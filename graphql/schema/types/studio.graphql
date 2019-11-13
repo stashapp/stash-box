@@ -1,0 +1,68 @@
+type Studio {
+  id: ID!
+  name: String!
+  urls: [URL]!
+  parent: Studio
+  child_studios: [Studio!]!
+}
+
+input StudioCreateInput {
+  name: String!
+  urls: [URLInput!]
+  parent_id: ID
+  child_studio_ids: [ID!]
+}
+
+input StudioUpdateInput {
+  id: ID!
+  name: String!
+  urls: [URLInput!]
+  parent_id: ID
+  child_studio_ids: [ID!]
+}
+
+input StudioDestroyInput {
+  id: ID!
+}
+
+input StudioEditDetailsInput {
+  name: String
+  urls: [URLInput!]
+  parent_id: ID
+  child_studio_ids: [ID!]
+}
+
+input StudioEditInput {
+  """Not required for create type"""
+  id: ID
+  operation: OperationEnum!
+  """Only required for merge type"""
+  merge_source_ids: [ID!]
+  """Not required for destroy type"""
+  details: StudioEditDetailsInput
+  comment: String
+}
+
+type StudioEdit {
+  name: String
+  """Added and modified URLs"""
+  added_urls: [URL!]
+  removed_urls: [URL!]
+  parent: Studio
+  added_child_studios: [Studio!]
+  removed_child_studios: [Studio!]
+}
+
+type QueryStudiosResultType {
+  count: Int!
+  studios: [Studio!]!
+}
+
+input StudioFilterType {
+  """Filter to search name - assumes like query unless quoted"""
+  name: String
+  """Filter to search url - assumes like query unless quoted"""
+  url: String
+  
+  parent: IDCriterionInput
+}

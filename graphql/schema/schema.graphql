@@ -1,0 +1,99 @@
+"""The query root for this schema"""
+type Query {
+  #### Performers ####
+
+  # performer names may not be unique
+  """Find a performer by ID"""
+  findPerformer(id: ID!): Performer
+
+  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType!
+
+
+  #### Studios ####
+
+  # studio names should be unique
+  """Find a studio by ID or name"""
+  findStudio(id: ID, name: String): Studio
+
+  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType!
+
+
+  #### Tags ####
+
+  # tag names will be unique
+  """Find a tag by ID or name, or aliases"""
+  findTag(id: ID, name: String): Tag
+
+  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType!
+
+
+  #### Scenes ####
+
+  # ids and checksums should be unique
+  """Find a scene by ID or checksum"""
+  findScene(id: ID, checksum: String): Scene
+
+  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType!
+
+
+  #### Edits ####
+
+  findEdit(id: ID): Edit
+
+  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType!
+
+
+  #### Users ####
+
+  """Find user by ID or username"""
+  findUser(id: ID, username: String): User
+
+  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType!
+
+
+  #### Version ####
+  version: Version!
+}
+
+type Mutation {
+  # Admin-only interface
+  sceneCreate(input: SceneCreateInput!): Scene
+  sceneUpdate(input: SceneUpdateInput!): Scene
+  sceneDestroy(input: SceneDestroyInput!): Boolean!
+
+  performerCreate(input: PerformerCreateInput!): Performer
+  performerUpdate(input: PerformerUpdateInput!): Performer
+  performerDestroy(input: PerformerDestroyInput!): Boolean!
+
+  studioCreate(input: StudioCreateInput!): Studio
+  studioUpdate(input: StudioUpdateInput!): Studio
+  studioDestroy(input: StudioDestroyInput!): Boolean!
+
+  tagCreate(input: TagCreateInput!): Tag
+  tagUpdate(input: TagUpdateInput!): Tag
+  tagDestroy(input: TagDestroyInput!): Boolean!
+
+  userCreate(input: UserCreateInput!): User
+  userUpdate(input: UserUpdateInput!): User
+  userDestroy(input: UserDestroyInput!): Boolean!
+
+  # Edit interfaces
+  """Propose a new scene or modification to a scene"""
+  sceneEdit(input: SceneEditInput!): Edit!
+  """Propose a new performer or modification to a performer"""
+  performerEdit(input: PerformerEditInput!): Edit!
+  """Propose a new studio or modification to a studio"""
+  studioEdit(input: StudioEditInput!): Edit!
+  """Propose a new tag or modification to a tag"""
+  tagEdit(input: TagEditInput!): Edit!
+
+  """Vote to accept/reject an edit"""
+  editVote(input: EditVoteInput!): Edit!
+  """Comment on an edit"""
+  editComment(input: EditCommentInput!): Edit!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}
