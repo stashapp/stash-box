@@ -54,7 +54,7 @@ func runMigrations(databasePath string) {
 	m, err := migrate.NewWithSourceInstance(
 		"packr2",
 		s,
-		fmt.Sprintf("sqlite3://%s", "file:"+databasePath),
+		fmt.Sprintf("sqlite3://%s", databasePath),
 	)
 	if err != nil {
 		panic(err.Error())
