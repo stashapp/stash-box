@@ -16,6 +16,9 @@ func (r *Resolver) Mutation() models.MutationResolver {
 func (r *Resolver) Performer() models.PerformerResolver {
 	return &performerResolver{r}
 }
+func (r *Resolver) Tag() models.TagResolver {
+	return &tagResolver{r}
+}
 func (r *Resolver) Query() models.QueryResolver {
 	return &queryResolver{r}
 }

@@ -59,3 +59,19 @@ CREATE INDEX `index_performers_on_alias` on `performer_aliases` (`alias`);
 CREATE INDEX `index_performers_on_piercing_location` on `performer_piercings` (`location`);
 CREATE INDEX `index_performers_on_tattoo_location` on `performer_tattoos` (`location`);
 CREATE INDEX `index_performers_on_tattoo_description` on `performer_tattoos` (`description`);
+
+CREATE TABLE `tags` (
+  `id` integer not null primary key autoincrement,
+  `name` varchar(255) not null,
+  `description` varchar(255),
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  unique (`name`)
+);
+
+CREATE TABLE `tag_aliases` (
+  `tag_id` integer not null,
+  `alias` varchar(255) not null,
+  foreign key(`tag_id`) references `tags`(`id`) ON DELETE CASCADE,
+  unique (`alias`)
+);

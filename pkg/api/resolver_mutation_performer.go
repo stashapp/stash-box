@@ -104,6 +104,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 
 	// Save the aliases
+	// TODO - only do this if provided
 	performerAliases := models.CreatePerformerAliases(performer.ID, input.Aliases)
 	if err := qb.UpdateAliases(performer.ID, performerAliases, tx); err != nil {
 		_ = tx.Rollback()
@@ -111,6 +112,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 
 	// Save the URLs
+	// TODO - only do this if provided
 	performerUrls := models.CreatePerformerUrls(performer.ID, input.Urls)
 	if err := qb.UpdateUrls(performer.ID, performerUrls, tx); err != nil {
 		_ = tx.Rollback()
@@ -118,6 +120,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 
 	// Save the Tattoos
+	// TODO - only do this if provided
 	performerTattoos := models.CreatePerformerBodyMods(performer.ID, input.Tattoos)
 	if err := qb.UpdateTattoos(performer.ID, performerTattoos, tx); err != nil {
 		_ = tx.Rollback()
@@ -125,6 +128,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 
 	// Save the Piercings
+	// TODO - only do this if provided
 	performerPiercings := models.CreatePerformerBodyMods(performer.ID, input.Piercings)
 	if err := qb.UpdatePiercings(performer.ID, performerPiercings, tx); err != nil {
 		_ = tx.Rollback()

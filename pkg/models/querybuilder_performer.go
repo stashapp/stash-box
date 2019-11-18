@@ -233,27 +233,6 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	return performers, countResult
 }
 
-func handleStringCriterion(column string, value *StringCriterionInput, query *queryBuilder) {
-	if value != nil {
-		if modifier := value.Modifier.String(); value.Modifier.IsValid() {
-			switch modifier {
-			case "EQUALS":
-				clause, thisArgs := getSearchBinding([]string{column}, value.Value, false)
-				query.addWhere(clause)
-				query.addArg(thisArgs...)
-			case "NOT_EQUALS":
-				clause, thisArgs := getSearchBinding([]string{column}, value.Value, true)
-				query.addWhere(clause)
-				query.addArg(thisArgs...)
-			case "IS_NULL":
-				query.addWhere(column + " IS NULL")
-			case "NOT_NULL":
-				query.addWhere(column + " IS NOT NULL")
-			}
-		}
-	}
-}
-
 func getBirthYearFilterClause(criterionModifier CriterionModifier, value int) ([]string, []interface{}) {
 	var clauses []string
 	var args []interface{}

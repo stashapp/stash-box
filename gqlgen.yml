@@ -16,4 +16,6 @@ struct_tag: gqlgen
 models:
   Performer:
     model: github.com/stashapp/stashdb/pkg/models.Performer
+  Tag:
+    model: github.com/stashapp/stashdb/pkg/models.Tag
 

@@ -43,6 +43,27 @@ func (qb *queryBuilder) addArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
 }
 
+func handleStringCriterion(column string, value *StringCriterionInput, query *queryBuilder) {
+	if value != nil {
+		if modifier := value.Modifier.String(); value.Modifier.IsValid() {
+			switch modifier {
+			case "EQUALS":
+				clause, thisArgs := getSearchBinding([]string{column}, value.Value, false)
+				query.addWhere(clause)
+				query.addArg(thisArgs...)
+			case "NOT_EQUALS":
+				clause, thisArgs := getSearchBinding([]string{column}, value.Value, true)
+				query.addWhere(clause)
+				query.addArg(thisArgs...)
+			case "IS_NULL":
+				query.addWhere(column + " IS NULL")
+			case "NOT_NULL":
+				query.addWhere(column + " IS NOT NULL")
+			}
+		}
+	}
+}
+
 func insertObject(tx *sqlx.Tx, table string, object interface{}) (int64, error) {
 	ensureTx(tx)
 	fields, values := SQLGenKeysCreate(object)
@@ -96,7 +117,7 @@ func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value inter
 }
 
 func getByID(tx *sqlx.Tx, table string, id int64, object interface{}) error {
-	return tx.Get(object, `SELECT * FROM performers WHERE id = ? LIMIT 1`, id)
+	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = ? LIMIT 1`, id)
 }
 
 func selectAll(tableName string) string {
