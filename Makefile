@@ -6,7 +6,7 @@ endif
 build:
 	$(eval DATE := $(shell go run scripts/getDate.go))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stashdb/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stashdb/pkg/api.githash=$(GITHASH)'"
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -v -ldflags "-X 'github.com/stashapp/stashdb/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stashdb/pkg/api.githash=$(GITHASH)'"
 
 install:
 	packr2 install
