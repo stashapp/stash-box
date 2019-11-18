@@ -1,0 +1,94 @@
+enum OperationEnum {
+    CREATE
+    MODIFY
+    DESTROY
+    MERGE
+}
+
+enum VoteTypeEnum {
+    COMMENT
+    ACCEPT
+    REJECT
+    """Immediately accepts the edit - bypassing the vote"""
+    IMMEDIATE_ACCEPT
+    """Immediately rejects the edit - bypassing the vote"""
+    IMMEDIATE_REJECT
+}
+
+enum VoteStatusEnum {
+    ACCEPTED
+    REJECTED
+    PENDING
+    IMMEDIATE_ACCEPTED
+    IMMEDIATE_REJECTED
+}
+
+type VoteComment {
+    user: User!
+    date: DateTime
+    comment: String
+    type: VoteTypeEnum
+}
+
+union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit
+
+enum TargetTypeEnum {
+    SCENE
+    STUDIO
+    PERFORMER
+    TAG
+}
+
+union EditTarget = Performer | Scene | Studio | Tag
+
+type Edit {
+    id: ID!
+    user: User!
+    """Object being edited - null if creating a new object"""
+    target: EditTarget!
+    target_type: TargetTypeEnum!
+    """Objects to merge with the target. Only applicable to merges"""
+    merge_sources: [EditTarget]
+    operation: OperationEnum!
+    editComment: String
+    details: EditDetails!
+    comments: [VoteComment!]!
+    votes: [VoteComment!]!
+    """ = Accepted - Rejected"""
+    vote_count: Int!
+    status: VoteStatusEnum!
+    applied: Boolean!
+}
+
+input EditVoteInput {
+    id: ID!
+    comment: String
+    type: VoteTypeEnum!
+}
+
+input EditCommentInput {
+    id: ID!
+    comment: String!
+}
+
+type QueryEditsResultType {
+  count: Int!
+  edits: [Edit!]!
+}
+
+input EditFilterType {
+  """Filter by user id"""
+  user_id: ID
+  """Filter by status"""
+  status: VoteStatusEnum
+  """Filter by operation"""
+  operation: OperationEnum
+  """Filter by vote count"""
+  vote_count: IntCriterionInput
+  """Filter by applied status"""
+  applied: Boolean
+  """Filter by target type"""
+  target_type: TargetTypeEnum
+  """Filter by target id"""
+  target_id: ID
+}

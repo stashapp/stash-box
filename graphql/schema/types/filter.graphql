@@ -1,0 +1,43 @@
+input MultiIDCriterionInput {
+  value: [ID!]
+  modifier: CriterionModifier!
+}
+
+input IDCriterionInput {
+  value: [ID!]!
+  modifier: CriterionModifier!
+}
+
+input StringCriterionInput {
+  value: String!
+  modifier: CriterionModifier!
+}
+
+input IntCriterionInput {
+  value: Int!
+  modifier: CriterionModifier!
+}
+
+input DateCriterionInput {
+  value: Date!
+  modifier: CriterionModifier!
+}
+
+enum CriterionModifier {
+  """="""
+  EQUALS,
+  """!="""
+  NOT_EQUALS,
+  """>"""
+  GREATER_THAN,
+  """<"""
+  LESS_THAN,
+  """IS NULL"""
+  IS_NULL,
+  """IS NOT NULL"""
+  NOT_NULL,
+  """INCLUDES ALL"""
+  INCLUDES_ALL,
+  INCLUDES,
+  EXCLUDES,
+}

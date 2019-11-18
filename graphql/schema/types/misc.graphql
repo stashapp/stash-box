@@ -1,0 +1,41 @@
+scalar Date
+scalar DateTime
+
+enum DateAccuracyEnum {
+  YEAR
+  MONTH
+  DAY
+}
+
+type FuzzyDate {
+  date: Date!
+  accuracy: DateAccuracyEnum!
+}
+
+input FuzzyDateInput {
+  date: Date!
+  accuracy: DateAccuracyEnum!
+}
+
+enum SortDirectionEnum {
+  ASC
+  DESC
+}
+
+type URL {
+  url: String!
+  type: String!
+}
+
+input URLInput {
+  url: String!
+  type: String!
+}
+
+input QuerySpec {
+  # TODO - specify by page or start/limit?
+  page: Int
+  per_page: Int
+  sort: String
+  direction: SortDirectionEnum
+}
