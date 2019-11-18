@@ -1,0 +1,109 @@
+type PerformerAppearance {
+  performer: Performer!
+  """Performing as alias"""
+  as: String
+}
+
+input PerformerAppearanceInput {
+  performer_id: ID!
+  """Performing as alias"""
+  as: String
+}
+
+type Scene {
+  id: ID!
+  title: String
+  details: String
+  url: String
+  date: Date
+
+  studio: Studio
+  tags: [Tag!]!
+  performers: [PerformerAppearance!]!
+  checksums: [String!]!
+}
+
+input SceneCreateInput {
+  title: String
+  details: String
+  url: String
+  date: Date
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  tag_ids: [ID!]
+  checksums: [String!]!
+}
+
+input SceneUpdateInput {
+  id: ID!
+  title: String
+  details: String
+  url: String
+  date: Date
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  tag_ids: [ID!]
+}
+
+input SceneDestroyInput {
+  id: ID!
+}
+
+input SceneEditDetailsInput {
+  title: String
+  details: String
+  url: String
+  date: Date
+  studio_id: ID
+  performers: [PerformerAppearanceInput!]
+  tag_ids: [ID!]
+  checksums: [String!]
+}
+
+input SceneEditInput {
+  """Not required for create type"""
+  id: ID
+  operation: OperationEnum!
+  """Only required for merge type"""
+  merge_source_ids: [ID!]
+  """Not required for destroy type"""
+  details: SceneEditDetailsInput
+  comment: String
+}
+
+type SceneEdit {
+  title: String
+  details: String
+  url: String
+  date: Date
+  studio_id: ID
+  """Added or modified performer appearance entries"""
+  added_performers: [PerformerAppearance!]
+  removed_performers: [PerformerAppearance!]
+  added_tags: [Tag!]
+  removed_tags: [Tag!]
+}
+
+type QueryScenesResultType {
+  count: Int!
+  scenes: [Scene!]!
+}
+
+input SceneFilterType {
+  """Filter to search title and details - assumes like query unless quoted"""
+  text: String
+  """Filter to search title - assumes like query unless quoted"""
+  title: String
+  """Filter to search url - assumes like query unless quoted"""
+  url: String
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter to only include scenes with this studio"""
+  studios: MultiIDCriterionInput
+  """Filter to only include scenes with these tags"""
+  tags: MultiIDCriterionInput
+  """Filter to only include scenes with these performers"""
+  performers: MultiIDCriterionInput
+  """Filter to include scenes with performer appearing as alias"""
+  alias: StringCriterionInput
+}

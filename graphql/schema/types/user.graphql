@@ -1,0 +1,75 @@
+enum RoleEnum {
+    READ
+    VOTE
+    EDIT
+    MODIFY
+    ADMIN
+}
+
+type User {
+    id: ID!
+    name: String!
+    roles: [RoleEnum!]!
+    email: String!
+    api_key: String!
+    successful_edits: Int!
+    unsuccessful_edits: Int!
+    successful_votes: Int!
+    """Votes on unsuccessful edits"""
+    unsuccessful_votes: Int!
+    """Calls to the API from this user over a configurable time period"""
+    api_calls: Int!
+}
+
+input UserCreateInput {
+    name: String!
+    # TODO - figure out format for this
+    password: String!
+    roles: [RoleEnum!]!
+    email: String!
+}
+
+input UserUpdateInput {
+    id: ID!
+    name: String
+    # TODO - figure out format for this
+    password: String
+    roles: [RoleEnum!]
+    email: String
+}
+
+input UserDestroyInput {
+    id: ID!
+}
+
+type QueryUsersResultType {
+  count: Int!
+  users: [User!]!
+}
+
+input RoleCriterionInput {
+  value: [RoleEnum!]!
+  modifier: CriterionModifier!
+}
+
+input UserFilterType {
+  """Filter to search user name - assumes like query unless quoted"""
+  name: String
+  """Filter to search email - assumes like query unless quoted"""
+  email: String
+  """Filter by roles"""
+  roles: RoleCriterionInput
+  """Filter by api key"""
+  apiKey: String
+
+  """Filter by successful edits"""
+  successful_edits: IntCriterionInput
+  """Filter by unsuccessful edits"""
+  unsuccessful_edits: IntCriterionInput
+  """Filter by votes on successful edits"""
+  successful_votes: IntCriterionInput
+  """Filter by votes on unsuccessful edits"""
+  unsuccessful_votes: IntCriterionInput
+  """Filter by number of API calls"""
+  api_calls: IntCriterionInput
+}
