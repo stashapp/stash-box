@@ -63,7 +63,7 @@ func (qb *TagQueryBuilder) UpdateAliases(tagID int64, updatedJoins []TagAliases,
 	return qb.CreateAliases(updatedJoins, tx)
 }
 
-func (qb *TagQueryBuilder) Find(id int) (*Tag, error) {
+func (qb *TagQueryBuilder) Find(id int64) (*Tag, error) {
 	query := "SELECT * FROM tags WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.queryTags(query, args, nil)
@@ -86,7 +86,7 @@ func (qb *TagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
 	return results[0], nil
 }
 
-func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Tag, error) {
+func (qb *TagQueryBuilder) FindBySceneID(sceneID int64, tx *sqlx.Tx) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scenes_tags as scenes_join on scenes_join.tag_id = tags.id

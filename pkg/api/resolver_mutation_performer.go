@@ -82,7 +82,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	qb := models.NewPerformerQueryBuilder()
 
 	// get the existing performer and modify it
-	performerID, _ := strconv.Atoi(input.ID)
+	performerID, _ := strconv.ParseInt(input.ID, 10, 64)
 	updatedPerformer, err := qb.Find(performerID)
 
 	if err != nil {

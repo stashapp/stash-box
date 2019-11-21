@@ -22,7 +22,7 @@ func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes,
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []PerformersScenes, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int64, updatedJoins []PerformersScenes, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -33,7 +33,7 @@ func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []
 	return qb.CreatePerformersScenes(updatedJoins, tx)
 }
 
-func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID int, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID int64, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins
@@ -55,7 +55,7 @@ func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []ScenesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int64, updatedJoins []ScenesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -66,7 +66,7 @@ func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []Scenes
 	return qb.CreateScenesTags(updatedJoins, tx)
 }
 
-func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int64, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins
@@ -89,7 +89,7 @@ func (qb *JoinsQueryBuilder) CreateSceneMarkersTags(newJoins []SceneMarkersTags,
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) UpdateSceneMarkersTags(sceneMarkerID int, updatedJoins []SceneMarkersTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateSceneMarkersTags(sceneMarkerID int64, updatedJoins []SceneMarkersTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -100,7 +100,7 @@ func (qb *JoinsQueryBuilder) UpdateSceneMarkersTags(sceneMarkerID int, updatedJo
 	return qb.CreateSceneMarkersTags(updatedJoins, tx)
 }
 
-func (qb *JoinsQueryBuilder) DestroySceneMarkersTags(sceneMarkerID int, updatedJoins []SceneMarkersTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) DestroySceneMarkersTags(sceneMarkerID int64, updatedJoins []SceneMarkersTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins
@@ -108,7 +108,7 @@ func (qb *JoinsQueryBuilder) DestroySceneMarkersTags(sceneMarkerID int, updatedJ
 	return err
 }
 
-func (qb *JoinsQueryBuilder) DestroyScenesGalleries(sceneID int, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) DestroyScenesGalleries(sceneID int64, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Unset the existing scene id from galleries
@@ -117,7 +117,7 @@ func (qb *JoinsQueryBuilder) DestroyScenesGalleries(sceneID int, tx *sqlx.Tx) er
 	return err
 }
 
-func (qb *JoinsQueryBuilder) DestroyScenesMarkers(sceneID int, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) DestroyScenesMarkers(sceneID int64, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the scene marker tags

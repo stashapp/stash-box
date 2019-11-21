@@ -63,7 +63,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	qb := models.NewStudioQueryBuilder()
 
 	// get the existing studio and modify it
-	studioID, _ := strconv.Atoi(input.ID)
+	studioID, _ := strconv.ParseInt(input.ID, 10, 64)
 	updatedStudio, err := qb.Find(studioID)
 
 	if err != nil {

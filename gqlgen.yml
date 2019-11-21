@@ -20,4 +20,6 @@ models:
     model: github.com/stashapp/stashdb/pkg/models.Tag
   Studio:
     model: github.com/stashapp/stashdb/pkg/models.Studio
+  Scene:
+    model: github.com/stashapp/stashdb/pkg/models.Scene
 

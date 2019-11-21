@@ -63,7 +63,7 @@ func (qb *StudioQueryBuilder) UpdateUrls(studio int64, updatedJoins []StudioUrls
 	return qb.CreateUrls(updatedJoins, tx)
 }
 
-func (qb *StudioQueryBuilder) Find(id int) (*Studio, error) {
+func (qb *StudioQueryBuilder) Find(id int64) (*Studio, error) {
 	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.queryStudios(query, args, nil)

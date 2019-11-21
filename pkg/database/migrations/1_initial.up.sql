@@ -94,3 +94,39 @@ CREATE TABLE `studio_urls` (
   unique (`studio_id`, `url`),
   unique (`studio_id`, `type`)
 );
+
+CREATE TABLE `scenes` (
+  `id` integer not null primary key autoincrement,
+  `title` varchar(255),
+  `details` varchar(255),
+  `url` varchar(255),
+  `date` date,
+  `studio_id` integer,
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  foreign key(`studio_id`) references `studios`(`id`) ON DELETE SET NULL
+);
+
+CREATE TABLE `scene_checksums` (
+  `scene_id` integer not null,
+  `checksum` varchar(255) not null,
+  foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
+  unique (`checksum`)
+);
+
+CREATE TABLE `scene_performers` (
+  `scene_id` integer not null,
+  `as` varchar(255),
+  `performer_id` integer not null,
+  foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
+  foreign key(`performer_id`) references `performers`(`id`) ON DELETE CASCADE,
+  unique(`scene_id`, `performer_id`)
+);
+
+CREATE TABLE `scene_tags` (
+  `scene_id` integer not null,
+  `tag_id` integer not null,
+  foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
+  foreign key(`tag_id`) references `tags`(`id`) ON DELETE CASCADE,
+  unique(`scene_id`, `tag_id`)
+);

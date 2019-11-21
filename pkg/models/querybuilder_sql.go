@@ -27,7 +27,7 @@ type queryBuilder struct {
 	sortAndPagination string
 }
 
-func (qb queryBuilder) executeFind() ([]int, int) {
+func (qb queryBuilder) executeFind() ([]int64, int) {
 	return executeFindQuery(qb.tableName, qb.body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
 }
 
@@ -187,9 +187,7 @@ func getSort(sort string, direction string, tableName string) string {
 	} else {
 		colName := getColumn(tableName, sort)
 		var additional string
-		if tableName == "scenes" {
-			additional = ", bitrate DESC, framerate DESC, rating DESC, duration DESC"
-		} else if tableName == "scene_markers" {
+		if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
 		return " ORDER BY " + colName + " " + direction + additional
@@ -257,15 +255,15 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func runIdsQuery(query string, args []interface{}) ([]int, error) {
+func runIdsQuery(query string, args []interface{}) ([]int64, error) {
 	var result []struct {
-		Int int `db:"id"`
+		Int int64 `db:"id"`
 	}
 	if err := database.DB.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
-		return []int{}, err
+		return []int64{}, err
 	}
 
-	vsm := make([]int, len(result))
+	vsm := make([]int64, len(result))
 	for i, v := range result {
 		vsm[i] = v.Int
 	}
@@ -284,7 +282,7 @@ func runCountQuery(query string, args []interface{}) (int, error) {
 	return result.Int, nil
 }
 
-func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int) {
+func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int64, int) {
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}

@@ -113,7 +113,7 @@ func (qb *PerformerQueryBuilder) UpdatePiercings(performerID int64, updatedJoins
 	return qb.CreateTattoos(updatedJoins, tx)
 }
 
-func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
+func (qb *PerformerQueryBuilder) Find(id int64) (*Performer, error) {
 	query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.queryPerformers(query, args, nil)

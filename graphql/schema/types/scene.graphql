@@ -43,6 +43,7 @@ input SceneUpdateInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
+  checksums: [String!]
 }
 
 input SceneDestroyInput {

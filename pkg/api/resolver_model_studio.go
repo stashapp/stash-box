@@ -36,7 +36,7 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 	}
 
 	qb := models.NewStudioQueryBuilder()
-	parent, err := qb.Find(int(obj.ParentStudioID.Int64))
+	parent, err := qb.Find(obj.ParentStudioID.Int64)
 
 	if err != nil {
 		return nil, err

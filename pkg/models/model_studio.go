@@ -9,7 +9,7 @@ type Studio struct {
 	ID             int64           `db:"id" json:"id"`
 	Name           string          `db:"name" json:"name"`
 	Image          []byte          `db:"image" json:"image"`
-	ParentStudioID sql.NullInt64   `db:"parent_studio_id,omitempty" json:"studio_id"`
+	ParentStudioID sql.NullInt64   `db:"parent_studio_id,omitempty" json:"parent_studio_id"`
 	CreatedAt      SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt      SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }

@@ -15,7 +15,7 @@ func (r *queryResolver) FindStudio(ctx context.Context, id *string, name *string
 	qb := models.NewStudioQueryBuilder()
 
 	if id != nil {
-		idInt, _ := strconv.Atoi(*id)
+		idInt, _ := strconv.ParseInt(*id, 10, 64)
 		return qb.Find(idInt)
 	} else if name != nil {
 		return qb.FindByName(*name, nil)

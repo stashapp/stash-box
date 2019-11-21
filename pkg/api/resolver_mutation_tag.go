@@ -61,7 +61,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	qb := models.NewTagQueryBuilder()
 
 	// get the existing tag and modify it
-	tagID, _ := strconv.Atoi(input.ID)
+	tagID, _ := strconv.ParseInt(input.ID, 10, 64)
 	updatedTag, err := qb.Find(tagID)
 
 	if err != nil {
