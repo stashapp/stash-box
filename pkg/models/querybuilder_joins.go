@@ -12,7 +12,7 @@ func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes,
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
-			`INSERT INTO performers_scenes (performer_id, scene_id) VALUES (:performer_id, :scene_id)`,
+			`INSERT INTO scene_performers (performer_id, scene_id) VALUES (:performer_id, :scene_id)`,
 			join,
 		)
 		if err != nil {
@@ -26,7 +26,7 @@ func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int64, updatedJoins 
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
-	_, err := tx.Exec("DELETE FROM performers_scenes WHERE scene_id = ?", sceneID)
+	_, err := tx.Exec("DELETE FROM scene_performers WHERE scene_id = ?", sceneID)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID int64, tx *sqlx.Tx)
 	ensureTx(tx)
 
 	// Delete the existing joins
-	_, err := tx.Exec("DELETE FROM performers_scenes WHERE scene_id = ?", sceneID)
+	_, err := tx.Exec("DELETE FROM scene_performers WHERE scene_id = ?", sceneID)
 	return err
 }
 
@@ -45,7 +45,7 @@ func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
-			`INSERT INTO scenes_tags (scene_id, tag_id) VALUES (:scene_id, :tag_id)`,
+			`INSERT INTO scene_tags (scene_id, tag_id) VALUES (:scene_id, :tag_id)`,
 			join,
 		)
 		if err != nil {
@@ -59,7 +59,7 @@ func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int64, updatedJoins []Scen
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
-	_, err := tx.Exec("DELETE FROM scenes_tags WHERE scene_id = ?", sceneID)
+	_, err := tx.Exec("DELETE FROM scene_tags WHERE scene_id = ?", sceneID)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int64, tx *sqlx.Tx) error
 	ensureTx(tx)
 
 	// Delete the existing joins
-	_, err := tx.Exec("DELETE FROM scenes_tags WHERE scene_id = ?", sceneID)
+	_, err := tx.Exec("DELETE FROM scene_tags WHERE scene_id = ?", sceneID)
 
 	return err
 }

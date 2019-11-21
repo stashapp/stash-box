@@ -3,7 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"regexp"
+
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source"
@@ -11,7 +13,6 @@ import (
 	sqlite3 "github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stashdb/pkg/logger"
 	"github.com/stashapp/stashdb/pkg/utils"
-	"os"
 )
 
 var DB *sqlx.DB
@@ -68,6 +69,8 @@ func runMigrations(databasePath string) {
 			panic(err.Error())
 		}
 	}
+
+	m.Close()
 }
 
 func registerRegexpFunc() {
