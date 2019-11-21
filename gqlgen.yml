@@ -18,4 +18,6 @@ models:
     model: github.com/stashapp/stashdb/pkg/models.Performer
   Tag:
     model: github.com/stashapp/stashdb/pkg/models.Tag
+  Studio:
+    model: github.com/stashapp/stashdb/pkg/models.Studio
 

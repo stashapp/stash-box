@@ -75,3 +75,22 @@ CREATE TABLE `tag_aliases` (
   foreign key(`tag_id`) references `tags`(`id`) ON DELETE CASCADE,
   unique (`alias`)
 );
+
+CREATE TABLE `studios` (
+  `id` integer not null primary key autoincrement,
+  `image` blob,
+  `name` varchar(255) not null,
+  `parent_studio_id` integer ,
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  foreign key(`parent_studio_id`) references `studios`(`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `studio_urls` (
+  `studio_id` integer not null,
+  `url` varchar(255) not null,
+  `type` varchar(255) not null,
+  foreign key(`studio_id`) references `studios`(`id`) ON DELETE CASCADE,
+  unique (`studio_id`, `url`),
+  unique (`studio_id`, `type`)
+);
