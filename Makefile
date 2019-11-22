@@ -22,11 +22,11 @@ generate:
 
 .PHONY: test
 test: 
-	go test -mod=vendor ./...
+	go test ./...
 
 .PHONY: it
 it:
-	go test -mod=vendor -tags=integration ./...
+	go test -tags=integration ./...
 	
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt
