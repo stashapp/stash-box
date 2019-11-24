@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 const (
@@ -262,20 +263,26 @@ func (p Performer) ResolveMeasurements() Measurements {
 	return ret
 }
 
-func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) {
-	CopyFull(p, input)
+func (p *Performer) TranslateImageData(inputData *string) ([]byte, error) {
+	var imageData []byte
+	var err error
 
-	if input.Birthdate != nil {
-		p.setBirthdate(*input.Birthdate)
-	}
+	_, imageData, err = utils.ProcessBase64Image(*inputData)
 
-	if input.Measurements != nil {
-		p.setMeasurements(*input.Measurements)
-	}
+	return imageData, err
 }
 
-func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) {
+func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 	CopyFull(p, input)
+
+	if input.Image != nil {
+		var err error
+		p.Image, err = p.TranslateImageData(input.Image)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)
@@ -284,4 +291,29 @@ func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) {
 	if input.Measurements != nil {
 		p.setMeasurements(*input.Measurements)
 	}
+
+	return nil
+}
+
+func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
+	CopyFull(p, input)
+
+	if input.Image != nil {
+		var err error
+		p.Image, err = p.TranslateImageData(input.Image)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if input.Birthdate != nil {
+		p.setBirthdate(*input.Birthdate)
+	}
+
+	if input.Measurements != nil {
+		p.setMeasurements(*input.Measurements)
+	}
+
+	return nil
 }

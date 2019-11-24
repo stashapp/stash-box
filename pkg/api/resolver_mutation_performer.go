@@ -28,7 +28,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
-	newPerformer.CopyFromCreateInput(input)
+	err = newPerformer.CopyFromCreateInput(input)
+	if err != nil {
+		return nil, err
+	}
 
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -98,7 +101,11 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 	// Populate performer from the input
-	updatedPerformer.CopyFromUpdateInput(input)
+	err = updatedPerformer.CopyFromUpdateInput(input)
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
 
 	performer, err := qb.Update(*updatedPerformer)
 	if err != nil {
