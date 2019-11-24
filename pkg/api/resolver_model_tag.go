@@ -16,7 +16,7 @@ func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string
 	return resolveNullString(obj.Description)
 }
 func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := models.NewTagQueryBuilder(nil)
 	aliases, err := qb.GetAliases(obj.ID)
 
 	if err != nil {

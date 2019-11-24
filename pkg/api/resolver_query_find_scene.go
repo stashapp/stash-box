@@ -12,13 +12,13 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 		return nil, err
 	}
 
-	qb := models.NewSceneQueryBuilder()
+	qb := models.NewSceneQueryBuilder(nil)
 
 	if id != nil {
 		idInt, _ := strconv.ParseInt(*id, 10, 64)
 		return qb.Find(idInt)
 	} else if checksum != nil {
-		return qb.FindByChecksum(*checksum, nil)
+		return qb.FindByChecksum(*checksum)
 	}
 
 	return nil, nil
@@ -28,7 +28,7 @@ func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.Sce
 		return nil, err
 	}
 
-	qb := models.NewSceneQueryBuilder()
+	qb := models.NewSceneQueryBuilder(nil)
 
 	scenes, count := qb.Query(sceneFilter, filter)
 	return &models.QueryScenesResultType{

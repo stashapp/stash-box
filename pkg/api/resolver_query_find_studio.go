@@ -12,13 +12,13 @@ func (r *queryResolver) FindStudio(ctx context.Context, id *string, name *string
 		return nil, err
 	}
 
-	qb := models.NewStudioQueryBuilder()
+	qb := models.NewStudioQueryBuilder(nil)
 
 	if id != nil {
 		idInt, _ := strconv.ParseInt(*id, 10, 64)
 		return qb.Find(idInt)
 	} else if name != nil {
-		return qb.FindByName(*name, nil)
+		return qb.FindByName(*name)
 	}
 
 	return nil, nil
@@ -29,7 +29,7 @@ func (r *queryResolver) QueryStudios(ctx context.Context, studioFilter *models.S
 		return nil, err
 	}
 
-	qb := models.NewStudioQueryBuilder()
+	qb := models.NewStudioQueryBuilder(nil)
 
 	studios, count := qb.Query(studioFilter, filter)
 	return &models.QueryStudiosResultType{

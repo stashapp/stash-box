@@ -1,79 +1,56 @@
 package models
 
 import (
-	"database/sql"
-
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 	"github.com/stashapp/stashdb/pkg/database"
 )
 
-type SceneQueryBuilder struct{}
-
-const sceneTable = "scenes"
-const sceneChecksumsJoinTable = "scene_checksums"
-const sceneJoinKey = "scene_id"
-
-func NewSceneQueryBuilder() SceneQueryBuilder {
-	return SceneQueryBuilder{}
+type SceneQueryBuilder struct {
+	dbi database.DBI
 }
 
-func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error) {
-	sceneID, err := insertObject(tx, sceneTable, newScene)
-
-	if err != nil {
-		return nil, errors.Wrap(err, "Error creating scene")
+func NewSceneQueryBuilder(tx *sqlx.Tx) SceneQueryBuilder {
+	return SceneQueryBuilder{
+		dbi: database.DBIWithTxn(tx),
 	}
-
-	if err := getByID(tx, sceneTable, sceneID, &newScene); err != nil {
-		return nil, errors.Wrap(err, "Error getting scene after create")
-	}
-	return &newScene, nil
 }
 
-func (qb *SceneQueryBuilder) Update(updatedScene Scene, tx *sqlx.Tx) (*Scene, error) {
-	err := updateObjectByID(tx, sceneTable, updatedScene)
-
-	if err != nil {
-		return nil, errors.Wrap(err, "Error updating scene")
+func (qb *SceneQueryBuilder) toModel(ro interface{}) *Scene {
+	if ro != nil {
+		return ro.(*Scene)
 	}
 
-	if err := getByID(tx, sceneTable, updatedScene.ID, &updatedScene); err != nil {
-		return nil, errors.Wrap(err, "Error getting scene after update")
-	}
-	return &updatedScene, nil
+	return nil
 }
 
-func (qb *SceneQueryBuilder) Destroy(id int64, tx *sqlx.Tx) error {
-	return executeDeleteQuery(sceneTable, id, tx)
+func (qb *SceneQueryBuilder) Create(newScene Scene) (*Scene, error) {
+	ret, err := qb.dbi.Insert(newScene)
+	return qb.toModel(ret), err
 }
 
-func (qb *SceneQueryBuilder) CreateChecksums(newJoins []SceneChecksum, tx *sqlx.Tx) error {
-	return insertJoins(tx, sceneChecksumsJoinTable, newJoins)
+func (qb *SceneQueryBuilder) Update(updatedScene Scene) (*Scene, error) {
+	ret, err := qb.dbi.Update(updatedScene)
+	return qb.toModel(ret), err
 }
 
-func (qb *SceneQueryBuilder) UpdateChecksums(sceneID int64, updatedJoins []SceneChecksum, tx *sqlx.Tx) error {
-	ensureTx(tx)
+func (qb *SceneQueryBuilder) Destroy(id int64) error {
+	return qb.dbi.Delete(id, sceneDBTable)
+}
 
-	// Delete the existing joins and then create new ones
-	err := deleteObjectsByColumn(tx, sceneChecksumsJoinTable, sceneJoinKey, sceneID)
-	if err != nil {
-		return err
-	}
-	return qb.CreateChecksums(updatedJoins, tx)
+func (qb *SceneQueryBuilder) CreateChecksums(newJoins SceneChecksums) error {
+	return qb.dbi.InsertJoins(sceneChecksumTable, &newJoins)
+}
+
+func (qb *SceneQueryBuilder) UpdateChecksums(sceneID int64, updatedJoins SceneChecksums) error {
+	return qb.dbi.ReplaceJoins(sceneChecksumTable, sceneID, &updatedJoins)
 }
 
 func (qb *SceneQueryBuilder) Find(id int64) (*Scene, error) {
-	query := "SELECT * FROM scenes WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	results, err := qb.queryScenes(query, args, nil)
-	if err != nil || len(results) < 1 {
-		return nil, err
-	}
-	return results[0], nil
+	ret, err := qb.dbi.Find(id, sceneDBTable)
+	return qb.toModel(ret), err
 }
 
-// func (qb *SceneQueryBuilder) FindByStudioID(sceneID int, tx *sqlx.Tx) ([]*Scene, error) {
+// func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
 // 	query := `
 // 		SELECT scenes.* FROM scenes
 // 		LEFT JOIN scenes_scenes as scenes_join on scenes_join.scene_id = scenes.id
@@ -82,10 +59,10 @@ func (qb *SceneQueryBuilder) Find(id int64) (*Scene, error) {
 // 		GROUP BY scenes.id
 // 	`
 // 	args := []interface{}{sceneID}
-// 	return qb.queryScenes(query, args, tx)
+// 	return qb.queryScenes(query, args)
 // }
 
-func (qb *SceneQueryBuilder) FindByChecksum(checksum string, tx *sqlx.Tx) (*Scene, error) {
+func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
 	query := `SELECT scenes.* FROM scenes
 		left join scene_checksums on scenes.id = scene_checksums.scene_id
 		WHERE scene_checksums.checksum = ?`
@@ -93,14 +70,14 @@ func (qb *SceneQueryBuilder) FindByChecksum(checksum string, tx *sqlx.Tx) (*Scen
 	var args []interface{}
 	args = append(args, checksum)
 
-	results, err := qb.queryScenes(query, args, tx)
+	results, err := qb.queryScenes(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *SceneQueryBuilder) FindByChecksums(checksums []string, tx *sqlx.Tx) ([]*Scene, error) {
+func (qb *SceneQueryBuilder) FindByChecksums(checksums []string) ([]*Scene, error) {
 	query := `SELECT scenes.* FROM scenes
 		left join scene_checksums on scenes.id = scene_checksums.scene_id
 		WHERE scene_checksums.checksum IN ` + getInBinding(len(checksums))
@@ -109,14 +86,14 @@ func (qb *SceneQueryBuilder) FindByChecksums(checksums []string, tx *sqlx.Tx) ([
 	for _, name := range checksums {
 		args = append(args, name)
 	}
-	return qb.queryScenes(query, args, tx)
+	return qb.queryScenes(query, args)
 }
 
-func (qb *SceneQueryBuilder) FindByTitle(name string, tx *sqlx.Tx) ([]*Scene, error) {
+func (qb *SceneQueryBuilder) FindByTitle(name string) ([]*Scene, error) {
 	query := "SELECT * FROM scenes WHERE upper(title) = upper(?)"
 	var args []interface{}
 	args = append(args, name)
-	return qb.queryScenes(query, args, tx)
+	return qb.queryScenes(query, args)
 }
 
 func (qb *SceneQueryBuilder) Count() (int, error) {
@@ -185,62 +162,22 @@ func (qb *SceneQueryBuilder) getSceneSort(findFilter *QuerySpec) string {
 	return getSort(sort, direction, "scenes")
 }
 
-func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *sqlx.Tx) ([]*Scene, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	scenes := make([]*Scene, 0)
-	for rows.Next() {
-		scene := Scene{}
-		if err := rows.StructScan(&scene); err != nil {
-			return nil, err
-		}
-		scenes = append(scenes, &scene)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return scenes, nil
+func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}) (Scenes, error) {
+	output := Scenes{}
+	err := qb.dbi.RawQuery(sceneDBTable, query, args, &output)
+	return output, err
 }
 
 func (qb *SceneQueryBuilder) GetChecksums(id int64) ([]string, error) {
-	query := "SELECT checksum FROM scene_checksums WHERE scene_id = ?"
-	args := []interface{}{id}
+	joins := SceneChecksums{}
+	err := qb.dbi.FindJoins(sceneChecksumTable, id, &joins)
 
-	var rows *sqlx.Rows
-	var err error
-	rows, err = database.DB.Queryx(query, args...)
+	return joins.ToChecksums(), err
+}
 
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
+func (qb *SceneQueryBuilder) GetPerformers(id int64) (PerformersScenes, error) {
+	joins := PerformersScenes{}
+	err := qb.dbi.FindJoins(scenePerformerTable, id, &joins)
 
-	aliases := make([]string, 0)
-	for rows.Next() {
-		var alias string
-
-		if err := rows.Scan(&alias); err != nil {
-			return nil, err
-		}
-		aliases = append(aliases, alias)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return aliases, nil
+	return joins, err
 }

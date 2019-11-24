@@ -31,24 +31,24 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 
 	// Start the transaction and save the scene
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
-	scene, err := qb.Create(newScene, tx)
+	qb := models.NewSceneQueryBuilder(tx)
+	scene, err := qb.Create(newScene)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
-	// Save the aliases
+	// Save the checksums
 	sceneAliases := models.CreateSceneChecksums(scene.ID, input.Checksums)
-	if err := qb.CreateChecksums(sceneAliases, tx); err != nil {
+	if err := qb.CreateChecksums(sceneAliases); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
-	// TODO - save the performers
+	// save the performers
 	scenePerformers := models.CreateScenePerformers(scene.ID, input.Performers)
-	jqb := models.NewJoinsQueryBuilder()
-	if err := jqb.CreatePerformersScenes(scenePerformers, tx); err != nil {
+	jqb := models.NewJoinsQueryBuilder(tx)
+	if err := jqb.CreatePerformersScenes(scenePerformers); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	// Save the tags
 	tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
 
-	if err := jqb.CreateScenesTags(tagJoins, tx); err != nil {
+	if err := jqb.CreateScenesTags(tagJoins); err != nil {
 		return nil, err
 	}
 
@@ -73,7 +73,8 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
-	qb := models.NewSceneQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder(tx)
 
 	// get the existing scene and modify it
 	sceneID, _ := strconv.ParseInt(input.ID, 10, 64)
@@ -85,40 +86,44 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 
 	updatedScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-	// Start the transaction and save the scene
-	tx := database.DB.MustBeginTx(ctx, nil)
-
 	// Populate scene from the input
 	updatedScene.CopyFromUpdateInput(input)
 
-	scene, err := qb.Update(*updatedScene, tx)
+	scene, err := qb.Update(*updatedScene)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
 	// Save the checksums
-	// TODO - only do this if provided
-	sceneAliases := models.CreateSceneChecksums(scene.ID, input.Checksums)
-	if err := qb.UpdateChecksums(scene.ID, sceneAliases, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
+	// only do this if provided
+	if wasFieldIncluded(ctx, "checksums") {
+		sceneChecksums := models.CreateSceneChecksums(scene.ID, input.Checksums)
+		if err := qb.UpdateChecksums(scene.ID, sceneChecksums); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
-	// TODO - only do this if provided
-	scenePerformers := models.CreateScenePerformers(scene.ID, input.Performers)
-	jqb := models.NewJoinsQueryBuilder()
-	if err := jqb.UpdatePerformersScenes(scene.ID, scenePerformers, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
+	jqb := models.NewJoinsQueryBuilder(tx)
+
+	// only do this if provided
+	if wasFieldIncluded(ctx, "performers") {
+		scenePerformers := models.CreateScenePerformers(scene.ID, input.Performers)
+		if err := jqb.UpdatePerformersScenes(scene.ID, scenePerformers); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Save the tags
-	// TODO - only do this if provided
-	tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
+	// only do this if provided
+	if wasFieldIncluded(ctx, "tagIds") {
+		tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
 
-	if err := jqb.UpdateScenesTags(scene.ID, tagJoins, tx); err != nil {
-		return nil, err
+		if err := jqb.UpdateScenesTags(scene.ID, tagJoins); err != nil {
+			return nil, err
+		}
 	}
 
 	// Commit
@@ -134,8 +139,8 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		return false, err
 	}
 
-	qb := models.NewSceneQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder(tx)
 
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
@@ -144,7 +149,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	if err != nil {
 		return false, err
 	}
-	if err = qb.Destroy(sceneID, tx); err != nil {
+	if err = qb.Destroy(sceneID); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}

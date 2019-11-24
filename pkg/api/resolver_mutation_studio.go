@@ -31,8 +31,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder()
-	studio, err := qb.Create(newStudio, tx)
+	qb := models.NewStudioQueryBuilder(tx)
+	studio, err := qb.Create(newStudio)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
@@ -42,7 +42,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	// Save the URLs
 	studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
-	if err := qb.CreateUrls(studioUrls, tx); err != nil {
+	if err := qb.CreateUrls(studioUrls); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -60,7 +60,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	qb := models.NewStudioQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewStudioQueryBuilder(tx)
 
 	// get the existing studio and modify it
 	studioID, _ := strconv.ParseInt(input.ID, 10, 64)
@@ -72,13 +73,10 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	updatedStudio.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-	// Start the transaction and save the studio
-	tx := database.DB.MustBeginTx(ctx, nil)
-
 	// Populate studio from the input
 	updatedStudio.CopyFromUpdateInput(input)
 
-	studio, err := qb.Update(*updatedStudio, tx)
+	studio, err := qb.Update(*updatedStudio)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
@@ -87,7 +85,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Save the URLs
 	// TODO - only do this if provided
 	studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
-	if err := qb.UpdateUrls(studio.ID, studioUrls, tx); err != nil {
+	if err := qb.UpdateUrls(studio.ID, studioUrls); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -107,8 +105,8 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		return false, err
 	}
 
-	qb := models.NewStudioQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewStudioQueryBuilder(tx)
 
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
@@ -117,7 +115,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 	if err != nil {
 		return false, err
 	}
-	if err = qb.Destroy(studioID, tx); err != nil {
+	if err = qb.Destroy(studioID); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}

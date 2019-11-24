@@ -43,6 +43,10 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 func wasFieldIncluded(ctx context.Context, field string) bool {
 	rctx := graphql.GetRequestContext(ctx)
 
-	_, ret := rctx.Variables[field]
-	return ret
+	if rctx != nil {
+		_, ret := rctx.Variables[field]
+		return ret
+	}
+
+	return false
 }

@@ -12,7 +12,7 @@ func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (
 		return nil, err
 	}
 
-	qb := models.NewTagQueryBuilder()
+	qb := models.NewTagQueryBuilder(nil)
 
 	if id != nil {
 		idInt, _ := strconv.ParseInt(*id, 10, 64)
@@ -29,7 +29,7 @@ func (r *queryResolver) QueryTags(ctx context.Context, tagFilter *models.TagFilt
 		return nil, err
 	}
 
-	qb := models.NewTagQueryBuilder()
+	qb := models.NewTagQueryBuilder(nil)
 
 	tags, count := qb.Query(tagFilter, filter)
 	return &models.QueryTagsResultType{

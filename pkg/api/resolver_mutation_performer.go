@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -31,8 +32,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	performer, err := qb.Create(newPerformer, tx)
+	qb := models.NewPerformerQueryBuilder(tx)
+	performer, err := qb.Create(newPerformer)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
@@ -40,28 +41,28 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	// Save the aliases
 	performerAliases := models.CreatePerformerAliases(performer.ID, input.Aliases)
-	if err := qb.CreateAliases(performerAliases, tx); err != nil {
+	if err := qb.CreateAliases(performerAliases); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
 	// Save the URLs
 	performerUrls := models.CreatePerformerUrls(performer.ID, input.Urls)
-	if err := qb.CreateUrls(performerUrls, tx); err != nil {
+	if err := qb.CreateUrls(performerUrls); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
 	// Save the Tattoos
 	performerTattoos := models.CreatePerformerBodyMods(performer.ID, input.Tattoos)
-	if err := qb.CreateTattoos(performerTattoos, tx); err != nil {
+	if err := qb.CreateTattoos(performerTattoos); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
 	// Save the Piercings
 	performerPiercings := models.CreatePerformerBodyMods(performer.ID, input.Piercings)
-	if err := qb.CreatePiercings(performerPiercings, tx); err != nil {
+	if err := qb.CreatePiercings(performerPiercings); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -79,7 +80,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	qb := models.NewPerformerQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewPerformerQueryBuilder(tx)
 
 	// get the existing performer and modify it
 	performerID, _ := strconv.ParseInt(input.ID, 10, 64)
@@ -89,50 +91,59 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	updatedPerformer.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	if updatedPerformer == nil {
+		return nil, fmt.Errorf("Performer with id %d cannot be found", performerID)
+	}
 
-	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
+	updatedPerformer.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 	// Populate performer from the input
 	updatedPerformer.CopyFromUpdateInput(input)
 
-	performer, err := qb.Update(*updatedPerformer, tx)
+	performer, err := qb.Update(*updatedPerformer)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
 	// Save the aliases
-	// TODO - only do this if provided
-	performerAliases := models.CreatePerformerAliases(performer.ID, input.Aliases)
-	if err := qb.UpdateAliases(performer.ID, performerAliases, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
+	// only do this if provided
+	if wasFieldIncluded(ctx, "aliases") {
+		performerAliases := models.CreatePerformerAliases(performer.ID, input.Aliases)
+		if err := qb.UpdateAliases(performer.ID, performerAliases); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Save the URLs
-	// TODO - only do this if provided
-	performerUrls := models.CreatePerformerUrls(performer.ID, input.Urls)
-	if err := qb.UpdateUrls(performer.ID, performerUrls, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
+	// only do this if provided
+	if wasFieldIncluded(ctx, "urls") {
+		performerUrls := models.CreatePerformerUrls(performer.ID, input.Urls)
+		if err := qb.UpdateUrls(performer.ID, performerUrls); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Save the Tattoos
-	// TODO - only do this if provided
-	performerTattoos := models.CreatePerformerBodyMods(performer.ID, input.Tattoos)
-	if err := qb.UpdateTattoos(performer.ID, performerTattoos, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
+	// only do this if provided
+	if wasFieldIncluded(ctx, "tattoos") {
+		performerTattoos := models.CreatePerformerBodyMods(performer.ID, input.Tattoos)
+		if err := qb.UpdateTattoos(performer.ID, performerTattoos); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Save the Piercings
-	// TODO - only do this if provided
-	performerPiercings := models.CreatePerformerBodyMods(performer.ID, input.Piercings)
-	if err := qb.UpdatePiercings(performer.ID, performerPiercings, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
+	// only do this if provided
+	if wasFieldIncluded(ctx, "piercings") {
+		performerPiercings := models.CreatePerformerBodyMods(performer.ID, input.Piercings)
+		if err := qb.UpdatePiercings(performer.ID, performerPiercings); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Commit
@@ -148,8 +159,8 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 		return false, err
 	}
 
-	qb := models.NewPerformerQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewPerformerQueryBuilder(tx)
 
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
@@ -158,7 +169,7 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 	if err != nil {
 		return false, err
 	}
-	if err = qb.Destroy(performerID, tx); err != nil {
+	if err = qb.Destroy(performerID); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}

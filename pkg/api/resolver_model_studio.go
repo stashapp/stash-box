@@ -14,7 +14,7 @@ func (r *studioResolver) ID(ctx context.Context, obj *models.Studio) (string, er
 }
 
 func (r *studioResolver) Urls(ctx context.Context, obj *models.Studio) ([]*models.URL, error) {
-	qb := models.NewStudioQueryBuilder()
+	qb := models.NewStudioQueryBuilder(nil)
 	urls, err := qb.GetUrls(obj.ID)
 
 	if err != nil {
@@ -35,7 +35,7 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 		return nil, nil
 	}
 
-	qb := models.NewStudioQueryBuilder()
+	qb := models.NewStudioQueryBuilder(nil)
 	parent, err := qb.Find(obj.ParentStudioID.Int64)
 
 	if err != nil {
@@ -46,8 +46,8 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
-	children, err := qb.FindByParentID(obj.ID, nil)
+	qb := models.NewStudioQueryBuilder(nil)
+	children, err := qb.FindByParentID(obj.ID)
 
 	if err != nil {
 		return nil, err

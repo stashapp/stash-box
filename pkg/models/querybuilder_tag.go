@@ -1,76 +1,54 @@
 package models
 
 import (
-	"database/sql"
-
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
+
 	"github.com/stashapp/stashdb/pkg/database"
 )
 
-type TagQueryBuilder struct{}
-
-const tagTable = "tags"
-const tagAliasesJoinTable = "tag_aliases"
-const tagJoinKey = "tag_id"
-
-func NewTagQueryBuilder() TagQueryBuilder {
-	return TagQueryBuilder{}
+type TagQueryBuilder struct {
+	dbi database.DBI
 }
 
-func (qb *TagQueryBuilder) Create(newTag Tag, tx *sqlx.Tx) (*Tag, error) {
-	tagID, err := insertObject(tx, tagTable, newTag)
-
-	if err != nil {
-		return nil, errors.Wrap(err, "Error creating tag")
+func NewTagQueryBuilder(tx *sqlx.Tx) TagQueryBuilder {
+	return TagQueryBuilder{
+		dbi: database.DBIWithTxn(tx),
 	}
-
-	if err := getByID(tx, tagTable, tagID, &newTag); err != nil {
-		return nil, errors.Wrap(err, "Error getting tag after create")
-	}
-	return &newTag, nil
 }
 
-func (qb *TagQueryBuilder) Update(updatedTag Tag, tx *sqlx.Tx) (*Tag, error) {
-	err := updateObjectByID(tx, tagTable, updatedTag)
-
-	if err != nil {
-		return nil, errors.Wrap(err, "Error updating tag")
+func (qb *TagQueryBuilder) toModel(ro interface{}) *Tag {
+	if ro != nil {
+		return ro.(*Tag)
 	}
 
-	if err := getByID(tx, tagTable, updatedTag.ID, &updatedTag); err != nil {
-		return nil, errors.Wrap(err, "Error getting tag after update")
-	}
-	return &updatedTag, nil
+	return nil
 }
 
-func (qb *TagQueryBuilder) Destroy(id int64, tx *sqlx.Tx) error {
-	return executeDeleteQuery(tagTable, id, tx)
+func (qb *TagQueryBuilder) Create(newTag Tag) (*Tag, error) {
+	ret, err := qb.dbi.Insert(newTag)
+	return qb.toModel(ret), err
 }
 
-func (qb *TagQueryBuilder) CreateAliases(newJoins []TagAliases, tx *sqlx.Tx) error {
-	return insertJoins(tx, tagAliasesJoinTable, newJoins)
+func (qb *TagQueryBuilder) Update(updatedTag Tag) (*Tag, error) {
+	ret, err := qb.dbi.Update(updatedTag)
+	return qb.toModel(ret), err
 }
 
-func (qb *TagQueryBuilder) UpdateAliases(tagID int64, updatedJoins []TagAliases, tx *sqlx.Tx) error {
-	ensureTx(tx)
+func (qb *TagQueryBuilder) Destroy(id int64) error {
+	return qb.dbi.Delete(id, tagDBTable)
+}
 
-	// Delete the existing joins and then create new ones
-	err := deleteObjectsByColumn(tx, tagAliasesJoinTable, tagJoinKey, tagID)
-	if err != nil {
-		return err
-	}
-	return qb.CreateAliases(updatedJoins, tx)
+func (qb *TagQueryBuilder) CreateAliases(newJoins TagAliases) error {
+	return qb.dbi.InsertJoins(tagAliasTable, &newJoins)
+}
+
+func (qb *TagQueryBuilder) UpdateAliases(tagID int64, updatedJoins TagAliases) error {
+	return qb.dbi.ReplaceJoins(tagAliasTable, tagID, &updatedJoins)
 }
 
 func (qb *TagQueryBuilder) Find(id int64) (*Tag, error) {
-	query := "SELECT * FROM tags WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	results, err := qb.queryTags(query, args, nil)
-	if err != nil || len(results) < 1 {
-		return nil, err
-	}
-	return results[0], nil
+	ret, err := qb.dbi.Find(id, tagDBTable)
+	return qb.toModel(ret), err
 }
 
 func (qb *TagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
@@ -79,35 +57,35 @@ func (qb *TagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
 		WHERE tag_aliases.alias = ? OR tags.name = ?`
 
 	args := []interface{}{name, name}
-	results, err := qb.queryTags(query, args, nil)
+	results, err := qb.queryTags(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *TagQueryBuilder) FindBySceneID(sceneID int64, tx *sqlx.Tx) ([]*Tag, error) {
+func (qb *TagQueryBuilder) FindBySceneID(sceneID int64) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
-		LEFT JOIN scenes_tags as scenes_join on scenes_join.tag_id = tags.id
+		LEFT JOIN scene_tags as scenes_join on scenes_join.tag_id = tags.id
 		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
 		WHERE scenes.id = ?
 		GROUP BY tags.id
 	`
 	args := []interface{}{sceneID}
-	return qb.queryTags(query, args, tx)
+	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Tag, error) {
+func (qb *TagQueryBuilder) FindByNames(names []string) ([]*Tag, error) {
 	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)
 	}
-	return qb.queryTags(query, args, tx)
+	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByAliases(names []string, tx *sqlx.Tx) ([]*Tag, error) {
+func (qb *TagQueryBuilder) FindByAliases(names []string) ([]*Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tags.id = tag_aliases.tag_id
 		WHERE tag_aliases.alias IN ` + getInBinding(len(names))
@@ -116,24 +94,24 @@ func (qb *TagQueryBuilder) FindByAliases(names []string, tx *sqlx.Tx) ([]*Tag, e
 	for _, name := range names {
 		args = append(args, name)
 	}
-	return qb.queryTags(query, args, tx)
+	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByName(name string, tx *sqlx.Tx) ([]*Tag, error) {
+func (qb *TagQueryBuilder) FindByName(name string) ([]*Tag, error) {
 	query := "SELECT * FROM tags WHERE upper(name) = upper(?)"
 	var args []interface{}
 	args = append(args, name)
-	return qb.queryTags(query, args, tx)
+	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByAlias(name string, tx *sqlx.Tx) ([]*Tag, error) {
+func (qb *TagQueryBuilder) FindByAlias(name string) ([]*Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tag.id = tag_aliases.tag_id
 		WHERE upper(tag_aliases.alias) = UPPER(?)`
 
 	var args []interface{}
 	args = append(args, name)
-	return qb.queryTags(query, args, tx)
+	return qb.queryTags(query, args)
 }
 
 func (qb *TagQueryBuilder) Count() (int, error) {
@@ -186,62 +164,15 @@ func (qb *TagQueryBuilder) getTagSort(findFilter *QuerySpec) string {
 	return getSort(sort, direction, tagTable)
 }
 
-func (qb *TagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.Tx) ([]*Tag, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	tags := make([]*Tag, 0)
-	for rows.Next() {
-		tag := Tag{}
-		if err := rows.StructScan(&tag); err != nil {
-			return nil, err
-		}
-		tags = append(tags, &tag)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return tags, nil
+func (qb *TagQueryBuilder) queryTags(query string, args []interface{}) (Tags, error) {
+	var output Tags
+	err := qb.dbi.RawQuery(tagDBTable, query, args, &output)
+	return output, err
 }
 
 func (qb *TagQueryBuilder) GetAliases(id int64) ([]string, error) {
-	query := "SELECT alias FROM tag_aliases WHERE tag_id = ?"
-	args := []interface{}{id}
+	joins := TagAliases{}
+	err := qb.dbi.FindJoins(tagAliasTable, id, &joins)
 
-	var rows *sqlx.Rows
-	var err error
-	rows, err = database.DB.Queryx(query, args...)
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	aliases := make([]string, 0)
-	for rows.Next() {
-		var alias string
-
-		if err := rows.Scan(&alias); err != nil {
-			return nil, err
-		}
-		aliases = append(aliases, alias)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return aliases, nil
+	return joins.ToAliases(), err
 }

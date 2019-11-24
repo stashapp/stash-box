@@ -31,8 +31,8 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewTagQueryBuilder()
-	tag, err := qb.Create(newTag, tx)
+	qb := models.NewTagQueryBuilder(tx)
+	tag, err := qb.Create(newTag)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
@@ -40,7 +40,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 
 	// Save the aliases
 	tagAliases := models.CreateTagAliases(tag.ID, input.Aliases)
-	if err := qb.CreateAliases(tagAliases, tx); err != nil {
+	if err := qb.CreateAliases(tagAliases); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -58,7 +58,8 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		return nil, err
 	}
 
-	qb := models.NewTagQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewTagQueryBuilder(tx)
 
 	// get the existing tag and modify it
 	tagID, _ := strconv.ParseInt(input.ID, 10, 64)
@@ -70,13 +71,10 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 
 	updatedTag.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
-
 	// Populate performer from the input
 	updatedTag.CopyFromUpdateInput(input)
 
-	tag, err := qb.Update(*updatedTag, tx)
+	tag, err := qb.Update(*updatedTag)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
@@ -85,7 +83,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	// Save the aliases
 	// TODO - only do this if provided
 	tagAliases := models.CreateTagAliases(tag.ID, input.Aliases)
-	if err := qb.UpdateAliases(tag.ID, tagAliases, tx); err != nil {
+	if err := qb.UpdateAliases(tag.ID, tagAliases); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -103,8 +101,8 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 		return false, err
 	}
 
-	qb := models.NewTagQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewTagQueryBuilder(tx)
 
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
@@ -113,7 +111,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 	if err != nil {
 		return false, err
 	}
-	if err = qb.Destroy(tagID, tx); err != nil {
+	if err = qb.Destroy(tagID); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}
