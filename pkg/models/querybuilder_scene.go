@@ -50,6 +50,17 @@ func (qb *SceneQueryBuilder) Find(id int64) (*Scene, error) {
 	return qb.toModel(ret), err
 }
 
+func (qb *SceneQueryBuilder) FindByFingerprint(algorithm FingerprintAlgorithm, hash string) ([]*Scene, error) {
+	query := `
+		SELECT scenes.* FROM scenes
+		LEFT JOIN scene_fingerprints as scenes_join on scenes_join.scene_id = scenes.id
+		WHERE scenes_join.algorithm = ? AND scenes_join.hash = ?`
+	var args []interface{}
+	args = append(args, algorithm.String())
+	args = append(args, hash)
+	return qb.queryScenes(query, args)
+}
+
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
 // 	query := `
 // 		SELECT scenes.* FROM scenes

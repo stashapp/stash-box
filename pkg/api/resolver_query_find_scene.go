@@ -18,6 +18,16 @@ func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene
 	return qb.Find(idInt)
 }
 
+func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintInput) ([]*models.Scene, error) {
+	if err := validateRead(ctx); err != nil {
+		return nil, err
+	}
+
+	qb := models.NewSceneQueryBuilder(nil)
+
+	return qb.FindByFingerprint(fingerprint.Algorithm, fingerprint.Hash)
+}
+
 func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.SceneFilterType, filter *models.QuerySpec) (*models.QueryScenesResultType, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err

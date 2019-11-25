@@ -196,6 +196,35 @@ func (s *sceneTestRunner) testFindSceneById() {
 	}
 }
 
+func (s *sceneTestRunner) testFindSceneByFingerprint() {
+	createdScene, err := s.createTestScene(nil)
+	if err != nil {
+		return
+	}
+
+	fingerprints, err := s.resolver.Scene().Fingerprints(s.ctx, createdScene)
+	fingerprint := models.FingerprintInput{
+		Algorithm: fingerprints[0].Algorithm,
+		Hash:      fingerprints[0].Hash,
+	}
+	scenes, err := s.resolver.Query().FindSceneByFingerprint(s.ctx, fingerprint)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+
+	// ensure returned scene is not nil
+	if len(scenes) == 0 {
+		s.t.Error("Did not find scene by fingerprint")
+		return
+	}
+
+	// ensure values were set
+	if createdScene.Title != scenes[0].Title {
+		s.fieldMismatch(createdScene.Title, scenes[0].Title, "Title")
+	}
+}
+
 func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
@@ -434,6 +463,11 @@ func TestCreateScene(t *testing.T) {
 func TestFindSceneById(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindSceneById()
+}
+
+func TestFindSceneByFingerprint(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testFindSceneByFingerprint()
 }
 
 func TestUpdateScene(t *testing.T) {
