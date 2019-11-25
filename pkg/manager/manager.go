@@ -61,6 +61,9 @@ func initConfig() {
 		}
 	}
 
+	// TODO - need a smarter way to do this. What if one is set and not the
+	// other.
+	viper.SetDefault(config.DatabaseType, "sqlite3")
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
 }
 
