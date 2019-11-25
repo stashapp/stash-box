@@ -16,49 +16,22 @@ import (
 
 var randomSortFloat = rand.Float64()
 
-type queryBuilder struct {
-	tableName string
-	body      string
-
-	whereClauses  []string
-	havingClauses []string
-	args          []interface{}
-
-	sortAndPagination string
-}
-
-func (qb queryBuilder) executeFind() ([]int64, int) {
-	return executeFindQuery(qb.tableName, qb.body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
-}
-
-func (qb *queryBuilder) addWhere(clauses ...string) {
-	qb.whereClauses = append(qb.whereClauses, clauses...)
-}
-
-func (qb *queryBuilder) addHaving(clauses ...string) {
-	qb.havingClauses = append(qb.havingClauses, clauses...)
-}
-
-func (qb *queryBuilder) addArg(args ...interface{}) {
-	qb.args = append(qb.args, args...)
-}
-
-func handleStringCriterion(column string, value *StringCriterionInput, query *queryBuilder) {
+func handleStringCriterion(column string, value *StringCriterionInput, query *database.QueryBuilder) {
 	if value != nil {
 		if modifier := value.Modifier.String(); value.Modifier.IsValid() {
 			switch modifier {
 			case "EQUALS":
 				clause, thisArgs := getSearchBinding([]string{column}, value.Value, false)
-				query.addWhere(clause)
-				query.addArg(thisArgs...)
+				query.AddWhere(clause)
+				query.AddArg(thisArgs...)
 			case "NOT_EQUALS":
 				clause, thisArgs := getSearchBinding([]string{column}, value.Value, true)
-				query.addWhere(clause)
-				query.addArg(thisArgs...)
+				query.AddWhere(clause)
+				query.AddArg(thisArgs...)
 			case "IS_NULL":
-				query.addWhere(column + " IS NULL")
+				query.AddWhere(column + " IS NULL")
 			case "NOT_NULL":
-				query.addWhere(column + " IS NOT NULL")
+				query.AddWhere(column + " IS NOT NULL")
 			}
 		}
 	}
@@ -259,6 +232,7 @@ func runIdsQuery(query string, args []interface{}) ([]int64, error) {
 	var result []struct {
 		Int int64 `db:"id"`
 	}
+	query = database.GetDialect().SetPlaceholders(query)
 	if err := database.DB.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
 		return []int64{}, err
 	}
@@ -275,6 +249,8 @@ func runCountQuery(query string, args []interface{}) (int, error) {
 	result := struct {
 		Int int `db:"count"`
 	}{0}
+
+	query = database.GetDialect().SetPlaceholders(query)
 	if err := database.DB.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
 		return 0, err
 	}

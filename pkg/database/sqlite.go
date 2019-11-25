@@ -40,7 +40,7 @@ func (p *SQLite3Provider) Open(databasePath string) *sqlx.DB {
 
 // Migrate the database
 func (p *SQLite3Provider) runMigrations(databasePath string) {
-	migrationsBox := packr.New("Migrations Box", "./migrations/sqlite3")
+	migrationsBox := packr.New("sqlite3 Migrations", "./migrations/sqlite3")
 	packrSource := &Packr2Source{
 		Box:        migrationsBox,
 		Migrations: source.NewMigrations(),
@@ -80,4 +80,18 @@ func registerRegexpFunc() {
 				return conn.RegisterFunc("regexp", regexFn, true)
 			},
 		})
+}
+
+type sqlite3Dialect struct{}
+
+func (p *SQLite3Provider) GetDialect() sqlDialect {
+	return &sqlite3Dialect{}
+}
+
+func (*sqlite3Dialect) FieldQuote(field string) string {
+	return "`" + field + "`"
+}
+
+func (*sqlite3Dialect) SetPlaceholders(sql string) string {
+	return sql
 }

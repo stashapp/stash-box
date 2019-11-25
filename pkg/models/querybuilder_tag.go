@@ -126,26 +126,23 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 		findFilter = &QuerySpec{}
 	}
 
-	query := queryBuilder{
-		tableName: tagTable,
-	}
-
-	query.body = selectDistinctIDs(tagTable)
+	query := database.NewQueryBuilder(tagDBTable)
 
 	if q := tagFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
 	}
 
-	query.sortAndPagination = qb.getTagSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := query.executeFind()
+	query.SortAndPagination = qb.getTagSort(findFilter) + getPagination(findFilter)
+	var tags Tags
 
-	var tags []*Tag
-	for _, id := range idsResult {
-		tag, _ := qb.Find(id)
-		tags = append(tags, tag)
+	countResult, err := qb.dbi.Query(*query, &tags)
+
+	if err != nil {
+		// TODO
+		panic(err)
 	}
 
 	return tags, countResult

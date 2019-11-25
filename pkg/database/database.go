@@ -5,11 +5,19 @@ import (
 )
 
 var DB *sqlx.DB
+
 var appSchemaVersion uint = 1
 var databaseProviders map[string]databaseProvider
+var dialect sqlDialect
+
+type sqlDialect interface {
+	FieldQuote(field string) string
+	SetPlaceholders(sql string) string
+}
 
 type databaseProvider interface {
 	Open(path string) *sqlx.DB
+	GetDialect() sqlDialect
 }
 
 func Initialize(provider string, databasePath string) {
@@ -20,6 +28,11 @@ func Initialize(provider string, databasePath string) {
 	}
 
 	DB = p.Open(databasePath)
+	dialect = p.GetDialect()
+}
+
+func GetDialect() sqlDialect {
+	return dialect
 }
 
 func registerProvider(name string, provider databaseProvider) {

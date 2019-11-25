@@ -49,6 +49,12 @@ type DBI interface {
 	// RawQuery performs a query on the provided table using the query string
 	// and argument slice. It outputs the results to the output slice.
 	RawQuery(table Table, query string, args []interface{}, output Models) error
+
+	// Count performs a count query using the provided query builder
+	Count(query QueryBuilder) (int, error)
+
+	// Query performs a query using the provided query builder.
+	Query(query QueryBuilder, output Models) (int, error)
 }
 
 type dbi struct {
@@ -142,6 +148,8 @@ func (q dbi) Find(id int64, table Table) (interface{}, error) {
 	query := selectStatement(table) + " WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 
+	query = dialect.SetPlaceholders(query)
+
 	var rows *sqlx.Rows
 	var err error
 	rows, err = q.queryx(query, args...)
@@ -225,6 +233,8 @@ func (q dbi) FindJoins(tableJoin TableJoin, id int64, output Joins) error {
 func (q dbi) RawQuery(table Table, query string, args []interface{}, output Models) error {
 	var rows *sqlx.Rows
 	var err error
+
+	query = dialect.SetPlaceholders(query)
 	rows, err = q.queryx(query, args...)
 
 	if err != nil && err != sql.ErrNoRows {
@@ -246,4 +256,41 @@ func (q dbi) RawQuery(table Table, query string, args []interface{}, output Mode
 	}
 
 	return nil
+}
+
+func (q dbi) Count(query QueryBuilder) (int, error) {
+	var err error
+
+	result := struct {
+		Int int `db:"count"`
+	}{0}
+
+	rawQuery := dialect.SetPlaceholders(query.buildCountQuery())
+
+	if q.tx != nil {
+		err = q.tx.Get(&result, rawQuery, query.args...)
+	} else {
+		err = DB.Get(&result, rawQuery, query.args...)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return 0, err
+	}
+
+	return result.Int, nil
+}
+
+// RawQuery performs a query on the provided table using the query string
+// and argument slice. It outputs the results to the output slice.
+func (q dbi) Query(query QueryBuilder, output Models) (int, error) {
+
+	count, err := q.Count(query)
+
+	if err != nil {
+		return 0, err
+	}
+
+	err = q.RawQuery(query.Table, query.buildQuery(), query.args, output)
+
+	return count, err
 }

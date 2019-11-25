@@ -18,8 +18,8 @@ CREATE TABLE "performers" (
   "breast_type" varchar(10),
   "career_start_year" integer,
   "career_end_year" integer,
-  "created_at" timestamp  not null,
-  "updated_at" timestamp  not null
+  "created_at" timestamp not null,
+  "updated_at" timestamp not null
 );
 
 CREATE TABLE "performer_aliases" (
@@ -98,7 +98,7 @@ CREATE TABLE "studio_urls" (
 CREATE TABLE "scenes" (
   "id" integer not null primary key generated always as identity,
   "title" varchar(255),
-  "details" varchar(255),
+  "details" text,
   "url" varchar(255),
   "date" date,
   "studio_id" integer,

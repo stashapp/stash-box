@@ -140,33 +140,29 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		findFilter = &QuerySpec{}
 	}
 
-	query := queryBuilder{
-		tableName: "performers",
-	}
-
-	query.body = selectDistinctIDs("performers")
+	query := database.NewQueryBuilder(performerDBTable)
 
 	if q := performerFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"performers.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
 	}
 
 	if birthYear := performerFilter.BirthYear; birthYear != nil {
 		clauses, thisArgs := getBirthYearFilterClause(birthYear.Modifier, birthYear.Value)
-		query.addWhere(clauses...)
-		query.addArg(thisArgs...)
+		query.AddWhere(clauses...)
+		query.AddArg(thisArgs...)
 	}
 
 	if age := performerFilter.Age; age != nil {
 		clauses, thisArgs := getAgeFilterClause(age.Modifier, age.Value)
-		query.addWhere(clauses...)
-		query.addArg(thisArgs...)
+		query.AddWhere(clauses...)
+		query.AddArg(thisArgs...)
 	}
 
 	//handleStringCriterion("ethnicity", performerFilter.Ethnicity, &query)
-	handleStringCriterion("country", performerFilter.Country, &query)
+	handleStringCriterion("country", performerFilter.Country, query)
 	//handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
 	//handleStringCriterion("height", performerFilter.Height, &query)
 	//handleStringCriterion("measurements", performerFilter.Measurements, &query)
@@ -176,13 +172,13 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	//handleStringCriterion("piercings", performerFilter.Piercings, &query)
 	//handleStringCriterion("aliases", performerFilter.Aliases, &query)
 
-	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := query.executeFind()
+	query.SortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+	var performers Performers
+	countResult, err := qb.dbi.Query(*query, &performers)
 
-	var performers []*Performer
-	for _, id := range idsResult {
-		performer, _ := qb.Find(id)
-		performers = append(performers, performer)
+	if err != nil {
+		// TODO
+		panic(err)
 	}
 
 	return performers, countResult

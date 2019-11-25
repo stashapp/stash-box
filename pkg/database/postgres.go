@@ -2,6 +2,8 @@ package database
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
@@ -26,8 +28,6 @@ type PostgresProvider struct{}
 func (p *PostgresProvider) Open(databasePath string) *sqlx.DB {
 	p.runMigrations(databasePath)
 
-	// https://github.com/mattn/go-sqlite3
-	fmt.Printf("Connecting to %s", databasePath)
 	conn, err := sqlx.Open(postgresDriver, "postgres://"+databasePath)
 	conn.SetMaxOpenConns(25)
 	conn.SetMaxIdleConns(4)
@@ -39,7 +39,7 @@ func (p *PostgresProvider) Open(databasePath string) *sqlx.DB {
 
 // Migrate the database
 func (p *PostgresProvider) runMigrations(databasePath string) {
-	migrationsBox := packr.New("Migrations Box", "./migrations/postgres")
+	migrationsBox := packr.New("Postgres Migrations", "./migrations/postgres")
 	packrSource := &Packr2Source{
 		Box:        migrationsBox,
 		Migrations: source.NewMigrations(),
@@ -66,4 +66,26 @@ func (p *PostgresProvider) runMigrations(databasePath string) {
 	}
 
 	m.Close()
+}
+
+type postgresDialect struct{}
+
+func (p *PostgresProvider) GetDialect() sqlDialect {
+	return &postgresDialect{}
+}
+
+func (*postgresDialect) FieldQuote(field string) string {
+	return `"` + field + `"`
+}
+
+func (*postgresDialect) SetPlaceholders(sql string) string {
+	p := strings.Index(sql, "?")
+	index := 1
+	for p != -1 {
+		sql = strings.Replace(sql, "?", "$"+strconv.Itoa(index), 1)
+		p = strings.Index(sql, "?")
+		index++
+	}
+
+	return sql
 }
