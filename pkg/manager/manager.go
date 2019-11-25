@@ -2,6 +2,8 @@ package manager
 
 import (
 	"net"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/spf13/pflag"
@@ -20,6 +22,7 @@ type singleton struct {
 
 var instance *singleton
 var once sync.Once
+var configFilePath *string
 
 func GetInstance() *singleton {
 	Initialize()
@@ -28,10 +31,10 @@ func GetInstance() *singleton {
 
 func Initialize() *singleton {
 	once.Do(func() {
-		_ = utils.EnsureDir(paths.GetConfigDirectory())
+		initFlags()
+
 		initConfig()
 		initLog()
-		initFlags()
 		initEnvs()
 		instance = &singleton{
 			Status: Idle,
@@ -43,15 +46,34 @@ func Initialize() *singleton {
 	return instance
 }
 
-func initConfig() {
-	// The config file is called config.  Leave off the file extension.
-	viper.SetConfigName(paths.GetConfigName())
+// returns the path and config name
+func parseConfigFilePath() (string, string) {
+	dir := filepath.Dir(*configFilePath)
+	name := filepath.Base(*configFilePath)
+	extension := filepath.Ext(*configFilePath)
+	name = strings.TrimSuffix(name, extension)
+	return dir, name
+}
 
-	viper.AddConfigPath(".") // Look for config in the working directory
+func initConfig() {
+	if *configFilePath != "" {
+		dir, name := parseConfigFilePath()
+		viper.SetConfigName(name)
+		viper.AddConfigPath(dir)
+	} else {
+		// The config file is called config.  Leave off the file extension.
+		viper.SetConfigName(paths.GetConfigName())
+		viper.AddConfigPath(".") // Look for config in the working directory
+	}
 
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
-		_ = utils.Touch(paths.GetDefaultConfigFilePath())
+		defaultConfigFilePath := paths.GetDefaultConfigFilePath()
+		if *configFilePath != "" {
+			defaultConfigFilePath = *configFilePath
+		}
+
+		_ = utils.Touch(defaultConfigFilePath)
 		if err = viper.ReadInConfig(); err != nil {
 			panic(err)
 		}
@@ -65,16 +87,18 @@ func initConfig() {
 	// other.
 	viper.SetDefault(config.DatabaseType, "sqlite3")
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
+
+	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+		logger.Infof("failed to bind flags: %s", err.Error())
+	}
 }
 
 func initFlags() {
 	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
 	pflag.Int("port", 9998, "port to serve from")
+	configFilePath = pflag.String("config_file", "", "location of the config file")
 
 	pflag.Parse()
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		logger.Infof("failed to bind flags: %s", err.Error())
-	}
 }
 
 func initEnvs() {

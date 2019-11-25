@@ -1,35 +1,34 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
-	"regexp"
 
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/jmoiron/sqlx"
-	sqlite3 "github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stashdb/pkg/logger"
 	"github.com/stashapp/stashdb/pkg/utils"
+
+	// Driver used here only
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/lib/pq"
 )
 
-const sqlite3Driver = "sqlite3_regexp"
+const postgresDriver = "postgres"
 
 func init() {
-	// register custom driver with regexp function
-	registerRegexpFunc()
-
-	registerProvider("sqlite3", &SQLite3Provider{})
+	registerProvider("postgres", &PostgresProvider{})
 }
 
-type SQLite3Provider struct{}
+type PostgresProvider struct{}
 
-func (p *SQLite3Provider) Open(databasePath string) *sqlx.DB {
+func (p *PostgresProvider) Open(databasePath string) *sqlx.DB {
 	p.runMigrations(databasePath)
 
 	// https://github.com/mattn/go-sqlite3
-	conn, err := sqlx.Open(sqlite3Driver, "file:"+databasePath+"?_fk=true")
+	fmt.Printf("Connecting to %s", databasePath)
+	conn, err := sqlx.Open(postgresDriver, "postgres://"+databasePath)
 	conn.SetMaxOpenConns(25)
 	conn.SetMaxIdleConns(4)
 	if err != nil {
@@ -39,8 +38,8 @@ func (p *SQLite3Provider) Open(databasePath string) *sqlx.DB {
 }
 
 // Migrate the database
-func (p *SQLite3Provider) runMigrations(databasePath string) {
-	migrationsBox := packr.New("Migrations Box", "./migrations/sqlite3")
+func (p *PostgresProvider) runMigrations(databasePath string) {
+	migrationsBox := packr.New("Migrations Box", "./migrations/postgres")
 	packrSource := &Packr2Source{
 		Box:        migrationsBox,
 		Migrations: source.NewMigrations(),
@@ -51,7 +50,7 @@ func (p *SQLite3Provider) runMigrations(databasePath string) {
 	m, err := migrate.NewWithSourceInstance(
 		"packr2",
 		s,
-		fmt.Sprintf("sqlite3://%s", databasePath),
+		fmt.Sprintf("%s://%s", postgresDriver, databasePath),
 	)
 	if err != nil {
 		panic(err.Error())
@@ -67,17 +66,4 @@ func (p *SQLite3Provider) runMigrations(databasePath string) {
 	}
 
 	m.Close()
-}
-
-func registerRegexpFunc() {
-	regexFn := func(re, s string) (bool, error) {
-		return regexp.MatchString(re, s)
-	}
-
-	sql.Register(sqlite3Driver,
-		&sqlite3.SQLiteDriver{
-			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
-				return conn.RegisterFunc("regexp", regexFn, true)
-			},
-		})
 }
