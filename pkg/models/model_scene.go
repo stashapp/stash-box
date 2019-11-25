@@ -17,8 +17,8 @@ var (
 		return &Scene{}
 	})
 
-	sceneChecksumTable = database.NewTableJoin(sceneTable, "scene_checksums", sceneJoinKey, func() interface{} {
-		return &SceneChecksum{}
+	sceneFingerprintTable = database.NewTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
+		return &SceneFingerprint{}
 	})
 )
 
@@ -53,37 +53,49 @@ func (p *Scenes) Add(o interface{}) {
 	*p = append(*p, o.(*Scene))
 }
 
-type SceneChecksum struct {
-	SceneID  int64  `db:"scene_id" json:"scene_id"`
-	Checksum string `db:"checksum" json:"checksum"`
+type SceneFingerprint struct {
+	SceneID   int64  `db:"scene_id" json:"scene_id"`
+	Hash      string `db:"hash" json:"hash"`
+	Algorithm string `db:"algorithm" json:"algorithm"`
 }
 
-type SceneChecksums []*SceneChecksum
+func (p SceneFingerprint) ToFingerprint() *Fingerprint {
+	return &Fingerprint{
+		Algorithm: FingerprintAlgorithm(p.Algorithm),
+		Hash:      p.Hash,
+	}
+}
 
-func (p SceneChecksums) Each(fn func(interface{})) {
+type SceneFingerprints []*SceneFingerprint
+
+func (p SceneFingerprints) Each(fn func(interface{})) {
 	for _, v := range p {
 		fn(*v)
 	}
 }
 
-func (p *SceneChecksums) Add(o interface{}) {
-	*p = append(*p, o.(*SceneChecksum))
+func (p *SceneFingerprints) Add(o interface{}) {
+	*p = append(*p, o.(*SceneFingerprint))
 }
 
-func (p SceneChecksums) ToChecksums() []string {
-	var ret []string
+func (p SceneFingerprints) ToFingerprints() []*Fingerprint {
+	var ret []*Fingerprint
 	for _, v := range p {
-		ret = append(ret, v.Checksum)
+		ret = append(ret, v.ToFingerprint())
 	}
 
 	return ret
 }
 
-func CreateSceneChecksums(sceneID int64, checksums []string) SceneChecksums {
-	var ret SceneChecksums
+func CreateSceneFingerprints(sceneID int64, fingerprints []*FingerprintInput) SceneFingerprints {
+	var ret SceneFingerprints
 
-	for _, checksum := range checksums {
-		ret = append(ret, &SceneChecksum{SceneID: sceneID, Checksum: checksum})
+	for _, fingerprint := range fingerprints {
+		ret = append(ret, &SceneFingerprint{
+			SceneID:   sceneID,
+			Hash:      fingerprint.Hash,
+			Algorithm: fingerprint.Algorithm.String(),
+		})
 	}
 
 	return ret

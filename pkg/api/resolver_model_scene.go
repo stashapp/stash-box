@@ -71,7 +71,7 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 
 	return ret, nil
 }
-func (r *sceneResolver) Checksums(ctx context.Context, obj *models.Scene) ([]string, error) {
+func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene) ([]*models.Fingerprint, error) {
 	qb := models.NewSceneQueryBuilder(nil)
-	return qb.GetChecksums(obj.ID)
+	return qb.GetFingerprints(obj.ID)
 }

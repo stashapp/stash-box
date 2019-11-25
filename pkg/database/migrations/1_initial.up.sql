@@ -107,12 +107,15 @@ CREATE TABLE `scenes` (
   foreign key(`studio_id`) references `studios`(`id`) ON DELETE SET NULL
 );
 
-CREATE TABLE `scene_checksums` (
+CREATE TABLE `scene_fingerprints` (
   `scene_id` integer not null,
-  `checksum` varchar(255) not null,
+  `hash` varchar(255) not null,
+  `algorithm` varchar(20) not null,
   foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
-  unique (`checksum`)
+  unique (`scene_id`, `algorithm`, `hash`)
 );
+
+CREATE INDEX `index_scene_fingerprints_on_hash` on `scene_fingerprints` (`algorithm`, `hash`);
 
 CREATE TABLE `scene_performers` (
   `scene_id` integer not null,

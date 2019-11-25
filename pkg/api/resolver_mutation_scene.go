@@ -39,8 +39,8 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	}
 
 	// Save the checksums
-	sceneAliases := models.CreateSceneChecksums(scene.ID, input.Checksums)
-	if err := qb.CreateChecksums(sceneAliases); err != nil {
+	sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
+	if err := qb.CreateFingerprints(sceneFingerprints); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -97,9 +97,9 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 
 	// Save the checksums
 	// only do this if provided
-	if wasFieldIncluded(ctx, "checksums") {
-		sceneChecksums := models.CreateSceneChecksums(scene.ID, input.Checksums)
-		if err := qb.UpdateChecksums(scene.ID, sceneChecksums); err != nil {
+	if wasFieldIncluded(ctx, "fingerprints") {
+		sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
+		if err := qb.UpdateFingerprints(scene.ID, sceneFingerprints); err != nil {
 			_ = tx.Rollback()
 			return nil, err
 		}

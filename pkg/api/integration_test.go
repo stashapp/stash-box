@@ -74,6 +74,7 @@ func (s *testRunner) generatePerformerName() string {
 }
 
 func (s *testRunner) createTestPerformer(input *models.PerformerCreateInput) (*models.Performer, error) {
+	s.t.Helper()
 	if input == nil {
 		input = &models.PerformerCreateInput{
 			Name: s.generatePerformerName(),
@@ -96,6 +97,7 @@ func (s *testRunner) generateStudioName() string {
 }
 
 func (s *testRunner) createTestStudio(input *models.StudioCreateInput) (*models.Studio, error) {
+	s.t.Helper()
 	if input == nil {
 		input = &models.StudioCreateInput{
 			Name: s.generateStudioName(),
@@ -118,6 +120,7 @@ func (s *testRunner) generateTagName() string {
 }
 
 func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, error) {
+	s.t.Helper()
 	if input == nil {
 		input = &models.TagCreateInput{
 			Name: s.generateTagName(),
@@ -135,12 +138,13 @@ func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, e
 }
 
 func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Scene, error) {
+	s.t.Helper()
 	if input == nil {
 		title := "title"
 		input = &models.SceneCreateInput{
 			Title: &title,
-			Checksums: []string{
-				s.generateSceneChecksum(),
+			Fingerprints: []*models.FingerprintInput{
+				s.generateSceneFingerprint(),
 			},
 		}
 	}
@@ -155,9 +159,12 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Sc
 	return createdScene, nil
 }
 
-func (s *testRunner) generateSceneChecksum() string {
+func (s *testRunner) generateSceneFingerprint() *models.FingerprintInput {
 	sceneChecksumSuffix += 1
-	return "scene-" + strconv.Itoa(sceneChecksumSuffix)
+	return &models.FingerprintInput{
+		Algorithm: "MD5",
+		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
+	}
 }
 
 func oneNil(l interface{}, r interface{}) bool {

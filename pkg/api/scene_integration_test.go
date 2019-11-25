@@ -43,9 +43,9 @@ func (s *sceneTestRunner) testCreateScene() {
 		Details: &details,
 		URL:     &url,
 		Date:    &date,
-		Checksums: []string{
-			"checksum1",
-			"checksum2",
+		Fingerprints: []*models.FingerprintInput{
+			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint(),
 		},
 		StudioID: &studioID,
 		Performers: []*models.PerformerAppearanceInput{
@@ -109,6 +109,20 @@ func compareTags(tagIDs []string, tags []*models.Tag) bool {
 	return true
 }
 
+func compareFingerprints(input []*models.FingerprintInput, fingerprints []*models.Fingerprint) bool {
+	if len(input) != len(fingerprints) {
+		return false
+	}
+
+	for i, v := range fingerprints {
+		if input[i].Algorithm != v.Algorithm || input[i].Hash != v.Hash {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scene *models.Scene) {
 	// ensure basic attributes are set correctly
 	r := s.resolver.Scene()
@@ -134,8 +148,8 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 		s.fieldMismatch(*input.Date, v, "Date")
 	}
 
-	if v, _ := r.Checksums(s.ctx, scene); !reflect.DeepEqual(v, input.Checksums) {
-		s.fieldMismatch(input.Checksums, v, "Checksums")
+	if v, _ := r.Fingerprints(s.ctx, scene); !compareFingerprints(input.Fingerprints, v) {
+		s.fieldMismatch(input.Fingerprints, v, "Fingerprints")
 	}
 
 	performers, err := s.resolver.Scene().Performers(s.ctx, scene)
@@ -164,7 +178,7 @@ func (s *sceneTestRunner) testFindSceneById() {
 	}
 
 	sceneID := strconv.FormatInt(createdScene.ID, 10)
-	scene, err := s.resolver.Query().FindScene(s.ctx, &sceneID, nil)
+	scene, err := s.resolver.Query().FindScene(s.ctx, sceneID)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -173,32 +187,6 @@ func (s *sceneTestRunner) testFindSceneById() {
 	// ensure returned scene is not nil
 	if scene == nil {
 		s.t.Error("Did not find scene by id")
-		return
-	}
-
-	// ensure values were set
-	if createdScene.Title != scene.Title {
-		s.fieldMismatch(createdScene.Title, scene.Title, "Title")
-	}
-}
-
-func (s *sceneTestRunner) testFindSceneByChecksum() {
-	createdScene, err := s.createTestScene(nil)
-	if err != nil {
-		return
-	}
-
-	checksums, _ := s.resolver.Scene().Checksums(s.ctx, createdScene)
-
-	scene, err := s.resolver.Query().FindScene(s.ctx, nil, &checksums[0])
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
-
-	// ensure returned scene is not nil
-	if scene == nil {
-		s.t.Error("Did not find scene by checksum")
 		return
 	}
 
@@ -229,9 +217,9 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Details: &details,
 		URL:     &url,
 		Date:    &date,
-		Checksums: []string{
-			s.generateSceneChecksum(),
-			s.generateSceneChecksum(),
+		Fingerprints: []*models.FingerprintInput{
+			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint(),
 		},
 		StudioID: &studioID,
 		Performers: []*models.PerformerAppearanceInput{
@@ -273,8 +261,8 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Details: &newDetails,
 		URL:     &newURL,
 		Date:    &newDate,
-		Checksums: []string{
-			s.generateSceneChecksum(),
+		Fingerprints: []*models.FingerprintInput{
+			s.generateSceneFingerprint(),
 		},
 		Performers: []*models.PerformerAppearanceInput{
 			&models.PerformerAppearanceInput{
@@ -290,7 +278,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 
 	// need some mocking of the context to make the field ignore behaviour work
 	ctx := s.updateContext([]string{
-		"checksums",
+		"fingerprints",
 		"performers",
 		"tagIds",
 	})
@@ -325,9 +313,9 @@ func (s *sceneTestRunner) testUpdateSceneTitle() {
 		Details: &details,
 		URL:     &url,
 		Date:    &date,
-		Checksums: []string{
-			s.generateSceneChecksum(),
-			s.generateSceneChecksum(),
+		Fingerprints: []*models.FingerprintInput{
+			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint(),
 		},
 		Performers: []*models.PerformerAppearanceInput{
 			&models.PerformerAppearanceInput{
@@ -388,8 +376,8 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 		s.fieldMismatch(input.Date, v, "Date")
 	}
 
-	if v, _ := r.Checksums(s.ctx, scene); !reflect.DeepEqual(v, input.Checksums) {
-		s.fieldMismatch(input.Checksums, v, "Checksums")
+	if v, _ := r.Fingerprints(s.ctx, scene); !compareFingerprints(input.Fingerprints, v) {
+		s.fieldMismatch(input.Fingerprints, v, "Fingerprints")
 	}
 
 	performers, _ := s.resolver.Scene().Performers(s.ctx, scene)
@@ -425,7 +413,7 @@ func (s *sceneTestRunner) testDestroyScene() {
 	}
 
 	// ensure cannot find scene
-	foundScene, err := s.resolver.Query().FindScene(s.ctx, &sceneID, nil)
+	foundScene, err := s.resolver.Query().FindScene(s.ctx, sceneID)
 	if err != nil {
 		s.t.Errorf("Error finding scene after destroying: %s", err.Error())
 		return
@@ -446,11 +434,6 @@ func TestCreateScene(t *testing.T) {
 func TestFindSceneById(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindSceneById()
-}
-
-func TestFindSceneByChecksum(t *testing.T) {
-	pt := createSceneTestRunner(t)
-	pt.testFindSceneByChecksum()
 }
 
 func TestUpdateScene(t *testing.T) {

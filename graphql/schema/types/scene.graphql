@@ -10,6 +10,20 @@ input PerformerAppearanceInput {
   as: String
 }
 
+enum FingerprintAlgorithm {
+  MD5
+}
+
+type Fingerprint {
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+}
+
+input FingerprintInput {
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+}
+
 type Scene {
   id: ID!
   title: String
@@ -20,7 +34,7 @@ type Scene {
   studio: Studio
   tags: [Tag!]!
   performers: [PerformerAppearance!]!
-  checksums: [String!]!
+  fingerprints: [Fingerprint!]!
 }
 
 input SceneCreateInput {
@@ -31,7 +45,7 @@ input SceneCreateInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
-  checksums: [String!]!
+  fingerprints: [FingerprintInput!]!
 }
 
 input SceneUpdateInput {
@@ -43,7 +57,7 @@ input SceneUpdateInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
-  checksums: [String!]
+  fingerprints: [FingerprintInput!]
 }
 
 input SceneDestroyInput {
@@ -58,7 +72,7 @@ input SceneEditDetailsInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
-  checksums: [String!]
+  fingerprints: [FingerprintInput!]
 }
 
 input SceneEditInput {
@@ -83,6 +97,8 @@ type SceneEdit {
   removed_performers: [PerformerAppearance!]
   added_tags: [Tag!]
   removed_tags: [Tag!]
+  added_fingerprints: [Fingerprint!]
+  removed_fingerprints: [Fingerprint!]
 }
 
 type QueryScenesResultType {

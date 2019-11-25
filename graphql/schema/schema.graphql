@@ -30,8 +30,8 @@ type Query {
   #### Scenes ####
 
   # ids and checksums should be unique
-  """Find a scene by ID or checksum"""
-  findScene(id: ID, checksum: String): Scene
+  """Find a scene by ID"""
+  findScene(id: ID!): Scene
 
   queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType!
 
