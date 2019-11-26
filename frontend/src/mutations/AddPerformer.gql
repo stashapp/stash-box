@@ -1,0 +1,28 @@
+mutation AddPerformerMutation($performerData: UpdatePerformer!) {
+  addPerformer(input: $performerData) {
+    id
+    uuid
+    waistSize
+    tattoos
+    piercings
+    photoUrl
+    name
+    location
+    hipSize
+    height
+    hairColor
+    gender
+    eyeColor
+    ethnicity
+    disambiguation
+    countryId
+    careerStart
+    careerEnd
+    cupSize
+    bandSize
+    boobJob
+    birthdateAccuracy
+    birthdate
+    aliases
+  }
+}

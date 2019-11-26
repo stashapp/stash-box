@@ -1,0 +1,12 @@
+module.exports = {
+    client: {
+        service: {
+            name: 'stashdb',
+            url: <GraphQL endpoint>,
+            headers: {
+				  Authorization: "Bearer <Insert token>"
+            }
+        },
+        excludes: ['**/queries/**/_*', '**/mutations/**/_*', '**/__tests__/**/*', '**/node_modules']
+    }
+};

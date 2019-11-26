@@ -1,0 +1,27 @@
+query Performers($limit: Int=10, $skip: Int=20) {
+  getPerformers(input: {skip: $skip, limit: $limit}) {
+    waistSize
+    tattoos
+    piercings
+    photoUrl
+    name
+    location
+    hipSize
+    height
+    hairColor
+    gender
+    eyeColor
+    ethnicity
+    disambiguation
+    countryId
+    careerStart
+    careerEnd
+    cupSize
+    bandSize
+    boobJob
+    birthdateAccuracy
+    birthdate
+    uuid
+    id
+  }
+}

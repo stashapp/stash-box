@@ -1,0 +1,26 @@
+query Studio($id: Uuid!, $skip: Int=0, $limit: Int=20) {
+  getStudio(studioId: $id) {
+    id
+    uuid
+    title
+    url
+    photoUrl
+    sceneCount
+    scenes(input: {skip: $skip, limit: $limit}) {
+        title
+        uuid
+        date
+        photoUrl
+        studio {
+            title
+            uuid
+        }
+        performers {
+            performer {
+                displayName
+                uuid
+            }
+        }
+    }
+  }
+}

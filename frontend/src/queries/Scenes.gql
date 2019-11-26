@@ -1,0 +1,18 @@
+query Scenes($limit: Int=10, $skip: Int=0) {
+  getScenes(input: {skip: $skip, limit: $limit}) {
+        title
+        uuid
+        date
+        photoUrl
+        studio {
+            title
+            uuid
+        }
+        performers {
+            performer {
+                displayName
+                uuid
+            }
+        }
+  }
+}

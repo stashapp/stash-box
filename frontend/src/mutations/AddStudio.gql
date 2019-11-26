@@ -1,0 +1,9 @@
+mutation AddStudioMutation($studioData: UpdateStudio!) {
+  addStudio(input: $studioData) {
+    id
+    uuid
+    title
+    url
+    photoUrl
+  }
+}

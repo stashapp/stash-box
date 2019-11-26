@@ -1,0 +1,3 @@
+mutation DeleteSceneMutation($sceneId: Int!) {
+    deleteScene(sceneId: $sceneId)
+}

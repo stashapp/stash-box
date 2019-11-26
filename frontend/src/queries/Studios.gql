@@ -1,0 +1,9 @@
+query Studios($limit: Int=10, $skip: Int=0) {
+  getStudios(input: {skip: $skip, limit: $limit}) {
+        id
+        uuid
+        title
+        url
+        photoUrl
+  }
+}

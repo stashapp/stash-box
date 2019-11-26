@@ -1,0 +1,40 @@
+query Performer($id: Uuid!) {
+  getPerformer(performerId: $id) {
+    id
+    uuid
+    waistSize
+    tattoos
+    piercings
+    photoUrl
+    name
+    displayName
+    location
+    hipSize
+    height
+    hairColor
+    gender
+    eyeColor
+    ethnicity
+    disambiguation
+    countryId
+    careerStart
+    careerEnd
+    cupSize
+    bandSize
+    boobJob
+    birthdateAccuracy
+    birthdate
+    aliases
+
+    performances {
+        title
+        uuid
+        date
+        photoUrl
+        studio {
+            title
+            uuid
+        }
+      }
+   }
+}
