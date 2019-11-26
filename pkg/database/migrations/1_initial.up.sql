@@ -19,7 +19,8 @@ CREATE TABLE `performers` (
   `career_start_year` integer,
   `career_end_year` integer,
   `created_at` datetime not null,
-  `updated_at` datetime not null
+  `updated_at` datetime not null,
+  unique (`name`, `disambiguation`)
 );
 
 CREATE TABLE `performer_aliases` (
