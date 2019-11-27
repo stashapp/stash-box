@@ -20,6 +20,14 @@ generate:
 	go generate
 	packr2
 
+.PHONY: test
+test: 
+	go test ./...
+
+.PHONY: it
+it:
+	go test -tags=integration ./...
+	
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt
 fmt:

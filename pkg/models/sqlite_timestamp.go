@@ -19,3 +19,7 @@ func (t *SQLiteTimestamp) Scan(value interface{}) error {
 func (t SQLiteTimestamp) Value() (driver.Value, error) {
 	return t.Timestamp.Format(time.RFC3339), nil
 }
+
+func (t SQLiteTimestamp) IsValid() bool {
+	return !t.Timestamp.IsZero()
+}

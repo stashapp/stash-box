@@ -20,7 +20,7 @@ func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Perf
 }
 
 func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) ([]string, error) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := models.NewPerformerQueryBuilder(nil)
 	aliases, err := qb.GetAliases(obj.ID)
 
 	if err != nil {
@@ -40,7 +40,7 @@ func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]*models.URL, error) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := models.NewPerformerQueryBuilder(nil)
 	urls, err := qb.GetUrls(obj.ID)
 
 	if err != nil {
@@ -140,7 +140,7 @@ func (r *performerResolver) CareerEndYear(ctx context.Context, obj *models.Perfo
 }
 
 func (r *performerResolver) Tattoos(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := models.NewPerformerQueryBuilder(nil)
 	tattoos, err := qb.GetTattoos(obj.ID)
 
 	if err != nil {
@@ -157,7 +157,7 @@ func (r *performerResolver) Tattoos(ctx context.Context, obj *models.Performer) 
 }
 
 func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := models.NewPerformerQueryBuilder(nil)
 	piercings, err := qb.GetPiercings(obj.ID)
 
 	if err != nil {

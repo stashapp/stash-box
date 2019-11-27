@@ -27,7 +27,7 @@ type queryBuilder struct {
 	sortAndPagination string
 }
 
-func (qb queryBuilder) executeFind() ([]int, int) {
+func (qb queryBuilder) executeFind() ([]int64, int) {
 	return executeFindQuery(qb.tableName, qb.body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
 }
 
@@ -41,6 +41,27 @@ func (qb *queryBuilder) addHaving(clauses ...string) {
 
 func (qb *queryBuilder) addArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
+}
+
+func handleStringCriterion(column string, value *StringCriterionInput, query *queryBuilder) {
+	if value != nil {
+		if modifier := value.Modifier.String(); value.Modifier.IsValid() {
+			switch modifier {
+			case "EQUALS":
+				clause, thisArgs := getSearchBinding([]string{column}, value.Value, false)
+				query.addWhere(clause)
+				query.addArg(thisArgs...)
+			case "NOT_EQUALS":
+				clause, thisArgs := getSearchBinding([]string{column}, value.Value, true)
+				query.addWhere(clause)
+				query.addArg(thisArgs...)
+			case "IS_NULL":
+				query.addWhere(column + " IS NULL")
+			case "NOT_NULL":
+				query.addWhere(column + " IS NOT NULL")
+			}
+		}
+	}
 }
 
 func insertObject(tx *sqlx.Tx, table string, object interface{}) (int64, error) {
@@ -96,7 +117,7 @@ func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value inter
 }
 
 func getByID(tx *sqlx.Tx, table string, id int64, object interface{}) error {
-	return tx.Get(object, `SELECT * FROM performers WHERE id = ? LIMIT 1`, id)
+	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = ? LIMIT 1`, id)
 }
 
 func selectAll(tableName string) string {
@@ -166,9 +187,7 @@ func getSort(sort string, direction string, tableName string) string {
 	} else {
 		colName := getColumn(tableName, sort)
 		var additional string
-		if tableName == "scenes" {
-			additional = ", bitrate DESC, framerate DESC, rating DESC, duration DESC"
-		} else if tableName == "scene_markers" {
+		if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
 		return " ORDER BY " + colName + " " + direction + additional
@@ -236,15 +255,15 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func runIdsQuery(query string, args []interface{}) ([]int, error) {
+func runIdsQuery(query string, args []interface{}) ([]int64, error) {
 	var result []struct {
-		Int int `db:"id"`
+		Int int64 `db:"id"`
 	}
 	if err := database.DB.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
-		return []int{}, err
+		return []int64{}, err
 	}
 
-	vsm := make([]int, len(result))
+	vsm := make([]int64, len(result))
 	for i, v := range result {
 		vsm[i] = v.Int
 	}
@@ -263,7 +282,7 @@ func runCountQuery(query string, args []interface{}) (int, error) {
 	return result.Int, nil
 }
 
-func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int) {
+func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int64, int) {
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}

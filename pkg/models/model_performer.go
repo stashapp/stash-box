@@ -2,6 +2,36 @@ package models
 
 import (
 	"database/sql"
+
+	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
+)
+
+const (
+	performerTable   = "performers"
+	performerJoinKey = "performer_id"
+)
+
+var (
+	performerDBTable = database.NewTable(performerTable, func() interface{} {
+		return &Performer{}
+	})
+
+	performerAliasTable = database.NewTableJoin(performerTable, "performer_aliases", performerJoinKey, func() interface{} {
+		return &PerformerAlias{}
+	})
+
+	performerUrlTable = database.NewTableJoin(performerTable, "performer_urls", performerJoinKey, func() interface{} {
+		return &PerformerUrl{}
+	})
+
+	performerTattooTable = database.NewTableJoin(performerTable, "performer_tattoos", performerJoinKey, func() interface{} {
+		return &PerformerBodyMod{}
+	})
+
+	performerPiercingTable = database.NewTableJoin(performerTable, "performer_piercings", performerJoinKey, func() interface{} {
+		return &PerformerBodyMod{}
+	})
 )
 
 type Performer struct {
@@ -28,39 +58,92 @@ type Performer struct {
 	UpdatedAt         SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
-type PerformerAliases struct {
+func (Performer) GetTable() database.Table {
+	return performerDBTable
+}
+
+func (p Performer) GetID() int64 {
+	return p.ID
+}
+
+type Performers []*Performer
+
+func (p Performers) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *Performers) Add(o interface{}) {
+	*p = append(*p, o.(*Performer))
+}
+
+type PerformerAlias struct {
 	PerformerID int64  `db:"performer_id" json:"performer_id"`
 	Alias       string `db:"alias" json:"alias"`
 }
 
-func CreatePerformerAliases(performerId int64, aliases []string) []PerformerAliases {
-	var ret []PerformerAliases
+type PerformerAliases []*PerformerAlias
 
-	for _, alias := range aliases {
-		ret = append(ret, PerformerAliases{PerformerID: performerId, Alias: alias})
+func (p PerformerAliases) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *PerformerAliases) Add(o interface{}) {
+	*p = append(*p, o.(*PerformerAlias))
+}
+
+func (p PerformerAliases) ToAliases() []string {
+	var ret []string
+	for _, v := range p {
+		ret = append(ret, v.Alias)
 	}
 
 	return ret
 }
 
-type PerformerUrls struct {
+func CreatePerformerAliases(performerId int64, aliases []string) PerformerAliases {
+	var ret PerformerAliases
+
+	for _, alias := range aliases {
+		ret = append(ret, &PerformerAlias{PerformerID: performerId, Alias: alias})
+	}
+
+	return ret
+}
+
+type PerformerUrl struct {
 	PerformerID int64  `db:"performer_id" json:"performer_id"`
 	URL         string `db:"url" json:"url"`
 	Type        string `db:"type" json:"type"`
 }
 
-func (p *PerformerUrls) ToURL() URL {
+func (p *PerformerUrl) ToURL() URL {
 	return URL{
 		URL:  p.URL,
 		Type: p.Type,
 	}
 }
 
-func CreatePerformerUrls(performerId int64, urls []*URLInput) []PerformerUrls {
-	var ret []PerformerUrls
+type PerformerUrls []*PerformerUrl
+
+func (p PerformerUrls) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *PerformerUrls) Add(o interface{}) {
+	*p = append(*p, o.(*PerformerUrl))
+}
+
+func CreatePerformerUrls(performerId int64, urls []*URLInput) PerformerUrls {
+	var ret PerformerUrls
 
 	for _, urlInput := range urls {
-		ret = append(ret, PerformerUrls{
+		ret = append(ret, &PerformerUrl{
 			PerformerID: performerId,
 			URL:         urlInput.URL,
 			Type:        urlInput.Type,
@@ -70,13 +153,13 @@ func CreatePerformerUrls(performerId int64, urls []*URLInput) []PerformerUrls {
 	return ret
 }
 
-type PerformerBodyMods struct {
+type PerformerBodyMod struct {
 	PerformerID int64          `db:"performer_id" json:"performer_id"`
 	Location    string         `db:"location" json:"location"`
 	Description sql.NullString `db:"description" json:"description"`
 }
 
-func (m PerformerBodyMods) ToBodyModification() BodyModification {
+func (m PerformerBodyMod) ToBodyModification() BodyModification {
 	ret := BodyModification{
 		Location: m.Location,
 	}
@@ -87,8 +170,20 @@ func (m PerformerBodyMods) ToBodyModification() BodyModification {
 	return ret
 }
 
-func CreatePerformerBodyMods(performerId int64, urls []*BodyModificationInput) []PerformerBodyMods {
-	var ret []PerformerBodyMods
+type PerformerBodyMods []*PerformerBodyMod
+
+func (p PerformerBodyMods) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *PerformerBodyMods) Add(o interface{}) {
+	*p = append(*p, o.(*PerformerBodyMod))
+}
+
+func CreatePerformerBodyMods(performerId int64, urls []*BodyModificationInput) PerformerBodyMods {
+	var ret PerformerBodyMods
 
 	for _, bmInput := range urls {
 		description := sql.NullString{}
@@ -97,7 +192,7 @@ func CreatePerformerBodyMods(performerId int64, urls []*BodyModificationInput) [
 			description.String = *bmInput.Description
 			description.Valid = true
 		}
-		ret = append(ret, PerformerBodyMods{
+		ret = append(ret, &PerformerBodyMod{
 			PerformerID: performerId,
 			Location:    bmInput.Location,
 			Description: description,
@@ -168,20 +263,26 @@ func (p Performer) ResolveMeasurements() Measurements {
 	return ret
 }
 
-func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) {
-	CopyFull(p, input)
+func (p *Performer) TranslateImageData(inputData *string) ([]byte, error) {
+	var imageData []byte
+	var err error
 
-	if input.Birthdate != nil {
-		p.setBirthdate(*input.Birthdate)
-	}
+	_, imageData, err = utils.ProcessBase64Image(*inputData)
 
-	if input.Measurements != nil {
-		p.setMeasurements(*input.Measurements)
-	}
+	return imageData, err
 }
 
-func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) {
+func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 	CopyFull(p, input)
+
+	if input.Image != nil {
+		var err error
+		p.Image, err = p.TranslateImageData(input.Image)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)
@@ -190,4 +291,29 @@ func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) {
 	if input.Measurements != nil {
 		p.setMeasurements(*input.Measurements)
 	}
+
+	return nil
+}
+
+func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
+	CopyFull(p, input)
+
+	if input.Image != nil {
+		var err error
+		p.Image, err = p.TranslateImageData(input.Image)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if input.Birthdate != nil {
+		p.setBirthdate(*input.Birthdate)
+	}
+
+	if input.Measurements != nil {
+		p.setMeasurements(*input.Measurements)
+	}
+
+	return nil
 }
