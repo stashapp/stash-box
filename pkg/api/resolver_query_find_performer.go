@@ -12,9 +12,9 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (*models.P
 		return nil, err
 	}
 
-	qb := models.NewPerformerQueryBuilder()
+	qb := models.NewPerformerQueryBuilder(nil)
 
-	idInt, _ := strconv.Atoi(id)
+	idInt, _ := strconv.ParseInt(id, 10, 64)
 	return qb.Find(idInt)
 }
 func (r *queryResolver) QueryPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.QuerySpec) (*models.QueryPerformersResultType, error) {
@@ -22,7 +22,7 @@ func (r *queryResolver) QueryPerformers(ctx context.Context, performerFilter *mo
 		return nil, err
 	}
 
-	qb := models.NewPerformerQueryBuilder()
+	qb := models.NewPerformerQueryBuilder(nil)
 
 	performers, count := qb.Query(performerFilter, filter)
 	return &models.QueryPerformersResultType{

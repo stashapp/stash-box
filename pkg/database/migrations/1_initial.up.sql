@@ -19,7 +19,8 @@ CREATE TABLE `performers` (
   `career_start_year` integer,
   `career_end_year` integer,
   `created_at` datetime not null,
-  `updated_at` datetime not null
+  `updated_at` datetime not null,
+  unique (`name`, `disambiguation`)
 );
 
 CREATE TABLE `performer_aliases` (
@@ -59,3 +60,77 @@ CREATE INDEX `index_performers_on_alias` on `performer_aliases` (`alias`);
 CREATE INDEX `index_performers_on_piercing_location` on `performer_piercings` (`location`);
 CREATE INDEX `index_performers_on_tattoo_location` on `performer_tattoos` (`location`);
 CREATE INDEX `index_performers_on_tattoo_description` on `performer_tattoos` (`description`);
+
+CREATE TABLE `tags` (
+  `id` integer not null primary key autoincrement,
+  `name` varchar(255) not null,
+  `description` varchar(255),
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  unique (`name`)
+);
+
+CREATE TABLE `tag_aliases` (
+  `tag_id` integer not null,
+  `alias` varchar(255) not null,
+  foreign key(`tag_id`) references `tags`(`id`) ON DELETE CASCADE,
+  unique (`alias`)
+);
+
+CREATE TABLE `studios` (
+  `id` integer not null primary key autoincrement,
+  `image` blob,
+  `name` varchar(255) not null,
+  `parent_studio_id` integer ,
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  foreign key(`parent_studio_id`) references `studios`(`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `studio_urls` (
+  `studio_id` integer not null,
+  `url` varchar(255) not null,
+  `type` varchar(255) not null,
+  foreign key(`studio_id`) references `studios`(`id`) ON DELETE CASCADE,
+  unique (`studio_id`, `url`),
+  unique (`studio_id`, `type`)
+);
+
+CREATE TABLE `scenes` (
+  `id` integer not null primary key autoincrement,
+  `title` varchar(255),
+  `details` varchar(255),
+  `url` varchar(255),
+  `date` date,
+  `studio_id` integer,
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  foreign key(`studio_id`) references `studios`(`id`) ON DELETE SET NULL
+);
+
+CREATE TABLE `scene_fingerprints` (
+  `scene_id` integer not null,
+  `hash` varchar(255) not null,
+  `algorithm` varchar(20) not null,
+  foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
+  unique (`scene_id`, `algorithm`, `hash`)
+);
+
+CREATE INDEX `index_scene_fingerprints_on_hash` on `scene_fingerprints` (`algorithm`, `hash`);
+
+CREATE TABLE `scene_performers` (
+  `scene_id` integer not null,
+  `as` varchar(255),
+  `performer_id` integer not null,
+  foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
+  foreign key(`performer_id`) references `performers`(`id`) ON DELETE CASCADE,
+  unique(`scene_id`, `performer_id`)
+);
+
+CREATE TABLE `scene_tags` (
+  `scene_id` integer not null,
+  `tag_id` integer not null,
+  foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
+  foreign key(`tag_id`) references `tags`(`id`) ON DELETE CASCADE,
+  unique(`scene_id`, `tag_id`)
+);

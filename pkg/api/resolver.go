@@ -16,6 +16,15 @@ func (r *Resolver) Mutation() models.MutationResolver {
 func (r *Resolver) Performer() models.PerformerResolver {
 	return &performerResolver{r}
 }
+func (r *Resolver) Tag() models.TagResolver {
+	return &tagResolver{r}
+}
+func (r *Resolver) Studio() models.StudioResolver {
+	return &studioResolver{r}
+}
+func (r *Resolver) Scene() models.SceneResolver {
+	return &sceneResolver{r}
+}
 func (r *Resolver) Query() models.QueryResolver {
 	return &queryResolver{r}
 }
@@ -34,6 +43,10 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 func wasFieldIncluded(ctx context.Context, field string) bool {
 	rctx := graphql.GetRequestContext(ctx)
 
-	_, ret := rctx.Variables[field]
-	return ret
+	if rctx != nil {
+		_, ret := rctx.Variables[field]
+		return ret
+	}
+
+	return false
 }

@@ -2,9 +2,10 @@ package models
 
 import (
 	"database/sql/driver"
+	"time"
+
 	"github.com/stashapp/stashdb/pkg/logger"
 	"github.com/stashapp/stashdb/pkg/utils"
-	"time"
 )
 
 type SQLiteDate struct {
@@ -37,4 +38,8 @@ func (t SQLiteDate) Value() (driver.Value, error) {
 		logger.Debugf("sqlite date conversion error: %s", err.Error())
 	}
 	return result, nil
+}
+
+func (t SQLiteDate) IsValid() bool {
+	return t.Valid
 }
