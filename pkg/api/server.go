@@ -122,7 +122,7 @@ func Start() {
 
 		go func() {
 			printVersion()
-			logger.Infof("stash is running on HTTPS at https://" + address + "/")
+			logger.Infof("stashdb is running on HTTPS at https://" + address + "/")
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 		}()
 	} else {
@@ -133,14 +133,14 @@ func Start() {
 
 		go func() {
 			printVersion()
-			logger.Infof("stash is running on HTTP at http://" + address + "/")
+			logger.Infof("stashdb is running on HTTP at http://" + address + "/")
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}
 }
 
 func printVersion() {
-	fmt.Printf("stash version: %s (%s)\n", githash, buildstamp)
+	fmt.Printf("stashdb version: %s (%s)\n", githash, buildstamp)
 }
 
 func GetVersion() (string, string) {

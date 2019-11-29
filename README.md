@@ -35,6 +35,18 @@ Stash-box generates a configuration file in the current working directory when i
 
 These are a very basic authorization method. When set, the `ApiKey` header must be set to the correct value to read/write the data. The write API key allows reading and writing. The read API key allows only reading.
 
+### Postgres Support
+
+Stash-box can be configured to run with a Postgres database. To use a Postgres database, the config file have the following fields:
+```
+database_type: postgres
+database: <user>:<password>@<host>/<dbname>?[sslmode=<sslmode>]
+```
+
+The database `<dbname>` must be created already. The schema will be created within the database if it is not already present.
+
+The `sslmode` parameter is documented in the [pq documentation](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default value is `require`.
+
 ## SSL (HTTPS)
 
 Stash-box supports HTTPS with some additional work.  First you must generate a SSL certificate and key combo.  Here is an example using openssl:

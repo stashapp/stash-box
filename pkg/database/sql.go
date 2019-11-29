@@ -9,6 +9,62 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type QueryBuilder struct {
+	Table Table
+	Body  string
+
+	whereClauses  []string
+	havingClauses []string
+	args          []interface{}
+
+	SortAndPagination string
+}
+
+func NewQueryBuilder(table Table) *QueryBuilder {
+	ret := &QueryBuilder{
+		Table: table,
+	}
+
+	tableName := table.Name()
+	ret.Body = "SELECT " + tableName + ".* FROM " + tableName + " "
+
+	return ret
+}
+
+func (qb *QueryBuilder) AddWhere(clauses ...string) {
+	qb.whereClauses = append(qb.whereClauses, clauses...)
+}
+
+func (qb *QueryBuilder) AddHaving(clauses ...string) {
+	qb.havingClauses = append(qb.havingClauses, clauses...)
+}
+
+func (qb *QueryBuilder) AddArg(args ...interface{}) {
+	qb.args = append(qb.args, args...)
+}
+
+func (qb QueryBuilder) buildBody() string {
+	body := qb.Body
+
+	if len(qb.whereClauses) > 0 {
+		body = body + " WHERE " + strings.Join(qb.whereClauses, " AND ") // TODO handle AND or OR
+	}
+	body = body + " GROUP BY " + qb.Table.Name() + ".id "
+	if len(qb.havingClauses) > 0 {
+		body = body + " HAVING " + strings.Join(qb.havingClauses, " AND ") // TODO handle AND or OR
+	}
+
+	return body
+}
+
+func (qb QueryBuilder) buildCountQuery() string {
+	return "SELECT COUNT(*) as count FROM (" + qb.buildBody() + ") as temp"
+}
+
+func (qb QueryBuilder) buildQuery() string {
+	return qb.buildBody() + qb.SortAndPagination
+}
+
 type optionalValue interface {
 	IsValid() bool
 }
@@ -78,7 +134,7 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 	var values []string
 
 	addPlaceholder := func(key string) {
-		fields = append(fields, "`"+key+"`")
+		fields = append(fields, dialect.FieldQuote(key))
 		values = append(values, ":"+key)
 	}
 
