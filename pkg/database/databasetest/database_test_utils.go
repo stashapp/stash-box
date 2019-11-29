@@ -36,7 +36,8 @@ func runTests(m *testing.M, populater DatabasePopulater) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	database.Initialize(databaseFile)
+	const databaseType = "sqlite3"
+	database.Initialize(databaseType, databaseFile)
 
 	// defer close and delete the database
 	defer testTeardown(databaseFile)

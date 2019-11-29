@@ -119,42 +119,39 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 		findFilter = &QuerySpec{}
 	}
 
-	query := queryBuilder{
-		tableName: sceneTable,
-	}
-
-	query.body = selectDistinctIDs(sceneTable)
+	query := database.NewQueryBuilder(sceneDBTable)
 
 	if q := sceneFilter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
 	}
 
 	if q := sceneFilter.Title; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
 	}
 
 	if q := sceneFilter.URL; q != nil && *q != "" {
 		searchColumns := []string{"scenes.url"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
 	}
 
 	// TODO - other filters
 
-	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := query.executeFind()
+	query.SortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
 
-	var scenes []*Scene
-	for _, id := range idsResult {
-		scene, _ := qb.Find(id)
-		scenes = append(scenes, scene)
+	var scenes Scenes
+	countResult, err := qb.dbi.Query(*query, &scenes)
+
+	if err != nil {
+		// TODO
+		panic(err)
 	}
 
 	return scenes, countResult

@@ -100,26 +100,22 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 		findFilter = &QuerySpec{}
 	}
 
-	query := queryBuilder{
-		tableName: studioTable,
-	}
-
-	query.body = selectDistinctIDs(studioTable)
+	query := database.NewQueryBuilder(studioDBTable)
 
 	if q := studioFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
 	}
 
-	query.sortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := query.executeFind()
+	query.SortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
+	var studios Studios
+	countResult, err := qb.dbi.Query(*query, &studios)
 
-	var studios []*Studio
-	for _, id := range idsResult {
-		studio, _ := qb.Find(id)
-		studios = append(studios, studio)
+	if err != nil {
+		// TODO
+		panic(err)
 	}
 
 	return studios, countResult
