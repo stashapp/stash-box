@@ -4,6 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stashdb/pkg/database"
+    "github.com/satori/go.uuid"
 )
 
 type TagQueryBuilder struct {
@@ -34,7 +35,7 @@ func (qb *TagQueryBuilder) Update(updatedTag Tag) (*Tag, error) {
 	return qb.toModel(ret), err
 }
 
-func (qb *TagQueryBuilder) Destroy(id int64) error {
+func (qb *TagQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, tagDBTable)
 }
 
@@ -42,11 +43,11 @@ func (qb *TagQueryBuilder) CreateAliases(newJoins TagAliases) error {
 	return qb.dbi.InsertJoins(tagAliasTable, &newJoins)
 }
 
-func (qb *TagQueryBuilder) UpdateAliases(tagID int64, updatedJoins TagAliases) error {
+func (qb *TagQueryBuilder) UpdateAliases(tagID uuid.UUID, updatedJoins TagAliases) error {
 	return qb.dbi.ReplaceJoins(tagAliasTable, tagID, &updatedJoins)
 }
 
-func (qb *TagQueryBuilder) Find(id int64) (*Tag, error) {
+func (qb *TagQueryBuilder) Find(id uuid.UUID) (*Tag, error) {
 	ret, err := qb.dbi.Find(id, tagDBTable)
 	return qb.toModel(ret), err
 }
@@ -64,7 +65,7 @@ func (qb *TagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
 	return results[0], nil
 }
 
-func (qb *TagQueryBuilder) FindBySceneID(sceneID int64) ([]*Tag, error) {
+func (qb *TagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_tags as scenes_join on scenes_join.tag_id = tags.id
@@ -167,7 +168,7 @@ func (qb *TagQueryBuilder) queryTags(query string, args []interface{}) (Tags, er
 	return output, err
 }
 
-func (qb *TagQueryBuilder) GetAliases(id int64) ([]string, error) {
+func (qb *TagQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
 	joins := TagAliases{}
 	err := qb.dbi.FindJoins(tagAliasTable, id, &joins)
 

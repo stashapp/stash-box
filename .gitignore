@@ -37,6 +37,9 @@
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+# Vim
+*.swp
+
 ####
 # Random
 ####

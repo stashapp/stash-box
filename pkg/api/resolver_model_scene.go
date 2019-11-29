@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/stashapp/stashdb/pkg/models"
 )
@@ -10,7 +9,7 @@ import (
 type sceneResolver struct{ *Resolver }
 
 func (r *sceneResolver) ID(ctx context.Context, obj *models.Scene) (string, error) {
-	return strconv.FormatInt(obj.ID, 10), nil
+	return obj.ID.String(), nil
 }
 func (r *sceneResolver) Title(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.Title)
@@ -30,7 +29,7 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 	}
 
 	qb := models.NewStudioQueryBuilder(nil)
-	parent, err := qb.Find(obj.StudioID.Int64)
+	parent, err := qb.Find(obj.StudioID.UUID)
 
 	if err != nil {
 		return nil, err

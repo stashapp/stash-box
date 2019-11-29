@@ -1,5 +1,5 @@
 CREATE TABLE `performers` (
-  `id` integer not null primary key autoincrement,
+  `id` blob not null primary key,
   `image` blob,
   `name` varchar(255) not null,
   `disambiguation` varchar(255),
@@ -24,14 +24,14 @@ CREATE TABLE `performers` (
 );
 
 CREATE TABLE `performer_aliases` (
-  `performer_id` integer not null,
+  `performer_id` blob not null,
   `alias` varchar(255) not null,
   foreign key(`performer_id`) references `performers`(`id`) ON DELETE CASCADE,
   unique (`performer_id`, `alias`)
 );
 
 CREATE TABLE `performer_urls` (
-  `performer_id` integer not null,
+  `performer_id` blob not null,
   `url` varchar(255) not null,
   `type` varchar(255) not null,
   foreign key(`performer_id`) references `performers`(`id`) ON DELETE CASCADE,
@@ -40,7 +40,7 @@ CREATE TABLE `performer_urls` (
 );
 
 CREATE TABLE `performer_piercings` (
-  `performer_id` integer not null,
+  `performer_id` blob not null,
   `location` varchar(255),
   `description` varchar(255),
   foreign key(`performer_id`) references `performers`(`id`) ON DELETE CASCADE,
@@ -48,7 +48,7 @@ CREATE TABLE `performer_piercings` (
 );
 
 CREATE TABLE `performer_tattoos` (
-  `performer_id` integer not null,
+  `performer_id` blob not null,
   `location` varchar(255),
   `description` varchar(255),
   foreign key(`performer_id`) references `performers`(`id`) ON DELETE CASCADE,
@@ -62,7 +62,7 @@ CREATE INDEX `index_performers_on_tattoo_location` on `performer_tattoos` (`loca
 CREATE INDEX `index_performers_on_tattoo_description` on `performer_tattoos` (`description`);
 
 CREATE TABLE `tags` (
-  `id` integer not null primary key autoincrement,
+  `id` blob not null primary key,
   `name` varchar(255) not null,
   `description` varchar(255),
   `created_at` datetime not null,
@@ -71,24 +71,24 @@ CREATE TABLE `tags` (
 );
 
 CREATE TABLE `tag_aliases` (
-  `tag_id` integer not null,
+  `tag_id` blob not null,
   `alias` varchar(255) not null,
   foreign key(`tag_id`) references `tags`(`id`) ON DELETE CASCADE,
   unique (`alias`)
 );
 
 CREATE TABLE `studios` (
-  `id` integer not null primary key autoincrement,
+  `id` blob not null primary key,
   `image` blob,
   `name` varchar(255) not null,
-  `parent_studio_id` integer ,
+  `parent_studio_id` blob,
   `created_at` datetime not null,
   `updated_at` datetime not null,
   foreign key(`parent_studio_id`) references `studios`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `studio_urls` (
-  `studio_id` integer not null,
+  `studio_id` blob not null,
   `url` varchar(255) not null,
   `type` varchar(255) not null,
   foreign key(`studio_id`) references `studios`(`id`) ON DELETE CASCADE,
@@ -97,19 +97,19 @@ CREATE TABLE `studio_urls` (
 );
 
 CREATE TABLE `scenes` (
-  `id` integer not null primary key autoincrement,
+  `id` blob not null primary key,
   `title` varchar(255),
   `details` varchar(255),
   `url` varchar(255),
   `date` date,
-  `studio_id` integer,
+  `studio_id` blob,
   `created_at` datetime not null,
   `updated_at` datetime not null,
   foreign key(`studio_id`) references `studios`(`id`) ON DELETE SET NULL
 );
 
 CREATE TABLE `scene_fingerprints` (
-  `scene_id` integer not null,
+  `scene_id` blob not null,
   `hash` varchar(255) not null,
   `algorithm` varchar(20) not null,
   foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
@@ -119,17 +119,17 @@ CREATE TABLE `scene_fingerprints` (
 CREATE INDEX `index_scene_fingerprints_on_hash` on `scene_fingerprints` (`algorithm`, `hash`);
 
 CREATE TABLE `scene_performers` (
-  `scene_id` integer not null,
+  `scene_id` blob not null,
   `as` varchar(255),
-  `performer_id` integer not null,
+  `performer_id` blob not null,
   foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
   foreign key(`performer_id`) references `performers`(`id`) ON DELETE CASCADE,
   unique(`scene_id`, `performer_id`)
 );
 
 CREATE TABLE `scene_tags` (
-  `scene_id` integer not null,
-  `tag_id` integer not null,
+  `scene_id` blob not null,
+  `tag_id` blob not null,
   foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
   foreign key(`tag_id`) references `tags`(`id`) ON DELETE CASCADE,
   unique(`scene_id`, `tag_id`)

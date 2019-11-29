@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+    "github.com/satori/go.uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -75,26 +76,22 @@ func ensureTx(tx *sqlx.Tx) {
 	}
 }
 
-func getByID(tx *sqlx.Tx, table string, id int64, object interface{}) error {
+func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
 	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = ? LIMIT 1`, id)
 }
 
-func insertObject(tx *sqlx.Tx, table string, object interface{}) (int64, error) {
+func insertObject(tx *sqlx.Tx, table string, object interface{}) error {
 	ensureTx(tx)
 	fields, values := sqlGenKeysCreate(object)
 
-	result, err := tx.NamedExec(
+	_, err := tx.NamedExec(
 		`INSERT INTO `+table+` (`+fields+`)
 				VALUES (`+values+`)
 		`,
 		object,
 	)
 
-	if err != nil {
-		return 0, err
-	}
-
-	return result.LastInsertId()
+    return err
 }
 
 func updateObjectByID(tx *sqlx.Tx, table string, object interface{}) error {
@@ -107,7 +104,7 @@ func updateObjectByID(tx *sqlx.Tx, table string, object interface{}) error {
 	return err
 }
 
-func executeDeleteQuery(tableName string, id int64, tx *sqlx.Tx) error {
+func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
 	if tx == nil {
 		panic("must use a transaction")
 	}
@@ -143,9 +140,6 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 		//get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
-		if key == "id" {
-			continue
-		}
 		switch t := v.Field(i).Interface().(type) {
 		case string:
 			if t != "" {
@@ -153,6 +147,10 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 			}
 		case int, int64, float64:
 			if t != 0 {
+				addPlaceholder(key)
+			}
+		case uuid.UUID:
+			if t != uuid.Nil {
 				addPlaceholder(key)
 			}
 		case optionalValue:
@@ -168,6 +166,10 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 				addPlaceholder(key)
 			}
 		case sql.NullInt64:
+			if t.Valid {
+				addPlaceholder(key)
+			}
+		case uuid.NullUUID:
 			if t.Valid {
 				addPlaceholder(key)
 			}
@@ -207,6 +209,10 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			if partial || t != "" {
 				addKey(key)
 			}
+		case uuid.UUID:
+			if partial || t != uuid.Nil {
+				addKey(key)
+			}
 		case int, int64, float64:
 			if partial || t != 0 {
 				addKey(key)
@@ -224,6 +230,10 @@ func sqlGenKeys(i interface{}, partial bool) string {
 				addKey(key)
 			}
 		case sql.NullInt64:
+			if partial || t.Valid {
+				addKey(key)
+			}
+		case uuid.NullUUID:
 			if partial || t.Valid {
 				addKey(key)
 			}

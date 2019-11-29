@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	"strconv"
 	"time"
+    "github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -23,6 +23,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	// Populate a new studio from the input
 	currentTime := time.Now()
 	newStudio := models.Studio{
+        ID: uuid.NewV4(),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
@@ -64,7 +65,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	qb := models.NewStudioQueryBuilder(tx)
 
 	// get the existing studio and modify it
-	studioID, _ := strconv.ParseInt(input.ID, 10, 64)
+	studioID, _ := uuid.FromString(input.ID)
 	updatedStudio, err := qb.Find(studioID)
 
 	if err != nil {
@@ -111,7 +112,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
 
-	studioID, err := strconv.ParseInt(input.ID, 10, 64)
+	studioID, err := uuid.FromString(input.ID)
 	if err != nil {
 		return false, err
 	}

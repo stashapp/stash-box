@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+    "github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -22,7 +23,7 @@ var (
 )
 
 type Tag struct {
-	ID          int64           `db:"id" json:"id"`
+	ID          uuid.UUID       `db:"id" json:"id"`
 	Name        string          `db:"name" json:"name"`
 	Description sql.NullString  `db:"description" json:"description"`
 	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
@@ -33,7 +34,7 @@ func (Tag) GetTable() database.Table {
 	return tagDBTable
 }
 
-func (p Tag) GetID() int64 {
+func (p Tag) GetID() uuid.UUID {
 	return p.ID
 }
 
@@ -50,8 +51,8 @@ func (p *Tags) Add(o interface{}) {
 }
 
 type TagAlias struct {
-	TagID int64  `db:"tag_id" json:"tag_id"`
-	Alias string `db:"alias" json:"alias"`
+	TagID uuid.UUID `db:"tag_id" json:"tag_id"`
+	Alias string    `db:"alias" json:"alias"`
 }
 
 type TagAliases []TagAlias
@@ -75,7 +76,7 @@ func (p TagAliases) ToAliases() []string {
 	return ret
 }
 
-func CreateTagAliases(tagId int64, aliases []string) []TagAlias {
+func CreateTagAliases(tagId uuid.UUID, aliases []string) []TagAlias {
 	var ret []TagAlias
 
 	for _, alias := range aliases {

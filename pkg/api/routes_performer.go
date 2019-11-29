@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"net/http"
-	"strconv"
 
+    "github.com/satori/go.uuid"
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stashdb/pkg/models"
 )
@@ -34,7 +34,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 func PerformerCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		performerID, err := strconv.ParseInt(chi.URLParam(r, "performerId"), 10, 64)
+		performerID, err := uuid.FromString(chi.URLParam(r, "performerId"))
 		if err != nil {
 			http.Error(w, http.StatusText(404), 404)
 			return

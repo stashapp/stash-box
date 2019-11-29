@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
+    "github.com/satori/go.uuid"
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/logger"
 )
@@ -37,22 +38,18 @@ func handleStringCriterion(column string, value *StringCriterionInput, query *da
 	}
 }
 
-func insertObject(tx *sqlx.Tx, table string, object interface{}) (int64, error) {
+func insertObject(tx *sqlx.Tx, table string, object interface{}) error {
 	ensureTx(tx)
 	fields, values := SQLGenKeysCreate(object)
 
-	result, err := tx.NamedExec(
+	_, err := tx.NamedExec(
 		`INSERT INTO `+table+` (`+fields+`)
 				VALUES (`+values+`)
 		`,
 		object,
 	)
 
-	if err != nil {
-		return 0, err
-	}
-
-	return result.LastInsertId()
+    return err
 }
 
 func insertJoins(tx *sqlx.Tx, table string, joins interface{}) error {
@@ -63,7 +60,7 @@ func insertJoins(tx *sqlx.Tx, table string, joins interface{}) error {
 
 	slice := reflect.ValueOf(joins)
 	for i := 0; i < slice.Len(); i++ {
-		_, err := insertObject(tx, table, slice.Index(i).Interface())
+		err := insertObject(tx, table, slice.Index(i).Interface())
 
 		if err != nil {
 			return err
@@ -89,7 +86,7 @@ func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value inter
 	return err
 }
 
-func getByID(tx *sqlx.Tx, table string, id int64, object interface{}) error {
+func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
 	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = ? LIMIT 1`, id)
 }
 
@@ -228,18 +225,18 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func runIdsQuery(query string, args []interface{}) ([]int64, error) {
+func runIdsQuery(query string, args []interface{}) ([]uuid.UUID, error) {
 	var result []struct {
-		Int int64 `db:"id"`
+		ID uuid.UUID `db:"id"`
 	}
 	query = database.GetDialect().SetPlaceholders(query)
 	if err := database.DB.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
-		return []int64{}, err
+		return []uuid.UUID{}, err
 	}
 
-	vsm := make([]int64, len(result))
+	vsm := make([]uuid.UUID, len(result))
 	for i, v := range result {
-		vsm[i] = v.Int
+		vsm[i] = v.ID
 	}
 	return vsm, nil
 }
@@ -247,7 +244,7 @@ func runIdsQuery(query string, args []interface{}) ([]int64, error) {
 func runCountQuery(query string, args []interface{}) (int, error) {
 	// Perform query and fetch result
 	result := struct {
-		Int int `db:"count"`
+		Count int `db:"count"`
 	}{0}
 
 	query = database.GetDialect().SetPlaceholders(query)
@@ -255,10 +252,10 @@ func runCountQuery(query string, args []interface{}) (int, error) {
 		return 0, err
 	}
 
-	return result.Int, nil
+	return result.Count, nil
 }
 
-func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int64, int) {
+func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]uuid.UUID, int) {
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
@@ -285,7 +282,7 @@ func executeFindQuery(tableName string, body string, args []interface{}, sortAnd
 	return idsResult, countResult
 }
 
-func executeDeleteQuery(tableName string, id int64, tx *sqlx.Tx) error {
+func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
 	if tx == nil {
 		panic("must use a transaction")
 	}
@@ -361,6 +358,14 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			if partial || t.Valid {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
+		case uuid.NullUUID:
+			if partial || t.Valid {
+				query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			}
+		case uuid.UUID:
+			if partial || t != uuid.Nil {
+				query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			}
 		default:
 			reflectValue := reflect.ValueOf(t)
 			isNil := reflectValue.IsNil()
@@ -381,9 +386,6 @@ func SQLGenKeysCreate(i interface{}) (string, string) {
 		//get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
-		if key == "id" {
-			continue
-		}
 		switch t := v.Field(i).Interface().(type) {
 		case string:
 			if t != "" {
@@ -422,6 +424,16 @@ func SQLGenKeysCreate(i interface{}) (string, string) {
 			}
 		case sql.NullFloat64:
 			if t.Valid {
+				fields = append(fields, key)
+				values = append(values, ":"+key)
+			}
+		case uuid.NullUUID:
+			if t.Valid {
+				fields = append(fields, key)
+				values = append(values, ":"+key)
+			}
+		case uuid.UUID:
+			if t != uuid.Nil {
 				fields = append(fields, key)
 				values = append(values, ":"+key)
 			}

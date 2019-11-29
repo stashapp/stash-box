@@ -2,9 +2,9 @@ package models
 
 import (
 	"database/sql"
+    "github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 const (
@@ -35,7 +35,7 @@ var (
 )
 
 type Performer struct {
-	ID                int64           `db:"id" json:"id"`
+	ID                uuid.UUID       `db:"id" json:"id"`
 	Name              string          `db:"name" json:"name"`
 	Disambiguation    sql.NullString  `db:"disambiguation" json:"disambiguation"`
 	Image             []byte          `db:"image" json:"image"`
@@ -62,7 +62,7 @@ func (Performer) GetTable() database.Table {
 	return performerDBTable
 }
 
-func (p Performer) GetID() int64 {
+func (p Performer) GetID() uuid.UUID {
 	return p.ID
 }
 
@@ -79,8 +79,8 @@ func (p *Performers) Add(o interface{}) {
 }
 
 type PerformerAlias struct {
-	PerformerID int64  `db:"performer_id" json:"performer_id"`
-	Alias       string `db:"alias" json:"alias"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	Alias       string    `db:"alias" json:"alias"`
 }
 
 type PerformerAliases []*PerformerAlias
@@ -104,7 +104,7 @@ func (p PerformerAliases) ToAliases() []string {
 	return ret
 }
 
-func CreatePerformerAliases(performerId int64, aliases []string) PerformerAliases {
+func CreatePerformerAliases(performerId uuid.UUID, aliases []string) PerformerAliases {
 	var ret PerformerAliases
 
 	for _, alias := range aliases {
@@ -115,9 +115,9 @@ func CreatePerformerAliases(performerId int64, aliases []string) PerformerAliase
 }
 
 type PerformerUrl struct {
-	PerformerID int64  `db:"performer_id" json:"performer_id"`
-	URL         string `db:"url" json:"url"`
-	Type        string `db:"type" json:"type"`
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	URL         string    `db:"url" json:"url"`
+	Type        string    `db:"type" json:"type"`
 }
 
 func (p *PerformerUrl) ToURL() URL {
@@ -139,7 +139,7 @@ func (p *PerformerUrls) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerUrl))
 }
 
-func CreatePerformerUrls(performerId int64, urls []*URLInput) PerformerUrls {
+func CreatePerformerUrls(performerId uuid.UUID, urls []*URLInput) PerformerUrls {
 	var ret PerformerUrls
 
 	for _, urlInput := range urls {
@@ -154,7 +154,7 @@ func CreatePerformerUrls(performerId int64, urls []*URLInput) PerformerUrls {
 }
 
 type PerformerBodyMod struct {
-	PerformerID int64          `db:"performer_id" json:"performer_id"`
+	PerformerID uuid.UUID      `db:"performer_id" json:"performer_id"`
 	Location    string         `db:"location" json:"location"`
 	Description sql.NullString `db:"description" json:"description"`
 }
@@ -182,7 +182,7 @@ func (p *PerformerBodyMods) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerBodyMod))
 }
 
-func CreatePerformerBodyMods(performerId int64, urls []*BodyModificationInput) PerformerBodyMods {
+func CreatePerformerBodyMods(performerId uuid.UUID, urls []*BodyModificationInput) PerformerBodyMods {
 	var ret PerformerBodyMods
 
 	for _, bmInput := range urls {
@@ -263,26 +263,8 @@ func (p Performer) ResolveMeasurements() Measurements {
 	return ret
 }
 
-func (p *Performer) TranslateImageData(inputData *string) ([]byte, error) {
-	var imageData []byte
-	var err error
-
-	_, imageData, err = utils.ProcessBase64Image(*inputData)
-
-	return imageData, err
-}
-
 func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 	CopyFull(p, input)
-
-	if input.Image != nil {
-		var err error
-		p.Image, err = p.TranslateImageData(input.Image)
-
-		if err != nil {
-			return err
-		}
-	}
 
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)
@@ -297,15 +279,6 @@ func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 
 func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
 	CopyFull(p, input)
-
-	if input.Image != nil {
-		var err error
-		p.Image, err = p.TranslateImageData(input.Image)
-
-		if err != nil {
-			return err
-		}
-	}
 
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)

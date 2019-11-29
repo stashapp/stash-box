@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	"strconv"
 	"time"
+    "github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -23,6 +23,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	// Populate a new scene from the input
 	currentTime := time.Now()
 	newScene := models.Scene{
+        ID: uuid.NewV4(),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
@@ -77,7 +78,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	qb := models.NewSceneQueryBuilder(tx)
 
 	// get the existing scene and modify it
-	sceneID, _ := strconv.ParseInt(input.ID, 10, 64)
+	sceneID, _ := uuid.FromString(input.ID)
 	updatedScene, err := qb.Find(sceneID)
 
 	if err != nil {
@@ -145,7 +146,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
 
-	sceneID, err := strconv.ParseInt(input.ID, 10, 64)
+	sceneID, err := uuid.FromString(input.ID)
 	if err != nil {
 		return false, err
 	}

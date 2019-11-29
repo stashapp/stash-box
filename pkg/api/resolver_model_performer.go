@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/stashapp/stashdb/pkg/models"
@@ -12,7 +11,7 @@ import (
 type performerResolver struct{ *Resolver }
 
 func (r *performerResolver) ID(ctx context.Context, obj *models.Performer) (string, error) {
-	return strconv.FormatInt(obj.ID, 10), nil
+	return obj.ID.String(), nil
 }
 
 func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Performer) (*string, error) {

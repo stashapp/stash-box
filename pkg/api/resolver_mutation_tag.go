@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	"strconv"
 	"time"
+    "github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -23,6 +23,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	// Populate a new performer from the input
 	currentTime := time.Now()
 	newTag := models.Tag{
+        ID: uuid.NewV4(),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
@@ -62,7 +63,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	qb := models.NewTagQueryBuilder(tx)
 
 	// get the existing tag and modify it
-	tagID, _ := strconv.ParseInt(input.ID, 10, 64)
+	tagID, _ := uuid.FromString(input.ID)
 	updatedTag, err := qb.Find(tagID)
 
 	if err != nil {
@@ -107,7 +108,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
 
-	tagID, err := strconv.ParseInt(input.ID, 10, 64)
+	tagID, err := uuid.FromString(input.ID)
 	if err != nil {
 		return false, err
 	}

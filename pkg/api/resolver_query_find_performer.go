@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"strconv"
+    "github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/models"
 )
@@ -14,8 +14,8 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (*models.P
 
 	qb := models.NewPerformerQueryBuilder(nil)
 
-	idInt, _ := strconv.ParseInt(id, 10, 64)
-	return qb.Find(idInt)
+	idUUID, _ := uuid.FromString(id)
+	return qb.Find(idUUID)
 }
 func (r *queryResolver) QueryPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.QuerySpec) (*models.QueryPerformersResultType, error) {
 	if err := validateRead(ctx); err != nil {

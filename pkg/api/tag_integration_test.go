@@ -4,7 +4,6 @@ package api_test
 
 import (
 	"reflect"
-	"strconv"
 	"testing"
 
 	"github.com/stashapp/stashdb/pkg/models"
@@ -65,7 +64,7 @@ func (s *tagTestRunner) testFindTagById() {
 		return
 	}
 
-	tagID := strconv.FormatInt(createdTag.ID, 10)
+	tagID := createdTag.ID.String()
 	tag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding tag: %s", err.Error())
@@ -116,7 +115,7 @@ func (s *tagTestRunner) testUpdateTag() {
 		return
 	}
 
-	tagID := strconv.FormatInt(createdTag.ID, 10)
+	tagID := createdTag.ID.String()
 
 	newDescription := "newDescription"
 
@@ -154,7 +153,7 @@ func (s *tagTestRunner) testDestroyTag() {
 		return
 	}
 
-	tagID := strconv.FormatInt(createdTag.ID, 10)
+	tagID := createdTag.ID.String()
 
 	destroyed, err := s.resolver.Mutation().TagDestroy(s.ctx, models.TagDestroyInput{
 		ID: tagID,
