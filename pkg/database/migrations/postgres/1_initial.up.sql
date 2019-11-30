@@ -78,6 +78,7 @@ CREATE TABLE "tag_aliases" (
 
 CREATE TABLE "studios" (
   "id" uuid not null primary key,
+  "image" bytea,
   "name" varchar(255) not null,
   "parent_studio_id" uuid,
   "created_at" timestamp  not null,
@@ -103,7 +104,6 @@ CREATE TABLE "scenes" (
   "studio_id" uuid,
   "created_at" timestamp  not null,
   "updated_at" timestamp  not null,
-  "photo_url" varchar(255,
   foreign key("studio_id") references "studios"("id") ON DELETE SET NULL
 );
 
