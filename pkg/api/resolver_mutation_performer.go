@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/satori/go.uuid"
 	"time"
-    "github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -24,7 +24,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	// Populate a new performer from the input
 	currentTime := time.Now()
 	newPerformer := models.Performer{
-        ID: uuid.NewV4(),
+		ID:        uuid.NewV4(),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}

@@ -1,7 +1,7 @@
 package database
 
 import (
-    "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 )
 
 // NewObjectFunc is a function that returns an instance of an object stored in

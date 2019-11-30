@@ -2,9 +2,10 @@ package models
 
 import (
 	"database/sql"
-    "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 const (
@@ -263,8 +264,35 @@ func (p Performer) ResolveMeasurements() Measurements {
 	return ret
 }
 
+func (p *Performer) TranslateImageData(inputData *string) ([]byte, error) {
+	var imageData []byte
+	var err error
+
+	_, imageData, err = utils.ProcessBase64Image(*inputData)
+
+	return imageData, err
+}
+
 func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 	CopyFull(p, input)
+
+	if input.Image != nil {
+		var err error
+		p.Image, err = p.TranslateImageData(input.Image)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if input.Image != nil {
+		var err error
+		p.Image, err = p.TranslateImageData(input.Image)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)

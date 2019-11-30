@@ -2,7 +2,7 @@ package models
 
 import (
 	"database/sql"
-    "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -118,7 +118,7 @@ func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
 func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearanceInput) PerformersScenes {
 	var performerJoins PerformersScenes
 	for _, a := range appearances {
-		performerID := uuid.FromStringOrNil(a.PerformerID)
+		performerID, _ := uuid.FromString(a.PerformerID)
 		performerJoin := &PerformerScene{
 			SceneID:     sceneID,
 			PerformerID: performerID,

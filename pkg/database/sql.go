@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strings"
 
-    "github.com/satori/go.uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/satori/go.uuid"
 )
 
 type QueryBuilder struct {
@@ -91,7 +91,7 @@ func insertObject(tx *sqlx.Tx, table string, object interface{}) error {
 		object,
 	)
 
-    return err
+	return err
 }
 
 func updateObjectByID(tx *sqlx.Tx, table string, object interface{}) error {

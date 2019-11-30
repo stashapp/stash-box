@@ -2,7 +2,7 @@ package models
 
 import (
 	"database/sql"
-    "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 )

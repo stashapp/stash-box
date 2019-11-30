@@ -1,7 +1,7 @@
 package models
 
 import (
-    "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -24,7 +24,7 @@ var (
 type Studio struct {
 	ID             uuid.UUID       `db:"id" json:"id"`
 	Name           string          `db:"name" json:"name"`
-    Image          []byte          `db:"image" json:"image"`
+	Image          []byte          `db:"image" json:"image"`
 	ParentStudioID uuid.NullUUID   `db:"parent_studio_id,omitempty" json:"parent_studio_id"`
 	CreatedAt      SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt      SQLiteTimestamp `db:"updated_at" json:"updated_at"`
@@ -95,21 +95,21 @@ func (p *Studio) IsEditTarget() {
 func (p *Studio) CopyFromCreateInput(input StudioCreateInput) {
 	CopyFull(p, input)
 
-    if input.ParentID != nil {
-        UUID, err := uuid.FromString(*input.ParentID)
-        if err == nil {
-            p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
-        }
-    }
+	if input.ParentID != nil {
+		UUID, err := uuid.FromString(*input.ParentID)
+		if err == nil {
+			p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
+		}
+	}
 }
 
 func (p *Studio) CopyFromUpdateInput(input StudioUpdateInput) {
 	CopyFull(p, input)
 
-    if input.ParentID != nil {
-        UUID, err := uuid.FromString(*input.ParentID)
-        if err == nil {
-            p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
-        }
-    }
+	if input.ParentID != nil {
+		UUID, err := uuid.FromString(*input.ParentID)
+		if err == nil {
+			p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
+		}
+	}
 }

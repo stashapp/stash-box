@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-    "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/logger"
 )
@@ -49,7 +49,7 @@ func insertObject(tx *sqlx.Tx, table string, object interface{}) error {
 		object,
 	)
 
-    return err
+	return err
 }
 
 func insertJoins(tx *sqlx.Tx, table string, joins interface{}) error {

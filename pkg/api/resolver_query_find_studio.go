@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-    "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/models"
 )

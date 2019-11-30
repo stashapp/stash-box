@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
+	"github.com/satori/go.uuid"
 	"time"
-    "github.com/satori/go.uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -23,7 +23,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	// Populate a new performer from the input
 	currentTime := time.Now()
 	newTag := models.Tag{
-        ID: uuid.NewV4(),
+		ID:        uuid.NewV4(),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}

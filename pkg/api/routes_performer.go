@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-    "github.com/satori/go.uuid"
 	"github.com/go-chi/chi"
+	"github.com/satori/go.uuid"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
