@@ -3,7 +3,7 @@ package models
 import (
 	"github.com/jmoiron/sqlx"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stashdb/pkg/database"
 )
 

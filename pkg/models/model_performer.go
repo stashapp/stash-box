@@ -2,7 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/utils"
@@ -294,6 +294,15 @@ func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 		}
 	}
 
+	if input.Image != nil {
+		var err error
+		p.Image, err = p.TranslateImageData(input.Image)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)
 	}
@@ -307,6 +316,15 @@ func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 
 func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
 	CopyFull(p, input)
+
+	if input.Image != nil {
+		var err error
+		p.Image, err = p.TranslateImageData(input.Image)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)

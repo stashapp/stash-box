@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 	"time"
 
 	"github.com/stashapp/stashdb/pkg/database"
@@ -20,10 +20,15 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
+	UUID, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
 	// Populate a new studio from the input
 	currentTime := time.Now()
 	newStudio := models.Studio{
-		ID:        uuid.NewV4(),
+		ID:        UUID,
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
