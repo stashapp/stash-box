@@ -285,24 +285,6 @@ func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 		}
 	}
 
-	if input.Image != nil {
-		var err error
-		p.Image, err = p.TranslateImageData(input.Image)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	if input.Image != nil {
-		var err error
-		p.Image, err = p.TranslateImageData(input.Image)
-
-		if err != nil {
-			return err
-		}
-	}
-
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)
 	}
