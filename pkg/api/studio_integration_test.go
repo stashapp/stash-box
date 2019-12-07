@@ -62,7 +62,7 @@ func (s *studioTestRunner) testFindStudioById() {
 		return
 	}
 
-	studioID := strconv.FormatInt(createdStudio.ID, 10)
+	studioID := createdStudio.ID.String()
 	studio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding studio: %s", err.Error())
@@ -116,7 +116,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 		return
 	}
 
-	studioID := strconv.FormatInt(createdStudio.ID, 10)
+	studioID := createdStudio.ID.String()
 
 	updatedName := s.generateStudioName()
 	updateInput := models.StudioUpdateInput{
@@ -151,7 +151,7 @@ func (s *studioTestRunner) testDestroyStudio() {
 		return
 	}
 
-	studioID := strconv.FormatInt(createdStudio.ID, 10)
+	studioID := createdStudio.ID.String()
 
 	destroyed, err := s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{
 		ID: studioID,

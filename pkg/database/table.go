@@ -1,5 +1,9 @@
 package database
 
+import (
+	"github.com/gofrs/uuid"
+)
+
 // NewObjectFunc is a function that returns an instance of an object stored in
 // a database table.
 type NewObjectFunc func() interface{}
@@ -74,7 +78,7 @@ type Model interface {
 	GetTable() Table
 
 	// GetID returns the ID of the object.
-	GetID() int64
+	GetID() uuid.UUID
 }
 
 // Models is the interface implemented by slices of Model objects.

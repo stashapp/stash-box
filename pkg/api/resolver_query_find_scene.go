@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"strconv"
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/models"
 )
@@ -14,8 +14,8 @@ func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene
 
 	qb := models.NewSceneQueryBuilder(nil)
 
-	idInt, _ := strconv.ParseInt(id, 10, 64)
-	return qb.Find(idInt)
+	idUUID, _ := uuid.FromString(id)
+	return qb.Find(idUUID)
 }
 
 func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintInput) ([]*models.Scene, error) {

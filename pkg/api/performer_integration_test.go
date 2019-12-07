@@ -4,7 +4,6 @@ package api_test
 
 import (
 	"reflect"
-	"strconv"
 	"testing"
 
 	"github.com/stashapp/stashdb/pkg/models"
@@ -221,7 +220,7 @@ func (s *performerTestRunner) testFindPerformer() {
 		return
 	}
 
-	performer, err := s.resolver.Query().FindPerformer(s.ctx, strconv.FormatInt(createdPerformer.ID, 10))
+	performer, err := s.resolver.Query().FindPerformer(s.ctx, createdPerformer.ID.String())
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -282,7 +281,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		return
 	}
 
-	performerID := strconv.FormatInt(createdPerformer.ID, 10)
+	performerID := createdPerformer.ID.String()
 
 	updateInput := models.PerformerUpdateInput{
 		ID:      performerID,
@@ -379,7 +378,7 @@ func (s *performerTestRunner) testUpdatePerformerName() {
 		return
 	}
 
-	performerID := strconv.FormatInt(createdPerformer.ID, 10)
+	performerID := createdPerformer.ID.String()
 
 	updatedName := s.generatePerformerName()
 	updateInput := models.PerformerUpdateInput{
@@ -449,7 +448,7 @@ func (s *performerTestRunner) testDestroyPerformer() {
 		return
 	}
 
-	performerID := strconv.FormatInt(createdPerformer.ID, 10)
+	performerID := createdPerformer.ID.String()
 
 	destroyed, err := s.resolver.Mutation().PerformerDestroy(s.ctx, models.PerformerDestroyInput{
 		ID: performerID,
