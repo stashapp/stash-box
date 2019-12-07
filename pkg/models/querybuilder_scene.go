@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -33,7 +34,7 @@ func (qb *SceneQueryBuilder) Update(updatedScene Scene) (*Scene, error) {
 	return qb.toModel(ret), err
 }
 
-func (qb *SceneQueryBuilder) Destroy(id int64) error {
+func (qb *SceneQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, sceneDBTable)
 }
 
@@ -41,11 +42,11 @@ func (qb *SceneQueryBuilder) CreateFingerprints(newJoins SceneFingerprints) erro
 	return qb.dbi.InsertJoins(sceneFingerprintTable, &newJoins)
 }
 
-func (qb *SceneQueryBuilder) UpdateFingerprints(sceneID int64, updatedJoins SceneFingerprints) error {
+func (qb *SceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins SceneFingerprints) error {
 	return qb.dbi.ReplaceJoins(sceneFingerprintTable, sceneID, &updatedJoins)
 }
 
-func (qb *SceneQueryBuilder) Find(id int64) (*Scene, error) {
+func (qb *SceneQueryBuilder) Find(id uuid.UUID) (*Scene, error) {
 	ret, err := qb.dbi.Find(id, sceneDBTable)
 	return qb.toModel(ret), err
 }
@@ -176,14 +177,14 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}) (Scen
 	return output, err
 }
 
-func (qb *SceneQueryBuilder) GetFingerprints(id int64) ([]*Fingerprint, error) {
+func (qb *SceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*Fingerprint, error) {
 	joins := SceneFingerprints{}
 	err := qb.dbi.FindJoins(sceneFingerprintTable, id, &joins)
 
 	return joins.ToFingerprints(), err
 }
 
-func (qb *SceneQueryBuilder) GetPerformers(id int64) (PerformersScenes, error) {
+func (qb *SceneQueryBuilder) GetPerformers(id uuid.UUID) (PerformersScenes, error) {
 	joins := PerformersScenes{}
 	err := qb.dbi.FindJoins(scenePerformerTable, id, &joins)
 

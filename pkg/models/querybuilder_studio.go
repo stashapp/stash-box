@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -33,7 +34,7 @@ func (qb *StudioQueryBuilder) Update(updatedStudio Studio) (*Studio, error) {
 	return qb.toModel(ret), err
 }
 
-func (qb *StudioQueryBuilder) Destroy(id int64) error {
+func (qb *StudioQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, studioDBTable)
 }
 
@@ -41,11 +42,11 @@ func (qb *StudioQueryBuilder) CreateUrls(newJoins StudioUrls) error {
 	return qb.dbi.InsertJoins(studioUrlTable, &newJoins)
 }
 
-func (qb *StudioQueryBuilder) UpdateUrls(studio int64, updatedJoins StudioUrls) error {
+func (qb *StudioQueryBuilder) UpdateUrls(studio uuid.UUID, updatedJoins StudioUrls) error {
 	return qb.dbi.ReplaceJoins(studioUrlTable, studio, &updatedJoins)
 }
 
-func (qb *StudioQueryBuilder) Find(id int64) (*Studio, error) {
+func (qb *StudioQueryBuilder) Find(id uuid.UUID) (*Studio, error) {
 	ret, err := qb.dbi.Find(id, studioDBTable)
 	return qb.toModel(ret), err
 }
@@ -81,7 +82,7 @@ func (qb *StudioQueryBuilder) FindByName(name string) (*Studio, error) {
 	return results[0], nil
 }
 
-func (qb *StudioQueryBuilder) FindByParentID(id int64) (Studios, error) {
+func (qb *StudioQueryBuilder) FindByParentID(id uuid.UUID) (Studios, error) {
 	query := "SELECT * FROM studios WHERE parent_studio_id = ?"
 	var args []interface{}
 	args = append(args, id)
@@ -140,7 +141,7 @@ func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}) (St
 	return output, err
 }
 
-func (qb *StudioQueryBuilder) GetUrls(id int64) (StudioUrls, error) {
+func (qb *StudioQueryBuilder) GetUrls(id uuid.UUID) (StudioUrls, error) {
 	joins := StudioUrls{}
 	err := qb.dbi.FindJoins(studioUrlTable, id, &joins)
 

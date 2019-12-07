@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jmoiron/sqlx"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stashdb/pkg/database"
 )
 
@@ -20,11 +21,11 @@ func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins PerformersScenes) e
 	return qb.dbi.InsertJoins(scenePerformerTable, &newJoins)
 }
 
-func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int64, updatedJoins PerformersScenes) error {
+func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID uuid.UUID, updatedJoins PerformersScenes) error {
 	return qb.dbi.ReplaceJoins(scenePerformerTable, sceneID, &updatedJoins)
 }
 
-func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID int64) error {
+func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID uuid.UUID) error {
 	return qb.dbi.DeleteJoins(scenePerformerTable, sceneID)
 }
 
@@ -32,10 +33,10 @@ func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins ScenesTags) error {
 	return qb.dbi.InsertJoins(sceneTagTable, &newJoins)
 }
 
-func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int64, updatedJoins ScenesTags) error {
+func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID uuid.UUID, updatedJoins ScenesTags) error {
 	return qb.dbi.ReplaceJoins(sceneTagTable, sceneID, &updatedJoins)
 }
 
-func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int64) error {
+func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID uuid.UUID) error {
 	return qb.dbi.DeleteJoins(sceneTagTable, sceneID)
 }

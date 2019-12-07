@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
@@ -28,23 +29,23 @@ type DBI interface {
 
 	// ReplaceJoins replaces table join objects with the provided primary table
 	// id value with the provided join objects.
-	ReplaceJoins(tableJoin TableJoin, id int64, objects Joins) error
+	ReplaceJoins(tableJoin TableJoin, id uuid.UUID, objects Joins) error
 
 	// Delete deletes the table row with the provided id. Delete returns an
 	// error if the id does not exist in the database table.
-	Delete(id int64, table Table) error
+	Delete(id uuid.UUID, table Table) error
 
 	// DeleteJoins deletes all join objects with the provided primary table
 	// id value.
-	DeleteJoins(tableJoin TableJoin, id int64) error
+	DeleteJoins(tableJoin TableJoin, id uuid.UUID) error
 
 	// Find returns the row object with the provided id, or returns nil if not
 	// found.
-	Find(id int64, table Table) (interface{}, error)
+	Find(id uuid.UUID, table Table) (interface{}, error)
 
 	// FindJoins returns join objects where the foreign key id is equal to the
 	// provided id. The join objects are output to the provided output slice.
-	FindJoins(tableJoin TableJoin, id int64, output Joins) error
+	FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error
 
 	// RawQuery performs a query on the provided table using the query string
 	// and argument slice. It outputs the results to the output slice.
@@ -78,7 +79,7 @@ func DBINoTxn() DBI {
 // It returns the new object.
 func (q dbi) Insert(model Model) (interface{}, error) {
 	tableName := model.GetTable().Name()
-	id, err := insertObject(q.tx, tableName, model)
+	err := insertObject(q.tx, tableName, model)
 
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(model).Name()))
@@ -86,7 +87,7 @@ func (q dbi) Insert(model Model) (interface{}, error) {
 
 	// don't want to modify the existing object
 	newModel := model.GetTable().NewObject()
-	if err := getByID(q.tx, tableName, id, newModel); err != nil {
+	if err := getByID(q.tx, tableName, model.GetID(), newModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after create", reflect.TypeOf(model).Name()))
 	}
 
@@ -115,7 +116,7 @@ func (q dbi) Update(model Model) (interface{}, error) {
 
 // Delete deletes the table row with the provided id. Delete returns an
 // error if the id does not exist in the database table.
-func (q dbi) Delete(id int64, table Table) error {
+func (q dbi) Delete(id uuid.UUID, table Table) error {
 	o, err := q.Find(id, table)
 
 	if err != nil {
@@ -144,7 +145,7 @@ func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 
 // Find returns the row object with the provided id, or returns nil if not
 // found.
-func (q dbi) Find(id int64, table Table) (interface{}, error) {
+func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
 	query := selectStatement(table) + " WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 
@@ -178,7 +179,7 @@ func (q dbi) Find(id int64, table Table) (interface{}, error) {
 
 // InsertJoin inserts a join object into the provided join table.
 func (q dbi) InsertJoin(tableJoin TableJoin, object interface{}) error {
-	_, err := insertObject(q.tx, tableJoin.Name(), object)
+	err := insertObject(q.tx, tableJoin.Name(), object)
 
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(object).Name()))
@@ -203,7 +204,7 @@ func (q dbi) InsertJoins(tableJoin TableJoin, joins Joins) error {
 
 // ReplaceJoins replaces table join objects with the provided primary table
 // id value with the provided join objects.
-func (q dbi) ReplaceJoins(tableJoin TableJoin, id int64, joins Joins) error {
+func (q dbi) ReplaceJoins(tableJoin TableJoin, id uuid.UUID, joins Joins) error {
 	err := q.DeleteJoins(tableJoin, id)
 
 	if err != nil {
@@ -215,13 +216,13 @@ func (q dbi) ReplaceJoins(tableJoin TableJoin, id int64, joins Joins) error {
 
 // DeleteJoins deletes all join objects with the provided primary table
 // id value.
-func (q dbi) DeleteJoins(tableJoin TableJoin, id int64) error {
+func (q dbi) DeleteJoins(tableJoin TableJoin, id uuid.UUID) error {
 	return deleteObjectsByColumn(q.tx, tableJoin.Name(), tableJoin.joinColumn, id)
 }
 
 // FindJoins returns join objects where the foreign key id is equal to the
 // provided id. The join objects are output to the provided output slice.
-func (q dbi) FindJoins(tableJoin TableJoin, id int64, output Joins) error {
+func (q dbi) FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error {
 	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " = ?"
 	args := []interface{}{id}
 

@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"strconv"
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/models"
 )
@@ -15,8 +15,8 @@ func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (
 	qb := models.NewTagQueryBuilder(nil)
 
 	if id != nil {
-		idInt, _ := strconv.ParseInt(*id, 10, 64)
-		return qb.Find(idInt)
+		idUUID, _ := uuid.FromString(*id)
+		return qb.Find(idUUID)
 	} else if name != nil {
 		return qb.FindByNameOrAlias(*name)
 	}

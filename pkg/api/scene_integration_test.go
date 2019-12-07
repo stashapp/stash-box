@@ -4,7 +4,6 @@ package api_test
 
 import (
 	"reflect"
-	"strconv"
 	"testing"
 
 	"github.com/stashapp/stashdb/pkg/models"
@@ -32,9 +31,9 @@ func (s *sceneTestRunner) testCreateScene() {
 	studio, _ := s.createTestScene(nil)
 	tag, _ := s.createTestTag(nil)
 
-	performerID := strconv.FormatInt(performer.ID, 10)
-	studioID := strconv.FormatInt(studio.ID, 10)
-	tagID := strconv.FormatInt(tag.ID, 10)
+	performerID := performer.ID.String()
+	studioID := studio.ID.String()
+	tagID := tag.ID.String()
 
 	performerAlias := "alias"
 
@@ -75,7 +74,7 @@ func comparePerformers(input []*models.PerformerAppearanceInput, performers []*m
 	}
 
 	for i, v := range performers {
-		performerID := strconv.FormatInt(v.Performer.ID, 10)
+		performerID := v.Performer.ID.String()
 		if performerID != input[i].PerformerID {
 			return false
 		}
@@ -100,7 +99,7 @@ func compareTags(tagIDs []string, tags []*models.Tag) bool {
 	}
 
 	for i, v := range tags {
-		tagID := strconv.FormatInt(v.ID, 10)
+		tagID := v.ID.String()
 		if tagID != tagIDs[i] {
 			return false
 		}
@@ -177,7 +176,7 @@ func (s *sceneTestRunner) testFindSceneById() {
 		return
 	}
 
-	sceneID := strconv.FormatInt(createdScene.ID, 10)
+	sceneID := createdScene.ID.String()
 	scene, err := s.resolver.Query().FindScene(s.ctx, sceneID)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
@@ -235,9 +234,9 @@ func (s *sceneTestRunner) testUpdateScene() {
 	studio, _ := s.createTestScene(nil)
 	tag, _ := s.createTestTag(nil)
 
-	performerID := strconv.FormatInt(performer.ID, 10)
-	studioID := strconv.FormatInt(studio.ID, 10)
-	tagID := strconv.FormatInt(tag.ID, 10)
+	performerID := performer.ID.String()
+	studioID := studio.ID.String()
+	tagID := tag.ID.String()
 
 	performerAlias := "alias"
 
@@ -267,7 +266,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 		return
 	}
 
-	sceneID := strconv.FormatInt(createdScene.ID, 10)
+	sceneID := createdScene.ID.String()
 
 	newTitle := "NewTitle"
 	newDetails := "NewDetails"
@@ -278,9 +277,9 @@ func (s *sceneTestRunner) testUpdateScene() {
 	studio, _ = s.createTestScene(nil)
 	tag, _ = s.createTestTag(nil)
 
-	performerID = strconv.FormatInt(performer.ID, 10)
-	studioID = strconv.FormatInt(studio.ID, 10)
-	tagID = strconv.FormatInt(tag.ID, 10)
+	performerID = performer.ID.String()
+	studioID = studio.ID.String()
+	tagID = tag.ID.String()
 
 	performerAlias = "updatedAlias"
 
@@ -331,9 +330,9 @@ func (s *sceneTestRunner) testUpdateSceneTitle() {
 	studio, _ := s.createTestScene(nil)
 	tag, _ := s.createTestTag(nil)
 
-	performerID := strconv.FormatInt(performer.ID, 10)
-	studioID := strconv.FormatInt(studio.ID, 10)
-	tagID := strconv.FormatInt(tag.ID, 10)
+	performerID := performer.ID.String()
+	studioID := studio.ID.String()
+	tagID := tag.ID.String()
 
 	performerAlias := "alias"
 
@@ -363,7 +362,7 @@ func (s *sceneTestRunner) testUpdateSceneTitle() {
 		return
 	}
 
-	sceneID := strconv.FormatInt(createdScene.ID, 10)
+	sceneID := createdScene.ID.String()
 	newTitle := "NewTitle"
 
 	updateInput := models.SceneUpdateInput{
@@ -426,7 +425,7 @@ func (s *sceneTestRunner) testDestroyScene() {
 		return
 	}
 
-	sceneID := strconv.FormatInt(createdScene.ID, 10)
+	sceneID := createdScene.ID.String()
 
 	destroyed, err := s.resolver.Mutation().SceneDestroy(s.ctx, models.SceneDestroyInput{
 		ID: sceneID,
