@@ -82,12 +82,12 @@ func updateObjectByID(tx *sqlx.Tx, table string, object interface{}) error {
 
 func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value interface{}) error {
 	ensureTx(tx)
-	_, err := tx.Exec(`DELETE FROM `+table+` WHERE `+column+` = ?`, value)
+	_, err := tx.Exec(`DELETE FROM `+table+` WHERE `+column+` = $1`, value)
 	return err
 }
 
 func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
-	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = ? LIMIT 1`, id)
+	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = $1 LIMIT 1`, id)
 }
 
 func selectAll(tableName string) string {
@@ -126,8 +126,8 @@ func getPagination(findFilter *QuerySpec) string {
 	} else {
 		perPage = *findFilter.PerPage
 	}
-	if perPage > 120 {
-		perPage = 120
+	if perPage > 1000 {
+		perPage = 1000
 	} else if perPage < 1 {
 		perPage = 1
 	}
@@ -160,7 +160,7 @@ func getSort(sort string, direction string, tableName string) string {
 		if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
-		return " ORDER BY " + colName + " " + direction + additional
+		return " ORDER BY " + colName + " " + direction + " NULLS LAST " + additional
 	}
 }
 
@@ -203,14 +203,14 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 		// Search for any word
 		for _, word := range queryWords {
 			for _, column := range columns {
-				likeClauses = append(likeClauses, column+notStr+" LIKE ?")
+				likeClauses = append(likeClauses, column+notStr+" LIKE $1")
 				args = append(args, "%"+word+"%")
 			}
 		}
 	} else {
 		// Search the exact query
 		for _, column := range columns {
-			likeClauses = append(likeClauses, column+notStr+" LIKE ?")
+			likeClauses = append(likeClauses, column+notStr+" LIKE $1")
 			args = append(args, "%"+trimmedQuery+"%")
 		}
 	}
@@ -220,7 +220,7 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 }
 
 func getInBinding(length int) string {
-	bindings := strings.Repeat("?, ", length)
+	bindings := strings.Repeat("$1, ", length)
 	bindings = strings.TrimRight(bindings, ", ")
 	return "(" + bindings + ")"
 }
@@ -288,7 +288,7 @@ func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
 	}
 	idColumnName := getColumn(tableName, "id")
 	_, err := tx.Exec(
-		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = ?`,
+		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = $1`,
 		id,
 	)
 	return err

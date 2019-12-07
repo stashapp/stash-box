@@ -3,7 +3,7 @@ module github.com/stashapp/stashdb
 go 1.12
 
 require (
-	github.com/99designs/gqlgen v0.10.1
+	github.com/99designs/gqlgen v0.10.2
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/gobuffalo/packr/v2 v2.0.2
 	github.com/gofrs/uuid v3.2.0+incompatible
@@ -19,5 +19,5 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.4.0
-	github.com/vektah/gqlparser v1.1.2
+	github.com/vektah/gqlparser v1.2.0
 )
