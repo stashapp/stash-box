@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stashdb/pkg/database"
 
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -37,7 +38,7 @@ func (qb *PerformerQueryBuilder) Update(updatedPerformer Performer) (*Performer,
 	return qb.toModel(ret), err
 }
 
-func (qb *PerformerQueryBuilder) Destroy(id int64) error {
+func (qb *PerformerQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, performerDBTable)
 }
 
@@ -45,7 +46,7 @@ func (qb *PerformerQueryBuilder) CreateAliases(newJoins PerformerAliases) error 
 	return qb.dbi.InsertJoins(performerAliasTable, &newJoins)
 }
 
-func (qb *PerformerQueryBuilder) UpdateAliases(performerID int64, updatedJoins PerformerAliases) error {
+func (qb *PerformerQueryBuilder) UpdateAliases(performerID uuid.UUID, updatedJoins PerformerAliases) error {
 	return qb.dbi.ReplaceJoins(performerAliasTable, performerID, &updatedJoins)
 }
 
@@ -53,7 +54,7 @@ func (qb *PerformerQueryBuilder) CreateUrls(newJoins PerformerUrls) error {
 	return qb.dbi.InsertJoins(performerUrlTable, &newJoins)
 }
 
-func (qb *PerformerQueryBuilder) UpdateUrls(performerID int64, updatedJoins PerformerUrls) error {
+func (qb *PerformerQueryBuilder) UpdateUrls(performerID uuid.UUID, updatedJoins PerformerUrls) error {
 	return qb.dbi.ReplaceJoins(performerUrlTable, performerID, &updatedJoins)
 }
 
@@ -61,7 +62,7 @@ func (qb *PerformerQueryBuilder) CreateTattoos(newJoins PerformerBodyMods) error
 	return qb.dbi.InsertJoins(performerTattooTable, &newJoins)
 }
 
-func (qb *PerformerQueryBuilder) UpdateTattoos(performerID int64, updatedJoins PerformerBodyMods) error {
+func (qb *PerformerQueryBuilder) UpdateTattoos(performerID uuid.UUID, updatedJoins PerformerBodyMods) error {
 	return qb.dbi.ReplaceJoins(performerTattooTable, performerID, &updatedJoins)
 }
 
@@ -69,16 +70,16 @@ func (qb *PerformerQueryBuilder) CreatePiercings(newJoins PerformerBodyMods) err
 	return qb.dbi.InsertJoins(performerPiercingTable, &newJoins)
 }
 
-func (qb *PerformerQueryBuilder) UpdatePiercings(performerID int64, updatedJoins PerformerBodyMods) error {
+func (qb *PerformerQueryBuilder) UpdatePiercings(performerID uuid.UUID, updatedJoins PerformerBodyMods) error {
 	return qb.dbi.ReplaceJoins(performerPiercingTable, performerID, &updatedJoins)
 }
 
-func (qb *PerformerQueryBuilder) Find(id int64) (*Performer, error) {
+func (qb *PerformerQueryBuilder) Find(id uuid.UUID) (*Performer, error) {
 	ret, err := qb.dbi.Find(id, performerDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int) (Performers, error) {
+func (qb *PerformerQueryBuilder) FindBySceneID(sceneID uuid.UUID) (Performers, error) {
 	query := `
 		SELECT performers.* FROM performers
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
@@ -274,28 +275,28 @@ func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{
 	return output, err
 }
 
-func (qb *PerformerQueryBuilder) GetAliases(id int64) ([]string, error) {
+func (qb *PerformerQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
 	joins := PerformerAliases{}
 	err := qb.dbi.FindJoins(performerAliasTable, id, &joins)
 
 	return joins.ToAliases(), err
 }
 
-func (qb *PerformerQueryBuilder) GetUrls(id int64) (PerformerUrls, error) {
+func (qb *PerformerQueryBuilder) GetUrls(id uuid.UUID) (PerformerUrls, error) {
 	joins := PerformerUrls{}
 	err := qb.dbi.FindJoins(performerUrlTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *PerformerQueryBuilder) GetTattoos(id int64) (PerformerBodyMods, error) {
+func (qb *PerformerQueryBuilder) GetTattoos(id uuid.UUID) (PerformerBodyMods, error) {
 	joins := PerformerBodyMods{}
 	err := qb.dbi.FindJoins(performerTattooTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *PerformerQueryBuilder) GetPiercings(id int64) (PerformerBodyMods, error) {
+func (qb *PerformerQueryBuilder) GetPiercings(id uuid.UUID) (PerformerBodyMods, error) {
 	joins := PerformerBodyMods{}
 	err := qb.dbi.FindJoins(performerPiercingTable, id, &joins)
 

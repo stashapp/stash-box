@@ -2,7 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"strconv"
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -23,12 +23,12 @@ var (
 )
 
 type Scene struct {
-	ID        int64           `db:"id" json:"id"`
+	ID        uuid.UUID       `db:"id" json:"id"`
 	Title     sql.NullString  `db:"title" json:"title"`
 	Details   sql.NullString  `db:"details" json:"details"`
 	URL       sql.NullString  `db:"url" json:"url"`
 	Date      SQLiteDate      `db:"date" json:"date"`
-	StudioID  sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
+	StudioID  uuid.NullUUID   `db:"studio_id,omitempty" json:"studio_id"`
 	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
@@ -37,7 +37,7 @@ func (Scene) GetTable() database.Table {
 	return sceneDBTable
 }
 
-func (p Scene) GetID() int64 {
+func (p Scene) GetID() uuid.UUID {
 	return p.ID
 }
 
@@ -54,9 +54,9 @@ func (p *Scenes) Add(o interface{}) {
 }
 
 type SceneFingerprint struct {
-	SceneID   int64  `db:"scene_id" json:"scene_id"`
-	Hash      string `db:"hash" json:"hash"`
-	Algorithm string `db:"algorithm" json:"algorithm"`
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
+	Hash      string    `db:"hash" json:"hash"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
 }
 
 func (p SceneFingerprint) ToFingerprint() *Fingerprint {
@@ -87,7 +87,7 @@ func (p SceneFingerprints) ToFingerprints() []*Fingerprint {
 	return ret
 }
 
-func CreateSceneFingerprints(sceneID int64, fingerprints []*FingerprintInput) SceneFingerprints {
+func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput) SceneFingerprints {
 	var ret SceneFingerprints
 
 	for _, fingerprint := range fingerprints {
@@ -101,10 +101,10 @@ func CreateSceneFingerprints(sceneID int64, fingerprints []*FingerprintInput) Sc
 	return ret
 }
 
-func CreateSceneTags(sceneID int64, tagIds []string) ScenesTags {
+func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
 	var tagJoins ScenesTags
 	for _, tid := range tagIds {
-		tagID, _ := strconv.ParseInt(tid, 10, 64)
+		tagID := uuid.FromStringOrNil(tid)
 		tagJoin := &SceneTag{
 			SceneID: sceneID,
 			TagID:   tagID,
@@ -115,10 +115,10 @@ func CreateSceneTags(sceneID int64, tagIds []string) ScenesTags {
 	return tagJoins
 }
 
-func CreateScenePerformers(sceneID int64, appearances []*PerformerAppearanceInput) PerformersScenes {
+func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearanceInput) PerformersScenes {
 	var performerJoins PerformersScenes
 	for _, a := range appearances {
-		performerID, _ := strconv.ParseInt(a.PerformerID, 10, 64)
+		performerID, _ := uuid.FromString(a.PerformerID)
 		performerJoin := &PerformerScene{
 			SceneID:     sceneID,
 			PerformerID: performerID,

@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -21,9 +22,9 @@ var (
 )
 
 type PerformerScene struct {
-	PerformerID int64          `db:"performer_id" json:"performer_id"`
+	PerformerID uuid.UUID      `db:"performer_id" json:"performer_id"`
 	As          sql.NullString `db:"as" json:"as"`
-	SceneID     int64          `db:"scene_id" json:"scene_id"`
+	SceneID     uuid.UUID      `db:"scene_id" json:"scene_id"`
 }
 
 type PerformersScenes []*PerformerScene
@@ -39,8 +40,8 @@ func (p *PerformersScenes) Add(o interface{}) {
 }
 
 type SceneTag struct {
-	SceneID int64 `db:"scene_id" json:"scene_id"`
-	TagID   int64 `db:"tag_id" json:"tag_id"`
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	TagID   uuid.UUID `db:"tag_id" json:"tag_id"`
 }
 
 type ScenesTags []*SceneTag

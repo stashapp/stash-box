@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/stashapp/stashdb/pkg/models"
 )
@@ -10,7 +9,7 @@ import (
 type tagResolver struct{ *Resolver }
 
 func (r *tagResolver) ID(ctx context.Context, obj *models.Tag) (string, error) {
-	return strconv.FormatInt(obj.ID, 10), nil
+	return obj.ID.String(), nil
 }
 func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string, error) {
 	return resolveNullString(obj.Description)

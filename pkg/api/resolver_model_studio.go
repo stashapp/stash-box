@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/stashapp/stashdb/pkg/models"
 )
@@ -10,7 +9,7 @@ import (
 type studioResolver struct{ *Resolver }
 
 func (r *studioResolver) ID(ctx context.Context, obj *models.Studio) (string, error) {
-	return strconv.FormatInt(obj.ID, 10), nil
+	return obj.ID.String(), nil
 }
 
 func (r *studioResolver) Urls(ctx context.Context, obj *models.Studio) ([]*models.URL, error) {
@@ -36,7 +35,7 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 	}
 
 	qb := models.NewStudioQueryBuilder(nil)
-	parent, err := qb.Find(obj.ParentStudioID.Int64)
+	parent, err := qb.Find(obj.ParentStudioID.UUID)
 
 	if err != nil {
 		return nil, err
