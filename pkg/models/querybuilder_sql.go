@@ -52,13 +52,13 @@ func insertObject(tx *sqlx.Tx, table string, object interface{}) error {
 	return err
 }
 
-func insertJoins(tx *sqlx.Tx, table string, joins interface{}) error {
-	// ensure joins is an array
-	if reflect.TypeOf(joins).Kind() != reflect.Slice {
-		return errors.New("Non-slice passed to insertJoins")
+func insertObjects(tx *sqlx.Tx, table string, objects interface{}) error {
+	// ensure objects is an array
+	if reflect.TypeOf(objects).Kind() != reflect.Slice {
+		return errors.New("Non-slice passed to insertObjects")
 	}
 
-	slice := reflect.ValueOf(joins)
+	slice := reflect.ValueOf(objects)
 	for i := 0; i < slice.Len(); i++ {
 		err := insertObject(tx, table, slice.Index(i).Interface())
 
