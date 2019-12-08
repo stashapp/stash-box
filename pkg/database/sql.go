@@ -32,11 +32,36 @@ func NewQueryBuilder(table Table) *QueryBuilder {
 	return ret
 }
 
+func (qb *QueryBuilder) AddJoin(joinTable Table, on string) {
+	qb.Body += "LEFT JOIN " + joinTable.Name() + " ON " + on
+}
+
 func (qb *QueryBuilder) AddWhere(clauses ...string) {
 	qb.whereClauses = append(qb.whereClauses, clauses...)
 }
 
+func (qb *QueryBuilder) Eq(column string, arg interface{}) {
+	qb.AddWhere(column + " = ?")
+	qb.AddArg(arg)
+}
+
+func (qb *QueryBuilder) NotEq(column string, arg interface{}) {
+	qb.AddWhere(column + " != ?")
+	qb.AddArg(arg)
+}
+
+func (qb *QueryBuilder) IsNull(column string) {
+	qb.AddWhere(column + " is NULL")
+}
+
+func (qb *QueryBuilder) IsNotNull(column string) {
+	qb.AddWhere(column + " is not NULL")
+}
+
 func (qb *QueryBuilder) AddHaving(clauses ...string) {
+	if len(clauses) == 1 && clauses[0] == "" {
+		return
+	}
 	qb.havingClauses = append(qb.havingClauses, clauses...)
 }
 
