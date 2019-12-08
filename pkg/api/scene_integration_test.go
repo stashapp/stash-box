@@ -28,7 +28,7 @@ func (s *sceneTestRunner) testCreateScene() {
 	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
-	studio, _ := s.createTestScene(nil)
+	studio, _ := s.createTestStudio(nil)
 	tag, _ := s.createTestTag(nil)
 
 	performerID := performer.ID.String()
@@ -231,7 +231,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
-	studio, _ := s.createTestScene(nil)
+	studio, _ := s.createTestStudio(nil)
 	tag, _ := s.createTestTag(nil)
 
 	performerID := performer.ID.String()
@@ -274,7 +274,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	newDate := "2001-02-03"
 
 	performer, _ = s.createTestPerformer(nil)
-	studio, _ = s.createTestScene(nil)
+	studio, _ = s.createTestStudio(nil)
 	tag, _ = s.createTestTag(nil)
 
 	performerID = performer.ID.String()
@@ -327,7 +327,7 @@ func (s *sceneTestRunner) testUpdateSceneTitle() {
 	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
-	studio, _ := s.createTestScene(nil)
+	studio, _ := s.createTestStudio(nil)
 	tag, _ := s.createTestTag(nil)
 
 	performerID := performer.ID.String()
@@ -454,6 +454,310 @@ func (s *sceneTestRunner) testDestroyScene() {
 	// TODO - ensure scene was not removed
 }
 
+func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneFilterType, ids []string) {
+	s.t.Helper()
+
+	page := 1
+	pageSize := 10
+	querySpec := models.QuerySpec{
+		Page:    &page,
+		PerPage: &pageSize,
+	}
+
+	results, err := s.resolver.Query().QueryScenes(s.ctx, &filter, &querySpec)
+	if err != nil {
+		s.t.Errorf("Error querying scenes: %s", err.Error())
+		return
+	}
+
+	if results.Count != len(ids) {
+		s.t.Errorf("Expected %d query result, got %d", len(ids), results.Count)
+		return
+	}
+
+	for _, id := range ids {
+		found := false
+		for _, scene := range results.Scenes {
+			if scene.ID.String() == id {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			s.t.Errorf("Missing scene with ID %s, got %v", id, results.Scenes)
+			return
+		}
+	}
+}
+
+func (s *sceneTestRunner) verifyInvalidModifier(filter models.SceneFilterType) {
+	s.t.Helper()
+
+	page := 1
+	pageSize := 10
+	querySpec := models.QuerySpec{
+		Page:    &page,
+		PerPage: &pageSize,
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			// success
+		} else {
+			s.t.Error("Expected error for invalid modifier")
+		}
+	}()
+	s.resolver.Query().QueryScenes(s.ctx, &filter, &querySpec)
+}
+
+func (s *sceneTestRunner) testQueryScenesByStudio() {
+	studio1, _ := s.createTestStudio(nil)
+	studio2, _ := s.createTestStudio(nil)
+
+	studio1ID := studio1.ID.String()
+	studio2ID := studio2.ID.String()
+
+	prefix := "testQueryScenesByStudio_"
+	scene1Title := prefix + "scene1Title"
+	scene2Title := prefix + "scene2Title"
+	scene3Title := prefix + "scene3Title"
+
+	input := models.SceneCreateInput{
+		StudioID: &studio1ID,
+		Title:    &scene1Title,
+	}
+
+	scene1, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	input.StudioID = &studio2ID
+	input.Title = &scene2Title
+	scene2, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	input.StudioID = nil
+	input.Title = &scene3Title
+	scene3, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	scene1ID := scene1.ID.String()
+	scene2ID := scene2.ID.String()
+	scene3ID := scene3.ID.String()
+
+	// test equals
+	filter := models.SceneFilterType{
+		Studios: &models.MultiIDCriterionInput{
+			Value:    []string{studio1ID},
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	s.verifyQueryScenesResult(filter, []string{scene1ID})
+
+	filter.Studios.Modifier = models.CriterionModifierNotEquals
+	filter.Title = &scene2Title
+	s.verifyQueryScenesResult(filter, []string{scene2ID})
+
+	filter.Studios.Modifier = models.CriterionModifierIsNull
+	filter.Title = &scene3Title
+	s.verifyQueryScenesResult(filter, []string{scene3ID})
+
+	filter.Studios.Modifier = models.CriterionModifierNotNull
+	filter.Title = &scene1Title
+	s.verifyQueryScenesResult(filter, []string{scene1ID})
+
+	filter.Studios.Modifier = models.CriterionModifierIncludes
+	filter.Studios.Value = []string{studio1ID, studio2ID}
+	filter.Title = nil
+	s.verifyQueryScenesResult(filter, []string{scene1ID, scene2ID})
+
+	filter.Studios.Modifier = models.CriterionModifierExcludes
+	filter.Studios.Value = []string{studio1ID}
+	filter.Title = &scene2Title
+	s.verifyQueryScenesResult(filter, []string{scene2ID})
+
+	// test invalid modifiers
+	filter.Studios.Modifier = models.CriterionModifierGreaterThan
+	s.verifyInvalidModifier(filter)
+
+	filter.Studios.Modifier = models.CriterionModifierLessThan
+	s.verifyInvalidModifier(filter)
+
+	filter.Studios.Modifier = models.CriterionModifierIncludesAll
+	s.verifyInvalidModifier(filter)
+}
+
+func (s *sceneTestRunner) testQueryScenesByPerformer() {
+	performer1, _ := s.createTestPerformer(nil)
+	performer2, _ := s.createTestPerformer(nil)
+
+	performer1ID := performer1.ID.String()
+	performer2ID := performer2.ID.String()
+
+	prefix := "testQueryScenesByPerformer_"
+	scene1Title := prefix + "scene1Title"
+	scene2Title := prefix + "scene2Title"
+	scene3Title := prefix + "scene3Title"
+
+	input := models.SceneCreateInput{
+		Performers: []*models.PerformerAppearanceInput{
+			&models.PerformerAppearanceInput{
+				PerformerID: performer1ID,
+			},
+		},
+		Title: &scene1Title,
+	}
+
+	scene1, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	input.Performers[0].PerformerID = performer2ID
+	input.Title = &scene2Title
+	scene2, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	input.Performers = append(input.Performers, &models.PerformerAppearanceInput{
+		PerformerID: performer1ID,
+	})
+	input.Title = &scene3Title
+	scene3, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	scene1ID := scene1.ID.String()
+	scene2ID := scene2.ID.String()
+	scene3ID := scene3.ID.String()
+
+	titleSearch := prefix
+	filter := models.SceneFilterType{
+		Performers: &models.MultiIDCriterionInput{
+			Value:    []string{performer1ID},
+			Modifier: models.CriterionModifierIncludes,
+		},
+		Title: &titleSearch,
+	}
+
+	s.verifyQueryScenesResult(filter, []string{scene1ID, scene3ID})
+
+	filter.Performers.Modifier = models.CriterionModifierExcludes
+	s.verifyQueryScenesResult(filter, []string{scene2ID})
+
+	filter.Performers.Modifier = models.CriterionModifierIncludesAll
+	filter.Performers.Value = append(filter.Performers.Value, performer2ID)
+	s.verifyQueryScenesResult(filter, []string{scene3ID})
+
+	// test invalid modifiers
+	filter.Performers.Modifier = models.CriterionModifierGreaterThan
+	s.verifyInvalidModifier(filter)
+
+	filter.Performers.Modifier = models.CriterionModifierLessThan
+	s.verifyInvalidModifier(filter)
+
+	filter.Performers.Modifier = models.CriterionModifierEquals
+	s.verifyInvalidModifier(filter)
+
+	filter.Performers.Modifier = models.CriterionModifierNotEquals
+	s.verifyInvalidModifier(filter)
+
+	filter.Performers.Modifier = models.CriterionModifierIsNull
+	s.verifyInvalidModifier(filter)
+
+	filter.Performers.Modifier = models.CriterionModifierNotNull
+	s.verifyInvalidModifier(filter)
+}
+
+func (s *sceneTestRunner) testQueryScenesByTag() {
+	tag1, _ := s.createTestTag(nil)
+	tag2, _ := s.createTestTag(nil)
+
+	tag1ID := tag1.ID.String()
+	tag2ID := tag2.ID.String()
+
+	prefix := "testQueryScenesByTag_"
+	scene1Title := prefix + "scene1Title"
+	scene2Title := prefix + "scene2Title"
+	scene3Title := prefix + "scene3Title"
+
+	input := models.SceneCreateInput{
+		TagIds: []string{
+			tag1ID,
+		},
+		Title: &scene1Title,
+	}
+
+	scene1, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	input.TagIds[0] = tag2ID
+	input.Title = &scene2Title
+	scene2, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	input.TagIds = append(input.TagIds, tag1ID)
+	input.Title = &scene3Title
+	scene3, err := s.createTestScene(&input)
+	if err != nil {
+		return
+	}
+
+	scene1ID := scene1.ID.String()
+	scene2ID := scene2.ID.String()
+	scene3ID := scene3.ID.String()
+
+	titleSearch := prefix
+	filter := models.SceneFilterType{
+		Tags: &models.MultiIDCriterionInput{
+			Value:    []string{tag1ID},
+			Modifier: models.CriterionModifierIncludes,
+		},
+		Title: &titleSearch,
+	}
+
+	s.verifyQueryScenesResult(filter, []string{scene1ID, scene3ID})
+
+	filter.Tags.Modifier = models.CriterionModifierExcludes
+	s.verifyQueryScenesResult(filter, []string{scene2ID})
+
+	filter.Tags.Modifier = models.CriterionModifierIncludesAll
+	filter.Tags.Value = append(filter.Tags.Value, tag2ID)
+	s.verifyQueryScenesResult(filter, []string{scene3ID})
+
+	// test invalid modifiers
+	filter.Tags.Modifier = models.CriterionModifierGreaterThan
+	s.verifyInvalidModifier(filter)
+
+	filter.Tags.Modifier = models.CriterionModifierLessThan
+	s.verifyInvalidModifier(filter)
+
+	filter.Tags.Modifier = models.CriterionModifierEquals
+	s.verifyInvalidModifier(filter)
+
+	filter.Tags.Modifier = models.CriterionModifierNotEquals
+	s.verifyInvalidModifier(filter)
+
+	filter.Tags.Modifier = models.CriterionModifierIsNull
+	s.verifyInvalidModifier(filter)
+
+	filter.Tags.Modifier = models.CriterionModifierNotNull
+	s.verifyInvalidModifier(filter)
+}
+
 func TestCreateScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testCreateScene()
@@ -482,4 +786,19 @@ func TestUpdateSceneTitle(t *testing.T) {
 func TestDestroyScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testDestroyScene()
+}
+
+func TestQueryScenesByStudio(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByStudio()
+}
+
+func TestQueryScenesByPerformer(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByPerformer()
+}
+
+func TestQueryScenesByTag(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testQueryScenesByTag()
 }

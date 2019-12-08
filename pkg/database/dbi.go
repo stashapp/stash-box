@@ -239,6 +239,8 @@ func (q dbi) RawQuery(table Table, query string, args []interface{}, output Mode
 	rows, err = q.queryx(query, args...)
 
 	if err != nil && err != sql.ErrNoRows {
+		// TODO - log error instead of returning SQL
+		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
 		return err
 	}
 	defer rows.Close()
@@ -275,6 +277,8 @@ func (q dbi) Count(query QueryBuilder) (int, error) {
 	}
 
 	if err != nil && err != sql.ErrNoRows {
+		// TODO - log error instead of returning SQL
+		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", rawQuery, query.args))
 		return 0, err
 	}
 
