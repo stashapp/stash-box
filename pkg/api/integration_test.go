@@ -19,12 +19,12 @@ import (
 // we need to create some users to test the api with, otherwise all calls
 // will be unauthorised
 type userPopulator struct {
-	none *models.User
-	read *models.User
+	none        *models.User
+	read        *models.User
 	admin       *models.User
 	modify      *models.User
-	noneRolls []models.RoleEnum
-	readRoles []models.RoleEnum
+	noneRolls   []models.RoleEnum
+	readRoles   []models.RoleEnum
 	adminRoles  []models.RoleEnum
 	modifyRoles []models.RoleEnum
 }
