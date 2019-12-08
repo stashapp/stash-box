@@ -40,3 +40,19 @@ func TestCopyFull(t *testing.T) {
 		t.Errorf("Expected '%s' got '%s'", ethnicity.String(), target.Ethnicity.String)
 	}
 }
+
+func TestCopyFullUUID(t *testing.T) {
+	studioID := "01234567-89ab-cdef-0123-456789abcdef"
+
+	input := SceneCreateInput{
+		StudioID: &studioID,
+	}
+
+	target := Scene{}
+
+	CopyFull(&target, input)
+
+	if target.StudioID.UUID.String() != studioID {
+		t.Errorf("Expected '%s' got '%s'", studioID, target.StudioID.UUID.String())
+	}
+}

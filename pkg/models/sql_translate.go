@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+
+	"github.com/gofrs/uuid"
 )
 
 func CopyFull(target interface{}, source interface{}) error {
@@ -76,6 +78,15 @@ func translateField(targetFieldValue reflect.Value, sourceFieldValue reflect.Val
 
 	if targetFieldType == reflect.TypeOf(sql.NullString{}) && sourceFieldType == reflect.TypeOf(string("")) {
 		output := sql.NullString{String: sourceFieldValue.String(), Valid: true}
+		targetFieldValue.Set(reflect.ValueOf(output))
+	}
+
+	if targetFieldType == reflect.TypeOf(uuid.NullUUID{}) && sourceFieldType == reflect.TypeOf(string("")) {
+		uuidVal, err := uuid.FromString(sourceFieldValue.String())
+		if err != nil {
+			return
+		}
+		output := uuid.NullUUID{UUID: uuidVal, Valid: true}
 		targetFieldValue.Set(reflect.ValueOf(output))
 	}
 

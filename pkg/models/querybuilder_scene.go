@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strconv"
+
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
@@ -143,6 +145,53 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 		query.AddArg(thisArgs...)
 	}
 
+	if q := sceneFilter.Studios; q != nil && len(q.Value) > 0 {
+		column := "scenes.studio_id"
+		if q.Modifier == CriterionModifierEquals {
+			query.Eq(column, q.Value[0])
+		} else if q.Modifier == CriterionModifierNotEquals {
+			query.NotEq(column, q.Value[0])
+		} else if q.Modifier == CriterionModifierIsNull {
+			query.IsNull(column)
+		} else if q.Modifier == CriterionModifierNotNull {
+			query.IsNotNull(column)
+		} else if q.Modifier == CriterionModifierIncludes {
+			query.AddWhere(column + " IN " + getInBinding(len(q.Value)))
+			for _, studioID := range q.Value {
+				query.AddArg(studioID)
+			}
+		} else if q.Modifier == CriterionModifierExcludes {
+			query.AddWhere(column + " NOT IN " + getInBinding(len(q.Value)))
+			for _, studioID := range q.Value {
+				query.AddArg(studioID)
+			}
+		} else {
+			panic("unsupported modifier " + q.Modifier + " for scnes.studio_id")
+		}
+	}
+
+	if q := sceneFilter.Performers; q != nil && len(q.Value) > 0 {
+		query.AddJoin(scenePerformerTable.Table, scenePerformerTable.Name()+".scene_id = scenes.id")
+		whereClause, havingClause := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
+		query.AddWhere(whereClause)
+		query.AddHaving(havingClause)
+
+		for _, performerID := range q.Value {
+			query.AddArg(performerID)
+		}
+	}
+
+	if q := sceneFilter.Tags; q != nil && len(q.Value) > 0 {
+		query.AddJoin(sceneTagTable.Table, sceneTagTable.Name()+".scene_id = scenes.id")
+		whereClause, havingClause := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
+		query.AddWhere(whereClause)
+		query.AddHaving(havingClause)
+
+		for _, tagID := range q.Value {
+			query.AddArg(tagID)
+		}
+	}
+
 	// TODO - other filters
 
 	query.SortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
@@ -156,6 +205,27 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 	}
 
 	return scenes, countResult
+}
+
+func getMultiCriterionClause(joinTable database.TableJoin, joinTableField string, criterion *MultiIDCriterionInput) (string, string) {
+	joinTableName := joinTable.Name()
+	whereClause := ""
+	havingClause := ""
+	if criterion.Modifier == CriterionModifierIncludes {
+		// includes any of the provided ids
+		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierIncludesAll {
+		// includes all of the provided ids
+		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
+		havingClause = "count(distinct " + joinTableName + "." + joinTableField + ") IS " + strconv.Itoa(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierExcludes {
+		// excludes all of the provided ids
+		whereClause = "not exists (select " + joinTableName + ".scene_id from " + joinTableName + " where " + joinTableName + ".scene_id = scenes.id and " + joinTableName + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
+	} else {
+		panic("unsupported modifier " + criterion.Modifier + " for scenes.studio_id")
+	}
+
+	return whereClause, havingClause
 }
 
 func (qb *SceneQueryBuilder) getSceneSort(findFilter *QuerySpec) string {
