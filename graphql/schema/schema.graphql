@@ -102,6 +102,10 @@ type Mutation {
   editVote(input: EditVoteInput!): Edit!
   """Comment on an edit"""
   editComment(input: EditCommentInput!): Edit!
+
+  ### Full text search ###
+  searchPerformer(term: String!): [Performer]!
+  searchScene(term: String!): [Scene]!
 }
 
 schema {
