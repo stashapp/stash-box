@@ -49,8 +49,8 @@ CREATE TRIGGER update_scene_search_title AFTER UPDATE ON scenes FOR EACH ROW EXE
 
 CREATE FUNCTION insert_scene() RETURNS TRIGGER AS $$
 BEGIN
-INSERT INTO scene_search (NEW.id, NEW.title, T.name)
-SELECT T.name FROM studios T WHERE T.id = NEW.studio_id;
+INSERT INTO scene_search (scene_id, scene_title, studio_name)
+SELECT NEW.id, NEW.title, T.name FROM studios T WHERE T.id = NEW.studio_id;
 RETURN NULL;
 END;
 $$ LANGUAGE plpgsql; --The trigger used to update a table.
