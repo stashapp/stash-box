@@ -304,7 +304,7 @@ func (qb *PerformerQueryBuilder) GetPiercings(id uuid.UUID) (PerformerBodyMods, 
 }
 
 func (qb *PerformerQueryBuilder) SearchPerformers(term string) (Performers, error) {
-    query := `
+	query := `
         SELECT * FROM performers
         WHERE name % $1
         AND similarity(name, $1) > 0.5
