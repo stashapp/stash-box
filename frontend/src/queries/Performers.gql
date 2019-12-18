@@ -1,27 +1,43 @@
-query Performers($limit: Int=10, $skip: Int=20) {
-  getPerformers(input: {skip: $skip, limit: $limit}) {
-    waistSize
-    tattoos
-    piercings
-    photoUrl
-    name
-    location
-    hipSize
-    height
-    hairColor
-    gender
-    eyeColor
-    ethnicity
-    disambiguation
-    countryId
-    careerStart
-    careerEnd
-    cupSize
-    bandSize
-    boobJob
-    birthdateAccuracy
-    birthdate
-    uuid
-    id
+query Performers($filter: QuerySpec, $performerFilter: PerformerFilterType) {
+  queryPerformers(filter: $filter, performer_filter: $performerFilter) {
+    count
+    performers {
+      id
+      name
+      disambiguation
+      aliases
+      gender
+      birthdate {
+        date
+        accuracy
+      }
+      age
+      height
+      hair_color
+      eye_color
+      ethnicity
+      country
+      career_end_year
+      career_start_year
+      breast_type
+      measurements {
+        waist
+        hip
+        band_size
+        cup_size
+      }
+      tattoos {
+        location
+        description
+      }
+      piercings {
+        location
+        description
+      }
+      urls {
+          type
+          url
+      }
+    }
   }
 }

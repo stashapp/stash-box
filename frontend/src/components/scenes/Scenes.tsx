@@ -1,42 +1,37 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
-import { RouteComponentProps } from '@reach/router';
 import ScenesQuery from 'src/queries/Scenes.gql';
-import SceneCountQuery from 'src/queries/SceneCount.gql';
 import { Scenes } from 'src/definitions/Scenes';
-import { SceneCount } from 'src/definitions/SceneCount';
 
+import { usePagination } from 'src/hooks';
 import Pagination from 'src/components/pagination';
 import SceneCard from 'src/components/sceneCard';
 import { LoadingIndicator } from 'src/components/fragments';
 
-
-const ScenesComponent: React.FC<RouteComponentProps> = () => {
-    const [page, setPage] = useState(1);
+const ScenesComponent: React.FC = () => {
+    const { page, setPage } = usePagination();
     const { loading: loadingData, data } = useQuery<Scenes>(ScenesQuery, {
-        variables: { skip: (20 * page) - 20, limit: 20 }
+        variables: { filter: { page, per_page: 20, sort: 'DATE', direction: 'DESC' } }
     });
-    const { loading: loadingTotal, data: countData } = useQuery<SceneCount>(SceneCountQuery);
 
-    if (loadingTotal || loadingData)
+    if (loadingData)
         return <LoadingIndicator message="Loading scenes..." />;
 
-    const handlePagination = (pageNumber:number) => setPage(pageNumber);
-    const totalPages = Math.ceil(countData.sceneCount / 20);
+    const totalPages = Math.ceil(data.queryScenes.count / 20);
 
-    const scenes = data.getScenes.map((scene) => (
-        <SceneCard key={scene.uuid} performance={scene} />
+    const scenes = data.queryScenes.scenes.map((scene) => (
+        <SceneCard key={scene.id} performance={scene} />
     ));
 
     return (
         <>
             <div className="row">
                 <h3 className="col-4">Scenes</h3>
-                <Pagination onClick={handlePagination} pages={totalPages} active={page} />
+                <Pagination onClick={setPage} pages={totalPages} active={page} />
             </div>
             <div className="performers row">{scenes}</div>
             <div className="row">
-                <Pagination onClick={handlePagination} pages={totalPages} active={page} />
+                <Pagination onClick={setPage} pages={totalPages} active={page} />
             </div>
         </>
     );

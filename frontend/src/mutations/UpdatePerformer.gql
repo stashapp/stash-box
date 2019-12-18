@@ -1,28 +1,36 @@
-mutation UpdatePerformerMutation($performerId: Int!, $performerData: UpdatePerformer!) {
-  updatePerformer(performerId: $performerId, input: $performerData) {
+mutation UpdatePerformerMutation($performerData: PerformerUpdateInput!) {
+  performerUpdate(input: $performerData) {
     id
-    uuid
-    waistSize
-    tattoos
-    piercings
-    photoUrl
     name
-    location
-    hipSize
-    height
-    hairColor
-    gender
-    eyeColor
-    ethnicity
     disambiguation
-    countryId
-    careerStart
-    careerEnd
-    cupSize
-    bandSize
-    boobJob
-    birthdateAccuracy
-    birthdate
     aliases
+    gender
+    birthdate {
+      date
+      accuracy
+    }
+    age
+    height
+    hair_color
+    eye_color
+    ethnicity
+    country
+    career_end_year
+    career_start_year
+    breast_type
+    measurements {
+      waist
+      hip
+      band_size
+      cup_size
+    }
+    tattoos {
+      location
+      description
+    }
+    piercings {
+      location
+      description
+    }
   }
 }

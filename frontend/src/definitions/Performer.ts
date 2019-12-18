@@ -2,56 +2,71 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: Performer
 // ====================================================
 
-export interface Performer_getPerformer_performances_studio {
-  title: string;
-  uuid: any;
+export interface Performer_findPerformer_birthdate {
+  date: any;
+  accuracy: DateAccuracyEnum;
 }
 
-export interface Performer_getPerformer_performances {
-  title: string | null;
-  uuid: any;
-  date: any | null;
-  photoUrl: string | null;
-  studio: Performer_getPerformer_performances_studio;
+export interface Performer_findPerformer_measurements {
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
 }
 
-export interface Performer_getPerformer {
-  id: number;
-  uuid: any;
-  waistSize: number | null;
-  tattoos: string[] | null;
-  piercings: string[] | null;
-  photoUrl: string | null;
+export interface Performer_findPerformer_tattoos {
+  location: string;
+  description: string | null;
+}
+
+export interface Performer_findPerformer_piercings {
+  location: string;
+  description: string | null;
+}
+
+export interface Performer_findPerformer_urls {
+  url: string;
+  type: string;
+}
+
+export interface Performer_findPerformer {
+  id: string;
   name: string;
-  displayName: string;
-  location: string | null;
-  hipSize: number | null;
+  disambiguation: string | null;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: Performer_findPerformer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
   height: number | null;
-  hairColor: string | null;
-  gender: string;
-  eyeColor: string | null;
-  ethnicity: string | null;
-  disambiguation: string;
-  countryId: number | null;
-  careerStart: number | null;
-  careerEnd: number | null;
-  cupSize: string | null;
-  bandSize: number | null;
-  boobJob: boolean | null;
-  birthdateAccuracy: number | null;
-  birthdate: any | null;
-  aliases: string[] | null;
-  performances: Performer_getPerformer_performances[];
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: Performer_findPerformer_measurements;
+  tattoos: Performer_findPerformer_tattoos[] | null;
+  piercings: Performer_findPerformer_piercings[] | null;
+  urls: Performer_findPerformer_urls[];
 }
 
 export interface Performer {
-  getPerformer: Performer_getPerformer;
+  /**
+   * Find a performer by ID
+   */
+  findPerformer: Performer_findPerformer | null;
 }
 
 export interface PerformerVariables {
-  id: any;
+  id: string;
 }

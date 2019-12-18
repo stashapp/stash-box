@@ -5,7 +5,6 @@ interface User {
     role?: number
 }
 
-
 export type ContextProps = {
     authenticated: boolean,
     user?: User;

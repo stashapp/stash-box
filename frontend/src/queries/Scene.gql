@@ -1,27 +1,25 @@
-query Scene($id: Uuid!) {
-  getScene(sceneId: $id) {
-    id
-    uuid
-    title
-    date
-    dateAccuracy
-    photoUrl
-    description
-    studioUrl
-    studio {
+query Scene($id: ID!) {
+  findScene(id: $id) {
+      id
+      date
+      title,
+      details,
+      urls {
+        url,
+        type
+      }
+      studio {
         id
-        title
-        uuid
-    }
-    performers {
-        alias
+        name
+      }
+      performers {
+        as
         performer {
-            name
-            displayName
-            uuid
-            id
-            gender
+          name
+          id
+		  gender
+		  aliases
         }
+      }
     }
-  }
 }

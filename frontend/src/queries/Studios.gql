@@ -1,9 +1,13 @@
-query Studios($limit: Int=10, $skip: Int=0) {
-  getStudios(input: {skip: $skip, limit: $limit}) {
+query Studios($filter: QuerySpec, $studioFilter: StudioFilterType) {
+  queryStudios(filter: $filter, studio_filter: $studioFilter) {
+      count
+      studios {
         id
-        uuid
-        title
-        url
-        photoUrl
+        name
+        urls {
+            url
+            type
+        }
+      }
   }
 }

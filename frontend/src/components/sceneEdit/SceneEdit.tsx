@@ -1,31 +1,30 @@
 import React from 'react';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { RouteComponentProps, navigate } from '@reach/router';
+import { useHistory, useParams } from 'react-router-dom';
 
 import UpdateSceneMutation from 'src/mutations/UpdateScene.gql';
 import { Scene } from 'src/definitions/Scene';
+import { UpdateSceneMutationVariables } from 'src/definitions/UpdateSceneMutation';
 import SceneQuery from 'src/queries/Scene.gql';
-import { SceneFormData, Performer } from 'src/common/types';
+import { SceneUpdateInput } from 'src/definitions/globalTypes';
 
 import { LoadingIndicator } from 'src/components/fragments';
 import SceneForm from 'src/components/sceneForm';
 
-interface SceneProps extends RouteComponentProps<{
-    id: string;
-}> {}
-
-const SceneEdit: React.FC<SceneProps> = ({ id }) => {
+const SceneEdit: React.FC = () => {
+    const { id } = useParams();
+    const history = useHistory();
     const { loading, data } = useQuery<Scene>(SceneQuery, {
         variables: { id }
     });
-    const [updateScene] = useMutation<Scene>(UpdateSceneMutation, {
+    const [updateScene] = useMutation<Scene, UpdateSceneMutationVariables>(UpdateSceneMutation, {
         onCompleted: () => {
-            navigate(`/scene/${data.getScene.uuid}`);
+            history.push(`/scenes/${data.findScene.id}`);
         }
     });
 
-    const doUpdate = (updateData:SceneFormData, performers:Performer[] = []) => {
-        updateScene({ variables: { sceneId: data.getScene.id, sceneData: updateData, performers } });
+    const doUpdate = (updateData:SceneUpdateInput) => {
+        updateScene({ variables: { updateData } });
     };
 
     if (loading)
@@ -35,10 +34,10 @@ const SceneEdit: React.FC<SceneProps> = ({ id }) => {
         <div>
             <h2>
                 Edit
-                <i>{data.getScene.title}</i>
+                <i>{data.findScene.title}</i>
             </h2>
             <hr />
-            <SceneForm scene={data.getScene} callback={doUpdate} />
+            <SceneForm scene={data.findScene} callback={doUpdate} />
         </div>
     );
 };

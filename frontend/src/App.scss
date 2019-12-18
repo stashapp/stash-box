@@ -49,3 +49,9 @@ a[aria-current] {
         margin-left: 10rem;
     }
 }
+
+label.is-invalid {
+    .error-message {
+        color: red;
+    }
+}

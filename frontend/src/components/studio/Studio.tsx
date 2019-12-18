@@ -1,39 +1,46 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
-import { RouteComponentProps, Link } from '@reach/router';
+import { Link, useParams } from 'react-router-dom';
 
-import { Studio } from 'src/definitions/Studio';
 import StudioQuery from 'src/queries/Studio.gql';
+import { Studio, StudioVariables } from 'src/definitions/Studio';
+import ScenesQuery from 'src/queries/Scenes.gql';
+import { Scenes, ScenesVariables } from 'src/definitions/Scenes';
+import { CriterionModifier, SortDirectionEnum } from 'src/definitions/globalTypes';
 
+import { usePagination } from 'src/hooks';
 import Pagination from 'src/components/pagination';
 import { LoadingIndicator } from 'src/components/fragments';
 import SceneCard from 'src/components/sceneCard';
 
-interface StudioProps extends RouteComponentProps<{
-    id: string;
-}> {}
+import { getUrlByType } from 'src/utils/transforms';
 
-const StudioComponent: React.FC<StudioProps> = ({ id }) => {
-    const [page, setPage] = useState(1);
-    const { loading, data } = useQuery<Studio>(StudioQuery, {
-        variables: { id, skip: (40 * page) - 40, limit: 40 }
+const StudioComponent: React.FC = () => {
+    const { id } = useParams();
+    const { page, setPage } = usePagination();
+    const { loading, data } = useQuery<Studio, StudioVariables>(StudioQuery, {
+        variables: { id }
+    });
+    const { loading: loadingScenes, data: sceneData } = useQuery<Scenes, ScenesVariables>(ScenesQuery, {
+        variables: {
+            filter: { page, per_page: 20, sort: 'DATE', direction: SortDirectionEnum.DESC },
+            sceneFilter: { studios: { value: [id], modifier: CriterionModifier.INCLUDES } }
+        }
     });
 
-    if (loading)
+    if (loading || loadingScenes)
         return <LoadingIndicator message="Loading studio..." />;
 
-    const studio = data.getStudio;
+    const studio = data.findStudio;
 
-    const handlePagination = (pageNumber:number) => setPage(pageNumber);
-
-    const totalPages = Math.ceil(studio.sceneCount / 40);
-    const scenes = studio.scenes.sort(
+    const totalPages = Math.ceil(sceneData.queryScenes.count / 20);
+    const scenes = sceneData.queryScenes.scenes.sort(
         (a, b) => {
             if (a.date < b.date) return 1;
             if (a.date > b.date) return -1;
             return -1;
         }
-    ).map((p) => (<SceneCard key={p.uuid} performance={p} />));
+    ).map((p) => (<SceneCard key={p.id} performance={p} />));
 
     const handleDelete = () => {
     };
@@ -42,11 +49,11 @@ const StudioComponent: React.FC<StudioProps> = ({ id }) => {
         <>
             <div className="studio-header">
                 <div className="studio-title">
-                    <h2>{studio.title}</h2>
-                    <h4><a href={studio.url}>{studio.url}</a></h4>
+                    <h2>{studio.name}</h2>
+                    <h4><a href={getUrlByType(studio.urls, 'HOME')}>{getUrlByType(studio.urls, 'HOME')}</a></h4>
                 </div>
                 <div className="studio-photo">
-                    { studio.photoUrl && <img src={studio.photoUrl} alt="Studio logo" /> }
+                    <img src={getUrlByType(studio.urls, 'PHOTO')} alt="Studio logo" />
                 </div>
                 <div className="studio-edit">
                     <Link to="edit">
@@ -55,17 +62,20 @@ const StudioComponent: React.FC<StudioProps> = ({ id }) => {
                     <button type="button" className="btn btn-danger" onClick={handleDelete}>Delete</button>
                 </div>
             </div>
-            <hr />
-            <div className="row">
-                <h3 className="col-4">Scenes</h3>
-                <Pagination onClick={handlePagination} pages={totalPages} active={page} />
-            </div>
-            <div className="row">
-                { scenes }
-            </div>
-            <div className="row">
-                <Pagination onClick={handlePagination} pages={totalPages} active={page} />
-            </div>
+            <hr />{ scenes.length === 0 ? <h4>No scenes found for this studio</h4> : (
+                <>
+                    <div className="row">
+                        <h3 className="col-4">Scenes</h3>
+                        <Pagination onClick={setPage} pages={totalPages} active={page} />
+                    </div>
+                    <div className="row">
+                        { scenes }
+                    </div>
+                    <div className="row">
+                        <Pagination onClick={setPage} pages={totalPages} active={page} />
+                    </div>
+                </>
+            )}
         </>
     );
 };

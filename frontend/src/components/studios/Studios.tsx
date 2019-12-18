@@ -1,30 +1,29 @@
 import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { Card } from 'react-bootstrap';
-import { RouteComponentProps, Link } from '@reach/router';
+import { Link } from 'react-router-dom';
 
 import { Studios } from 'src/definitions/Studios';
 import StudiosQuery from 'src/queries/Studios.gql';
 
 import { LoadingIndicator } from 'src/components/fragments';
 
-const StudiosComponent: React.FC<RouteComponentProps> = () => {
+const StudiosComponent: React.FC = () => {
     const { loading: loadingData, data } = useQuery<Studios>(StudiosQuery, {
-        variables: { skip: 0, limit: 1000 }
+        variables: { filter: { page: 0, per_page: 10000 } }
     });
 
     if (loadingData)
         return <LoadingIndicator message="Loading studios..." />;
 
-
-    const studios = data.getStudios;
-
-    const studioList = studios.map((studio) => (
-        <li key={studio.uuid}>
-            <Link to={`/studio/${studio.uuid}`}>{studio.title}</Link>
+    const studioList = data.queryStudios.studios.map((studio) => (
+        <li key={studio.id}>
+            <Link to={`/studios/${studio.id}`}>{studio.name}</Link>
             {' '}
 •
-            <a href={studio.url}>{studio.url}</a>
+            { studio.urls.filter((url) => url.type === 'HOME').map((url) => (
+                <a href={url.url}>{url.url}</a>
+            ))}
         </li>
     ));
 

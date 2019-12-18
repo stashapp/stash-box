@@ -1,45 +1,51 @@
 import React, { useState, useContext } from 'react';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { RouteComponentProps, Link, navigate } from '@reach/router';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import { Card } from 'react-bootstrap';
 
 import AuthContext from 'src/AuthContext';
 import SceneQuery from 'src/queries/Scene.gql';
-import DeleteSceneMutation from 'src/mutations/DeleteScene.gql';
+import DeleteScene from 'src/mutations/DeleteScene.gql';
 import { Scene } from 'src/definitions/Scene';
+import { getUrlByType } from 'src/utils/transforms';
+import {
+    DeleteSceneMutation,
+    DeleteSceneMutationVariables
+} from 'src/definitions/DeleteSceneMutation';
 
 import Modal from 'src/components/modal';
 import { GenderIcon, LoadingIndicator } from 'src/components/fragments';
 
-interface SceneProps extends RouteComponentProps<{
-    id: string;
-}> {}
-
-const SceneComponent: React.FC<SceneProps> = ({ id }) => {
+const SceneComponent: React.FC = () => {
+    const { id } = useParams();
+    const history = useHistory();
     const [showDelete, setShowDelete] = useState(false);
     const { loading, data } = useQuery<Scene>(SceneQuery, {
         variables: { id }
     });
-    const [deleteScene, { loading: deleting }] = useMutation(DeleteSceneMutation);
+    const [
+        deleteScene,
+        { loading: deleting }
+    ] = useMutation<DeleteSceneMutation, DeleteSceneMutationVariables>(DeleteScene);
     const auth = useContext(AuthContext);
 
     if (loading)
         return <LoadingIndicator message="Loading scene..." />;
-    const scene = data.getScene;
+    const scene = data.findScene;
 
     const toggleModal = () => setShowDelete(true);
     const handleDelete = (status:boolean):void => {
         if (status)
-            deleteScene({ variables: { sceneId: scene.id } }).then(() => navigate('/scenes'));
+            deleteScene({ variables: { input: { id: scene.id } } }).then(() => history.push('/scenes'));
         setShowDelete(false);
     };
 
-    const performers = data.getScene.performers.map((performance) => {
+    const performers = data.findScene.performers.map((performance) => {
         const { performer } = performance;
         return (
-            <Link key={performer.uuid} to={`/performer/${performer.uuid}`} className="scene-performer">
+            <Link key={performer.id} to={`/performers/${performer.id}`} className="scene-performer">
                 <GenderIcon gender={performer.gender} />
-                {performer.displayName}
+                { performance.as ? `${performance.as} (${performer.name})` : performer.name }
             </Link>
         );
     }).map((p, index) => (index % 2 === 2 ? [' • ', p] : p));
@@ -69,7 +75,7 @@ const SceneComponent: React.FC<SceneProps> = ({ id }) => {
                     </div>
                     <h2>{scene.title}</h2>
                     <h6>
-                        <Link to={`/studio/${scene.studio.uuid}`}>{scene.studio.title}</Link>
+                        <Link to={`/studios/${scene.studio.id}`}>{scene.studio.name}</Link>
                         {' '}
 •
                         {' '}
@@ -77,7 +83,7 @@ const SceneComponent: React.FC<SceneProps> = ({ id }) => {
                     </h6>
                 </Card.Header>
                 <Card.Body className="scene-photo">
-                    <img alt="" src={scene.photoUrl} className="scene-photo-element" />
+                    <img alt="" src={getUrlByType(scene.urls, 'PHOTO')} className="scene-photo-element" />
                 </Card.Body>
                 <Card.Footer>
                     <div className="scene-performers">{ performers }</div>
@@ -85,9 +91,9 @@ const SceneComponent: React.FC<SceneProps> = ({ id }) => {
             </Card>
             <div className="scene-description">
                 <h2>Description:</h2>
-                <div>{scene.description}</div>
+                <div>{scene.details}</div>
                 <hr />
-                <a href={scene.studioUrl}>{scene.studioUrl}</a>
+                <a href={getUrlByType(scene.urls, 'STUDIO')}>{getUrlByType(scene.urls, 'STUDIO')}</a>
             </div>
         </>
     );

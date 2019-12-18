@@ -2,50 +2,46 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { UpdateScene, NewPerformerScene } from "./globalTypes";
+import { SceneUpdateInput, GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateSceneMutation
 // ====================================================
 
-export interface UpdateSceneMutation_updateScene_studio {
-  id: number;
-  title: string;
-  uuid: any;
+export interface UpdateSceneMutation_sceneUpdate_urls {
+  url: string;
+  type: string;
 }
 
-export interface UpdateSceneMutation_updateScene_performers_performer {
+export interface UpdateSceneMutation_sceneUpdate_studio {
+  id: string;
   name: string;
-  displayName: string;
-  uuid: any;
-  id: number;
-  gender: string;
 }
 
-export interface UpdateSceneMutation_updateScene_performers {
-  alias: string | null;
-  performer: UpdateSceneMutation_updateScene_performers_performer;
+export interface UpdateSceneMutation_sceneUpdate_performers_performer {
+  name: string;
+  id: string;
+  gender: GenderEnum | null;
+  aliases: string[];
 }
 
-export interface UpdateSceneMutation_updateScene {
-  id: number;
-  uuid: any;
-  title: string | null;
+export interface UpdateSceneMutation_sceneUpdate_performers {
+  performer: UpdateSceneMutation_sceneUpdate_performers_performer;
+}
+
+export interface UpdateSceneMutation_sceneUpdate {
+  id: string;
   date: any | null;
-  dateAccuracy: number | null;
-  photoUrl: string | null;
-  description: string | null;
-  studioUrl: string | null;
-  studio: UpdateSceneMutation_updateScene_studio;
-  performers: UpdateSceneMutation_updateScene_performers[];
+  title: string | null;
+  urls: UpdateSceneMutation_sceneUpdate_urls[];
+  studio: UpdateSceneMutation_sceneUpdate_studio | null;
+  performers: UpdateSceneMutation_sceneUpdate_performers[];
 }
 
 export interface UpdateSceneMutation {
-  updateScene: UpdateSceneMutation_updateScene;
+  sceneUpdate: UpdateSceneMutation_sceneUpdate | null;
 }
 
 export interface UpdateSceneMutationVariables {
-  sceneId: number;
-  sceneData: UpdateScene;
-  performers?: NewPerformerScene[] | null;
+  updateData: SceneUpdateInput;
 }

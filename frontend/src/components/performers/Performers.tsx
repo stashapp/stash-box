@@ -1,49 +1,38 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
-import { Card } from 'react-bootstrap';
-import { RouteComponentProps, Link } from '@reach/router';
 
 import PerformersQuery from 'src/queries/Performers.gql';
-import PerformerCountQuery from 'src/queries/PerformerCount.gql';
 import { Performers } from 'src/definitions/Performers';
-import { PerformerCount } from 'src/definitions/PerformerCount';
 
+import { usePagination } from 'src/hooks';
 import Pagination from 'src/components/pagination';
 import { LoadingIndicator } from 'src/components/fragments';
+import PerformerCard from 'src/components/performerCard';
 
-const PerformersComponent: React.FC<RouteComponentProps> = () => {
-    const [page, setPage] = useState(1);
+const PerformersComponent: React.FC = () => {
+    const { page, setPage } = usePagination();
     const { loading: loadingData, data } = useQuery<Performers>(PerformersQuery, {
-        variables: { skip: (20 * page) - 20, limit: 20 }
+        variables: { filter: { page, per_page: 20, sort: 'BIRTHDATE', direction: 'DESC' } }
     });
-    const { loading: loadingTotal, data: countData } = useQuery<PerformerCount>(PerformerCountQuery);
 
-    if (loadingTotal)
+    if (loadingData)
         return <LoadingIndicator message="Loading performers..." />;
 
-    const handlePagination = (pageNumber:number) => setPage(pageNumber);
-    const totalPages = Math.ceil(countData.performerCount / 20);
+    const totalPages = Math.ceil(data.queryPerformers.count / 20);
 
-    const performers = loadingData ? <div>Loading performers...</div> : data.getPerformers.map((performer) => (
-        <div key={performer.uuid} className="col-12 col-lg-3 col-md-6">
-            <Card>
-                <Link to={`/performer/${performer.uuid}`}>
-                    <Card.Img variant="top" src="http://placekitten.com/g/200/300" />
-                    <Card.Title>{performer.name}</Card.Title>
-                </Link>
-            </Card>
-        </div>
+    const performers = data.queryPerformers.performers.map((performer) => (
+        <PerformerCard performer={performer} />
     ));
 
     return (
         <>
             <div className="row">
                 <h3 className="col-4">Performers</h3>
-                <Pagination onClick={handlePagination} pages={totalPages} active={page} />
+                <Pagination onClick={setPage} pages={totalPages} active={page} />
             </div>
             <div className="performers row">{performers}</div>
             <div className="row">
-                <Pagination onClick={handlePagination} pages={totalPages} active={page} />
+                <Pagination onClick={setPage} pages={totalPages} active={page} />
             </div>
         </>
     );

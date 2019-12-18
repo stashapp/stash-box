@@ -2,38 +2,51 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { QuerySpec, SceneFilterType, GenderEnum } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: Scenes
 // ====================================================
 
-export interface Scenes_getScenes_studio {
-  title: string;
-  uuid: any;
+export interface Scenes_queryScenes_scenes_urls {
+  url: string;
+  type: string;
 }
 
-export interface Scenes_getScenes_performers_performer {
-  displayName: string;
-  uuid: any;
+export interface Scenes_queryScenes_scenes_studio {
+  id: string;
+  name: string;
 }
 
-export interface Scenes_getScenes_performers {
-  performer: Scenes_getScenes_performers_performer;
+export interface Scenes_queryScenes_scenes_performers_performer {
+  id: string;
+  name: string;
+  gender: GenderEnum | null;
 }
 
-export interface Scenes_getScenes {
-  title: string | null;
-  uuid: any;
+export interface Scenes_queryScenes_scenes_performers {
+  performer: Scenes_queryScenes_scenes_performers_performer;
+}
+
+export interface Scenes_queryScenes_scenes {
+  id: string;
   date: any | null;
-  photoUrl: string | null;
-  studio: Scenes_getScenes_studio;
-  performers: Scenes_getScenes_performers[];
+  title: string | null;
+  urls: Scenes_queryScenes_scenes_urls[];
+  studio: Scenes_queryScenes_scenes_studio | null;
+  performers: Scenes_queryScenes_scenes_performers[];
+}
+
+export interface Scenes_queryScenes {
+  count: number;
+  scenes: Scenes_queryScenes_scenes[];
 }
 
 export interface Scenes {
-  getScenes: Scenes_getScenes[];
+  queryScenes: Scenes_queryScenes;
 }
 
 export interface ScenesVariables {
-  limit?: number | null;
-  skip?: number | null;
+  filter?: QuerySpec | null;
+  sceneFilter?: SceneFilterType | null;
 }

@@ -1,13 +1,13 @@
 import React, { useRef, useContext } from 'react';
 import { useMutation } from '@apollo/react-hooks';
-import { RouteComponentProps, navigate } from '@reach/router';
+import { useHistory } from 'react-router-dom';
 import LoginMutation from './mutations/Login.gql';
 import { setToken } from './utils/createClient';
 import AuthContext, { ContextProps } from './AuthContext';
 
 import './App.scss';
 
-const Login: React.FC<RouteComponentProps> = () => {
+const Login: React.FC = () => {
     const Auth = useContext<ContextProps>(AuthContext);
     const [loginUser] = useMutation(LoginMutation, {
         onCompleted: ({ loginUser: { bearer, user } }) => {
@@ -17,9 +17,10 @@ const Login: React.FC<RouteComponentProps> = () => {
     });
     const email = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
+    const history = useHistory();
 
     if (Auth.authenticated)
-        navigate('/');
+        history.push('/');
 
     const submitLogin = () => {
         loginUser({

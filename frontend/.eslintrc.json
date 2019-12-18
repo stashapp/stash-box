@@ -23,7 +23,7 @@
 		"jsx-a11y/label-has-associated-control": [ 2, {
 		  "controlComponents": ["Select"]
 		}],
-        "react/jsx-one-expression-per-line": [2, { "allow": "single-child" }],
+        "react/jsx-one-expression-per-line": "off",
         "no-nested-ternary": "off",
         "import/prefer-default-export": "off",
         "import/no-cycle": "off"

@@ -2,14 +2,16 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { PerformerDestroyInput } from "./globalTypes";
+
 // ====================================================
 // GraphQL mutation operation: DeletePerformerMutation
 // ====================================================
 
 export interface DeletePerformerMutation {
-  deletePerformer: number;
+  performerDestroy: boolean;
 }
 
 export interface DeletePerformerMutationVariables {
-  performerId: number;
+  input: PerformerDestroyInput;
 }

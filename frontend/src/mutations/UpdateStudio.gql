@@ -1,9 +1,10 @@
-mutation UpdateStudioMutation($studioId: Int!, $studioData: UpdateStudio!) {
-  updateStudio(studioId: $studioId, input: $studioData) {
+mutation UpdateStudioMutation($input: StudioUpdateInput!) {
+  studioUpdate(input: $input) {
     id
-    uuid
-    title
-    url
-    photoUrl
+    name
+    urls {
+        url
+        type
+    }
   }
 }

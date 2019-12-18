@@ -1,3 +1,3 @@
-mutation DeleteSceneMutation($sceneId: Int!) {
-    deleteScene(sceneId: $sceneId)
+mutation DeleteSceneMutation($input: SceneDestroyInput!) {
+    sceneDestroy(input: $input)
 }

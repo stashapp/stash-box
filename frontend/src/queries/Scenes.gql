@@ -1,18 +1,26 @@
-query Scenes($limit: Int=10, $skip: Int=0) {
-  getScenes(input: {skip: $skip, limit: $limit}) {
-        title
-        uuid
-        date
-        photoUrl
-        studio {
+query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
+  queryScenes(filter: $filter, scene_filter: $sceneFilter) {
+        count
+        scenes {
+            id
+            date
             title
-            uuid
-        }
-        performers {
-            performer {
-                displayName
-                uuid
+            urls {
+                url
+                type
             }
+            studio {
+                id
+                name
+            }
+            performers {
+                performer {
+                    id
+                    name
+                    gender
+                }
+            }
+
         }
-  }
+    }
 }

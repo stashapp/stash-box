@@ -1,27 +1,23 @@
-mutation UpdateSceneMutation($sceneId: Int!, $sceneData: UpdateScene!, $performers: [NewPerformerScene!]) {
-  updateScene(sceneId: $sceneId, scene: $sceneData, performers: $performers) {
-    id
-    uuid
-    title
-    date
-    dateAccuracy
-    photoUrl
-    description
-    studioUrl
-    studio {
+mutation UpdateSceneMutation($updateData: SceneUpdateInput!) {
+  sceneUpdate(input: $updateData) {
+      id
+      date
+      title,
+      urls {
+        url,
+        type
+      }
+      studio {
         id
-        title
-        uuid
-    }
-    performers {
-        alias
+        name
+      }
+      performers {
         performer {
-            name
-            displayName
-            uuid
-            id
-            gender
+          name
+          id
+		  gender
+		  aliases
         }
+      }
     }
-  }
 }

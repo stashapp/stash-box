@@ -1,8 +1,0 @@
-query Countries {
-    getCountries {
-        id,
-        name,
-        alpha2,
-        alpha3
-    }
-}

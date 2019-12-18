@@ -2,14 +2,16 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { SceneDestroyInput } from "./globalTypes";
+
 // ====================================================
 // GraphQL mutation operation: DeleteSceneMutation
 // ====================================================
 
 export interface DeleteSceneMutation {
-  deleteScene: number;
+  sceneDestroy: boolean;
 }
 
 export interface DeleteSceneMutationVariables {
-  sceneId: number;
+  input: SceneDestroyInput;
 }

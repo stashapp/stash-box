@@ -6,45 +6,24 @@
 // GraphQL query operation: Studio
 // ====================================================
 
-export interface Studio_getStudio_scenes_studio {
-  title: string;
-  uuid: any;
+export interface Studio_findStudio_urls {
+  url: string;
+  type: string;
 }
 
-export interface Studio_getStudio_scenes_performers_performer {
-  displayName: string;
-  uuid: any;
-}
-
-export interface Studio_getStudio_scenes_performers {
-  performer: Studio_getStudio_scenes_performers_performer;
-}
-
-export interface Studio_getStudio_scenes {
-  title: string | null;
-  uuid: any;
-  date: any | null;
-  photoUrl: string | null;
-  studio: Studio_getStudio_scenes_studio;
-  performers: Studio_getStudio_scenes_performers[];
-}
-
-export interface Studio_getStudio {
-  id: number;
-  uuid: any;
-  title: string;
-  url: string | null;
-  photoUrl: string | null;
-  sceneCount: number;
-  scenes: Studio_getStudio_scenes[];
+export interface Studio_findStudio {
+  id: string;
+  name: string;
+  urls: (Studio_findStudio_urls | null)[];
 }
 
 export interface Studio {
-  getStudio: Studio_getStudio;
+  /**
+   * Find a studio by ID or name
+   */
+  findStudio: Studio_findStudio | null;
 }
 
 export interface StudioVariables {
-  id: any;
-  skip?: number | null;
-  limit?: number | null;
+  id: string;
 }

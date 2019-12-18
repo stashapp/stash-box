@@ -1,19 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Navbar, Nav } from 'react-bootstrap';
-import { useQuery } from '@apollo/react-hooks';
-import { RouteComponentProps, navigate, Link } from '@reach/router';
+import { NavLink } from 'react-router-dom';
+import SearchField, { SearchType } from 'src/components/searchField';
 import AuthContext from './AuthContext';
-import SearchField, { SearchType } from './components/searchField';
 
-import { Me } from './definitions/Me';
-import ME from './queries/Me.gql';
-
-interface MainProps extends RouteComponentProps<{
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    children?: any
-}>{}
-
-const Main: React.FC<MainProps> = ({ children }) => {
+const Main: React.FC = ({ children }) => {
+    /*
     const [user, setUser] = useState(undefined);
     const prevUser = useRef();
     const { loading } = useQuery<Me>(ME, {
@@ -49,19 +41,29 @@ const Main: React.FC<MainProps> = ({ children }) => {
 :
             </AuthContext.Provider>
         );
+    */
+
+    const user = {
+        username: 'User',
+        role: 2
+    };
+    const contextValue = {
+        authenticated: true,
+        user
+    };
 
 
     return (
         <div>
             <Navbar bg="light" expand="lg">
                 <Nav className="mr-auto">
-                    <Link to="/" className="nav-link">Home</Link>
-                    <Link to="/performers" className="nav-link">Performers</Link>
-                    <Link to="/scenes" className="nav-link">Scenes</Link>
-                    <Link to="/studios" className="nav-link">Studios</Link>
-                    <Link to="/performer/add" className="nav-link">Add Performer</Link>
-                    <Link to="/scene/add" className="nav-link">Add Scene</Link>
-                    <Link to="/studio/add" className="nav-link">Add Studio</Link>
+                    <NavLink exact to="/" className="nav-link">Home</NavLink>
+                    <NavLink to="/performers" className="nav-link">Performers</NavLink>
+                    <NavLink to="/scenes" className="nav-link">Scenes</NavLink>
+                    <NavLink to="/studios" className="nav-link">Studios</NavLink>
+                    <NavLink exact to="/performers/add" className="nav-link">Add Performer</NavLink>
+                    <NavLink exact to="/scenes/add" className="nav-link">Add Scene</NavLink>
+                    <NavLink exact to="/studios/add" className="nav-link">Add Studio</NavLink>
                 </Nav>
                 <div className="welcome">
 Welcome

@@ -2,46 +2,54 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { GenderEnum } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: Scene
 // ====================================================
 
-export interface Scene_getScene_studio {
-  id: number;
-  title: string;
-  uuid: any;
+export interface Scene_findScene_urls {
+  url: string;
+  type: string;
 }
 
-export interface Scene_getScene_performers_performer {
+export interface Scene_findScene_studio {
+  id: string;
   name: string;
-  displayName: string;
-  uuid: any;
-  id: number;
-  gender: string;
 }
 
-export interface Scene_getScene_performers {
-  alias: string | null;
-  performer: Scene_getScene_performers_performer;
+export interface Scene_findScene_performers_performer {
+  name: string;
+  id: string;
+  gender: GenderEnum | null;
+  aliases: string[];
 }
 
-export interface Scene_getScene {
-  id: number;
-  uuid: any;
-  title: string | null;
+export interface Scene_findScene_performers {
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+  performer: Scene_findScene_performers_performer;
+}
+
+export interface Scene_findScene {
+  id: string;
   date: any | null;
-  dateAccuracy: number | null;
-  photoUrl: string | null;
-  description: string | null;
-  studioUrl: string | null;
-  studio: Scene_getScene_studio;
-  performers: Scene_getScene_performers[];
+  title: string | null;
+  details: string | null;
+  urls: Scene_findScene_urls[];
+  studio: Scene_findScene_studio | null;
+  performers: Scene_findScene_performers[];
 }
 
 export interface Scene {
-  getScene: Scene_getScene;
+  /**
+   * Find a scene by ID
+   */
+  findScene: Scene_findScene | null;
 }
 
 export interface SceneVariables {
-  id: any;
+  id: string;
 }

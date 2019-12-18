@@ -1,42 +1,38 @@
 import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
-import { RouteComponentProps, Link } from '@reach/router';
-import { Card } from 'react-bootstrap';
 
 import ScenesQuery from 'src/queries/Scenes.gql';
 import PerformersQuery from 'src/queries/Performers.gql';
-import { Scenes } from 'src/definitions/Scenes';
-import { Performers } from 'src/definitions/Performers';
+import { Scenes, ScenesVariables } from 'src/definitions/Scenes';
+import { Performers, PerformersVariables } from 'src/definitions/Performers';
+import { SortDirectionEnum } from 'src/definitions/globalTypes';
 
+import PerformerCard from 'src/components/performerCard';
 import SceneCard from 'src/components/sceneCard';
 import { LoadingIndicator } from 'src/components/fragments';
 
 
-const ScenesComponent: React.FC<RouteComponentProps> = () => {
-    const { loading: loadingScenes, data: sceneData } = useQuery<Scenes>(ScenesQuery, {
-        variables: { skip: 0, limit: 4 }
+const ScenesComponent: React.FC = () => {
+    const { loading: loadingScenes, data: sceneData } = useQuery<Scenes, ScenesVariables>(ScenesQuery, {
+        variables: { filter: { page: 0, per_page: 8, sort: 'DATE', direction: SortDirectionEnum.DESC } }
     });
-    const { loading: loadingPerformers, data: performerData } = useQuery<Performers>(PerformersQuery, {
-        variables: { skip: 0, limit: 4 }
+    const {
+        loading: loadingPerformers,
+        data: performerData
+    } = useQuery<Performers, PerformersVariables>(PerformersQuery, {
+        variables: { filter: { page: 0, per_page: 4, sort: 'BIRTHDATE', direction: SortDirectionEnum.DESC } }
     });
 
     const scenes = loadingScenes
         ? <LoadingIndicator message="Loading scenes..." />
-        : sceneData.getScenes.map((scene) => (
-            <SceneCard key={scene.uuid} performance={scene} />
+        : sceneData.queryScenes.scenes.map((scene) => (
+            <SceneCard key={scene.id} performance={scene} />
         ));
 
     const performers = loadingPerformers
         ? <LoadingIndicator message="Loading performers" />
-        : performerData.getPerformers.map((performer) => (
-            <div key={performer.uuid} className="col-12 col-lg-3 col-md-6">
-                <Card>
-                    <Link to={`/performer/${performer.uuid}`}>
-                        <Card.Img variant="top" src="http://placekitten.com/g/200/300" />
-                        <Card.Title>{performer.name}</Card.Title>
-                    </Link>
-                </Card>
-            </div>
+        : performerData.queryPerformers.performers.map((performer) => (
+            <PerformerCard key={performer.id} performer={performer} />
         ));
 
     return (

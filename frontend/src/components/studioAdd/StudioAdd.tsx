@@ -1,28 +1,30 @@
 import React from 'react';
 import { useMutation } from '@apollo/react-hooks';
-import { RouteComponentProps, navigate } from '@reach/router';
+import { useHistory } from 'react-router-dom';
 
-import { Studio_getStudio as Studio } from 'src/definitions/Studio';
-import { AddStudioMutation as NewStudio } from 'src/definitions/AddStudioMutation';
+import { AddStudioMutation as AddStudio } from 'src/definitions/AddStudioMutation';
+import { Studio_findStudio as Studio } from 'src/definitions/Studio';
 import AddStudioMutation from 'src/mutations/AddStudio.gql';
+import { StudioCreateInput } from 'src/definitions/globalTypes';
 
 import StudioForm from 'src/components/studioForm';
 
-const StudioAdd: React.FC<RouteComponentProps> = () => {
-    const [insertStudio] = useMutation<NewStudio>(AddStudioMutation, {
+const StudioAdd: React.FC = () => {
+    const history = useHistory();
+    const [insertStudio] = useMutation<AddStudio>(AddStudioMutation, {
         onCompleted: (data) => {
-            navigate(`/studio/${data.addStudio.uuid}`);
+            history.push(`/studios/${data.studioCreate.id}`);
         }
     });
 
-    const doInsert = (insertData:Object) => {
+    const doInsert = (insertData:StudioCreateInput) => {
         insertStudio({ variables: { studioData: insertData } });
     };
 
     const emptyStudio = {
-        title: null,
-        url: null,
-        photoUrl: null
+        id: '',
+        name: '',
+        urls: null
     } as Studio;
 
     return (

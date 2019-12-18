@@ -2,25 +2,27 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { UpdateStudio } from "./globalTypes";
+import { StudioUpdateInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateStudioMutation
 // ====================================================
 
-export interface UpdateStudioMutation_updateStudio {
-  id: number;
-  uuid: any;
-  title: string;
-  url: string | null;
-  photoUrl: string | null;
+export interface UpdateStudioMutation_studioUpdate_urls {
+  url: string;
+  type: string;
+}
+
+export interface UpdateStudioMutation_studioUpdate {
+  id: string;
+  name: string;
+  urls: (UpdateStudioMutation_studioUpdate_urls | null)[];
 }
 
 export interface UpdateStudioMutation {
-  updateStudio: UpdateStudioMutation_updateStudio;
+  studioUpdate: UpdateStudioMutation_studioUpdate | null;
 }
 
 export interface UpdateStudioMutationVariables {
-  studioId: number;
-  studioData: UpdateStudio;
+  input: StudioUpdateInput;
 }

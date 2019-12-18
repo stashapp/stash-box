@@ -2,23 +2,33 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { QuerySpec, StudioFilterType } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: Studios
 // ====================================================
 
-export interface Studios_getStudios {
-  id: number;
-  uuid: any;
-  title: string;
-  url: string | null;
-  photoUrl: string | null;
+export interface Studios_queryStudios_studios_urls {
+  url: string;
+  type: string;
+}
+
+export interface Studios_queryStudios_studios {
+  id: string;
+  name: string;
+  urls: (Studios_queryStudios_studios_urls | null)[];
+}
+
+export interface Studios_queryStudios {
+  count: number;
+  studios: Studios_queryStudios_studios[];
 }
 
 export interface Studios {
-  getStudios: Studios_getStudios[];
+  queryStudios: Studios_queryStudios;
 }
 
 export interface StudiosVariables {
-  limit?: number | null;
-  skip?: number | null;
+  filter?: QuerySpec | null;
+  studioFilter?: StudioFilterType | null;
 }

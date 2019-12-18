@@ -1,22 +1,25 @@
 import React from 'react';
 import { useMutation } from '@apollo/react-hooks';
-import { RouteComponentProps, navigate } from '@reach/router';
+import { useHistory } from 'react-router-dom';
 
-import { Performer_getPerformer as Performer } from 'src/definitions/Performer';
-import { AddPerformerMutation as NewPerformer } from 'src/definitions/AddPerformerMutation';
-import AddPerformerMutation from 'src/mutations/AddPerformer.gql';
+import { Performer_findPerformer as Performer } from 'src/definitions/Performer';
+import { AddPerformerMutation, AddPerformerMutationVariables } from 'src/definitions/AddPerformerMutation';
+import AddPerformer from 'src/mutations/AddPerformer.gql';
+import { PerformerUpdateInput, PerformerCreateInput } from 'src/definitions/globalTypes';
 
 import PerformerForm from 'src/components/performerForm';
 
-const PerformerAdd: React.FC<RouteComponentProps> = () => {
-    const [insertPerformer] = useMutation<NewPerformer>(AddPerformerMutation, {
+const PerformerAdd: React.FC = () => {
+    const history = useHistory();
+    const [insertPerformer] = useMutation<AddPerformerMutation, AddPerformerMutationVariables>(AddPerformer, {
         onCompleted: (data) => {
-            navigate(`/performer/${data.addPerformer.uuid}`);
+            history.push(`/performers/${data.performerCreate.id}`);
         }
     });
 
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    const doInsert = (insertData:any) => {
+    const doInsert = (updateData:PerformerUpdateInput) => {
+        const { id, ...performerData } = updateData;
+        const insertData:PerformerCreateInput = { ...performerData, name: updateData.name };
         insertPerformer({ variables: { performerData: insertData } });
     };
 
@@ -25,23 +28,17 @@ const PerformerAdd: React.FC<RouteComponentProps> = () => {
         disambiguation: null,
         gender: null,
         birthdate: null,
-        birthdateAccuracy: null,
-        careerStart: null,
-        careerEnd: null,
+        career_start_year: null,
+        career_end_year: null,
         height: null,
-        cupSize: null,
-        bandSize: null,
-        waistSize: null,
-        hipSize: null,
-        countryId: null,
+        measurements: null,
+        country: null,
         ethnicity: null,
-        location: null,
-        eyeColor: null,
-        hairColor: null,
+        eye_color: null,
+        hair_color: null,
         tattoos: null,
         piercings: null,
-        aliases: null,
-        photoUrl: null
+        aliases: null
     } as Performer;
 
     return (

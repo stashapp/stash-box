@@ -1,37 +1,37 @@
 import React from 'react';
 import { useMutation } from '@apollo/react-hooks';
-import { RouteComponentProps, navigate } from '@reach/router';
+import { useHistory } from 'react-router-dom';
 
-import { Scene_getScene as Scene } from 'src/definitions/Scene';
-import { AddSceneMutation as NewScene } from 'src/definitions/AddSceneMutation';
+import { Scene_findScene as Scene } from 'src/definitions/Scene';
+import { AddSceneMutation as AddScene, AddSceneMutationVariables } from 'src/definitions/AddSceneMutation';
 import AddSceneMutation from 'src/mutations/AddScene.gql';
+import { SceneUpdateInput, SceneCreateInput } from 'src/definitions/globalTypes';
 
-import { SceneFormData, Performer } from 'src/common/types';
 import SceneForm from 'src/components/sceneForm';
 
-const SceneAdd: React.FC<RouteComponentProps> = () => {
-    const [insertScene] = useMutation<NewScene>(AddSceneMutation, {
+const SceneAdd: React.FC = () => {
+    const history = useHistory();
+    const [insertScene] = useMutation<AddScene, AddSceneMutationVariables>(AddSceneMutation, {
         onCompleted: (data) => {
-            navigate(`/scene/${data.addScene.uuid}`);
+            history.push(`/scenes/${data.sceneCreate.id}`);
         }
     });
 
-    const doInsert = (insertData:SceneFormData, performers:Performer[]) => {
-        insertScene({ variables: { sceneData: insertData, performers } });
+    const doInsert = (updateData:SceneUpdateInput) => {
+        const { id, ...sceneData } = updateData;
+        const insertData:SceneCreateInput = { ...sceneData, fingerprints: updateData.fingerprints || [] };
+        insertScene({ variables: { sceneData: insertData } });
     };
 
     const emptyScene = {
-        id: null,
-        uuid: null,
-        title: null,
+        id: '',
         date: null,
-        dateAccuracy: null,
-        photoUrl: null,
-        description: null,
-        studioUrl: null,
-        studio: {
-            id: null
-        },
+        title: null,
+        details: null,
+        urls: null,
+        studio: null,
+        tag_ids: null,
+        fingerprints: [],
         performers: []
     } as Scene;
 
