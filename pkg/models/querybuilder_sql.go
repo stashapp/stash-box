@@ -82,12 +82,14 @@ func updateObjectByID(tx *sqlx.Tx, table string, object interface{}) error {
 
 func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value interface{}) error {
 	ensureTx(tx)
-	_, err := tx.Exec(`DELETE FROM `+table+` WHERE `+column+` = $1`, value)
+	query := tx.Rebind(`DELETE FROM ` + table + ` WHERE ` + column + ` = ?`)
+	_, err := tx.Exec(query, value)
 	return err
 }
 
 func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
-	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = $1 LIMIT 1`, id)
+	query := tx.Rebind(`SELECT * FROM ` + table + ` WHERE id = ? LIMIT 1`)
+	return tx.Get(object, query, id)
 }
 
 func selectAll(tableName string) string {
@@ -203,14 +205,14 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 		// Search for any word
 		for _, word := range queryWords {
 			for _, column := range columns {
-				likeClauses = append(likeClauses, column+notStr+" LIKE $1")
+				likeClauses = append(likeClauses, column+notStr+" LIKE ?")
 				args = append(args, "%"+word+"%")
 			}
 		}
 	} else {
 		// Search the exact query
 		for _, column := range columns {
-			likeClauses = append(likeClauses, column+notStr+" LIKE $1")
+			likeClauses = append(likeClauses, column+notStr+" LIKE ?")
 			args = append(args, "%"+trimmedQuery+"%")
 		}
 	}
@@ -220,7 +222,7 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 }
 
 func getInBinding(length int) string {
-	bindings := strings.Repeat("$1, ", length)
+	bindings := strings.Repeat("?, ", length)
 	bindings = strings.TrimRight(bindings, ", ")
 	return "(" + bindings + ")"
 }
@@ -287,10 +289,8 @@ func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
 		panic("must use a transaction")
 	}
 	idColumnName := getColumn(tableName, "id")
-	_, err := tx.Exec(
-		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = $1`,
-		id,
-	)
+	query := tx.Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
+	_, err := tx.Exec(query, id)
 	return err
 }
 

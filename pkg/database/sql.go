@@ -102,7 +102,8 @@ func ensureTx(tx *sqlx.Tx) {
 }
 
 func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
-	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = $1 LIMIT 1`, id)
+	query := tx.Rebind(`SELECT * FROM ` + table + ` WHERE id = ? LIMIT 1`)
+	return tx.Get(object, query, id)
 }
 
 func insertObject(tx *sqlx.Tx, table string, object interface{}) error {
@@ -134,16 +135,15 @@ func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
 		panic("must use a transaction")
 	}
 	idColumnName := getColumn(tableName, "id")
-	_, err := tx.Exec(
-		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = $1`,
-		id,
-	)
+	query := tx.Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
+	_, err := tx.Exec(query, id)
 	return err
 }
 
 func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value interface{}) error {
 	ensureTx(tx)
-	_, err := tx.Exec(`DELETE FROM `+table+` WHERE `+column+` = $1`, value)
+	query := tx.Rebind(`DELETE FROM ` + table + ` WHERE ` + column + ` = ?`)
+	_, err := tx.Exec(query, value)
 	return err
 }
 

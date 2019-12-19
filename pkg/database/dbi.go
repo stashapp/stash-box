@@ -146,7 +146,7 @@ func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 // Find returns the row object with the provided id, or returns nil if not
 // found.
 func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
-	query := selectStatement(table) + " WHERE id = $1 LIMIT 1"
+	query := selectStatement(table) + " WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 
 	query = dialect.SetPlaceholders(query)
@@ -223,7 +223,7 @@ func (q dbi) DeleteJoins(tableJoin TableJoin, id uuid.UUID) error {
 // FindJoins returns join objects where the foreign key id is equal to the
 // provided id. The join objects are output to the provided output slice.
 func (q dbi) FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error {
-	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " = $1"
+	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " = ?"
 	args := []interface{}{id}
 
 	return q.RawQuery(tableJoin.Table, query, args, output)
