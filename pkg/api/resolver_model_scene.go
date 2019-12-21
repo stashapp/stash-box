@@ -74,3 +74,20 @@ func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene) ([]
 	qb := models.NewSceneQueryBuilder(nil)
 	return qb.GetFingerprints(obj.ID)
 }
+
+func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]*models.URL, error) {
+	qb := models.NewSceneQueryBuilder(nil)
+	urls, err := qb.GetUrls(obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.URL
+	for _, url := range urls {
+		retURL := url.ToURL()
+		ret = append(ret, &retURL)
+	}
+
+	return ret, nil
+}

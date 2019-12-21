@@ -1,6 +1,5 @@
 CREATE TABLE `performers` (
   `id` blob not null primary key,
-  `image` blob,
   `name` varchar(255) not null,
   `disambiguation` varchar(255),
   `gender` varchar(20),
@@ -79,7 +78,6 @@ CREATE TABLE `tag_aliases` (
 
 CREATE TABLE `studios` (
   `id` blob not null primary key,
-  `image` blob,
   `name` varchar(255) not null,
   `parent_studio_id` blob,
   `created_at` datetime not null,
@@ -100,12 +98,20 @@ CREATE TABLE `scenes` (
   `id` blob not null primary key,
   `title` varchar(255),
   `details` varchar(255),
-  `url` varchar(255),
   `date` date,
   `studio_id` blob,
   `created_at` datetime not null,
   `updated_at` datetime not null,
   foreign key(`studio_id`) references `studios`(`id`) ON DELETE SET NULL
+);
+
+CREATE TABLE `scene_urls` (
+  `scene_id` blob not null,
+  `url` varchar(255) not null,
+  `type` varchar(255) not null,
+  foreign key(`scene_id`) references `scenes`(`id`) ON DELETE CASCADE,
+  unique (`scene_id`, `url`),
+  unique (`scene_id`, `type`)
 );
 
 CREATE TABLE `scene_fingerprints` (

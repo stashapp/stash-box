@@ -42,8 +42,8 @@ func (qb *StudioQueryBuilder) CreateUrls(newJoins StudioUrls) error {
 	return qb.dbi.InsertJoins(studioUrlTable, &newJoins)
 }
 
-func (qb *StudioQueryBuilder) UpdateUrls(studio uuid.UUID, updatedJoins StudioUrls) error {
-	return qb.dbi.ReplaceJoins(studioUrlTable, studio, &updatedJoins)
+func (qb *StudioQueryBuilder) UpdateUrls(studioID uuid.UUID, updatedJoins StudioUrls) error {
+	return qb.dbi.ReplaceJoins(studioUrlTable, studioID, &updatedJoins)
 }
 
 func (qb *StudioQueryBuilder) Find(id uuid.UUID) (*Studio, error) {
