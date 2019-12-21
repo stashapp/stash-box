@@ -13,6 +13,7 @@ const Database = "database"
 
 const Host = "host"
 const Port = "port"
+const HTTPUpgrade = "http_upgrade"
 
 // key used to sign JWT tokens
 const JWTSignKey = "jwt_secret_key"
@@ -55,6 +56,10 @@ func GetJWTSignKey() []byte {
 
 func GetSessionStoreKey() []byte {
 	return []byte(viper.GetString(SessionStoreKey))
+}
+
+func GetHTTPUpgrade() bool {
+    return viper.GetBool(HTTPUpgrade)
 }
 
 // GetLogFile returns the filename of the file to output logs to.

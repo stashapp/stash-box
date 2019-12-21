@@ -30,7 +30,7 @@ const formatDuration = (dur?: number) => {
         seconds.toString().padStart(2, '0')
     ];
     if (hour)
-        res.push(hour.toString());
+        res.unshift(hour.toString());
     return res.join(':');
 };
 

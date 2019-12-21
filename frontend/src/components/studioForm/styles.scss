@@ -1,17 +1,9 @@
 .StudioForm {
-    img {
-        width: 100%;
-    }
-
     &-body {
         min-height: 400px;
     }
 
-    .save-button {
-        margin-right: 2rem;
-    }
-
-    .reset-button {
-        margin-right: 1rem;
+    &-img {
+        max-height: 10rem;
     }
 }

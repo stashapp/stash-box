@@ -5,6 +5,9 @@ query Studio($id: ID!) {
     urls {
         url
         type
+        image_id
+        width
+        height
     }
   }
 }

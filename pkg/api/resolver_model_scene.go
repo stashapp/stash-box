@@ -20,6 +20,9 @@ func (r *sceneResolver) Details(ctx context.Context, obj *models.Scene) (*string
 func (r *sceneResolver) Duration(ctx context.Context, obj *models.Scene) (*int, error) {
 	return resolveNullInt32(obj.Duration)
 }
+func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*string, error) {
+	return resolveNullString(obj.Director)
+}
 func (r *sceneResolver) URL(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.URL)
 }

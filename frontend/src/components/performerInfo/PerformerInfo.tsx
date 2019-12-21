@@ -2,8 +2,6 @@ import React, { useState, useContext } from 'react';
 import { useMutation } from '@apollo/react-hooks';
 import { Link, useHistory } from 'react-router-dom';
 import { Card, Table } from 'react-bootstrap';
-import { Carousel } from 'react-responsive-carousel';
-import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 import DeletePerformer from 'src/mutations/DeletePerformer.gql';
 import AuthContext from 'src/AuthContext';
@@ -13,6 +11,7 @@ import getFuzzyDate from 'src/utils/date';
 import { boobJobStatus, getBodyModification } from 'src/utils/transforms';
 import { EthnicityTypes, HairColorTypes, EyeColorTypes } from 'src/constants';
 
+import ImageCarousel from 'src/components/imageCarousel';
 import Modal from 'src/components/modal';
 import { GenderIcon } from 'src/components/fragments';
 
@@ -54,7 +53,7 @@ const PerformerInfo: React.FC<{performer: Performer}> = ({ performer }) => {
     return (
         <>
             { showModal }
-            <div className="row">
+            <div className="row mb-4">
                 <div className="col-6">
                     <Card>
                         <Card.Header>
@@ -148,11 +147,7 @@ const PerformerInfo: React.FC<{performer: Performer}> = ({ performer }) => {
                     </Card>
                 </div>
                 <div className="col-6 performer-photo">
-                    <Carousel width="auto" className="image-carousel">
-                        { performer.urls.filter((url) => url.type === 'PHOTO').map((url) => (
-                            <img src={url.url} alt="Performer" />
-                        ))}
-                    </Carousel>
+                    <ImageCarousel urls={performer.urls} orientation="portrait" />
                 </div>
             </div>
         </>

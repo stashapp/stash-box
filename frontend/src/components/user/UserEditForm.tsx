@@ -87,6 +87,7 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
                 { (Auth.user?.roles ?? []).includes('ADMIN') && (
                     <Form.Group className="col-4">
                         <Select
+                            classNamePrefix="react-select"
                             name="roles"
                             options={roles}
                             placeholder="User roles"

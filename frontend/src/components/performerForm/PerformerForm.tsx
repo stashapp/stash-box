@@ -394,6 +394,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                         <label htmlFor="country" className="col-6">
                             <div>Nationality</div>
                             <Select
+                                classNamePrefix="react-select"
                                 name="country"
                                 onChange={onCountryChange}
                                 options={countryObj}

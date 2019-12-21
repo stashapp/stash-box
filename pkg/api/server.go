@@ -108,6 +108,14 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
+func redirect(w http.ResponseWriter, req *http.Request) {
+    target := "https://" + req.Host + req.URL.Path
+    if len(req.URL.RawQuery) > 0 {
+        target += "?" + req.URL.RawQuery
+    }
+    http.Redirect(w, req, target, http.StatusPermanentRedirect)
+}
+
 func Start() {
 	uiBox = packr.New("Setup UI Box", "../../frontend/dist")
 
@@ -145,7 +153,16 @@ func Start() {
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
 
 	// session handlers
-	r.HandleFunc("/login", handleLogin)
+	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == http.MethodGet {
+			data, _ := uiBox.Find("index.html")
+			_, _ = w.Write(data)
+            return
+        }
+
+        handleLogin(w, r)
+        return
+    })
 	r.HandleFunc("/logout", handleLogout)
 
 	r.HandleFunc("/image", func(w http.ResponseWriter, r *http.Request) {
@@ -176,6 +193,10 @@ func Start() {
 			Handler:   r,
 			TLSConfig: tlsConfig,
 		}
+
+        if config.GetHTTPUpgrade() {
+            go http.ListenAndServe(config.GetHost() + ":80", http.HandlerFunc(redirect))
+        }
 
 		go func() {
 			printVersion()

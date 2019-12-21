@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { Link, useParams } from 'react-router-dom';
 
@@ -14,8 +14,11 @@ import { LoadingIndicator } from 'src/components/fragments';
 import SceneCard from 'src/components/sceneCard';
 
 import { getUrlByType } from 'src/utils/transforms';
+import { canEdit } from 'src/utils/auth';
+import AuthContext from 'src/AuthContext';
 
 const StudioComponent: React.FC = () => {
+    const auth = useContext(AuthContext);
     const { id } = useParams();
     const { page, setPage } = usePagination();
     const { loading, data } = useQuery<Studio, StudioVariables>(StudioQuery, {
@@ -50,17 +53,21 @@ const StudioComponent: React.FC = () => {
             <div className="studio-header">
                 <div className="studio-title">
                     <h2>{studio.name}</h2>
-                    <h4><a href={getUrlByType(studio.urls, 'HOME')}>{getUrlByType(studio.urls, 'HOME')}</a></h4>
+                    <h6>
+                        <a href={getUrlByType(studio.urls, 'HOME')}>{getUrlByType(studio.urls, 'HOME')}</a>
+                    </h6>
                 </div>
                 <div className="studio-photo">
-                    <img src={getUrlByType(studio.urls, 'PHOTO')} alt="Studio logo" />
+                    <img src={getUrlByType(studio.urls, 'PHOTO', 'landscape')} alt="Studio logo" />
                 </div>
-                <div className="studio-edit">
-                    <Link to={`${id}/edit`}>
-                        <button type="button" className="btn btn-secondary">Edit</button>
-                    </Link>
-                    <button type="button" className="btn btn-danger" onClick={handleDelete}>Delete</button>
-                </div>
+                { canEdit(auth.user) && (
+                    <div className="studio-edit">
+                        <Link to={`${id}/edit`}>
+                            <button type="button" className="btn btn-secondary">Edit</button>
+                        </Link>
+                        <button type="button" className="btn btn-danger" onClick={handleDelete}>Delete</button>
+                    </div>
+                )}
             </div>
             <hr />{ scenes.length === 0 ? <h4>No scenes found for this studio</h4> : (
                 <>

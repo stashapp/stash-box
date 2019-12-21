@@ -107,6 +107,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
                 </Form.Group>
                 <Form.Group className="col-4">
                     <Select
+                        classNamePrefix="react-select"
                         name="roles"
                         options={roles}
                         placeholder="User roles"

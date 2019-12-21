@@ -25,6 +25,9 @@ enum SortDirectionEnum {
 type URL {
   url: String!
   type: String!
+  image_id: String
+  height: Int
+  width: Int
 }
 
 input URLInput {

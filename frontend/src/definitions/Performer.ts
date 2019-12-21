@@ -34,6 +34,9 @@ export interface Performer_findPerformer_piercings {
 export interface Performer_findPerformer_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  height: number | null;
+  width: number | null;
 }
 
 export interface Performer_findPerformer {

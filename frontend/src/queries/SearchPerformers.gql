@@ -12,6 +12,9 @@ query SearchPerformers($term: String!) {
         urls {
             url
             type
+            image_id
+            height
+            width
         }
     }
 }

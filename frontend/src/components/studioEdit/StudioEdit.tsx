@@ -38,7 +38,7 @@ const StudioEdit: React.FC = () => {
         <div>
             <h2>
                 Edit
-                <i>{data.findStudio.name}</i>
+                <strong className="ml-2">{data.findStudio.name}</strong>
             </h2>
             <hr />
             <StudioForm studio={data.findStudio} callback={doUpdate} />

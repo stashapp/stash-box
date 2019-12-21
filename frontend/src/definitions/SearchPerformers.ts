@@ -17,6 +17,9 @@ export interface SearchPerformers_searchPerformer_birthdate {
 export interface SearchPerformers_searchPerformer_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  height: number | null;
+  width: number | null;
 }
 
 export interface SearchPerformers_searchPerformer {

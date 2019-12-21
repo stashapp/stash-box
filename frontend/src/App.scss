@@ -48,7 +48,7 @@ textarea.text-input {
    to the react-select controls */
 /* stylelint-disable selector-class-pattern */
 
-div.react-select__control {
+.react-select__control {
   background-color: $secondary;
   border-color: $secondary;
   color: $text-color;
@@ -56,7 +56,7 @@ div.react-select__control {
 
   .react-select__single-value,
   .react-select__input {
-    color: $text-color;
+    color: black;
   }
 
   .react-select__multi-value {

@@ -4,9 +4,16 @@ query Studios($filter: QuerySpec, $studioFilter: StudioFilterType) {
       studios {
         id
         name
+        parent {
+            id,
+            name
+        }
         urls {
             url
             type
+            image_id
+            width
+            height
         }
       }
   }

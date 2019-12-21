@@ -64,6 +64,7 @@ const BodyModification: React.FC<BodyModificationProps> = ({
             {modificationList}
             <label htmlFor={name} className={`${CLASSNAME}-select`}>
                 <Creatable
+                    classNamePrefix="react-select"
                     value={null}
                     ref={selectRef}
                     name={name}

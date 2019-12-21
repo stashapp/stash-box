@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { SceneUpdateInput, GenderEnum } from "./globalTypes";
+import { SceneUpdateInput, GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateSceneMutation
@@ -30,6 +30,17 @@ export interface UpdateSceneMutation_sceneUpdate_performers {
   performer: UpdateSceneMutation_sceneUpdate_performers_performer;
 }
 
+export interface UpdateSceneMutation_sceneUpdate_fingerprints {
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+}
+
+export interface UpdateSceneMutation_sceneUpdate_tags {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 export interface UpdateSceneMutation_sceneUpdate {
   id: string;
   date: any | null;
@@ -37,6 +48,8 @@ export interface UpdateSceneMutation_sceneUpdate {
   urls: UpdateSceneMutation_sceneUpdate_urls[];
   studio: UpdateSceneMutation_sceneUpdate_studio | null;
   performers: UpdateSceneMutation_sceneUpdate_performers[];
+  fingerprints: UpdateSceneMutation_sceneUpdate_fingerprints[];
+  tags: UpdateSceneMutation_sceneUpdate_tags[];
 }
 
 export interface UpdateSceneMutation {

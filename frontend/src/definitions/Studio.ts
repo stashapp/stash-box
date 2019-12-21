@@ -10,6 +10,9 @@
 export interface Studio_findStudio_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 export interface Studio_findStudio {

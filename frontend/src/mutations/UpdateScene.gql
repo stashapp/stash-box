@@ -19,5 +19,14 @@ mutation UpdateSceneMutation($updateData: SceneUpdateInput!) {
 		  aliases
         }
       }
+      fingerprints {
+        hash
+        algorithm
+      }
+      tags {
+          id
+          name
+          description
+      }
     }
 }

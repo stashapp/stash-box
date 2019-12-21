@@ -35,6 +35,9 @@ query Performer($id: ID!) {
     urls {
         url
         type
+        image_id
+        height
+        width
     }
   }
 }

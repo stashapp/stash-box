@@ -3,8 +3,10 @@
         width: 100%;
     }
 
-    label {
+    label,
+    .label {
         font-weight: 700;
+        margin-bottom: 0;
     }
 
     .performer-item {
@@ -22,7 +24,7 @@
         font-weight: bold;
     }
 
-    .performer-remove {
+    .remove-item {
         background: transparent;
         border: none;
         color: rgba(0, 0, 0, .5);

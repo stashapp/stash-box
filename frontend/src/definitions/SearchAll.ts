@@ -17,6 +17,9 @@ export interface SearchAll_searchPerformer_birthdate {
 export interface SearchAll_searchPerformer_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  height: number | null;
+  width: number | null;
 }
 
 export interface SearchAll_searchPerformer {
@@ -32,6 +35,9 @@ export interface SearchAll_searchPerformer {
 export interface SearchAll_searchScene_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  height: number | null;
+  width: number | null;
 }
 
 export interface SearchAll_searchScene_studio {

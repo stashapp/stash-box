@@ -1,0 +1,8 @@
+.image-carousel {
+    &-img {
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        width: 100%;
+    }
+}

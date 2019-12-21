@@ -33,8 +33,7 @@ const SceneEdit: React.FC = () => {
     return (
         <div>
             <h2>
-                Edit
-                <i>{data.findScene.title}</i>
+                Edit “{data.findScene.title}”
             </h2>
             <hr />
             <SceneForm scene={data.findScene} callback={doUpdate} />

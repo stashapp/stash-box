@@ -102,8 +102,9 @@ const SearchField: React.FC<SearchFieldProps> = ({ onClick, searchType = SearchT
     };
 
     return (
-        <div className="SearchField">
+        <div className="SearchField ml-4">
             <Async
+                classNamePrefix="react-select"
                 autoload={false}
                 value={selectedValue}
                 defaultOptions

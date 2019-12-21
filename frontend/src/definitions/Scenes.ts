@@ -12,6 +12,9 @@ import { QuerySpec, SceneFilterType, GenderEnum } from "./globalTypes";
 export interface Scenes_queryScenes_scenes_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  height: number | null;
+  width: number | null;
 }
 
 export interface Scenes_queryScenes_scenes_studio {

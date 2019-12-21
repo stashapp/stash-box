@@ -58,10 +58,11 @@ const Main: React.FC = ({ children }) => {
     const renderUserNav = () => (
         contextValue.authenticated && (
             <>
+                <span>Logged in as</span>
+                <NavLink to={`/users/${contextValue.user.name}`} className="nav-link ml-auto mr-2">{contextValue.user.name}</NavLink>
                 { isRole('ADMIN') && (
                     <NavLink exact to="/admin" className="nav-link">Admin</NavLink>
                 )}
-                <NavLink to={`/users/${contextValue.user.name}`} className="nav-link ml-auto">{contextValue.user.name}</NavLink>
                 <NavLink to="/logout" onClick={handleLogout} className="nav-link">Logout</NavLink>
             </>
         )
@@ -69,14 +70,14 @@ const Main: React.FC = ({ children }) => {
 
     return (
         <div>
-            <Navbar bg="dark" variant="dark">
+            <Navbar bg="dark" variant="dark" className="px-4">
                 <Nav className="row mr-auto">
                     <NavLink exact to="/" className="nav-link">Home</NavLink>
                     <NavLink to="/performers" className="nav-link">Performers</NavLink>
                     <NavLink to="/scenes" className="nav-link">Scenes</NavLink>
                     <NavLink to="/studios" className="nav-link col-1">Studios</NavLink>
                 </Nav>
-                <Nav>
+                <Nav className="align-items-center">
                     { contextValue.authenticated && renderUserNav() }
                     <SearchField searchType={SearchType.Combined} />
                 </Nav>
