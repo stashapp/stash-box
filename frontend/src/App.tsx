@@ -18,6 +18,7 @@ import Studio from './components/studio';
 import Studios from './components/studios';
 import StudioEdit from './components/studioEdit';
 import StudioAdd from './components/studioAdd';
+import Tag from './components/tag';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.scss';
@@ -68,6 +69,9 @@ const App: React.FC = () => (
                         </Route>
                         <Route exact path="/studios/:id/edit">
                             <StudioEdit />
+                        </Route>
+                        <Route exact path="/tag/:name">
+                            <Tag />
                         </Route>
                     </Switch>
                 </Main>

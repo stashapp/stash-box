@@ -26,9 +26,28 @@
 }
 
 .scene-description {
-    padding: 1rem 0;
+    padding: 1rem;
 }
 
 .scene-performer {
     margin-right: .5rem;
+}
+
+.scene-fingerprints {
+    padding: 1rem;
+}
+
+.scene-tags {
+    margin-top: 1rem;
+}
+
+.scene-tag-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+        display: inline;
+        margin-right: .5rem;
+    }
 }

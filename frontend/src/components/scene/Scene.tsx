@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { Link, useHistory, useParams } from 'react-router-dom';
-import { Card } from 'react-bootstrap';
+import { Card, Tabs, Tab, Table} from 'react-bootstrap';
 
 import AuthContext from 'src/AuthContext';
 import SceneQuery from 'src/queries/Scene.gql';
@@ -50,6 +50,18 @@ const SceneComponent: React.FC = () => {
         );
     }).map((p, index) => (index % 2 === 2 ? [' • ', p] : p));
 
+    const fingerprints = scene.fingerprints.map((fingerprint) => (
+        <tr>
+            <td>{ fingerprint.algorithm }</td>
+            <td>{ fingerprint.hash }</td>
+        </tr>
+    ));
+    const tags = scene.tags.map((tag) => (
+        <li>
+            <a href={`/tag/${tag.name}`} title={tag.description} className="badge badge-secondary">{tag.name}</a>
+        </li>
+    ));
+
     const deleteModal = showDelete && (
         <Modal
             message={`Are you sure you want to delete '${scene.title}'? This operation cannot be undone.`}
@@ -89,12 +101,33 @@ const SceneComponent: React.FC = () => {
                     <div className="scene-performers">{ performers }</div>
                 </Card.Footer>
             </Card>
-            <div className="scene-description">
-                <h2>Description:</h2>
-                <div>{scene.details}</div>
-                <hr />
-                <a href={getUrlByType(scene.urls, 'STUDIO')}>{getUrlByType(scene.urls, 'STUDIO')}</a>
-            </div>
+            <Tabs defaultActiveKey="description" id="scene-tab">
+                <Tab eventKey="description" title="Description">
+                    <div className="scene-description">
+                        <h4>Description:</h4>
+                        <div>{scene.details}</div>
+                        <div className="scene-tags">
+                            <h6>Tags:</h6>
+                            <ul className="scene-tag-list">
+                                {tags}
+                            </ul>
+                        </div>
+                        <hr />
+                        <a href={getUrlByType(scene.urls, 'STUDIO')}>{getUrlByType(scene.urls, 'STUDIO')}</a>
+                    </div>
+                </Tab>
+                <Tab eventKey="fingerprints" title="Fingerprints">
+                    <div className="scene-fingerprints">
+                        <h4>Fingerprints:</h4>
+                        { fingerprints.length === 0 ? <h6>No fingerprints found for this scene.</h6> : (
+                            <Table striped bordered hover size="sm">
+                                <thead><td>Algorithm</td><td>Hash</td></thead>
+                                <tbody>{ fingerprints }</tbody>
+                            </Table>
+                        )}
+                    </div>
+                </Tab>
+            </Tabs>
         </>
     );
 };

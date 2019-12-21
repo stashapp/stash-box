@@ -21,5 +21,14 @@ query Scene($id: ID!) {
 		  aliases
         }
       }
+      fingerprints {
+        hash
+        algorithm
+      }
+      tags {
+        id
+        name
+        description
+      }
     }
 }

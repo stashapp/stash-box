@@ -20,5 +20,14 @@ mutation AddSceneMutation($sceneData: SceneCreateInput!) {
 		  aliases
         }
       }
+      fingerprints {
+        hash
+        algorithm
+      }
+      tags {
+          id
+          name
+          description
+      }
     }
 }
