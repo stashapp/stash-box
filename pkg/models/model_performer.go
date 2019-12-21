@@ -5,7 +5,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 const (
@@ -39,7 +38,6 @@ type Performer struct {
 	ID                uuid.UUID       `db:"id" json:"id"`
 	Name              string          `db:"name" json:"name"`
 	Disambiguation    sql.NullString  `db:"disambiguation" json:"disambiguation"`
-	Image             []byte          `db:"image" json:"image"`
 	Gender            sql.NullString  `db:"gender" json:"gender"`
 	Birthdate         SQLiteDate      `db:"birthdate" json:"birthdate"`
 	BirthdateAccuracy sql.NullString  `db:"birthdate_accuracy" json:"birthdate_accuracy"`
@@ -264,26 +262,8 @@ func (p Performer) ResolveMeasurements() Measurements {
 	return ret
 }
 
-func (p *Performer) TranslateImageData(inputData *string) ([]byte, error) {
-	var imageData []byte
-	var err error
-
-	_, imageData, err = utils.ProcessBase64Image(*inputData)
-
-	return imageData, err
-}
-
 func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 	CopyFull(p, input)
-
-	if input.Image != nil {
-		var err error
-		p.Image, err = p.TranslateImageData(input.Image)
-
-		if err != nil {
-			return err
-		}
-	}
 
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)
@@ -298,15 +278,6 @@ func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 
 func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
 	CopyFull(p, input)
-
-	if input.Image != nil {
-		var err error
-		p.Image, err = p.TranslateImageData(input.Image)
-
-		if err != nil {
-			return err
-		}
-	}
 
 	if input.Birthdate != nil {
 		p.setBirthdate(*input.Birthdate)

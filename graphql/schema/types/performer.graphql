@@ -109,8 +109,6 @@ input PerformerCreateInput {
   career_end_year: Int
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
-  """Should be base64 encoded"""
-  image: String
 }
 
 input PerformerUpdateInput {
@@ -132,8 +130,6 @@ input PerformerUpdateInput {
   career_end_year: Int
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
-  """Should be base64 encoded"""
-  image: String
 }
 
 input PerformerDestroyInput {
@@ -158,8 +154,6 @@ input PerformerEditDetailsInput {
   career_end_year: Int
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
-  """Should be base64 encoded"""
-  image: String
 }
 
 input PerformerEditInput {

@@ -20,6 +20,10 @@ var (
 	sceneFingerprintTable = database.NewTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
 		return &SceneFingerprint{}
 	})
+
+	sceneUrlTable = database.NewTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
+		return &SceneUrl{}
+	})
 )
 
 type Scene struct {
@@ -57,6 +61,45 @@ type SceneFingerprint struct {
 	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
 	Hash      string    `db:"hash" json:"hash"`
 	Algorithm string    `db:"algorithm" json:"algorithm"`
+}
+
+type SceneUrl struct {
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	URL     string    `db:"url" json:"url"`
+	Type    string    `db:"type" json:"type"`
+}
+
+func (p *SceneUrl) ToURL() URL {
+	return URL{
+		URL:  p.URL,
+		Type: p.Type,
+	}
+}
+
+type SceneUrls []*SceneUrl
+
+func (p SceneUrls) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *SceneUrls) Add(o interface{}) {
+	*p = append(*p, o.(*SceneUrl))
+}
+
+func CreateSceneUrls(sceneId uuid.UUID, urls []*URLInput) SceneUrls {
+	var ret SceneUrls
+
+	for _, urlInput := range urls {
+		ret = append(ret, &SceneUrl{
+			SceneID: sceneId,
+			URL:     urlInput.URL,
+			Type:    urlInput.Type,
+		})
+	}
+
+	return ret
 }
 
 func (p SceneFingerprint) ToFingerprint() *Fingerprint {

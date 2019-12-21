@@ -120,43 +120,31 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 
 	// Save the aliases
-	// only do this if provided
-	if wasFieldIncluded(ctx, "aliases") {
-		performerAliases := models.CreatePerformerAliases(performer.ID, input.Aliases)
-		if err := qb.UpdateAliases(performer.ID, performerAliases); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
+	performerAliases := models.CreatePerformerAliases(performer.ID, input.Aliases)
+	if err := qb.UpdateAliases(performer.ID, performerAliases); err != nil {
+		_ = tx.Rollback()
+		return nil, err
 	}
 
 	// Save the URLs
-	// only do this if provided
-	if wasFieldIncluded(ctx, "urls") {
-		performerUrls := models.CreatePerformerUrls(performer.ID, input.Urls)
-		if err := qb.UpdateUrls(performer.ID, performerUrls); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
+	performerUrls := models.CreatePerformerUrls(performer.ID, input.Urls)
+	if err := qb.UpdateUrls(performer.ID, performerUrls); err != nil {
+		_ = tx.Rollback()
+		return nil, err
 	}
 
 	// Save the Tattoos
-	// only do this if provided
-	if wasFieldIncluded(ctx, "tattoos") {
-		performerTattoos := models.CreatePerformerBodyMods(performer.ID, input.Tattoos)
-		if err := qb.UpdateTattoos(performer.ID, performerTattoos); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
+	performerTattoos := models.CreatePerformerBodyMods(performer.ID, input.Tattoos)
+	if err := qb.UpdateTattoos(performer.ID, performerTattoos); err != nil {
+		_ = tx.Rollback()
+		return nil, err
 	}
 
 	// Save the Piercings
-	// only do this if provided
-	if wasFieldIncluded(ctx, "piercings") {
-		performerPiercings := models.CreatePerformerBodyMods(performer.ID, input.Piercings)
-		if err := qb.UpdatePiercings(performer.ID, performerPiercings); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
+	performerPiercings := models.CreatePerformerBodyMods(performer.ID, input.Piercings)
+	if err := qb.UpdatePiercings(performer.ID, performerPiercings); err != nil {
+		_ = tx.Rollback()
+		return nil, err
 	}
 
 	// Commit

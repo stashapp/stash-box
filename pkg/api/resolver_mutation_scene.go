@@ -59,6 +59,13 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		return nil, err
 	}
 
+	// Save the URLs
+	sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
+	if err := qb.CreateUrls(sceneUrls); err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
 	// Save the tags
 	tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
 
@@ -102,34 +109,31 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	// Save the checksums
-	// only do this if provided
-	if wasFieldIncluded(ctx, "fingerprints") {
-		sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
-		if err := qb.UpdateFingerprints(scene.ID, sceneFingerprints); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
+	sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
+	if err := qb.UpdateFingerprints(scene.ID, sceneFingerprints); err != nil {
+		_ = tx.Rollback()
+		return nil, err
 	}
 
 	jqb := models.NewJoinsQueryBuilder(tx)
 
-	// only do this if provided
-	if wasFieldIncluded(ctx, "performers") {
-		scenePerformers := models.CreateScenePerformers(scene.ID, input.Performers)
-		if err := jqb.UpdatePerformersScenes(scene.ID, scenePerformers); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
+	scenePerformers := models.CreateScenePerformers(scene.ID, input.Performers)
+	if err := jqb.UpdatePerformersScenes(scene.ID, scenePerformers); err != nil {
+		_ = tx.Rollback()
+		return nil, err
 	}
 
 	// Save the tags
-	// only do this if provided
-	if wasFieldIncluded(ctx, "tagIds") {
-		tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
+	tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
+	if err := jqb.UpdateScenesTags(scene.ID, tagJoins); err != nil {
+		return nil, err
+	}
 
-		if err := jqb.UpdateScenesTags(scene.ID, tagJoins); err != nil {
-			return nil, err
-		}
+	// Save the URLs
+	sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
+	if err := qb.UpdateUrls(scene.ID, sceneUrls); err != nil {
+		_ = tx.Rollback()
+		return nil, err
 	}
 
 	// Commit

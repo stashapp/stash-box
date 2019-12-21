@@ -11,6 +11,8 @@ git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGy
 github.com/99designs/gqlgen v0.9.0/go.mod h1:HrrG7ic9EgLPsULxsZh/Ti+p0HNWgR3XRuvnD0pb5KY=
 github.com/99designs/gqlgen v0.10.1 h1:1BgB6XKGTHq7uH4G1/PYyKe2Kz7/vw3AlvMZlD3TEEY=
 github.com/99designs/gqlgen v0.10.1/go.mod h1:IviubpnyI4gbBcj8IcxSSc/Q/+af5riwCmJmwF0uaPE=
+github.com/99designs/gqlgen v0.10.2 h1:FfjCqIWejHDJeLpQTI0neoZo5vDO3sdo5oNCucet3A0=
+github.com/99designs/gqlgen v0.10.2/go.mod h1:aDB7oabSAyZ4kUHLEySsLxnWrBy3lA0A2gWKU+qoHwI=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78/go.mod h1:LmzpDX56iTiv29bbRTIsUNlaFfuhWRQBWjQdVyAevI8=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
@@ -565,6 +567,8 @@ github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijb
 github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e/go.mod h1:/HUdMve7rvxZma+2ZELQeNh88+003LL7Pf/CZ089j8U=
 github.com/vektah/gqlparser v1.1.2 h1:ZsyLGn7/7jDNI+y4SEhI4yAxRChlv15pUHMjijT+e68=
 github.com/vektah/gqlparser v1.1.2/go.mod h1:1ycwN7Ij5njmMkPPAOaRFY4rET2Enx7IkVv3vaXspKw=
+github.com/vektah/gqlparser v1.2.0 h1:ntkSCX7F5ZJKl+HIVnmLaO269MruasVpNiMOjX9kgo0=
+github.com/vektah/gqlparser v1.2.0/go.mod h1:bkVf0FX+Stjg/MHnm8mEyubuaArhNEqfQhF+OTiAL74=
 github.com/xanzy/go-gitlab v0.15.0/go.mod h1:8zdQa/ri1dfn8eS3Ir1SyfvOKlw7WBJ8DVThkpGiXrs=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=

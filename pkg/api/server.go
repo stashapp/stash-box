@@ -110,8 +110,6 @@ func Start() {
 	// TODO - this should be disabled in production
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
 
-	r.Mount("/performer", performerRoutes{}.Routes())
-
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
 		httpsServer := &http.Server{

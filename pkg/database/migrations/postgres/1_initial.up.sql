@@ -1,6 +1,5 @@
 CREATE TABLE "performers" (
   "id" uuid not null primary key,
-  "image" bytea,
   "name" varchar(255) not null,
   "disambiguation" varchar(255),
   "gender" varchar(20),
@@ -31,7 +30,7 @@ CREATE TABLE "performer_aliases" (
 
 CREATE TABLE "performer_urls" (
   "performer_id" uuid not null,
-  "url" varchar(255) not null,
+  "url" varchar not null,
   "type" varchar(255) not null,
   foreign key("performer_id") references "performers"("id") ON DELETE CASCADE,
   unique ("performer_id", "url"),
@@ -78,7 +77,6 @@ CREATE TABLE "tag_aliases" (
 
 CREATE TABLE "studios" (
   "id" uuid not null primary key,
-  "image" bytea,
   "name" varchar(255) not null,
   "parent_studio_id" uuid,
   "created_at" timestamp  not null,
@@ -88,7 +86,7 @@ CREATE TABLE "studios" (
 
 CREATE TABLE "studio_urls" (
   "studio_id" uuid not null,
-  "url" varchar(255) not null,
+  "url" varchar not null,
   "type" varchar(255) not null,
   foreign key("studio_id") references "studios"("id") ON DELETE CASCADE,
   unique ("studio_id", "url"),
@@ -99,12 +97,20 @@ CREATE TABLE "scenes" (
   "id" uuid not null primary key,
   "title" varchar(255),
   "details" text,
-  "url" varchar(255),
   "date" date,
   "studio_id" uuid,
   "created_at" timestamp  not null,
   "updated_at" timestamp  not null,
   foreign key("studio_id") references "studios"("id") ON DELETE SET NULL
+);
+
+CREATE TABLE "scene_urls" (
+  "scene_id" uuid not null,
+  "url" varchar not null,
+  "type" varchar(255) not null,
+  foreign key("scene_id") references "scenes"("id") ON DELETE CASCADE,
+  unique ("scene_id", "url"),
+  unique ("scene_id", "type")
 );
 
 CREATE TABLE "scene_fingerprints" (
