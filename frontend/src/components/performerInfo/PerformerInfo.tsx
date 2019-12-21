@@ -57,7 +57,7 @@ const PerformerInfo: React.FC<{performer: Performer}> = ({ performer }) => {
                     <Card>
                         <Card.Header>
                             <div className="float-right">
-                                <Link to="edit">
+                                <Link to={`${performer.id}/edit`}>
                                     <button type="button" className="btn btn-secondary">Edit</button>
                                 </Link>
                                 { deleteButton }

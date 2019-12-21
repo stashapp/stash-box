@@ -56,7 +56,7 @@ const StudioComponent: React.FC = () => {
                     <img src={getUrlByType(studio.urls, 'PHOTO')} alt="Studio logo" />
                 </div>
                 <div className="studio-edit">
-                    <Link to="edit">
+                    <Link to={`${id}/edit`}>
                         <button type="button" className="btn btn-secondary">Edit</button>
                     </Link>
                     <button type="button" className="btn btn-danger" onClick={handleDelete}>Delete</button>

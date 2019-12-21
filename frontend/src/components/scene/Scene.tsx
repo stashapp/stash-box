@@ -68,7 +68,7 @@ const SceneComponent: React.FC = () => {
             <Card className="scene-info">
                 <Card.Header>
                     <div className="float-right">
-                        <Link to="edit">
+                        <Link to={`${id}/edit`}>
                             <button type="button" className="btn btn-secondary">Edit</button>
                         </Link>
                         { deleteButton }

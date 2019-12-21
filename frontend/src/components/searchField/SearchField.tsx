@@ -96,7 +96,7 @@ const SearchField: React.FC<SearchFieldProps> = ({ onClick, searchType = SearchT
             if (onClick)
                 onClick(result.value);
             else
-                history.push(`/${result.type}/${result.value.id}`);
+                history.push(`/${result.type}s/${result.value.id}`);
 
         setSelected(null);
     };
