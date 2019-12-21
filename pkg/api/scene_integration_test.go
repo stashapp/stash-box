@@ -24,7 +24,6 @@ func createSceneTestRunner(t *testing.T) *sceneTestRunner {
 func (s *sceneTestRunner) testCreateScene() {
 	title := "Title"
 	details := "Details"
-	url := "URL"
 	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
@@ -40,7 +39,6 @@ func (s *sceneTestRunner) testCreateScene() {
 	input := models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		URL:     &url,
 		Date:    &date,
 		Fingerprints: []*models.FingerprintInput{
 			s.generateSceneFingerprint(),
@@ -51,6 +49,12 @@ func (s *sceneTestRunner) testCreateScene() {
 			&models.PerformerAppearanceInput{
 				PerformerID: performerID,
 				As:          &performerAlias,
+			},
+		},
+		Urls: []*models.URLInput{
+			&models.URLInput{
+				URL:  "URL",
+				Type: "Type",
 			},
 		},
 		TagIds: []string{
@@ -66,6 +70,20 @@ func (s *sceneTestRunner) testCreateScene() {
 	}
 
 	s.verifyCreatedScene(input, scene)
+}
+
+func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
+	if len(urls) != len(input) {
+		return false
+	}
+
+	for i, v := range urls {
+		if v.URL != input[i].URL || v.Type != input[i].Type {
+			return false
+		}
+	}
+
+	return true
 }
 
 func comparePerformers(input []*models.PerformerAppearanceInput, performers []*models.PerformerAppearance) bool {
@@ -139,8 +157,10 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 		s.fieldMismatch(input.Details, v, "Details")
 	}
 
-	if v, _ := r.URL(s.ctx, scene); !reflect.DeepEqual(v, input.URL) {
-		s.fieldMismatch(*input.URL, v, "URL")
+	// ensure urls were set correctly
+	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
+	if !compareUrls(input.Urls, urls) {
+		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
 
 	if v, _ := r.Date(s.ctx, scene); !reflect.DeepEqual(v, input.Date) {
@@ -227,7 +247,6 @@ func (s *sceneTestRunner) testFindSceneByFingerprint() {
 func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
-	url := "URL"
 	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
@@ -243,7 +262,6 @@ func (s *sceneTestRunner) testUpdateScene() {
 	input := models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		URL:     &url,
 		Date:    &date,
 		Fingerprints: []*models.FingerprintInput{
 			s.generateSceneFingerprint(),
@@ -254,6 +272,12 @@ func (s *sceneTestRunner) testUpdateScene() {
 			&models.PerformerAppearanceInput{
 				PerformerID: performerID,
 				As:          &performerAlias,
+			},
+		},
+		Urls: []*models.URLInput{
+			&models.URLInput{
+				URL:  "URL",
+				Type: "Type",
 			},
 		},
 		TagIds: []string{
@@ -270,7 +294,6 @@ func (s *sceneTestRunner) testUpdateScene() {
 
 	newTitle := "NewTitle"
 	newDetails := "NewDetails"
-	newURL := "NewURL"
 	newDate := "2001-02-03"
 
 	performer, _ = s.createTestPerformer(nil)
@@ -287,7 +310,6 @@ func (s *sceneTestRunner) testUpdateScene() {
 		ID:      sceneID,
 		Title:   &newTitle,
 		Details: &newDetails,
-		URL:     &newURL,
 		Date:    &newDate,
 		Fingerprints: []*models.FingerprintInput{
 			s.generateSceneFingerprint(),
@@ -296,6 +318,12 @@ func (s *sceneTestRunner) testUpdateScene() {
 			&models.PerformerAppearanceInput{
 				PerformerID: performerID,
 				As:          &performerAlias,
+			},
+		},
+		Urls: []*models.URLInput{
+			&models.URLInput{
+				URL:  "URL",
+				Type: "Type",
 			},
 		},
 		StudioID: &studioID,
@@ -308,6 +336,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	ctx := s.updateContext([]string{
 		"fingerprints",
 		"performers",
+		"urls",
 		"tagIds",
 	})
 
@@ -323,7 +352,6 @@ func (s *sceneTestRunner) testUpdateScene() {
 func (s *sceneTestRunner) testUpdateSceneTitle() {
 	title := "Title"
 	details := "Details"
-	url := "URL"
 	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
@@ -339,7 +367,6 @@ func (s *sceneTestRunner) testUpdateSceneTitle() {
 	input := models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		URL:     &url,
 		Date:    &date,
 		Fingerprints: []*models.FingerprintInput{
 			s.generateSceneFingerprint(),
@@ -349,6 +376,12 @@ func (s *sceneTestRunner) testUpdateSceneTitle() {
 			&models.PerformerAppearanceInput{
 				PerformerID: performerID,
 				As:          &performerAlias,
+			},
+		},
+		Urls: []*models.URLInput{
+			&models.URLInput{
+				URL:  "URL",
+				Type: "Type",
 			},
 		},
 		StudioID: &studioID,
@@ -396,16 +429,18 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 		s.fieldMismatch(input.Details, v, "Details")
 	}
 
-	if v, _ := r.URL(s.ctx, scene); !reflect.DeepEqual(v, input.URL) {
-		s.fieldMismatch(input.URL, v, "URL")
-	}
-
 	if v, _ := r.Date(s.ctx, scene); !reflect.DeepEqual(v, input.Date) {
 		s.fieldMismatch(input.Date, v, "Date")
 	}
 
 	if v, _ := r.Fingerprints(s.ctx, scene); !compareFingerprints(input.Fingerprints, v) {
 		s.fieldMismatch(input.Fingerprints, v, "Fingerprints")
+	}
+
+	// ensure urls were set correctly
+	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
+	if !compareUrls(input.Urls, urls) {
+		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
 
 	performers, _ := s.resolver.Scene().Performers(s.ctx, scene)

@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS "performer_urls";
 DROP TABLE IF EXISTS "performer_piercings";
 DROP TABLE IF EXISTS "performer_tattoos";
 DROP TABLE IF EXISTS "scenes";
+DROP TABLE IF EXISTS "scene_urls";
 DROP TABLE IF EXISTS "tags";
 DROP TABLE IF EXISTS "performers";
 DROP TABLE IF EXISTS "studios";

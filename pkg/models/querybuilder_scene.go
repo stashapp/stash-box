@@ -40,6 +40,14 @@ func (qb *SceneQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, sceneDBTable)
 }
 
+func (qb *SceneQueryBuilder) CreateUrls(newJoins SceneUrls) error {
+	return qb.dbi.InsertJoins(sceneUrlTable, &newJoins)
+}
+
+func (qb *SceneQueryBuilder) UpdateUrls(scene uuid.UUID, updatedJoins SceneUrls) error {
+	return qb.dbi.ReplaceJoins(sceneUrlTable, scene, &updatedJoins)
+}
+
 func (qb *SceneQueryBuilder) CreateFingerprints(newJoins SceneFingerprints) error {
 	return qb.dbi.InsertJoins(sceneFingerprintTable, &newJoins)
 }
@@ -257,6 +265,13 @@ func (qb *SceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*Fingerprint, erro
 func (qb *SceneQueryBuilder) GetPerformers(id uuid.UUID) (PerformersScenes, error) {
 	joins := PerformersScenes{}
 	err := qb.dbi.FindJoins(scenePerformerTable, id, &joins)
+
+	return joins, err
+}
+
+func (qb *SceneQueryBuilder) GetUrls(id uuid.UUID) (SceneUrls, error) {
+	joins := SceneUrls{}
+	err := qb.dbi.FindJoins(sceneUrlTable, id, &joins)
 
 	return joins, err
 }

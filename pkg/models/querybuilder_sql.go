@@ -82,12 +82,14 @@ func updateObjectByID(tx *sqlx.Tx, table string, object interface{}) error {
 
 func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value interface{}) error {
 	ensureTx(tx)
-	_, err := tx.Exec(`DELETE FROM `+table+` WHERE `+column+` = ?`, value)
+	query := tx.Rebind(`DELETE FROM ` + table + ` WHERE ` + column + ` = ?`)
+	_, err := tx.Exec(query, value)
 	return err
 }
 
 func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
-	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = ? LIMIT 1`, id)
+	query := tx.Rebind(`SELECT * FROM ` + table + ` WHERE id = ? LIMIT 1`)
+	return tx.Get(object, query, id)
 }
 
 func selectAll(tableName string) string {
@@ -126,8 +128,8 @@ func getPagination(findFilter *QuerySpec) string {
 	} else {
 		perPage = *findFilter.PerPage
 	}
-	if perPage > 120 {
-		perPage = 120
+	if perPage > 1000 {
+		perPage = 1000
 	} else if perPage < 1 {
 		perPage = 1
 	}
@@ -160,7 +162,7 @@ func getSort(sort string, direction string, tableName string) string {
 		if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
-		return " ORDER BY " + colName + " " + direction + additional
+		return " ORDER BY " + colName + " " + direction + " NULLS LAST " + additional
 	}
 }
 
@@ -287,10 +289,8 @@ func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
 		panic("must use a transaction")
 	}
 	idColumnName := getColumn(tableName, "id")
-	_, err := tx.Exec(
-		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = ?`,
-		id,
-	)
+	query := tx.Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
+	_, err := tx.Exec(query, id)
 	return err
 }
 

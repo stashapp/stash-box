@@ -28,9 +28,8 @@ type Scene {
   id: ID!
   title: String
   details: String
-  url: String
   date: Date
-
+  urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
   performers: [PerformerAppearance!]!
@@ -40,7 +39,7 @@ type Scene {
 input SceneCreateInput {
   title: String
   details: String
-  url: String
+  urls: [URLInput!]
   date: Date
   studio_id: ID
   performers: [PerformerAppearanceInput!]
@@ -52,7 +51,7 @@ input SceneUpdateInput {
   id: ID!
   title: String
   details: String
-  url: String
+  urls: [URLInput!]
   date: Date
   studio_id: ID
   performers: [PerformerAppearanceInput!]
@@ -67,7 +66,7 @@ input SceneDestroyInput {
 input SceneEditDetailsInput {
   title: String
   details: String
-  url: String
+  urls: [URLInput!]
   date: Date
   studio_id: ID
   performers: [PerformerAppearanceInput!]
@@ -89,7 +88,8 @@ input SceneEditInput {
 type SceneEdit {
   title: String
   details: String
-  url: String
+  added_urls: [URL!]
+  removed_urls: [URL!]
   date: Date
   studio_id: ID
   """Added or modified performer appearance entries"""
@@ -111,7 +111,7 @@ input SceneFilterType {
   text: String
   """Filter to search title - assumes like query unless quoted"""
   title: String
-  """Filter to search url - assumes like query unless quoted"""
+  """Filter to search urls - assumes like query unless quoted"""
   url: String
   """Filter by date"""
   date: DateCriterionInput
