@@ -1,0 +1,27 @@
+.SceneCard {
+    margin-bottom: 1rem;
+
+    &-body {
+        height: 150px;
+    }
+
+    &-image {
+        align-items: center;
+        display: flex;
+        height: 100%;
+        justify-content: center;
+        width: 100%;
+
+        img {
+            max-height: 100%;
+            max-width: 100%;
+        }
+    }
+
+    &-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+    }
+}

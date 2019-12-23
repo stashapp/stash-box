@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "sourceMap": true,
+        "noImplicitAny": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "module": "es6",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "target": "ES2020",
+        "jsx": "react",
+        "baseUrl": ".",
+        "paths": {
+            "src/*": ["./src/*"]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ]
+}

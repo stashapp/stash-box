@@ -1,0 +1,57 @@
+@import "./components/**/*.scss";
+
+.StashDBContent {
+    margin: auto;
+    max-width: 1200px;
+    padding-top: 2rem;
+
+    .card-body {
+        padding: 0;
+    }
+}
+
+.welcome {
+    margin-right: 2rem;
+}
+
+.card {
+    margin-bottom: 1rem;
+}
+
+.pagination {
+    margin-left: auto;
+    margin-right: 1rem;
+}
+
+a[aria-current] {
+    font-weight: bold;
+}
+
+.btn {
+    margin: .5rem;
+}
+
+.LoginPrompt {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 70vh;
+    justify-content: center;
+    width: 100%;
+
+    .email,
+    .password {
+        text-align: right;
+        width: 20rem;
+    }
+
+    .login-button {
+        margin-left: 10rem;
+    }
+}
+
+label.is-invalid {
+    .error-message {
+        color: red;
+    }
+}
