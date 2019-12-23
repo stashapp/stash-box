@@ -1,0 +1,25 @@
+query Scene($id: ID!) {
+  findScene(id: $id) {
+      id
+      date
+      title,
+      details,
+      urls {
+        url,
+        type
+      }
+      studio {
+        id
+        name
+      }
+      performers {
+        as
+        performer {
+          name
+          id
+		  gender
+		  aliases
+        }
+      }
+    }
+}

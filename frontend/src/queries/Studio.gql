@@ -1,0 +1,10 @@
+query Studio($id: ID!) {
+  findStudio(id : $id) {
+    id
+    name
+    urls {
+        url
+        type
+    }
+  }
+}

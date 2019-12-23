@@ -1,0 +1,13 @@
+query Studios($filter: QuerySpec, $studioFilter: StudioFilterType) {
+  queryStudios(filter: $filter, studio_filter: $studioFilter) {
+      count
+      studios {
+        id
+        name
+        urls {
+            url
+            type
+        }
+      }
+  }
+}
