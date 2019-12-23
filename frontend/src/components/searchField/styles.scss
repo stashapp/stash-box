@@ -1,0 +1,13 @@
+.SearchField {
+    width: 400px;
+    z-index: 2;
+
+    .search-value {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .search-subvalue {
+        font-size: 12px;
+    }
+}

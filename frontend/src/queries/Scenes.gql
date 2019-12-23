@@ -1,0 +1,26 @@
+query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
+  queryScenes(filter: $filter, scene_filter: $sceneFilter) {
+        count
+        scenes {
+            id
+            date
+            title
+            urls {
+                url
+                type
+            }
+            studio {
+                id
+                name
+            }
+            performers {
+                performer {
+                    id
+                    name
+                    gender
+                }
+            }
+
+        }
+    }
+}

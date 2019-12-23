@@ -1,0 +1,42 @@
+import React, { useState } from 'react';
+import { useQuery } from '@apollo/react-hooks';
+import AuthContext from './AuthContext';
+import { RouteComponentProps } from '@reach/router';
+
+import ME from './queries/Me.gql';
+import Main from './components/Main';
+import Login from './Login';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.scss';
+
+const Startup: React.FC<RouteComponentProps> = () => {
+    const [username, setUsername] = useState(null);
+    const { loading } = useQuery(ME, {
+        onCompleted: (data: any) => {
+            setUsername(data.me.username);
+        }
+    });
+
+    if(loading)
+        return <div>Loading...</div>;
+
+    const contextValue =  username !== null ? {
+        authenticated: true,
+        username: username
+    } : {
+        authenticated: false,
+        setUsername
+    };
+
+    return (
+        <AuthContext.Provider value={contextValue}>
+            { contextValue.authenticated ? 
+                <Main /> :
+                <Login />
+            }
+        </AuthContext.Provider>
+    );
+}
+
+export default Startup;
