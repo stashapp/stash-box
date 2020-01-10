@@ -23,7 +23,7 @@ type User {
 
 input UserCreateInput {
     name: String!
-    # TODO - figure out format for this
+    """Password in plain text"""
     password: String!
     roles: [RoleEnum!]!
     email: String!
@@ -32,7 +32,7 @@ input UserCreateInput {
 input UserUpdateInput {
     id: ID!
     name: String
-    # TODO - figure out format for this
+    """Password in plain text"""
     password: String
     roles: [RoleEnum!]
     email: String

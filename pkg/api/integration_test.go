@@ -30,6 +30,7 @@ var performerSuffix int
 var studioSuffix int
 var tagSuffix int
 var sceneChecksumSuffix int
+var userSuffix int
 
 func createTestRunner(t *testing.T) *testRunner {
 	resolver := api.Resolver{}
@@ -165,6 +166,35 @@ func (s *testRunner) generateSceneFingerprint() *models.FingerprintInput {
 		Algorithm: "MD5",
 		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
 	}
+}
+
+func (s *testRunner) generateUserName() string {
+	userSuffix += 1
+	return "user-" + strconv.Itoa(studioSuffix)
+}
+
+func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User, error) {
+	s.t.Helper()
+
+	if input == nil {
+		name := s.generateUserName()
+		input = &models.UserCreateInput{
+			Name:  name,
+			Email: name,
+			Roles: []models.RoleEnum{
+				models.RoleEnumAdmin,
+			},
+		}
+	}
+
+	createdUser, err := s.resolver.Mutation().UserCreate(s.ctx, *input)
+
+	if err != nil {
+		s.t.Errorf("Error creating user: %s", err.Error())
+		return nil, err
+	}
+
+	return createdUser, nil
 }
 
 func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
