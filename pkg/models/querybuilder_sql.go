@@ -162,7 +162,10 @@ func getSort(sort string, direction string, tableName string) string {
 		if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
-		return " ORDER BY " + colName + " " + direction + " NULLS LAST " + additional
+
+		// TODO - NULLS LAST is only supported in postgres, not in sqlite
+		// commenting out for now
+		return " ORDER BY " + colName + " " + direction + /*" NULLS LAST " +*/ additional
 	}
 }
 

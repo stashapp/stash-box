@@ -112,20 +112,6 @@ func compareBodyMods(input []*models.BodyModificationInput, bodyMods []*models.B
 	return true
 }
 
-func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
-	if len(urls) != len(input) {
-		return false
-	}
-
-	for i, v := range urls {
-		if v.URL != input[i].URL || v.Type != input[i].Type {
-			return false
-		}
-	}
-
-	return true
-}
-
 func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreateInput, performer *models.Performer) {
 	// ensure basic attributes are set correctly
 	if input.Name != performer.Name {

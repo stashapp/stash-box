@@ -72,20 +72,6 @@ func (s *sceneTestRunner) testCreateScene() {
 	s.verifyCreatedScene(input, scene)
 }
 
-func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
-	if len(urls) != len(input) {
-		return false
-	}
-
-	for i, v := range urls {
-		if v.URL != input[i].URL || v.Type != input[i].Type {
-			return false
-		}
-	}
-
-	return true
-}
-
 func comparePerformers(input []*models.PerformerAppearanceInput, performers []*models.PerformerAppearance) bool {
 	if len(performers) != len(input) {
 		return false
@@ -158,7 +144,7 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 	}
 
 	// ensure urls were set correctly
-	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
+	urls, _ := s.resolver.Scene().Urls(s.ctx, scene)
 	if !compareUrls(input.Urls, urls) {
 		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
@@ -438,7 +424,7 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 	}
 
 	// ensure urls were set correctly
-	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
+	urls, _ := s.resolver.Scene().Urls(s.ctx, scene)
 	if !compareUrls(input.Urls, urls) {
 		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
