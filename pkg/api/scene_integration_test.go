@@ -335,74 +335,6 @@ func (s *sceneTestRunner) testUpdateScene() {
 	s.verifyUpdatedScene(updateInput, updatedScene)
 }
 
-func (s *sceneTestRunner) testUpdateSceneTitle() {
-	title := "Title"
-	details := "Details"
-	date := "2003-02-01"
-
-	performer, _ := s.createTestPerformer(nil)
-	studio, _ := s.createTestStudio(nil)
-	tag, _ := s.createTestTag(nil)
-
-	performerID := performer.ID.String()
-	studioID := studio.ID.String()
-	tagID := tag.ID.String()
-
-	performerAlias := "alias"
-
-	input := models.SceneCreateInput{
-		Title:   &title,
-		Details: &details,
-		Date:    &date,
-		Fingerprints: []*models.FingerprintInput{
-			s.generateSceneFingerprint(),
-			s.generateSceneFingerprint(),
-		},
-		Performers: []*models.PerformerAppearanceInput{
-			&models.PerformerAppearanceInput{
-				PerformerID: performerID,
-				As:          &performerAlias,
-			},
-		},
-		Urls: []*models.URLInput{
-			&models.URLInput{
-				URL:  "URL",
-				Type: "Type",
-			},
-		},
-		StudioID: &studioID,
-		TagIds: []string{
-			tagID,
-		},
-	}
-
-	createdScene, err := s.createTestScene(&input)
-	if err != nil {
-		return
-	}
-
-	sceneID := createdScene.ID.String()
-	newTitle := "NewTitle"
-
-	updateInput := models.SceneUpdateInput{
-		ID:    sceneID,
-		Title: &newTitle,
-	}
-
-	// need some mocking of the context to make the field ignore behaviour work
-	ctx := s.updateContext([]string{
-		"title",
-	})
-	updatedScene, err := s.resolver.Mutation().SceneUpdate(ctx, updateInput)
-	if err != nil {
-		s.t.Errorf("Error updating scene: %s", err.Error())
-		return
-	}
-
-	input.Title = &newTitle
-	s.verifyCreatedScene(input, updatedScene)
-}
-
 func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scene *models.Scene) {
 	// ensure basic attributes are set correctly
 	r := s.resolver.Scene()
@@ -799,10 +731,8 @@ func TestUpdateScene(t *testing.T) {
 	pt.testUpdateScene()
 }
 
-func TestUpdateSceneTitle(t *testing.T) {
-	pt := createSceneTestRunner(t)
-	pt.testUpdateSceneTitle()
-}
+// TestUpdateSceneTitle is removed due to no longer allowing
+// partial updates
 
 func TestDestroyScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
