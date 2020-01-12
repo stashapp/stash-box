@@ -163,9 +163,9 @@ func getSort(sort string, direction string, tableName string) string {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
 
-		// TODO - NULLS LAST is only supported in postgres, not in sqlite
-		// commenting out for now
-		return " ORDER BY " + colName + " " + direction + /*" NULLS LAST " +*/ additional
+		// sqlite3 golang library does not yet support NULLS LAST, so leave it as empty in
+		// its dialect for now.
+		return " ORDER BY " + colName + " " + direction + database.GetDialect().NullsLast() + additional
 	}
 }
 
