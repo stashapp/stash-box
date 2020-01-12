@@ -225,7 +225,7 @@ func getMultiCriterionClause(joinTable database.TableJoin, joinTableField string
 	} else if criterion.Modifier == CriterionModifierIncludesAll {
 		// includes all of the provided ids
 		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
-		havingClause = "count(distinct " + joinTableName + "." + joinTableField + ") IS " + strconv.Itoa(len(criterion.Value))
+		havingClause = "count(distinct " + joinTableName + "." + joinTableField + ") = " + strconv.Itoa(len(criterion.Value))
 	} else if criterion.Modifier == CriterionModifierExcludes {
 		// excludes all of the provided ids
 		whereClause = "not exists (select " + joinTableName + ".scene_id from " + joinTableName + " where " + joinTableName + ".scene_id = scenes.id and " + joinTableName + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
