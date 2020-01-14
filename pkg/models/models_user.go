@@ -1,9 +1,8 @@
 package models
 
 import (
-	"time"
+	"fmt"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 
@@ -109,45 +108,13 @@ func (p *User) setPasswordHash(pw string) error {
 	return nil
 }
 
-const APIKeySubject = "APIKey"
-
-type APIKeyClaims struct {
-	UserID string `json:"uid"`
-	jwt.StandardClaims
-}
-
-func (p *User) generateAPIKey() error {
-	claims := &APIKeyClaims{
-		UserID: p.ID.String(),
-		StandardClaims: jwt.StandardClaims{
-			Subject:  APIKeySubject,
-			IssuedAt: time.Now().Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	ss, err := token.SignedString(token)
-	if err != nil {
-		return err
-	}
-
-	p.APIKey = ss
-	return nil
-}
-
 func (p *User) CopyFromCreateInput(input UserCreateInput) error {
 	CopyFull(p, input)
 
 	err := p.setPasswordHash(input.Password)
 
 	if err != nil {
-		return err
-	}
-
-	err = p.generateAPIKey()
-	if err != nil {
-		return err
+		return fmt.Errorf("Error setting password: %s", err.Error())
 	}
 
 	return nil
@@ -160,7 +127,7 @@ func (p *User) CopyFromUpdateInput(input UserUpdateInput) error {
 	if input.Password != nil {
 		err := p.setPasswordHash(*input.Password)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error setting password: %s", err.Error())
 		}
 	}
 

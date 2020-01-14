@@ -3,7 +3,6 @@
 package api_test
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/stashapp/stashdb/pkg/models"
@@ -13,18 +12,12 @@ import (
 
 type userTestRunner struct {
 	testRunner
-	userSuffix int
 }
 
 func createUserTestRunner(t *testing.T) *userTestRunner {
 	return &userTestRunner{
 		testRunner: *createTestRunner(t),
 	}
-}
-
-func (s *userTestRunner) generateUserName() string {
-	s.userSuffix += 1
-	return "userTestRunner-" + strconv.Itoa(s.userSuffix)
 }
 
 func (s *userTestRunner) testCreateUser() {
@@ -56,6 +49,16 @@ func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *m
 
 	if input.Email != user.Email {
 		s.fieldMismatch(input.Email, user.Email, "Email")
+	}
+
+	// ensure apikey is set
+	if user.APIKey == "" {
+		s.t.Errorf("API key was not generated")
+	}
+
+	// ensure password is set
+	if user.PasswordHash == "" {
+		s.t.Errorf("Password was not set")
 	}
 
 	r := s.resolver.User()
@@ -120,8 +123,10 @@ func (s *userTestRunner) testFindUserByName() {
 }
 
 func (s *userTestRunner) testUpdateUserName() {
+	name := s.generateUserName()
 	input := &models.UserCreateInput{
-		Name: s.generateUserName(),
+		Name:  name,
+		Email: name,
 	}
 
 	createdUser, err := s.createTestUser(input)
@@ -149,6 +154,48 @@ func (s *userTestRunner) testUpdateUserName() {
 
 	input.Name = updatedName
 	s.verifyCreatedUser(*input, updatedUser)
+}
+
+func (s *userTestRunner) testUpdatePassword() {
+	name := s.generateUserName()
+	input := &models.UserCreateInput{
+		Name:     name,
+		Email:    name,
+		Password: name,
+	}
+
+	createdUser, err := s.createTestUser(input)
+	if err != nil {
+		return
+	}
+
+	userID := createdUser.ID.String()
+	oldPassword := createdUser.PasswordHash
+
+	updatedPassword := s.generateUserName()
+	updateInput := models.UserUpdateInput{
+		ID:       userID,
+		Password: &updatedPassword,
+	}
+
+	// need some mocking of the context to make the field ignore behaviour work
+	ctx := s.updateContext([]string{
+		"password",
+	})
+	updatedUser, err := s.resolver.Mutation().UserUpdate(ctx, updateInput)
+	if err != nil {
+		s.t.Errorf("Error updating user: %s", err.Error())
+		return
+	}
+
+	// ensure password is set
+	if updatedUser.PasswordHash == "" {
+		s.t.Errorf("Password was not set")
+	}
+
+	if updatedUser.PasswordHash == oldPassword {
+		s.t.Error("Password was not changed")
+	}
 }
 
 func (s *userTestRunner) verifyUpdatedUser(input models.UserUpdateInput, user *models.User) {
@@ -209,6 +256,11 @@ func TestFindUserByName(t *testing.T) {
 func TestUpdateUserName(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testUpdateUserName()
+}
+
+func TestUpdateUserPassword(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testUpdatePassword()
 }
 
 func TestDestroyUser(t *testing.T) {

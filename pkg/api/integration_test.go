@@ -170,7 +170,7 @@ func (s *testRunner) generateSceneFingerprint() *models.FingerprintInput {
 
 func (s *testRunner) generateUserName() string {
 	userSuffix += 1
-	return "user-" + strconv.Itoa(studioSuffix)
+	return "user-" + strconv.Itoa(userSuffix)
 }
 
 func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User, error) {

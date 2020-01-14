@@ -20,6 +20,9 @@ const Port = "port"
 const ReadApiKey = "read_api_key"
 const ModifyApiKey = "modify_api_key"
 
+// key used to sign JWT tokens
+const JWTSignKey = "jwt_secret_key"
+
 // Logging options
 const LogFile = "logFile"
 const LogOut = "logOut"
@@ -61,6 +64,10 @@ func GetModifyApiKey() string {
 	return viper.GetString(ModifyApiKey)
 }
 
+func GetJWTSignKey() string {
+	return viper.GetString(JWTSignKey)
+}
+
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func GetLogFile() string {
@@ -99,19 +106,31 @@ func IsValid() bool {
 	return setPaths
 }
 
-func generateApiKey() string {
-	const apiKeyLength = 32
-	b := make([]byte, apiKeyLength)
+func generateRandomKey(l int) string {
+	b := make([]byte, l)
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)
 }
 
+// SetInitialConfig fills in missing required config fields
 func SetInitialConfig() error {
 	// generate some api keys
-	rApiKey := generateApiKey()
-	wApiKey := generateApiKey()
+	const apiKeyLength = 32
 
-	Set(ReadApiKey, rApiKey)
-	Set(ModifyApiKey, wApiKey)
+	if GetReadApiKey() == "" {
+		rAPIKey := generateRandomKey(apiKeyLength)
+		Set(ReadApiKey, rAPIKey)
+	}
+
+	if GetModifyApiKey() == "" {
+		wAPIKey := generateRandomKey(apiKeyLength)
+		Set(ModifyApiKey, wAPIKey)
+	}
+
+	if GetJWTSignKey() == "" {
+		signKey := generateRandomKey(apiKeyLength)
+		Set(JWTSignKey, signKey)
+	}
+
 	return Write()
 }

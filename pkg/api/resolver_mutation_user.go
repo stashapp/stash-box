@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
@@ -40,6 +42,13 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 	if err != nil {
 		return nil, err
 	}
+
+	apiKey, err := manager.GenerateAPIKey(newUser.ID.String())
+	if err != nil {
+		return nil, fmt.Errorf("Error generating APIKey: %s", err.Error())
+	}
+
+	newUser.APIKey = apiKey
 
 	// Start the transaction and save the user
 	tx := database.DB.MustBeginTx(ctx, nil)
