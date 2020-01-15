@@ -15,6 +15,7 @@ func main() {
 	manager.Initialize()
 
 	database.Initialize(config.GetDatabaseType(), config.GetDatabasePath())
+	manager.CreateRootUser()
 	api.Start()
 	blockForever()
 }

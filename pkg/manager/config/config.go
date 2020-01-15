@@ -1,10 +1,9 @@
 package config
 
 import (
-	"crypto/rand"
-	"fmt"
-
 	"github.com/spf13/viper"
+
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 const Stash = "stash"
@@ -106,29 +105,23 @@ func IsValid() bool {
 	return setPaths
 }
 
-func generateRandomKey(l int) string {
-	b := make([]byte, l)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
-}
-
 // SetInitialConfig fills in missing required config fields
 func SetInitialConfig() error {
 	// generate some api keys
 	const apiKeyLength = 32
 
 	if GetReadApiKey() == "" {
-		rAPIKey := generateRandomKey(apiKeyLength)
+		rAPIKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(ReadApiKey, rAPIKey)
 	}
 
 	if GetModifyApiKey() == "" {
-		wAPIKey := generateRandomKey(apiKeyLength)
+		wAPIKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(ModifyApiKey, wAPIKey)
 	}
 
 	if GetJWTSignKey() == "" {
-		signKey := generateRandomKey(apiKeyLength)
+		signKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(JWTSignKey, signKey)
 	}
 

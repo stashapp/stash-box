@@ -2,10 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
-	"time"
-
-	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/manager"
@@ -17,51 +13,13 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 		return nil, err
 	}
 
-	var err error
-
-	if err != nil {
-		return nil, err
-	}
-
-	UUID, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
-	}
-
-	// Populate a new studio from the input
-	currentTime := time.Now()
-	newUser := models.User{
-		ID: UUID,
-		// set last API call to now just so that it has a value
-		LastAPICall: models.SQLiteTimestamp{Timestamp: currentTime},
-		CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
-	}
-
-	err = newUser.CopyFromCreateInput(input)
-	if err != nil {
-		return nil, err
-	}
-
-	apiKey, err := manager.GenerateAPIKey(newUser.ID.String())
-	if err != nil {
-		return nil, fmt.Errorf("Error generating APIKey: %s", err.Error())
-	}
-
-	newUser.APIKey = apiKey
-
-	// Start the transaction and save the user
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewUserQueryBuilder(tx)
-	user, err := qb.Create(newUser)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
 
-	// Save the roles
-	userRoles := models.CreateUserRoles(user.ID, input.Roles)
-	if err := qb.CreateRoles(userRoles); err != nil {
+	// TODO - validate input
+
+	user, err := manager.UserCreate(tx, input)
+
+	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -73,40 +31,18 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 
 	return user, nil
 }
+
 func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpdateInput) (*models.User, error) {
 	if err := validateModify(ctx); err != nil {
 		return nil, err
 	}
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewUserQueryBuilder(tx)
 
-	// get the existing studio and modify it
-	userID, _ := uuid.FromString(input.ID)
-	updatedUser, err := qb.Find(userID)
+	// TODO - validate input
 
+	user, err := manager.UserUpdate(tx, input)
 	if err != nil {
-		return nil, err
-	}
-
-	updatedUser.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
-
-	// Populate studio from the input
-	err = updatedUser.CopyFromUpdateInput(input)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := qb.Update(*updatedUser)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the roles
-	// TODO - only do this if provided
-	userRoles := models.CreateUserRoles(user.ID, input.Roles)
-	if err := qb.UpdateRoles(user.ID, userRoles); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -118,22 +54,19 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 
 	return user, nil
 }
+
 func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDestroyInput) (bool, error) {
 	if err := validateModify(ctx); err != nil {
 		return false, err
 	}
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewUserQueryBuilder(tx)
 
-	// references have on delete cascade, so shouldn't be necessary
-	// to remove them explicitly
+	// TODO - validate input
 
-	userID, err := uuid.FromString(input.ID)
+	ret, err := manager.UserDestroy(tx, input)
+
 	if err != nil {
-		return false, err
-	}
-	if err = qb.Destroy(userID); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}
@@ -141,5 +74,6 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 	if err := tx.Commit(); err != nil {
 		return false, err
 	}
-	return true, nil
+
+	return ret, nil
 }
