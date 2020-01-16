@@ -105,3 +105,22 @@ func TestValidatePassword(t *testing.T) {
 		}
 	}
 }
+
+var destroyUserScenarios []userNameTest = []userNameTest{
+	{"root", ErrDeleteRoot},
+	{"user", nil},
+}
+
+func TestDestroyUser(t *testing.T) {
+	for _, v := range destroyUserScenarios {
+		user := &models.User{
+			Name: v.username,
+		}
+
+		err := ValidateDestroyUser(user)
+
+		if err != v.err {
+			t.Errorf("username: %s - got %v; want %v", v.username, err, v.err)
+		}
+	}
+}

@@ -37,6 +37,7 @@ var (
 	ErrBannedPassword                  = errors.New("password matches a common password")
 	ErrPasswordUsername                = errors.New("password matches username")
 	ErrPasswordEmail                   = errors.New("password matches email")
+	ErrDeleteRoot = errors.New("root user cannot be deleted")
 )
 
 func ValidateUserCreate(input models.UserCreateInput) error {
@@ -90,6 +91,14 @@ func ValidateUserUpdate(input models.UserUpdateInput, current models.User) error
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func ValidateDestroyUser(user *models.User) error {
+	if user.Name == rootUserName {
+		return ErrDeleteRoot
 	}
 
 	return nil

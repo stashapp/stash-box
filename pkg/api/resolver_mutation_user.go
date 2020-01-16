@@ -82,7 +82,22 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	// TODO - validate input
+	qb := models.NewUserQueryBuilder(tx)
+	userID, _ := uuid.FromString(input.ID)
+	user, err := qb.Find(userID)
+
+	if err != nil {
+		return false, fmt.Errorf("error finding user: %s", err.Error())
+	}
+
+	if user == nil {
+		return false, fmt.Errorf("user not found for id %s", input.ID)
+	}
+
+	if err = manager.ValidateDestroyUser(user); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
 
 	ret, err := manager.UserDestroy(tx, input)
 
