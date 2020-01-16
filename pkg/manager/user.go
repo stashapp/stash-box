@@ -2,7 +2,10 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -12,6 +15,165 @@ import (
 	"github.com/stashapp/stashdb/pkg/models"
 	"github.com/stashapp/stashdb/pkg/utils"
 )
+
+const (
+	minPasswordLength = 8
+	maxPasswordLength = 64
+	minUniqueChars    = 5
+
+	rootUserName = "root"
+	unsetEmail   = "none"
+)
+
+var (
+	ErrEmptyUsername                   = errors.New("empty username")
+	ErrUsernameHasWhitespace           = errors.New("username has leading or trailing whitespace")
+	ErrEmptyEmail                      = errors.New("empty email")
+	ErrEmailHasWhitespace              = errors.New("email has leading or trailing whitespace")
+	ErrInvalidEmail                    = errors.New("not a valid email address")
+	ErrPasswordTooShort                = fmt.Errorf("password length < %d", minPasswordLength)
+	ErrPasswordTooLong                 = fmt.Errorf("password > %d", maxPasswordLength)
+	ErrPasswordInsufficientUniqueChars = fmt.Errorf("password has < %d unique characters", minUniqueChars)
+	ErrBannedPassword                  = errors.New("password matches a common password")
+	ErrPasswordUsername                = errors.New("password matches username")
+	ErrPasswordEmail                   = errors.New("password matches email")
+)
+
+func ValidateUserCreate(input models.UserCreateInput) error {
+	// username must be set
+	err := validateUserName(input.Name)
+	if err != nil {
+		return err
+	}
+
+	// email must be valid
+	err = validateUserEmail(input.Email)
+	if err != nil {
+		return err
+	}
+
+	// password must be valid according to policy
+	err = validateUserPassword(input.Name, input.Email, input.Password)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ValidateUserUpdate(input models.UserUpdateInput, current models.User) error {
+	currentName := current.Name
+	currentEmail := current.Email
+
+	if input.Name != nil {
+		currentName = *input.Name
+		err := validateUserName(*input.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	// email must be valid
+	if input.Email != nil {
+		currentEmail = *input.Email
+		err := validateUserEmail(*input.Email)
+		if err != nil {
+			return err
+		}
+	} else if current.Email == unsetEmail {
+		return ErrEmptyEmail
+	}
+
+	// password must be valid according to policy
+	if input.Password != nil {
+		err := validateUserPassword(currentName, currentEmail, *input.Password)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateUserName(username string) error {
+	if username == "" {
+		return ErrEmptyUsername
+	}
+
+	// username must not have leading or trailing whitespace
+	trimmed := strings.TrimSpace(username)
+
+	if trimmed != username {
+		return ErrUsernameHasWhitespace
+	}
+
+	return nil
+}
+
+func validateUserEmail(email string) error {
+	if email == "" {
+		return ErrEmptyEmail
+	}
+
+	// email must not have leading or trailing whitespace
+	trimmed := strings.TrimSpace(email)
+
+	if trimmed != email {
+		return ErrEmailHasWhitespace
+	}
+
+	// from https://stackoverflow.com/a/201378
+	const emailRegex = "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\\])"
+	re := regexp.MustCompile(emailRegex)
+
+	if !re.MatchString(email) {
+		return ErrInvalidEmail
+	}
+
+	return nil
+}
+
+func countUniqueCharacters(str string) int {
+	chars := make(map[rune]bool)
+	for _, r := range str {
+		chars[r] = true
+	}
+
+	return len(chars)
+}
+
+func validateUserPassword(username string, email string, password string) error {
+	// TODO - hardcode these policies for now. We may want to make these
+	// configurable in future
+
+	if len(password) < minPasswordLength {
+		return ErrPasswordTooShort
+	}
+
+	if len(password) > maxPasswordLength {
+		return ErrPasswordTooLong
+	}
+
+	if countUniqueCharacters(password) < minUniqueChars {
+		return ErrPasswordInsufficientUniqueChars
+	}
+
+	// ensure password doesn't match the top 10,000 passwords over the minimum length
+	if utils.IsBannedPassword(password) {
+		return ErrBannedPassword
+	}
+
+	// ensure password doesn't match the username or email
+	if password == username {
+		return ErrPasswordUsername
+	}
+
+	if password == email {
+		return ErrPasswordEmail
+	}
+
+	return nil
+}
 
 func UserCreate(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error) {
 	var err error
@@ -109,9 +271,6 @@ func UserDestroy(tx *sqlx.Tx, input models.UserDestroyInput) (bool, error) {
 
 	return true, nil
 }
-
-const rootUserName = "root"
-const unsetEmail = "none"
 
 // CreateRootUser creates the initial root user if no users are present
 func CreateRootUser() {

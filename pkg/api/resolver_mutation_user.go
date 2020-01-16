@@ -2,6 +2,9 @@ package api
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/manager"
@@ -13,9 +16,11 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 		return nil, err
 	}
 
-	tx := database.DB.MustBeginTx(ctx, nil)
+	if err := manager.ValidateUserCreate(input); err != nil {
+		return nil, err
+	}
 
-	// TODO - validate input
+	tx := database.DB.MustBeginTx(ctx, nil)
 
 	user, err := manager.UserCreate(tx, input)
 
@@ -39,7 +44,22 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	// TODO - validate input
+	qb := models.NewUserQueryBuilder(tx)
+	userID, _ := uuid.FromString(input.ID)
+	current, err := qb.Find(userID)
+
+	if err != nil {
+		return nil, fmt.Errorf("error finding user: %s", err.Error())
+	}
+
+	if current == nil {
+		return nil, fmt.Errorf("user not found for id %s", input.ID)
+	}
+
+	if err := manager.ValidateUserUpdate(input, *current); err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
 
 	user, err := manager.UserUpdate(tx, input)
 	if err != nil {

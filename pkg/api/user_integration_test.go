@@ -24,8 +24,8 @@ func (s *userTestRunner) testCreateUser() {
 	name := s.generateUserName()
 	input := models.UserCreateInput{
 		Name:     name,
-		Password: "password",
-		Email:    name,
+		Password: "password" + name,
+		Email:    name + "@example.com",
 		Roles: []models.RoleEnum{
 			models.RoleEnumAdmin,
 		},
@@ -126,7 +126,8 @@ func (s *userTestRunner) testUpdateUserName() {
 	name := s.generateUserName()
 	input := &models.UserCreateInput{
 		Name:  name,
-		Email: name,
+		Email: name + "@example.com",
+		Password: "password" + name,
 	}
 
 	createdUser, err := s.createTestUser(input)
@@ -160,8 +161,8 @@ func (s *userTestRunner) testUpdatePassword() {
 	name := s.generateUserName()
 	input := &models.UserCreateInput{
 		Name:     name,
-		Email:    name,
-		Password: name,
+		Email:    name + "@example.com",
+		Password: "password" + name,
 	}
 
 	createdUser, err := s.createTestUser(input)
@@ -172,7 +173,7 @@ func (s *userTestRunner) testUpdatePassword() {
 	userID := createdUser.ID.String()
 	oldPassword := createdUser.PasswordHash
 
-	updatedPassword := s.generateUserName()
+	updatedPassword := s.generateUserName() + "newpassword"
 	updateInput := models.UserUpdateInput{
 		ID:       userID,
 		Password: &updatedPassword,

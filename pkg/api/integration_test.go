@@ -179,8 +179,9 @@ func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User
 	if input == nil {
 		name := s.generateUserName()
 		input = &models.UserCreateInput{
-			Name:  name,
-			Email: name,
+			Name:     name,
+			Email:    name + "@example.com",
+			Password: "password" + name,
 			Roles: []models.RoleEnum{
 				models.RoleEnumAdmin,
 			},
