@@ -162,7 +162,10 @@ func getSort(sort string, direction string, tableName string) string {
 		if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
-		return " ORDER BY " + colName + " " + direction + " NULLS LAST " + additional
+
+		// sqlite3 golang library does not yet support NULLS LAST, so leave it as empty in
+		// its dialect for now.
+		return " ORDER BY " + colName + " " + direction + database.GetDialect().NullsLast() + additional
 	}
 }
 

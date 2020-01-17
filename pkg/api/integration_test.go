@@ -167,6 +167,20 @@ func (s *testRunner) generateSceneFingerprint() *models.FingerprintInput {
 	}
 }
 
+func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
+	if len(urls) != len(input) {
+		return false
+	}
+
+	for i, v := range urls {
+		if v.URL != input[i].URL || v.Type != input[i].Type {
+			return false
+		}
+	}
+
+	return true
+}
+
 func oneNil(l interface{}, r interface{}) bool {
 	return l != r && (l == nil || r == nil)
 }
