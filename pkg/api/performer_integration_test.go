@@ -112,20 +112,6 @@ func compareBodyMods(input []*models.BodyModificationInput, bodyMods []*models.B
 	return true
 }
 
-func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
-	if len(urls) != len(input) {
-		return false
-	}
-
-	for i, v := range urls {
-		if v.URL != input[i].URL || v.Type != input[i].Type {
-			return false
-		}
-	}
-
-	return true
-}
-
 func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreateInput, performer *models.Performer) {
 	// ensure basic attributes are set correctly
 	if input.Name != performer.Name {
@@ -335,71 +321,6 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	s.verifyUpdatedPerformer(updateInput, updatedPerformer)
 }
 
-func (s *performerTestRunner) testUpdatePerformerName() {
-	cupSize := "C"
-	bandSize := 32
-	tattooDesc := "Foobar"
-
-	input := &models.PerformerCreateInput{
-		Name:    s.generatePerformerName(),
-		Aliases: []string{"Alias1", "Alias2"},
-		Urls: []*models.URLInput{
-			&models.URLInput{
-				URL:  "URL",
-				Type: "Type",
-			},
-		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2001-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
-		Measurements: &models.MeasurementsInput{
-			CupSize:  &cupSize,
-			BandSize: &bandSize,
-			Waist:    &bandSize,
-			Hip:      &bandSize,
-		},
-		Tattoos: []*models.BodyModificationInput{
-			&models.BodyModificationInput{
-				Location:    "Inner thigh",
-				Description: &tattooDesc,
-			},
-		},
-		Piercings: []*models.BodyModificationInput{
-			&models.BodyModificationInput{
-				Location:    "Nose",
-				Description: nil,
-			},
-		},
-	}
-
-	createdPerformer, err := s.createTestPerformer(input)
-	if err != nil {
-		return
-	}
-
-	performerID := createdPerformer.ID.String()
-
-	updatedName := s.generatePerformerName()
-	updateInput := models.PerformerUpdateInput{
-		ID:   performerID,
-		Name: &updatedName,
-	}
-
-	// need some mocking of the context to make the field ignore behaviour work
-	ctx := s.updateContext([]string{
-		"name",
-	})
-	updatedPerformer, err := s.resolver.Mutation().PerformerUpdate(ctx, updateInput)
-	if err != nil {
-		s.t.Errorf("Error updating performer: %s", err.Error())
-		return
-	}
-
-	input.Name = updatedName
-	s.verifyCreatedPerformer(*input, updatedPerformer)
-}
-
 func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdateInput, performer *models.Performer) {
 	// ensure basic attributes are set correctly
 	if input.Name != nil && *input.Name != performer.Name {
@@ -492,10 +413,8 @@ func TestUpdatePerformer(t *testing.T) {
 	pt.testUpdatePerformer()
 }
 
-func TestUpdatePerformerName(t *testing.T) {
-	pt := createPerformerTestRunner(t)
-	pt.testUpdatePerformerName()
-}
+// TestUpdatePerformerName is removed due to no longer allowing
+// partial updates
 
 func TestDestroyPerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)

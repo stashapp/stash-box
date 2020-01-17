@@ -95,3 +95,8 @@ func (*sqlite3Dialect) FieldQuote(field string) string {
 func (*sqlite3Dialect) SetPlaceholders(sql string) string {
 	return sql
 }
+
+func (*sqlite3Dialect) NullsLast() string {
+	// TODO - determine a workaround for NULLS LAST support
+	return " "
+}

@@ -89,3 +89,7 @@ func (*postgresDialect) SetPlaceholders(sql string) string {
 
 	return sql
 }
+
+func (*postgresDialect) NullsLast() string {
+	return " NULLS LAST "
+}
