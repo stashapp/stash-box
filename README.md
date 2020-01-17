@@ -100,6 +100,8 @@ TODO
 * `make test` - Runs the unit tests
 * `make it` - Runs the unit and integration tests
 
+**Note:** the integration tests run against a temporary sqlite3 database by default. They can be run against a postgres server by setting the environment variable `POSTGRES_DB` to the postgres connection string. For example: `postgres@localhost/stash-box-test?sslmode=disable`. **Be aware that the integration tests drop all tables before and after the tests.**
+
 ## Building a release
 
 1. Run `make generate` to create generated files 
