@@ -72,7 +72,10 @@ func (s *Packr2Source) ReadUp(version uint) (r io.ReadCloser, identifier string,
 	if migration, ok := s.Migrations.Up(version); !ok {
 		return nil, "", os.ErrNotExist
 	} else {
-		b := s.Box.Bytes(migration.Raw)
+		b, err := s.Box.Find(migration.Raw)
+		if err != nil {
+			return nil, "", err
+		}
 		return ioutil.NopCloser(bytes.NewBuffer(b)),
 			migration.Identifier,
 			nil
@@ -83,7 +86,10 @@ func (s *Packr2Source) ReadDown(version uint) (r io.ReadCloser, identifier strin
 	if migration, ok := s.Migrations.Down(version); !ok {
 		return nil, "", migrate.ErrNilVersion
 	} else {
-		b := s.Box.Bytes(migration.Raw)
+		b, err := s.Box.Find(migration.Raw)
+		if err != nil {
+			return nil, "", err
+		}
 		return ioutil.NopCloser(bytes.NewBuffer(b)),
 			migration.Identifier,
 			nil
