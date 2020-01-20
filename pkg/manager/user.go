@@ -39,7 +39,13 @@ var (
 	ErrPasswordUsername                = errors.New("password matches username")
 	ErrPasswordEmail                   = errors.New("password matches email")
 	ErrDeleteRoot                      = errors.New("root user cannot be deleted")
+	ErrChangeRootName                  = errors.New("cannot change root username")
+	ErrChangeRootRoles                 = errors.New("cannot change root roles")
 )
+
+var rootUserRoles []models.RoleEnum = []models.RoleEnum{
+	models.RoleEnumAdmin,
+}
 
 func ValidateUserCreate(input models.UserCreateInput) error {
 	// username must be set
@@ -67,8 +73,20 @@ func ValidateUserUpdate(input models.UserUpdateInput, current models.User) error
 	currentName := current.Name
 	currentEmail := current.Email
 
+	if currentName == rootUserName {
+		if input.Name != nil && *input.Name != rootUserName {
+			return ErrChangeRootName
+		}
+
+		// TODO - this means that we must include roles in the input
+		if len(input.Roles) != len(rootUserRoles) || input.Roles[0] != rootUserRoles[0] {
+			return ErrChangeRootRoles
+		}
+	}
+
 	if input.Name != nil {
 		currentName = *input.Name
+
 		err := validateUserName(*input.Name)
 		if err != nil {
 			return err
@@ -302,9 +320,7 @@ func CreateRootUser() {
 			Name:     "root",
 			Password: password,
 			Email:    unsetEmail,
-			Roles: []models.RoleEnum{
-				models.RoleEnumAdmin,
-			},
+			Roles:    rootUserRoles,
 		}
 
 		createdUser, err := UserCreate(tx, newUser)

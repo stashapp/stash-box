@@ -67,7 +67,7 @@ func makeValidUserCreateInput() models.UserCreateInput {
 	}
 }
 
-func TestValidateUserName(t *testing.T) {
+func TestValidateUserNameCreate(t *testing.T) {
 	for _, v := range userNameScenarios {
 		input := makeValidUserCreateInput()
 		input.Name = v.username
@@ -80,7 +80,7 @@ func TestValidateUserName(t *testing.T) {
 	}
 }
 
-func TestValidateUserEmail(t *testing.T) {
+func TestValidateUserEmailCreate(t *testing.T) {
 	for _, v := range userEmailScenarios {
 		input := makeValidUserCreateInput()
 		input.Email = v.email
@@ -93,7 +93,7 @@ func TestValidateUserEmail(t *testing.T) {
 	}
 }
 
-func TestValidatePassword(t *testing.T) {
+func TestValidatePasswordCreate(t *testing.T) {
 	for _, v := range userEmailScenarios {
 		input := makeValidUserCreateInput()
 		input.Email = v.email
@@ -103,6 +103,87 @@ func TestValidatePassword(t *testing.T) {
 		if err != v.err {
 			t.Errorf("password: %s - got %v; want %v", v.email, err, v.err)
 		}
+	}
+}
+
+func makeValidUser() models.User {
+	return models.User{
+		Name:  DefaultUsername,
+		Email: DefaultEmail,
+	}
+}
+
+func makeValidUserUpdateInput() models.UserUpdateInput {
+	return models.UserUpdateInput{
+		ID: "id",
+	}
+}
+
+func TestValidateUserNameUpdate(t *testing.T) {
+	for _, v := range userNameScenarios {
+		input := makeValidUserUpdateInput()
+		input.Name = &v.username
+
+		err := ValidateUserUpdate(input, makeValidUser())
+
+		if err != v.err {
+			t.Errorf("name: %s - got %v; want %v", v.username, err, v.err)
+		}
+	}
+}
+
+func TestValidateUserEmailUpdate(t *testing.T) {
+	for _, v := range userEmailScenarios {
+		input := makeValidUserUpdateInput()
+		input.Email = &v.email
+
+		err := ValidateUserUpdate(input, makeValidUser())
+
+		if err != v.err {
+			t.Errorf("email: %s - got %v; want %v", v.email, err, v.err)
+		}
+	}
+}
+
+func TestValidatePasswordUpdate(t *testing.T) {
+	for _, v := range userEmailScenarios {
+		input := makeValidUserUpdateInput()
+		input.Email = &v.email
+
+		err := ValidateUserUpdate(input, makeValidUser())
+
+		if err != v.err {
+			t.Errorf("password: %s - got %v; want %v", v.email, err, v.err)
+		}
+	}
+}
+
+func TestChangeRootUsername(t *testing.T) {
+	input := makeValidUserUpdateInput()
+	newName := "changedRoot"
+	input.Name = &newName
+
+	rootUser := makeValidUser()
+	rootUser.Name = "root"
+	err := ValidateUserUpdate(input, rootUser)
+
+	if err != ErrChangeRootName {
+		t.Errorf("change root username: got %v; want %v", err, ErrChangeRootName)
+	}
+}
+
+func TestChangeRootRoles(t *testing.T) {
+	input := makeValidUserUpdateInput()
+	input.Roles = []models.RoleEnum{
+		models.RoleEnumModify,
+	}
+
+	rootUser := makeValidUser()
+	rootUser.Name = "root"
+	err := ValidateUserUpdate(input, rootUser)
+
+	if err != ErrChangeRootRoles {
+		t.Errorf("change root roles: got %v; want %v", err, ErrChangeRootRoles)
 	}
 }
 
