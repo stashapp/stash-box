@@ -105,12 +105,12 @@ func SetInitialConfig() error {
 	// generate some api keys
 	const apiKeyLength = 32
 
-	if GetJWTSignKey() == nil {
+	if string(GetJWTSignKey()) == "" {
 		signKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(JWTSignKey, signKey)
 	}
 
-	if GetSessionStoreKey() == nil {
+	if string(GetSessionStoreKey()) == "" {
 		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(SessionStoreKey, sessionStoreKey)
 	}
