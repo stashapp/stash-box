@@ -17,7 +17,7 @@ type tagTestRunner struct {
 
 func createTagTestRunner(t *testing.T) *tagTestRunner {
 	return &tagTestRunner{
-		testRunner: *createTestRunner(t),
+		testRunner: *asModify(t),
 	}
 }
 

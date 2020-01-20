@@ -8,15 +8,77 @@ import (
 	"testing"
 
 	"github.com/stashapp/stashdb/pkg/api"
+	"github.com/stashapp/stashdb/pkg/database"
 	dbtest "github.com/stashapp/stashdb/pkg/database/databasetest"
+	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/models"
 
 	"github.com/99designs/gqlgen/graphql"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 )
 
+// we need to create some users to test the api with, otherwise all calls
+// will be unauthorised
+type userPopulator struct {
+	admin       *models.User
+	modify      *models.User
+	adminRoles  []models.RoleEnum
+	modifyRoles []models.RoleEnum
+}
+
+var userDB *userPopulator
+
+func (p *userPopulator) PopulateDB() error {
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	// create admin user
+	createInput := models.UserCreateInput{
+		Name: "admin",
+		Roles: []models.RoleEnum{
+			models.RoleEnumAdmin,
+		},
+		Email: "admin",
+	}
+
+	var err error
+	p.admin, err = manager.UserCreate(tx, createInput)
+	p.adminRoles = createInput.Roles
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// create modify user
+	createInput = models.UserCreateInput{
+		Name: "modify",
+		Roles: []models.RoleEnum{
+			models.RoleEnumModify,
+		},
+		Email: "modify",
+	}
+
+	p.modify, err = manager.UserCreate(tx, createInput)
+	p.modifyRoles = createInput.Roles
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// create other users as needed
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func TestMain(m *testing.M) {
-	dbtest.TestWithDatabase(m, nil)
+	userDB = &userPopulator{}
+	dbtest.TestWithDatabase(m, userDB)
 }
 
 type testRunner struct {
@@ -32,16 +94,27 @@ var tagSuffix int
 var sceneChecksumSuffix int
 var userSuffix int
 
-func createTestRunner(t *testing.T) *testRunner {
+func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) *testRunner {
 	resolver := api.Resolver{}
+
+	// replicate what the server.go code does
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextRole, api.ModifyRole)
+	ctx = context.WithValue(ctx, api.ContextUser, user)
+	ctx = context.WithValue(ctx, api.ContextRoles, roles)
 
 	return &testRunner{
 		t:        t,
 		resolver: resolver,
 		ctx:      ctx,
 	}
+}
+
+func asAdmin(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.admin, userDB.adminRoles)
+}
+
+func asModify(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.modify, userDB.modifyRoles)
 }
 
 func (t *testRunner) doTest(test func()) {

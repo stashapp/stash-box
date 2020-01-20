@@ -63,8 +63,8 @@ func GetModifyApiKey() string {
 	return viper.GetString(ModifyApiKey)
 }
 
-func GetJWTSignKey() string {
-	return viper.GetString(JWTSignKey)
+func GetJWTSignKey() []byte {
+	return []byte(viper.GetString(JWTSignKey))
 }
 
 // GetLogFile returns the filename of the file to output logs to.
@@ -120,7 +120,7 @@ func SetInitialConfig() error {
 		Set(ModifyApiKey, wAPIKey)
 	}
 
-	if GetJWTSignKey() == "" {
+	if GetJWTSignKey() == nil {
 		signKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(JWTSignKey, signKey)
 	}

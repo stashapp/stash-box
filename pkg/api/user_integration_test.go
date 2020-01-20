@@ -16,7 +16,7 @@ type userTestRunner struct {
 
 func createUserTestRunner(t *testing.T) *userTestRunner {
 	return &userTestRunner{
-		testRunner: *createTestRunner(t),
+		testRunner: *asAdmin(t),
 	}
 }
 

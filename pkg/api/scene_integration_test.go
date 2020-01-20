@@ -17,7 +17,7 @@ type sceneTestRunner struct {
 
 func createSceneTestRunner(t *testing.T) *sceneTestRunner {
 	return &sceneTestRunner{
-		testRunner: *createTestRunner(t),
+		testRunner: *asModify(t),
 	}
 }
 

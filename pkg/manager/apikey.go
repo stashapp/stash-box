@@ -1,12 +1,15 @@
 package manager
 
 import (
+	"errors"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 
 	"github.com/stashapp/stashdb/pkg/manager/config"
 )
+
+var ErrInvalidToken = errors.New("invalid apikey")
 
 const APIKeySubject = "APIKey"
 
@@ -26,10 +29,28 @@ func GenerateAPIKey(userID string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	ss, err := token.SignedString([]byte(config.GetJWTSignKey()))
+	ss, err := token.SignedString(config.GetJWTSignKey())
 	if err != nil {
 		return "", err
 	}
 
 	return ss, nil
+}
+
+// GetUserIDFromAPIKey validates the provided api key and returns the user ID
+func GetUserIDFromAPIKey(apiKey string) (string, error) {
+	claims := &APIKeyClaims{}
+	token, err := jwt.ParseWithClaims(apiKey, claims, func(t *jwt.Token) (interface{}, error) {
+		return config.GetJWTSignKey(), nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if !token.Valid {
+		return "", ErrInvalidToken
+	}
+
+	return claims.UserID, nil
 }

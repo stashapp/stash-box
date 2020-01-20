@@ -18,7 +18,7 @@ type studioTestRunner struct {
 
 func createStudioTestRunner(t *testing.T) *studioTestRunner {
 	return &studioTestRunner{
-		testRunner: *createTestRunner(t),
+		testRunner: *asModify(t),
 	}
 }
 

@@ -3,33 +3,44 @@ package api
 import (
 	"context"
 	"errors"
+
+	"github.com/stashapp/stashdb/pkg/models"
 )
 
-const ReadRole = "read"
-const ModifyRole = "modify"
+var ErrUnauthorized = errors.New("Not authorized")
 
-func validateRole(ctx context.Context, requiredRole string) error {
-	role := ctx.Value(ContextRole)
-	valid := true
+func validateRole(ctx context.Context, requiredRole models.RoleEnum) error {
+	var roles []models.RoleEnum
 
-	switch requiredRole {
-	case ReadRole:
-		valid = role == ReadRole || role == ModifyRole
-	case ModifyRole:
-		valid = role == ModifyRole
+	roleCtxVal := ctx.Value(ContextRoles)
+	if roleCtxVal != nil {
+		roles = ctx.Value(ContextRoles).([]models.RoleEnum)
+	}
+
+	valid := false
+
+	for _, role := range roles {
+		if role.Implies(requiredRole) {
+			valid = true
+			break
+		}
 	}
 
 	if !valid {
-		return errors.New("Not authorized")
+		return ErrUnauthorized
 	}
 
 	return nil
 }
 
 func validateRead(ctx context.Context) error {
-	return validateRole(ctx, ReadRole)
+	return validateRole(ctx, models.RoleEnumRead)
 }
 
 func validateModify(ctx context.Context) error {
-	return validateRole(ctx, ModifyRole)
+	return validateRole(ctx, models.RoleEnumModify)
+}
+
+func validateAdmin(ctx context.Context) error {
+	return validateRole(ctx, models.RoleEnumAdmin)
 }

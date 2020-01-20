@@ -26,6 +26,7 @@ const (
 )
 
 var (
+	ErrUserNotExist                    = errors.New("user not found")
 	ErrEmptyUsername                   = errors.New("empty username")
 	ErrUsernameHasWhitespace           = errors.New("username has leading or trailing whitespace")
 	ErrEmptyEmail                      = errors.New("empty email")
@@ -37,7 +38,7 @@ var (
 	ErrBannedPassword                  = errors.New("password matches a common password")
 	ErrPasswordUsername                = errors.New("password matches username")
 	ErrPasswordEmail                   = errors.New("password matches email")
-	ErrDeleteRoot = errors.New("root user cannot be deleted")
+	ErrDeleteRoot                      = errors.New("root user cannot be deleted")
 )
 
 func ValidateUserCreate(input models.UserCreateInput) error {
@@ -318,4 +319,33 @@ func CreateRootUser() {
 		fmt.Printf("root user has been created.\nUser: root\nPassword: %s\nAPI Key: %s\n", password, createdUser.APIKey)
 		fmt.Print("These credentials have not been logged. The email should be set and the password should be changed after logging in.\n")
 	}
+}
+
+func GetUser(id string) (*models.User, error) {
+	qb := models.NewUserQueryBuilder(nil)
+	userID, _ := uuid.FromString(id)
+	return qb.Find(userID)
+}
+
+func GetUserRoles(id string) ([]models.RoleEnum, error) {
+	qb := models.NewUserQueryBuilder(nil)
+
+	userID, _ := uuid.FromString(id)
+	user, err := qb.Find(userID)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error finding user with id %s: %s", id, err.Error())
+	}
+
+	if user == nil {
+		return nil, ErrUserNotExist
+	}
+
+	roles, err := qb.GetRoles(userID)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error getting user roles: %s", err.Error())
+	}
+
+	return roles.ToRoles(), nil
 }

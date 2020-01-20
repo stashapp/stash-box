@@ -8,7 +8,7 @@ import (
 )
 
 func (r *queryResolver) FindUser(ctx context.Context, id *string, username *string) (*models.User, error) {
-	if err := validateRead(ctx); err != nil {
+	if err := validateAdmin(ctx); err != nil {
 		return nil, err
 	}
 
@@ -24,7 +24,7 @@ func (r *queryResolver) FindUser(ctx context.Context, id *string, username *stri
 	return nil, nil
 }
 func (r *queryResolver) QueryUsers(ctx context.Context, userFilter *models.UserFilterType, filter *models.QuerySpec) (*models.QueryUsersResultType, error) {
-	if err := validateRead(ctx); err != nil {
+	if err := validateAdmin(ctx); err != nil {
 		return nil, err
 	}
 

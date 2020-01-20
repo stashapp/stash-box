@@ -17,7 +17,7 @@ type performerTestRunner struct {
 
 func createPerformerTestRunner(t *testing.T) *performerTestRunner {
 	return &performerTestRunner{
-		testRunner: *createTestRunner(t),
+		testRunner: *asModify(t),
 	}
 }
 

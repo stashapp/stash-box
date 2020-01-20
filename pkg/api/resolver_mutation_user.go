@@ -12,7 +12,7 @@ import (
 )
 
 func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCreateInput) (*models.User, error) {
-	if err := validateModify(ctx); err != nil {
+	if err := validateAdmin(ctx); err != nil {
 		return nil, err
 	}
 
@@ -38,7 +38,7 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 }
 
 func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpdateInput) (*models.User, error) {
-	if err := validateModify(ctx); err != nil {
+	if err := validateAdmin(ctx); err != nil {
 		return nil, err
 	}
 
@@ -76,7 +76,7 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 }
 
 func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
+	if err := validateAdmin(ctx); err != nil {
 		return false, err
 	}
 
