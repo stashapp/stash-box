@@ -87,7 +87,10 @@ func initPostgres(connString string) func() {
 }
 
 func teardownPostgres() {
-	pgDropAll(database.DB)
+	noDrop := os.Getenv("POSTGRES_NODROP")
+	if noDrop == "" {
+		pgDropAll(database.DB)
+	}
 	database.DB.Close()
 }
 
