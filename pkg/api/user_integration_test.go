@@ -5,6 +5,7 @@ package api_test
 import (
 	"testing"
 
+	"github.com/stashapp/stashdb/pkg/api"
 	"github.com/stashapp/stashdb/pkg/models"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -125,8 +126,8 @@ func (s *userTestRunner) testFindUserByName() {
 func (s *userTestRunner) testUpdateUserName() {
 	name := s.generateUserName()
 	input := &models.UserCreateInput{
-		Name:  name,
-		Email: name + "@example.com",
+		Name:     name,
+		Email:    name + "@example.com",
 		Password: "password" + name,
 	}
 
@@ -239,6 +240,34 @@ func (s *userTestRunner) testDestroyUser() {
 	}
 }
 
+func (s *userTestRunner) testUnauthorisedUser() {
+	// test each api interface - all require admin so all should fail
+	_, err := s.resolver.Mutation().UserCreate(s.ctx, models.UserCreateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("UserCreate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().UserUpdate(s.ctx, models.UserUpdateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("UserUpdate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("UserDestroy: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Query().FindUser(s.ctx, nil, nil)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("FindUser: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Query().QueryUsers(s.ctx, nil, nil)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("QueryUsers: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
 func TestCreateUser(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testCreateUser()
@@ -267,4 +296,11 @@ func TestUpdateUserPassword(t *testing.T) {
 func TestDestroyUser(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testDestroyUser()
+}
+
+func TestUnauthorisedUser(t *testing.T) {
+	pt := &userTestRunner{
+		testRunner: *asModify(t),
+	}
+	pt.testUnauthorisedUser()
 }

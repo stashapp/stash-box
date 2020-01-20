@@ -20,8 +20,12 @@ import (
 // we need to create some users to test the api with, otherwise all calls
 // will be unauthorised
 type userPopulator struct {
+	none *models.User
+	read *models.User
 	admin       *models.User
 	modify      *models.User
+	noneRolls []models.RoleEnum
+	readRoles []models.RoleEnum
 	adminRoles  []models.RoleEnum
 	modifyRoles []models.RoleEnum
 }
@@ -61,6 +65,39 @@ func (p *userPopulator) PopulateDB() error {
 
 	p.modify, err = manager.UserCreate(tx, createInput)
 	p.modifyRoles = createInput.Roles
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// create read user
+	createInput = models.UserCreateInput{
+		Name: "read",
+		Roles: []models.RoleEnum{
+			models.RoleEnumRead,
+		},
+		Email: "read",
+	}
+
+	p.read, err = manager.UserCreate(tx, createInput)
+	p.readRoles = createInput.Roles
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// create none user
+	createInput = models.UserCreateInput{
+		Name: "none",
+		Roles: []models.RoleEnum{
+			models.RoleEnumRead,
+		},
+		Email: "none",
+	}
+
+	p.none, err = manager.UserCreate(tx, createInput)
 
 	if err != nil {
 		_ = tx.Rollback()
@@ -115,6 +152,14 @@ func asAdmin(t *testing.T) *testRunner {
 
 func asModify(t *testing.T) *testRunner {
 	return createTestRunner(t, userDB.modify, userDB.modifyRoles)
+}
+
+func asRead(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.read, userDB.readRoles)
+}
+
+func asNone(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.none, userDB.noneRolls)
 }
 
 func (t *testRunner) doTest(test func()) {

@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stashapp/stashdb/pkg/api"
 	"github.com/stashapp/stashdb/pkg/models"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -182,6 +183,37 @@ func (s *tagTestRunner) testDestroyTag() {
 	// TODO - ensure scene was not removed
 }
 
+func (s *tagTestRunner) testUnauthorisedTagModify() {
+	// test each api interface - all require modify so all should fail
+	_, err := s.resolver.Mutation().TagCreate(s.ctx, models.TagCreateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("TagCreate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().TagUpdate(s.ctx, models.TagUpdateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("TagUpdate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().TagDestroy(s.ctx, models.TagDestroyInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("TagDestroy: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
+func (s *tagTestRunner) testUnauthorisedTagQuery() {
+	// test each api interface - all require read so all should fail
+	_, err := s.resolver.Query().FindTag(s.ctx, nil, nil)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("FindTag: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Query().QueryTags(s.ctx, nil, nil)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("QueryTags: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
 func TestCreateTag(t *testing.T) {
 	pt := createTagTestRunner(t)
 	pt.testCreateTag()
@@ -205,4 +237,18 @@ func TestUpdateTag(t *testing.T) {
 func TestDestroyTag(t *testing.T) {
 	pt := createTagTestRunner(t)
 	pt.testDestroyTag()
+}
+
+func TestUnauthorisedTagModify(t *testing.T) {
+	pt := &tagTestRunner{
+		testRunner: *asRead(t),
+	}
+	pt.testUnauthorisedTagModify()
+}
+
+func TestUnauthorisedTagQuery(t *testing.T) {
+	pt := &tagTestRunner{
+		testRunner: *asNone(t),
+	}
+	pt.testUnauthorisedTagQuery()
 }

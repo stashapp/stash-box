@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stashapp/stashdb/pkg/api"
 	"github.com/stashapp/stashdb/pkg/models"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -398,6 +399,37 @@ func (s *performerTestRunner) testDestroyPerformer() {
 	// TODO - ensure scene was not removed
 }
 
+func (s *performerTestRunner) testUnauthorisedPerformerModify() {
+	// test each api interface - all require modify so all should fail
+	_, err := s.resolver.Mutation().PerformerCreate(s.ctx, models.PerformerCreateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("PerformerCreate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().PerformerUpdate(s.ctx, models.PerformerUpdateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("PerformerUpdate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().PerformerDestroy(s.ctx, models.PerformerDestroyInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("PerformerDestroy: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
+func (s *performerTestRunner) testUnauthorisedPerformerQuery() {
+	// test each api interface - all require read so all should fail
+	_, err := s.resolver.Query().FindPerformer(s.ctx, "")
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("FindPerformer: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Query().QueryPerformers(s.ctx, nil, nil)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("QueryPerformers: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
 func TestCreatePerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testCreatePerformer()
@@ -419,4 +451,18 @@ func TestUpdatePerformer(t *testing.T) {
 func TestDestroyPerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testDestroyPerformer()
+}
+
+func TestUnauthorisedPerformerModify(t *testing.T) {
+	pt := &performerTestRunner{
+		testRunner: *asRead(t),
+	}
+	pt.testUnauthorisedPerformerModify()
+}
+
+func TestUnauthorisedPerformerQuery(t *testing.T) {
+	pt := &performerTestRunner{
+		testRunner: *asNone(t),
+	}
+	pt.testUnauthorisedPerformerQuery()
 }
