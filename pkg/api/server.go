@@ -44,6 +44,11 @@ func getUserAndRoles(apiKey string) (*models.User, []models.RoleEnum, error) {
 		return nil, nil, err
 	}
 
+	// ensure api key of the user matches the passed one
+	if user.APIKey != apiKey {
+		return nil, nil, ErrUnauthorized
+	}
+
 	roles, err := manager.GetUserRoles(userID)
 	if err != nil {
 		return nil, nil, err
