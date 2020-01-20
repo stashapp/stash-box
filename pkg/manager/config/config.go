@@ -15,10 +15,6 @@ const DatabaseType = "database_type"
 const Host = "host"
 const Port = "port"
 
-// TODO - temporary api key configuration
-const ReadApiKey = "read_api_key"
-const ModifyApiKey = "modify_api_key"
-
 // key used to sign JWT tokens
 const JWTSignKey = "jwt_secret_key"
 
@@ -53,14 +49,6 @@ func GetHost() string {
 
 func GetPort() int {
 	return viper.GetInt(Port)
-}
-
-func GetReadApiKey() string {
-	return viper.GetString(ReadApiKey)
-}
-
-func GetModifyApiKey() string {
-	return viper.GetString(ModifyApiKey)
 }
 
 func GetJWTSignKey() []byte {
@@ -109,16 +97,6 @@ func IsValid() bool {
 func SetInitialConfig() error {
 	// generate some api keys
 	const apiKeyLength = 32
-
-	if GetReadApiKey() == "" {
-		rAPIKey := utils.GenerateRandomKey(apiKeyLength)
-		Set(ReadApiKey, rAPIKey)
-	}
-
-	if GetModifyApiKey() == "" {
-		wAPIKey := utils.GenerateRandomKey(apiKeyLength)
-		Set(ModifyApiKey, wAPIKey)
-	}
 
 	if GetJWTSignKey() == nil {
 		signKey := utils.GenerateRandomKey(apiKeyLength)
