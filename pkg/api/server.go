@@ -18,6 +18,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stashdb/pkg/logger"
+	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/manager/paths"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -29,45 +30,48 @@ var githash string = ""
 var setupUIBox *packr.Box
 
 const ApiKeyHeader = "ApiKey"
-const ContextRole = "role"
 
-func getRole(apiKey string) string {
-	readApiKey := config.GetReadApiKey()
-	modifyApiKey := config.GetModifyApiKey()
+func getUserAndRoles(apiKey string) (*models.User, []models.RoleEnum, error) {
 
-	// allow modification if both api keys are blanked
-	if (modifyApiKey == "" && readApiKey == "") || apiKey == modifyApiKey {
-		return ModifyRole
+	userID, err := manager.GetUserIDFromAPIKey(apiKey)
+
+	if err != nil {
+		return nil, nil, err
 	}
 
-	// allow read if read api key is blanked
-	if readApiKey == "" || apiKey == readApiKey {
-		return ReadRole
+	user, err := manager.GetUser(userID)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return ""
+	roles, err := manager.GetUserRoles(userID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return user, roles, nil
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			apiKey := r.Header.Get(ApiKeyHeader)
-
-			// TODO - translate api key into current user
-			// for now, set role based on config
-			role := getRole(apiKey)
-
-			// TODO - add config to allow playground
-			// for now just let it through with blank role
-			if role == "" {
-				// w.WriteHeader(http.StatusUnauthorized)
-				// w.Write([]byte("Missing API key"))
-				// return
-			}
-
 			ctx := r.Context()
-			r = r.WithContext(context.WithValue(ctx, ContextRole, role))
+
+			// translate api key into current user, if present
+			apiKey := r.Header.Get(ApiKeyHeader)
+			if apiKey != "" {
+				user, roles, err := getUserAndRoles(apiKey)
+
+				if err != nil {
+					// TODO - handle error
+				}
+
+				ctx = context.WithValue(ctx, ContextUser, user)
+				ctx = context.WithValue(ctx, ContextRoles, roles)
+			}
+			// TODO - handle session
+
+			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
 		})
