@@ -9,9 +9,12 @@ enum RoleEnum {
 type User {
     id: ID!
     name: String!
-    roles: [RoleEnum!]!
-    email: String!
-    api_key: String!
+    """Should not be visible to other users"""
+    roles: [RoleEnum!]
+    """Should not be visible to other users"""
+    email: String
+    """Should not be visible to other users"""
+    api_key: String
     successful_edits: Int!
     unsuccessful_edits: Int!
     successful_votes: Int!

@@ -137,7 +137,7 @@ func (s *userTestRunner) testQueryUserByName() {
 	page := 1
 	perPage := 1
 	filter := models.QuerySpec{
-		Page: &page,
+		Page:    &page,
 		PerPage: &perPage,
 	}
 
@@ -278,7 +278,7 @@ func (s *userTestRunner) testDestroyUser() {
 	}
 }
 
-func (s *userTestRunner) testUnauthorisedUser() {
+func (s *userTestRunner) testUnauthorisedUserMutate() {
 	// test each api interface - all require admin so all should fail
 	_, err := s.resolver.Mutation().UserCreate(s.ctx, models.UserCreateInput{})
 	if err != api.ErrUnauthorized {
@@ -294,16 +294,62 @@ func (s *userTestRunner) testUnauthorisedUser() {
 	if err != api.ErrUnauthorized {
 		s.t.Errorf("UserDestroy: got %v want %v", err, api.ErrUnauthorized)
 	}
+}
 
-	_, err = s.resolver.Query().FindUser(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("FindUser: got %v want %v", err, api.ErrUnauthorized)
+func (s *userTestRunner) ensureDetailsRemoved(user *models.User) {
+	s.t.Helper()
+
+	if user.APIKey != "" {
+		s.t.Error("API key shown for unauthorised user")
 	}
 
-	_, err = s.resolver.Query().QueryUsers(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("QueryUsers: got %v want %v", err, api.ErrUnauthorized)
+	if user.Email != "" {
+		s.t.Error("Email shown for unauthorised user")
 	}
+}
+
+func (s *userTestRunner) testUnauthorisedUserFind() {
+	// find different user
+	userID := userDB.admin.ID.String()
+	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
+	if err != nil {
+		s.t.Errorf("FindUser: got %v want %v", err, nil)
+		return
+	}
+
+	if user == nil {
+		s.t.Error("FindUser: admin user not found")
+		return
+	}
+
+	s.ensureDetailsRemoved(user)
+}
+
+func (s *userTestRunner) testUnauthorisedUserQuery() {
+	userName := userDB.admin.Name
+
+	userFilter := models.UserFilterType{
+		Name: &userName,
+	}
+	page := 1
+	perPage := 1
+	filter := models.QuerySpec{
+		Page:    &page,
+		PerPage: &perPage,
+	}
+
+	users, err := s.resolver.Query().QueryUsers(s.ctx, &userFilter, &filter)
+	if err != nil {
+		s.t.Errorf("QueryUsers: got %v want %v", err, nil)
+		return
+	}
+
+	if len(users.Users) != 1 {
+		s.t.Error("QueryUsers: admin user not found")
+		return
+	}
+
+	s.ensureDetailsRemoved(users.Users[0])
 }
 
 func TestCreateUser(t *testing.T) {
@@ -341,9 +387,23 @@ func TestDestroyUser(t *testing.T) {
 	pt.testDestroyUser()
 }
 
-func TestUnauthorisedUser(t *testing.T) {
+func TestUnauthorisedUserMutate(t *testing.T) {
 	pt := &userTestRunner{
 		testRunner: *asModify(t),
 	}
-	pt.testUnauthorisedUser()
+	pt.testUnauthorisedUserMutate()
+}
+
+func TestUnauthorisedUserFind(t *testing.T) {
+	pt := &userTestRunner{
+		testRunner: *asModify(t),
+	}
+	pt.testUnauthorisedUserFind()
+}
+
+func TestUnauthorisedUserQuery(t *testing.T) {
+	pt := &userTestRunner{
+		testRunner: *asModify(t),
+	}
+	pt.testUnauthorisedUserQuery()
 }

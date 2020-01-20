@@ -89,7 +89,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			user, roles, err := getUserAndRoles(userID)
 
 			// ensure api key of the user matches the passed one
-			if apiKey != "" && user.APIKey != apiKey {
+			if apiKey != "" && user != nil && user.APIKey != apiKey {
 				w.WriteHeader(http.StatusUnauthorized)
 				w.Write([]byte(err.Error()))
 				return

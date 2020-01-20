@@ -14,7 +14,7 @@ func validateRole(ctx context.Context, requiredRole models.RoleEnum) error {
 
 	roleCtxVal := ctx.Value(ContextRoles)
 	if roleCtxVal != nil {
-		roles = ctx.Value(ContextRoles).([]models.RoleEnum)
+		roles = roleCtxVal.([]models.RoleEnum)
 	}
 
 	valid := false
