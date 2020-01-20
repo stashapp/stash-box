@@ -77,17 +77,17 @@ func (qb *UserQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT users.id FROM users"), nil)
 }
 
-func (qb *UserQueryBuilder) Query(studioFilter *UserFilterType, findFilter *QuerySpec) (Users, int) {
-	if studioFilter == nil {
-		studioFilter = &UserFilterType{}
+func (qb *UserQueryBuilder) Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int) {
+	if userFilter == nil {
+		userFilter = &UserFilterType{}
 	}
 	if findFilter == nil {
 		findFilter = &QuerySpec{}
 	}
 
-	query := database.NewQueryBuilder(studioDBTable)
+	query := database.NewQueryBuilder(userDBTable)
 
-	if q := studioFilter.Name; q != nil && *q != "" {
+	if q := userFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"users.name", "users.email"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.AddWhere(clause)

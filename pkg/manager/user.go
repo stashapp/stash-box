@@ -302,6 +302,9 @@ func CreateRootUser() {
 			Name:     "root",
 			Password: password,
 			Email:    unsetEmail,
+			Roles: []models.RoleEnum{
+				models.RoleEnumAdmin,
+			},
 		}
 
 		createdUser, err := UserCreate(tx, newUser)

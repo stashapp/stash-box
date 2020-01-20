@@ -123,6 +123,44 @@ func (s *userTestRunner) testFindUserByName() {
 	}
 }
 
+func (s *userTestRunner) testQueryUserByName() {
+	createdUser, err := s.createTestUser(nil)
+	if err != nil {
+		return
+	}
+
+	userName := createdUser.Name
+
+	userFilter := models.UserFilterType{
+		Name: &userName,
+	}
+	page := 1
+	perPage := 1
+	filter := models.QuerySpec{
+		Page: &page,
+		PerPage: &perPage,
+	}
+
+	result, err := s.resolver.Query().QueryUsers(s.ctx, &userFilter, &filter)
+	if err != nil {
+		s.t.Errorf("Error querying user: %s", err.Error())
+		return
+	}
+
+	// ensure one result was returned
+	if result.Count != 1 {
+		s.t.Errorf("Expected %d users, got %d", 1, result.Count)
+		return
+	}
+
+	user := result.Users[0]
+
+	// ensure values were set
+	if createdUser.Name != user.Name {
+		s.fieldMismatch(createdUser.Name, user.Name, "Name")
+	}
+}
+
 func (s *userTestRunner) testUpdateUserName() {
 	name := s.generateUserName()
 	input := &models.UserCreateInput{
@@ -281,6 +319,11 @@ func TestFindUserById(t *testing.T) {
 func TestFindUserByName(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testFindUserByName()
+}
+
+func TestQueryUserByName(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testQueryUserByName()
 }
 
 func TestUpdateUserName(t *testing.T) {
