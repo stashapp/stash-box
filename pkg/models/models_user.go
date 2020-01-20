@@ -108,6 +108,11 @@ func (p *User) setPasswordHash(pw string) error {
 	return nil
 }
 
+func (p User) IsPasswordCorrect(pw string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(p.PasswordHash), []byte(pw))
+	return err == nil
+}
+
 func (p *User) CopyFromCreateInput(input UserCreateInput) error {
 	CopyFull(p, input)
 

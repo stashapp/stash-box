@@ -31,22 +31,10 @@ var setupUIBox *packr.Box
 
 const ApiKeyHeader = "ApiKey"
 
-func getUserAndRoles(apiKey string) (*models.User, []models.RoleEnum, error) {
-
-	userID, err := manager.GetUserIDFromAPIKey(apiKey)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
+func getUserAndRoles(userID string) (*models.User, []models.RoleEnum, error) {
 	user, err := manager.GetUser(userID)
 	if err != nil {
 		return nil, nil, err
-	}
-
-	// ensure api key of the user matches the passed one
-	if user.APIKey != apiKey {
-		return nil, nil, ErrUnauthorized
 	}
 
 	roles, err := manager.GetUserRoles(userID)
@@ -57,26 +45,60 @@ func getUserAndRoles(apiKey string) (*models.User, []models.RoleEnum, error) {
 	return user, roles, nil
 }
 
+// returns the userID, a boolean set to true if api key was used, and an error
+func getRequestUserID(w http.ResponseWriter, r *http.Request) (string, bool, error) {
+	userID := ""
+	isAPIKey := false
+	var err error
+
+	// translate api key into current user, if present
+	apiKey := r.Header.Get(ApiKeyHeader)
+	if apiKey != "" {
+		isAPIKey = true
+		userID, err = manager.GetUserIDFromAPIKey(apiKey)
+	} else {
+		// handle session
+		userID, err = getSessionUserID(w, r)
+	}
+
+	return userID, isAPIKey, err
+}
+
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
 			// translate api key into current user, if present
+			userID := ""
 			apiKey := r.Header.Get(ApiKeyHeader)
+			var err error
 			if apiKey != "" {
-				user, roles, err := getUserAndRoles(apiKey)
-
-				if err != nil {
-					w.WriteHeader(http.StatusUnauthorized)
-					w.Write([]byte(err.Error()))
-					return
-				}
-
-				ctx = context.WithValue(ctx, ContextUser, user)
-				ctx = context.WithValue(ctx, ContextRoles, roles)
+				userID, err = manager.GetUserIDFromAPIKey(apiKey)
+			} else {
+				// handle session
+				userID, err = getSessionUserID(w, r)
 			}
-			// TODO - handle session
+
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			user, roles, err := getUserAndRoles(userID)
+
+			// ensure api key of the user matches the passed one
+			if apiKey != "" && user.APIKey != apiKey {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			// TODO - increment api key counters
+
+			ctx = context.WithValue(ctx, ContextUser, user)
+			ctx = context.WithValue(ctx, ContextRoles, roles)
 
 			r = r.WithContext(ctx)
 
@@ -120,6 +142,10 @@ func Start() {
 
 	// TODO - this should be disabled in production
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+
+	// session handlers
+	r.HandleFunc("/login", handleLogin)
+	r.HandleFunc("/logout", handleLogout)
 
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {

@@ -18,6 +18,9 @@ const Port = "port"
 // key used to sign JWT tokens
 const JWTSignKey = "jwt_secret_key"
 
+// key used for session store
+const SessionStoreKey = "session_store_key"
+
 // Logging options
 const LogFile = "logFile"
 const LogOut = "logOut"
@@ -53,6 +56,10 @@ func GetPort() int {
 
 func GetJWTSignKey() []byte {
 	return []byte(viper.GetString(JWTSignKey))
+}
+
+func GetSessionStoreKey() []byte {
+	return []byte(viper.GetString(SessionStoreKey))
 }
 
 // GetLogFile returns the filename of the file to output logs to.
@@ -101,6 +108,11 @@ func SetInitialConfig() error {
 	if GetJWTSignKey() == nil {
 		signKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(JWTSignKey, signKey)
+	}
+
+	if GetSessionStoreKey() == nil {
+		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(SessionStoreKey, sessionStoreKey)
 	}
 
 	return Write()

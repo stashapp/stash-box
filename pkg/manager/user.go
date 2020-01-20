@@ -41,6 +41,8 @@ var (
 	ErrDeleteRoot                      = errors.New("root user cannot be deleted")
 	ErrChangeRootName                  = errors.New("cannot change root username")
 	ErrChangeRootRoles                 = errors.New("cannot change root roles")
+
+	ErrAccessDenied = errors.New("access denied")
 )
 
 var rootUserRoles []models.RoleEnum = []models.RoleEnum{
@@ -367,4 +369,25 @@ func GetUserRoles(id string) ([]models.RoleEnum, error) {
 	}
 
 	return roles.ToRoles(), nil
+}
+
+// Authenticate validates the provided username and password. If correct, it
+// returns the id of the user.
+func Authenticate(username string, password string) (string, error) {
+	qb := models.NewUserQueryBuilder(nil)
+
+	user, err := qb.FindByName(username)
+	if err != nil {
+		return "", err
+	}
+
+	if user == nil {
+		return "", ErrAccessDenied
+	}
+
+	if !user.IsPasswordCorrect(password) {
+		return "", ErrAccessDenied
+	}
+
+	return user.ID.String(), nil
 }
