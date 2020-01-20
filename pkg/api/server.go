@@ -63,7 +63,9 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				user, roles, err := getUserAndRoles(apiKey)
 
 				if err != nil {
-					// TODO - handle error
+					w.WriteHeader(http.StatusUnauthorized)
+					w.Write([]byte(err.Error()))
+					return
 				}
 
 				ctx = context.WithValue(ctx, ContextUser, user)
