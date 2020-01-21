@@ -214,7 +214,7 @@ func UserCreate(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error)
 		return nil, err
 	}
 
-	// Populate a new studio from the input
+	// Populate a new user from the input
 	currentTime := time.Now()
 	newUser := models.User{
 		ID: UUID,
