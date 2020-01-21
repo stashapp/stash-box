@@ -255,7 +255,7 @@ func UserCreate(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error)
 func UserUpdate(tx *sqlx.Tx, input models.UserUpdateInput) (*models.User, error) {
 	qb := models.NewUserQueryBuilder(tx)
 
-	// get the existing studio and modify it
+	// get the existing user and modify it
 	userID, _ := uuid.FromString(input.ID)
 	updatedUser, err := qb.Find(userID)
 
@@ -265,7 +265,7 @@ func UserUpdate(tx *sqlx.Tx, input models.UserUpdateInput) (*models.User, error)
 
 	updatedUser.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-	// Populate studio from the input
+	// Populate user from the input
 	err = updatedUser.CopyFromUpdateInput(input)
 	if err != nil {
 		return nil, err
