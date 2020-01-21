@@ -9,6 +9,16 @@ import (
 
 var ErrUnauthorized = errors.New("Not authorized")
 
+func getCurrentUser(ctx context.Context) *models.User {
+	userCtxVal := ctx.Value(ContextUser)
+	if userCtxVal != nil {
+		currentUser := userCtxVal.(*models.User)
+		return currentUser
+	}
+
+	return nil
+}
+
 func validateRole(ctx context.Context, requiredRole models.RoleEnum) error {
 	var roles []models.RoleEnum
 

@@ -101,7 +101,7 @@ func CreateUserRoles(userId uuid.UUID, roles []RoleEnum) UserRoles {
 	return ret
 }
 
-func (p *User) setPasswordHash(pw string) error {
+func (p *User) SetPasswordHash(pw string) error {
 	// generate password from input
 	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
 
@@ -122,7 +122,7 @@ func (p User) IsPasswordCorrect(pw string) bool {
 func (p *User) CopyFromCreateInput(input UserCreateInput) error {
 	CopyFull(p, input)
 
-	err := p.setPasswordHash(input.Password)
+	err := p.SetPasswordHash(input.Password)
 
 	if err != nil {
 		return fmt.Errorf("Error setting password: %s", err.Error())
@@ -136,7 +136,7 @@ func (p *User) CopyFromUpdateInput(input UserUpdateInput) error {
 
 	// generate password from input
 	if input.Password != nil {
-		err := p.setPasswordHash(*input.Password)
+		err := p.SetPasswordHash(*input.Password)
 		if err != nil {
 			return fmt.Errorf("Error setting password: %s", err.Error())
 		}

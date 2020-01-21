@@ -112,3 +112,64 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 
 	return ret, nil
 }
+
+func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string) (string, error) {
+	currentUser := getCurrentUser(ctx)
+	if currentUser == nil {
+		return "", ErrUnauthorized
+	}
+
+	if userID != nil {
+		if currentUser.ID.String() != *userID {
+			// changing another user api key
+			// must be admin
+			if err := validateAdmin(ctx); err != nil {
+				return "", err
+			}
+		}
+	} else {
+		// changing current user api key
+		userIDStr := currentUser.ID.String()
+		userID = &userIDStr
+	}
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	ret, err := manager.RegenerateUserAPIKey(tx, *userID)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return "", err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return "", err
+	}
+
+	return ret, err
+}
+
+func (r *mutationResolver) ChangePassword(ctx context.Context, input models.UserChangePasswordInput) (bool, error) {
+	currentUser := getCurrentUser(ctx)
+	if currentUser == nil {
+		return false, ErrUnauthorized
+	}
+
+	// changing current user password
+	userIDStr := currentUser.ID.String()
+	userID := userIDStr
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	err := manager.ChangeUserPassword(tx, userID, input.ExistingPassword, input.NewPassword)
+	if err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

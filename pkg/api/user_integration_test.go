@@ -3,7 +3,9 @@
 package api_test
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stashdb/pkg/api"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -352,6 +354,105 @@ func (s *userTestRunner) testUnauthorisedUserQuery() {
 	s.ensureDetailsRemoved(users.Users[0])
 }
 
+func (s *userTestRunner) testChangePassword() {
+	name := s.generateUserName()
+	oldPassword := "password" + name
+	input := &models.UserCreateInput{
+		Name:     name,
+		Email:    name + "@example.com",
+		Password: oldPassword,
+	}
+
+	createdUser, err := s.createTestUser(input)
+	if err != nil {
+		return
+	}
+
+	// change password as the test user
+	ctx := context.TODO()
+	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+
+	updatedPassword := name + "newpassword"
+	updateInput := models.UserChangePasswordInput{
+		ExistingPassword: "incorrect password",
+		NewPassword:      updatedPassword,
+	}
+
+	_, err = s.resolver.Mutation().ChangePassword(ctx, updateInput)
+	if err == nil {
+		s.t.Error("Expected error for incorrect current password")
+	}
+
+	updateInput.ExistingPassword = oldPassword
+	updateInput.NewPassword = "aaa"
+
+	_, err = s.resolver.Mutation().ChangePassword(ctx, updateInput)
+	if err == nil {
+		s.t.Error("Expected error for invalid new password")
+	}
+
+	updateInput.NewPassword = updatedPassword
+	_, err = s.resolver.Mutation().ChangePassword(ctx, updateInput)
+	if err != nil {
+		s.t.Errorf("Error changing password: %s", err.Error())
+	}
+}
+
+func (s *userTestRunner) testRegenerateAPIKey() {
+	name := s.generateUserName()
+	input := &models.UserCreateInput{
+		Name:     name,
+		Email:    name + "@example.com",
+		Password: "password" + name,
+	}
+
+	createdUser, err := s.createTestUser(input)
+	if err != nil {
+		return
+	}
+
+	oldKey := createdUser.APIKey
+
+	// regenerate as the test user
+	ctx := context.TODO()
+	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+
+	adminID := userDB.admin.ID.String()
+	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
+	if err == nil {
+		s.t.Error("Expected error for changing other user API key")
+	}
+
+	// wait one second before regenerating to ensure a new key is created
+	time.Sleep(1 * time.Second)
+	newKey, err := s.resolver.Mutation().RegenerateAPIKey(ctx, nil)
+	if err != nil {
+		s.t.Errorf("Error regenerating API key: %s", err.Error())
+		return
+	}
+
+	if newKey == "" {
+		s.t.Error("Regenerated API key is empty")
+		return
+	}
+
+	if newKey == oldKey {
+		s.t.Errorf("Regenerated API key is same as old key: %s", newKey)
+		return
+	}
+
+	userID := createdUser.ID.String()
+	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
+	if err != nil {
+		s.t.Errorf("Error finding user: %s", err.Error())
+		return
+	}
+
+	if user.APIKey != newKey {
+		s.t.Errorf("Returned API key %s is different to stored key %s", newKey, user.APIKey)
+	}
+}
+
 func TestCreateUser(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testCreateUser()
@@ -406,4 +507,14 @@ func TestUnauthorisedUserQuery(t *testing.T) {
 		testRunner: *asModify(t),
 	}
 	pt.testUnauthorisedUserQuery()
+}
+
+func TestChangePassword(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testChangePassword()
+}
+
+func TestRegenerateAPIKey(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testRegenerateAPIKey()
 }

@@ -41,6 +41,12 @@ input UserUpdateInput {
     email: String
 }
 
+input UserChangePasswordInput {
+  """Password in plain text"""
+  existing_password: String!
+  new_password: String!
+}
+
 input UserDestroyInput {
     id: ID!
 }

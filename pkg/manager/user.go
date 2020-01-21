@@ -42,7 +42,8 @@ var (
 	ErrChangeRootName                  = errors.New("cannot change root username")
 	ErrChangeRootRoles                 = errors.New("cannot change root roles")
 
-	ErrAccessDenied = errors.New("access denied")
+	ErrAccessDenied             = errors.New("access denied")
+	ErrCurrentPasswordIncorrect = errors.New("current password incorrect")
 )
 
 var rootUserRoles []models.RoleEnum = []models.RoleEnum{
@@ -390,4 +391,66 @@ func Authenticate(username string, password string) (string, error) {
 	}
 
 	return user.ID.String(), nil
+}
+
+func RegenerateUserAPIKey(tx *sqlx.Tx, userID string) (string, error) {
+	var err error
+
+	qb := models.NewUserQueryBuilder(tx)
+	userUUID, _ := uuid.FromString(userID)
+	user, err := qb.Find(userUUID)
+
+	if err != nil {
+		return "", fmt.Errorf("error finding user: %s", err.Error())
+	}
+
+	if user == nil {
+		return "", fmt.Errorf("user not found for id %s", userID)
+	}
+
+	user.APIKey, err = GenerateAPIKey(user.ID.String())
+	if err != nil {
+		return "", fmt.Errorf("Error generating APIKey: %s", err.Error())
+	}
+
+	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	user, err = qb.Update(*user)
+	if err != nil {
+		return "", err
+	}
+
+	return user.APIKey, nil
+}
+
+func ChangeUserPassword(tx *sqlx.Tx, userID string, currentPassword string, newPassword string) error {
+	qb := models.NewUserQueryBuilder(tx)
+
+	userUUID, _ := uuid.FromString(userID)
+	user, err := qb.Find(userUUID)
+
+	if err != nil {
+		return fmt.Errorf("error finding user: %s", err.Error())
+	}
+
+	if user == nil {
+		return fmt.Errorf("user not found for id %s", userID)
+	}
+
+	if !user.IsPasswordCorrect(currentPassword) {
+		return ErrCurrentPasswordIncorrect
+	}
+
+	err = validateUserPassword(user.Name, user.Email, newPassword)
+	if err != nil {
+		return err
+	}
+
+	err = user.SetPasswordHash(newPassword)
+	if err != nil {
+		return err
+	}
+	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+
+	user, err = qb.Update(*user)
+	return err
 }

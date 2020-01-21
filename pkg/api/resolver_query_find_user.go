@@ -60,9 +60,8 @@ func removeSensitiveUserDetails(ctx context.Context, users models.Users) {
 	// remove sensitive details for users that are not the current user
 	userID := ""
 
-	userCtxVal := ctx.Value(ContextUser)
-	if userCtxVal != nil {
-		currentUser := userCtxVal.(*models.User)
+	currentUser := getCurrentUser(ctx)
+	if currentUser != nil {
 		userID = currentUser.ID.String()
 	}
 
