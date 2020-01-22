@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/stashapp/stashdb/pkg/api"
 	"github.com/stashapp/stashdb/pkg/models"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -18,7 +19,7 @@ type studioTestRunner struct {
 
 func createStudioTestRunner(t *testing.T) *studioTestRunner {
 	return &studioTestRunner{
-		testRunner: *createTestRunner(t),
+		testRunner: *asModify(t),
 	}
 }
 
@@ -180,6 +181,37 @@ func (s *studioTestRunner) testDestroyStudio() {
 	// TODO - ensure scene was not removed
 }
 
+func (s *studioTestRunner) testUnauthorisedStudioModify() {
+	// test each api interface - all require modify so all should fail
+	_, err := s.resolver.Mutation().StudioCreate(s.ctx, models.StudioCreateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("StudioCreate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().StudioUpdate(s.ctx, models.StudioUpdateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("StudioUpdate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("StudioDestroy: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
+func (s *studioTestRunner) testUnauthorisedStudioQuery() {
+	// test each api interface - all require read so all should fail
+	_, err := s.resolver.Query().FindStudio(s.ctx, nil, nil)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("FindStudio: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Query().QueryStudios(s.ctx, nil, nil)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("QueryStudios: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
 func TestCreateStudio(t *testing.T) {
 	pt := createStudioTestRunner(t)
 	pt.testCreateStudio()
@@ -206,3 +238,17 @@ func TestDestroyStudio(t *testing.T) {
 }
 
 // TODO - test parent/children studios
+
+func TestUnauthorisedStudioModify(t *testing.T) {
+	pt := &studioTestRunner{
+		testRunner: *asRead(t),
+	}
+	pt.testUnauthorisedStudioModify()
+}
+
+func TestUnauthorisedStudioQuery(t *testing.T) {
+	pt := &studioTestRunner{
+		testRunner: *asNone(t),
+	}
+	pt.testUnauthorisedStudioQuery()
+}

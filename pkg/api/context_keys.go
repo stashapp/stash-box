@@ -5,7 +5,6 @@ package api
 type key int
 
 const (
-	performerKey key = 1
-	sceneKey     key = 2
-	studioKey    key = 3
+	ContextUser key = iota
+	ContextRoles
 )

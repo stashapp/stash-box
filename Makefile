@@ -24,9 +24,11 @@ generate:
 test: 
 	go test ./...
 
+# Runs the integration tests. -count=1 is used to ensure results are not
+# cached, which is important if the environment changes
 .PHONY: it
 it:
-	go test -tags=integration ./...
+	go test -tags=integration -count=1 ./...
 	
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt
