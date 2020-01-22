@@ -22,4 +22,6 @@ models:
     model: github.com/stashapp/stashdb/pkg/models.Studio
   Scene:
     model: github.com/stashapp/stashdb/pkg/models.Scene
+  User:
+    model: github.com/stashapp/stashdb/pkg/models.User
 

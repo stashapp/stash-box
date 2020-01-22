@@ -140,3 +140,28 @@ CREATE TABLE `scene_tags` (
   foreign key(`tag_id`) references `tags`(`id`) ON DELETE CASCADE,
   unique(`scene_id`, `tag_id`)
 );
+
+CREATE TABLE `users` (
+  `id` blob not null primary key,
+  `name` varchar(255) not null,
+  `password_hash` varchar(60) not null,
+  `email` varchar(255) not null,
+  `api_key` varchar(255) not null,
+  `api_calls` integer default 0,
+  `last_api_call` datetime not null,
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  unique (`name`),
+  unique (`email`)
+);
+
+CREATE TABLE `user_roles` (
+  `user_id` blob not null,
+  `role` varchar(10) not null,
+  foreign key(`user_id`) references `users`(`id`) ON DELETE CASCADE,
+  unique (`user_id`, `role`)
+);
+
+CREATE INDEX `index_users_on_name` on `users` (`name`);
+CREATE INDEX `index_users_on_email` on `users` (`email`);
+CREATE INDEX `index_users_on_api_key` on `users` (`api_key`);

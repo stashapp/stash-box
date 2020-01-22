@@ -23,6 +23,9 @@ func (r *Resolver) Studio() models.StudioResolver {
 func (r *Resolver) Scene() models.SceneResolver {
 	return &sceneResolver{r}
 }
+func (r *Resolver) User() models.UserResolver {
+	return &userResolver{r}
+}
 func (r *Resolver) Query() models.QueryResolver {
 	return &queryResolver{r}
 }

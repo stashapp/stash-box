@@ -9,9 +9,12 @@ enum RoleEnum {
 type User {
     id: ID!
     name: String!
-    roles: [RoleEnum!]!
-    email: String!
-    api_key: String!
+    """Should not be visible to other users"""
+    roles: [RoleEnum!]
+    """Should not be visible to other users"""
+    email: String
+    """Should not be visible to other users"""
+    api_key: String
     successful_edits: Int!
     unsuccessful_edits: Int!
     successful_votes: Int!
@@ -23,7 +26,7 @@ type User {
 
 input UserCreateInput {
     name: String!
-    # TODO - figure out format for this
+    """Password in plain text"""
     password: String!
     roles: [RoleEnum!]!
     email: String!
@@ -32,10 +35,16 @@ input UserCreateInput {
 input UserUpdateInput {
     id: ID!
     name: String
-    # TODO - figure out format for this
+    """Password in plain text"""
     password: String
     roles: [RoleEnum!]
     email: String
+}
+
+input UserChangePasswordInput {
+  """Password in plain text"""
+  existing_password: String!
+  new_password: String!
 }
 
 input UserDestroyInput {

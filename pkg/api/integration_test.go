@@ -8,15 +8,114 @@ import (
 	"testing"
 
 	"github.com/stashapp/stashdb/pkg/api"
+	"github.com/stashapp/stashdb/pkg/database"
 	dbtest "github.com/stashapp/stashdb/pkg/database/databasetest"
+	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/models"
 
 	"github.com/99designs/gqlgen/graphql"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 )
 
+// we need to create some users to test the api with, otherwise all calls
+// will be unauthorised
+type userPopulator struct {
+	none *models.User
+	read *models.User
+	admin       *models.User
+	modify      *models.User
+	noneRolls []models.RoleEnum
+	readRoles []models.RoleEnum
+	adminRoles  []models.RoleEnum
+	modifyRoles []models.RoleEnum
+}
+
+var userDB *userPopulator
+
+func (p *userPopulator) PopulateDB() error {
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	// create admin user
+	createInput := models.UserCreateInput{
+		Name: "admin",
+		Roles: []models.RoleEnum{
+			models.RoleEnumAdmin,
+		},
+		Email: "admin",
+	}
+
+	var err error
+	p.admin, err = manager.UserCreate(tx, createInput)
+	p.adminRoles = createInput.Roles
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// create modify user
+	createInput = models.UserCreateInput{
+		Name: "modify",
+		Roles: []models.RoleEnum{
+			models.RoleEnumModify,
+		},
+		Email: "modify",
+	}
+
+	p.modify, err = manager.UserCreate(tx, createInput)
+	p.modifyRoles = createInput.Roles
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// create read user
+	createInput = models.UserCreateInput{
+		Name: "read",
+		Roles: []models.RoleEnum{
+			models.RoleEnumRead,
+		},
+		Email: "read",
+	}
+
+	p.read, err = manager.UserCreate(tx, createInput)
+	p.readRoles = createInput.Roles
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// create none user
+	createInput = models.UserCreateInput{
+		Name: "none",
+		Roles: []models.RoleEnum{
+			models.RoleEnumRead,
+		},
+		Email: "none",
+	}
+
+	p.none, err = manager.UserCreate(tx, createInput)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	// create other users as needed
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func TestMain(m *testing.M) {
-	dbtest.TestWithDatabase(m, nil)
+	userDB = &userPopulator{}
+	dbtest.TestWithDatabase(m, userDB)
 }
 
 type testRunner struct {
@@ -30,17 +129,37 @@ var performerSuffix int
 var studioSuffix int
 var tagSuffix int
 var sceneChecksumSuffix int
+var userSuffix int
 
-func createTestRunner(t *testing.T) *testRunner {
+func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) *testRunner {
 	resolver := api.Resolver{}
+
+	// replicate what the server.go code does
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextRole, api.ModifyRole)
+	ctx = context.WithValue(ctx, api.ContextUser, user)
+	ctx = context.WithValue(ctx, api.ContextRoles, roles)
 
 	return &testRunner{
 		t:        t,
 		resolver: resolver,
 		ctx:      ctx,
 	}
+}
+
+func asAdmin(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.admin, userDB.adminRoles)
+}
+
+func asModify(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.modify, userDB.modifyRoles)
+}
+
+func asRead(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.read, userDB.readRoles)
+}
+
+func asNone(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.none, userDB.noneRolls)
 }
 
 func (t *testRunner) doTest(test func()) {
@@ -165,6 +284,36 @@ func (s *testRunner) generateSceneFingerprint() *models.FingerprintInput {
 		Algorithm: "MD5",
 		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
 	}
+}
+
+func (s *testRunner) generateUserName() string {
+	userSuffix += 1
+	return "user-" + strconv.Itoa(userSuffix)
+}
+
+func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User, error) {
+	s.t.Helper()
+
+	if input == nil {
+		name := s.generateUserName()
+		input = &models.UserCreateInput{
+			Name:     name,
+			Email:    name + "@example.com",
+			Password: "password" + name,
+			Roles: []models.RoleEnum{
+				models.RoleEnumAdmin,
+			},
+		}
+	}
+
+	createdUser, err := s.resolver.Mutation().UserCreate(s.ctx, *input)
+
+	if err != nil {
+		s.t.Errorf("Error creating user: %s", err.Error())
+		return nil, err
+	}
+
+	return createdUser, nil
 }
 
 func compareUrls(input []*models.URLInput, urls []*models.URL) bool {

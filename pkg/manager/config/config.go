@@ -1,10 +1,9 @@
 package config
 
 import (
-	"crypto/rand"
-	"fmt"
-
 	"github.com/spf13/viper"
+
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 const Stash = "stash"
@@ -16,9 +15,11 @@ const DatabaseType = "database_type"
 const Host = "host"
 const Port = "port"
 
-// TODO - temporary api key configuration
-const ReadApiKey = "read_api_key"
-const ModifyApiKey = "modify_api_key"
+// key used to sign JWT tokens
+const JWTSignKey = "jwt_secret_key"
+
+// key used for session store
+const SessionStoreKey = "session_store_key"
 
 // Logging options
 const LogFile = "logFile"
@@ -53,12 +54,12 @@ func GetPort() int {
 	return viper.GetInt(Port)
 }
 
-func GetReadApiKey() string {
-	return viper.GetString(ReadApiKey)
+func GetJWTSignKey() []byte {
+	return []byte(viper.GetString(JWTSignKey))
 }
 
-func GetModifyApiKey() string {
-	return viper.GetString(ModifyApiKey)
+func GetSessionStoreKey() []byte {
+	return []byte(viper.GetString(SessionStoreKey))
 }
 
 // GetLogFile returns the filename of the file to output logs to.
@@ -99,19 +100,20 @@ func IsValid() bool {
 	return setPaths
 }
 
-func generateApiKey() string {
-	const apiKeyLength = 32
-	b := make([]byte, apiKeyLength)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
-}
-
+// SetInitialConfig fills in missing required config fields
 func SetInitialConfig() error {
 	// generate some api keys
-	rApiKey := generateApiKey()
-	wApiKey := generateApiKey()
+	const apiKeyLength = 32
 
-	Set(ReadApiKey, rApiKey)
-	Set(ModifyApiKey, wApiKey)
+	if string(GetJWTSignKey()) == "" {
+		signKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(JWTSignKey, signKey)
+	}
+
+	if string(GetSessionStoreKey()) == "" {
+		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(SessionStoreKey, sessionStoreKey)
+	}
+
 	return Write()
 }

@@ -77,10 +77,10 @@ func initConfig() {
 		if err = viper.ReadInConfig(); err != nil {
 			panic(err)
 		}
+	}
 
-		if err = config.SetInitialConfig(); err != nil {
-			panic(err)
-		}
+	if err = config.SetInitialConfig(); err != nil {
+		panic(err)
 	}
 
 	// TODO - need a smarter way to do this. What if one is set and not the

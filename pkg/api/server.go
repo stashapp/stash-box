@@ -18,6 +18,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stashdb/pkg/logger"
+	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/manager/paths"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -29,45 +30,77 @@ var githash string = ""
 var setupUIBox *packr.Box
 
 const ApiKeyHeader = "ApiKey"
-const ContextRole = "role"
 
-func getRole(apiKey string) string {
-	readApiKey := config.GetReadApiKey()
-	modifyApiKey := config.GetModifyApiKey()
-
-	// allow modification if both api keys are blanked
-	if (modifyApiKey == "" && readApiKey == "") || apiKey == modifyApiKey {
-		return ModifyRole
+func getUserAndRoles(userID string) (*models.User, []models.RoleEnum, error) {
+	user, err := manager.GetUser(userID)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	// allow read if read api key is blanked
-	if readApiKey == "" || apiKey == readApiKey {
-		return ReadRole
+	roles, err := manager.GetUserRoles(userID)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return ""
+	return user, roles, nil
+}
+
+// returns the userID, a boolean set to true if api key was used, and an error
+func getRequestUserID(w http.ResponseWriter, r *http.Request) (string, bool, error) {
+	userID := ""
+	isAPIKey := false
+	var err error
+
+	// translate api key into current user, if present
+	apiKey := r.Header.Get(ApiKeyHeader)
+	if apiKey != "" {
+		isAPIKey = true
+		userID, err = manager.GetUserIDFromAPIKey(apiKey)
+	} else {
+		// handle session
+		userID, err = getSessionUserID(w, r)
+	}
+
+	return userID, isAPIKey, err
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+
+			// translate api key into current user, if present
+			userID := ""
 			apiKey := r.Header.Get(ApiKeyHeader)
-
-			// TODO - translate api key into current user
-			// for now, set role based on config
-			role := getRole(apiKey)
-
-			// TODO - add config to allow playground
-			// for now just let it through with blank role
-			if role == "" {
-				// w.WriteHeader(http.StatusUnauthorized)
-				// w.Write([]byte("Missing API key"))
-				// return
+			var err error
+			if apiKey != "" {
+				userID, err = manager.GetUserIDFromAPIKey(apiKey)
+			} else {
+				// handle session
+				userID, err = getSessionUserID(w, r)
 			}
 
-			ctx := r.Context()
-			r = r.WithContext(context.WithValue(ctx, ContextRole, role))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			user, roles, err := getUserAndRoles(userID)
+
+			// ensure api key of the user matches the passed one
+			if apiKey != "" && user != nil && user.APIKey != apiKey {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			// TODO - increment api key counters
+
+			ctx = context.WithValue(ctx, ContextUser, user)
+			ctx = context.WithValue(ctx, ContextRoles, roles)
+
+			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
 		})
@@ -109,6 +142,10 @@ func Start() {
 
 	// TODO - this should be disabled in production
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+
+	// session handlers
+	r.HandleFunc("/login", handleLogin)
+	r.HandleFunc("/logout", handleLogout)
 
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {

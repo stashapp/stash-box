@@ -15,6 +15,11 @@
 **/*-packr.go
 
 ####
+# Visual Studio Code
+####
+.vscode
+
+####
 # Jetbrains
 ####
 
