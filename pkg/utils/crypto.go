@@ -2,6 +2,8 @@ package utils
 
 import (
 	"crypto/md5"
+	"crypto/rand"
+	"encoding/ascii85"
 	"fmt"
 	"io"
 	"os"
@@ -30,4 +32,20 @@ func MD5FromFilePath(filePath string) (string, error) {
 	}
 	checksum := h.Sum(nil)
 	return fmt.Sprintf("%x", checksum), nil
+}
+
+func GenerateRandomPassword(l int) string {
+	b := make([]byte, l)
+	rand.Read(b)
+
+	output := make([]byte, ascii85.MaxEncodedLen(l))
+	n := ascii85.Encode(output, b)
+	output = output[0:n]
+	return string(output)
+}
+
+func GenerateRandomKey(l int) string {
+	b := make([]byte, l)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
 }

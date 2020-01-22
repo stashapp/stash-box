@@ -80,6 +80,14 @@ type Mutation {
   userUpdate(input: UserUpdateInput!): User
   userDestroy(input: UserDestroyInput!): Boolean!
 
+  """Regenerates the api key for the given user, or the current user if id not provided"""
+  regenerateAPIKey(userID: ID): String!
+
+  """Changes the password for the current user"""
+  changePassword(input: UserChangePasswordInput!): Boolean!
+
+  # TODO - reset password - needs email integration
+
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
   sceneEdit(input: SceneEditInput!): Edit!

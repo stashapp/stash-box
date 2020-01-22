@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stashapp/stashdb/pkg/api"
 	"github.com/stashapp/stashdb/pkg/models"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -17,7 +18,7 @@ type sceneTestRunner struct {
 
 func createSceneTestRunner(t *testing.T) *sceneTestRunner {
 	return &sceneTestRunner{
-		testRunner: *createTestRunner(t),
+		testRunner: *asModify(t),
 	}
 }
 
@@ -711,6 +712,37 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 	s.verifyInvalidModifier(filter)
 }
 
+func (s *sceneTestRunner) testUnauthorisedSceneModify() {
+	// test each api interface - all require modify so all should fail
+	_, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("SceneCreate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().SceneUpdate(s.ctx, models.SceneUpdateInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("SceneUpdate: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Mutation().SceneDestroy(s.ctx, models.SceneDestroyInput{})
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("SceneDestroy: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
+func (s *sceneTestRunner) testUnauthorisedSceneQuery() {
+	// test each api interface - all require read so all should fail
+	_, err := s.resolver.Query().FindScene(s.ctx, "")
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("FindScene: got %v want %v", err, api.ErrUnauthorized)
+	}
+
+	_, err = s.resolver.Query().QueryScenes(s.ctx, nil, nil)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("QueryScenes: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
 func TestCreateScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testCreateScene()
@@ -752,4 +784,18 @@ func TestQueryScenesByPerformer(t *testing.T) {
 func TestQueryScenesByTag(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testQueryScenesByTag()
+}
+
+func TestUnauthorisedSceneModify(t *testing.T) {
+	pt := &sceneTestRunner{
+		testRunner: *asRead(t),
+	}
+	pt.testUnauthorisedSceneModify()
+}
+
+func TestUnauthorisedSceneQuery(t *testing.T) {
+	pt := &sceneTestRunner{
+		testRunner: *asNone(t),
+	}
+	pt.testUnauthorisedSceneQuery()
 }
