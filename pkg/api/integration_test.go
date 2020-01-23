@@ -14,7 +14,6 @@ import (
 	"github.com/stashapp/stashdb/pkg/models"
 
 	"github.com/99designs/gqlgen/graphql"
-	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 )
 
 // we need to create some users to test the api with, otherwise all calls

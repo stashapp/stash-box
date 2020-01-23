@@ -10,7 +10,6 @@ const Stash = "stash"
 const Metadata = "metadata"
 
 const Database = "database"
-const DatabaseType = "database_type"
 
 const Host = "host"
 const Port = "port"
@@ -36,10 +35,6 @@ func Write() error {
 
 func GetMetadataPath() string {
 	return viper.GetString(Metadata)
-}
-
-func GetDatabaseType() string {
-	return viper.GetString(DatabaseType)
 }
 
 func GetDatabasePath() string {

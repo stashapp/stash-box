@@ -163,8 +163,6 @@ func getSort(sort string, direction string, tableName string) string {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
 
-		// sqlite3 golang library does not yet support NULLS LAST, so leave it as empty in
-		// its dialect for now.
 		return " ORDER BY " + colName + " " + direction + database.GetDialect().NullsLast() + additional
 	}
 }
@@ -234,7 +232,7 @@ func runIdsQuery(query string, args []interface{}) ([]uuid.UUID, error) {
 	var result []struct {
 		ID uuid.UUID `db:"id"`
 	}
-	query = database.GetDialect().SetPlaceholders(query)
+	query = database.DB.Rebind(query)
 	if err := database.DB.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
 		return []uuid.UUID{}, err
 	}
@@ -252,7 +250,7 @@ func runCountQuery(query string, args []interface{}) (int, error) {
 		Count int `db:"count"`
 	}{0}
 
-	query = database.GetDialect().SetPlaceholders(query)
+	query = database.DB.Rebind(query)
 	if err := database.DB.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
 		return 0, err
 	}
