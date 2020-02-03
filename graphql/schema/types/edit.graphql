@@ -50,7 +50,7 @@ type Edit {
     """Objects to merge with the target. Only applicable to merges"""
     merge_sources: [EditTarget]
     operation: OperationEnum!
-    editComment: String
+    edit_comment: String
     details: EditDetails!
     comments: [VoteComment!]!
     votes: [VoteComment!]!

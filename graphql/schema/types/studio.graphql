@@ -40,6 +40,8 @@ input StudioEditInput {
   """Not required for create type"""
   id: ID
   operation: OperationEnum!
+  """Required for amending an existing edit"""
+  edit_id: ID
   """Only required for merge type"""
   merge_source_ids: [ID!]
   """Not required for destroy type"""
