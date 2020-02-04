@@ -43,6 +43,10 @@ func (qb *EditQueryBuilder) Find(id uuid.UUID) (*Edit, error) {
 	return qb.toModel(ret), err
 }
 
+func (qb *EditQueryBuilder) CreateEditTag(newJoin EditTag) error {
+	return qb.dbi.InsertJoin(editTagTable, &newJoin)
+}
+
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
 // 	query := `
 // 		SELECT scenes.* FROM scenes

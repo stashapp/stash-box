@@ -1,10 +1,13 @@
 package models
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jmoiron/sqlx/types"
 
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -21,6 +24,10 @@ var (
 		return &Edit{}
 	})
 
+	editTagTable = database.NewTableJoin(editTable, "tag_edit", editJoinKey, func() interface{} {
+		return &TagEdit{}
+	})
+
 	// voteDBTable = database.NewTable(editTable, func() interface{} {
 	// 	return &Edit{}
 	// })
@@ -35,22 +42,32 @@ type Edit struct {
 	VoteCount   int             `db:"votes" json:"votes"`
 	Status      string          `db:"status" json:"status"`
 	Applied     bool            `db:"applied" json:"applied"`
-	Data        string          `db:"data" json:"data"`
+	Data        types.JSONText  `db:"data" json:"data"`
 	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
-func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum) *Edit {
+func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
 	currentTime := time.Now()
 
-	return &Edit{
+	ret := &Edit{
 		ID:         UUID,
 		UserID:     user.ID,
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
+		Operation:  input.Operation.String(),
 		CreatedAt:  SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt:  SQLiteTimestamp{Timestamp: currentTime},
 	}
+
+	if input.Comment != nil {
+		ret.EditComment = sql.NullString{
+			String: *input.Comment,
+			Valid:  true,
+		}
+	}
+
+	return ret
 }
 
 func (Edit) GetTable() database.Table {
@@ -59,6 +76,18 @@ func (Edit) GetTable() database.Table {
 
 func (p Edit) GetID() uuid.UUID {
 	return p.ID
+}
+
+func (e *Edit) SetData(data interface{}) error {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(data); err != nil {
+		return err
+	}
+	e.Data = buffer.Bytes()
+	return nil
 }
 
 type Edits []*Edit
@@ -71,6 +100,23 @@ func (p Edits) Each(fn func(interface{})) {
 
 func (p *Edits) Add(o interface{}) {
 	*p = append(*p, o.(*Edit))
+}
+
+type EditTag struct {
+	EditID uuid.UUID `db:"edit_id" json:"edit_id"`
+	TagID  uuid.UUID `db:"tag_id" json:"tag_id"`
+}
+
+type EditTags []*EditTag
+
+func (p EditTags) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditTags) Add(o interface{}) {
+	*p = append(*p, o.(*EditTag))
 }
 
 // type VoteComment struct {
