@@ -2,8 +2,6 @@ package database
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
@@ -76,18 +74,6 @@ func (p *PostgresProvider) GetDialect() sqlDialect {
 
 func (*postgresDialect) FieldQuote(field string) string {
 	return `"` + field + `"`
-}
-
-func (*postgresDialect) SetPlaceholders(sql string) string {
-	p := strings.Index(sql, "?")
-	index := 1
-	for p != -1 {
-		sql = strings.Replace(sql, "?", "$"+strconv.Itoa(index), 1)
-		p = strings.Index(sql, "?")
-		index++
-	}
-
-	return sql
 }
 
 func (*postgresDialect) NullsLast() string {

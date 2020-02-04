@@ -19,7 +19,7 @@ func GetConfigDirectory() string {
 }
 
 func GetDefaultDatabaseFilePath() string {
-	return filepath.Join(GetConfigDirectory(), "stashdb-go.sqlite")
+	return "postgres@localhost/stash-box?sslmode=disable"
 }
 
 func GetConfigName() string {

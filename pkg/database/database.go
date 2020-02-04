@@ -12,7 +12,6 @@ var dialect sqlDialect
 
 type sqlDialect interface {
 	FieldQuote(field string) string
-	SetPlaceholders(sql string) string
 	NullsLast() string
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -12,6 +11,8 @@ import (
 
 	"github.com/stashapp/stashdb/pkg/database"
 )
+
+const defaultTestDB = "postgres@localhost/stash-box-test?sslmode=disable"
 
 type DatabasePopulater interface {
 	PopulateDB() error
@@ -27,27 +28,6 @@ func testTeardown(databaseFile string) {
 	err = os.Remove(databaseFile)
 	if err != nil {
 		panic(err)
-	}
-}
-
-func initDatabase() {
-
-}
-
-func initSQLite() func() {
-	// create the database file
-	f, err := ioutil.TempFile("", "*.sqlite")
-	if err != nil {
-		panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
-	}
-
-	f.Close()
-	databaseFile := f.Name()
-	const databaseType = "sqlite3"
-	database.Initialize(databaseType, databaseFile)
-
-	return func() {
-		testTeardown(databaseFile)
 	}
 }
 
@@ -98,12 +78,10 @@ func runTests(m *testing.M, populater DatabasePopulater) int {
 	var deferFn func()
 
 	pgConnStr := os.Getenv("POSTGRES_DB")
-	if pgConnStr != "" {
-		deferFn = initPostgres(pgConnStr)
-	} else {
-		deferFn = initSQLite()
+	if pgConnStr == "" {
+		pgConnStr = defaultTestDB
 	}
-
+	deferFn = initPostgres(pgConnStr)
 	// defer close and delete the database
 	if deferFn != nil {
 		defer deferFn()

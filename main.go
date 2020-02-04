@@ -7,14 +7,14 @@ import (
 	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/manager/config"
 
-	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {
 	manager.Initialize()
 
-	database.Initialize(config.GetDatabaseType(), config.GetDatabasePath())
+	const databaseProvider = "postgres"
+	database.Initialize(databaseProvider, config.GetDatabasePath())
 	manager.CreateRootUser()
 	api.Start()
 	blockForever()
