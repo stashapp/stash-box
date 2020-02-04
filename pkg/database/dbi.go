@@ -137,8 +137,10 @@ func selectStatement(table Table) string {
 
 func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 	if q.tx != nil {
+		query = q.tx.Rebind(query)
 		return q.tx.Queryx(query, args...)
 	} else {
+		query = DB.Rebind(query)
 		return DB.Queryx(query, args...)
 	}
 }
@@ -148,8 +150,6 @@ func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
 	query := selectStatement(table) + " WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
-
-	query = dialect.SetPlaceholders(query)
 
 	var rows *sqlx.Rows
 	var err error
@@ -235,7 +235,6 @@ func (q dbi) RawQuery(table Table, query string, args []interface{}, output Mode
 	var rows *sqlx.Rows
 	var err error
 
-	query = dialect.SetPlaceholders(query)
 	rows, err = q.queryx(query, args...)
 
 	if err != nil && err != sql.ErrNoRows {
@@ -268,11 +267,13 @@ func (q dbi) Count(query QueryBuilder) (int, error) {
 		Int int `db:"count"`
 	}{0}
 
-	rawQuery := dialect.SetPlaceholders(query.buildCountQuery())
+	rawQuery := query.buildCountQuery()
 
 	if q.tx != nil {
+		rawQuery = q.tx.Rebind(rawQuery)
 		err = q.tx.Get(&result, rawQuery, query.args...)
 	} else {
+		rawQuery = DB.Rebind(rawQuery)
 		err = DB.Get(&result, rawQuery, query.args...)
 	}
 

@@ -1,7 +1,9 @@
 package manager
 
 import (
+	"fmt"
 	"net"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -67,7 +69,9 @@ func initConfig() {
 	}
 
 	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
+	newConfig := false
+	if err != nil { // Handle errors reading the config file
+		newConfig = true
 		defaultConfigFilePath := paths.GetDefaultConfigFilePath()
 		if *configFilePath != "" {
 			defaultConfigFilePath = *configFilePath
@@ -83,13 +87,23 @@ func initConfig() {
 		panic(err)
 	}
 
-	// TODO - need a smarter way to do this. What if one is set and not the
-	// other.
-	viper.SetDefault(config.DatabaseType, "sqlite3")
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
+
+	if err := config.Write(); err != nil {
+		panic(err)
+	}
 
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		logger.Infof("failed to bind flags: %s", err.Error())
+	}
+
+	if newConfig {
+		fmt.Printf(`
+A new config file has been generated at %s.
+The database connection string has been defaulted to: %s
+Please ensure this database is created and available, or change the connection string in the configuration file, then rerun stashdb.`,
+			viper.GetViper().ConfigFileUsed(), config.GetDatabasePath())
+		os.Exit(0)
 	}
 }
 
