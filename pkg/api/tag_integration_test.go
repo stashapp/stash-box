@@ -8,8 +8,6 @@ import (
 
 	"github.com/stashapp/stashdb/pkg/api"
 	"github.com/stashapp/stashdb/pkg/models"
-
-	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 )
 
 type tagTestRunner struct {

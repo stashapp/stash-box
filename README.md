@@ -18,6 +18,18 @@ Stash-box supports macOS, Windows, and Linux.
 
 Releases TODO
 
+## Initial setup
+
+Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stashdb-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
+
+The database must be created and available before rerunning stash-box. The schema will be created within the database if it is not already present.
+
+The `sslmode` parameter is documented in the [pq documentation](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default value is `require`.
+
+After ensuring the database connection string is correct and the database server is available, the stash-box executable may be rerun. 
+
+The second time that stash-box is run, stash-box will run the schema migrations to create the required tables. It will also generate a `root` user with a random password and an API key. These credentials are printed once to stdout and are not logged. The root user will be regenerated on startup if it does not exist, so a new root user may be created by deleting the root user row from the database and restarting stash-box.
+
 ## CLI
 
 Stash-box provides some command line options.  See what is currently available by running `stashdb --help`.
@@ -26,26 +38,14 @@ For example, to run stash locally on port 80 run it like this (OSX / Linux) `sta
 
 ## Configuration
 
-Stash-box generates a configuration file in the current working directory when it is first started up. This configuration file is generated with the following defaults:
+Stash-box generates a configuration file `stashdb-config.yml` in the current working directory when it is first started up. This configuration file is generated with the following defaults:
 - running on `0.0.0.0` port `9998`
-- sqlite3 database generated in the current working directory named `stashdb-go.sqlite`
-- generated read (`read_api_key`) and write (`modify_api_key`) API keys. These can be deleted to disable read/write authentication (all requests will be allowed without API key)
 
-### API keys
+### API keys and authorisation
 
-These are a very basic authorization method. When set, the `ApiKey` header must be set to the correct value to read/write the data. The write API key allows reading and writing. The read API key allows only reading.
+A user may be authenticated in one of two ways. Session-based management is possible by logging in via `/login`, passing form values for `username` and `password` in plain text. This sets a cookie which is required for subsequent requests. The session can be ended with a request to `/logout`.
 
-### Postgres Support
-
-Stash-box can be configured to run with a Postgres database. To use a Postgres database, the config file have the following fields:
-```
-database_type: postgres
-database: <user>:<password>@<host>/<dbname>?[sslmode=<sslmode>]
-```
-
-The database `<dbname>` must be created already. The schema will be created within the database if it is not already present.
-
-The `sslmode` parameter is documented in the [pq documentation](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default value is `require`.
+The alternative is to use the user's api key. For this, the `ApiKey` header must be set to the user's api key value.
 
 ## SSL (HTTPS)
 
