@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useQuery } from '@apollo/react-hooks';
 import { Navbar, Nav } from 'react-bootstrap';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useHistory } from 'react-router-dom';
 import SearchField, { SearchType } from 'src/components/searchField';
+import ME from 'src/queries/Me.gql';
+import { Me } from 'src/definitions/Me';
 import AuthContext from './AuthContext';
 
 const Main: React.FC = ({ children }) => {
-    /*
+    const history = useHistory();
     const [user, setUser] = useState(undefined);
     const prevUser = useRef();
     const { loading } = useQuery<Me>(ME, {
@@ -15,9 +18,9 @@ const Main: React.FC = ({ children }) => {
 
     useEffect(() => {
         if (user === null)
-            navigate('/login');
+            history.push('/login');
         else if (prevUser.current === null)
-            navigate('/');
+            history.push('/');
         prevUser.current = user;
     }, [user]);
 
@@ -25,52 +28,58 @@ const Main: React.FC = ({ children }) => {
     if (loading)
         return <div>Loading...</div>;
 
-    const contextValue = user !== null ? {
+    const isRole = (role: string) => (
+        (user?.roles ?? []).includes(role)
+    );
+
+    const contextValue = user ? {
         authenticated: true,
-        user
+        user,
+        isRole
     } : {
         authenticated: false,
-        setUser
+        setUser,
     };
 
     if (!contextValue.authenticated)
         return (
             <AuthContext.Provider value={contextValue}>
                 { children }
-                {' '}
-:
             </AuthContext.Provider>
         );
-    */
 
-    const user = {
-        username: 'User',
-        role: 2
-    };
-    const contextValue = {
-        authenticated: true,
-        user
+    const handleLogout = async () => {
+        const res = await fetch('/logout');
+        if (res.ok)
+            window.location.href = '/';
+        return false;
     };
 
+    const renderUserNav = () => (
+        contextValue.authenticated && (
+            <>
+                { isRole('ADMIN') && (
+                    <NavLink exact to="/admin" className="nav-link">Admin</NavLink>
+                )}
+                <NavLink to={`/users/${contextValue.user.name}`} className="nav-link ml-auto">{contextValue.user.name}</NavLink>
+                <NavLink to="/logout" onClick={handleLogout} className="nav-link">Logout</NavLink>
+            </>
+        )
+    );
 
     return (
         <div>
-            <Navbar bg="light" expand="lg">
-                <Nav className="mr-auto">
+            <Navbar bg="light">
+                <Nav className="row mr-auto">
                     <NavLink exact to="/" className="nav-link">Home</NavLink>
                     <NavLink to="/performers" className="nav-link">Performers</NavLink>
                     <NavLink to="/scenes" className="nav-link">Scenes</NavLink>
-                    <NavLink to="/studios" className="nav-link">Studios</NavLink>
-                    <NavLink exact to="/performers/add" className="nav-link">Add Performer</NavLink>
-                    <NavLink exact to="/scenes/add" className="nav-link">Add Scene</NavLink>
-                    <NavLink exact to="/studios/add" className="nav-link">Add Studio</NavLink>
+                    <NavLink to="/studios" className="nav-link col-1">Studios</NavLink>
                 </Nav>
-                <div className="welcome">
-Welcome
-                    {user && user.username}
-!
-                </div>
-                <SearchField searchType={SearchType.Combined} />
+                <Nav>
+                    { contextValue.authenticated && renderUserNav() }
+                    <SearchField searchType={SearchType.Combined} />
+                </Nav>
             </Navbar>
             <div className="StashDBContent container-fluid">
                 <AuthContext.Provider value={contextValue}>

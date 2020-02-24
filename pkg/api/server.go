@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+    "path"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -27,7 +28,7 @@ import (
 var buildstamp string = ""
 var githash string = ""
 
-var setupUIBox *packr.Box
+var uiBox *packr.Box
 
 const ApiKeyHeader = "ApiKey"
 
@@ -108,16 +109,16 @@ func authenticateHandler() func(http.Handler) http.Handler {
 }
 
 func Start() {
-	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
+	uiBox = packr.New("Setup UI Box", "../../frontend/dist")
 
 	r := chi.NewRouter()
 
+	r.Use(cors.AllowAll().Handler)
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
-	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
 
 	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
@@ -146,6 +147,21 @@ func Start() {
 	// session handlers
 	r.HandleFunc("/login", handleLogin)
 	r.HandleFunc("/logout", handleLogout)
+
+	// Serve the web app
+	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
+		ext := path.Ext(r.URL.Path)
+		if ext == ".html" || ext == "" {
+			data, _ := uiBox.Find("index.html")
+			_, _ = w.Write(data)
+		} else {
+			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
+			if isStatic {
+				w.Header().Add("Cache-Control", "max-age=604800000")
+			}
+			http.FileServer(uiBox).ServeHTTP(w, r)
+		}
+	})
 
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {

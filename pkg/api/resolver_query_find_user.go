@@ -51,6 +51,16 @@ func (r *queryResolver) QueryUsers(ctx context.Context, userFilter *models.UserF
 	}, nil
 }
 
+func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
+	currentUser := getCurrentUser(ctx)
+	if currentUser == nil {
+		return nil, ErrUnauthorized
+	}
+
+    return currentUser, nil
+}
+
+
 func removeSensitiveUserDetails(ctx context.Context, users models.Users) {
 	// don't need to remove details if we're admin
 	if validateAdmin(ctx) == nil {

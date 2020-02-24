@@ -2,7 +2,7 @@ import React from 'react';
 import { Spinner } from 'react-bootstrap';
 
 interface LoadingProps {
-    message: string;
+    message?: string;
 }
 
 const CLASSNAME = 'LoadingIndicator';
@@ -14,7 +14,7 @@ const LoadingIndicator: React.FC<LoadingProps> = ({ message }) => (
             <span className="sr-only">Loading...</span>
         </Spinner>
         <h4 className={CLASSNAME_MESSAGE}>
-            { message }
+            { message ?? 'Loading...' }
         </h4>
     </div>
 );

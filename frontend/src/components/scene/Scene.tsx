@@ -56,7 +56,7 @@ const SceneComponent: React.FC = () => {
             callback={handleDelete}
         />
     );
-    const deleteButton = auth.user.role > 1 && (
+    const deleteButton = auth.user.roles.includes('ADMIN') && (
         <button type="button" disabled={showDelete || deleting} className="btn btn-danger" onClick={toggleModal}>
             Delete
         </button>

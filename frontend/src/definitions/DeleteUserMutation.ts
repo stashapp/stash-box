@@ -3,16 +3,16 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { SceneDestroyInput } from "./globalTypes";
+import { UserDestroyInput } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: DeleteSceneMutation
+// GraphQL mutation operation: DeleteUserMutation
 // ====================================================
 
-export interface DeleteSceneMutation {
-  sceneDestroy: boolean;
+export interface DeleteUserMutation {
+  userDestroy: boolean;
 }
 
-export interface DeleteSceneMutationVariables {
-  input: SceneDestroyInput;
+export interface DeleteUserMutationVariables {
+  input: UserDestroyInput;
 }
