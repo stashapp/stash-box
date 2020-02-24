@@ -43,3 +43,7 @@ vet:
 .PHONY: lint
 lint:
 	revive -config revive.toml -exclude ./vendor/...  ./...
+
+.PHONY: ui
+ui:
+	cd frontend && yarn build
