@@ -28,7 +28,7 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="LoginPrompt mx-auto d-flex h-100">
+        <div className="LoginPrompt mx-auto d-flex">
             <form className="align-self-center col-4 mx-auto" onSubmit={submitLogin}>
                 <label className="row">
                     <span className="col-4">Username: </span>

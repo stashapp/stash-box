@@ -19,7 +19,9 @@ const httpLink = createHttpLink({
 const authLink = setContext((_, { headers, ...context }) => ({
     headers: {
         ...headers,
-        ApiKey: process.env.APIKEY
+        ...process.env.APIKEY && {
+            ApiKey: process.env.APIKEY
+        }
     },
     ...context,
 }));
