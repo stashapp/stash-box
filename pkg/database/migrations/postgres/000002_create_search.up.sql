@@ -9,10 +9,10 @@ GROUP BY S.id, S.title, T.name;
 CREATE INDEX name_trgm_idx ON performers USING GIN (name gin_trgm_ops);
 CREATE INDEX ts_idx ON scene_search USING gist (
 	(
-		to_tsvector('english', scene_title) ||
-		to_tsvector('english', studio_name) ||
-		to_tsvector('simple', COALESCE(performer_names, '')) ||
-        to_tsvector('simple', COALESCE(scene_date, ''))
+        to_tsvector('simple', COALESCE(scene_date, '')) ||
+        to_tsvector('english', studio_name) ||
+        to_tsvector('english', COALESCE(performer_names, '')) ||
+        to_tsvector('english', scene_title)
 	)
 );
 

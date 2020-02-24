@@ -1,0 +1,10 @@
+query User($name: String!) {
+  findUser(username: $name) {
+    id
+    name
+    email
+    roles
+    api_key
+    api_calls
+  }
+}

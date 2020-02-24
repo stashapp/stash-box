@@ -2,13 +2,15 @@ import React, { useState, useContext } from 'react';
 import { useMutation } from '@apollo/react-hooks';
 import { Link, useHistory } from 'react-router-dom';
 import { Card, Table } from 'react-bootstrap';
+import { Carousel } from 'react-responsive-carousel';
+import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 import DeletePerformer from 'src/mutations/DeletePerformer.gql';
 import AuthContext from 'src/AuthContext';
 import { Performer_findPerformer as Performer } from 'src/definitions/Performer';
 import { DeletePerformerMutation, DeletePerformerMutationVariables } from 'src/definitions/DeletePerformerMutation';
 import getFuzzyDate from 'src/utils/date';
-import { boobJobStatus, getUrlByType, getBodyModification } from 'src/utils/transforms';
+import { boobJobStatus, getBodyModification } from 'src/utils/transforms';
 import { EthnicityTypes, HairColorTypes, EyeColorTypes } from 'src/constants';
 
 import Modal from 'src/components/modal';
@@ -38,7 +40,7 @@ const PerformerInfo: React.FC<{performer: Performer}> = ({ performer }) => {
     const showModal = showDelete && (
         <Modal message={`Are you sure you want to delete '${performer.name}`} callback={handleDelete} />
     );
-    const deleteButton = auth.user.role > 1 && (
+    const deleteButton = auth.user.roles.includes('ADMIN') && (
         <button
             type="button"
             disabled={showDelete || deleting}
@@ -146,7 +148,11 @@ const PerformerInfo: React.FC<{performer: Performer}> = ({ performer }) => {
                     </Card>
                 </div>
                 <div className="col-6 performer-photo">
-                    <img src={getUrlByType(performer.urls, 'PHOTO')} alt="Performer" />
+                    <Carousel width="auto" className="image-carousel">
+                        { performer.urls.filter((url) => url.type === 'PHOTO').map((url) => (
+                            <img src={url.url} alt="Performer" />
+                        ))}
+                    </Carousel>
                 </div>
             </div>
         </>

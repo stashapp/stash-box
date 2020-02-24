@@ -1,5 +1,5 @@
 import React from 'react';
-import { faVenus, faTransgenderAlt, faMars } from '@fortawesome/free-solid-svg-icons';
+import { faVenus, faTransgenderAlt, faMars, faVenusMars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface IconProps {
@@ -7,9 +7,12 @@ interface IconProps {
 }
 
 const GenderIcon: React.FC<IconProps> = ({ gender }) => {
-    const icon = gender.toLowerCase() === 'male' ? faMars
-        : gender.toLowerCase() === 'female' ? faVenus : faTransgenderAlt;
-    return <FontAwesomeIcon icon={icon} />;
+    if (gender) {
+        const icon = gender.toLowerCase() === 'male' ? faMars
+            : gender.toLowerCase() === 'female' ? faVenus : faTransgenderAlt;
+        return <FontAwesomeIcon icon={icon} />;
+    }
+    return <FontAwesomeIcon icon={faVenusMars} />;
 };
 
 export default GenderIcon;

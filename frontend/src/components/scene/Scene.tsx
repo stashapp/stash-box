@@ -56,7 +56,7 @@ const SceneComponent: React.FC = () => {
             callback={handleDelete}
         />
     );
-    const deleteButton = auth.user.role > 1 && (
+    const deleteButton = auth.user.roles.includes('ADMIN') && (
         <button type="button" disabled={showDelete || deleting} className="btn btn-danger" onClick={toggleModal}>
             Delete
         </button>
@@ -83,7 +83,7 @@ const SceneComponent: React.FC = () => {
                     </h6>
                 </Card.Header>
                 <Card.Body className="scene-photo">
-                    <img alt="" src={getUrlByType(scene.urls, 'PHOTO')} className="scene-photo-element" />
+                    <img alt="" src={getUrlByType(scene.urls, 'PHOTO', 'landscape')} className="scene-photo-element" />
                 </Card.Body>
                 <Card.Footer>
                     <div className="scene-performers">{ performers }</div>

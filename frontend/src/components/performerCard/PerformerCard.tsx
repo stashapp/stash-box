@@ -17,9 +17,9 @@ const PerformerCard: React.FC<PerformerCardProps> = ({ performer }) => (
         <Card>
             <Link to={`/performers/${performer.id}`}>
                 <div className={CLASSNAME_IMAGE}>
-                    <img src={getUrlByType(performer.urls, 'PHOTO')} alt="" />
+                    <img src={getUrlByType(performer.urls, 'PHOTO', 'portrait')} alt="" />
                 </div>
-                <Card.Footer>{performer.name}</Card.Footer>
+                <Card.Footer><h5>{performer.name}</h5></Card.Footer>
             </Link>
         </Card>
     </div>

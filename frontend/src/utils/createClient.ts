@@ -9,21 +9,22 @@ import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 
 const httpLink = createHttpLink({
-    uri: process.env.GRAPHQL_ENDPOINT
+    uri: `${process.env.SERVER}${process.env.GRAPHQL_PATH}`,
+    fetchOptions: {
+        mode: 'cors',
+        credentials: 'same-origin'
+    }
 });
 
-const authLink = setContext((_, { headers }) => (
-    // get the authentication token from local storage if it exists
-    // const token = localStorage.getItem('token');
-    // return the headers to the context so httpLink can read them
-    {
-        headers: {
-            ...headers,
-            // authorization: token ? `Bearer ${token}` : '',
+const authLink = setContext((_, { headers, ...context }) => ({
+    headers: {
+        ...headers,
+        ...process.env.APIKEY && {
             ApiKey: process.env.APIKEY
         }
-    }
-));
+    },
+    ...context,
+}));
 
 const createClient = () => (
     new ApolloClient({

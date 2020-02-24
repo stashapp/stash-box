@@ -169,3 +169,28 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	}
 	return true, nil
 }
+
+func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.FingerprintSubmission) (bool, error) {
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder(tx)
+
+	// find the scene
+	sceneID, _ := uuid.FromString(input.SceneID)
+	scene, err := qb.Find(sceneID)
+
+	if err != nil {
+		return false, err
+    }
+
+	sceneFingerprint := models.CreateSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
+	if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+
+    return true, nil
+}

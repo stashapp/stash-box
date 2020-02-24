@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -72,6 +73,14 @@ export enum HairColorEnum {
   OTHER = "OTHER",
   RED = "RED",
   VARIOUS = "VARIOUS",
+}
+
+export enum RoleEnum {
+  ADMIN = "ADMIN",
+  EDIT = "EDIT",
+  MODIFY = "MODIFY",
+  READ = "READ",
+  VOTE = "VOTE",
 }
 
 export enum SortDirectionEnum {
@@ -239,6 +248,7 @@ export interface SceneCreateInput {
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
   fingerprints: FingerprintInput[];
+  duration?: number | null;
 }
 
 export interface SceneDestroyInput {
@@ -266,6 +276,7 @@ export interface SceneUpdateInput {
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
   fingerprints?: FingerprintInput[] | null;
+  duration?: number | null;
 }
 
 export interface StringCriterionInput {
@@ -297,6 +308,30 @@ export interface StudioUpdateInput {
 export interface URLInput {
   url: string;
   type: string;
+}
+
+export interface UserChangePasswordInput {
+  existing_password: string;
+  new_password: string;
+}
+
+export interface UserCreateInput {
+  name: string;
+  password: string;
+  roles: RoleEnum[];
+  email: string;
+}
+
+export interface UserDestroyInput {
+  id: string;
+}
+
+export interface UserUpdateInput {
+  id: string;
+  name?: string | null;
+  password?: string | null;
+  roles?: RoleEnum[] | null;
+  email?: string | null;
 }
 
 //==============================================================

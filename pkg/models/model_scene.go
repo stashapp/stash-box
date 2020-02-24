@@ -35,6 +35,7 @@ type Scene struct {
 	StudioID  uuid.NullUUID   `db:"studio_id,omitempty" json:"studio_id"`
 	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Duration  sql.NullInt32   `db:"duration" json:"duration"`
 }
 
 func (Scene) GetTable() database.Table {

@@ -13,8 +13,10 @@
         width: 100%;
 
         img {
-            max-height: 100%;
-            max-width: 100%;
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            object-position: top;
         }
     }
 
@@ -23,5 +25,9 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         width: 100%;
+    }
+
+    .card-footer {
+        font-size: .8rem;
     }
 }
