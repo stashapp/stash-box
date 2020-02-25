@@ -1,5 +1,5 @@
 CREATE TABLE scene_search AS 
-SELECT S.id as scene_id, S.title AS scene_title, T.name AS studio_name, STRING_AGG(P.name, ' ') || COALESCE(STRING_AGG(PS.as , ''), '') AS performer_names
+SELECT S.id as scene_id, S.title AS scene_title, S.date::TEXT AS scene_date, T.name AS studio_name, STRING_AGG(P.name, ' ') || COALESCE(STRING_AGG(PS.as , ''), '') AS performer_names
 FROM scenes S
 LEFT JOIN scene_performers PS ON PS.scene_id = S.id
 LEFT JOIN performers P ON PS.performer_id = P.id
@@ -10,8 +10,9 @@ CREATE INDEX name_trgm_idx ON performers USING GIN (name gin_trgm_ops);
 CREATE INDEX ts_idx ON scene_search USING gist (
 	(
 		to_tsvector('english', scene_title) ||
-		to_tsvector('english', studio_name)  ||
-		to_tsvector('simple', COALESCE(performer_names, ''))
+		to_tsvector('english', studio_name) ||
+		to_tsvector('simple', COALESCE(performer_names, '')) ||
+        to_tsvector('simple', COALESCE(scene_date, ''))
 	)
 );
 
@@ -37,8 +38,8 @@ CREATE TRIGGER update_performer_search_name AFTER UPDATE ON performers FOR EACH 
 
 CREATE FUNCTION update_scene() RETURNS TRIGGER AS $$
 BEGIN
-IF (NEW.title != OLD.title) THEN
-UPDATE scene_search SET scene_title = NEW.title
+IF (NEW.title != OLD.title OR New.date != OLD.date) THEN
+UPDATE scene_search SET scene_title = NEW.title, scene_date = NEW.date
 WHERE scene_id = NEW.scene_id;
 END IF;
 RETURN NULL;
@@ -49,8 +50,8 @@ CREATE TRIGGER update_scene_search_title AFTER UPDATE ON scenes FOR EACH ROW EXE
 
 CREATE FUNCTION insert_scene() RETURNS TRIGGER AS $$
 BEGIN
-INSERT INTO scene_search (scene_id, scene_title, studio_name)
-SELECT NEW.id, NEW.title, T.name FROM studios T WHERE T.id = NEW.studio_id;
+INSERT INTO scene_search (scene_id, scene_title, scene_date, studio_name)
+SELECT NEW.id, NEW.title, NEW.date, T.name FROM studios T WHERE T.id = NEW.studio_id;
 RETURN NULL;
 END;
 $$ LANGUAGE plpgsql; --The trigger used to update a table.
