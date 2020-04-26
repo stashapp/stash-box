@@ -17,6 +17,9 @@ func (r *Resolver) Performer() models.PerformerResolver {
 func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
 }
+func (r *Resolver) Image() models.ImageResolver {
+	return &imageResolver{r}
+}
 func (r *Resolver) Studio() models.StudioResolver {
 	return &studioResolver{r}
 }

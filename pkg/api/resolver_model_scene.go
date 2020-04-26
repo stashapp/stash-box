@@ -47,6 +47,10 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.
 	qb := models.NewTagQueryBuilder(nil)
 	return qb.FindBySceneID(obj.ID)
 }
+func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*models.Image, error) {
+	qb := models.NewImageQueryBuilder(nil)
+	return qb.FindBySceneID(obj.ID)
+}
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.PerformerAppearance, error) {
 	pqb := models.NewPerformerQueryBuilder(nil)
 	sqb := models.NewSceneQueryBuilder(nil)

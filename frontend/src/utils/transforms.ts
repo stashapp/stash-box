@@ -1,4 +1,4 @@
-import { MeasurementsInput, BreastTypeEnum, URLInput } from 'src/definitions/globalTypes';
+import { MeasurementsInput, BreastTypeEnum } from 'src/definitions/globalTypes';
 
 export const boobJobStatus = (val:BreastTypeEnum) => {
     if (val === BreastTypeEnum.NATURAL) return 'Natural';
@@ -15,16 +15,19 @@ export const getBraSize = (measurements:MeasurementsInput) => (
 export interface URL {
     url: string;
     type: string;
-    image_id: string | null;
-    height: number | null;
-    width: number | null;
 }
 
-export const sortImageURLs = (urls: URL[], orientation: 'portrait'|'landscape') => (
+export interface Image {
+    url: string;
+    id: string;
+    width?: number;
+    height?: number;
+}
+
+export const sortImageURLs = (urls: Image[], orientation: 'portrait'|'landscape') => (
     urls
-        .filter((u) => u.type === 'PHOTO' && u.image_id !== null)
-        .map((u:URL) => ({
-            url: `${process.env.CDN}/${u.image_id.slice(0, 2)}/${u.image_id.slice(2, 4)}/${u.image_id}`,
+        .map((u) => ({
+            url: `${process.env.CDN}/${u.id.slice(0, 2)}/${u.id.slice(2, 4)}/${u.id}`,
             width: u.width,
             height: u.height,
             aspect: orientation === 'portrait' ? (u.height / u.width > 1) : (u.width / u.height) > 1
@@ -40,15 +43,17 @@ export const sortImageURLs = (urls: URL[], orientation: 'portrait'|'landscape') 
         })
 );
 
+export const getImage = (urls: Image[], orientation: 'portrait'|'landscape') => {
+    const images = sortImageURLs(urls, orientation);
+    return images?.[0]?.url ?? '';
+};
+
 export const getUrlByType = (
     urls:URL[],
-    type:string,
-    orientation?: 'portrait'|'landscape'
-) => {
-    if (type === 'PHOTO' && urls.some((u) => u.type === 'PHOTO') && orientation)
-        return sortImageURLs(urls, orientation)[0].url;
-    return (urls && (urls.find((url) => url.type === type) || {}).url) || '';
-};
+    type:string
+) => (
+    (urls && (urls.find((url) => url.type === type) || {}).url) || ''
+);
 
 export const getBodyModification = (bodyMod:{location:string, description?:string}[]) => (
     (bodyMod || []).map((mod) => (

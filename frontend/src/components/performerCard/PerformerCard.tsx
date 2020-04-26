@@ -3,7 +3,7 @@ import { Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Performers_queryPerformers_performers as Performer } from 'src/definitions/Performers';
 
-import { getUrlByType } from 'src/utils/transforms';
+import { getImage } from 'src/utils/transforms';
 
 interface PerformerCardProps {
     performer: Performer;
@@ -17,7 +17,7 @@ const PerformerCard: React.FC<PerformerCardProps> = ({ performer }) => (
         <Card>
             <Link to={`/performers/${performer.id}`}>
                 <div className={CLASSNAME_IMAGE}>
-                    <img src={getUrlByType(performer.urls, 'PHOTO', 'portrait')} alt="" />
+                    <img src={getImage(performer.images, 'portrait')} alt="" />
                 </div>
                 <Card.Footer><h5>{performer.name}</h5></Card.Footer>
             </Link>

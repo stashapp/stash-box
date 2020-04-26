@@ -179,6 +179,7 @@ export interface PerformerCreateInput {
   career_end_year?: number | null;
   tattoos?: BodyModificationInput[] | null;
   piercings?: BodyModificationInput[] | null;
+  image_ids?: string[] | null;
 }
 
 export interface PerformerDestroyInput {
@@ -230,6 +231,7 @@ export interface PerformerUpdateInput {
   career_end_year?: number | null;
   tattoos?: BodyModificationInput[] | null;
   piercings?: BodyModificationInput[] | null;
+  image_ids?: string[] | null;
 }
 
 export interface QuerySpec {
@@ -247,6 +249,7 @@ export interface SceneCreateInput {
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
+  image_ids?: string[] | null;
   fingerprints: FingerprintInput[];
   duration?: number | null;
   director?: string | null;
@@ -276,6 +279,7 @@ export interface SceneUpdateInput {
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
+  image_ids?: string[] | null;
   fingerprints?: FingerprintInput[] | null;
   duration?: number | null;
   director?: string | null;
@@ -291,6 +295,7 @@ export interface StudioCreateInput {
   urls?: URLInput[] | null;
   parent_id?: string | null;
   child_studio_ids?: string[] | null;
+  image_ids?: string[] | null;
 }
 
 export interface StudioFilterType {
@@ -305,6 +310,7 @@ export interface StudioUpdateInput {
   urls?: URLInput[] | null;
   parent_id?: string | null;
   child_studio_ids?: string[] | null;
+  image_ids?: string[] | null;
 }
 
 export interface TagCreateInput {

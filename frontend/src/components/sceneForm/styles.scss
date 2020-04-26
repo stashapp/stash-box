@@ -27,10 +27,11 @@
     .remove-item {
         background: transparent;
         border: none;
-        color: rgba(0, 0, 0, .5);
+        color: white;
+        opacity: 1;
 
         &:hover {
-            color: rgba(0, 0, 0, .8);
+            opacity: .8;
         }
     }
 

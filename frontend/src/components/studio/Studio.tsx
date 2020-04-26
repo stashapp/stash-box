@@ -13,7 +13,7 @@ import Pagination from 'src/components/pagination';
 import { LoadingIndicator } from 'src/components/fragments';
 import SceneCard from 'src/components/sceneCard';
 
-import { getUrlByType } from 'src/utils/transforms';
+import { getImage, getUrlByType } from 'src/utils/transforms';
 import { canEdit } from 'src/utils/auth';
 import AuthContext from 'src/AuthContext';
 
@@ -58,7 +58,7 @@ const StudioComponent: React.FC = () => {
                     </h6>
                 </div>
                 <div className="studio-photo">
-                    <img src={getUrlByType(studio.urls, 'PHOTO', 'landscape')} alt="Studio logo" />
+                    <img src={getImage(studio.images, 'landscape')} alt="Studio logo" />
                 </div>
                 { canEdit(auth.user) && (
                     <div className="studio-edit">

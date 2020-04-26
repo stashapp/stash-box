@@ -96,14 +96,14 @@ const App: React.FC = () => (
                         <Route exact path="/studios/:id/edit">
                             <StudioEdit />
                         </Route>
-                        <Route exact path="/tag/:name">
-                            <Tag />
-                        </Route>
                         <Route exact path="/tags">
                             <Tags />
                         </Route>
                         <Route exact path="/tags/add">
                             <TagAdd />
+                        </Route>
+                        <Route exact path="/tags/:name">
+                            <Tag />
                         </Route>
                     </Switch>
                 </Main>

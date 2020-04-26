@@ -16,7 +16,7 @@ import {
     DateAccuracyEnum,
     PerformerUpdateInput
 } from 'src/definitions/globalTypes';
-import { getBraSize, getUrlByType } from 'src/utils/transforms';
+import { getBraSize } from 'src/utils/transforms';
 import { Performer_findPerformer as Performer } from 'src/definitions/Performer';
 
 import { BodyModification } from 'src/components/form';
@@ -124,8 +124,7 @@ const schema = yup.object().shape({
         location: yup.string().required('Location is required'),
         description: yup.string().transform(nullCheck).nullable()
     })).nullable(),
-    aliases: yup.string().trim().transform(nullCheck).nullable(),
-    photoURL: yup.string().url('Invalid URL').transform(nullCheck).nullable()
+    aliases: yup.string().trim().transform(nullCheck).nullable()
 });
 
 type PerformerFormData = yup.InferType<typeof schema>;
@@ -140,7 +139,6 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
         validationSchema: schema,
     });
     const [gender, setGender] = useState(performer.gender || 'FEMALE');
-    const [photoURL, setPhotoURL] = useState(getUrlByType(performer.urls, 'PHOTO'));
 
     useEffect(() => {
         register({ name: 'country' });
@@ -149,8 +147,6 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
 
     const onGenderChange = (e: React.ChangeEvent<HTMLSelectElement>) => (
         setGender(e.currentTarget.value));
-    const onURLChange = (e: React.ChangeEvent<HTMLInputElement>) => (
-        setPhotoURL(e.currentTarget.value));
     const onCountryChange = (selectedOption:{label:string, value:string}) => (
         setValue('country', selectedOption.value));
 
@@ -176,11 +172,6 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
             tattoos: data.tattoos,
             breast_type: BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum]
         };
-
-        const urls = [];
-        if (data.photoURL)
-            urls.push({ url: data.photoURL, type: 'PHOTO' });
-        performerData.urls = urls;
 
         if (data.cupSize !== null) {
             const bandSize = Number.parseInt(data.cupSize.match(/^\d+/)[0], 10);
@@ -478,24 +469,6 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                             <button className="btn btn-danger reset-button" type="button">Cancel</button>
                         </Link>
                     </div>
-                </div>
-
-                <div className="col-4">
-                    <div className="form-group">
-                        <label htmlFor="photoUrl">
-                            <div>Photo URL</div>
-                            <input
-                                type="url"
-                                className={cx('form-control', { 'is-invalid': errors.photoURL })}
-                                name="photoURL"
-                                onChange={onURLChange}
-                                defaultValue={getUrlByType(performer.urls, 'PHOTO')}
-                                ref={register}
-                            />
-                            <div className="invalid-feedback">{ errors?.photoURL?.message }</div>
-                        </label>
-                    </div>
-                    <img alt="" src={photoURL} />
                 </div>
             </div>
         </form>

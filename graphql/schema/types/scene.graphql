@@ -44,6 +44,7 @@ type Scene {
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
+  images: [Image!]!
   performers: [PerformerAppearance!]!
   fingerprints: [Fingerprint!]!
   duration: Int
@@ -58,6 +59,7 @@ input SceneCreateInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
+  image_ids: [ID!]
   fingerprints: [FingerprintInput!]!
   duration: Int
   director: String
@@ -72,6 +74,7 @@ input SceneUpdateInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
+  image_ids: [ID!]
   fingerprints: [FingerprintInput!]
   duration: Int
   director: String
@@ -89,6 +92,7 @@ input SceneEditDetailsInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
+  image_ids: [ID!]
   fingerprints: [FingerprintInput!]
   duration: Int
   director: String
@@ -118,6 +122,8 @@ type SceneEdit {
   removed_performers: [PerformerAppearance!]
   added_tags: [Tag!]
   removed_tags: [Tag!]
+  added_images: [Image!]
+  removed_images: [Image!]
   added_fingerprints: [Fingerprint!]
   removed_fingerprints: [Fingerprint!]
   duration: Int

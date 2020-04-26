@@ -9,7 +9,10 @@ query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
             urls {
                 url
                 type
-                image_id
+            }
+            images {
+                id
+                url
                 height
                 width
             }

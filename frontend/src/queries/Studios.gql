@@ -11,9 +11,12 @@ query Studios($filter: QuerySpec, $studioFilter: StudioFilterType) {
         urls {
             url
             type
-            image_id
-            width
+        }
+        images {
+            id
+            url
             height
+            width
         }
       }
   }

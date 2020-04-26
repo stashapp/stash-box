@@ -6,7 +6,6 @@ import useForm from 'react-hook-form';
 import Select from 'react-select';
 import * as yup from 'yup';
 import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import cx from 'classnames';
 import { Button, Form, Table } from 'react-bootstrap';
 
@@ -14,12 +13,12 @@ import { Studios, StudiosVariables } from 'src/definitions/Studios';
 import { Scene_findScene as Scene } from 'src/definitions/Scene';
 import StudioQuery from 'src/queries/Studios.gql';
 import { SceneUpdateInput, FingerprintInput, FingerprintAlgorithm } from 'src/definitions/globalTypes';
-import { SearchPerformers_searchPerformer as PerformerResult } from '../../definitions/SearchPerformers';
 import { getUrlByType } from 'src/utils/transforms';
 
-import { GenderIcon, LoadingIndicator, CloseButton } from 'src/components/fragments';
+import { GenderIcon, LoadingIndicator, CloseButton, Icon } from 'src/components/fragments';
 import SearchField, { SearchType } from 'src/components/searchField';
 import TagSelect from 'src/components/tagSelect';
+import { SearchPerformers_searchPerformer as PerformerResult } from 'src/definitions/SearchPerformers';
 
 const nullCheck = ((input:string|null) => (input === '' || input === 'null' ? null : input));
 
@@ -31,7 +30,6 @@ const schema = yup.object().shape({
         .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, { excludeEmptyString: true, message: 'Invalid date' })
         .nullable(),
     studioId: yup.string().typeError('Studio is required').transform(nullCheck).required('Studio is required'),
-    photoURL: yup.string().url('Invalid URL').transform(nullCheck).nullable(),
     studioURL: yup.string().url('Invalid URL').transform(nullCheck).nullable(),
     performers: yup.array().of(yup.object().shape({
         performerId: yup.string().required(),
@@ -64,7 +62,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     const { register, handleSubmit, setValue, errors } = useForm({
         validationSchema: schema,
     });
-    const [photoURL, setPhotoURL] = useState(getUrlByType(scene.urls, 'PHOTO'));
     const [performers, setPerformers] = useState<PerformerInfo[]>(
         scene.performers.map((p) => ({
             id: p.performer.id,
@@ -94,8 +91,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     if (loadingStudios)
         return <LoadingIndicator message="Loading scene..." />;
 
-    const onURLChange = (e: React.ChangeEvent<HTMLInputElement>) => (
-        setPhotoURL(e.currentTarget.value));
     const onStudioChange = (selectedOption:{label:string, value:string}) => (
         setValue('studioId', selectedOption.value));
     const onTagChange = (selectedTags:string[]) => (
@@ -115,8 +110,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             tag_ids: data.tags
         };
         const urls = [];
-        if (data.photoURL)
-            urls.push({ url: data.photoURL, type: 'PHOTO' });
         if (data.studioURL)
             urls.push({ url: data.studioURL, type: 'STUDIO' });
         sceneData.urls = urls;
@@ -173,7 +166,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             <tr>
                 <td>
                     <button className="remove-item" type="button" onClick={() => (removeFingerprint(f.hash))}>
-                        <FontAwesomeIcon icon={faTimesCircle} />
+                        <Icon icon="times-circle" />
                     </button>
                 </td>
                 <td>{f.algorithm}</td>
@@ -201,7 +194,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         <form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
             <input type="hidden" name="id" value={scene.id} ref={register({ required: true })} />
             <div className="row">
-                <div className="col-6">
+                <div className="col-8">
                     <div className="form-group row">
                         <label htmlFor="title" className="col-8">
                             <div>Title</div>
@@ -308,23 +301,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                         <Link to={scene.id ? `/scenes/${scene.id}` : '/scenes'}>
                             <button className="btn btn-danger reset-button" type="button">Cancel</button>
                         </Link>
-                    </div>
-                </div>
-                <div className="form-group col-6">
-                    <div className="row">
-                        <label htmlFor="photoURL" className="col-8">
-                            <div>Photo URL</div>
-                            <input
-                                type="url"
-                                className={cx('form-control', { 'is-invalid': errors.photoURL })}
-                                name="photoURL"
-                                onChange={onURLChange}
-                                defaultValue={getUrlByType(scene.urls, 'PHOTO')}
-                                ref={register}
-                            />
-                            <div className="invalid-feedback">{ errors?.photoURL?.message }</div>
-                        </label>
-                        <img src={photoURL} alt="" className="col-12" />
                     </div>
                 </div>
             </div>

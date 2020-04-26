@@ -12,7 +12,11 @@ import { QuerySpec, SceneFilterType, GenderEnum } from "./globalTypes";
 export interface Scenes_queryScenes_scenes_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface Scenes_queryScenes_scenes_images {
+  id: string;
+  url: string;
   height: number | null;
   width: number | null;
 }
@@ -38,6 +42,7 @@ export interface Scenes_queryScenes_scenes {
   title: string | null;
   duration: number | null;
   urls: Scenes_queryScenes_scenes_urls[];
+  images: Scenes_queryScenes_scenes_images[];
   studio: Scenes_queryScenes_scenes_studio | null;
   performers: Scenes_queryScenes_scenes_performers[];
 }

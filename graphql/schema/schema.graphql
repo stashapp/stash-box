@@ -86,6 +86,10 @@ type Mutation {
   userUpdate(input: UserUpdateInput!): User
   userDestroy(input: UserDestroyInput!): Boolean!
 
+  imageCreate(input: ImageCreateInput!): Image
+  imageUpdate(input: ImageUpdateInput!): Image
+  imageDestroy(input: ImageDestroyInput!): Boolean!
+
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
 

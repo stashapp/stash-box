@@ -19,6 +19,24 @@ var (
 	})
 
 	tagSceneTable = sceneTagTable.Inverse(tagJoinKey)
+
+	sceneImageTable = database.NewTableJoin(sceneTable, "scene_images", sceneJoinKey, func() interface{} {
+		return &SceneImage{}
+	})
+
+	imageSceneTable = sceneImageTable.Inverse(imageJoinKey)
+
+	performerImageTable = database.NewTableJoin(performerTable, "performer_images", sceneJoinKey, func() interface{} {
+		return &PerformerImage{}
+	})
+
+	imagePerformerTable = performerImageTable.Inverse(imageJoinKey)
+
+	studioImageTable = database.NewTableJoin(studioTable, "studio_images", sceneJoinKey, func() interface{} {
+		return &StudioImage{}
+	})
+
+	imageStudioTable = studioImageTable.Inverse(imageJoinKey)
 )
 
 type PerformerScene struct {
@@ -54,4 +72,55 @@ func (p ScenesTags) Each(fn func(interface{})) {
 
 func (p *ScenesTags) Add(o interface{}) {
 	*p = append(*p, o.(*SceneTag))
+}
+
+type SceneImage struct {
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	ImageID   uuid.UUID `db:"image_id" json:"image_id"`
+}
+
+type SceneImages []*SceneImage
+
+func (p SceneImages) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *SceneImages) Add(o interface{}) {
+	*p = append(*p, o.(*SceneImage))
+}
+
+type PerformerImage struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	ImageID   uuid.UUID `db:"image_id" json:"image_id"`
+}
+
+type PerformerImages []*PerformerImage
+
+func (p PerformerImages) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *PerformerImages) Add(o interface{}) {
+	*p = append(*p, o.(*PerformerImage))
+}
+
+type StudioImage struct {
+	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+	ImageID   uuid.UUID `db:"image_id" json:"image_id"`
+}
+
+type StudioImages []*StudioImage
+
+func (p StudioImages) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *StudioImages) Add(o interface{}) {
+	*p = append(*p, o.(*StudioImage))
 }

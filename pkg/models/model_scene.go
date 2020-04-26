@@ -184,6 +184,20 @@ func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
 	return tagJoins
 }
 
+func CreateSceneImages(sceneID uuid.UUID, imageIds []string) SceneImages {
+	var imageJoins SceneImages
+	for _, iid := range imageIds {
+		imageID := uuid.FromStringOrNil(iid)
+		imageJoin := &SceneImage{
+			SceneID: sceneID,
+			ImageID:   imageID,
+		}
+		imageJoins = append(imageJoins, imageJoin)
+	}
+
+	return imageJoins
+}
+
 func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearanceInput) PerformersScenes {
 	var performerJoins PerformersScenes
 	for _, a := range appearances {

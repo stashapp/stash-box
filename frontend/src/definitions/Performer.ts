@@ -34,7 +34,11 @@ export interface Performer_findPerformer_piercings {
 export interface Performer_findPerformer_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface Performer_findPerformer_images {
+  id: string;
+  url: string;
   height: number | null;
   width: number | null;
 }
@@ -62,6 +66,7 @@ export interface Performer_findPerformer {
   tattoos: Performer_findPerformer_tattoos[] | null;
   piercings: Performer_findPerformer_piercings[] | null;
   urls: Performer_findPerformer_urls[];
+  images: Performer_findPerformer_images[];
 }
 
 export interface Performer {

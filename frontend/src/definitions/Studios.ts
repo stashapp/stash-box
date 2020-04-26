@@ -17,9 +17,13 @@ export interface Studios_queryStudios_studios_parent {
 export interface Studios_queryStudios_studios_urls {
   url: string;
   type: string;
-  image_id: string | null;
-  width: number | null;
+}
+
+export interface Studios_queryStudios_studios_images {
+  id: string;
+  url: string;
   height: number | null;
+  width: number | null;
 }
 
 export interface Studios_queryStudios_studios {
@@ -27,6 +31,7 @@ export interface Studios_queryStudios_studios {
   name: string;
   parent: Studios_queryStudios_studios_parent | null;
   urls: (Studios_queryStudios_studios_urls | null)[];
+  images: Studios_queryStudios_studios_images[];
 }
 
 export interface Studios_queryStudios {

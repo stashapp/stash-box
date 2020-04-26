@@ -150,7 +150,7 @@ const PerformerInfo: React.FC<{performer: Performer}> = ({ performer }) => {
                     </Card>
                 </div>
                 <div className="col-6 performer-photo">
-                    <ImageCarousel urls={performer.urls} orientation="portrait" />
+                    <ImageCarousel images={performer.images} orientation="portrait" />
                 </div>
             </div>
         </>

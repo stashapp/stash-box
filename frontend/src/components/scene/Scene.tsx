@@ -7,7 +7,7 @@ import AuthContext from 'src/AuthContext';
 import SceneQuery from 'src/queries/Scene.gql';
 import DeleteScene from 'src/mutations/DeleteScene.gql';
 import { Scene } from 'src/definitions/Scene';
-import { getUrlByType } from 'src/utils/transforms';
+import { getImage, getUrlByType } from 'src/utils/transforms';
 import { canEdit } from 'src/utils/auth';
 import {
     DeleteSceneMutation,
@@ -59,7 +59,7 @@ const SceneComponent: React.FC = () => {
     ));
     const tags = scene.tags.map((tag) => (
         <li>
-            <a href={`/tag/${tag.name}`} title={tag.description} className="badge badge-secondary">{tag.name}</a>
+            <a href={`/tags/${tag.name}`} title={tag.description} className="badge badge-secondary">{tag.name}</a>
         </li>
     ));
 
@@ -105,7 +105,7 @@ const SceneComponent: React.FC = () => {
                 <Card.Body className="scene-photo">
                     <img
                         alt=""
-                        src={getUrlByType(scene.urls, 'PHOTO', 'landscape')}
+                        src={getImage(scene.images, 'landscape')}
                         className="scene-photo-element"
                     />
                 </Card.Body>

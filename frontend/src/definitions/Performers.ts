@@ -34,7 +34,11 @@ export interface Performers_queryPerformers_performers_piercings {
 export interface Performers_queryPerformers_performers_urls {
   type: string;
   url: string;
-  image_id: string | null;
+}
+
+export interface Performers_queryPerformers_performers_images {
+  id: string;
+  url: string;
   height: number | null;
   width: number | null;
 }
@@ -62,6 +66,7 @@ export interface Performers_queryPerformers_performers {
   tattoos: Performers_queryPerformers_performers_tattoos[] | null;
   piercings: Performers_queryPerformers_performers_piercings[] | null;
   urls: Performers_queryPerformers_performers_urls[];
+  images: Performers_queryPerformers_performers_images[];
 }
 
 export interface Performers_queryPerformers {

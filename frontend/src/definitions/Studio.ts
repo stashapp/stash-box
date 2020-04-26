@@ -10,15 +10,20 @@
 export interface Studio_findStudio_urls {
   url: string;
   type: string;
-  image_id: string | null;
-  width: number | null;
+}
+
+export interface Studio_findStudio_images {
+  id: string;
+  url: string;
   height: number | null;
+  width: number | null;
 }
 
 export interface Studio_findStudio {
   id: string;
   name: string;
   urls: (Studio_findStudio_urls | null)[];
+  images: Studio_findStudio_images[];
 }
 
 export interface Studio {

@@ -17,7 +17,11 @@ export interface SearchPerformers_searchPerformer_birthdate {
 export interface SearchPerformers_searchPerformer_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface SearchPerformers_searchPerformer_images {
+  id: string;
+  url: string;
   height: number | null;
   width: number | null;
 }
@@ -30,6 +34,7 @@ export interface SearchPerformers_searchPerformer {
   aliases: string[];
   birthdate: SearchPerformers_searchPerformer_birthdate | null;
   urls: SearchPerformers_searchPerformer_urls[];
+  images: SearchPerformers_searchPerformer_images[];
 }
 
 export interface SearchPerformers {

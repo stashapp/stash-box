@@ -12,7 +12,10 @@ query SearchAll($term: String!) {
         urls {
             url
             type
-            image_id
+        }
+        images {
+            id
+            url
             height
             width
         }
@@ -24,7 +27,10 @@ query SearchAll($term: String!) {
         urls {
             url
             type
-            image_id
+        }
+        images {
+            id
+            url
             height
             width
         }

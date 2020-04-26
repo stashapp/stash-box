@@ -310,3 +310,17 @@ func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
 
 	return nil
 }
+
+func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformerImages {
+	var imageJoins PerformerImages
+	for _, iid := range imageIds {
+		imageID := uuid.FromStringOrNil(iid)
+		imageJoin := &PerformerImage{
+			PerformerID: performerID,
+			ImageID:   imageID,
+		}
+		imageJoins = append(imageJoins, imageJoin)
+	}
+
+	return imageJoins
+}

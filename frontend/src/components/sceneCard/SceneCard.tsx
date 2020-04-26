@@ -4,7 +4,7 @@ import { Card } from 'react-bootstrap';
 import { Icon } from 'src/components/fragments';
 
 import { Scenes_queryScenes_scenes as Performance } from 'src/definitions/Scenes';
-import { getUrlByType } from 'src/utils/transforms';
+import { getImage } from 'src/utils/transforms';
 
 const CLASSNAME = 'SceneCard';
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
@@ -39,7 +39,7 @@ const SceneCard: React.FC<{performance: Performance}> = ({ performance }) => (
         <Card>
             <Card.Body className={CLASSNAME_BODY}>
                 <Link to={`/scenes/${performance.id}`} className={CLASSNAME_IMAGE}>
-                    <img alt="" src={getUrlByType(performance.urls, 'PHOTO', 'landscape')} />
+                    <img alt="" src={getImage(performance.images, 'landscape')} />
                 </Link>
             </Card.Body>
             <Card.Footer>
