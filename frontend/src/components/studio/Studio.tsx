@@ -54,7 +54,7 @@ const StudioComponent: React.FC = () => {
                 <div className="studio-title">
                     <h2>{studio.name}</h2>
                     <h6>
-                        <a href={getUrlByType(studio.urls, 'HOME')}>{getUrlByType(studio.urls, 'HOME')}</a>
+                        <a href={getUrlByType(studio.urls, 'HOME')} rel="noreferrer">{getUrlByType(studio.urls, 'HOME')}</a>
                     </h6>
                 </div>
                 <div className="studio-photo">

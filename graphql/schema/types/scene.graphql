@@ -17,9 +17,16 @@ enum FingerprintAlgorithm {
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
+  duration: Int!
 }
 
 input FingerprintInput {
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
+}
+
+input FingerprintQueryInput {
   hash: String!
   algorithm: FingerprintAlgorithm!
 }

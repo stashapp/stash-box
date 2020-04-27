@@ -307,6 +307,12 @@ export interface StudioUpdateInput {
   child_studio_ids?: string[] | null;
 }
 
+export interface TagCreateInput {
+  name: string;
+  description?: string | null;
+  aliases?: string[] | null;
+}
+
 export interface TagFilterType {
   text?: string | null;
   names?: string | null;

@@ -130,7 +130,7 @@ const SceneComponent: React.FC = () => {
                         <hr />
                         <div>
                             <strong className="mr-2">Studio: </strong>
-                            <a href={getUrlByType(scene.urls, 'STUDIO')}>
+                            <a href={getUrlByType(scene.urls, 'STUDIO')} rel="noreferrer">
                                 {getUrlByType(scene.urls, 'STUDIO')}
                             </a>
                         </div>

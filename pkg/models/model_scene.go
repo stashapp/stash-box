@@ -62,9 +62,10 @@ func (p *Scenes) Add(o interface{}) {
 }
 
 type SceneFingerprint struct {
-	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
-	Hash      string    `db:"hash" json:"hash"`
-	Algorithm string    `db:"algorithm" json:"algorithm"`
+	SceneID   uuid.UUID     `db:"scene_id" json:"scene_id"`
+	Hash      string        `db:"hash" json:"hash"`
+	Algorithm string        `db:"algorithm" json:"algorithm"`
+    Duration  int           `db:"duration" json:"duration"`
 }
 
 type SceneUrl struct {
@@ -129,6 +130,7 @@ func (p SceneFingerprint) ToFingerprint() *Fingerprint {
 	return &Fingerprint{
 		Algorithm: FingerprintAlgorithm(p.Algorithm),
 		Hash:      p.Hash,
+        Duration:  p.Duration,
 	}
 }
 
@@ -161,6 +163,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput
 			SceneID:   sceneID,
 			Hash:      fingerprint.Hash,
 			Algorithm: fingerprint.Algorithm.String(),
+            Duration:  fingerprint.Duration,
 		})
 	}
 

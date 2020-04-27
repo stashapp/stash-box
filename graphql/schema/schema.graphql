@@ -34,7 +34,7 @@ type Query {
   findScene(id: ID!): Scene
 
   """Finds a scene by an algorithm-specific checksum"""
-  findSceneByFingerprint(fingerprint: FingerprintInput!): [Scene!]!
+  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]!
 
   queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType!
 

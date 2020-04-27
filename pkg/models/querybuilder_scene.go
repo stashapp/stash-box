@@ -49,7 +49,7 @@ func (qb *SceneQueryBuilder) UpdateUrls(scene uuid.UUID, updatedJoins SceneUrls)
 }
 
 func (qb *SceneQueryBuilder) CreateFingerprints(newJoins SceneFingerprints) error {
-	return qb.dbi.InsertJoins(sceneFingerprintTable, &newJoins)
+	return qb.dbi.InsertJoinsWithoutConflict(sceneFingerprintTable, &newJoins)
 }
 
 func (qb *SceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins SceneFingerprints) error {
