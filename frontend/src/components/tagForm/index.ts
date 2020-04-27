@@ -1,3 +1,3 @@
-import TagForm from './TagForm';
+import TagForm from "./TagForm";
 
 export default TagForm;

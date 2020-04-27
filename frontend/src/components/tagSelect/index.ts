@@ -1,3 +1,3 @@
-import TagSelect from './TagSelect';
+import TagSelect from "./TagSelect";
 
 export default TagSelect;

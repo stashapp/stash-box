@@ -1,3 +1,3 @@
-import PerformerForm from './PerformerForm';
+import PerformerForm from "./PerformerForm";
 
 export default PerformerForm;

@@ -1,18 +1,27 @@
-import React from 'react';
-import { faVenus, faTransgenderAlt, faMars, faVenusMars } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from "react";
+import {
+  faVenus,
+  faTransgenderAlt,
+  faMars,
+  faVenusMars,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface IconProps {
-    gender: string;
+  gender: string;
 }
 
 const GenderIcon: React.FC<IconProps> = ({ gender }) => {
-    if (gender) {
-        const icon = gender.toLowerCase() === 'male' ? faMars
-            : gender.toLowerCase() === 'female' ? faVenus : faTransgenderAlt;
-        return <FontAwesomeIcon icon={icon} />;
-    }
-    return <FontAwesomeIcon icon={faVenusMars} />;
+  if (gender) {
+    const icon =
+      gender.toLowerCase() === "male"
+        ? faMars
+        : gender.toLowerCase() === "female"
+        ? faVenus
+        : faTransgenderAlt;
+    return <FontAwesomeIcon icon={icon} />;
+  }
+  return <FontAwesomeIcon icon={faVenusMars} />;
 };
 
 export default GenderIcon;

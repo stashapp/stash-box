@@ -1,3 +1,3 @@
-import PerformerCard from './PerformerCard';
+import PerformerCard from "./PerformerCard";
 
 export default PerformerCard;

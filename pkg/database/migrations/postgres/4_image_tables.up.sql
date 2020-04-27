@@ -1,6 +1,6 @@
 CREATE TABLE images (
     id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-    url VARCHAR NOT NULL UNIQUE,
+    url VARCHAR NOT NULL,
     width INT,
     height INT
 );

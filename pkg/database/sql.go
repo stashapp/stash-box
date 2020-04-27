@@ -184,6 +184,8 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 			if t != uuid.Nil {
 				addPlaceholder(key)
 			}
+        case bool:
+            addPlaceholder(key)
 		case optionalValue:
 			if t.IsValid() {
 				addPlaceholder(key)

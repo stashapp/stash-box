@@ -149,8 +149,9 @@ func Start() {
 
 	r.Handle("/graphql", gqlHandler)
 
-	// TODO - this should be disabled in production
-	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+	if !config.GetIsProduction() {
+        r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+    }
 
 	// session handlers
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
@@ -164,12 +165,6 @@ func Start() {
         return
     })
 	r.HandleFunc("/logout", handleLogout)
-
-	r.HandleFunc("/image", func(w http.ResponseWriter, r *http.Request) {
-        id := r.URL.Query()["id"][0]
-        path := "/mnt/lager/scraped-images/" + id[0:2] + "/" + id[2:4] + "/" + id
-        http.ServeFile(w, r, path)
-    })
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {

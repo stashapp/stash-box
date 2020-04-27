@@ -1,3 +1,3 @@
-import SceneForm from './SceneForm';
+import SceneForm from "./SceneForm";
 
 export default SceneForm;

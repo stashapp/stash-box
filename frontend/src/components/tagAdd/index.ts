@@ -1,3 +1,3 @@
-import TagAdd from './TagAdd';
+import TagAdd from "./TagAdd";
 
 export default TagAdd;

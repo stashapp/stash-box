@@ -14,6 +14,7 @@ const Database = "database"
 const Host = "host"
 const Port = "port"
 const HTTPUpgrade = "http_upgrade"
+const IsProduction = "is_production"
 
 // key used to sign JWT tokens
 const JWTSignKey = "jwt_secret_key"
@@ -60,6 +61,15 @@ func GetSessionStoreKey() []byte {
 
 func GetHTTPUpgrade() bool {
     return viper.GetBool(HTTPUpgrade)
+}
+
+func GetIsProduction() bool {
+	ret := false
+	if viper.IsSet(IsProduction) {
+		ret = viper.GetBool(IsProduction)
+	}
+
+	return ret
 }
 
 // GetLogFile returns the filename of the file to output logs to.

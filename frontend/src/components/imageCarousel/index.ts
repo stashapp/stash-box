@@ -1,3 +1,3 @@
-import ImageCarousel from './ImageCarousel';
+import ImageCarousel from "./ImageCarousel";
 
 export default ImageCarousel;

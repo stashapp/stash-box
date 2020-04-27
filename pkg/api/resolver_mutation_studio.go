@@ -1,20 +1,9 @@
 package api
 
 import (
-    "bytes"
 	"context"
-    "database/sql"
-    "fmt"
 	"github.com/gofrs/uuid"
-    "net/http"
 	"time"
-    "image"
-    _ "image/jpeg"
-    _ "image/png"
-    _ "golang.org/x/image/webp"
-    "github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/aws/session"
-    "github.com/aws/aws-sdk-go/service/s3/s3manager"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -102,67 +91,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Save the URLs
 	// TODO - only do this if provided
 	studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
-    // if photo, download image, check mimetype, compress if webp or too large
-    for _, url := range studioUrls {
-        if url.Type == "PHOTO" {
-            resp, err := http.Get(url.URL)
-            if err != nil {
-                return nil, err
-            }
 
-            buf := new(bytes.Buffer)
-            buf.ReadFrom(resp.Body)
-            defer resp.Body.Close()
-
-            width := 1
-            height := 1
-            mimetype := http.DetectContentType([]byte(buf.String()))
-            namespace, err := uuid.FromString("415b2d34-a24d-4de6-9416-a304bd42be4d")
-            imageID := uuid.NewV3(namespace, buf.String())
-            if mimetype == "image/jpeg" || mimetype == "image/png" ||  mimetype == "image/webp" {
-                tempBuffer := bytes.NewBuffer(buf.Bytes())
-                img, _, err := image.DecodeConfig(tempBuffer)
-                width = img.Width
-                height = img.Height
-
-                if err != nil {
-                    return nil, err
-                }
-            } else if mimetype == "text/xml; charset=utf-8" {
-                mimetype = "image/svg+xml"
-            } else if mimetype != "image/svg+xml" {
-                return nil, fmt.Errorf("Unsupported image type: %s", mimetype)
-            }
-
-            if err != nil {
-                return nil, err
-            }
-
-            sess, err := session.NewSession(&aws.Config{
-                Endpoint:      aws.String("https://ams3.digitaloceanspaces.com"),
-                Region: aws.String("us-west-2"),
-            })
-
-            idString := imageID.String();
-            fmt.Println(string(idString[0:2]) + "/" + string(idString[2:4]) + "/" + idString)
-
-            uploader := s3manager.NewUploader(sess)
-            _, err = uploader.Upload(&s3manager.UploadInput{
-                Bucket: aws.String("cdn-stashdb"),
-                Key: aws.String(string(idString[0:2]) + "/" + string(idString[2:4]) + "/" + idString),
-                Body: bytes.NewReader(buf.Bytes()),
-                ContentType: aws.String(mimetype),
-                ACL: aws.String("public-read"),
-            })
-            if err != nil {
-                return nil, err
-            }
-
-            url.ImageID = uuid.NullUUID{UUID: imageID, Valid: true}
-            url.Width = sql.NullInt32{Int32: int32(width), Valid: true}
-            url.Height = sql.NullInt32{Int32: int32(height), Valid: true}
-        }
-    }
 	if err := qb.UpdateUrls(studio.ID, studioUrls); err != nil {
 		_ = tx.Rollback()
 		return nil, err

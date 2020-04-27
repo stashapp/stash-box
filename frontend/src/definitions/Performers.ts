@@ -3,7 +3,16 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { QuerySpec, PerformerFilterType, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import {
+  QuerySpec,
+  PerformerFilterType,
+  GenderEnum,
+  DateAccuracyEnum,
+  HairColorEnum,
+  EyeColorEnum,
+  EthnicityEnum,
+  BreastTypeEnum,
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Performers
