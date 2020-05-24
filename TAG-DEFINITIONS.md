@@ -85,7 +85,7 @@ All tags belong to a category and all categories belong to a grouping.
     - [Gay Threesome](#gay-threesome)
     - [Gay Orgy](#gay-orgy)
   - [Relations](#relations)
-    - [Gonzo (Relation)](#gonzo--relation-)
+    - [Gonzo (Relation)](#gonzo-relation)
     - [Paid Amateur](#paid-amateur)
     - [Professional](#professional)
     - [Stripper](#stripper)
@@ -127,13 +127,13 @@ All tags belong to a category and all categories belong to a grouping.
     - [Cheater](#cheater)
   - [Themes](#themes)
     - [Behind the Scenes](#behind-the-scenes)
-    - [Gonzo](#gonzo)
+    - [Gonzo (Theme)](#gonzo-theme)
     - [JOI](#joi)
     - [Birthday](#birthday)
     - [Christmas](#christmas)
     - [Halloween](#halloween)
-    - [New Year's](#new-year-s)
-    - [Valentine's Day](#valentine-s-day)
+    - [New Year's](#new-years)
+    - [Valentine's Day](#valentines-day)
     - [Casting](#casting)
     - [Cuckold](#cuckold)
     - [Parody](#parody)
@@ -143,13 +143,13 @@ All tags belong to a category and all categories belong to a grouping.
     - [Exhibition](#exhibition)
     - [Reality](#reality)
     - [Interracial](#interracial)
-    - [Office (Theme)](#office--theme-)
+    - [Office (Theme)](#office-theme)
     - [POV](#pov)
     - [Public](#public)
     - [Role Play](#role-play)
-    - [School (Theme)](#school--theme-)
-    - [College](#college)
-    - [High School](#high-school)
+    - [School (Theme)](#school-theme)
+    - [College (Theme)](#college-theme)
+    - [High School (Theme)](#high-school-theme)
     - [Voyeur](#voyeur)
     - [Wedding](#wedding)
   - [Moods](#moods)
@@ -159,7 +159,9 @@ All tags belong to a category and all categories belong to a grouping.
     - [Nature](#nature)
     - [Heaven](#heaven)
     - [Hell](#hell)
-    - [School (Location)](#school--location-)
+    - [School (Location)](#school-location)
+    - [High School (Location)](#high-school-location)
+    - [College (Location)](#college-location)
     - [Boat](#boat)
     - [Car](#car)
     - [Moving Car](#moving-car)
@@ -167,7 +169,7 @@ All tags belong to a category and all categories belong to a grouping.
     - [Hotel](#hotel)
     - [Library](#library)
     - [Massage Parlor](#massage-parlor)
-    - [Office](#office)
+    - [Office (Location)](#office-location)
     - [Park](#park)
     - [Poolside](#poolside)
     - [Bathroom](#bathroom)
@@ -636,7 +638,7 @@ Describes female characters who act as cheerleaders, either at their school or p
 > Cheerleader
 
 #### College Girl
-Describes female characters currently (or were up until very recently) attending a college or university. Often used along with [Themes: College](#college) and [Themes: School](#school).
+Describes female characters currently (or were up until very recently) attending a college or university. Often used along with [Themes: College](#college-theme) and [Themes: School](#school-theme).
 > College Girl, College Girls, College Sugarbabes
 
 #### Girl Next Door
@@ -656,7 +658,7 @@ Describes female characters who are giving a massage to another character, wheth
 Describes female characters who seem to be regularly taken over by an overwhelming sexual urge.
 
 #### School Girl
-Describes female characters currently (or were up until very recently) attending a high school or secondary school. Often used along with [Themes: High School](#high-school) and [Themes: School](#school).
+Describes female characters currently (or were up until very recently) attending a high school or secondary school. Often used along with [Themes: High School](#high-school-theme) and [Themes: School](#school-theme).
 > School Girl, Schoolgirl
 
 #### Sex Object
@@ -675,7 +677,7 @@ Describes female characters who are currently in a committed relationship having
 #### Behind the Scenes
 Describes videos produced as an extra alongside another scene, usually highlighting the production process.
 
-#### Gonzo
+#### Gonzo (Theme)
 Describes scenes that do not have any type of narrative, not even vague impressions of one. Since the performers are simply playing themselves, the only context to describe is that of adult actors working together.
 
 #### JOI
@@ -723,12 +725,12 @@ Describes scenes that are presented to be real people in the real world, but oft
 #### Interracial
 More narrowly defined, describes scenes that include a black male performer and a non-black female performer. For scenes that revolve around this difference in race, the tag [Themes: Interracial Focused](#interracial-focused) should also be included.
 		
-#### Office
-Describes scenes that revolve around a professional or business-like setting. Scenes that are set in an actual office should include [Locations: Office](#office).  
+#### Office (Theme)
+Describes scenes that revolve around a professional or business-like setting. Scenes that are set in an actual office should include [Locations: Office](#office-location).  
 See also: [Relations: Boss](#boss), [Relations: Employee](#employee), [Relations: Co-Worker](#co-worker), [Relations: Client](#client)
 
 #### POV
-Describes scenes that are presented entirely from the perspective of the male character. Scenes that do not commit fully to this perspective should use the tag [Themes: Partial POV](#partial-pov) instead, and scenes from an uninvolved character's perspective should use [Themes: POV (Third Party)](#pov--third-party-) instead.
+Describes scenes that are presented entirely from the perspective of the male character. Scenes that do not commit fully to this perspective should use the tag [Themes: Partial POV](#partial-pov) instead, and scenes from an uninvolved character's perspective should use [Themes: POV (Third Party)](#pov-third-party) instead.
 			
 #### Public
 Describes scenes where the action takes place in a public setting where the characters could be seen by others. If the characters want to be seen, it should include the tag [Themes: Exhibition](#exhibition). If not, it should include [Themes: Don't Get Caught](#don-t-get-caught).
@@ -738,18 +740,18 @@ Describes scenes where the action takes place in a public setting where the char
 Describes scenes where the characters decide together to have one or more of them play-act as somebody else.
 
 #### School (Theme)
-Describes scenes that significantly feature a general academic setting. Often includes either of the tags [Themes: High School](#high-school) or [Themes: College](#college).  
-See also: [Locations: School](#school--location-), [Relations: Teacher](#teacher), [Relations: Student](#student), [Relations: Classmate](#classmate)
+Describes scenes that significantly feature a general academic setting. Often includes either of the tags [Themes: High School](#high-school-theme) or [Themes: College](#college-theme).  
+See also: [Locations: School](#school-location), [Relations: Teacher](#teacher), [Relations: Student](#student), [Relations: Classmate](#classmate)
 > School, School Fantasies
 
 #### College (Theme)
-Describes scenes that significantly feature an academic setting that is explicitly relating to a college or university. The tag [Themes: School](#school) should always be included as well.  
-See also: [Locations: College](#college--location-)
+Describes scenes that significantly feature an academic setting that is explicitly relating to a college or university. The tag [Themes: School](#school-theme) should always be included as well.  
+See also: [Locations: College](#college-location)
 > College, College Party
 
 #### High School (Theme)
-Describes scenes that significantly feature an academic setting that is explicitly relating to a high school or secondary school. The tag [Themes: School](#school) should always be included as well.  
-See also: [Locations: High School](#high-school--location-)
+Describes scenes that significantly feature an academic setting that is explicitly relating to a high school or secondary school. The tag [Themes: School](#school-theme) should always be included as well.  
+See also: [Locations: High School](#high-school-location)
 > [NONE]
 
 #### Voyeur
@@ -784,14 +786,14 @@ Describes scenes where at least some of the action takes place in some heaven-li
 Describes scenes where at least some of the action takes place in some hellish afterlife, as a sort of punishment including Purgatory and Limbo.
 		
 #### School (Location)
-Describes scenes where at least some of the action takes place in some sort of academic institution. Often used along with [Themes: High School](#high-school) or [Themes: College](#college).  
-See also [Themes: School](#school--theme-).
+Describes scenes where at least some of the action takes place in some sort of academic institution. Often used along with [Themes: High School](#high-school-theme) or [Themes: College](#college-theme).  
+See also [Themes: School](#school-theme).
 
 #### High School (Location)
-Describes scenes where at least some of the action takes place in a high school or secondary school. The tags [Location: School](#school--location-) and [Themes: High School](#high-school--theme-) should always be included as well.
+Describes scenes where at least some of the action takes place in a high school or secondary school. The tags [Location: School](#school-location), [Themes: School](#school-theme), and [Themes: High School](#high-school-theme) should always be included as well.
 
 #### College (Location)
-Describes scenes where at least some of the action takes place in a college or university. The tags [Location: School](#school--location-) and [Themes: College](#college--theme-) should always be included as well.
+Describes scenes where at least some of the action takes place in a college or university. The tags [Location: School](#school-location), [Themes: School](#school-theme), and [Themes: College](#college-theme) should always be included as well.
 
 #### Boat
 Describes scenes where at least some of the action takes place on a boat or ship of some kind.
@@ -805,7 +807,7 @@ Describes scenes where at least some of the action takes place in a car while it
 > Roadhead
 
 #### Gym
-Describes scenes where at least some of the action takes place in a gym, either a private one or a public one. For the former, it should also include [Locations: Her Place](#her-place), [Locations: His Place](#his-place), or [Locations: Their Place](their-place) as well.
+Describes scenes where at least some of the action takes place in a gym, either a private one or a public one. For the former, it should also include [Locations: Her Place](#her-place), [Locations: His Place](#his-place), or [Locations: Their Place](#their-place) as well.
 > Gym
 
 #### Hotel
@@ -813,14 +815,14 @@ Describes scenes where at least some of the action takes place at a hotel, motel
 > Hotel, Hotel Room
 
 #### Library
-Describes scenes where at least some of the action takes place in a library, either a public library or a school library. For the latter, should be used along with some combination of [Locations: School](#school--location-), [Locations: High School](#high-school--location-), and [Locations: College](#college--location-) as well as [Themes: School](#school--theme-), [Themes: High School](#high-school--theme-), and [Themes: College](#college--theme-).
+Describes scenes where at least some of the action takes place in a library, either a public library or a school library. For the latter, should be used along with some combination of [Locations: School](#school-location), [Locations: High School](#high-school-location), and [Locations: College](#college-location) as well as [Themes: School](#school-theme), [Themes: High School](#high-school-theme), and [Themes: College](#college-theme).
 
 #### Massage Parlor
 Describes scenes where at least some of the action takes place at a place of business that is dedicated to providing massages, whether that business also offers sexual services or not. Often used along with [Relations: Professional](#professional) or [Relations: Client](#client). 
 
 #### Office (Location)
 Describes scenes where at least some of the action takes place in a professional office. For scenes that take place in a home office, see [Locations: Private Office](#private-office).  
-See also: [Themes: Office](#office--theme-)
+See also: [Themes: Office](#office-theme)
 
 #### Park
 Describes scenes where at least some of the action takes place at a public park. The tag [Themes: Public](#public) should always be included as well.
@@ -837,7 +839,7 @@ Describes scenes where at least some of the action takes place in a bedroom. Oft
 > Bedroom
 
 #### Dorm Room
-Describes scenes where at least some of the action takes place in a school dorm room. Always used along with [Themes: School](#school--theme-) and [Locations: School](#school--location-). Usually also used with [Themes: College](#college--theme-), and [Locations: College](#college--location-), but may use [Themes: High School](#high-school--theme-) and [Locations: High School](#high-school--location-) for boarding schools instead.
+Describes scenes where at least some of the action takes place in a school dorm room. Always used along with [Themes: School](#school-theme) and [Locations: School](#school-location). Usually also used with [Themes: College](#college-theme), and [Locations: College](#college-location), but may use [Themes: High School](#high-school-theme) and [Locations: High School](#high-school-location) for boarding schools instead.
 
 #### Kitchen
 Describes scenes where at least some of the action takes place in a kitchen.
