@@ -136,7 +136,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       date: data.date,
       details: data.details,
       studio_id: data.studioId,
-      performers: data.performers.map((performance) => ({
+      performers: (data.performers ?? []).map((performance) => ({
         performer_id: performance.performerId,
         as: performance.alias,
       })),

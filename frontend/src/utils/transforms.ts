@@ -32,9 +32,7 @@ export const sortImageURLs = (
 ) =>
   urls
     .map((u) => ({
-      url: `${process.env.CDN}/${u.id.slice(0, 2)}/${u.id.slice(2, 4)}/${u.id}`,
-      width: u.width,
-      height: u.height,
+      ...u,
       aspect:
         orientation === "portrait"
           ? u.height / u.width > 1

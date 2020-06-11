@@ -1,9 +1,7 @@
 package models
 
 import (
-    "crypto/md5"
 	"database/sql"
-    "encoding/hex"
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
@@ -82,21 +80,6 @@ func (p *SceneUrl) ToURL() URL {
 		URL:  p.URL,
 		Type: p.Type,
 	}
-    if p.ImageID.Valid && p.Height.Valid && p.Width.Valid {
-        imageID := p.ImageID.UUID.String()
-        height := int(p.Height.Int32)
-        width := int(p.Width.Int32)
-
-        if width > 1280 || height > 1280 {
-            hasher := md5.New()
-            hasher.Write([]byte(imageID + "-resized"))
-            imageID = hex.EncodeToString(hasher.Sum(nil))
-        }
-
-        url.ImageID = &imageID
-        url.Height = &height
-        url.Width = &width
-    }
     return url
 }
 

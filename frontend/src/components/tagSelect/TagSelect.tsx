@@ -56,7 +56,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
     onChange(newTags.map((tag) => tag.id));
   };
 
-  const tagList = tags
+  const tagList = (tags ?? [])
     .sort((a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0))
     .map((tag) => (
       <span className="badge badge-pill badge-light" key={tag.id}>
