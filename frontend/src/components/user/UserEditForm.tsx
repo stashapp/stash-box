@@ -1,12 +1,13 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
-import Select from "react-select";
+import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import useForm from "react-hook-form";
 import cx from "classnames";
 
 import { RoleEnum, UserUpdateInput } from "src/definitions/globalTypes";
+import { isAdmin } from "src/utils/auth";
 
 import AuthContext from "src/AuthContext";
 
@@ -30,6 +31,11 @@ interface UserProps {
   callback: (data: UserEditData) => void;
 }
 
+interface IOptionType extends OptionTypeBase {
+  value: string;
+  label: string;
+}
+
 const roles = Object.keys(RoleEnum).map((role) => ({
   label: role,
   value: role,
@@ -43,14 +49,14 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
       label: role,
     }))
   );
-  const { register, handleSubmit, setValue, errors } = useForm({
+  const { register, handleSubmit, setValue, errors } = useForm<UserFormData>({
     validationSchema: schema,
   });
 
   useEffect(() => {
     register({ name: "roles" });
     setValue("roles", []);
-  }, [register]);
+  }, [register, setValue]);
 
   const onSubmit = (formData: UserFormData) => {
     const userData = {
@@ -62,11 +68,12 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
     callback(userData);
   };
 
-  const onRoleChange = (selectedRoles: { label: string; value: string }[]) => {
-    setUserRoles(selectedRoles);
+  const onRoleChange = (selectedRoles: ValueType<IOptionType>) => {
+    const val = selectedRoles as IOptionType[];
+    setUserRoles(val);
     setValue(
       "roles",
-      selectedRoles.map((role) => role.value)
+      val.map((role) => role.value)
     );
   };
 
@@ -81,11 +88,11 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
             type="email"
             placeholder="Email"
             ref={register}
-            defaultValue={user.email}
+            defaultValue={user.email ?? ""}
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </Form.Group>
-        {(Auth.user?.roles ?? []).includes("ADMIN") && (
+        {isAdmin(Auth.user) && (
           <Form.Group className="col-4">
             <Select
               classNamePrefix="react-select"

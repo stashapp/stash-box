@@ -1,15 +1,17 @@
 import React, { useContext, useState } from "react";
 import { useMutation } from "@apollo/react-hooks";
 import { useHistory } from "react-router-dom";
+import { loader } from "graphql.macro";
 
 import {
   ChangePasswordMutation,
   ChangePasswordMutationVariables,
 } from "src/definitions/ChangePasswordMutation";
-import ChangePassword from "src/mutations/ChangePassword.gql";
 
 import AuthContext from "src/AuthContext";
 import UserPassword, { UserPasswordData } from "./UserPasswordForm";
+
+const ChangePassword = loader("src/mutations/ChangePassword.gql");
 
 const ChangePasswordComponent: React.FC = () => {
   const Auth = useContext(AuthContext);

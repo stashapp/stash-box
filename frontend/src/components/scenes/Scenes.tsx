@@ -1,12 +1,14 @@
 import React from "react";
 import { useQuery } from "@apollo/react-hooks";
-import ScenesQuery from "src/queries/Scenes.gql";
+import { loader } from "graphql.macro";
 import { Scenes } from "src/definitions/Scenes";
 
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
+
+const ScenesQuery = loader("src/queries/Scenes.gql");
 
 const ScenesComponent: React.FC = () => {
   const { page, setPage } = usePagination();
@@ -18,9 +20,9 @@ const ScenesComponent: React.FC = () => {
 
   if (loadingData) return <LoadingIndicator message="Loading scenes..." />;
 
-  const totalPages = Math.ceil(data.queryScenes.count / 20);
+  const totalPages = Math.ceil((data?.queryScenes?.count ?? 0) / 20);
 
-  const scenes = data.queryScenes.scenes.map((scene) => (
+  const scenes = (data?.queryScenes?.scenes ?? []).map((scene) => (
     <SceneCard key={scene.id} performance={scene} />
   ));
 

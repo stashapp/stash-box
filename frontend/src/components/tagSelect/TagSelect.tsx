@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useQuery } from "@apollo/react-hooks";
-import Select from "react-select";
+import Select, { ValueType, OptionTypeBase } from "react-select";
+import { loader } from "graphql.macro";
 
-import TagsQuery from "src/queries/Tags.gql";
 import {
   Tags,
   TagsVariables,
@@ -12,9 +12,16 @@ import { SortDirectionEnum } from "src/definitions/globalTypes";
 
 import { CloseButton } from "src/components/fragments";
 
+const TagsQuery = loader("src/queries/Tags.gql");
+
 interface TagSelectProps {
   tags: Tag[];
   onChange: (tags: string[]) => void;
+}
+
+interface IOptionType extends OptionTypeBase {
+  label: string;
+  value: Tag;
 }
 
 const CLASSNAME = "TagSelect";
@@ -39,13 +46,14 @@ const TagSelect: React.FC<TagSelectProps> = ({
 
   if (loading) return <div />;
 
-  const options = data.queryTags.tags.map((tag) => ({
-    label: tag.description,
+  const options: IOptionType[] = (data?.queryTags?.tags ?? []).map((tag) => ({
+    label: tag.description ?? tag.name,
     value: tag,
   }));
 
-  const addTag = (selected: { label: string; value: Tag }) => {
-    const newTags = [...tags, selected.value];
+  const addTag = (selected: ValueType<IOptionType>) => {
+    const selectedTag = selected as IOptionType;
+    const newTags = [...tags, selectedTag.value];
     setTags(newTags);
     onChange(newTags.map((tag) => tag.id));
   };

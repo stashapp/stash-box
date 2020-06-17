@@ -26,7 +26,7 @@ interface StudioProps {
 }
 
 const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
-  const { register, handleSubmit, errors } = useForm({
+  const { register, handleSubmit, errors } = useForm<StudioFormData>({
     validationSchema: schema,
   });
   const [photoURL, setPhotoURL] = useState(getUrlByType(studio.urls, "PHOTO"));

@@ -1,41 +1,55 @@
 import React, { useState } from "react";
 import { useLazyQuery } from "@apollo/react-hooks";
-import { components, OptionsType, OptionProps } from "react-select";
+import {
+  components,
+  OptionTypeBase,
+  OptionProps,
+  ValueType,
+} from "react-select";
 import Async from "react-select/async";
 import { debounce } from "lodash";
 import { useHistory } from "react-router-dom";
-import SearchAllQuery from "src/queries/SearchAll.gql";
-import SearchPerformersQuery from "src/queries/SearchPerformers.gql";
+import { loader } from "graphql.macro";
+
 import {
   SearchAll,
-  SearchAll_searchScene as SceneResult,
-  SearchAll_searchPerformer as PerformerResult,
+  SearchAll_searchScene as SceneAllResult,
+  SearchAll_searchPerformer as PerformerAllResult,
 } from "src/definitions/SearchAll";
-import { SearchPerformers } from "src/definitions/SearchPerformers";
+import {
+  SearchPerformers,
+  SearchPerformers_searchPerformer as PerformerOnlyResult,
+} from "src/definitions/SearchPerformers";
 import GetFuzzyDate from "src/utils/date";
 
-export const enum SearchType {
+const SearchAllQuery = loader("src/queries/SearchAll.gql");
+const SearchPerformersQuery = loader("src/queries/SearchPerformers.gql");
+
+export enum SearchType {
   Performer = "performer",
   Combined = "combined",
 }
 
 interface SearchFieldProps {
-  onClick?: (result: PerformerResult | SceneResult) => void;
+  onClick?: (result: SceneResult | PerformerResult) => void;
   searchType: SearchType;
 }
+
+export type PerformerResult = PerformerAllResult | PerformerOnlyResult;
+export type SceneResult = SceneAllResult;
 
 interface SearchGroup {
   label: string;
   options: SearchResult[];
 }
-interface SearchResult {
+interface SearchResult extends OptionTypeBase {
   type: string;
-  value: PerformerResult | SceneResult;
+  value: SceneResult | PerformerResult;
   label: string;
   subLabel: string;
 }
 
-const Option: React.FC = (props: OptionProps<OptionsType<SearchResult>>) => {
+const Option = (props: OptionProps<SearchResult>) => {
   const {
     data: { label, subLabel },
   } = props;
@@ -47,17 +61,55 @@ const Option: React.FC = (props: OptionProps<OptionsType<SearchResult>>) => {
   );
 };
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-const resultIsSearchAll = (arg: any): arg is SearchAll =>
-  arg.searchPerformer && arg.searchScene;
+const resultIsSearchAll = (
+  arg: SearchAll | SearchPerformers
+): arg is SearchAll =>
+  (arg as SearchAll).searchPerformer !== undefined &&
+  (arg as SearchAll).searchScene !== undefined;
 
 function handleResult(
   result: SearchAll | SearchPerformers,
   callback: (result: SearchGroup[]) => void
 ) {
-  const performers =
-    result.searchPerformer &&
-    result.searchPerformer.map((performer: PerformerResult) => ({
+  let performers: SearchResult[] = [];
+  let scenes: SearchResult[] = [];
+
+  if (resultIsSearchAll(result)) {
+    const performerResults = (result?.searchPerformer?.filter(
+      (p) => p !== null
+    ) ?? []) as PerformerAllResult[];
+    performers = performerResults.map((performer) => ({
+      type: "performer",
+      value: performer,
+      label: performer?.name ?? "Unknown",
+      subLabel: [
+        performer?.birthdate
+          ? `Born: ${GetFuzzyDate(performer.birthdate)}`
+          : null,
+        performer?.aliases.length
+          ? `AKA: ${performer.aliases.join(", ")}`
+          : null,
+      ]
+        .filter((p) => p !== null)
+        .join(", "),
+    }));
+
+    const sceneResults = (result?.searchScene?.filter((p) => p !== null) ??
+      []) as SceneAllResult[];
+    scenes = sceneResults.map((scene) => ({
+      type: "scene",
+      value: scene,
+      label: `${scene.title} ${scene.date ? `(${scene.date})` : ""}`,
+      subLabel: `${scene?.studio?.name ?? ""}${
+        scene.performers && scene.studio ? " • " : ""
+      }
+          ${scene.performers.map((p) => p.as || p.performer.name).join(", ")}`,
+    }));
+  } else {
+    const performerResults = (result?.searchPerformer?.filter(
+      (p) => p !== null
+    ) ?? []) as PerformerOnlyResult[];
+    performers = performerResults.map((performer) => ({
       type: "performer",
       value: performer,
       label: performer.name,
@@ -72,17 +124,7 @@ function handleResult(
         .filter((p) => p !== null)
         .join(", "),
     }));
-  const scenes = resultIsSearchAll(result)
-    ? result.searchScene.map((scene: SceneResult) => ({
-        type: "scene",
-        value: scene,
-        label: `${scene.title} ${scene.date ? `(${scene.date})` : ""}`,
-        subLabel: `${scene.studio.name}${scene.performers ? " • " : ""}
-            ${scene.performers
-              .map((p) => p.as || p.performer.name)
-              .join(", ")}`,
-      }))
-    : [];
+  }
 
   const options = [];
   if (performers.length)
@@ -97,28 +139,36 @@ const SearchField: React.FC<SearchFieldProps> = ({
 }) => {
   const history = useHistory();
   const [selectedValue, setSelected] = useState(null);
-  const [searchCallback, setCallback] = useState(null);
+  const [searchCallback, setCallback] = useState<
+    (result: SearchGroup[]) => void
+  >();
   const [search] = useLazyQuery(
     searchType === SearchType.Performer
       ? SearchPerformersQuery
       : SearchAllQuery,
-    { onCompleted: (result) => handleResult(result, searchCallback) }
+    {
+      onCompleted: (result) => {
+        if (searchCallback) handleResult(result, searchCallback);
+      },
+    }
   );
 
   const handleSearch = (
     term: string,
     callback: (options: Array<SearchGroup>) => void
   ) => {
-    setCallback(() => callback);
+    setCallback(callback);
     search({ variables: { term } });
   };
 
   const debouncedLoadOptions = debounce(handleSearch, 400);
 
-  const handleChange = (result: SearchResult) => {
-    if (result)
-      if (onClick) onClick(result.value);
-      else history.push(`/${result.type}s/${result.value.id}`);
+  const handleChange = (result: ValueType<SearchResult>) => {
+    if (result) {
+      const res = result as SearchResult;
+      if (onClick) onClick(res.value);
+      else history.push(`/${res.type}s/${res.value.id}`);
+    }
 
     setSelected(null);
   };
@@ -130,7 +180,8 @@ const SearchField: React.FC<SearchFieldProps> = ({
         autoload={false}
         value={selectedValue}
         defaultOptions
-        loadOptions={debouncedLoadOptions}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        loadOptions={debouncedLoadOptions as any}
         onChange={handleChange}
         placeholder={
           searchType === SearchType.Performer
@@ -142,8 +193,8 @@ const SearchField: React.FC<SearchFieldProps> = ({
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null,
         }}
-        noOptionsMessage={({ inputValue }: { inputValue: string }): string =>
-          null && inputValue
+        noOptionsMessage={({ inputValue }) =>
+          `No result found for "${inputValue}"`
         }
       />
     </div>

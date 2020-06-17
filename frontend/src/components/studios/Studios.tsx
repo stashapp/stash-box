@@ -2,14 +2,16 @@ import React from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { loader } from "graphql.macro";
 
 import {
   Studios,
   Studios_queryStudios_studios as Studio,
 } from "src/definitions/Studios";
-import StudiosQuery from "src/queries/Studios.gql";
 
 import { LoadingIndicator } from "src/components/fragments";
+
+const StudiosQuery = loader("src/queries/Studios.gql");
 
 interface ParentStudio {
   studio: Studio;
@@ -23,7 +25,7 @@ const StudiosComponent: React.FC = () => {
 
   if (loadingData) return <LoadingIndicator message="Loading studios..." />;
 
-  const parentStudios = data.queryStudios.studios.reduce<
+  const parentStudios = (data?.queryStudios?.studios ?? []).reduce<
     Record<string, ParentStudio>
   >((parents, studio) => {
     const newStudios = { ...parents };

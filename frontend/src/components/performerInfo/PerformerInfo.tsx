@@ -2,8 +2,8 @@ import React, { useState, useContext } from "react";
 import { useMutation } from "@apollo/react-hooks";
 import { Link, useHistory } from "react-router-dom";
 import { Card, Table } from "react-bootstrap";
+import { loader } from "graphql.macro";
 
-import DeletePerformer from "src/mutations/DeletePerformer.gql";
 import AuthContext from "src/AuthContext";
 import { Performer_findPerformer as Performer } from "src/definitions/Performer";
 import {
@@ -11,13 +11,15 @@ import {
   DeletePerformerMutationVariables,
 } from "src/definitions/DeletePerformerMutation";
 import getFuzzyDate from "src/utils/date";
+import { canEdit, isAdmin } from "src/utils/auth";
 import { boobJobStatus, getBodyModification } from "src/utils/transforms";
 import { EthnicityTypes, HairColorTypes, EyeColorTypes } from "src/constants";
 
-import ImageCarousel from 'src/components/imageCarousel';
-import Modal from 'src/components/modal';
-import { GenderIcon } from 'src/components/fragments';
-import { canEdit } from 'src/utils/auth';
+import ImageCarousel from "src/components/imageCarousel";
+import Modal from "src/components/modal";
+import { GenderIcon } from "src/components/fragments";
+
+const DeletePerformer = loader("src/mutations/DeletePerformer.gql");
 
 const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
   const history = useHistory();
@@ -43,7 +45,7 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
       callback={handleDelete}
     />
   );
-  const deleteButton = auth.user.roles.includes("ADMIN") && (
+  const deleteButton = isAdmin(auth.user) && (
     <button
       type="button"
       disabled={showDelete || deleting}
@@ -62,15 +64,17 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
           <Card>
             <Card.Header>
               <div className="float-right">
-                { canEdit(auth.user) && (
-                    <Link to={`${performer.id}/edit`}>
-                        <button type="button" className="btn btn-secondary">Edit</button>
-                    </Link>
+                {canEdit(auth?.user) && (
+                  <Link to={`${performer.id}/edit`}>
+                    <button type="button" className="btn btn-secondary">
+                      Edit
+                    </button>
+                  </Link>
                 )}
                 {deleteButton}
               </div>
               <h2>
-                <GenderIcon gender={performer.gender} />
+                <GenderIcon gender={performer?.gender} />
                 {performer.name}
               </h2>
             </Card.Header>
@@ -92,7 +96,11 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                   </tr>
                   <tr>
                     <td>Birthdate</td>
-                    <td>{getFuzzyDate(performer.birthdate)}</td>
+                    <td>
+                      {performer.birthdate
+                        ? getFuzzyDate(performer.birthdate)
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Height</td>
@@ -116,7 +124,11 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                     performer.gender === "TRANSGENDER_FEMALE") && (
                     <tr>
                       <td>Breast type</td>
-                      <td>{boobJobStatus(performer.breast_type)}</td>
+                      <td>
+                        {performer.breast_type
+                          ? boobJobStatus(performer.breast_type)
+                          : ""}
+                      </td>
                     </tr>
                   )}
                   <tr>
@@ -125,23 +137,39 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                   </tr>
                   <tr>
                     <td>Ethnicity</td>
-                    <td>{EthnicityTypes[performer.ethnicity]}</td>
+                    <td>
+                      {performer.ethnicity
+                        ? EthnicityTypes[performer.ethnicity]
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Eye color</td>
-                    <td>{EyeColorTypes[performer.eye_color]}</td>
+                    <td>
+                      {performer.eye_color
+                        ? EyeColorTypes[performer.eye_color]
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Hair color</td>
-                    <td>{HairColorTypes[performer.hair_color]}</td>
+                    <td>
+                      {performer.hair_color
+                        ? HairColorTypes[performer.hair_color]
+                        : ""}
+                    </td>
                   </tr>
                   <tr>
                     <td>Tattoos</td>
-                    <td>{getBodyModification(performer.tattoos)}</td>
+                    <td>
+                      {getBodyModification(performer?.tattoos ?? undefined)}
+                    </td>
                   </tr>
                   <tr>
                     <td>Piercings</td>
-                    <td>{getBodyModification(performer.piercings)}</td>
+                    <td>
+                      {getBodyModification(performer?.piercings ?? undefined)}
+                    </td>
                   </tr>
                   <tr>
                     <td>Aliases</td>

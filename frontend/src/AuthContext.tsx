@@ -1,8 +1,10 @@
 import React from "react";
+import { RoleEnum } from "src/definitions/globalTypes";
 
 export interface User {
-  name?: string;
-  roles?: string[];
+  id: string;
+  name: string;
+  roles: RoleEnum[] | null;
 }
 
 export type ContextType = {

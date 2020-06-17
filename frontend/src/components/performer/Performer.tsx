@@ -1,15 +1,17 @@
 import React from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { useParams } from "react-router-dom";
+import { loader } from "graphql.macro";
 
 import { Performer } from "src/definitions/Performer";
-import PerformerQuery from "src/queries/Performer.gql";
 import { Scenes } from "src/definitions/Scenes";
-import ScenesQuery from "src/queries/Scenes.gql";
 
 import PerformerInfo from "src/components/performerInfo";
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
+
+const PerformerQuery = loader("src/queries/Performer.gql");
+const ScenesQuery = loader("src/queries/Scenes.gql");
 
 const PerformerComponent: React.FC = () => {
   const { id } = useParams();
@@ -29,7 +31,9 @@ const PerformerComponent: React.FC = () => {
   if (loading || loadingPerformances)
     return <LoadingIndicator message="Loading performer..." />;
 
-  const scenes = performances.queryScenes.scenes
+  if (!data?.findPerformer) return <div>Performer not found.</div>;
+
+  const scenes = (performances?.queryScenes?.scenes ?? [])
     .sort((a, b) => {
       if (a.date < b.date) return 1;
       if (a.date > b.date) return -1;

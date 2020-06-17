@@ -3,14 +3,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Link } from "react-router-dom";
 import useForm from "react-hook-form";
-import Select from "react-select";
+import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form, Table } from "react-bootstrap";
+import { loader } from "graphql.macro";
 
 import { Studios, StudiosVariables } from "src/definitions/Studios";
 import { Scene_findScene as Scene } from "src/definitions/Scene";
-import StudioQuery from "src/queries/Studios.gql";
 import {
   SceneUpdateInput,
   FingerprintInput,
@@ -26,7 +26,13 @@ import {
 } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
 import TagSelect from "src/components/tagSelect";
-import { SearchPerformers_searchPerformer as PerformerResult } from "src/definitions/SearchPerformers";
+
+const StudioQuery = loader("src/queries/Studios.gql");
+
+interface IOptionType extends OptionTypeBase {
+  value: string;
+  label: string;
+}
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
@@ -81,23 +87,23 @@ interface SceneProps {
 }
 
 interface PerformerInfo {
-  alias?: string;
+  alias: string[];
   name: string;
   id: string;
-  gender: string;
+  gender: string | null;
 }
 
 const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
-  const fingerprintHash = useRef(null);
-  const fingerprintAlgorithm = useRef(null);
-  const { register, handleSubmit, setValue, errors } = useForm({
+  const fingerprintHash = useRef<HTMLInputElement>(null);
+  const fingerprintAlgorithm = useRef<HTMLSelectElement>(null);
+  const { register, handleSubmit, setValue, errors } = useForm<SceneFormData>({
     validationSchema: schema,
   });
   const [performers, setPerformers] = useState<PerformerInfo[]>(
     scene.performers.map((p) => ({
       id: p.performer.id,
       name: p.performer.name,
-      alias: p.as,
+      alias: p.as ? [p.as] : [],
       gender: p.performer.gender,
     }))
   );
@@ -115,17 +121,18 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   });
   useEffect(() => {
     register({ name: "studioId" });
-    setValue("studioId", scene.studio ? scene.studio.id : null);
     register({ name: "tags" });
-    setValue("tags", scene.tags ? scene.tags.map((tag) => tag.id) : []);
     register({ name: "fingerprints" });
     setValue("fingerprints", fingerprints);
-  }, [register]);
+    setValue("tags", scene.tags ? scene.tags.map((tag) => tag.id) : []);
+    if (scene?.studio?.id) setValue("studioId", scene.studio.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [register, setValue]);
 
   if (loadingStudios) return <LoadingIndicator message="Loading scene..." />;
 
-  const onStudioChange = (selectedOption: { label: string; value: string }) =>
-    setValue("studioId", selectedOption.value);
+  const onStudioChange = (selectedOption: ValueType<IOptionType>) =>
+    setValue("studioId", (selectedOption as IOptionType).value);
   const onTagChange = (selectedTags: string[]) =>
     setValue("tags", selectedTags);
 
@@ -150,18 +157,20 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     callback(sceneData);
   };
 
-  const studioObj = studios.queryStudios.studios.map((studio) => ({
+  const studioObj = (studios?.queryStudios?.studios ?? []).map((studio) => ({
     value: studio.id,
     label: studio.name,
   }));
 
-  const addPerformer = (result: PerformerResult) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const addPerformer = (result: any) =>
     setPerformers([
       ...performers,
       {
         name: result.name,
         id: result.id,
         gender: result.gender,
+        alias: [],
       },
     ]);
   const removePerformer = (id: string) =>
@@ -186,7 +195,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           className="performer-alias"
           type="text"
           name={`performers[${index}].alias`}
-          defaultValue={p.alias !== p.name ? p.alias : ""}
+          defaultValue={p.alias?.[0] !== p.name ? p.alias[0] : ""}
           placeholder={p.name}
           ref={register}
         />
@@ -195,9 +204,16 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   ));
 
   const addFingerprint = () => {
-    const hash = fingerprintHash.current.value.trim();
-    const algorithm = fingerprintAlgorithm.current.value;
-    if (!algorithm || fingerprints.some((f) => f.hash === hash) || hash === "")
+    if (!fingerprintHash.current || !fingerprintAlgorithm.current) return;
+    const hash = fingerprintHash.current.value?.trim();
+    const algorithm = fingerprintAlgorithm.current
+      .value as FingerprintAlgorithm;
+    if (
+      !algorithm ||
+      !hash ||
+      fingerprints.some((f) => f.hash === hash) ||
+      hash === ""
+    )
       return;
     const newFingerprints = [...fingerprints, { hash, algorithm }];
     setFingerprints(newFingerprints);
@@ -259,7 +275,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 type="text"
                 placeholder="Title"
                 name="title"
-                defaultValue={scene.title}
+                defaultValue={scene?.title ?? ""}
                 ref={register({ required: true })}
               />
               <div className="invalid-feedback">{errors?.title?.message}</div>
@@ -280,7 +296,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
           <div className="form-group row">
             <div className="col">
-              <label htmlFor="performers">Performers</label>
+              <div className="label">Performers</div>
               {performerList}
               <div className="add-performer">
                 <span>Add performer:</span>
@@ -302,8 +318,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 onChange={onStudioChange}
                 options={studioObj}
                 defaultValue={
-                  scene.studio &&
-                  studioObj.find((s) => s.value === scene.studio.id)
+                  scene?.studio?.id
+                    ? studioObj.find((s) => s.value === scene.studio?.id)
+                    : { label: "", value: "" }
                 }
               />
               <div className="invalid-feedback">
@@ -334,7 +351,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 className="form-control description"
                 placeholder="Details"
                 name="details"
-                defaultValue={scene.details}
+                defaultValue={scene?.details ?? ""}
                 ref={register}
               />
             </label>

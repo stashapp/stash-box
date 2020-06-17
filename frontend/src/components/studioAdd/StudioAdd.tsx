@@ -1,19 +1,22 @@
 import React from "react";
 import { useMutation } from "@apollo/react-hooks";
 import { useHistory } from "react-router-dom";
+import { loader } from "graphql.macro";
 
 import { AddStudioMutation as AddStudio } from "src/definitions/AddStudioMutation";
 import { Studio_findStudio as Studio } from "src/definitions/Studio";
-import AddStudioMutation from "src/mutations/AddStudio.gql";
 import { StudioCreateInput } from "src/definitions/globalTypes";
 
 import StudioForm from "src/components/studioForm";
+
+const AddStudioMutation = loader("src/mutations/AddStudio.gql");
 
 const StudioAdd: React.FC = () => {
   const history = useHistory();
   const [insertStudio] = useMutation<AddStudio>(AddStudioMutation, {
     onCompleted: (data) => {
-      history.push(`/studios/${data.studioCreate.id}`);
+      if (data.studioCreate?.id)
+        history.push(`/studios/${data.studioCreate.id}`);
     },
   });
 
@@ -24,7 +27,8 @@ const StudioAdd: React.FC = () => {
   const emptyStudio = {
     id: "",
     name: "",
-    urls: null,
+    urls: [],
+    images: [],
   } as Studio;
 
   return (

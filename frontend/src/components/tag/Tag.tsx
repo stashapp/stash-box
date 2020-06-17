@@ -1,28 +1,30 @@
 import React from "react";
 import { useQuery } from "@apollo/react-hooks";
-import ScenesQuery from "src/queries/Scenes.gql";
-import TagQuery from "src/queries/Tag.gql";
+import { useParams } from "react-router-dom";
+import { loader } from "graphql.macro";
+
 import { Scenes, ScenesVariables } from "src/definitions/Scenes";
 import { Tag, TagVariables } from "src/definitions/Tag";
 import {
   SortDirectionEnum,
   CriterionModifier,
 } from "src/definitions/globalTypes";
-import { useParams } from "react-router-dom";
 
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
 
+const ScenesQuery = loader("src/queries/Scenes.gql");
+const TagQuery = loader("src/queries/Tag.gql");
+
 const TagComponent: React.FC = () => {
   const { name } = useParams();
   const { page, setPage } = usePagination();
-  const { data: tag } = useQuery<Tag, TagVariables>(TagQuery, {
+  const { data: tag, loading } = useQuery<Tag, TagVariables>(TagQuery, {
     variables: { name },
   });
   const { data } = useQuery<Scenes, ScenesVariables>(ScenesQuery, {
-    skip: !tag,
     variables: {
       filter: {
         page,
@@ -32,14 +34,17 @@ const TagComponent: React.FC = () => {
       },
       sceneFilter: {
         tags: {
-          value: [tag && tag.findTag.id],
+          value: [tag?.findTag?.id ?? ""],
           modifier: CriterionModifier.INCLUDES,
         },
       },
     },
+    skip: !tag?.findTag?.id,
   });
 
-  if (!data) return <LoadingIndicator message="Loading scenes..." />;
+  if (!loading) return <LoadingIndicator message="Loading scenes..." />;
+
+  if (!tag?.findTag?.id || !data) return <div>Tag not found!</div>;
 
   const totalPages = Math.ceil(data.queryScenes.count / 20);
 

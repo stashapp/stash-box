@@ -45,17 +45,19 @@ const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
         <Link to={`/scenes/${performance.id}`} className="d-flex">
           <h6 className={CLASSNAME_TITLE}>{performance.title}</h6>
           <span className="text-muted">
-            {formatDuration(performance.duration)}
+            {performance.duration ? formatDuration(performance.duration) : ""}
           </span>
         </Link>
         <div>
-          <Link
-            to={`/studios/${performance.studio.id}`}
-            className="float-right text-muted"
-          >
-            <Icon icon="video" className="mr-1" />
-            {performance.studio.name}
-          </Link>
+          {performance.studio && (
+            <Link
+              to={`/studios/${performance.studio.id}`}
+              className="float-right text-muted"
+            >
+              <Icon icon="video" className="mr-1" />
+              {performance.studio.name}
+            </Link>
+          )}
           <strong className="text-muted">{performance.date}</strong>
         </div>
       </Card.Footer>

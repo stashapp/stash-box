@@ -8,7 +8,7 @@ import { createHttpLink } from "apollo-link-http";
 import { setContext } from "apollo-link-context";
 
 const httpLink = createHttpLink({
-  uri: `${process.env.SERVER}${process.env.GRAPHQL_PATH}`,
+  uri: `${process.env.REACT_APP_SERVER}${process.env.REACT_APP_GRAPHQL_PATH}`,
   fetchOptions: {
     mode: "cors",
     credentials: "same-origin",
@@ -18,8 +18,8 @@ const httpLink = createHttpLink({
 const authLink = setContext((_, { headers, ...context }) => ({
   headers: {
     ...headers,
-    ...(process.env.APIKEY && {
-      ApiKey: process.env.APIKEY,
+    ...(process.env.REACT_APP_APIKEY && {
+      ApiKey: process.env.REACT_APP_APIKEY,
     }),
   },
   ...context,

@@ -40,7 +40,7 @@ interface UserProps {
 }
 
 const UserForm: React.FC<UserProps> = ({ callback, error }) => {
-  const { register, handleSubmit, errors } = useForm({
+  const { register, handleSubmit, errors } = useForm<UserFormData>({
     validationSchema: schema,
   });
 

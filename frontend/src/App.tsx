@@ -1,4 +1,3 @@
-import { hot } from "react-hot-loader/root";
 import React from "react";
 import { ApolloProvider } from "@apollo/react-hooks";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
@@ -112,4 +111,4 @@ const App: React.FC = () => (
   </ApolloProvider>
 );
 
-export default hot(App);
+export default App;

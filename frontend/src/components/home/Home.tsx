@@ -1,8 +1,7 @@
 import React from "react";
 import { useQuery } from "@apollo/react-hooks";
+import { loader } from "graphql.macro";
 
-import ScenesQuery from "src/queries/Scenes.gql";
-import PerformersQuery from "src/queries/Performers.gql";
 import { Scenes, ScenesVariables } from "src/definitions/Scenes";
 import { Performers, PerformersVariables } from "src/definitions/Performers";
 import { SortDirectionEnum } from "src/definitions/globalTypes";
@@ -10,6 +9,9 @@ import { SortDirectionEnum } from "src/definitions/globalTypes";
 import PerformerCard from "src/components/performerCard";
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
+
+const ScenesQuery = loader("src/queries/Scenes.gql");
+const PerformersQuery = loader("src/queries/Performers.gql");
 
 const ScenesComponent: React.FC = () => {
   const { loading: loadingScenes, data: sceneData } = useQuery<
@@ -42,7 +44,7 @@ const ScenesComponent: React.FC = () => {
   const scenes = loadingScenes ? (
     <LoadingIndicator message="Loading scenes..." />
   ) : (
-    sceneData.queryScenes.scenes.map((scene) => (
+    (sceneData?.queryScenes?.scenes ?? []).map((scene) => (
       <SceneCard key={scene.id} performance={scene} />
     ))
   );
@@ -50,7 +52,7 @@ const ScenesComponent: React.FC = () => {
   const performers = loadingPerformers ? (
     <LoadingIndicator message="Loading performers" />
   ) : (
-    performerData.queryPerformers.performers.map((performer) => (
+    (performerData?.queryPerformers?.performers ?? []).map((performer) => (
       <PerformerCard key={performer.id} performer={performer} />
     ))
   );

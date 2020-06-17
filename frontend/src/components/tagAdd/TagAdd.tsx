@@ -1,19 +1,21 @@
 import React from "react";
 import { useMutation } from "@apollo/react-hooks";
 import { useHistory } from "react-router-dom";
+import { loader } from "graphql.macro";
 
-import AddTagMutation from "src/mutations/AddTag.gql";
 import { Tag_findTag as Tag } from "src/definitions/Tag";
 import { AddTagMutation as AddTag } from "src/definitions/AddTagMutation";
 import { TagCreateInput } from "src/definitions/globalTypes";
 
 import TagForm from "src/components/tagForm";
 
+const AddTagMutation = loader("src/mutations/AddTag.gql");
+
 const TagAddComponent: React.FC = () => {
   const history = useHistory();
   const [insertStudio] = useMutation<AddTag>(AddTagMutation, {
     onCompleted: (data) => {
-      history.push(`/tags/${data.tagCreate.name}`);
+      if (data.tagCreate?.name) history.push(`/tags/${data.tagCreate.name}`);
     },
   });
 

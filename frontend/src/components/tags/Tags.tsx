@@ -1,11 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/react-hooks";
-import TagsQuery from "src/queries/Tags.gql";
+import { Button } from "react-bootstrap";
+import { loader } from "graphql.macro";
+
 import { Tags } from "src/definitions/Tags";
 
-import { Button } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/fragments";
+
+const TagsQuery = loader("src/queries/Tags.gql");
 
 const TagsComponent: React.FC = () => {
   const { loading, data } = useQuery<Tags>(TagsQuery, {
@@ -14,7 +17,7 @@ const TagsComponent: React.FC = () => {
 
   if (loading) return <LoadingIndicator message="Loading scenes..." />;
 
-  const tags = data.queryTags.tags.map((tag) => (
+  const tags = (data?.queryTags?.tags ?? []).map((tag) => (
     <li key={tag.id}>
       <Link to={`/tags/${encodeURIComponent(tag.name)}`}>{tag.name}</Link>
       <span className="ml-2">{tag.description}</span>

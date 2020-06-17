@@ -30,10 +30,8 @@ const PaginationComponent: React.FC<PaginationProps> = ({
   });
 
   const handleClick = (e: React.MouseEvent<HTMLUListElement>): void => {
-    const pageNumber = Number.parseInt(
-      (e.target as HTMLAnchorElement).closest("a").dataset.page,
-      10
-    );
+    const page = (e.target as HTMLElement).closest("a")?.dataset.page;
+    const pageNumber = page ? Number.parseInt(page, 10) : 1;
     if (pageNumber !== active) onClick(pageNumber);
   };
 

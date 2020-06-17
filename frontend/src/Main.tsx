@@ -3,16 +3,27 @@ import { useQuery } from "@apollo/react-hooks";
 import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useHistory } from "react-router-dom";
 import SearchField, { SearchType } from "src/components/searchField";
-import ME from "src/queries/Me.gql";
 import { Me } from "src/definitions/Me";
+import { RoleEnum } from "src/definitions/globalTypes";
+import { loader } from "graphql.macro";
 import AuthContext from "./AuthContext";
+
+const ME = loader("src/queries/Me.gql");
+
+interface User {
+  id: string;
+  name: string;
+  roles: RoleEnum[] | null;
+}
 
 const Main: React.FC = ({ children }) => {
   const history = useHistory();
-  const [user, setUser] = useState(undefined);
-  const prevUser = useRef();
+  const [user, setUser] = useState<User | null>();
+  const prevUser = useRef<User | null>();
   const { loading } = useQuery<Me>(ME, {
-    onCompleted: (data) => setUser(data.me),
+    onCompleted: (data) => {
+      if (data?.me) setUser(data.me);
+    },
     onError: () => setUser(null),
   });
 
@@ -24,7 +35,8 @@ const Main: React.FC = ({ children }) => {
 
   if (loading) return <div>Loading...</div>;
 
-  const isRole = (role: string) => (user?.roles ?? []).includes(role);
+  const isRole = (role: string) =>
+    (user?.roles ?? []).includes(role as RoleEnum);
 
   const contextValue = user
     ? {
@@ -55,10 +67,10 @@ const Main: React.FC = ({ children }) => {
       <>
         <span>Logged in as</span>
         <NavLink
-          to={`/users/${contextValue.user.name}`}
+          to={`/users/${contextValue!.user!.name}`}
           className="nav-link ml-auto mr-2"
         >
-          {contextValue.user.name}
+          {contextValue!.user!.name}
         </NavLink>
         {isRole("ADMIN") && (
           <NavLink exact to="/admin" className="nav-link">

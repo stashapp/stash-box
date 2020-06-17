@@ -1,15 +1,17 @@
 import React from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { useHistory, useParams } from "react-router-dom";
+import { loader } from "graphql.macro";
 
-import UpdateSceneMutation from "src/mutations/UpdateScene.gql";
 import { Scene } from "src/definitions/Scene";
 import { UpdateSceneMutationVariables } from "src/definitions/UpdateSceneMutation";
-import SceneQuery from "src/queries/Scene.gql";
 import { SceneUpdateInput } from "src/definitions/globalTypes";
 
 import { LoadingIndicator } from "src/components/fragments";
 import SceneForm from "src/components/sceneForm";
+
+const SceneQuery = loader("src/queries/Scene.gql");
+const UpdateSceneMutation = loader("src/mutations/UpdateScene.gql");
 
 const SceneEdit: React.FC = () => {
   const { id } = useParams();
@@ -21,7 +23,7 @@ const SceneEdit: React.FC = () => {
     UpdateSceneMutation,
     {
       onCompleted: () => {
-        history.push(`/scenes/${data.findScene.id}`);
+        if (data?.findScene?.id) history.push(`/scenes/${data.findScene.id}`);
       },
     }
   );
@@ -31,6 +33,8 @@ const SceneEdit: React.FC = () => {
   };
 
   if (loading) return <LoadingIndicator message="Loading studio..." />;
+
+  if (!data?.findScene) return <div>Scene not found!</div>;
 
   return (
     <div>

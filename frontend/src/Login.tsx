@@ -15,10 +15,10 @@ const Login: React.FC = () => {
   const submitLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData();
-    data.append("username", username.current.value || "");
-    data.append("password", password.current.value);
+    data.append("username", username.current?.value ?? "");
+    data.append("password", password.current?.value ?? "");
 
-    const res = await fetch(`${process.env.SERVER}/login`, {
+    const res = await fetch(`${process.env.REACT_APP_SERVER}/login`, {
       method: "POST",
       body: data,
     });
@@ -34,7 +34,12 @@ const Login: React.FC = () => {
         </label>
         <label className="row" htmlFor="password">
           <span className="col-4">Password:</span>
-          <input ref={password} type="password" className="col-8" name="password" />
+          <input
+            ref={password}
+            type="password"
+            className="col-8"
+            name="password"
+          />
         </label>
         <button
           type="submit"

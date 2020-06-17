@@ -1,10 +1,9 @@
 import React, { useContext } from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Link, useParams } from "react-router-dom";
+import { loader } from "graphql.macro";
 
-import StudioQuery from "src/queries/Studio.gql";
 import { Studio, StudioVariables } from "src/definitions/Studio";
-import ScenesQuery from "src/queries/Scenes.gql";
 import { Scenes, ScenesVariables } from "src/definitions/Scenes";
 import {
   CriterionModifier,
@@ -20,12 +19,16 @@ import { getImage, getUrlByType } from "src/utils/transforms";
 import { canEdit } from "src/utils/auth";
 import AuthContext from "src/AuthContext";
 
+const StudioQuery = loader("src/queries/Studio.gql");
+const ScenesQuery = loader("src/queries/Scenes.gql");
+
 const StudioComponent: React.FC = () => {
   const auth = useContext(AuthContext);
-  const { id } = useParams();
+  const { id = "" } = useParams();
   const { page, setPage } = usePagination();
   const { loading, data } = useQuery<Studio, StudioVariables>(StudioQuery, {
     variables: { id },
+    skip: id === "",
   });
   const { loading: loadingScenes, data: sceneData } = useQuery<
     Scenes,
@@ -42,15 +45,17 @@ const StudioComponent: React.FC = () => {
         studios: { value: [id], modifier: CriterionModifier.INCLUDES },
       },
     },
+    skip: id === "",
   });
 
   if (loading || loadingScenes)
     return <LoadingIndicator message="Loading studio..." />;
+  if (id === "" || !data?.findStudio) return <div>Studio not found!</div>;
 
   const studio = data.findStudio;
 
-  const totalPages = Math.ceil(sceneData.queryScenes.count / 20);
-  const scenes = sceneData.queryScenes.scenes
+  const totalPages = Math.ceil((sceneData?.queryScenes?.count ?? 0) / 20);
+  const scenes = (sceneData?.queryScenes?.scenes ?? [])
     .sort((a, b) => {
       if (a.date < b.date) return 1;
       if (a.date > b.date) return -1;

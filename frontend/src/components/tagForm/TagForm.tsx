@@ -21,7 +21,7 @@ interface TagProps {
 }
 
 const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
-  const { register, handleSubmit, errors } = useForm({
+  const { register, handleSubmit, errors } = useForm<TagFormData>({
     validationSchema: schema,
   });
 
@@ -53,7 +53,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
         <Form.Control
           name="description"
           placeholder="Description"
-          defaultValue={tag.description}
+          defaultValue={tag.description ?? ""}
           ref={register}
         />
       </Form.Group>

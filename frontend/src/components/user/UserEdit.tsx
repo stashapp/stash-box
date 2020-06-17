@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@apollo/react-hooks";
 import { useHistory, useParams } from "react-router-dom";
+import { loader } from "graphql.macro";
 
 import {
   UpdateUserMutation,
   UpdateUserMutationVariables,
 } from "src/definitions/UpdateUserMutation";
 import { User, UserVariables } from "src/definitions/User";
-import UpdateUser from "src/mutations/UpdateUser.gql";
-import UserQuery from "src/queries/User.gql";
 
 import { LoadingIndicator } from "src/components/fragments";
 import UserEditForm, { UserEditData } from "./UserEditForm";
 
+const UpdateUser = loader("src/mutations/UpdateUser.gql");
+const UserQuery = loader("src/queries/User.gql");
+
 const EditUserComponent: React.FC = () => {
-  const { username } = useParams();
+  const { username = "" } = useParams();
   const { data, loading } = useQuery<User, UserVariables>(UserQuery, {
     variables: { name: username },
   });
@@ -26,6 +28,7 @@ const EditUserComponent: React.FC = () => {
   >(UpdateUser);
 
   if (loading) return <LoadingIndicator />;
+  if (username === "" || !data?.findUser) return <div>User not found!</div>;
 
   const user = data.findUser;
 

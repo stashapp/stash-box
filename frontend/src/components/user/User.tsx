@@ -3,24 +3,27 @@ import { useQuery, useMutation } from "@apollo/react-hooks";
 import { useParams, useHistory } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
+import { loader } from "graphql.macro";
 
 import { User, UserVariables } from "src/definitions/User";
-import UserQuery from "src/queries/User.gql";
 
 import AuthContext from "src/AuthContext";
-import DeleteUser from "src/mutations/DeleteUser.gql";
 import {
   DeleteUserMutation,
   DeleteUserMutationVariables,
 } from "src/definitions/DeleteUserMutation";
+import { canEdit, isAdmin } from "src/utils/auth";
 
 import Modal from "src/components/modal";
 import { LoadingIndicator } from "src/components/fragments";
 
+const UserQuery = loader("src/queries/User.gql");
+const DeleteUser = loader("src/mutations/DeleteUser.gql");
+
 const AddUserComponent: React.FC = () => {
   const history = useHistory();
   const Auth = useContext(AuthContext);
-  const { username } = useParams();
+  const { username = "" } = useParams();
   const [showDelete, setShowDelete] = useState(false);
   const [deleteUser, { loading: deleting }] = useMutation<
     DeleteUserMutation,
@@ -28,15 +31,15 @@ const AddUserComponent: React.FC = () => {
   >(DeleteUser);
   const { data, loading } = useQuery<User, UserVariables>(UserQuery, {
     variables: { name: username },
+    skip: username === "",
   });
 
   if (loading) return <LoadingIndicator />;
+  if (username === "" || !data?.findUser) return <div>No user found!</div>;
 
   const user = data.findUser;
 
-  const isAdmin = () => (Auth.user?.roles ?? []).includes("ADMIN");
   const isUser = () => Auth.user?.name === username;
-  const canEdit = () => isUser() || isAdmin();
 
   const toggleModal = () => setShowDelete(true);
   const handleDelete = (status: boolean): void => {

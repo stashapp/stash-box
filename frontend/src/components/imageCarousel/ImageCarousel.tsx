@@ -11,7 +11,7 @@ interface ImageCarouselProps {
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({
   images,
-  orientation,
+  orientation = "portrait",
 }) => {
   const [activeImage, setActiveImage] = useState(0);
   const sortedImages = sortImageURLs(images, orientation);

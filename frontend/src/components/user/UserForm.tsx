@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
-import Select from "react-select";
+import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import { RoleEnum, UserUpdateInput } from "src/definitions/globalTypes";
 import useForm from "react-hook-form";
@@ -43,6 +43,11 @@ interface UserProps {
   callback: (data: UserData) => void;
 }
 
+interface IOptionType extends OptionTypeBase {
+  value: string;
+  label: string;
+}
+
 const roles = Object.keys(RoleEnum).map((role) => ({
   label: role,
   value: role,
@@ -50,19 +55,19 @@ const roles = Object.keys(RoleEnum).map((role) => ({
 
 const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
   const [userRoles, setUserRoles] = useState(
-    user.roles.map((role: string) => ({
+    (user?.roles ?? []).map((role: string) => ({
       value: role,
       label: role,
     }))
   );
-  const { register, handleSubmit, setValue, errors } = useForm({
+  const { register, handleSubmit, setValue, errors } = useForm<UserFormData>({
     validationSchema: schema,
   });
 
   useEffect(() => {
     register({ name: "roles" });
     setValue("roles", []);
-  }, [register]);
+  }, [register, setValue]);
 
   const onSubmit = (formData: UserFormData) => {
     const userData = {
@@ -76,11 +81,13 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
     callback(userData);
   };
 
-  const onRoleChange = (selectedRoles: { label: string; value: string }[]) => {
-    setUserRoles(selectedRoles);
+  const onRoleChange = (selectedRoles: ValueType<IOptionType>) => {
+    if (!selectedRoles) return;
+    const val = selectedRoles as IOptionType[];
+    setUserRoles(val);
     setValue(
       "roles",
-      selectedRoles.map((role) => role.value)
+      val.map((role) => role.value)
     );
   };
 
@@ -95,7 +102,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
             name="name"
             placeholder="Username"
             ref={register}
-            defaultValue={user.name}
+            defaultValue={user.name ?? ""}
           />
           <div className="invalid-feedback">{errors?.name?.message}</div>
         </Form.Group>
@@ -106,7 +113,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
             type="email"
             placeholder="Email"
             ref={register}
-            defaultValue={user.email}
+            defaultValue={user.email ?? ""}
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </Form.Group>
@@ -117,7 +124,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
             type="password"
             placeholder="Password"
             ref={register}
-            defaultValue={user.password}
+            defaultValue={user.password ?? ""}
           />
           <div className="invalid-feedback">{errors?.password?.message}</div>
         </Form.Group>

@@ -2,13 +2,12 @@ import React, { useState, useContext } from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Card, Tabs, Tab, Table } from "react-bootstrap";
+import { loader } from "graphql.macro";
 
 import AuthContext from "src/AuthContext";
-import SceneQuery from "src/queries/Scene.gql";
-import DeleteScene from "src/mutations/DeleteScene.gql";
 import { Scene } from "src/definitions/Scene";
 import { getImage, getUrlByType } from "src/utils/transforms";
-import { canEdit } from "src/utils/auth";
+import { canEdit, isAdmin } from "src/utils/auth";
 import {
   DeleteSceneMutation,
   DeleteSceneMutationVariables,
@@ -16,6 +15,9 @@ import {
 
 import Modal from "src/components/modal";
 import { GenderIcon, LoadingIndicator } from "src/components/fragments";
+
+const SceneQuery = loader("src/queries/Scene.gql");
+const DeleteScene = loader("src/mutations/DeleteScene.gql");
 
 const SceneComponent: React.FC = () => {
   const { id } = useParams();
@@ -31,6 +33,7 @@ const SceneComponent: React.FC = () => {
   const auth = useContext(AuthContext);
 
   if (loading) return <LoadingIndicator message="Loading scene..." />;
+  if (!data?.findScene) return <div>Scene not found!</div>;
   const scene = data.findScene;
 
   const toggleModal = () => setShowDelete(true);
@@ -70,7 +73,7 @@ const SceneComponent: React.FC = () => {
     <li>
       <a
         href={`/tags/${tag.name}`}
-        title={tag.description}
+        title={tag?.description ?? ""}
         className="badge badge-secondary"
       >
         {tag.name}
@@ -84,7 +87,7 @@ const SceneComponent: React.FC = () => {
       callback={handleDelete}
     />
   );
-  const deleteButton = auth.user.roles.includes("ADMIN") && (
+  const deleteButton = isAdmin(auth.user) && (
     <button
       type="button"
       disabled={showDelete || deleting}
@@ -112,8 +115,15 @@ const SceneComponent: React.FC = () => {
           </div>
           <h2>{scene.title}</h2>
           <h6>
-            <Link to={`/studios/${scene.studio.id}`}>{scene.studio.name}</Link>{" "}
-            • {scene.date}
+            {scene.studio && (
+              <>
+                <Link to={`/studios/${scene.studio.id}`}>
+                  {scene.studio.name}
+                </Link>
+                <span className="mx-1">•</span>
+              </>
+            )}
+            {scene.date}
           </h6>
         </Card.Header>
         <Card.Body className="scene-photo">

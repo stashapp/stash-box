@@ -1,7 +1,13 @@
 import React, { useState, useRef } from "react";
 import Creatable from "react-select/creatable";
+import { ValueType, OptionTypeBase } from "react-select";
 
 import { CloseButton } from "src/components/fragments";
+
+interface IOptionType extends OptionTypeBase {
+  value?: string;
+  label?: string;
+}
 
 interface BodyModificationProps {
   name: string;
@@ -10,7 +16,7 @@ interface BodyModificationProps {
   register: any;
   locationPlaceholder: string;
   descriptionPlaceholder: string;
-  defaultValues?: { location: string; description?: string }[];
+  defaultValues?: { location: string; description?: string | null }[];
 }
 
 const CLASSNAME = "BodyModification";
@@ -26,8 +32,10 @@ const BodyModification: React.FC<BodyModificationProps> = ({
   const [modifications, setModifications] = useState(defaultValues || []);
   const selectRef = useRef(null);
 
-  const handleChange = (newValue: { label: string; value: string }) => {
-    setModifications([...modifications, { location: newValue.value }]);
+  const handleChange = (newValue: ValueType<IOptionType>) => {
+    const val = newValue as IOptionType;
+    if (val?.value)
+      setModifications([...modifications, { location: val.value }]);
   };
 
   const removeMod = (index: number) =>
@@ -55,7 +63,7 @@ const BodyModification: React.FC<BodyModificationProps> = ({
             className="form-control"
             name={inputName}
             placeholder={descriptionPlaceholder}
-            defaultValue={mod.description}
+            defaultValue={mod.description ?? ""}
             ref={register}
           />
         </label>
@@ -69,7 +77,6 @@ const BodyModification: React.FC<BodyModificationProps> = ({
     <div className={CLASSNAME}>
       <h6>{name}</h6>
       {modificationList}
-      <label htmlFor={name} className={`${CLASSNAME}-select`}>
         <Creatable
           classNamePrefix="react-select"
           value={null}
@@ -79,7 +86,6 @@ const BodyModification: React.FC<BodyModificationProps> = ({
           placeholder={locationPlaceholder}
           onChange={handleChange}
         />
-      </label>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import useForm from "react-hook-form";
-import Select from "react-select";
+import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
@@ -24,6 +24,11 @@ import getFuzzyDate from "src/utils/date";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en");
+
+interface IOptionType extends OptionTypeBase {
+  value?: string;
+  label?: string;
+}
 
 type OptionEnum = {
   value: string;
@@ -187,7 +192,9 @@ interface PerformerProps {
 }
 
 const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
-  const { register, handleSubmit, setValue, errors } = useForm({
+  const { register, handleSubmit, setValue, errors } = useForm<
+    PerformerFormData
+  >({
     validationSchema: schema,
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
@@ -195,12 +202,15 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
   useEffect(() => {
     register({ name: "country" });
     setValue("country", performer.country);
-  }, [register]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [register, setValue]);
 
   const onGenderChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setGender(e.currentTarget.value);
-  const onCountryChange = (selectedOption: { label: string; value: string }) =>
-    setValue("country", selectedOption.value);
+  const onCountryChange = (selectedOption: ValueType<IOptionType>) => {
+    const country = (selectedOption as IOptionType).value;
+    if (country) setValue("country", country);
+  };
 
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
@@ -233,14 +243,18 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
       breast_type: BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum],
     };
 
-    if (data.cupSize !== null) {
-      const bandSize = Number.parseInt(data.cupSize.match(/^\d+/)[0], 10);
+    if (data.cupSize != null) {
+      const band = data.cupSize.match(/^\d+/)?.[0];
+      const bandSize = band ? Number.parseInt(band[0], 10) : null;
+      const cup = bandSize
+        ? data.cupSize.replace(bandSize.toString(), "")
+        : null;
+      const cupSize = cup
+        ? cup.match(/^[a-zA-Z]+/)?.[0]?.toUpperCase() ?? null
+        : null;
       performerData.measurements = {
         band_size: bandSize,
-        cup_size: data.cupSize
-          .replace(bandSize.toString(), "")
-          .match(/^[a-zA-Z]+/)[0]
-          .toUpperCase(),
+        cup_size: cupSize,
         waist: data.waistSize,
         hip: data.hipSize,
       };
@@ -305,7 +319,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 type="text"
                 placeholder="Disambiguation"
                 name="disambiguation"
-                defaultValue={performer.disambiguation}
+                defaultValue={performer?.disambiguation ?? ""}
                 ref={register}
               />
               <div className="invalid-feedback">
@@ -335,7 +349,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
               <select
                 className={cx("form-control", { "is-invalid": errors.gender })}
                 name="gender"
-                defaultValue={performer.gender}
+                defaultValue={performer?.gender ?? ""}
                 onChange={onGenderChange}
                 ref={register}
               >
@@ -352,7 +366,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 type="text"
                 placeholder="YYYY-MM-DD"
                 name="birthdate"
-                defaultValue={getFuzzyDate(performer.birthdate)}
+                defaultValue={
+                  performer.birthdate ? getFuzzyDate(performer.birthdate) : ""
+                }
                 ref={register}
               />
               <div className="invalid-feedback">
@@ -368,7 +384,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 type="year"
                 placeholder="Year"
                 name="career_start_year"
-                defaultValue={performer.career_start_year}
+                defaultValue={performer?.career_start_year ?? ""}
                 ref={register}
               />
               <div className="invalid-feedback">
@@ -384,7 +400,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 type="year"
                 placeholder="Year"
                 name="career_end_year"
-                defaultValue={performer.career_end_year}
+                defaultValue={performer?.career_end_year ?? ""}
                 ref={register}
               />
               <div className="invalid-feedback">
@@ -404,7 +420,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 type="number"
                 placeholder="Height"
                 name="height"
-                defaultValue={performer.height}
+                defaultValue={performer?.height ?? ""}
                 ref={register}
               />
               <div className="invalid-feedback">{errors?.height?.message}</div>
@@ -432,9 +448,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 type="number"
                 placeholder="Waist"
                 name="waistSize"
-                defaultValue={
-                  performer.measurements && performer.measurements.waist
-                }
+                defaultValue={performer.measurements.waist ?? ""}
                 ref={register}
               />
               <div className="invalid-feedback">
@@ -449,9 +463,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 type="number"
                 placeholder="Hip"
                 name="hipSize"
-                defaultValue={
-                  performer.measurements && performer.measurements.hip
-                }
+                defaultValue={performer.measurements.hip ?? ""}
                 ref={register}
               />
               <div className="invalid-feedback">{errors?.hipSize?.message}</div>
@@ -465,7 +477,11 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                     "is-invalid": errors.boobJob,
                   })}
                   name="boobJob"
-                  defaultValue={getEnumValue(BREAST, performer.breast_type)}
+                  defaultValue={
+                    performer.breast_type
+                      ? getEnumValue(BREAST, performer.breast_type)
+                      : ""
+                  }
                   ref={register}
                 >
                   {enumOptions(BREAST)}
@@ -501,7 +517,11 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                   "is-invalid": errors.ethnicity,
                 })}
                 name="ethnicity"
-                defaultValue={getEnumValue(ETHNICITY, performer.ethnicity)}
+                defaultValue={
+                  performer.ethnicity
+                    ? getEnumValue(ETHNICITY, performer.ethnicity)
+                    : ""
+                }
                 ref={register}
               >
                 {enumOptions(ETHNICITY)}
@@ -520,7 +540,11 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                   "is-invalid": errors.eye_color,
                 })}
                 name="eye_color"
-                defaultValue={getEnumValue(EYE, performer.eye_color)}
+                defaultValue={
+                  performer.eye_color
+                    ? getEnumValue(EYE, performer.eye_color)
+                    : ""
+                }
                 ref={register}
               >
                 {enumOptions(EYE)}
@@ -537,7 +561,11 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                   "is-invalid": errors.hair_color,
                 })}
                 name="hair_color"
-                defaultValue={getEnumValue(HAIR, performer.hair_color)}
+                defaultValue={
+                  performer.hair_color
+                    ? getEnumValue(HAIR, performer.hair_color)
+                    : ""
+                }
                 ref={register}
               >
                 {enumOptions(HAIR)}
@@ -556,7 +584,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 locationPlaceholder="Tattoo location..."
                 descriptionPlaceholder="Tattoo description..."
                 options={["Neck", "Foot"]}
-                defaultValues={performer.tattoos}
+                defaultValues={performer?.tattoos ?? []}
               />
             </div>
 
@@ -567,7 +595,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
                 locationPlaceholder="Piercing location..."
                 descriptionPlaceholder="Piercing description..."
                 options={["Tongue", "Clitoris"]}
-                defaultValues={performer.piercings}
+                defaultValues={performer?.piercings ?? []}
               />
             </div>
           </div>

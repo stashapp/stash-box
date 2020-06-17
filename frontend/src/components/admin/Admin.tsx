@@ -2,18 +2,20 @@ import React from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Button, Table } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
+import { loader } from "graphql.macro";
 
-import UsersQuery from "src/queries/Users.gql";
 import { Users } from "src/definitions/Users";
 
 import { Icon, LoadingIndicator } from "src/components/fragments";
+
+const UsersQuery = loader("src/queries/Users.gql");
 
 const AdminComponent: React.FC = () => {
   const { loading, data } = useQuery<Users>(UsersQuery);
 
   if (loading) return <LoadingIndicator />;
 
-  const users = data.queryUsers.users.map((user) => (
+  const users = (data?.queryUsers?.users ?? []).map((user) => (
     <tr key={user.id}>
       <td>
         <LinkContainer to={`/users/${user.name}/edit`}>
@@ -28,9 +30,14 @@ const AdminComponent: React.FC = () => {
         </LinkContainer>
       </td>
       <td>{user.email}</td>
-      <td>{user.roles.join(", ")}</td>
+      <td>{user?.roles?.join(", ") ?? ""}</td>
       <td className="apikey">
-        <textarea className="w-100" rows={1} disabled value={user.api_key} />
+        <textarea
+          className="w-100"
+          rows={1}
+          disabled
+          value={user?.api_key ?? ""}
+        />
       </td>
     </tr>
   ));

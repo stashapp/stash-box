@@ -1,13 +1,13 @@
 import React from "react";
 import { useMutation } from "@apollo/react-hooks";
 import { useHistory } from "react-router-dom";
+import { loader } from "graphql.macro";
 
 import { Scene_findScene as Scene } from "src/definitions/Scene";
 import {
   AddSceneMutation as AddScene,
   AddSceneMutationVariables,
 } from "src/definitions/AddSceneMutation";
-import AddSceneMutation from "src/mutations/AddScene.gql";
 import {
   SceneUpdateInput,
   SceneCreateInput,
@@ -15,13 +15,16 @@ import {
 
 import SceneForm from "src/components/sceneForm";
 
+const AddSceneMutation = loader("src/mutations/AddScene.gql");
+
 const SceneAdd: React.FC = () => {
   const history = useHistory();
   const [insertScene] = useMutation<AddScene, AddSceneMutationVariables>(
     AddSceneMutation,
     {
       onCompleted: (data) => {
-        history.push(`/scenes/${data.sceneCreate.id}`);
+        if (data?.sceneCreate?.id)
+          history.push(`/scenes/${data.sceneCreate.id}`);
       },
     }
   );
@@ -40,9 +43,12 @@ const SceneAdd: React.FC = () => {
     date: null,
     title: null,
     details: null,
-    urls: null,
+    urls: [],
     studio: null,
     tag_ids: null,
+    director: null,
+    images: [],
+    tags: [],
     fingerprints: [],
     performers: [],
   } as Scene;

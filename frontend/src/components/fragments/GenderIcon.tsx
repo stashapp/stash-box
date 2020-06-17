@@ -8,7 +8,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface IconProps {
-  gender: string;
+  gender?: string | null;
 }
 
 const GenderIcon: React.FC<IconProps> = ({ gender }) => {

@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/react-hooks";
 import { useHistory } from "react-router-dom";
+import { loader } from "graphql.macro";
 
 import {
   AddUserMutation,
   AddUserMutationVariables,
 } from "src/definitions/AddUserMutation";
-import AddUser from "src/mutations/AddUser.gql";
 
 import UserForm, { UserData } from "./UserForm";
+
+const AddUser = loader("src/mutations/AddUser.gql");
 
 const AddUserComponent: React.FC = () => {
   const [queryError, setQueryError] = useState();

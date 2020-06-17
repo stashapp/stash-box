@@ -117,7 +117,7 @@ func redirect(w http.ResponseWriter, req *http.Request) {
 }
 
 func Start() {
-	uiBox = packr.New("Setup UI Box", "../../frontend/dist")
+	uiBox = packr.New("Setup UI Box", "../../frontend/build")
 
 	r := chi.NewRouter()
 

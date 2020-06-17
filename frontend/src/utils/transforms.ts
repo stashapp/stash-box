@@ -12,7 +12,7 @@ export const getBraSize = (measurements: MeasurementsInput) =>
   measurements.band_size === null ||
   measurements.cup_size === null
     ? ""
-    : measurements.band_size + measurements.cup_size;
+    : (measurements.band_size ?? "??") + (measurements.cup_size ?? "?");
 
 export interface URL {
   url: string;
@@ -22,8 +22,8 @@ export interface URL {
 export interface Image {
   url: string;
   id: string;
-  width?: number;
-  height?: number;
+  width: number | null;
+  height: number | null;
 }
 
 export const sortImageURLs = (
@@ -35,16 +35,20 @@ export const sortImageURLs = (
       ...u,
       aspect:
         orientation === "portrait"
-          ? u.height / u.width > 1
-          : u.width / u.height > 1,
+          ? (u?.height ?? 1) / (u?.width ?? 1) > 1
+          : (u?.width ?? 1) / (u?.height ?? 1) > 1,
     }))
     .sort((a, b) => {
       if (a.aspect > b.aspect) return -1;
       if (a.aspect < b.aspect) return 1;
-      if (orientation === "portrait" && a.height > b.height) return -1;
-      if (orientation === "portrait" && a.height < b.height) return 1;
-      if (orientation === "landscape" && a.width > b.width) return -1;
-      if (orientation === "landscape" && a.width < b.width) return 1;
+      if (orientation === "portrait" && (a.height ?? 1) > (b.height ?? 1))
+        return -1;
+      if (orientation === "portrait" && (a.height ?? 1) < (b.height ?? 1))
+        return 1;
+      if (orientation === "landscape" && (a.width ?? 1) > (b.width ?? 1))
+        return -1;
+      if (orientation === "landscape" && (a.width ?? 1) < (b.width ?? 1))
+        return 1;
       return 0;
     });
 
@@ -56,13 +60,13 @@ export const getImage = (
   return images?.[0]?.url ?? "";
 };
 
-export const getUrlByType = (urls: URL[], type: string) =>
-  (urls && (urls.find((url) => url.type === type) || {}).url) || "";
+export const getUrlByType = (urls: (URL | null)[], type: string) =>
+  (urls && (urls.find((url) => url?.type === type) || {}).url) || "";
 
 export const getBodyModification = (
-  bodyMod: { location: string; description?: string }[]
+  bodyMod?: { location: string; description?: string | null }[]
 ) =>
-  (bodyMod || [])
+  (bodyMod ?? [])
     .map(
       (mod) => mod.location + (mod.description ? ` (${mod.description})` : "")
     )
