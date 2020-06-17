@@ -202,10 +202,6 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 			if t.Valid {
 				addPlaceholder(key)
 			}
-		case sql.NullInt32:
-			if t.Valid {
-				addPlaceholder(key)
-			}
 		case uuid.NullUUID:
 			if t.Valid {
 				addPlaceholder(key)
@@ -267,10 +263,6 @@ func sqlGenKeys(i interface{}, partial bool) string {
 				addKey(key)
 			}
 		case sql.NullInt64:
-			if partial || t.Valid {
-				addKey(key)
-			}
-		case sql.NullInt32:
 			if partial || t.Valid {
 				addKey(key)
 			}

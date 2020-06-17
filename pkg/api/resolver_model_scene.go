@@ -18,7 +18,7 @@ func (r *sceneResolver) Details(ctx context.Context, obj *models.Scene) (*string
 	return resolveNullString(obj.Details)
 }
 func (r *sceneResolver) Duration(ctx context.Context, obj *models.Scene) (*int, error) {
-	return resolveNullInt32(obj.Duration)
+	return resolveNullInt64(obj.Duration)
 }
 func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.Director)

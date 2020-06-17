@@ -55,11 +55,3 @@ func resolveNullInt64(value sql.NullInt64) (*int, error) {
 	}
 	return nil, nil
 }
-
-func resolveNullInt32(value sql.NullInt32) (*int, error) {
-	if value.Valid {
-		result := int(value.Int32)
-		return &result, nil
-	}
-	return nil, nil
-}

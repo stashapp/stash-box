@@ -35,7 +35,7 @@ type Scene struct {
 	StudioID  uuid.NullUUID   `db:"studio_id,omitempty" json:"studio_id"`
 	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-	Duration  sql.NullInt32   `db:"duration" json:"duration"`
+	Duration  sql.NullInt64   `db:"duration" json:"duration"`
 	Director  sql.NullString  `db:"director" json:"director"`
 }
 
@@ -71,8 +71,8 @@ type SceneUrl struct {
 	URL     string        `db:"url" json:"url"`
 	Type    string        `db:"type" json:"type"`
 	ImageID uuid.NullUUID `db:"id" json:"image_id"`
-	Height  sql.NullInt32 `db:"height" json:"height"`
-	Width   sql.NullInt32 `db:"width" json:"width"`
+	Height  sql.NullInt64 `db:"height" json:"height"`
+	Width   sql.NullInt64 `db:"width" json:"width"`
 }
 
 func (p *SceneUrl) ToURL() URL {
