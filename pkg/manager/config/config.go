@@ -60,7 +60,7 @@ func GetSessionStoreKey() []byte {
 }
 
 func GetHTTPUpgrade() bool {
-    return viper.GetBool(HTTPUpgrade)
+	return viper.GetBool(HTTPUpgrade)
 }
 
 func GetIsProduction() bool {

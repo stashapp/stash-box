@@ -19,10 +19,10 @@ var (
 )
 
 type Image struct {
-	ID          uuid.UUID       `db:"id" json:"id"`
-	URL         string          `db:"url" json:"url"`
-	Width       sql.NullInt64   `db:"width" json:"width"`
-	Height      sql.NullInt64   `db:"height" json:"height"`
+	ID     uuid.UUID     `db:"id" json:"id"`
+	URL    string        `db:"url" json:"url"`
+	Width  sql.NullInt64 `db:"width" json:"width"`
+	Height sql.NullInt64 `db:"height" json:"height"`
 }
 
 func (Image) GetTable() database.Table {

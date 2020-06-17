@@ -110,10 +110,10 @@ func insertObject(tx *sqlx.Tx, table string, object interface{}, ignoreConflicts
 	ensureTx(tx)
 	fields, values := sqlGenKeysCreate(object)
 
-    conflictHandling :=  ""
-    if ignoreConflicts {
-        conflictHandling = "ON CONFLICT DO NOTHING"
-    }
+	conflictHandling := ""
+	if ignoreConflicts {
+		conflictHandling = "ON CONFLICT DO NOTHING"
+	}
 
 	_, err := tx.NamedExec(
 		`INSERT INTO `+table+` (`+fields+`)
@@ -184,8 +184,8 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 			if t != uuid.Nil {
 				addPlaceholder(key)
 			}
-        case bool:
-            addPlaceholder(key)
+		case bool:
+			addPlaceholder(key)
 		case optionalValue:
 			if t.IsValid() {
 				addPlaceholder(key)

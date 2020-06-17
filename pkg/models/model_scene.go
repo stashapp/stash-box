@@ -60,10 +60,10 @@ func (p *Scenes) Add(o interface{}) {
 }
 
 type SceneFingerprint struct {
-	SceneID   uuid.UUID     `db:"scene_id" json:"scene_id"`
-	Hash      string        `db:"hash" json:"hash"`
-	Algorithm string        `db:"algorithm" json:"algorithm"`
-    Duration  int           `db:"duration" json:"duration"`
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
+	Hash      string    `db:"hash" json:"hash"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
+	Duration  int       `db:"duration" json:"duration"`
 }
 
 type SceneUrl struct {
@@ -76,11 +76,11 @@ type SceneUrl struct {
 }
 
 func (p *SceneUrl) ToURL() URL {
-    url := URL{
+	url := URL{
 		URL:  p.URL,
 		Type: p.Type,
 	}
-    return url
+	return url
 }
 
 type SceneUrls []*SceneUrl
@@ -113,7 +113,7 @@ func (p SceneFingerprint) ToFingerprint() *Fingerprint {
 	return &Fingerprint{
 		Algorithm: FingerprintAlgorithm(p.Algorithm),
 		Hash:      p.Hash,
-        Duration:  p.Duration,
+		Duration:  p.Duration,
 	}
 }
 
@@ -146,7 +146,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput
 			SceneID:   sceneID,
 			Hash:      fingerprint.Hash,
 			Algorithm: fingerprint.Algorithm.String(),
-            Duration:  fingerprint.Duration,
+			Duration:  fingerprint.Duration,
 		})
 	}
 
@@ -173,7 +173,7 @@ func CreateSceneImages(sceneID uuid.UUID, imageIds []string) SceneImages {
 		imageID := uuid.FromStringOrNil(iid)
 		imageJoin := &SceneImage{
 			SceneID: sceneID,
-			ImageID:   imageID,
+			ImageID: imageID,
 		}
 		imageJoins = append(imageJoins, imageJoin)
 	}

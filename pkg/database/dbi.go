@@ -22,7 +22,7 @@ type DBI interface {
 	// InsertJoins inserts multiple join objects into the provided join table.
 	InsertJoins(tableJoin TableJoin, joins Joins) error
 
-    // InsertJoinsWithoutConflict inserts multiple join objects and doesn't fail on id conflicts
+	// InsertJoinsWithoutConflict inserts multiple join objects and doesn't fail on id conflicts
 	InsertJoinsWithoutConflict(tableJoin TableJoin, joins Joins) error
 
 	// Update updates a database row based on the id and values of the provided

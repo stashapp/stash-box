@@ -114,20 +114,20 @@ func CreatePerformerAliases(performerId uuid.UUID, aliases []string) PerformerAl
 }
 
 type PerformerUrl struct {
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	URL         string    `db:"url" json:"url"`
-	Type        string    `db:"type" json:"type"`
-	ImageID uuid.NullUUID `db:"id" json:"image_id"`
-	Height  sql.NullInt64 `db:"height" json:"height"`
-	Width   sql.NullInt64 `db:"width" json:"width"`
+	PerformerID uuid.UUID     `db:"performer_id" json:"performer_id"`
+	URL         string        `db:"url" json:"url"`
+	Type        string        `db:"type" json:"type"`
+	ImageID     uuid.NullUUID `db:"id" json:"image_id"`
+	Height      sql.NullInt64 `db:"height" json:"height"`
+	Width       sql.NullInt64 `db:"width" json:"width"`
 }
 
 func (p *PerformerUrl) ToURL() URL {
-    url := URL{
+	url := URL{
 		URL:  p.URL,
 		Type: p.Type,
 	}
-    return url
+	return url
 }
 
 type PerformerUrls []*PerformerUrl
@@ -300,7 +300,7 @@ func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformerIm
 		imageID := uuid.FromStringOrNil(iid)
 		imageJoin := &PerformerImage{
 			PerformerID: performerID,
-			ImageID:   imageID,
+			ImageID:     imageID,
 		}
 		imageJoins = append(imageJoins, imageJoin)
 	}

@@ -25,8 +25,8 @@ func (r *mutationResolver) ImageCreate(ctx context.Context, input models.ImageCr
 	}
 
 	// Populate a new performer from the input
-	newImage := models.Image {
-		ID:        UUID,
+	newImage := models.Image{
+		ID: UUID,
 	}
 
 	newImage.CopyFromCreateInput(input)

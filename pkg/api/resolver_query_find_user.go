@@ -57,9 +57,8 @@ func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 		return nil, ErrUnauthorized
 	}
 
-    return currentUser, nil
+	return currentUser, nil
 }
-
 
 func removeSensitiveUserDetails(ctx context.Context, users models.Users) {
 	// don't need to remove details if we're admin

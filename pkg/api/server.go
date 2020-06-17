@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-    "path"
+	"path"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -109,11 +109,11 @@ func authenticateHandler() func(http.Handler) http.Handler {
 }
 
 func redirect(w http.ResponseWriter, req *http.Request) {
-    target := "https://" + req.Host + req.URL.Path
-    if len(req.URL.RawQuery) > 0 {
-        target += "?" + req.URL.RawQuery
-    }
-    http.Redirect(w, req, target, http.StatusPermanentRedirect)
+	target := "https://" + req.Host + req.URL.Path
+	if len(req.URL.RawQuery) > 0 {
+		target += "?" + req.URL.RawQuery
+	}
+	http.Redirect(w, req, target, http.StatusPermanentRedirect)
 }
 
 func Start() {
@@ -150,20 +150,20 @@ func Start() {
 	r.Handle("/graphql", gqlHandler)
 
 	if !config.GetIsProduction() {
-        r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
-    }
+		r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+	}
 
 	// session handlers
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method == http.MethodGet {
+		if r.Method == http.MethodGet {
 			data, _ := uiBox.Find("index.html")
 			_, _ = w.Write(data)
-            return
-        }
+			return
+		}
 
-        handleLogin(w, r)
-        return
-    })
+		handleLogin(w, r)
+		return
+	})
 	r.HandleFunc("/logout", handleLogout)
 
 	// Serve the web app
@@ -189,9 +189,9 @@ func Start() {
 			TLSConfig: tlsConfig,
 		}
 
-        if config.GetHTTPUpgrade() {
-            go http.ListenAndServe(config.GetHost() + ":80", http.HandlerFunc(redirect))
-        }
+		if config.GetHTTPUpgrade() {
+			go http.ListenAndServe(config.GetHost()+":80", http.HandlerFunc(redirect))
+		}
 
 		go func() {
 			printVersion()

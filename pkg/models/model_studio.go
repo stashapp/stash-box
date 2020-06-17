@@ -60,19 +60,19 @@ type StudioUrl struct {
 }
 
 func (p *StudioUrl) ToURL() URL {
-    url := URL{
+	url := URL{
 		URL:  p.URL,
 		Type: p.Type,
 	}
-    if p.ImageID.Valid && p.Height.Valid && p.Width.Valid {
-        imageID := p.ImageID.UUID.String()
-        height := int(p.Height.Int64)
-        width := int(p.Width.Int64)
-        url.ImageID = &imageID
-        url.Height = &height
-        url.Width = &width
-    }
-    return url
+	if p.ImageID.Valid && p.Height.Valid && p.Width.Valid {
+		imageID := p.ImageID.UUID.String()
+		height := int(p.Height.Int64)
+		width := int(p.Width.Int64)
+		url.ImageID = &imageID
+		url.Height = &height
+		url.Width = &width
+	}
+	return url
 }
 
 type StudioUrls []*StudioUrl
@@ -132,7 +132,7 @@ func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudioImages {
 		imageID := uuid.FromStringOrNil(iid)
 		imageJoin := &StudioImage{
 			StudioID: studioID,
-			ImageID:   imageID,
+			ImageID:  imageID,
 		}
 		imageJoins = append(imageJoins, imageJoin)
 	}

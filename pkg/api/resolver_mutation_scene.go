@@ -180,17 +180,17 @@ func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.F
 
 	if err != nil {
 		return false, err
-    }
+	}
 
 	sceneFingerprint := models.CreateSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
-    if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
-        _ = tx.Rollback()
-        return false, err
-    }
+	if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
 
 	if err := tx.Commit(); err != nil {
 		return false, err
 	}
 
-    return true, nil
+	return true, nil
 }

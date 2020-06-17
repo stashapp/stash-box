@@ -76,7 +76,7 @@ func (p *ScenesTags) Add(o interface{}) {
 
 type SceneImage struct {
 	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
-	ImageID   uuid.UUID `db:"image_id" json:"image_id"`
+	ImageID uuid.UUID `db:"image_id" json:"image_id"`
 }
 
 type SceneImages []*SceneImage
@@ -93,7 +93,7 @@ func (p *SceneImages) Add(o interface{}) {
 
 type PerformerImage struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	ImageID   uuid.UUID `db:"image_id" json:"image_id"`
+	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
 }
 
 type PerformerImages []*PerformerImage
@@ -110,7 +110,7 @@ func (p *PerformerImages) Add(o interface{}) {
 
 type StudioImage struct {
 	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
-	ImageID   uuid.UUID `db:"image_id" json:"image_id"`
+	ImageID  uuid.UUID `db:"image_id" json:"image_id"`
 }
 
 type StudioImages []*StudioImage
