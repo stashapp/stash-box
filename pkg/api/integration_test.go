@@ -282,6 +282,7 @@ func (s *testRunner) generateSceneFingerprint() *models.FingerprintInput {
 	return &models.FingerprintInput{
 		Algorithm: "MD5",
 		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
+        Duration:  1234,
 	}
 }
 

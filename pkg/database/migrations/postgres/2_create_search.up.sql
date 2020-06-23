@@ -22,7 +22,7 @@ CREATE INDEX ts_idx ON scene_search USING gist (
 	)
 );
 
-CREATE FUNCTION update_performers() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION update_performers() RETURNS TRIGGER AS $$
 BEGIN
 IF (NEW.name != OLD.name) THEN
 UPDATE scene_search SET performer_names = SUBQUERY.performer_names
@@ -40,9 +40,10 @@ RETURN NULL;
 END;
 $$ LANGUAGE plpgsql; --The trigger used to update a table.
 
+DROP TRIGGER IF EXISTS update_performer_search_name ON performers;
 CREATE TRIGGER update_performer_search_name AFTER UPDATE ON performers FOR EACH ROW EXECUTE PROCEDURE update_performers();
 
-CREATE FUNCTION update_scene() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION update_scene() RETURNS TRIGGER AS $$
 BEGIN
 IF (NEW.title != OLD.title OR New.date != OLD.date) THEN
 UPDATE scene_search
@@ -53,9 +54,10 @@ RETURN NULL;
 END;
 $$ LANGUAGE plpgsql; --The trigger used to update a table.
 
+DROP TRIGGER IF EXISTS update_scene_search_title ON scenes;
 CREATE TRIGGER update_scene_search_title AFTER UPDATE ON scenes FOR EACH ROW EXECUTE PROCEDURE update_scene();
 
-CREATE FUNCTION insert_scene() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION insert_scene() RETURNS TRIGGER AS $$
 BEGIN
 INSERT INTO scene_search (scene_id, scene_title, scene_date, studio_name)
 SELECT
@@ -70,9 +72,10 @@ RETURN NULL;
 END;
 $$ LANGUAGE plpgsql; --The trigger used to update a table.
 
+DROP TRIGGER IF EXISTS insert_scene_search ON scenes;
 CREATE TRIGGER insert_scene_search AFTER INSERT ON scenes FOR EACH ROW EXECUTE PROCEDURE insert_scene();
 
-CREATE FUNCTION update_studio() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION update_studio() RETURNS TRIGGER AS $$
 BEGIN
 IF (NEW.name != OLD.name) THEN
 UPDATE scene_search SET studio_name = SUBQUERY.name
@@ -92,9 +95,10 @@ RETURN NULL;
 END;
 $$ LANGUAGE plpgsql; --The trigger used to update a table.
 
+DROP TRIGGER IF EXISTS update_studio_search_name ON studios;
 CREATE TRIGGER update_studio_search_name AFTER UPDATE ON studios FOR EACH ROW EXECUTE PROCEDURE update_studio();
 
-CREATE FUNCTION update_scene_performers() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION update_scene_performers() RETURNS TRIGGER AS $$
 BEGIN
 UPDATE scene_search SET performer_names = SUBQUERY.performer_names
 FROM (
@@ -110,4 +114,5 @@ RETURN NULL;
 END;
 $$ LANGUAGE plpgsql; --The trigger used to update a table.
 
+DROP TRIGGER IF EXISTS update_scene_performers_search ON scene_performers;
 CREATE TRIGGER update_scene_performers_search AFTER INSERT OR UPDATE OR DELETE ON scene_performers FOR EACH ROW EXECUTE PROCEDURE update_scene_performers();

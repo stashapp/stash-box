@@ -207,7 +207,7 @@ func (s *sceneTestRunner) testFindSceneByFingerprint() {
 	}
 
 	fingerprints, err := s.resolver.Scene().Fingerprints(s.ctx, createdScene)
-	fingerprint := models.FingerprintInput{
+	fingerprint := models.FingerprintQueryInput{
 		Algorithm: fingerprints[0].Algorithm,
 		Hash:      fingerprints[0].Hash,
 	}
