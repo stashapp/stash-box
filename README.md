@@ -26,7 +26,7 @@ Before building the binary the frontend project needs to be built.
 
 Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stashdb-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
 
-The database must be created and available before rerunning stash-box. The schema will be created within the database if it is not already present.
+The database must be created and available, and `CREATE EXTENSION pg_trgm;` needs to be run by a superuser in the database before rerunning stash-box. The schema will be created within the database if it is not already present. 
 
 The `sslmode` parameter is documented in the [pq documentation](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default value is `require`.
 
