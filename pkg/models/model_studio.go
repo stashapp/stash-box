@@ -50,9 +50,9 @@ func (p *Studios) Add(o interface{}) {
 }
 
 type StudioUrl struct {
-	StudioID uuid.UUID     `db:"studio_id" json:"studio_id"`
-	URL      string        `db:"url" json:"url"`
-	Type     string        `db:"type" json:"type"`
+	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+	URL      string    `db:"url" json:"url"`
+	Type     string    `db:"type" json:"type"`
 }
 
 func (p *StudioUrl) ToURL() URL {
