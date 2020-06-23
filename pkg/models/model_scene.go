@@ -67,9 +67,9 @@ type SceneFingerprint struct {
 }
 
 type SceneUrl struct {
-	SceneID uuid.UUID     `db:"scene_id" json:"scene_id"`
-	URL     string        `db:"url" json:"url"`
-	Type    string        `db:"type" json:"type"`
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	URL     string    `db:"url" json:"url"`
+	Type    string    `db:"type" json:"type"`
 }
 
 func (p *SceneUrl) ToURL() URL {
