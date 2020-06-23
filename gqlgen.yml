@@ -26,3 +26,6 @@ models:
     model: github.com/stashapp/stashdb/pkg/models.User
   Image:
     model: github.com/stashapp/stashdb/pkg/models.Image
+    fields:
+      url:
+        resolver: true

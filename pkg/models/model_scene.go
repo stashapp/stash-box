@@ -70,9 +70,6 @@ type SceneUrl struct {
 	SceneID uuid.UUID     `db:"scene_id" json:"scene_id"`
 	URL     string        `db:"url" json:"url"`
 	Type    string        `db:"type" json:"type"`
-	ImageID uuid.NullUUID `db:"id" json:"image_id"`
-	Height  sql.NullInt64 `db:"height" json:"height"`
-	Width   sql.NullInt64 `db:"width" json:"width"`
 }
 
 func (p *SceneUrl) ToURL() URL {
