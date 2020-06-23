@@ -37,6 +37,7 @@ export interface UpdateSceneMutation_sceneUpdate_performers {
 export interface UpdateSceneMutation_sceneUpdate_fingerprints {
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface UpdateSceneMutation_sceneUpdate_tags {

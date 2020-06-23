@@ -18,7 +18,6 @@ clean:
 .PHONY: generate
 generate:
 	go generate
-	packr2
 
 .PHONY: test
 test: 

@@ -21,10 +21,16 @@ const TagQuery = loader("src/queries/Tag.gql");
 const TagComponent: React.FC = () => {
   const { name } = useParams();
   const { page, setPage } = usePagination();
-  const { data: tag, loading } = useQuery<Tag, TagVariables>(TagQuery, {
-    variables: { name },
-  });
-  const { data } = useQuery<Scenes, ScenesVariables>(ScenesQuery, {
+  const { data: tag, loading: loadingTag } = useQuery<Tag, TagVariables>(
+    TagQuery,
+    {
+      variables: { name },
+    }
+  );
+  const { data: sceneData, loading: loadingScenes } = useQuery<
+    Scenes,
+    ScenesVariables
+  >(ScenesQuery, {
     variables: {
       filter: {
         page,
@@ -42,13 +48,15 @@ const TagComponent: React.FC = () => {
     skip: !tag?.findTag?.id,
   });
 
-  if (!loading) return <LoadingIndicator message="Loading scenes..." />;
+  if (loadingTag || loadingScenes)
+    return <LoadingIndicator message="Loading..." />;
 
-  if (!tag?.findTag?.id || !data) return <div>Tag not found!</div>;
+  if (!tag?.findTag?.id) return <div>Tag not found!</div>;
+  if (!sceneData?.queryScenes) return <div>Scene data not found!</div>;
 
-  const totalPages = Math.ceil(data.queryScenes.count / 20);
+  const totalPages = Math.ceil(sceneData.queryScenes.count / 20);
 
-  const scenes = data.queryScenes.scenes.map((scene) => (
+  const scenes = sceneData.queryScenes.scenes.map((scene) => (
     <SceneCard key={scene.id} performance={scene} />
   ));
 
@@ -56,7 +64,7 @@ const TagComponent: React.FC = () => {
     <>
       <div className="row">
         <h3 className="col-4">
-          Scenes for tag <em>{tag.findTag.description}</em>
+          Scenes for tag <em>{tag.findTag.name}</em>
         </h3>
         <Pagination onClick={setPage} pages={totalPages} active={page} />
       </div>

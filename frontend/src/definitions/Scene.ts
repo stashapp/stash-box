@@ -44,6 +44,7 @@ export interface Scene_findScene_performers {
 export interface Scene_findScene_fingerprints {
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface Scene_findScene_tags {

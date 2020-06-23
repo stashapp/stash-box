@@ -96,8 +96,11 @@ const Main: React.FC = ({ children }) => {
           <NavLink to="/scenes" className="nav-link">
             Scenes
           </NavLink>
-          <NavLink to="/studios" className="nav-link col-1">
+          <NavLink to="/studios" className="nav-link">
             Studios
+          </NavLink>
+          <NavLink to="/tags" className="nav-link">
+            Tags
           </NavLink>
         </Nav>
         <Nav className="align-items-center">

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useMutation } from "@apollo/react-hooks";
 import { Link, useHistory } from "react-router-dom";
-import { Card, Table } from "react-bootstrap";
+import { Button, Card, Table } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import AuthContext from "src/AuthContext";
@@ -45,16 +45,6 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
       callback={handleDelete}
     />
   );
-  const deleteButton = isAdmin(auth.user) && (
-    <button
-      type="button"
-      disabled={showDelete || deleting}
-      className="btn btn-danger"
-      onClick={toggleModal}
-    >
-      Delete
-    </button>
-  );
 
   return (
     <>
@@ -66,12 +56,19 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
               <div className="float-right">
                 {canEdit(auth?.user) && (
                   <Link to={`${performer.id}/edit`}>
-                    <button type="button" className="btn btn-secondary">
-                      Edit
-                    </button>
+                    <Button variant="secondary">Edit</Button>
                   </Link>
                 )}
-                {deleteButton}
+                {isAdmin(auth.user) && (
+                  <Button
+                    variant="danger"
+                    disabled={showDelete || deleting}
+                    className="ml-2"
+                    onClick={toggleModal}
+                  >
+                    Delete
+                  </Button>
+                )}
               </div>
               <h2>
                 <GenderIcon gender={performer?.gender} />

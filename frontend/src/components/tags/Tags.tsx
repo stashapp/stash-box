@@ -15,7 +15,7 @@ const TagsComponent: React.FC = () => {
     variables: { filter: { per_page: 10000, sort: "name", direction: "ASC" } },
   });
 
-  if (loading) return <LoadingIndicator message="Loading scenes..." />;
+  if (loading) return <LoadingIndicator message="Loading tags..." />;
 
   const tags = (data?.queryTags?.tags ?? []).map((tag) => (
     <li key={tag.id}>

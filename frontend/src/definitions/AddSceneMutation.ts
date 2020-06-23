@@ -37,6 +37,7 @@ export interface AddSceneMutation_sceneCreate_performers {
 export interface AddSceneMutation_sceneCreate_fingerprints {
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface AddSceneMutation_sceneCreate_tags {

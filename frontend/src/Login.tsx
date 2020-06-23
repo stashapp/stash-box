@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     data.append("username", username.current?.value ?? "");
     data.append("password", password.current?.value ?? "");
 
-    const res = await fetch(`${process.env.REACT_APP_SERVER}/login`, {
+    const res = await fetch("/login", {
       method: "POST",
       body: data,
     });

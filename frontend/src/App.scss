@@ -15,7 +15,6 @@
 @import "./components/studio/styles.scss";
 @import "./components/tag/styles.scss";
 @import "./components/tagSelect/styles.scss";
-@import "./styles/theme";
 
 body {
   color: $text-color;
@@ -27,7 +26,12 @@ body {
 
 a {
   //color: #48aff0;
-  color: $text-color;
+  //color: $text-color;
+  color: unset;
+
+  &:hover {
+    color: unset;
+  }
 }
 
 .input-control,
@@ -131,10 +135,6 @@ div.react-select__menu {
 
 a[aria-current] {
   font-weight: bold;
-}
-
-.btn {
-  margin: 0.5rem;
 }
 
 label.is-invalid {

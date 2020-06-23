@@ -12,7 +12,7 @@ const Icon: React.FC<IIcon> = ({ icon, className, color }) => (
   <FontAwesomeIcon
     icon={icon}
     className={`fa-icon ${className}`}
-    color={color ?? "white"}
+    color={color}
   />
 );
 

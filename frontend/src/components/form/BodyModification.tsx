@@ -77,15 +77,15 @@ const BodyModification: React.FC<BodyModificationProps> = ({
     <div className={CLASSNAME}>
       <h6>{name}</h6>
       {modificationList}
-        <Creatable
-          classNamePrefix="react-select"
-          value={null}
-          ref={selectRef}
-          name={name}
-          options={opts}
-          placeholder={locationPlaceholder}
-          onChange={handleChange}
-        />
+      <Creatable
+        classNamePrefix="react-select"
+        value={null}
+        ref={selectRef}
+        name={name}
+        options={opts}
+        placeholder={locationPlaceholder}
+        onChange={handleChange}
+      />
     </div>
   );
 };

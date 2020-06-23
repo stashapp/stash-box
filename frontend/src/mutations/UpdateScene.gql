@@ -22,6 +22,7 @@ mutation UpdateSceneMutation($updateData: SceneUpdateInput!) {
       fingerprints {
         hash
         algorithm
+        duration
       }
       tags {
           id

@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Link, useParams } from "react-router-dom";
+import { Button } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import { Studio, StudioVariables } from "src/definitions/Studio";
@@ -82,17 +83,11 @@ const StudioComponent: React.FC = () => {
         {canEdit(auth.user) && (
           <div className="studio-edit">
             <Link to={`${id}/edit`}>
-              <button type="button" className="btn btn-secondary">
-                Edit
-              </button>
+              <Button variant="secondary">Edit</Button>
             </Link>
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={handleDelete}
-            >
+            <Button variant="danger" className="ml-2" onClick={handleDelete}>
               Delete
-            </button>
+            </Button>
           </div>
         )}
       </div>

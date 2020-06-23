@@ -10,7 +10,7 @@ import {
 } from "src/definitions/Tags";
 import { SortDirectionEnum } from "src/definitions/globalTypes";
 
-import { CloseButton } from "src/components/fragments";
+import { TagLink } from "src/components/fragments";
 
 const TagsQuery = loader("src/queries/Tags.gql");
 
@@ -67,13 +67,12 @@ const TagSelect: React.FC<TagSelectProps> = ({
   const tagList = (tags ?? [])
     .sort((a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0))
     .map((tag) => (
-      <span className="badge badge-pill badge-light" key={tag.id}>
-        <span>{tag.name}</span>
-        <CloseButton
-          className="remove-item"
-          handler={() => removeTag(tag.id)}
-        />
-      </span>
+      <TagLink
+        title={tag.name}
+        link={`/tags/${tag.id}`}
+        onRemove={() => removeTag(tag.id)}
+        key={tag.id}
+      />
     ));
 
   return (

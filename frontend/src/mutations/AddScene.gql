@@ -23,6 +23,7 @@ mutation AddSceneMutation($sceneData: SceneCreateInput!) {
       fingerprints {
         hash
         algorithm
+        duration
       }
       tags {
           id

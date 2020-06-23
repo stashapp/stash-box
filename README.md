@@ -20,6 +20,10 @@ Releases TODO
 
 ## Initial setup
 
+Before building the binary the frontend project needs to be built.
+* Run `yarn install --frozen-lockfile` in the `stash-box/frontend` folder.
+* Run `make generate`, followed by `make build` from the main folder.
+
 Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stashdb-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
 
 The database must be created and available before rerunning stash-box. The schema will be created within the database if it is not already present.
@@ -34,7 +38,7 @@ The second time that stash-box is run, stash-box will run the schema migrations 
 
 Stash-box provides some command line options.  See what is currently available by running `stashdb --help`.
 
-For example, to run stash locally on port 80 run it like this (OSX / Linux) `stashdb --host 127.0.0.1 --port 80`
+For example, to run stash locally on port 80 run it like this (OSX / Linux) `stashdb --host 127.0.0.1 --port 80`.
 
 ## Configuration
 
@@ -56,6 +60,12 @@ Stash-box supports HTTPS with some additional work.  First you must generate a S
 This command would need customizing for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
 
 Once you have a certificate and key file name them `stashdb.crt` and `stashdb.key` and place them in the directory where stash-box is run from. Stash-box detects these and starts up using HTTPS rather than HTTP.
+
+## Frontend development
+
+To run the frontend in development mode, run `yarn start` from the frontend directory.
+
+Due to cookies not crossing domain barriers, the API key has to be set in `frontend/.env`, otherwise you will not be able to log in. See `frontend/.env.shadow` for examples. If the server uses https or runs on a custom port, this also needs to be configured in `.env`.
 
 # FAQ
 

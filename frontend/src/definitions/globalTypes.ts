@@ -122,6 +122,7 @@ export interface EyeColorCriterionInput {
 export interface FingerprintInput {
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface FuzzyDateInput {

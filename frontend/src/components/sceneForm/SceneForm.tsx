@@ -95,6 +95,7 @@ interface PerformerInfo {
 
 const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const fingerprintHash = useRef<HTMLInputElement>(null);
+  const fingerprintDuration = useRef<HTMLInputElement>(null);
   const fingerprintAlgorithm = useRef<HTMLSelectElement>(null);
   const { register, handleSubmit, setValue, errors } = useForm<SceneFormData>({
     validationSchema: schema,
@@ -111,6 +112,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     scene.fingerprints.map((f) => ({
       hash: f.hash,
       algorithm: f.algorithm,
+      duration: f.duration,
     }))
   );
   const { loading: loadingStudios, data: studios } = useQuery<
@@ -204,21 +206,30 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   ));
 
   const addFingerprint = () => {
-    if (!fingerprintHash.current || !fingerprintAlgorithm.current) return;
+    if (
+      !fingerprintHash.current ||
+      !fingerprintAlgorithm.current ||
+      !fingerprintDuration.current
+    )
+      return;
     const hash = fingerprintHash.current.value?.trim();
     const algorithm = fingerprintAlgorithm.current
       .value as FingerprintAlgorithm;
+    const duration =
+      Number.parseInt(fingerprintDuration.current.value?.trim(), 10) ?? 0;
     if (
       !algorithm ||
       !hash ||
+      !duration ||
       fingerprints.some((f) => f.hash === hash) ||
       hash === ""
     )
       return;
-    const newFingerprints = [...fingerprints, { hash, algorithm }];
+    const newFingerprints = [...fingerprints, { hash, algorithm, duration }];
     setFingerprints(newFingerprints);
     setValue("fingerprints", newFingerprints);
     fingerprintHash.current.value = "";
+    fingerprintDuration.current.value = "";
   };
   const removeFingerprint = (hash: string) => {
     const newFingerprints = fingerprints.filter((f) => f.hash !== hash);
@@ -228,7 +239,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
   const renderFingerprints = () => {
     const fingerprintList = fingerprints.map((f) => (
-      <tr>
+      <tr key={f.hash}>
         <td>
           <button
             className="remove-item"
@@ -240,15 +251,19 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         </td>
         <td>{f.algorithm}</td>
         <td>{f.hash}</td>
+        <td>{f.duration}</td>
       </tr>
     ));
 
     return fingerprints.length > 0 ? (
       <Table size="sm">
         <thead>
-          <th className="col-1" />
-          <th className="col-3">Algorithm</th>
-          <th>Hash</th>
+          <tr>
+            <th />
+            <th>Algorithm</th>
+            <th>Hash</th>
+            <th>Duration</th>
+          </tr>
         </thead>
         <tbody>{fingerprintList}</tbody>
       </Table>
@@ -382,8 +397,16 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             </Form.Control>
             <Form.Control
               id="hash"
-              className="col-4 mr-2"
+              placeholder="Hash"
+              className="col-3 mr-2"
               ref={fingerprintHash}
+            />
+            <Form.Control
+              id="duration"
+              placeholder="Duration"
+              type="number"
+              className="col-2 mr-2"
+              ref={fingerprintDuration}
             />
             <Button
               className="col-2 add-performer-button"
@@ -404,7 +427,10 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               type="reset"
             />
             <Link to={scene.id ? `/scenes/${scene.id}` : "/scenes"}>
-              <button className="btn btn-danger reset-button" type="button">
+              <button
+                className="btn btn-danger reset-button ml-2"
+                type="button"
+              >
                 Cancel
               </button>
             </Link>

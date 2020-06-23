@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { Link, useHistory, useParams } from "react-router-dom";
-import { Card, Tabs, Tab, Table } from "react-bootstrap";
+import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import AuthContext from "src/AuthContext";
@@ -14,7 +14,11 @@ import {
 } from "src/definitions/DeleteSceneMutation";
 
 import Modal from "src/components/modal";
-import { GenderIcon, LoadingIndicator } from "src/components/fragments";
+import {
+  GenderIcon,
+  LoadingIndicator,
+  TagLink,
+} from "src/components/fragments";
 
 const SceneQuery = loader("src/queries/Scene.gql");
 const DeleteScene = loader("src/mutations/DeleteScene.gql");
@@ -64,20 +68,15 @@ const SceneComponent: React.FC = () => {
     .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
 
   const fingerprints = scene.fingerprints.map((fingerprint) => (
-    <tr>
+    <tr key={fingerprint.hash}>
       <td>{fingerprint.algorithm}</td>
       <td>{fingerprint.hash}</td>
+      <td>{fingerprint.duration}</td>
     </tr>
   ));
   const tags = scene.tags.map((tag) => (
-    <li>
-      <a
-        href={`/tags/${tag.name}`}
-        title={tag?.description ?? ""}
-        className="badge badge-secondary"
-      >
-        {tag.name}
-      </a>
+    <li key={tag.name}>
+      <TagLink title={tag.name} link={`/tags/${tag.name}`} />
     </li>
   ));
 
@@ -87,17 +86,6 @@ const SceneComponent: React.FC = () => {
       callback={handleDelete}
     />
   );
-  const deleteButton = isAdmin(auth.user) && (
-    <button
-      type="button"
-      disabled={showDelete || deleting}
-      className="btn btn-danger"
-      onClick={toggleModal}
-    >
-      Delete
-    </button>
-  );
-
   return (
     <>
       {deleteModal}
@@ -106,12 +94,19 @@ const SceneComponent: React.FC = () => {
           <div className="float-right">
             {canEdit(auth.user) && (
               <Link to={`${id}/edit`}>
-                <button type="button" className="btn btn-secondary">
-                  Edit
-                </button>
+                <Button variant="secondary">Edit</Button>
               </Link>
             )}
-            {deleteButton}
+            {isAdmin(auth.user) && (
+              <Button
+                variant="danger"
+                className="ml-2"
+                disabled={showDelete || deleting}
+                onClick={toggleModal}
+              >
+                Delete
+              </Button>
+            )}
           </div>
           <h2>{scene.title}</h2>
           <h6>
@@ -168,8 +163,11 @@ const SceneComponent: React.FC = () => {
             ) : (
               <Table striped bordered hover size="sm">
                 <thead>
-                  <td>Algorithm</td>
-                  <td>Hash</td>
+                  <tr>
+                    <td>Algorithm</td>
+                    <td>Hash</td>
+                    <td>Duration</td>
+                  </tr>
                 </thead>
                 <tbody>{fingerprints}</tbody>
               </Table>
