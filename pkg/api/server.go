@@ -121,7 +121,17 @@ func Start() {
 
 	r := chi.NewRouter()
 
-	r.Use(cors.AllowAll().Handler)
+	var corsConfig *cors.Cors
+	if config.GetIsProduction() {
+		corsConfig = cors.AllowAll()
+	} else {
+		corsConfig = cors.New(cors.Options{
+			AllowOriginFunc:  func(origin string) bool { return true },
+			AllowCredentials: true,
+		})
+	}
+
+	r.Use(corsConfig.Handler)
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 

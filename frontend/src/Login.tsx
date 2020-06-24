@@ -2,6 +2,8 @@ import React, { useRef, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 
+import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
+
 import "./App.scss";
 
 const Login: React.FC = () => {
@@ -18,9 +20,10 @@ const Login: React.FC = () => {
     data.append("username", username.current?.value ?? "");
     data.append("password", password.current?.value ?? "");
 
-    const res = await fetch("/login", {
+    const res = await fetch(`${getPlatformURL()}login`, {
       method: "POST",
       body: data,
+      credentials: getCredentialsSetting(),
     });
     if (res.ok) window.location.replace("/");
   };

@@ -7,10 +7,16 @@ import { ApolloLink } from "apollo-link";
 import { createHttpLink } from "apollo-link-http";
 import { setContext } from "apollo-link-context";
 
+const isDevEnvironment = () =>
+  !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+
+export const getCredentialsSetting = () =>
+  isDevEnvironment() ? "include" : "same-origin";
+
 export const getPlatformURL = () => {
   const platformUrl = new URL(window.location.origin);
 
-  if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+  if (isDevEnvironment()) {
     platformUrl.port = process.env.REACT_APP_SERVER_PORT ?? "9998";
 
     if (process.env.REACT_APP_HTTPS === "true") {
@@ -25,7 +31,7 @@ const httpLink = createHttpLink({
   uri: `${getPlatformURL().toString().slice(0, -1)}/graphql`,
   fetchOptions: {
     mode: "cors",
-    credentials: "same-origin",
+    credentials: getCredentialsSetting(),
   },
 });
 

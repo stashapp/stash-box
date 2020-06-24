@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useHistory } from "react-router-dom";
+import { loader } from "graphql.macro";
 import SearchField, { SearchType } from "src/components/searchField";
 import { Me } from "src/definitions/Me";
 import { RoleEnum } from "src/definitions/globalTypes";
-import { loader } from "graphql.macro";
+import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 import AuthContext from "./AuthContext";
 
 const ME = loader("src/queries/Me.gql");
@@ -57,7 +58,9 @@ const Main: React.FC = ({ children }) => {
     );
 
   const handleLogout = async () => {
-    const res = await fetch("/logout");
+    const res = await fetch(`${getPlatformURL()}logout`, {
+      credentials: getCredentialsSetting(),
+    });
     if (res.ok) window.location.href = "/";
     return false;
   };

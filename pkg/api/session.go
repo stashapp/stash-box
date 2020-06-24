@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/manager/config"
@@ -41,6 +42,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	newSession.Values[userIDKey] = userID
 	newSession.Options.MaxAge = maxCookieAge
+	newSession.Options.Domain = getHost(r)
 
 	err = newSession.Save(r, w)
 	if err != nil {
@@ -86,4 +88,12 @@ func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
 	}
 
 	return "", nil
+}
+
+func getHost(r *http.Request) string {
+	host := r.Host
+	if i := strings.Index(host, ":"); i != -1 {
+		host = host[:i]
+	}
+	return host
 }

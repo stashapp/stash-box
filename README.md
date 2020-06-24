@@ -6,7 +6,7 @@
 
 The intent of stash-box is to provide a collaborative, crowd-sourced database of porn metadata, in the same way as [MusicBrainz](https://musicbrainz.org/) does for music. The submission and editing of metadata is expected to follow the same principle as that of the MusicBrainz database. [See here](https://musicbrainz.org/doc/Editing_FAQ) for how MusicBrainz does it.
 
-Currently, stash-box provides a graphql backend API only. There is no built in UI. The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
+The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
 
 # Docker install
 
@@ -45,6 +45,8 @@ For example, to run stash locally on port 80 run it like this (OSX / Linux) `sta
 Stash-box generates a configuration file `stashdb-config.yml` in the current working directory when it is first started up. This configuration file is generated with the following defaults:
 - running on `0.0.0.0` port `9998`
 
+The graphql playground and cross-domain cookies can be disabled by setting `is_production=true`.
+
 ### API keys and authorisation
 
 A user may be authenticated in one of two ways. Session-based management is possible by logging in via `/login`, passing form values for `username` and `password` in plain text. This sets a cookie which is required for subsequent requests. The session can be ended with a request to `/logout`.
@@ -65,7 +67,7 @@ Once you have a certificate and key file name them `stashdb.crt` and `stashdb.ke
 
 To run the frontend in development mode, run `yarn start` from the frontend directory.
 
-Due to cookies not crossing domain barriers, the API key has to be set in `frontend/.env`, otherwise you will not be able to log in. See `frontend/.env.shadow` for examples. If the server uses https or runs on a custom port, this also needs to be configured in `.env`.
+When developing the API key can be set in `frontend/.env` to avoid having to log in. When `is_production` is enabled on the server this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env`. See `frontend/.env.development.local.shadow` for examples. 
 
 # FAQ
 
