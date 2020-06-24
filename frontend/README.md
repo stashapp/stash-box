@@ -9,14 +9,6 @@ Make sure your environment is up to date:
 
 For installation instructions, please see the websites for [yarn](https://yarnpkg.com/lang/en/docs/install/#windows-stable) and [node.js](https://nodejs.org/en/download/).
 
-You also need to initialize the environment configuration:
-
-```shell
-cp .env.shadow .env
-```
-
-Fill in the `APIKEY` variable in `.env` with the API key for the user.
-
 Install dependencies
 
 ```shell
@@ -44,13 +36,23 @@ yarn generate
 
 ## Running
 
+### Local development server 
+
+Due to cookies not crossing domain barriers, the API key has to be set in the environment configuration. To do so, you will need to initialize the environment configuration:
+
+```shell
+cp .env.development.local.shadow .env.development.local
+```
+
+Fill in the `REACT_APP_APIKEY` variable in `.env` with the API key for the user.
+
 Run the local development server:
 
 ```shell
 yarn start
 ```
 
-The server will by default start on [http://localhost:8080](http://localhost:8080) and will automatically be updated whenever any changes are made.
+The server will by default start on [http://localhost:3001](http://localhost:3001) and will automatically be updated whenever any changes are made. The port can be changed by uncommenting the `PORT` entry and setting the value in the `.env.development.local` file.
 
 Run the linter:
 

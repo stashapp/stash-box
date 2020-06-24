@@ -46,3 +46,7 @@ lint:
 .PHONY: ui
 ui:
 	cd frontend && yarn build
+	packr2
+
+packr:
+	packr2
