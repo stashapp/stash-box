@@ -45,7 +45,7 @@ For example, to run stash locally on port 80 run it like this (OSX / Linux) `sta
 Stash-box generates a configuration file `stashdb-config.yml` in the current working directory when it is first started up. This configuration file is generated with the following defaults:
 - running on `0.0.0.0` port `9998`
 
-The graphql playground and cross-domain cookies can be disabled by setting `is_production=true`.
+The graphql playground and cross-domain cookies can be disabled by setting `is_production: true`.
 
 ### API keys and authorisation
 
