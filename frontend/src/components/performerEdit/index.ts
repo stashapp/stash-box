@@ -1,3 +1,3 @@
-import PerformerEdit from './PerformerEdit';
+import PerformerEdit from "./PerformerEdit";
 
 export default PerformerEdit;

@@ -1,0 +1,3 @@
+mutation DeleteUserMutation($input: UserDestroyInput!) {
+    userDestroy(input: $input)
+}

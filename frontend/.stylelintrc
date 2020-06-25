@@ -2,7 +2,9 @@
   "plugins": [
     "stylelint-order"
   ],
+  "extends": "stylelint-config-prettier",
   "rules": {
+    "indentation": 2,
     "at-rule-empty-line-before": [ "always", {
       except: ["after-same-name", "first-nested" ],
       ignore: ["after-comment"],
@@ -32,7 +34,6 @@
     "declaration-block-semicolon-space-before": "never",
     "declaration-block-single-line-max-declarations": 1,
     "declaration-block-trailing-semicolon": "always",
-    "declaration-colon-newline-after": "always-multi-line",
     "declaration-colon-space-after": "always-single-line",
     "declaration-colon-space-before": "never",
     "declaration-no-important": true,
@@ -46,11 +47,9 @@
     "function-parentheses-space-inside": "never-single-line",
     "function-url-quotes": "always",
     "function-whitespace-after": "always",
-    "indentation": 4,
     "length-zero-no-unit": true,
     "max-empty-lines": 1,
-    "max-nesting-depth": 3,
-    "max-line-length": 100,
+    "max-nesting-depth": 4,
     "media-feature-colon-space-after": "always",
     "media-feature-colon-space-before": "never",
     "media-feature-range-operator-space-after": "always",
@@ -62,7 +61,6 @@
     "no-descending-specificity": null,
     "no-invalid-double-slash-comments": true,
     "no-missing-end-of-source-newline": true,
-    "number-leading-zero": "never",
     "number-max-precision": 2,
     "number-no-trailing-zeros": true,
     "order/order": [
@@ -74,9 +72,9 @@
       except: ["after-single-line-comment", "first-nested" ],
       ignore: ["after-comment"],
     }],
-    "selector-max-id": 0,
-    "selector-max-type": 1,
-    "selector-class-pattern": "^(\\.*[A-Z]*[a-z]+)+(-[a-z]+)*$",
+    "selector-max-id": 1,
+    "selector-max-type": 2,
+    "selector-class-pattern": "^(\\.*[A-Z]*[a-z]+)+(-[a-z0-9]+)*$",
     "selector-combinator-space-after": "always",
     "selector-combinator-space-before": "always",
     "selector-list-comma-newline-after": "always",
@@ -88,7 +86,6 @@
     "string-quotes": "double",
     "time-min-milliseconds": 100,
     "unit-blacklist": ["em"],
-    "value-list-comma-newline-after": "always-multi-line",
     "value-list-comma-space-after": "always-single-line",
     "value-list-comma-space-before": "never",
     "value-no-vendor-prefix": true

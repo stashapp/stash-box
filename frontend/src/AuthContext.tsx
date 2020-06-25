@@ -1,18 +1,21 @@
-import React from 'react';
+import React from "react";
+import { RoleEnum } from "src/definitions/globalTypes";
 
-interface User {
-    username?: string,
-    role?: number
+export interface User {
+  id: string;
+  name: string;
+  roles: RoleEnum[] | null;
 }
 
-export type ContextProps = {
-    authenticated: boolean,
-    user?: User;
-    setUser?: (user:User) => void
+export type ContextType = {
+  authenticated: boolean;
+  user?: User;
+  setUser?: (user: User) => void;
+  isRole?: (role: string) => boolean;
 };
 
-const AuthContext = React.createContext<ContextProps>({
-    authenticated: false,
+const AuthContext = React.createContext<ContextType>({
+  authenticated: false,
 });
 
 export default AuthContext;

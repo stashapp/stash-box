@@ -6,7 +6,7 @@
 
 The intent of stash-box is to provide a collaborative, crowd-sourced database of porn metadata, in the same way as [MusicBrainz](https://musicbrainz.org/) does for music. The submission and editing of metadata is expected to follow the same principle as that of the MusicBrainz database. [See here](https://musicbrainz.org/doc/Editing_FAQ) for how MusicBrainz does it.
 
-Currently, stash-box provides a graphql backend API only. There is no built in UI. The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
+The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
 
 # Docker install
 
@@ -20,9 +20,13 @@ Releases TODO
 
 ## Initial setup
 
+Before building the binary the frontend project needs to be built.
+* Run `yarn install --frozen-lockfile` in the `stash-box/frontend` folder.
+* Run `make generate`, followed by `make ui build` from the main folder.
+
 Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stashdb-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
 
-The database must be created and available before rerunning stash-box. The schema will be created within the database if it is not already present.
+The database must be created and available, and `CREATE EXTENSION pg_trgm;` needs to be run by a superuser in the database before rerunning stash-box. The schema will be created within the database if it is not already present. 
 
 The `sslmode` parameter is documented in the [pq documentation](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default value is `require`.
 
@@ -34,12 +38,14 @@ The second time that stash-box is run, stash-box will run the schema migrations 
 
 Stash-box provides some command line options.  See what is currently available by running `stashdb --help`.
 
-For example, to run stash locally on port 80 run it like this (OSX / Linux) `stashdb --host 127.0.0.1 --port 80`
+For example, to run stash locally on port 80 run it like this (OSX / Linux) `stashdb --host 127.0.0.1 --port 80`.
 
 ## Configuration
 
 Stash-box generates a configuration file `stashdb-config.yml` in the current working directory when it is first started up. This configuration file is generated with the following defaults:
 - running on `0.0.0.0` port `9998`
+
+The graphql playground and cross-domain cookies can be disabled by setting `is_production: true`.
 
 ### API keys and authorisation
 
@@ -56,6 +62,12 @@ Stash-box supports HTTPS with some additional work.  First you must generate a S
 This command would need customizing for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
 
 Once you have a certificate and key file name them `stashdb.crt` and `stashdb.key` and place them in the directory where stash-box is run from. Stash-box detects these and starts up using HTTPS rather than HTTP.
+
+## Frontend development
+
+To run the frontend in development mode, run `yarn start` from the frontend directory.
+
+When developing the API key can be set in `frontend/.env` to avoid having to log in. When `is_production` is enabled on the server this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env`. See `frontend/.env.development.local.shadow` for examples. 
 
 # FAQ
 
@@ -93,7 +105,9 @@ TODO
 
 ## Commands
 
-* `make generate` - Generate Go GraphQL and packr2 files. This should be run if the graphql schema or schema migration files have changed.
+* `make generate` - Generate Go GraphQL files. This should be run if the graphql schema has changed.
+* `make ui` - Builds the UI and regenerates the packr2 files.
+* `make packr` - Regenerates the packr2 files. Run this if schema migration files have changed and you don't want to rebuild the UI.
 * `make build` - Builds the binary
 * `make vet` - Run `go vet`
 * `make lint` - Run the linter
@@ -105,7 +119,7 @@ TODO
 ## Building a release
 
 1. Run `make generate` to create generated files 
-2. Run `make build` to build the executable for your current platform
+2. Run `make ui build` to build the executable for your current platform
 
 ## Cross compiling
 

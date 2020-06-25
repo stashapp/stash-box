@@ -6,5 +6,11 @@ query Studio($id: ID!) {
         url
         type
     }
+    images {
+        id
+        url
+        height
+        width
+    }
   }
 }

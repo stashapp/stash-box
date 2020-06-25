@@ -49,7 +49,7 @@ func (qb *SceneQueryBuilder) UpdateUrls(scene uuid.UUID, updatedJoins SceneUrls)
 }
 
 func (qb *SceneQueryBuilder) CreateFingerprints(newJoins SceneFingerprints) error {
-	return qb.dbi.InsertJoins(sceneFingerprintTable, &newJoins)
+	return qb.dbi.InsertJoinsWithoutConflict(sceneFingerprintTable, &newJoins)
 }
 
 func (qb *SceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins SceneFingerprints) error {
@@ -274,4 +274,20 @@ func (qb *SceneQueryBuilder) GetUrls(id uuid.UUID) (SceneUrls, error) {
 	err := qb.dbi.FindJoins(sceneUrlTable, id, &joins)
 
 	return joins, err
+}
+
+func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {
+	query := `
+        SELECT S.* FROM scenes S
+        LEFT JOIN scene_search SS ON SS.scene_id = S.id
+        WHERE (
+			to_tsvector('simple', COALESCE(scene_date, '')) ||
+			to_tsvector('english', studio_name) ||
+			to_tsvector('english', COALESCE(performer_names, '')) ||
+			to_tsvector('english', scene_title)
+        ) @@ plainto_tsquery(?)
+        LIMIT 10`
+	var args []interface{}
+	args = append(args, term)
+	return qb.queryScenes(query, args)
 }

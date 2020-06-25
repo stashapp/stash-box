@@ -38,6 +38,12 @@ query Performers($filter: QuerySpec, $performerFilter: PerformerFilterType) {
           type
           url
       }
+      images {
+          id
+          url
+          height
+          width
+      }
     }
   }
 }

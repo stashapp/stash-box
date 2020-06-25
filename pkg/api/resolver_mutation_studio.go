@@ -91,6 +91,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Save the URLs
 	// TODO - only do this if provided
 	studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
+
 	if err := qb.UpdateUrls(studio.ID, studioUrls); err != nil {
 		_ = tx.Rollback()
 		return nil, err

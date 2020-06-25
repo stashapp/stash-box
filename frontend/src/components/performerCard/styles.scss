@@ -1,0 +1,14 @@
+.PerformerCard {
+  &-image {
+    align-items: center;
+    display: flex;
+    height: 20rem;
+
+    img {
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      width: 100%;
+    }
+  }
+}

@@ -54,3 +54,7 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 
 	return children, nil
 }
+func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]*models.Image, error) {
+	qb := models.NewImageQueryBuilder(nil)
+	return qb.FindByStudioID(obj.ID)
+}

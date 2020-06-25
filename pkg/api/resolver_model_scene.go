@@ -17,6 +17,12 @@ func (r *sceneResolver) Title(ctx context.Context, obj *models.Scene) (*string, 
 func (r *sceneResolver) Details(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.Details)
 }
+func (r *sceneResolver) Duration(ctx context.Context, obj *models.Scene) (*int, error) {
+	return resolveNullInt64(obj.Duration)
+}
+func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*string, error) {
+	return resolveNullString(obj.Director)
+}
 func (r *sceneResolver) URL(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.URL)
 }
@@ -39,6 +45,10 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 }
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
 	qb := models.NewTagQueryBuilder(nil)
+	return qb.FindBySceneID(obj.ID)
+}
+func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*models.Image, error) {
+	qb := models.NewImageQueryBuilder(nil)
 	return qb.FindBySceneID(obj.ID)
 }
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.PerformerAppearance, error) {

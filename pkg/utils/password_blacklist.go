@@ -10019,7 +10019,7 @@ func makeBannedPasswordsSet() map[string]struct{} {
 	}
 
 	ret := make(map[string]struct{})
-	for _, v := range(bannedPasswordsList) {
+	for _, v := range bannedPasswordsList {
 		ret[v] = struct{}{}
 	}
 

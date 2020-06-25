@@ -1,3 +1,3 @@
-import StudioForm from './StudioForm';
+import StudioForm from "./StudioForm";
 
 export default StudioForm;
