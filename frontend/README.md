@@ -38,7 +38,7 @@ yarn generate
 
 ### Local development server 
 
-Due to cookies not crossing domain barriers, the API key has to be set in the environment configuration. To do so, you will need to initialize the environment configuration:
+The API key can be set in the environment configuration. To do so, you will need to initialize the environment configuration:
 
 ```shell
 cp .env.development.local.shadow .env.development.local

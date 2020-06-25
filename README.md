@@ -22,7 +22,7 @@ Releases TODO
 
 Before building the binary the frontend project needs to be built.
 * Run `yarn install --frozen-lockfile` in the `stash-box/frontend` folder.
-* Run `make generate`, followed by `make build` from the main folder.
+* Run `make generate`, followed by `make ui build` from the main folder.
 
 Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stashdb-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
 
@@ -105,7 +105,9 @@ TODO
 
 ## Commands
 
-* `make generate` - Generate Go GraphQL and packr2 files. This should be run if the graphql schema or schema migration files have changed.
+* `make generate` - Generate Go GraphQL files. This should be run if the graphql schema has changed.
+* `make ui` - Builds the UI and regenerates the packr2 files.
+* `make packr` - Regenerates the packr2 files. Run this if schema migration files have changed and you don't want to rebuild the UI.
 * `make build` - Builds the binary
 * `make vet` - Run `go vet`
 * `make lint` - Run the linter
@@ -117,7 +119,7 @@ TODO
 ## Building a release
 
 1. Run `make generate` to create generated files 
-2. Run `make build` to build the executable for your current platform
+2. Run `make ui build` to build the executable for your current platform
 
 ## Cross compiling
 
