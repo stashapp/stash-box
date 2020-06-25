@@ -1,3 +1,3 @@
-import PerformerAdd from './PerformerAdd';
+import PerformerAdd from "./PerformerAdd";
 
 export default PerformerAdd;

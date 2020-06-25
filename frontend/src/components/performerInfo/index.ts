@@ -1,3 +1,3 @@
-import PerformerInfo from './PerformerInfo';
+import PerformerInfo from "./PerformerInfo";
 
 export default PerformerInfo;

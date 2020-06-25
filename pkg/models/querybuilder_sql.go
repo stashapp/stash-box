@@ -38,13 +38,19 @@ func handleStringCriterion(column string, value *StringCriterionInput, query *da
 	}
 }
 
-func insertObject(tx *sqlx.Tx, table string, object interface{}) error {
+func insertObject(tx *sqlx.Tx, table string, object interface{}, ignoreConflicts bool) error {
 	ensureTx(tx)
 	fields, values := SQLGenKeysCreate(object)
+
+	conflictHandling := ""
+	if ignoreConflicts {
+		conflictHandling = "ON CONFLICT DO NOTHING"
+	}
 
 	_, err := tx.NamedExec(
 		`INSERT INTO `+table+` (`+fields+`)
 				VALUES (`+values+`)
+                `+conflictHandling+`
 		`,
 		object,
 	)
@@ -60,7 +66,7 @@ func insertObjects(tx *sqlx.Tx, table string, objects interface{}) error {
 
 	slice := reflect.ValueOf(objects)
 	for i := 0; i < slice.Len(); i++ {
-		err := insertObject(tx, table, slice.Index(i).Interface())
+		err := insertObject(tx, table, slice.Index(i).Interface(), false)
 
 		if err != nil {
 			return err
@@ -128,8 +134,8 @@ func getPagination(findFilter *QuerySpec) string {
 	} else {
 		perPage = *findFilter.PerPage
 	}
-	if perPage > 1000 {
-		perPage = 1000
+	if perPage > 10000 {
+		perPage = 10000
 	} else if perPage < 1 {
 		perPage = 1
 	}

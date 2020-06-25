@@ -1,8 +1,16 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import {
+  GenderEnum,
+  DateAccuracyEnum,
+  HairColorEnum,
+  EyeColorEnum,
+  EthnicityEnum,
+  BreastTypeEnum,
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Performer
@@ -35,6 +43,13 @@ export interface Performer_findPerformer_urls {
   type: string;
 }
 
+export interface Performer_findPerformer_images {
+  id: string;
+  url: string;
+  height: number | null;
+  width: number | null;
+}
+
 export interface Performer_findPerformer {
   id: string;
   name: string;
@@ -58,6 +73,7 @@ export interface Performer_findPerformer {
   tattoos: Performer_findPerformer_tattoos[] | null;
   piercings: Performer_findPerformer_piercings[] | null;
   urls: Performer_findPerformer_urls[];
+  images: Performer_findPerformer_images[];
 }
 
 export interface Performer {

@@ -4,9 +4,16 @@ query Scene($id: ID!) {
       date
       title,
       details,
+      director,
       urls {
         url,
         type
+      }
+      images {
+          id
+          url
+          height
+          width
       }
       studio {
         id
@@ -20,6 +27,16 @@ query Scene($id: ID!) {
 		  gender
 		  aliases
         }
+      }
+      fingerprints {
+        hash
+        algorithm
+        duration
+      }
+      tags {
+        id
+        name
+        description
       }
     }
 }

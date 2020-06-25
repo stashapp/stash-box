@@ -171,3 +171,7 @@ func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer
 
 	return ret, nil
 }
+func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]*models.Image, error) {
+	qb := models.NewImageQueryBuilder(nil)
+	return qb.FindByPerformerID(obj.ID)
+}

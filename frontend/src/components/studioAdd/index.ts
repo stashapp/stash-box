@@ -1,3 +1,3 @@
-import StudioAdd from './StudioAdd';
+import StudioAdd from "./StudioAdd";
 
 export default StudioAdd;

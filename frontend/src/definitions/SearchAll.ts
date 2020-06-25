@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { GenderEnum, DateAccuracyEnum } from "./globalTypes";
@@ -18,6 +19,13 @@ export interface SearchAll_searchPerformer_urls {
   type: string;
 }
 
+export interface SearchAll_searchPerformer_images {
+  id: string;
+  url: string;
+  height: number | null;
+  width: number | null;
+}
+
 export interface SearchAll_searchPerformer {
   id: string;
   name: string;
@@ -26,11 +34,19 @@ export interface SearchAll_searchPerformer {
   aliases: string[];
   birthdate: SearchAll_searchPerformer_birthdate | null;
   urls: SearchAll_searchPerformer_urls[];
+  images: SearchAll_searchPerformer_images[];
 }
 
 export interface SearchAll_searchScene_urls {
   url: string;
   type: string;
+}
+
+export interface SearchAll_searchScene_images {
+  id: string;
+  url: string;
+  height: number | null;
+  width: number | null;
 }
 
 export interface SearchAll_searchScene_studio {
@@ -58,6 +74,7 @@ export interface SearchAll_searchScene {
   date: any | null;
   title: string | null;
   urls: SearchAll_searchScene_urls[];
+  images: SearchAll_searchScene_images[];
   studio: SearchAll_searchScene_studio | null;
   performers: SearchAll_searchScene_performers[];
 }

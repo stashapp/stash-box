@@ -13,5 +13,11 @@ query SearchPerformers($term: String!) {
             url
             type
         }
+        images {
+            id
+            url
+            height
+            width
+        }
     }
 }

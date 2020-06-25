@@ -13,6 +13,12 @@ query SearchAll($term: String!) {
             url
             type
         }
+        images {
+            id
+            url
+            height
+            width
+        }
     }
     searchScene(term: $term) {
         id
@@ -21,6 +27,12 @@ query SearchAll($term: String!) {
         urls {
             url
             type
+        }
+        images {
+            id
+            url
+            height
+            width
         }
         studio {
             id

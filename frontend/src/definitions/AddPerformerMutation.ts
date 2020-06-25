@@ -1,8 +1,17 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { PerformerCreateInput, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import {
+  PerformerCreateInput,
+  GenderEnum,
+  DateAccuracyEnum,
+  HairColorEnum,
+  EyeColorEnum,
+  EthnicityEnum,
+  BreastTypeEnum,
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddPerformerMutation

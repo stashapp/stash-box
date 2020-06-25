@@ -1,3 +1,3 @@
-import SceneEdit from './SceneEdit';
+import SceneEdit from "./SceneEdit";
 
 export default SceneEdit;

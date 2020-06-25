@@ -36,5 +36,11 @@ query Performer($id: ID!) {
         url
         type
     }
+    images {
+        id
+        url
+        height
+        width
+    }
   }
 }

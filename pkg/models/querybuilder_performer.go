@@ -302,3 +302,14 @@ func (qb *PerformerQueryBuilder) GetPiercings(id uuid.UUID) (PerformerBodyMods, 
 
 	return joins, err
 }
+
+func (qb *PerformerQueryBuilder) SearchPerformers(term string) (Performers, error) {
+	query := `
+        SELECT * FROM performers
+        WHERE name % $1
+        AND similarity(name, $1) > 0.5
+        ORDER BY similarity(name, $1) DESC
+        LIMIT 5`
+	args := []interface{}{term}
+	return qb.queryPerformers(query, args)
+}
