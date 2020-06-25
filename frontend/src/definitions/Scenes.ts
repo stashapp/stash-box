@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { QuerySpec, SceneFilterType, GenderEnum } from "./globalTypes";
@@ -11,6 +12,13 @@ import { QuerySpec, SceneFilterType, GenderEnum } from "./globalTypes";
 export interface Scenes_queryScenes_scenes_urls {
   url: string;
   type: string;
+}
+
+export interface Scenes_queryScenes_scenes_images {
+  id: string;
+  url: string;
+  height: number | null;
+  width: number | null;
 }
 
 export interface Scenes_queryScenes_scenes_studio {
@@ -32,7 +40,9 @@ export interface Scenes_queryScenes_scenes {
   id: string;
   date: any | null;
   title: string | null;
+  duration: number | null;
   urls: Scenes_queryScenes_scenes_urls[];
+  images: Scenes_queryScenes_scenes_images[];
   studio: Scenes_queryScenes_scenes_studio | null;
   performers: Scenes_queryScenes_scenes_performers[];
 }

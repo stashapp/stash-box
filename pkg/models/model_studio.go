@@ -56,10 +56,11 @@ type StudioUrl struct {
 }
 
 func (p *StudioUrl) ToURL() URL {
-	return URL{
+	url := URL{
 		URL:  p.URL,
 		Type: p.Type,
 	}
+	return url
 }
 
 type StudioUrls []*StudioUrl
@@ -111,4 +112,18 @@ func (p *Studio) CopyFromUpdateInput(input StudioUpdateInput) {
 			p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
 		}
 	}
+}
+
+func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudioImages {
+	var imageJoins StudioImages
+	for _, iid := range imageIds {
+		imageID := uuid.FromStringOrNil(iid)
+		imageJoin := &StudioImage{
+			StudioID: studioID,
+			ImageID:  imageID,
+		}
+		imageJoins = append(imageJoins, imageJoin)
+	}
+
+	return imageJoins
 }

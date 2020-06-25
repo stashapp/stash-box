@@ -1,3 +1,3 @@
-import StudioEdit from './StudioEdit';
+import StudioEdit from "./StudioEdit";
 
 export default StudioEdit;

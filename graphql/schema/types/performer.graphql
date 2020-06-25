@@ -89,6 +89,7 @@ type Performer {
   career_end_year: Int
   tattoos: [BodyModification!]
   piercings: [BodyModification!]
+  images: [Image!]!
 }
 
 input PerformerCreateInput {
@@ -109,6 +110,7 @@ input PerformerCreateInput {
   career_end_year: Int
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
+  image_ids: [ID!]
 }
 
 input PerformerUpdateInput {
@@ -130,6 +132,7 @@ input PerformerUpdateInput {
   career_end_year: Int
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
+  image_ids: [ID!]
 }
 
 input PerformerDestroyInput {
@@ -154,6 +157,7 @@ input PerformerEditDetailsInput {
   career_end_year: Int
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
+  image_ids: [ID!]
 }
 
 input PerformerEditInput {
@@ -190,6 +194,8 @@ type PerformerEdit {
   removed_tattoos: [BodyModification!]
   added_piercings: [BodyModification!]
   removed_piercings: [BodyModification!]
+  added_images: [Image!]
+  removed_images: [Image!]
 }
 
 type QueryPerformersResultType {

@@ -1,8 +1,13 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { SceneCreateInput, GenderEnum } from "./globalTypes";
+import {
+  SceneCreateInput,
+  GenderEnum,
+  FingerprintAlgorithm,
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddSceneMutation
@@ -29,6 +34,18 @@ export interface AddSceneMutation_sceneCreate_performers {
   performer: AddSceneMutation_sceneCreate_performers_performer;
 }
 
+export interface AddSceneMutation_sceneCreate_fingerprints {
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+}
+
+export interface AddSceneMutation_sceneCreate_tags {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 export interface AddSceneMutation_sceneCreate {
   id: string;
   date: any | null;
@@ -37,6 +54,8 @@ export interface AddSceneMutation_sceneCreate {
   urls: AddSceneMutation_sceneCreate_urls[];
   studio: AddSceneMutation_sceneCreate_studio | null;
   performers: AddSceneMutation_sceneCreate_performers[];
+  fingerprints: AddSceneMutation_sceneCreate_fingerprints[];
+  tags: AddSceneMutation_sceneCreate_tags[];
 }
 
 export interface AddSceneMutation {

@@ -18,7 +18,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene
 	return qb.Find(idUUID)
 }
 
-func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintInput) ([]*models.Scene, error) {
+func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]*models.Scene, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err
 	}

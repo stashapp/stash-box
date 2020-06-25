@@ -17,11 +17,23 @@ enum FingerprintAlgorithm {
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
+  duration: Int!
 }
 
 input FingerprintInput {
   hash: String!
   algorithm: FingerprintAlgorithm!
+  duration: Int!
+}
+
+input FingerprintQueryInput {
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+}
+
+input FingerprintSubmission {
+  scene_id: ID!
+  fingerprint: FingerprintInput!
 }
 
 type Scene {
@@ -32,8 +44,11 @@ type Scene {
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
+  images: [Image!]!
   performers: [PerformerAppearance!]!
   fingerprints: [Fingerprint!]!
+  duration: Int
+  director: String
 }
 
 input SceneCreateInput {
@@ -44,7 +59,10 @@ input SceneCreateInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
+  image_ids: [ID!]
   fingerprints: [FingerprintInput!]!
+  duration: Int
+  director: String
 }
 
 input SceneUpdateInput {
@@ -56,7 +74,10 @@ input SceneUpdateInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
+  image_ids: [ID!]
   fingerprints: [FingerprintInput!]
+  duration: Int
+  director: String
 }
 
 input SceneDestroyInput {
@@ -71,7 +92,10 @@ input SceneEditDetailsInput {
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
+  image_ids: [ID!]
   fingerprints: [FingerprintInput!]
+  duration: Int
+  director: String
 }
 
 input SceneEditInput {
@@ -83,6 +107,7 @@ input SceneEditInput {
   """Not required for destroy type"""
   details: SceneEditDetailsInput
   comment: String
+  duration: Int
 }
 
 type SceneEdit {
@@ -97,8 +122,12 @@ type SceneEdit {
   removed_performers: [PerformerAppearance!]
   added_tags: [Tag!]
   removed_tags: [Tag!]
+  added_images: [Image!]
+  removed_images: [Image!]
   added_fingerprints: [Fingerprint!]
   removed_fingerprints: [Fingerprint!]
+  duration: Int
+  director: String
 }
 
 type QueryScenesResultType {

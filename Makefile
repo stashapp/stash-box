@@ -18,7 +18,6 @@ clean:
 .PHONY: generate
 generate:
 	go generate
-	packr2
 
 .PHONY: test
 test: 
@@ -43,3 +42,11 @@ vet:
 .PHONY: lint
 lint:
 	revive -config revive.toml -exclude ./vendor/...  ./...
+
+.PHONY: ui
+ui:
+	cd frontend && yarn build
+	packr2
+
+packr:
+	packr2

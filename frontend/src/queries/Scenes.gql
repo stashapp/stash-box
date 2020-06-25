@@ -5,9 +5,16 @@ query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
             id
             date
             title
+            duration
             urls {
                 url
                 type
+            }
+            images {
+                id
+                url
+                height
+                width
             }
             studio {
                 id
@@ -20,7 +27,6 @@ query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
                     gender
                 }
             }
-
         }
     }
 }

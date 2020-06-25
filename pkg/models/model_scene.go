@@ -35,6 +35,8 @@ type Scene struct {
 	StudioID  uuid.NullUUID   `db:"studio_id,omitempty" json:"studio_id"`
 	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Duration  sql.NullInt64   `db:"duration" json:"duration"`
+	Director  sql.NullString  `db:"director" json:"director"`
 }
 
 func (Scene) GetTable() database.Table {
@@ -61,6 +63,7 @@ type SceneFingerprint struct {
 	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
 	Hash      string    `db:"hash" json:"hash"`
 	Algorithm string    `db:"algorithm" json:"algorithm"`
+	Duration  int       `db:"duration" json:"duration"`
 }
 
 type SceneUrl struct {
@@ -70,10 +73,11 @@ type SceneUrl struct {
 }
 
 func (p *SceneUrl) ToURL() URL {
-	return URL{
+	url := URL{
 		URL:  p.URL,
 		Type: p.Type,
 	}
+	return url
 }
 
 type SceneUrls []*SceneUrl
@@ -106,6 +110,7 @@ func (p SceneFingerprint) ToFingerprint() *Fingerprint {
 	return &Fingerprint{
 		Algorithm: FingerprintAlgorithm(p.Algorithm),
 		Hash:      p.Hash,
+		Duration:  p.Duration,
 	}
 }
 
@@ -138,6 +143,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput
 			SceneID:   sceneID,
 			Hash:      fingerprint.Hash,
 			Algorithm: fingerprint.Algorithm.String(),
+			Duration:  fingerprint.Duration,
 		})
 	}
 
@@ -156,6 +162,20 @@ func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
 	}
 
 	return tagJoins
+}
+
+func CreateSceneImages(sceneID uuid.UUID, imageIds []string) SceneImages {
+	var imageJoins SceneImages
+	for _, iid := range imageIds {
+		imageID := uuid.FromStringOrNil(iid)
+		imageJoin := &SceneImage{
+			SceneID: sceneID,
+			ImageID: imageID,
+		}
+		imageJoins = append(imageJoins, imageJoin)
+	}
+
+	return imageJoins
 }
 
 func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearanceInput) PerformersScenes {

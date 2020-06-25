@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -27,7 +28,7 @@ import (
 var buildstamp string = ""
 var githash string = ""
 
-var setupUIBox *packr.Box
+var uiBox *packr.Box
 
 const ApiKeyHeader = "ApiKey"
 
@@ -107,17 +108,35 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
+func redirect(w http.ResponseWriter, req *http.Request) {
+	target := "https://" + req.Host + req.URL.Path
+	if len(req.URL.RawQuery) > 0 {
+		target += "?" + req.URL.RawQuery
+	}
+	http.Redirect(w, req, target, http.StatusPermanentRedirect)
+}
+
 func Start() {
-	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
+	uiBox = packr.New("Setup UI Box", "../../frontend/build")
 
 	r := chi.NewRouter()
 
+	var corsConfig *cors.Cors
+	if config.GetIsProduction() {
+		corsConfig = cors.AllowAll()
+	} else {
+		corsConfig = cors.New(cors.Options{
+			AllowOriginFunc:  func(origin string) bool { return true },
+			AllowCredentials: true,
+		})
+	}
+
+	r.Use(corsConfig.Handler)
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
-	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
 
 	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
@@ -140,12 +159,37 @@ func Start() {
 
 	r.Handle("/graphql", gqlHandler)
 
-	// TODO - this should be disabled in production
-	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+	if !config.GetIsProduction() {
+		r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+	}
 
 	// session handlers
-	r.HandleFunc("/login", handleLogin)
+	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			data, _ := uiBox.Find("index.html")
+			_, _ = w.Write(data)
+			return
+		}
+
+		handleLogin(w, r)
+		return
+	})
 	r.HandleFunc("/logout", handleLogout)
+
+	// Serve the web app
+	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
+		ext := path.Ext(r.URL.Path)
+		if ext == ".html" || ext == "" {
+			data, _ := uiBox.Find("index.html")
+			_, _ = w.Write(data)
+		} else {
+			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
+			if isStatic {
+				w.Header().Add("Cache-Control", "max-age=604800000")
+			}
+			http.FileServer(uiBox).ServeHTTP(w, r)
+		}
+	})
 
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
@@ -153,6 +197,10 @@ func Start() {
 			Addr:      address,
 			Handler:   r,
 			TLSConfig: tlsConfig,
+		}
+
+		if config.GetHTTPUpgrade() {
+			go http.ListenAndServe(config.GetHost()+":80", http.HandlerFunc(redirect))
 		}
 
 		go func() {

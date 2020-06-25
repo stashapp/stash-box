@@ -1,1 +1,1 @@
-export { default, SearchType } from './SearchField';
+export { default, SearchType } from "./SearchField";

@@ -1,30 +1,14 @@
 .performer-scenes {
-    .card-body {
-        padding: 0;
-    }
+  .card-body {
+    padding: 0;
+  }
 }
 
 .performer-table {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .performer-photo {
-    align-items: center;
-    display: flex;
-    height: 100%;
-    justify-content: center;
-    width: 100%;
-
-    img {
-        max-height: 100%;
-        max-width: 100%;
-    }
-}
-
-.performer-info {
-    margin-bottom: 2rem;
-
-    .row {
-        height: 42rem;
-    }
+  height: 25rem;
+  margin-top: 5px;
 }

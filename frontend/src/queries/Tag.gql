@@ -1,0 +1,7 @@
+query Tag($name: String, $id: ID) {
+    findTag(name: $name, id: $id) {
+        id
+        name
+        description
+    }
+}

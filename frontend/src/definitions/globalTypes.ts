@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -74,6 +75,14 @@ export enum HairColorEnum {
   VARIOUS = "VARIOUS",
 }
 
+export enum RoleEnum {
+  ADMIN = "ADMIN",
+  EDIT = "EDIT",
+  MODIFY = "MODIFY",
+  READ = "READ",
+  VOTE = "VOTE",
+}
+
 export enum SortDirectionEnum {
   ASC = "ASC",
   DESC = "DESC",
@@ -113,6 +122,7 @@ export interface EyeColorCriterionInput {
 export interface FingerprintInput {
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface FuzzyDateInput {
@@ -170,6 +180,7 @@ export interface PerformerCreateInput {
   career_end_year?: number | null;
   tattoos?: BodyModificationInput[] | null;
   piercings?: BodyModificationInput[] | null;
+  image_ids?: string[] | null;
 }
 
 export interface PerformerDestroyInput {
@@ -221,6 +232,7 @@ export interface PerformerUpdateInput {
   career_end_year?: number | null;
   tattoos?: BodyModificationInput[] | null;
   piercings?: BodyModificationInput[] | null;
+  image_ids?: string[] | null;
 }
 
 export interface QuerySpec {
@@ -238,7 +250,10 @@ export interface SceneCreateInput {
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
+  image_ids?: string[] | null;
   fingerprints: FingerprintInput[];
+  duration?: number | null;
+  director?: string | null;
 }
 
 export interface SceneDestroyInput {
@@ -265,7 +280,10 @@ export interface SceneUpdateInput {
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
+  image_ids?: string[] | null;
   fingerprints?: FingerprintInput[] | null;
+  duration?: number | null;
+  director?: string | null;
 }
 
 export interface StringCriterionInput {
@@ -278,6 +296,7 @@ export interface StudioCreateInput {
   urls?: URLInput[] | null;
   parent_id?: string | null;
   child_studio_ids?: string[] | null;
+  image_ids?: string[] | null;
 }
 
 export interface StudioFilterType {
@@ -292,11 +311,48 @@ export interface StudioUpdateInput {
   urls?: URLInput[] | null;
   parent_id?: string | null;
   child_studio_ids?: string[] | null;
+  image_ids?: string[] | null;
+}
+
+export interface TagCreateInput {
+  name: string;
+  description?: string | null;
+  aliases?: string[] | null;
+}
+
+export interface TagFilterType {
+  text?: string | null;
+  names?: string | null;
+  name?: string | null;
 }
 
 export interface URLInput {
   url: string;
   type: string;
+}
+
+export interface UserChangePasswordInput {
+  existing_password: string;
+  new_password: string;
+}
+
+export interface UserCreateInput {
+  name: string;
+  password: string;
+  roles: RoleEnum[];
+  email: string;
+}
+
+export interface UserDestroyInput {
+  id: string;
+}
+
+export interface UserUpdateInput {
+  id: string;
+  name?: string | null;
+  password?: string | null;
+  roles?: RoleEnum[] | null;
+  email?: string | null;
 }
 
 //==============================================================

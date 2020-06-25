@@ -1,53 +1,58 @@
-import React, { useRef, useContext } from 'react';
-import { useMutation } from '@apollo/react-hooks';
-import { useHistory } from 'react-router-dom';
-import LoginMutation from './mutations/Login.gql';
-import { setToken } from './utils/createClient';
-import AuthContext, { ContextProps } from './AuthContext';
+import React, { useRef, useContext } from "react";
+import { useHistory } from "react-router-dom";
+import AuthContext, { ContextType } from "src/AuthContext";
 
-import './App.scss';
+import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
+
+import "./App.scss";
 
 const Login: React.FC = () => {
-    const Auth = useContext<ContextProps>(AuthContext);
-    const [loginUser] = useMutation(LoginMutation, {
-        onCompleted: ({ loginUser: { bearer, user } }) => {
-            setToken(bearer);
-            Auth.setUser(user);
-        }
+  const history = useHistory();
+  const Auth = useContext<ContextType>(AuthContext);
+  const username = useRef<HTMLInputElement>(null);
+  const password = useRef<HTMLInputElement>(null);
+
+  if (Auth.authenticated) history.push("/");
+
+  const submitLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData();
+    data.append("username", username.current?.value ?? "");
+    data.append("password", password.current?.value ?? "");
+
+    const res = await fetch(`${getPlatformURL()}login`, {
+      method: "POST",
+      body: data,
+      credentials: getCredentialsSetting(),
     });
-    const email = useRef<HTMLInputElement>(null);
-    const password = useRef<HTMLInputElement>(null);
-    const history = useHistory();
+    if (res.ok) window.location.replace("/");
+  };
 
-    if (Auth.authenticated)
-        history.push('/');
-
-    const submitLogin = () => {
-        loginUser({
-            variables: {
-                email: (email && email.current && email.current.value) || '',
-                password: password && password.current && password.current.value
-            }
-        });
-    };
-
-    return (
-        <div className="LoginPrompt">
-            <div className="email">
-                <label>
-Email:
-                    <input ref={email} type="text" />
-                </label>
-            </div>
-            <div className="password">
-                <label>
-Password:
-                    <input ref={password} type="password" />
-                </label>
-            </div>
-            <button type="submit" className="login-button btn btn-primary" onClick={submitLogin}>Login</button>
-        </div>
-    );
+  return (
+    <div className="LoginPrompt mx-auto d-flex">
+      <form className="align-self-center col-4 mx-auto" onSubmit={submitLogin}>
+        <label className="row" htmlFor="username">
+          <span className="col-4">Username: </span>
+          <input ref={username} type="text" className="col-8" name="username" />
+        </label>
+        <label className="row" htmlFor="password">
+          <span className="col-4">Password:</span>
+          <input
+            ref={password}
+            type="password"
+            className="col-8"
+            name="password"
+          />
+        </label>
+        <button
+          type="submit"
+          className="login-button btn btn-primary col-3 offset-9"
+        >
+          Login
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default Login;

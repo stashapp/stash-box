@@ -1,17 +1,54 @@
 .LoadingIndicator {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    height: 70vh;
-    justify-content: center;
-    width: 100%;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  justify-content: center;
+  width: 100%;
 
-    &-message {
-        margin-top: 1rem;
+  &-message {
+    margin-top: 1rem;
+  }
+
+  .spinner-border {
+    height: 3rem;
+    width: 3rem;
+  }
+}
+
+.tag-item {
+  background-color: #bfccd6;
+  color: #182026;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  margin: 5px;
+  padding: 2px 6px;
+
+  a:hover {
+    color: unset;
+    text-decoration: none;
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  .btn {
+    background: none;
+    border: none;
+    color: #182026;
+    margin: 0;
+    margin-left: 0.25rem;
+    padding: 0 0.5rem;
+
+    &:hover {
+      background-color: #ffbdad;
+      color: #de350b;
     }
 
-    .spinner-border {
-        height: 3rem;
-        width: 3rem;
+    .fa-times {
+      width: 0.5rem;
     }
+  }
 }
