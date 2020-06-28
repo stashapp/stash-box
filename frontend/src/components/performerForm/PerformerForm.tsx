@@ -289,10 +289,13 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
   const countryObj = [
     { label: "Unknown", value: "" },
     ...sortBy(
-      Object.keys(CountryList).map((name: string) => ({
-        label: CountryList[name],
-        value: Countries.getAlpha2Code(CountryList[name], "en"),
-      })),
+        Object.keys(CountryList).map((name: string) => {
+            const countryName: string = Array.isArray(CountryList[name]) ? CountryList[name][0] : CountryList[name] as string;
+            return {
+              label: countryName,
+              value: Countries.getAlpha2Code(countryName, 'en'),
+            };
+        }),
       "label"
     ),
   ];

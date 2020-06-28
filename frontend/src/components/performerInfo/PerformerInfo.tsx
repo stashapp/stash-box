@@ -10,7 +10,7 @@ import {
   DeletePerformerMutation,
   DeletePerformerMutationVariables,
 } from "src/definitions/DeletePerformerMutation";
-import getFuzzyDate from "src/utils/date";
+import { getFuzzyDate, getCountryByISO } from "src/utils";
 import { canEdit, isAdmin } from "src/utils/auth";
 import { boobJobStatus, getBodyModification } from "src/utils/transforms";
 import { EthnicityTypes, HairColorTypes, EyeColorTypes } from "src/constants";
@@ -130,7 +130,7 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                   )}
                   <tr>
                     <td>Nationality</td>
-                    <td>{performer.country}</td>
+                    <td>{getCountryByISO(performer.country)}</td>
                   </tr>
                   <tr>
                     <td>Ethnicity</td>
