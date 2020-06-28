@@ -206,8 +206,8 @@ func (p *Performer) IsEditTarget() {
 }
 
 func (p *Performer) setBirthdate(fuzzyDate FuzzyDateInput) {
-	p.Birthdate = SQLiteDate{String: fuzzyDate.Date, Valid: true}
-	p.BirthdateAccuracy = sql.NullString{String: fuzzyDate.Accuracy.String(), Valid: true}
+	p.Birthdate = SQLiteDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
+	p.BirthdateAccuracy = sql.NullString{String: fuzzyDate.Accuracy.String(), Valid: fuzzyDate.Date != ""}
 }
 
 func (p Performer) ResolveBirthdate() FuzzyDate {
@@ -228,16 +228,16 @@ func (p Performer) ResolveBirthdate() FuzzyDate {
 
 func (p *Performer) setMeasurements(measurements MeasurementsInput) {
 	if measurements.CupSize != nil {
-		p.CupSize = sql.NullString{String: *measurements.CupSize, Valid: true}
+		p.CupSize = sql.NullString{String: *measurements.CupSize, Valid: *measurements.CupSize != ""}
 	}
 	if measurements.BandSize != nil {
-		p.BandSize = sql.NullInt64{Int64: int64(*measurements.BandSize), Valid: true}
+		p.BandSize = sql.NullInt64{Int64: int64(*measurements.BandSize), Valid: *measurements.BandSize != 0}
 	}
 	if measurements.Hip != nil {
-		p.HipSize = sql.NullInt64{Int64: int64(*measurements.Hip), Valid: true}
+		p.HipSize = sql.NullInt64{Int64: int64(*measurements.Hip), Valid: *measurements.Hip != 0}
 	}
 	if measurements.Waist != nil {
-		p.WaistSize = sql.NullInt64{Int64: int64(*measurements.Waist), Valid: true}
+		p.WaistSize = sql.NullInt64{Int64: int64(*measurements.Waist), Valid: *measurements.Waist != 0}
 	}
 }
 

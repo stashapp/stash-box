@@ -17,7 +17,7 @@ import { EthnicityTypes, HairColorTypes, EyeColorTypes } from "src/constants";
 
 import ImageCarousel from "src/components/imageCarousel";
 import Modal from "src/components/modal";
-import { GenderIcon } from "src/components/fragments";
+import { GenderIcon, PerformerName } from "src/components/fragments";
 
 const DeletePerformer = loader("src/mutations/DeletePerformer.gql");
 
@@ -72,7 +72,7 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
               </div>
               <h2>
                 <GenderIcon gender={performer?.gender} />
-                {performer.name}
+                <PerformerName performer={performer} />
               </h2>
             </Card.Header>
             <Card.Body className="performer-card-body">

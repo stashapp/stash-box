@@ -18,6 +18,7 @@ import {
   GenderIcon,
   LoadingIndicator,
   TagLink,
+  PerformerName,
 } from "src/components/fragments";
 
 const SceneQuery = loader("src/queries/Scene.gql");
@@ -59,9 +60,7 @@ const SceneComponent: React.FC = () => {
           className="scene-performer"
         >
           <GenderIcon gender={performer.gender} />
-          {performance.as
-            ? `${performance.as} (${performer.name})`
-            : performer.name}
+          <PerformerName performer={performer} as={performance.as} />
         </Link>
       );
     })
@@ -76,7 +75,10 @@ const SceneComponent: React.FC = () => {
   ));
   const tags = scene.tags.map((tag) => (
     <li key={tag.name}>
-      <TagLink title={tag.name} link={`/tags/${tag.name}`} />
+      <TagLink
+        title={tag.name}
+        link={`/tags/${encodeURIComponent(tag.name)}`}
+      />
     </li>
   ));
 
