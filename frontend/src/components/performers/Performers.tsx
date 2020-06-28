@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { loader } from "graphql.macro";
+import { Link } from "react-router-dom";
+import { Button } from "react-bootstrap";
 
 import { Performers } from "src/definitions/Performers";
 
@@ -8,10 +10,13 @@ import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import { LoadingIndicator } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
+import { canEdit } from "src/utils/auth";
+import AuthContext from "src/AuthContext";
 
 const PerformersQuery = loader("src/queries/Performers.gql");
 
 const PerformersComponent: React.FC = () => {
+  const auth = useContext(AuthContext);
   const { page, setPage } = usePagination();
   const { loading: loadingData, data } = useQuery<Performers>(PerformersQuery, {
     variables: {
@@ -29,8 +34,13 @@ const PerformersComponent: React.FC = () => {
 
   return (
     <>
-      <div className="row">
-        <h3 className="col-4">Performers</h3>
+      <div className="d-flex">
+        <h3 className="mr-4">Performers</h3>
+        {canEdit(auth.user) && (
+          <Link to="/performers/add">
+            <Button className="mr-auto">Create</Button>
+          </Link>
+        )}
         <Pagination onClick={setPage} pages={totalPages} active={page} />
       </div>
       <div className="performers row">{performers}</div>

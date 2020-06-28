@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import useForm from "react-hook-form";
 import Select, { ValueType, OptionTypeBase } from "react-select";
+import { Button, Form } from "react-bootstrap";
 import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
@@ -199,6 +200,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
     validationSchema: schema,
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
+  const history = useHistory();
 
   useEffect(() => {
     register({ name: "country" });
@@ -609,24 +611,17 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
             </div>
           </div>
 
-          <div className="form-group">
-            <input
-              className="btn btn-primary col-2 save-button"
-              type="submit"
-              value="Save"
-            />
-            <input
-              className="btn btn-secondary offset-6 reset-button"
-              type="reset"
-            />
+          <Form.Group className="d-flex">
+            <Button className="col-2" type="submit">Save</Button>
+            <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
             <Link
               to={performer.id ? `/performers/${performer.id}` : "/performers"}
             >
-              <button className="btn btn-danger reset-button" type="button">
+              <Button variant="danger" onClick={() => history.goBack()}>
                 Cancel
-              </button>
+              </Button>
             </Link>
-          </div>
+          </Form.Group>
         </div>
       </div>
     </form>
