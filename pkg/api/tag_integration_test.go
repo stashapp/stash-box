@@ -136,7 +136,7 @@ func (s *tagTestRunner) testUpdateTag() {
 func (s *tagTestRunner) verifyUpdatedTag(input models.TagUpdateInput, tag *models.Tag) {
 	// ensure basic attributes are set correctly
 	if input.Name != nil && *input.Name != tag.Name {
-		s.fieldMismatch(input.Name, tag.Name, "Name")
+		s.fieldMismatch(*input.Name, tag.Name, "Name")
 	}
 
 	r := s.resolver.Tag()
