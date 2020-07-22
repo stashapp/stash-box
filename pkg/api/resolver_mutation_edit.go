@@ -46,6 +46,27 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 			_ = tx.Rollback()
 			return nil, err
 		}
+    } else if input.Edit.Operation == models.OperationEnumMerge {
+		err = edit.MergeTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+    } else if input.Edit.Operation == models.OperationEnumDestroy {
+		err = edit.DestroyTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+    } else if input.Edit.Operation == models.OperationEnumCreate {
+		err = edit.CreateTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	} else {
 		panic("not implemented")
 	}
@@ -59,18 +80,20 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 		return nil, err
 	}
 
-	tagID, _ := uuid.FromString(*input.Edit.ID)
+    if input.Edit.ID != nil {
+        tagID, _ := uuid.FromString(*input.Edit.ID)
 
-	editTag := models.EditTag{
-		EditID: created.ID,
-		TagID:  tagID,
-	}
+        editTag := models.EditTag{
+            EditID: created.ID,
+            TagID:  tagID,
+        }
 
-	err = eqb.CreateEditTag(editTag)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
+        err = eqb.CreateEditTag(editTag)
+        if err != nil {
+            _ = tx.Rollback()
+            return nil, err
+        }
+    }
 
 	// Commit
 	if err := tx.Commit(); err != nil {

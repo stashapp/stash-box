@@ -1,6 +1,8 @@
 package models
 
 import (
+    "errors"
+
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
@@ -44,7 +46,19 @@ func (qb *EditQueryBuilder) Find(id uuid.UUID) (*Edit, error) {
 }
 
 func (qb *EditQueryBuilder) CreateEditTag(newJoin EditTag) error {
-	return qb.dbi.InsertJoin(editTagTable, &newJoin)
+	return qb.dbi.InsertJoin(editTagTable, newJoin, false)
+}
+
+func (qb *EditQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
+    joins := EditTags{}
+    err := qb.dbi.FindJoins(editTagTable, id, &joins)
+    if err != nil {
+        return nil, err
+    }
+    if len(joins) == 0 {
+        return nil, errors.New("tag edit not found")
+    }
+    return &joins[0].TagID, nil
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {

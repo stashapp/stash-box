@@ -41,8 +41,89 @@ func ModifyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 			return err
 		}
 
-		tagEdit.AddedAliases, tagEdit.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
+		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
-	return edit.SetData(tagEdit)
+	edit.SetData(tagEdit)
+    return nil
+}
+
+func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tqb := models.NewTagQueryBuilder(tx)
+
+	// get the existing tag
+	tagID, _ := uuid.FromString(*input.Edit.ID)
+	tag, err := tqb.Find(tagID)
+
+	if err != nil {
+		return err
+	}
+
+	if tag == nil {
+		return errors.New("tag with id " + tagID.String() + " not found")
+	}
+
+    mergeSources := []string {}
+    for _, mergeSourceId := range input.Edit.MergeSourceIds {
+        sourceID, _ := uuid.FromString(mergeSourceId)
+        sourceTag, err := tqb.Find(sourceID)
+        if err != nil {
+            return err
+        }
+
+        if sourceTag == nil {
+            return errors.New("tag with id " + sourceID.String() + " not found")
+        }
+        if tagID == sourceID {
+            return errors.New("merge target cannot be used as source")
+        }
+        mergeSources = append(mergeSources, mergeSourceId)
+    }
+
+    if len(mergeSources) < 1 {
+		return errors.New("No merge sources found")
+    }
+
+	// perform a diff against the input and the current object
+	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources)
+
+	// determine unspecified aliases vs no aliases
+	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
+		aliases, err := tqb.GetAliases(tagID)
+
+		if err != nil {
+			return err
+		}
+
+		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
+	}
+
+	edit.SetData(tagEdit)
+    return nil
+}
+
+func CreateTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tagEdit := input.Details.TagEditFromCreate()
+
+	// determine unspecified aliases vs no aliases
+	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
+        tagEdit.New.AddedAliases = input.Details.Aliases
+	}
+
+	edit.SetData(tagEdit)
+    return nil
+}
+
+func DestroyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tqb := models.NewTagQueryBuilder(tx)
+
+	// get the existing tag
+	tagID, _ := uuid.FromString(*input.Edit.ID)
+	_, err := tqb.Find(tagID)
+
+	if err != nil {
+		return err
+	}
+
+    return nil
 }

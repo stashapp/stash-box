@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+    "errors"
 
+    "github.com/gofrs/uuid"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
@@ -24,8 +26,31 @@ func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User
 }
 
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {
-	// TODO
-	return nil, nil
+    var operation models.OperationEnum
+    resolveEnumString(obj.Operation, &operation)
+    if operation == models.OperationEnumCreate {
+        return nil, nil
+    }
+
+    var targetType models.TargetTypeEnum
+    resolveEnumString(obj.TargetType, &targetType)
+    if targetType == "TAG" {
+
+        eqb := models.NewEditQueryBuilder(nil)
+        tagID, err := eqb.FindTagID(obj.ID)
+        if err != nil {
+            return nil, err
+        }
+
+        tqb := models.NewTagQueryBuilder(nil)
+        target, err := tqb.Find(*tagID)
+        if err != nil {
+            return nil, err
+        }
+        return target, nil
+    } else {
+        return nil, errors.New("not implemented")
+    }
 }
 
 func (r *editResolver) TargetType(ctx context.Context, obj *models.Edit) (models.TargetTypeEnum, error) {
@@ -38,8 +63,29 @@ func (r *editResolver) TargetType(ctx context.Context, obj *models.Edit) (models
 }
 
 func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]models.EditTarget, error) {
-	// TODO
-	return nil, nil
+    mergeSources := []models.EditTarget{}
+    editData, err := obj.GetData()
+    if err != nil {
+        return nil, err
+    }
+
+    if len(editData.MergeSources) > 0 {
+        var ret models.TargetTypeEnum
+        resolveEnumString(obj.TargetType, &ret)
+        if ret == "TAG" {
+            tqb := models.NewTagQueryBuilder(nil)
+            for _, tagStringID := range(editData.MergeSources) {
+                tagID, _ := uuid.FromString(tagStringID)
+                tag, err := tqb.Find(tagID)
+                if err == nil {
+                    mergeSources = append(mergeSources, tag)
+                }
+            }
+        } else {
+            return nil, errors.New("not implemented")
+        }
+    }
+    return mergeSources, nil
 }
 
 func (r *editResolver) Operation(ctx context.Context, obj *models.Edit) (models.OperationEnum, error) {
@@ -56,8 +102,12 @@ func (r *editResolver) EditComment(ctx context.Context, obj *models.Edit) (*stri
 }
 
 func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.EditDetails, error) {
-	// TODO
-	return nil, nil
+    editData, err := obj.GetData()
+    if err != nil {
+        return nil, err
+    }
+
+    return editData.New, nil
 }
 
 func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*models.VoteComment, error) {

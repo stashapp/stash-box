@@ -25,7 +25,7 @@ var (
 	})
 
 	editTagTable = database.NewTableJoin(editTable, "tag_edit", editJoinKey, func() interface{} {
-		return &TagEdit{}
+		return &EditTag{}
 	})
 
 	// voteDBTable = database.NewTable(editTable, func() interface{} {
@@ -90,6 +90,15 @@ func (e *Edit) SetData(data interface{}) error {
 	return nil
 }
 
+func (e *Edit) GetData() (*TagEditData, error) {
+    data := TagEditData {}
+	err := json.Unmarshal(e.Data, &data)
+    if err != nil {
+        return nil, err
+    }
+	return &data, nil
+}
+
 type Edits []*Edit
 
 func (p Edits) Each(fn func(interface{})) {
@@ -143,3 +152,18 @@ func (p *EditTags) Add(o interface{}) {
 // 		p.setDate(*input.Date)
 // 	}
 // }
+
+type TagEdit struct {
+	Name           *string  `json:"name,omitempty"`
+	Description    *string  `json:"description,omitempty"`
+	AddedAliases   []string `json:"added_aliases,omitempty"`
+	RemovedAliases []string `json:"removed_aliases,omitempty"`
+}
+
+func (TagEdit) IsEditDetails() {}
+
+type TagEditData struct {
+    New            *TagEdit `json:"new_data,omitempty"`
+    Old            *TagEdit `json:"old_data,omitempty"`
+    MergeSources   []string `json:"merge_sources,omitempty"`
+}
