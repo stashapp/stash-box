@@ -31,7 +31,7 @@ func (qb *ImageQueryBuilder) Create(newImage Image) (*Image, error) {
 }
 
 func (qb *ImageQueryBuilder) Update(updatedImage Image) (*Image, error) {
-	ret, err := qb.dbi.Update(updatedImage)
+	ret, err := qb.dbi.Update(updatedImage, false)
 	return qb.toModel(ret), err
 }
 

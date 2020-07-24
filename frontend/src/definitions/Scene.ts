@@ -28,6 +28,7 @@ export interface Scene_findScene_studio {
 
 export interface Scene_findScene_performers_performer {
   name: string;
+  disambiguation: string | null;
   id: string;
   gender: GenderEnum | null;
   aliases: string[];

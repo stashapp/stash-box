@@ -48,17 +48,17 @@ const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
             {performance.duration ? formatDuration(performance.duration) : ""}
           </span>
         </Link>
-        <div>
+        <div className="text-muted">
           {performance.studio && (
             <Link
               to={`/studios/${performance.studio.id}`}
-              className="float-right text-muted"
+              className="float-right text-truncate SceneCard-studio-name"
             >
               <Icon icon="video" className="mr-1" />
               {performance.studio.name}
             </Link>
           )}
-          <strong className="text-muted">{performance.date}</strong>
+          <strong>{performance.date}</strong>
         </div>
       </Card.Footer>
     </Card>

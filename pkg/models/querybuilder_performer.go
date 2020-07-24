@@ -34,7 +34,7 @@ func (qb *PerformerQueryBuilder) Create(newPerformer Performer) (*Performer, err
 }
 
 func (qb *PerformerQueryBuilder) Update(updatedPerformer Performer) (*Performer, error) {
-	ret, err := qb.dbi.Update(updatedPerformer)
+	ret, err := qb.dbi.Update(updatedPerformer, true)
 	return qb.toModel(ret), err
 }
 

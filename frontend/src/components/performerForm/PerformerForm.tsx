@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import useForm from "react-hook-form";
 import Select, { ValueType, OptionTypeBase } from "react-select";
+import { Button, Form } from "react-bootstrap";
 import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
+import { sortBy } from "lodash";
 
 import {
   GenderEnum,
@@ -145,7 +147,7 @@ const schema = yup.object().shape({
   boobJob: yup
     .string()
     .transform(nullCheck)
-    .oneOf(Object.keys(BreastTypeEnum), "Invalid breast type")
+    .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type")
     .nullable(),
   country: yup.string().trim().transform(nullCheck).nullable(),
   ethnicity: yup
@@ -156,12 +158,12 @@ const schema = yup.object().shape({
   eye_color: yup
     .string()
     .transform(nullCheck)
-    .oneOf(Object.keys(EyeColorEnum), "Invalid eye color")
+    .oneOf([null, ...Object.keys(EyeColorEnum)], "Invalid eye color")
     .nullable(),
   hair_color: yup
     .string()
     .transform(nullCheck)
-    .oneOf(Object.keys(HairColorEnum), "Invalid hair color")
+    .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color")
     .nullable(),
   tattoos: yup
     .array()
@@ -198,6 +200,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
     validationSchema: schema,
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
+  const history = useHistory();
 
   useEffect(() => {
     register({ name: "country" });
@@ -209,7 +212,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
     setGender(e.currentTarget.value);
   const onCountryChange = (selectedOption: ValueType<IOptionType>) => {
     const country = (selectedOption as IOptionType).value;
-    if (country) setValue("country", country);
+    setValue("country", country || null);
   };
 
   const enumOptions = (enums: OptionEnum[]) =>
@@ -243,21 +246,23 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
       breast_type: BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum],
     };
 
+    performerData.measurements = {
+      cup_size: "",
+      band_size: 0,
+      waist: data.waistSize ?? 0,
+      hip: data.hipSize ?? 0,
+    };
     if (data.cupSize != null) {
       const band = data.cupSize.match(/^\d+/)?.[0];
-      const bandSize = band ? Number.parseInt(band[0], 10) : null;
+      const bandSize = band ? Number.parseInt(band, 10) : null;
       const cup = bandSize
         ? data.cupSize.replace(bandSize.toString(), "")
         : null;
       const cupSize = cup
         ? cup.match(/^[a-zA-Z]+/)?.[0]?.toUpperCase() ?? null
         : null;
-      performerData.measurements = {
-        band_size: bandSize,
-        cup_size: cupSize,
-        waist: data.waistSize,
-        hip: data.hipSize,
-      };
+      performerData.measurements.cup_size = cupSize;
+      performerData.measurements.band_size = bandSize ?? 0;
     }
     if (data.gender !== "FEMALE" && data.gender !== "TRANSGENDER_FEMALE")
       performerData.breast_type = BreastTypeEnum.NA;
@@ -281,10 +286,19 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
     callback(performerData);
   };
 
-  const countryObj = Object.keys(CountryList).map((name: string) => ({
-    label: CountryList[name],
-    value: CountryList[name],
-  }));
+  const countryObj = [
+    { label: "Unknown", value: "" },
+    ...sortBy(
+        Object.keys(CountryList).map((name: string) => {
+            const countryName: string = Array.isArray(CountryList[name]) ? CountryList[name][0] : CountryList[name] as string;
+            return {
+              label: countryName,
+              value: Countries.getAlpha2Code(countryName, 'en'),
+            };
+        }),
+      "label"
+    ),
+  ];
 
   return (
     // estlint-ignore-next-line
@@ -600,24 +614,17 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
             </div>
           </div>
 
-          <div className="form-group">
-            <input
-              className="btn btn-primary col-2 save-button"
-              type="submit"
-              value="Save"
-            />
-            <input
-              className="btn btn-secondary offset-6 reset-button"
-              type="reset"
-            />
+          <Form.Group className="d-flex">
+            <Button className="col-2" type="submit">Save</Button>
+            <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
             <Link
               to={performer.id ? `/performers/${performer.id}` : "/performers"}
             >
-              <button className="btn btn-danger reset-button" type="button">
+              <Button variant="danger" onClick={() => history.goBack()}>
                 Cancel
-              </button>
+              </Button>
             </Link>
-          </div>
+          </Form.Group>
         </div>
       </div>
     </form>

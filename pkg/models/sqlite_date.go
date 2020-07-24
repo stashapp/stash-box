@@ -37,6 +37,9 @@ func (t SQLiteDate) Value() (driver.Value, error) {
 	if err != nil {
 		logger.Debugf("sqlite date conversion error: %s", err.Error())
 	}
+	if result == "" {
+		return nil, nil
+	}
 	return result, nil
 }
 
