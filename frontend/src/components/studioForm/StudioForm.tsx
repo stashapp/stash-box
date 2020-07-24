@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
+import { Button, Form } from "react-bootstrap";
 import useForm from "react-hook-form";
 import * as yup from "yup";
 import cx from "classnames";
@@ -26,6 +27,7 @@ interface StudioProps {
 }
 
 const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
+  const history = useHistory();
   const { register, handleSubmit, errors } = useForm<StudioFormData>({
     validationSchema: schema,
   });
@@ -46,7 +48,7 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
   };
 
   return (
-    <form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
+    <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
       <div className="form-group row">
         <div className="col-3">
           <label htmlFor="title">
@@ -93,20 +95,16 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
       </div>
       <img src={photoURL} alt="Studio" className="StudioForm-img m-4" />
 
-      <div className="form-group">
-        <input
-          className="btn btn-primary col-2 mr-4"
-          type="submit"
-          value="Save"
-        />
-        <input className="btn btn-secondary offset-6 mr-2" type="reset" />
+      <Form.Group className="d-flex">
+        <Button className="col-2" type="submit">Save</Button>
+        <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
         <Link to={studio.id ? `/studios/${studio.id}` : "/studios"}>
-          <button className="btn btn-danger mr-2" type="button">
+          <Button variant="danger" onClick={() => history.goBack()}>
             Cancel
-          </button>
+          </Button>
         </Link>
-      </div>
-    </form>
+      </Form.Group>
+    </Form>
   );
 };
 

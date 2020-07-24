@@ -23,6 +23,7 @@ query Scene($id: ID!) {
         as
         performer {
           name
+          disambiguation
           id
 		  gender
 		  aliases

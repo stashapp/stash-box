@@ -3,6 +3,7 @@ import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Performers_queryPerformers_performers as Performer } from "src/definitions/Performers";
 
+import { PerformerName } from "src/components/fragments";
 import { getImage } from "src/utils/transforms";
 
 interface PerformerCardProps {
@@ -20,7 +21,9 @@ const PerformerCard: React.FC<PerformerCardProps> = ({ performer }) => (
           <img src={getImage(performer.images, "portrait")} alt="" />
         </div>
         <Card.Footer>
-          <h5>{performer.name}</h5>
+          <h5>
+            <PerformerName performer={performer} />
+          </h5>
         </Card.Footer>
       </Link>
     </Card>

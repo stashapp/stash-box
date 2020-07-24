@@ -32,7 +32,7 @@ func (qb *SceneQueryBuilder) Create(newScene Scene) (*Scene, error) {
 }
 
 func (qb *SceneQueryBuilder) Update(updatedScene Scene) (*Scene, error) {
-	ret, err := qb.dbi.Update(updatedScene)
+	ret, err := qb.dbi.Update(updatedScene, false)
 	return qb.toModel(ret), err
 }
 

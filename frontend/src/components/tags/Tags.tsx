@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/react-hooks";
-import { Button } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import { Tags } from "src/definitions/Tags";
 
 import { LoadingIndicator } from "src/components/fragments";
+import { canEdit } from "src/utils/auth";
+import AuthContext from "src/AuthContext";
 
 const TagsQuery = loader("src/queries/Tags.gql");
 
 const TagsComponent: React.FC = () => {
+  const auth = useContext(AuthContext);
   const { loading, data } = useQuery<Tags>(TagsQuery, {
     variables: { filter: { per_page: 10000, sort: "name", direction: "ASC" } },
   });
@@ -26,13 +29,19 @@ const TagsComponent: React.FC = () => {
 
   return (
     <>
-      <div className="row">
-        <h3 className="col-4">Tags</h3>
-        <Link to="/tags/add" className="ml-auto">
-          <Button>Create</Button>
-        </Link>
+      <div className="d-flex">
+        <h3 className="mr-4">Tags</h3>
+        {canEdit(auth.user) && (
+          <Link to="/tags/add">
+            <Button className="ml-auto">Create</Button>
+          </Link>
+        )}
       </div>
-      <ul>{tags}</ul>
+      <Card>
+        <Card.Body className="pt-4" >
+          <ul>{tags}</ul>
+        </Card.Body>
+      </Card>
     </>
   );
 };

@@ -28,7 +28,7 @@ type DBI interface {
 	// Update updates a database row based on the id and values of the provided
 	// object. It returns the updated object. Update will return an error if
 	// the object with id does not exist in the database table.
-	Update(model Model) (interface{}, error)
+	Update(model Model, updateEmptyValues bool) (interface{}, error)
 
 	// ReplaceJoins replaces table join objects with the provided primary table
 	// id value with the provided join objects.
@@ -100,9 +100,9 @@ func (q dbi) Insert(model Model) (interface{}, error) {
 // Update updates a database row based on the id and values of the provided
 // object. It returns the updated object. Update will return an error if
 // the object with id does not exist in the database table.
-func (q dbi) Update(model Model) (interface{}, error) {
+func (q dbi) Update(model Model, updateEmptyValues bool) (interface{}, error) {
 	tableName := model.GetTable().Name()
-	err := updateObjectByID(q.tx, tableName, model)
+	err := updateObjectByID(q.tx, tableName, model, updateEmptyValues)
 
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error updating %s", reflect.TypeOf(model).Name()))

@@ -126,10 +126,10 @@ func insertObject(tx *sqlx.Tx, table string, object interface{}, ignoreConflicts
 	return err
 }
 
-func updateObjectByID(tx *sqlx.Tx, table string, object interface{}) error {
+func updateObjectByID(tx *sqlx.Tx, table string, object interface{}, updateEmptyValues bool) error {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE `+table+` SET `+sqlGenKeys(object, false)+` WHERE `+table+`.id = :id`,
+		`UPDATE `+table+` SET `+sqlGenKeys(object, updateEmptyValues)+` WHERE `+table+`.id = :id`,
 		object,
 	)
 

@@ -30,7 +30,7 @@ func (qb *UserQueryBuilder) Create(newUser User) (*User, error) {
 }
 
 func (qb *UserQueryBuilder) Update(updatedUser User) (*User, error) {
-	ret, err := qb.dbi.Update(updatedUser)
+	ret, err := qb.dbi.Update(updatedUser, false)
 	return qb.toModel(ret), err
 }
 

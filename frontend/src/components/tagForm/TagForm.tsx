@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import useForm from "react-hook-form";
 import * as yup from "yup";
 import cx from "classnames";
@@ -21,6 +21,7 @@ interface TagProps {
 }
 
 const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
+  const history = useHistory();
   const { register, handleSubmit, errors } = useForm<TagFormData>({
     validationSchema: schema,
   });
@@ -58,17 +59,17 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
         />
       </Form.Group>
 
-      <Form.Group>
-        <Button type="submit" className="col-2 mr-4">
+      <Form.Group className="d-flex">
+        <Button type="submit" className="col-2">
           Save
         </Button>
-        <Button type="reset" className="offset-6 mr-4">
+        <Button type="reset" className="ml-auto mr-2">
           Reset
         </Button>
         <Link to={tag.id ? `/tags/${tag.id}` : "/tags"}>
-          <button className="btn btn-danger mr-2" type="button">
+          <Button variant="danger" onClick={() => history.goBack()}>
             Cancel
-          </button>
+          </Button>
         </Link>
       </Form.Group>
     </Form>

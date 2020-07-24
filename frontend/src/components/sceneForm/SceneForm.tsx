@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@apollo/react-hooks";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import useForm from "react-hook-form";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
@@ -94,6 +94,7 @@ interface PerformerInfo {
 }
 
 const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
+  const history = useHistory();
   const fingerprintHash = useRef<HTMLInputElement>(null);
   const fingerprintDuration = useRef<HTMLInputElement>(null);
   const fingerprintAlgorithm = useRef<HTMLSelectElement>(null);
@@ -273,7 +274,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   };
 
   return (
-    <form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
+    <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
       <input
         type="hidden"
         name="id"
@@ -416,28 +417,18 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             </Button>
           </Form.Group>
 
-          <div className="form-group button-row">
-            <input
-              className="btn btn-primary col-2 save-button"
-              type="submit"
-              value="Save"
-            />
-            <input
-              className="btn btn-secondary offset-6 reset-button"
-              type="reset"
-            />
+          <Form.Group className="d-flex">
+            <Button className="col-2" type="submit">Save</Button>
+            <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
             <Link to={scene.id ? `/scenes/${scene.id}` : "/scenes"}>
-              <button
-                className="btn btn-danger reset-button ml-2"
-                type="button"
-              >
+              <Button variant="danger" onClick={() => history.goBack()}>
                 Cancel
-              </button>
+              </Button>
             </Link>
-          </div>
+          </Form.Group>
         </div>
       </div>
-    </form>
+    </Form>
   );
 };
 
