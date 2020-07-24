@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { Button } from "react-bootstrap";
 import { loader } from "graphql.macro";
+import { canEdit } from "src/utils/auth";
+import AuthContext from "src/AuthContext";
 
 import {
   Studios,
@@ -19,6 +22,7 @@ interface ParentStudio {
 }
 
 const StudiosComponent: React.FC = () => {
+  const auth = useContext(AuthContext);
   const { loading: loadingData, data } = useQuery<Studios>(StudiosQuery, {
     variables: { filter: { page: 0, per_page: 10000 } },
   });
@@ -69,14 +73,21 @@ const StudiosComponent: React.FC = () => {
   ));
 
   return (
-    <Card>
-      <Card.Header>
-        <h2>Studios</h2>
-      </Card.Header>
-      <Card.Body>
-        <ul>{studioList}</ul>
-      </Card.Body>
-    </Card>
+    <>
+      <div className="d-flex">
+        <h2 className="mr-4">Studios</h2>
+        {canEdit(auth.user) && (
+          <Link to="/studios/add">
+            <Button className="mr-auto">Create</Button>
+          </Link>
+        )}
+      </div>
+      <Card>
+        <Card.Body className="pt-4" >
+          <ul>{studioList}</ul>
+        </Card.Body>
+      </Card>
+    </>
   );
 };
 

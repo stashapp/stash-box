@@ -36,7 +36,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
   };
 
   return (
-    <Pagination onClick={handleClick}>
+    <Pagination onClick={handleClick} className="mr-0">
       {showFirst && <Pagination.First data-page={1} />}
       <Pagination.Prev disabled={active === 1} data-page={active - 1} />
       {paginationItems}

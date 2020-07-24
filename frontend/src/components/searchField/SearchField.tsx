@@ -81,7 +81,10 @@ function handleResult(
     performers = performerResults.map((performer) => ({
       type: "performer",
       value: performer,
-      label: performer?.name ?? "Unknown",
+      // eslint-disable-next-line prefer-template
+      label: `${performer.name}${
+        performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
+      }`,
       subLabel: [
         performer?.birthdate
           ? `Born: ${GetFuzzyDate(performer.birthdate)}`
@@ -157,8 +160,10 @@ const SearchField: React.FC<SearchFieldProps> = ({
     term: string,
     callback: (options: Array<SearchGroup>) => void
   ) => {
-    setCallback(callback);
-    search({ variables: { term } });
+    if (term) {
+      setCallback(() => callback);
+      search({ variables: { term } });
+    } else callback([]);
   };
 
   const debouncedLoadOptions = debounce(handleSearch, 400);
@@ -194,7 +199,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
           IndicatorSeparator: () => null,
         }}
         noOptionsMessage={({ inputValue }) =>
-          `No result found for "${inputValue}"`
+          inputValue === "" ? null : `No result found for "${inputValue}"`
         }
       />
     </div>

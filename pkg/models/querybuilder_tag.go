@@ -31,7 +31,7 @@ func (qb *TagQueryBuilder) Create(newTag Tag) (*Tag, error) {
 }
 
 func (qb *TagQueryBuilder) Update(updatedTag Tag) (*Tag, error) {
-	ret, err := qb.dbi.Update(updatedTag)
+	ret, err := qb.dbi.Update(updatedTag, false)
 	return qb.toModel(ret), err
 }
 

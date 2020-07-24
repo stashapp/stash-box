@@ -23,9 +23,6 @@ func (r *sceneResolver) Duration(ctx context.Context, obj *models.Scene) (*int, 
 func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.Director)
 }
-func (r *sceneResolver) URL(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveNullString(obj.URL)
-}
 func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveSQLiteDate(obj.Date)
 }
