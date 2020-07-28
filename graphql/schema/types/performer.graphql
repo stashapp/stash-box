@@ -90,6 +90,7 @@ type Performer {
   tattoos: [BodyModification!]
   piercings: [BodyModification!]
   images: [Image!]!
+  deleted: Boolean!
 }
 
 input PerformerCreateInput {

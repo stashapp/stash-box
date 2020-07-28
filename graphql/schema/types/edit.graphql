@@ -103,3 +103,7 @@ input EditFilterType {
   """Filter by target id"""
   target_id: ID
 }
+
+input ApplyEditInput {
+    id: ID!
+}

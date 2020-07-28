@@ -3,6 +3,7 @@ type Tag {
   name: String!
   description: String
   aliases: [String!]!
+  deleted: Boolean!
 }
 
 input TagCreateInput {

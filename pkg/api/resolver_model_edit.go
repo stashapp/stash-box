@@ -102,12 +102,18 @@ func (r *editResolver) EditComment(ctx context.Context, obj *models.Edit) (*stri
 }
 
 func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.EditDetails, error) {
-    editData, err := obj.GetData()
-    if err != nil {
-        return nil, err
+    var ret models.EditDetails
+    var targetType models.TargetTypeEnum
+    resolveEnumString(obj.TargetType, &targetType)
+    if targetType == "TAG" {
+        tagData, err := obj.GetTagData()
+        if err != nil {
+            return nil, err
+        }
+        ret = tagData.New
     }
 
-    return editData.New, nil
+    return ret, nil
 }
 
 func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*models.VoteComment, error) {

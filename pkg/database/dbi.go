@@ -42,6 +42,9 @@ type DBI interface {
 	// id value.
 	DeleteJoins(tableJoin TableJoin, id uuid.UUID) error
 
+	// Soft delete row by setting value of deleted column to TRUE
+	SoftDelete(model Model) (interface{}, error)
+
 	// Find returns the row object with the provided id, or returns nil if not
 	// found.
 	Find(id uuid.UUID, table Table) (interface{}, error)
@@ -131,6 +134,25 @@ func (q dbi) Delete(id uuid.UUID, table Table) error {
 	}
 
 	return executeDeleteQuery(table.Name(), id, q.tx)
+}
+
+// Soft delete row by setting value of deleted column to TRUE
+func (q dbi) SoftDelete(model Model) (interface{}, error) {
+	tableName := model.GetTable().Name()
+    id := model.GetID()
+
+    err := softDeleteObjectByID(q.tx, tableName, id)
+    if err != nil {
+        return nil, err
+    }
+
+	// don't want to modify the existing object
+	updatedModel := model.GetTable().NewObject()
+	if err := getByID(q.tx, tableName, id, updatedModel); err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after soft delete", reflect.TypeOf(model).Name()))
+	}
+
+	return updatedModel, nil
 }
 
 func selectStatement(table Table) string {

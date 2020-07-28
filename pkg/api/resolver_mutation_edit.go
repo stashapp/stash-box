@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+    "errors"
 
 	"github.com/gofrs/uuid"
 
@@ -107,4 +108,63 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 }
 func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCommentInput) (*models.Edit, error) {
 	panic("not implemented")
+}
+
+func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
+	if err := validateAdmin(ctx); err != nil {
+		return nil, err
+	}
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+    tagID, _ := uuid.FromString(input.ID)
+	eqb := models.NewEditQueryBuilder(tx)
+    edit, err := eqb.Find(tagID)
+    if err != nil {
+        return nil, err
+    }
+    if edit == nil {
+        return nil, errors.New("Edit not found")
+    }
+
+    if edit.Applied {
+        return nil, errors.New("Edit already applied")
+    }
+
+    var status models.VoteStatusEnum
+    resolveEnumString(edit.Status, &status)
+    if status != models.VoteStatusEnumPending {
+        return nil, errors.New("Invalid vote status: " + edit.Status)
+    }
+
+    var operation models.OperationEnum
+    resolveEnumString(edit.Operation, &operation)
+    var targetType models.TargetTypeEnum
+    resolveEnumString(edit.TargetType, &targetType)
+    switch targetType {
+    case models.TargetTypeEnumTag:
+        tqb := models.NewTagQueryBuilder(tx)
+        _, err = tqb.ApplyEdit(*edit, operation)
+    default:
+        return nil, errors.New("Not implemented: " + edit.TargetType)
+    }
+
+    if err != nil {
+        _ = tx.Rollback()
+        return nil, err
+    }
+
+    edit.ImmediateAccept()
+    updatedEdit, err := eqb.Update(*edit)
+
+    if err != nil {
+        _ = tx.Rollback()
+        return nil, err
+    }
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+    return updatedEdit, nil
 }

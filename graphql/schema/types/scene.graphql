@@ -49,6 +49,7 @@ type Scene {
   fingerprints: [Fingerprint!]!
   duration: Int
   director: String
+  deleted: Boolean!
 }
 
 input SceneCreateInput {

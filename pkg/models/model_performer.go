@@ -55,6 +55,7 @@ type Performer struct {
 	CareerEndYear     sql.NullInt64   `db:"career_end_year" json:"career_end_year"`
 	CreatedAt         SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt         SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+    Deleted           bool            `db:"deleted" json:"deleted"`
 }
 
 func (Performer) GetTable() database.Table {

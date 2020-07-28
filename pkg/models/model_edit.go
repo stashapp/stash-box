@@ -78,6 +78,12 @@ func (p Edit) GetID() uuid.UUID {
 	return p.ID
 }
 
+func (p *Edit) ImmediateAccept() {
+    p.Status = VoteStatusEnumImmediateAccepted.String()
+    p.Applied = true
+    p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
 func (e *Edit) SetData(data interface{}) error {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
@@ -90,7 +96,16 @@ func (e *Edit) SetData(data interface{}) error {
 	return nil
 }
 
-func (e *Edit) GetData() (*TagEditData, error) {
+func (e *Edit) GetData() (*EditData, error) {
+    data := EditData {}
+	err := json.Unmarshal(e.Data, &data)
+    if err != nil {
+        return nil, err
+    }
+	return &data, nil
+}
+
+func (e *Edit) GetTagData() (*TagEditData, error) {
     data := TagEditData {}
 	err := json.Unmarshal(e.Data, &data)
     if err != nil {
@@ -166,4 +181,10 @@ type TagEditData struct {
     New            *TagEdit `json:"new_data,omitempty"`
     Old            *TagEdit `json:"old_data,omitempty"`
     MergeSources   []string `json:"merge_sources,omitempty"`
+}
+
+type EditData struct {
+    New            *json.RawMessage `json:"new_data,omitempty"`
+    Old            *json.RawMessage `json:"old_data,omitempty"`
+    MergeSources   []string         `json:"merge_sources,omitempty"`
 }

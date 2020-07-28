@@ -5,6 +5,7 @@ type Studio {
   parent: Studio
   child_studios: [Studio!]!
   images: [Image!]!
+  deleted: Boolean!
 }
 
 input StudioCreateInput {
