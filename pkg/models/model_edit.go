@@ -107,10 +107,7 @@ func (e *Edit) GetData() (*EditData, error) {
 
 func (e *Edit) GetTagData() (*TagEditData, error) {
     data := TagEditData {}
-	err := json.Unmarshal(e.Data, &data)
-    if err != nil {
-        return nil, err
-    }
+	_ = json.Unmarshal(e.Data, &data)
 	return &data, nil
 }
 

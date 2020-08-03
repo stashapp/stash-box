@@ -68,16 +68,16 @@ type TagAlias struct {
 	Alias string    `db:"alias" json:"alias"`
 }
 
-type TagAliases []TagAlias
+type TagAliases []*TagAlias
 
 func (p TagAliases) Each(fn func(interface{})) {
 	for _, v := range p {
-		fn(v)
+		fn(*v)
 	}
 }
 
 func (p *TagAliases) Add(o interface{}) {
-	*p = append(*p, o.(TagAlias))
+	*p = append(*p, o.(*TagAlias))
 }
 
 func (p *TagAliases) Remove(alias string) {
@@ -89,7 +89,7 @@ func (p *TagAliases) Remove(alias string) {
     }
 }
 
-func (p *TagAliases) AddAliases(newAliases []TagAlias) error {
+func (p *TagAliases) AddAliases(newAliases []*TagAlias) error {
     aliasMap := map[string]bool{}
     for _, x := range *p {
         aliasMap[x.Alias] = true
@@ -131,11 +131,11 @@ func (p TagAliases) ToAliases() []string {
 	return ret
 }
 
-func CreateTagAliases(tagId uuid.UUID, aliases []string) []TagAlias {
-	var ret []TagAlias
+func CreateTagAliases(tagId uuid.UUID, aliases []string) []*TagAlias {
+	var ret []*TagAlias
 
 	for _, alias := range aliases {
-		ret = append(ret, TagAlias{TagID: tagId, Alias: alias})
+		ret = append(ret, &TagAlias{TagID: tagId, Alias: alias})
 	}
 
 	return ret
@@ -153,7 +153,9 @@ func (p *Tag) CopyFromUpdateInput(input TagUpdateInput) {
 }
 
 func (p *Tag) CopyFromTagEdit(input TagEdit) {
-    p.Name = *input.Name
+    if input.Name != nil {
+        p.Name = *input.Name
+    }
     if input.Description != nil {
         p.Description = sql.NullString { String: *input.Description, Valid: true }
     } else {

@@ -43,12 +43,15 @@ func (qb *TagQueryBuilder) Destroy(id uuid.UUID) error {
 }
 
 func (qb *TagQueryBuilder) SoftDelete(tag Tag) (*Tag, error) {
+    if err := qb.dbi.DeleteJoins(tagAliasTable, tag.ID); err != nil {
+        return nil, err
+    }
     ret, err := qb.dbi.SoftDelete(tag)
 	return qb.toModel(ret), err
 }
 
 func (qb *TagQueryBuilder) CreateRedirect(newJoin TagRedirect) error {
-	return qb.dbi.InsertJoin(tagRedirectTable, &newJoin, false)
+	return qb.dbi.InsertJoin(tagRedirectTable, newJoin, false)
 }
 
 func (qb *TagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
@@ -206,6 +209,9 @@ func (qb *TagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
     if tag == nil {
         return errors.New("Merge source tag not found: " + sourceID.String())
     }
+    if tag.Deleted {
+        return errors.New("Merge source tag is deleted: " + sourceID.String())
+    }
     _, err = qb.SoftDelete(*tag)
     if err != nil {
         return err
@@ -217,7 +223,7 @@ func (qb *TagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
     return qb.CreateRedirect(redirect)
 }
 
-func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum) (*Tag, error) {
+func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Tag) (*Tag, error) {
     data, err := edit.GetTagData()
     if err != nil {
         return nil, err
@@ -239,7 +245,7 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum) (*Tag, 
         }
         newTag.CopyFromTagEdit(*data.New)
 
-        tag, err := qb.Create(newTag)
+        tag, err = qb.Create(newTag)
         if err != nil {
             return nil, err
         }
@@ -253,25 +259,9 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum) (*Tag, 
 
         return tag, nil
     case OperationEnumDestroy:
-        tag, err := qb.Find(edit.ID)
-        if err != nil {
-            return nil, err
-        }
-        if tag == nil {
-            return nil, errors.New("Tag not found")
-        }
-
         updatedTag, err := qb.SoftDelete(*tag)
         return updatedTag, err
     case OperationEnumModify:
-        tag, err := qb.Find(edit.ID)
-        if err != nil {
-            return nil, err
-        }
-        if tag == nil {
-            return nil, errors.New("Tag not found")
-        }
-
         if err := tag.ValidateModifyEdit(*data); err != nil {
             return nil, err
         }
@@ -290,43 +280,39 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum) (*Tag, 
         if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
             return nil, err
         }
-        qb.UpdateAliases(updatedTag.ID, currentAliases)
+        if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
+            return nil, err
+        }
 
         return updatedTag, err
     case OperationEnumMerge:
-        tag, err := qb.Find(edit.ID)
-        if err != nil {
-            return nil, err
-        }
-        if tag == nil {
-            return nil, errors.New("Tag not found")
-        }
-
         if err := tag.ValidateModifyEdit(*data); err != nil {
             return nil, err
         }
 
         tag.CopyFromTagEdit(*data.New)
         updatedTag, err := qb.Update(*tag)
-
-        currentAliases, err := qb.GetRawAliases(updatedTag.ID)
-        if err != nil {
-            return nil, err
-        }
-        newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
-        if err := currentAliases.AddAliases(newAliases); err != nil {
-            return nil, err
-        }
-        if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
-            return nil, err
-        }
-        qb.UpdateAliases(updatedTag.ID, currentAliases)
 
         for _, v := range data.MergeSources {
             sourceUUID, _ := uuid.FromString(v)
             if err := qb.MergeInto(sourceUUID, tag.ID); err != nil {
                 return nil, err
             }
+        }
+
+        currentAliases, err := qb.GetRawAliases(updatedTag.ID)
+        if err != nil {
+            return nil, err
+        }
+        newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
+        if err := currentAliases.AddAliases(newAliases); err != nil {
+            return nil, err
+        }
+        if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
+            return nil, err
+        }
+        if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
+            return nil, err
         }
 
         return updatedTag, nil

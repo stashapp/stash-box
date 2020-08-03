@@ -144,7 +144,21 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
     switch targetType {
     case models.TargetTypeEnumTag:
         tqb := models.NewTagQueryBuilder(tx)
-        _, err = tqb.ApplyEdit(*edit, operation)
+        var tag *models.Tag = nil
+        if operation != models.OperationEnumCreate {
+            tagID, err := eqb.FindTagID(edit.ID)
+            if err != nil {
+                return nil, err
+            }
+            tag, err = tqb.Find(*tagID)
+            if err != nil {
+                return nil, err
+            }
+            if tag == nil {
+                return nil, errors.New("Tag not found: " + tagID.String())
+            }
+        }
+        _, err = tqb.ApplyEdit(*edit, operation, tag)
     default:
         return nil, errors.New("Not implemented: " + edit.TargetType)
     }

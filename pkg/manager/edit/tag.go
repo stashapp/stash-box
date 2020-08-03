@@ -52,6 +52,9 @@ func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inp
 	tqb := models.NewTagQueryBuilder(tx)
 
 	// get the existing tag
+    if input.Edit.ID == nil {
+        return errors.New("Merge target ID is required")
+    }
 	tagID, _ := uuid.FromString(*input.Edit.ID)
 	tag, err := tqb.Find(tagID)
 
