@@ -96,6 +96,14 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
         }
     }
 
+    if input.Edit.Comment != nil {
+        commentID , _ := uuid.NewV4()
+        comment := models.NewEditComment(commentID, currentUser, created, *input.Edit.Comment)
+        if err := eqb.CreateComment(*comment); err != nil {
+            return nil, err
+        }
+    }
+
 	// Commit
 	if err := tx.Commit(); err != nil {
 		return nil, err

@@ -97,10 +97,6 @@ func (r *editResolver) Operation(ctx context.Context, obj *models.Edit) (models.
 	return ret, nil
 }
 
-func (r *editResolver) EditComment(ctx context.Context, obj *models.Edit) (*string, error) {
-	return resolveNullString(obj.EditComment)
-}
-
 func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.EditDetails, error) {
     var ret models.EditDetails
     var targetType models.TargetTypeEnum
@@ -116,9 +112,20 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
     return ret, nil
 }
 
-func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*models.VoteComment, error) {
-	// TODO
-	return nil, nil
+func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*models.EditComment, error) {
+	qb := models.NewEditQueryBuilder(nil)
+    comments, err := qb.GetComments(obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.EditComment
+	for _, comment := range comments {
+		ret = append(ret, comment)
+	}
+
+	return ret, nil
 }
 
 func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]*models.VoteComment, error) {

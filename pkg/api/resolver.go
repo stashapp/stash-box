@@ -17,6 +17,9 @@ func (r *Resolver) Mutation() models.MutationResolver {
 func (r *Resolver) Edit() models.EditResolver {
 	return &editResolver{r}
 }
+func (r *Resolver) EditComment() models.EditCommentResolver {
+	return &editCommentResolver{r}
+}
 func (r *Resolver) Performer() models.PerformerResolver {
 	return &performerResolver{r}
 }

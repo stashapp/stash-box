@@ -28,6 +28,10 @@ var (
 		return &EditTag{}
 	})
 
+	editCommentTable = database.NewTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
+		return &EditComment{}
+	})
+
 	// voteDBTable = database.NewTable(editTable, func() interface{} {
 	// 	return &Edit{}
 	// })
@@ -47,6 +51,14 @@ type Edit struct {
 	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
+type EditComment struct {
+	ID          uuid.UUID       `db:"id" json:"id"`
+	EditID      uuid.UUID       `db:"edit_id" json:"edit_id"`
+	UserID      uuid.UUID       `db:"user_id" json:"user_id"`
+	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
+	Text        string          `db:"text" json:"text"`
+}
+
 func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
 	currentTime := time.Now()
 
@@ -60,11 +72,18 @@ func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditI
 		UpdatedAt:  SQLiteTimestamp{Timestamp: currentTime},
 	}
 
-	if input.Comment != nil {
-		ret.EditComment = sql.NullString{
-			String: *input.Comment,
-			Valid:  true,
-		}
+	return ret
+}
+
+func NewEditComment(UUID uuid.UUID, user *User, edit *Edit, text string) *EditComment {
+	currentTime := time.Now()
+
+	ret := &EditComment{
+		ID:         UUID,
+        EditID:     edit.ID,
+		UserID:     user.ID,
+		CreatedAt:  SQLiteTimestamp{Timestamp: currentTime},
+        Text:       text,
 	}
 
 	return ret
@@ -184,4 +203,16 @@ type EditData struct {
     New            *json.RawMessage `json:"new_data,omitempty"`
     Old            *json.RawMessage `json:"old_data,omitempty"`
     MergeSources   []string         `json:"merge_sources,omitempty"`
+}
+
+type EditComments []*EditComment
+
+func (p EditComments) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditComments) Add(o interface{}) {
+	*p = append(*p, o.(*EditComment))
 }

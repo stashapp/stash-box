@@ -4,13 +4,22 @@ CREATE TABLE "edits" (
   "operation" varchar(10) not null,
   "target_type" varchar(10) not null,
   "data" jsonb,
-  "edit_comment" text,
   "votes" integer not null default 0,
   "status" varchar(20) not null,
   "applied" boolean default FALSE not null,
   "created_at" timestamp not null,
   "updated_at" timestamp not null,
   foreign key("user_id") references "users"("id")
+);
+
+CREATE TABLE "edit_comments" (
+  "id" UUID not null primary key,
+  "edit_id" UUID not null,
+  "user_id" UUID not null,
+  "created_at" TIMESTAMP not null,
+  "text" TEXT not null,
+  FOREIGN KEY("edit_id") REFERENCES "edits"("id") ON DELETE CASCADE,
+  FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
 );
 
 --CREATE TABLE "votes" (

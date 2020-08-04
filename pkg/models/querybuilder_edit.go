@@ -157,3 +157,14 @@ func (qb *EditQueryBuilder) queryEdits(query string, args []interface{}) (Edits,
 	err := qb.dbi.RawQuery(editDBTable, query, args, &output)
 	return output, err
 }
+
+func (qb *EditQueryBuilder) CreateComment(newJoin EditComment) error {
+	return qb.dbi.InsertJoin(editCommentTable, newJoin, false)
+}
+
+func (qb *EditQueryBuilder) GetComments(id uuid.UUID) (EditComments, error) {
+	joins := EditComments{}
+	err := qb.dbi.FindJoins(editCommentTable, id, &joins)
+
+	return joins, err
+}

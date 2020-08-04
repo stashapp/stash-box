@@ -30,6 +30,12 @@ type VoteComment {
     type: VoteTypeEnum
 }
 
+type EditComment {
+    user: User!
+    date: Time!
+    comment: String!
+}
+
 union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit
 
 enum TargetTypeEnum {
@@ -50,9 +56,8 @@ type Edit {
     """Objects to merge with the target. Only applicable to merges"""
     merge_sources: [EditTarget]
     operation: OperationEnum!
-    edit_comment: String
     details: EditDetails!
-    comments: [VoteComment!]!
+    comments: [EditComment!]!
     votes: [VoteComment!]!
     """ = Accepted - Rejected"""
     vote_count: Int!
