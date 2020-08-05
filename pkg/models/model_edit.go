@@ -24,7 +24,7 @@ var (
 		return &Edit{}
 	})
 
-	editTagTable = database.NewTableJoin(editTable, "tag_edit", editJoinKey, func() interface{} {
+	editTagTable = database.NewTableJoin(editTable, "tag_edits", editJoinKey, func() interface{} {
 		return &EditTag{}
 	})
 

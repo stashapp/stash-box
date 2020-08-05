@@ -4,6 +4,7 @@ type Tag {
   description: String
   aliases: [String!]!
   deleted: Boolean!
+  edits: [Edit!]!
 }
 
 input TagCreateInput {

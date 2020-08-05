@@ -33,28 +33,28 @@ CREATE TABLE "edit_comments" (
 --  foreign key("edit_id") references "edits"("id")
 --)
 
-CREATE TABLE "performer_edit" (
+CREATE TABLE "performer_edits" (
   "edit_id" uuid not null,
   "performer_id" uuid not null,
   foreign key("edit_id") references "edits"("id"),
   foreign key("performer_id") references "performers"("id")
 );
 
-CREATE TABLE "studio_edit" (
+CREATE TABLE "studio_edits" (
   "edit_id" uuid not null,
   "studio_id" uuid not null,
   foreign key("edit_id") references "edits"("id"),
   foreign key("studio_id") references "studios"("id")
 );
 
-CREATE TABLE "tag_edit" (
+CREATE TABLE "tag_edits" (
   "edit_id" uuid not null,
   "tag_id" uuid not null,
   foreign key("edit_id") references "edits"("id"),
   foreign key("tag_id") references "tags"("id")
 );
 
-CREATE TABLE "scene_edit" (
+CREATE TABLE "scene_edits" (
   "edit_id" uuid not null,
   "scene_id" uuid not null,
   foreign key("edit_id") references "edits"("id"),

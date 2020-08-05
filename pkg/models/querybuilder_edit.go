@@ -168,3 +168,13 @@ func (qb *EditQueryBuilder) GetComments(id uuid.UUID) (EditComments, error) {
 
 	return joins, err
 }
+
+func (qb *EditQueryBuilder) FindByTagID(id uuid.UUID) ([]*Edit, error) {
+	query := `
+        SELECT edits.* FROM edits
+        LEFT JOIN tag_edits
+        ON tag_edits.edit_id = edits.id
+        WHERE tag_edits.tag_id = ?`
+    args := []interface{}{id}
+	return qb.queryEdits(query, args)
+}
