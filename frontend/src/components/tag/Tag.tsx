@@ -1,6 +1,7 @@
 import React from "react";
 import { useQuery } from "@apollo/react-hooks";
 import { useParams } from "react-router-dom";
+import { Tab, Tabs } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import { Scenes, ScenesVariables } from "src/definitions/Scenes";
@@ -62,16 +63,22 @@ const TagComponent: React.FC = () => {
 
   return (
     <>
-      <div className="row">
-        <h3 className="col-4">
-          Scenes for tag <em>{tag.findTag.name}</em>
-        </h3>
-        <Pagination onClick={setPage} pages={totalPages} active={page} />
-      </div>
-      <div className="performers row">{scenes}</div>
-      <div className="row">
-        <Pagination onClick={setPage} pages={totalPages} active={page} />
-      </div>
+      <h3>
+        Tag: <em>{tag.findTag.name}</em>
+      </h3>
+      <Tabs defaultActiveKey="scenes" id="tag-tabs" mountOnEnter>
+        <Tab eventKey="scenes" title="Scenes">
+            <div className="row">
+              <Pagination onClick={setPage} pages={totalPages} active={page} />
+            </div>
+            <div className="performers row">{scenes}</div>
+            <div className="row">
+              <Pagination onClick={setPage} pages={totalPages} active={page} />
+            </div>
+        </Tab>
+        <Tab eventKey="edits" title="Edits">
+        </Tab>
+      </Tabs>
     </>
   );
 };

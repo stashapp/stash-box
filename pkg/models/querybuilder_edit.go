@@ -114,17 +114,33 @@ func (qb *EditQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 
 	query := database.NewQueryBuilder(editDBTable)
 
-	if q := editFilter.UserID; q != nil && *q != "" {
-		query.AddWhere("edits.user_id = ?")
-		query.AddArg(*q)
-	}
+  if q := editFilter.UserID; q != nil && *q != "" {
+    query.Eq("scenes.user_id", *q)
+  }
 
-	if q := editFilter.Applied; q != nil {
-		query.AddWhere("edits.applied = ?")
-		query.AddArg(*q)
-	}
+  if q := editFilter.TargetID; q != nil && *q != "" {
+    if editFilter.TargetType == nil || *editFilter.TargetType == "" {
+			panic("TargetType is required when TargetID filter is used")
+    }
+    if *editFilter.TargetType == "TAG" {
+      query.AddJoin(editTagTable.Table, editTagTable.Name()+".edit_id = edits.id")
+			query.Eq(editTagTable.Name()+".tag_id", *q)
+    } else {
+      panic("TargetType is not yet supported: " + *editFilter.TargetType)
+    }
+  } else if q := editFilter.TargetType; q != nil && *q != "" {
+    query.Eq("target_type", q.String())
+  }
 
-	// TODO - other filters
+  if q := editFilter.Status; q != nil {
+    query.Eq("status", q.String())
+  }
+  if q := editFilter.Operation; q != nil {
+    query.Eq("operation", q.String())
+  }
+  if q := editFilter.Applied; q != nil {
+    query.Eq("applied", *q)
+  }
 
 	query.SortAndPagination = qb.getEditSort(findFilter) + getPagination(findFilter)
 
@@ -174,7 +190,8 @@ func (qb *EditQueryBuilder) FindByTagID(id uuid.UUID) ([]*Edit, error) {
         SELECT edits.* FROM edits
         LEFT JOIN tag_edits
         ON tag_edits.edit_id = edits.id
-        WHERE tag_edits.tag_id = ?`
+        WHERE tag_edits.tag_id = ?
+        ORDER BY created_at DESC`
     args := []interface{}{id}
 	return qb.queryEdits(query, args)
 }
