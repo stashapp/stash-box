@@ -150,6 +150,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
       ? SearchPerformersQuery
       : SearchAllQuery,
     {
+      fetchPolicy: "network-only",
       onCompleted: (result) => {
         if (searchCallback) handleResult(result, searchCallback);
       },

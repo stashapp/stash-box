@@ -44,6 +44,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
     (result: SearchResult[]) => void
   >();
   const [search] = useLazyQuery<Tags, TagsVariables>(TagsQuery, {
+    fetchPolicy: "network-only",
     onCompleted: (result) => {
       if (searchCallback) {
         searchCallback(
@@ -106,8 +107,10 @@ const TagSelect: React.FC<TagSelectProps> = ({
           classNamePrefix="react-select"
           className={`react-select ${CLASSNAME_SELECT}`}
           onChange={handleChange}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          loadOptions={debouncedLoadOptions as any}
+          loadOptions={debouncedLoadOptions}
+          noOptionsMessage={({ inputValue }) =>
+            inputValue === "" ? null : `No tags found for "${inputValue}"`
+          }
         />
       </div>
     </div>

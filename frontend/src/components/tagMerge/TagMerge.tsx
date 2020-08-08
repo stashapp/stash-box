@@ -67,7 +67,7 @@ const TagMerge: React.FC = () => {
             tags={[]}
             onChange={(tags) => setMergeSources(tags.map((t) => t.id))}
             message="Select tags to merge:"
-            excludeTags={[tag.findTag.id]}
+            excludeTags={[tag.findTag.id, ...mergeSources]}
           />
         </div>
       </div>
