@@ -52,6 +52,7 @@ export interface TagEditMutation_tagEdit_merge_sources_Tag {
   id: string;
   name: string;
   description: string | null;
+  deleted: boolean;
 }
 
 export type TagEditMutation_tagEdit_merge_sources = TagEditMutation_tagEdit_merge_sources_Performer | TagEditMutation_tagEdit_merge_sources_Tag;

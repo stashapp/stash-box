@@ -30,6 +30,7 @@ fragment EditFragment on Edit {
       id
       name
       description
+      deleted
     }
   }
 }

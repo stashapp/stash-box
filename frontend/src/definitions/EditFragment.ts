@@ -52,6 +52,7 @@ export interface EditFragment_merge_sources_Tag {
   id: string;
   name: string;
   description: string | null;
+  deleted: boolean;
 }
 
 export type EditFragment_merge_sources = EditFragment_merge_sources_Performer | EditFragment_merge_sources_Tag;

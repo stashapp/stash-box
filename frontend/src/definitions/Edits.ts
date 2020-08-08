@@ -52,6 +52,7 @@ export interface Edits_queryEdits_edits_merge_sources_Tag {
   id: string;
   name: string;
   description: string | null;
+  deleted: boolean;
 }
 
 export type Edits_queryEdits_edits_merge_sources = Edits_queryEdits_edits_merge_sources_Performer | Edits_queryEdits_edits_merge_sources_Tag;
