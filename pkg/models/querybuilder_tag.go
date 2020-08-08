@@ -1,8 +1,8 @@
 package models
 
 import (
-    "errors"
-    "time"
+	"errors"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -43,10 +43,10 @@ func (qb *TagQueryBuilder) Destroy(id uuid.UUID) error {
 }
 
 func (qb *TagQueryBuilder) SoftDelete(tag Tag) (*Tag, error) {
-    if err := qb.dbi.DeleteJoins(tagAliasTable, tag.ID); err != nil {
-        return nil, err
-    }
-    ret, err := qb.dbi.SoftDelete(tag)
+	if err := qb.dbi.DeleteJoins(tagAliasTable, tag.ID); err != nil {
+		return nil, err
+	}
+	ret, err := qb.dbi.SoftDelete(tag)
 	return qb.toModel(ret), err
 }
 
@@ -55,8 +55,8 @@ func (qb *TagQueryBuilder) CreateRedirect(newJoin TagRedirect) error {
 }
 
 func (qb *TagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-    query := "UPDATE " + tagRedirectTable.Table.Name() + " SET target_id = ? WHERE target_id = ?"
-    args := []interface{}{newTargetID, oldTargetID}
+	query := "UPDATE " + tagRedirectTable.Table.Name() + " SET target_id = ? WHERE target_id = ?"
+	args := []interface{}{newTargetID, oldTargetID}
 	return qb.dbi.RawQuery(tagRedirectTable.Table, query, args, nil)
 }
 
@@ -149,7 +149,7 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 	}
 
 	query := database.NewQueryBuilder(tagDBTable)
-  query.Eq("deleted", false)
+	query.Eq("deleted", false)
 
 	if q := tagFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
@@ -198,126 +198,126 @@ func (qb *TagQueryBuilder) GetRawAliases(id uuid.UUID) (TagAliases, error) {
 }
 
 func (qb *TagQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
-    joins, err := qb.GetRawAliases(id)
+	joins, err := qb.GetRawAliases(id)
 	return joins.ToAliases(), err
 }
 
 func (qb *TagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
-    tag, err := qb.Find(sourceID)
-    if err != nil {
-        return err
-    }
-    if tag == nil {
-        return errors.New("Merge source tag not found: " + sourceID.String())
-    }
-    if tag.Deleted {
-        return errors.New("Merge source tag is deleted: " + sourceID.String())
-    }
-    _, err = qb.SoftDelete(*tag)
-    if err != nil {
-        return err
-    }
-    if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
-        return err
-    }
-    redirect := TagRedirect{SourceID: sourceID, TargetID: targetID}
-    return qb.CreateRedirect(redirect)
+	tag, err := qb.Find(sourceID)
+	if err != nil {
+		return err
+	}
+	if tag == nil {
+		return errors.New("Merge source tag not found: " + sourceID.String())
+	}
+	if tag.Deleted {
+		return errors.New("Merge source tag is deleted: " + sourceID.String())
+	}
+	_, err = qb.SoftDelete(*tag)
+	if err != nil {
+		return err
+	}
+	if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
+		return err
+	}
+	redirect := TagRedirect{SourceID: sourceID, TargetID: targetID}
+	return qb.CreateRedirect(redirect)
 }
 
 func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Tag) (*Tag, error) {
-    data, err := edit.GetTagData()
-    if err != nil {
-        return nil, err
-    }
+	data, err := edit.GetTagData()
+	if err != nil {
+		return nil, err
+	}
 
-    switch operation {
-    case OperationEnumCreate:
-        now := time.Now()
-        UUID, err := uuid.NewV4()
-        if err != nil {
-            return nil, err
-        }
-        newTag := Tag {
-            ID: UUID,
-            CreatedAt: SQLiteTimestamp{Timestamp: now},
-        }
-        if data.New.Name == nil {
-            return nil, errors.New("Missing tag name")
-        }
-        newTag.CopyFromTagEdit(*data.New)
+	switch operation {
+	case OperationEnumCreate:
+		now := time.Now()
+		UUID, err := uuid.NewV4()
+		if err != nil {
+			return nil, err
+		}
+		newTag := Tag{
+			ID:        UUID,
+			CreatedAt: SQLiteTimestamp{Timestamp: now},
+		}
+		if data.New.Name == nil {
+			return nil, errors.New("Missing tag name")
+		}
+		newTag.CopyFromTagEdit(*data.New)
 
-        tag, err = qb.Create(newTag)
-        if err != nil {
-            return nil, err
-        }
+		tag, err = qb.Create(newTag)
+		if err != nil {
+			return nil, err
+		}
 
-        if len(data.New.AddedAliases) > 0 {
-            aliases := CreateTagAliases(UUID, data.New.AddedAliases)
-            if err := qb.CreateAliases(aliases); err != nil {
-                return nil, err
-            }
-        }
+		if len(data.New.AddedAliases) > 0 {
+			aliases := CreateTagAliases(UUID, data.New.AddedAliases)
+			if err := qb.CreateAliases(aliases); err != nil {
+				return nil, err
+			}
+		}
 
-        return tag, nil
-    case OperationEnumDestroy:
-        updatedTag, err := qb.SoftDelete(*tag)
-        return updatedTag, err
-    case OperationEnumModify:
-        if err := tag.ValidateModifyEdit(*data); err != nil {
-            return nil, err
-        }
+		return tag, nil
+	case OperationEnumDestroy:
+		updatedTag, err := qb.SoftDelete(*tag)
+		return updatedTag, err
+	case OperationEnumModify:
+		if err := tag.ValidateModifyEdit(*data); err != nil {
+			return nil, err
+		}
 
-        tag.CopyFromTagEdit(*data.New)
-        updatedTag, err := qb.Update(*tag)
+		tag.CopyFromTagEdit(*data.New)
+		updatedTag, err := qb.Update(*tag)
 
-        currentAliases, err := qb.GetRawAliases(updatedTag.ID)
-        if err != nil {
-            return nil, err
-        }
-        newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
-        if err := currentAliases.AddAliases(newAliases); err != nil {
-            return nil, err
-        }
-        if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
-            return nil, err
-        }
-        if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
-            return nil, err
-        }
+		currentAliases, err := qb.GetRawAliases(updatedTag.ID)
+		if err != nil {
+			return nil, err
+		}
+		newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
+		if err := currentAliases.AddAliases(newAliases); err != nil {
+			return nil, err
+		}
+		if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
+			return nil, err
+		}
+		if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
+			return nil, err
+		}
 
-        return updatedTag, err
-    case OperationEnumMerge:
-        if err := tag.ValidateModifyEdit(*data); err != nil {
-            return nil, err
-        }
+		return updatedTag, err
+	case OperationEnumMerge:
+		if err := tag.ValidateModifyEdit(*data); err != nil {
+			return nil, err
+		}
 
-        tag.CopyFromTagEdit(*data.New)
-        updatedTag, err := qb.Update(*tag)
+		tag.CopyFromTagEdit(*data.New)
+		updatedTag, err := qb.Update(*tag)
 
-        for _, v := range data.MergeSources {
-            sourceUUID, _ := uuid.FromString(v)
-            if err := qb.MergeInto(sourceUUID, tag.ID); err != nil {
-                return nil, err
-            }
-        }
+		for _, v := range data.MergeSources {
+			sourceUUID, _ := uuid.FromString(v)
+			if err := qb.MergeInto(sourceUUID, tag.ID); err != nil {
+				return nil, err
+			}
+		}
 
-        currentAliases, err := qb.GetRawAliases(updatedTag.ID)
-        if err != nil {
-            return nil, err
-        }
-        newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
-        if err := currentAliases.AddAliases(newAliases); err != nil {
-            return nil, err
-        }
-        if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
-            return nil, err
-        }
-        if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
-            return nil, err
-        }
+		currentAliases, err := qb.GetRawAliases(updatedTag.ID)
+		if err != nil {
+			return nil, err
+		}
+		newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
+		if err := currentAliases.AddAliases(newAliases); err != nil {
+			return nil, err
+		}
+		if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
+			return nil, err
+		}
+		if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
+			return nil, err
+		}
 
-        return updatedTag, nil
-    default:
-        return nil, errors.New("Unsupported operation: " + operation.String())
-    }
+		return updatedTag, nil
+	default:
+		return nil, errors.New("Unsupported operation: " + operation.String())
+	}
 }

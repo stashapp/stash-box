@@ -27,6 +27,6 @@ func (r *queryResolver) QueryEdits(ctx context.Context, editFilter *models.EditF
 	edits, count := qb.Query(editFilter, filter)
 	return &models.QueryEditsResultType{
 		Edits: edits,
-		Count:  count,
+		Count: count,
 	}, nil
 }

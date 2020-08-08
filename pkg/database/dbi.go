@@ -139,12 +139,12 @@ func (q dbi) Delete(id uuid.UUID, table Table) error {
 // Soft delete row by setting value of deleted column to TRUE
 func (q dbi) SoftDelete(model Model) (interface{}, error) {
 	tableName := model.GetTable().Name()
-    id := model.GetID()
+	id := model.GetID()
 
-    err := softDeleteObjectByID(q.tx, tableName, id)
-    if err != nil {
-        return nil, err
-    }
+	err := softDeleteObjectByID(q.tx, tableName, id)
+	if err != nil {
+		return nil, err
+	}
 
 	// don't want to modify the existing object
 	updatedModel := model.GetTable().NewObject()

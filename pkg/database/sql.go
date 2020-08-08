@@ -256,8 +256,8 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			if partial || t != 0 {
 				addKey(key)
 			}
-        case bool:
-            addKey(key)
+		case bool:
+			addKey(key)
 		case optionalValue:
 			if partial || t.IsValid() {
 				addKey(key)

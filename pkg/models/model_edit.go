@@ -37,24 +37,24 @@ var (
 )
 
 type Edit struct {
-	ID          uuid.UUID       `db:"id" json:"id"`
-	UserID      uuid.UUID       `db:"user_id" json:"user_id"`
-	TargetType  string          `db:"target_type" json:"target_type"`
-	Operation   string          `db:"operation" json:"operation"`
-	VoteCount   int             `db:"votes" json:"votes"`
-	Status      string          `db:"status" json:"status"`
-	Applied     bool            `db:"applied" json:"applied"`
-	Data        types.JSONText  `db:"data" json:"data"`
-	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID         uuid.UUID       `db:"id" json:"id"`
+	UserID     uuid.UUID       `db:"user_id" json:"user_id"`
+	TargetType string          `db:"target_type" json:"target_type"`
+	Operation  string          `db:"operation" json:"operation"`
+	VoteCount  int             `db:"votes" json:"votes"`
+	Status     string          `db:"status" json:"status"`
+	Applied    bool            `db:"applied" json:"applied"`
+	Data       types.JSONText  `db:"data" json:"data"`
+	CreatedAt  SQLiteTimestamp `db:"created_at" json:"created_at"`
+	UpdatedAt  SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
 type EditComment struct {
-	ID          uuid.UUID       `db:"id" json:"id"`
-	EditID      uuid.UUID       `db:"edit_id" json:"edit_id"`
-	UserID      uuid.UUID       `db:"user_id" json:"user_id"`
-	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
-	Text        string          `db:"text" json:"text"`
+	ID        uuid.UUID       `db:"id" json:"id"`
+	EditID    uuid.UUID       `db:"edit_id" json:"edit_id"`
+	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
+	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
+	Text      string          `db:"text" json:"text"`
 }
 
 func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
@@ -77,11 +77,11 @@ func NewEditComment(UUID uuid.UUID, user *User, edit *Edit, text string) *EditCo
 	currentTime := time.Now()
 
 	ret := &EditComment{
-		ID:         UUID,
-        EditID:     edit.ID,
-		UserID:     user.ID,
-		CreatedAt:  SQLiteTimestamp{Timestamp: currentTime},
-        Text:       text,
+		ID:        UUID,
+		EditID:    edit.ID,
+		UserID:    user.ID,
+		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		Text:      text,
 	}
 
 	return ret
@@ -96,14 +96,14 @@ func (p Edit) GetID() uuid.UUID {
 }
 
 func (p *Edit) ImmediateAccept() {
-    p.Status = VoteStatusEnumImmediateAccepted.String()
-    p.Applied = true
-    p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	p.Status = VoteStatusEnumImmediateAccepted.String()
+	p.Applied = true
+	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (p *Edit) ImmediateReject() {
-    p.Status = VoteStatusEnumImmediateRejected.String()
-    p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	p.Status = VoteStatusEnumImmediateRejected.String()
+	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (e *Edit) SetData(data interface{}) error {
@@ -118,17 +118,17 @@ func (e *Edit) SetData(data interface{}) error {
 	return nil
 }
 
-func (e *Edit) GetData() (*EditData) {
-    data := EditData {}
+func (e *Edit) GetData() *EditData {
+	data := EditData{}
 	err := json.Unmarshal(e.Data, &data)
-    if err != nil {
-        return nil
-    }
+	if err != nil {
+		return nil
+	}
 	return &data
 }
 
 func (e *Edit) GetTagData() (*TagEditData, error) {
-    data := TagEditData {}
+	data := TagEditData{}
 	_ = json.Unmarshal(e.Data, &data)
 	return &data, nil
 }
@@ -197,15 +197,15 @@ type TagEdit struct {
 func (TagEdit) IsEditDetails() {}
 
 type TagEditData struct {
-    New            *TagEdit `json:"new_data,omitempty"`
-    Old            *TagEdit `json:"old_data,omitempty"`
-    MergeSources   []string `json:"merge_sources,omitempty"`
+	New          *TagEdit `json:"new_data,omitempty"`
+	Old          *TagEdit `json:"old_data,omitempty"`
+	MergeSources []string `json:"merge_sources,omitempty"`
 }
 
 type EditData struct {
-    New            *json.RawMessage `json:"new_data,omitempty"`
-    Old            *json.RawMessage `json:"old_data,omitempty"`
-    MergeSources   []string         `json:"merge_sources,omitempty"`
+	New          *json.RawMessage `json:"new_data,omitempty"`
+	Old          *json.RawMessage `json:"old_data,omitempty"`
+	MergeSources []string         `json:"merge_sources,omitempty"`
 }
 
 type EditComments []*EditComment

@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-    "errors"
+	"errors"
 
 	"github.com/gofrs/uuid"
 
@@ -47,21 +47,21 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 			_ = tx.Rollback()
 			return nil, err
 		}
-    } else if input.Edit.Operation == models.OperationEnumMerge {
+	} else if input.Edit.Operation == models.OperationEnumMerge {
 		err = edit.MergeTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
 
 		if err != nil {
 			_ = tx.Rollback()
 			return nil, err
 		}
-    } else if input.Edit.Operation == models.OperationEnumDestroy {
+	} else if input.Edit.Operation == models.OperationEnumDestroy {
 		err = edit.DestroyTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
 
 		if err != nil {
 			_ = tx.Rollback()
 			return nil, err
 		}
-    } else if input.Edit.Operation == models.OperationEnumCreate {
+	} else if input.Edit.Operation == models.OperationEnumCreate {
 		err = edit.CreateTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
 
 		if err != nil {
@@ -81,28 +81,28 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 		return nil, err
 	}
 
-    if input.Edit.ID != nil {
-        tagID, _ := uuid.FromString(*input.Edit.ID)
+	if input.Edit.ID != nil {
+		tagID, _ := uuid.FromString(*input.Edit.ID)
 
-        editTag := models.EditTag{
-            EditID: created.ID,
-            TagID:  tagID,
-        }
+		editTag := models.EditTag{
+			EditID: created.ID,
+			TagID:  tagID,
+		}
 
-        err = eqb.CreateEditTag(editTag)
-        if err != nil {
-            _ = tx.Rollback()
-            return nil, err
-        }
-    }
+		err = eqb.CreateEditTag(editTag)
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
 
-    if input.Edit.Comment != nil {
-        commentID , _ := uuid.NewV4()
-        comment := models.NewEditComment(commentID, currentUser, created, *input.Edit.Comment)
-        if err := eqb.CreateComment(*comment); err != nil {
-            return nil, err
-        }
-    }
+	if input.Edit.Comment != nil {
+		commentID, _ := uuid.NewV4()
+		comment := models.NewEditComment(commentID, currentUser, created, *input.Edit.Comment)
+		if err := eqb.CreateComment(*comment); err != nil {
+			return nil, err
+		}
+	}
 
 	// Commit
 	if err := tx.Commit(); err != nil {
@@ -125,35 +125,35 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-    tagID, _ := uuid.FromString(input.ID)
+	tagID, _ := uuid.FromString(input.ID)
 	eqb := models.NewEditQueryBuilder(tx)
-    edit, err := eqb.Find(tagID)
-    if err != nil {
-        return nil, err
-    }
-    if edit == nil {
-        return nil, errors.New("Edit not found")
-    }
+	edit, err := eqb.Find(tagID)
+	if err != nil {
+		return nil, err
+	}
+	if edit == nil {
+		return nil, errors.New("Edit not found")
+	}
 
-    var status models.VoteStatusEnum
-    resolveEnumString(edit.Status, &status)
-    if status != models.VoteStatusEnumPending {
-        return nil, errors.New("Invalid vote status: " + edit.Status)
-    }
+	var status models.VoteStatusEnum
+	resolveEnumString(edit.Status, &status)
+	if status != models.VoteStatusEnumPending {
+		return nil, errors.New("Invalid vote status: " + edit.Status)
+	}
 
-    edit.ImmediateReject()
-    updatedEdit, err := eqb.Update(*edit)
+	edit.ImmediateReject()
+	updatedEdit, err := eqb.Update(*edit)
 
-    if err != nil {
-        _ = tx.Rollback()
-        return nil, err
-    }
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
 
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
-    return updatedEdit, nil
+	return updatedEdit, nil
 }
 
 func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
@@ -163,85 +163,85 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-    tagID, _ := uuid.FromString(input.ID)
-    eqb := models.NewEditQueryBuilder(tx)
-    edit, err := eqb.Find(tagID)
-    if err != nil {
-        return nil, err
-    }
-    if edit == nil {
-        return nil, errors.New("Edit not found")
-    }
+	tagID, _ := uuid.FromString(input.ID)
+	eqb := models.NewEditQueryBuilder(tx)
+	edit, err := eqb.Find(tagID)
+	if err != nil {
+		return nil, err
+	}
+	if edit == nil {
+		return nil, errors.New("Edit not found")
+	}
 
-    if edit.Applied {
-        return nil, errors.New("Edit already applied")
-    }
+	if edit.Applied {
+		return nil, errors.New("Edit already applied")
+	}
 
-    var status models.VoteStatusEnum
-    resolveEnumString(edit.Status, &status)
-    if status != models.VoteStatusEnumPending {
-        return nil, errors.New("Invalid vote status: " + edit.Status)
-    }
+	var status models.VoteStatusEnum
+	resolveEnumString(edit.Status, &status)
+	if status != models.VoteStatusEnumPending {
+		return nil, errors.New("Invalid vote status: " + edit.Status)
+	}
 
-    var operation models.OperationEnum
-    resolveEnumString(edit.Operation, &operation)
-    var targetType models.TargetTypeEnum
-    resolveEnumString(edit.TargetType, &targetType)
-    switch targetType {
-    case models.TargetTypeEnumTag:
-        tqb := models.NewTagQueryBuilder(tx)
-        var tag *models.Tag = nil
-        if operation != models.OperationEnumCreate {
-            tagID, err := eqb.FindTagID(edit.ID)
-            if err != nil {
-                return nil, err
-            }
-            tag, err = tqb.Find(*tagID)
-            if err != nil {
-                return nil, err
-            }
-            if tag == nil {
-                return nil, errors.New("Tag not found: " + tagID.String())
-            }
-        }
-        newTag, err := tqb.ApplyEdit(*edit, operation, tag)
-        if err != nil {
-            _ = tx.Rollback()
-            return nil, err
-        }
+	var operation models.OperationEnum
+	resolveEnumString(edit.Operation, &operation)
+	var targetType models.TargetTypeEnum
+	resolveEnumString(edit.TargetType, &targetType)
+	switch targetType {
+	case models.TargetTypeEnumTag:
+		tqb := models.NewTagQueryBuilder(tx)
+		var tag *models.Tag = nil
+		if operation != models.OperationEnumCreate {
+			tagID, err := eqb.FindTagID(edit.ID)
+			if err != nil {
+				return nil, err
+			}
+			tag, err = tqb.Find(*tagID)
+			if err != nil {
+				return nil, err
+			}
+			if tag == nil {
+				return nil, errors.New("Tag not found: " + tagID.String())
+			}
+		}
+		newTag, err := tqb.ApplyEdit(*edit, operation, tag)
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 
-        if operation == models.OperationEnumCreate {
-            editTag := models.EditTag{
-                EditID: edit.ID,
-                TagID:  newTag.ID,
-            }
+		if operation == models.OperationEnumCreate {
+			editTag := models.EditTag{
+				EditID: edit.ID,
+				TagID:  newTag.ID,
+			}
 
-            err = eqb.CreateEditTag(editTag)
-            if err != nil {
-                _ = tx.Rollback()
-                return nil, err
-            }
-        }
-    default:
-        return nil, errors.New("Not implemented: " + edit.TargetType)
-    }
+			err = eqb.CreateEditTag(editTag)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+		}
+	default:
+		return nil, errors.New("Not implemented: " + edit.TargetType)
+	}
 
-    if err != nil {
-        _ = tx.Rollback()
-        return nil, err
-    }
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
 
-    edit.ImmediateAccept()
-    updatedEdit, err := eqb.Update(*edit)
+	edit.ImmediateAccept()
+	updatedEdit, err := eqb.Update(*edit)
 
-    if err != nil {
-        _ = tx.Rollback()
-        return nil, err
-    }
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
 
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
-    return updatedEdit, nil
+	return updatedEdit, nil
 }

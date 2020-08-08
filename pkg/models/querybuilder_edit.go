@@ -1,7 +1,7 @@
 package models
 
 import (
-    "errors"
+	"errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -50,15 +50,15 @@ func (qb *EditQueryBuilder) CreateEditTag(newJoin EditTag) error {
 }
 
 func (qb *EditQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
-    joins := EditTags{}
-    err := qb.dbi.FindJoins(editTagTable, id, &joins)
-    if err != nil {
-        return nil, err
-    }
-    if len(joins) == 0 {
-        return nil, errors.New("tag edit not found")
-    }
-    return &joins[0].TagID, nil
+	joins := EditTags{}
+	err := qb.dbi.FindJoins(editTagTable, id, &joins)
+	if err != nil {
+		return nil, err
+	}
+	if len(joins) == 0 {
+		return nil, errors.New("tag edit not found")
+	}
+	return &joins[0].TagID, nil
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
@@ -114,33 +114,33 @@ func (qb *EditQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 
 	query := database.NewQueryBuilder(editDBTable)
 
-  if q := editFilter.UserID; q != nil && *q != "" {
-    query.Eq("scenes.user_id", *q)
-  }
+	if q := editFilter.UserID; q != nil && *q != "" {
+		query.Eq("scenes.user_id", *q)
+	}
 
-  if q := editFilter.TargetID; q != nil && *q != "" {
-    if editFilter.TargetType == nil || *editFilter.TargetType == "" {
+	if q := editFilter.TargetID; q != nil && *q != "" {
+		if editFilter.TargetType == nil || *editFilter.TargetType == "" {
 			panic("TargetType is required when TargetID filter is used")
-    }
-    if *editFilter.TargetType == "TAG" {
-      query.AddJoin(editTagTable.Table, editTagTable.Name()+".edit_id = edits.id")
+		}
+		if *editFilter.TargetType == "TAG" {
+			query.AddJoin(editTagTable.Table, editTagTable.Name()+".edit_id = edits.id")
 			query.Eq(editTagTable.Name()+".tag_id", *q)
-    } else {
-      panic("TargetType is not yet supported: " + *editFilter.TargetType)
-    }
-  } else if q := editFilter.TargetType; q != nil && *q != "" {
-    query.Eq("target_type", q.String())
-  }
+		} else {
+			panic("TargetType is not yet supported: " + *editFilter.TargetType)
+		}
+	} else if q := editFilter.TargetType; q != nil && *q != "" {
+		query.Eq("target_type", q.String())
+	}
 
-  if q := editFilter.Status; q != nil {
-    query.Eq("status", q.String())
-  }
-  if q := editFilter.Operation; q != nil {
-    query.Eq("operation", q.String())
-  }
-  if q := editFilter.Applied; q != nil {
-    query.Eq("applied", *q)
-  }
+	if q := editFilter.Status; q != nil {
+		query.Eq("status", q.String())
+	}
+	if q := editFilter.Operation; q != nil {
+		query.Eq("operation", q.String())
+	}
+	if q := editFilter.Applied; q != nil {
+		query.Eq("applied", *q)
+	}
 
 	query.SortAndPagination = qb.getEditSort(findFilter) + getPagination(findFilter)
 
@@ -191,6 +191,6 @@ func (qb *EditQueryBuilder) FindByTagID(id uuid.UUID) ([]*Edit, error) {
         JOIN tag_edits
         ON tag_edits.edit_id = edits.id
         WHERE tag_edits.tag_id = ?`
-    args := []interface{}{id}
+	args := []interface{}{id}
 	return qb.queryEdits(query, args)
 }

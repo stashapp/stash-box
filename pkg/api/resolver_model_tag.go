@@ -27,5 +27,5 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, e
 
 func (r *tagResolver) Edits(ctx context.Context, obj *models.Tag) ([]*models.Edit, error) {
 	eqb := models.NewEditQueryBuilder(nil)
-    return eqb.FindByTagID(obj.ID)
+	return eqb.FindByTagID(obj.ID)
 }

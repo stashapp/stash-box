@@ -36,7 +36,7 @@ type Scene struct {
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Duration  sql.NullInt64   `db:"duration" json:"duration"`
 	Director  sql.NullString  `db:"director" json:"director"`
-    Deleted     bool          `db:"deleted" json:"deleted"`
+	Deleted   bool            `db:"deleted" json:"deleted"`
 }
 
 func (Scene) GetTable() database.Table {
