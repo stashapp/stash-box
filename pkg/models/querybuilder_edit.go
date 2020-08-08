@@ -32,7 +32,7 @@ func (qb *EditQueryBuilder) Create(newEdit Edit) (*Edit, error) {
 }
 
 func (qb *EditQueryBuilder) Update(updatedEdit Edit) (*Edit, error) {
-	ret, err := qb.dbi.Update(updatedEdit)
+	ret, err := qb.dbi.Update(updatedEdit, false)
 	return qb.toModel(ret), err
 }
 
