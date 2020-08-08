@@ -82,7 +82,7 @@ const TagComponent: React.FC = () => {
     });
   };
 
-  const setTab = (tab: string|null) =>
+  const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   if (loadingTag || loadingScenes)

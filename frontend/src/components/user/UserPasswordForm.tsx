@@ -42,7 +42,7 @@ interface UserProps {
 
 const UserForm: React.FC<UserProps> = ({ callback, error }) => {
   const { register, handleSubmit, errors } = useForm<UserFormData>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
 
   const onSubmit = (formData: UserFormData) => {

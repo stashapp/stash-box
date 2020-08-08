@@ -27,7 +27,9 @@ export interface EditFragment_target_Tag {
   deleted: boolean;
 }
 
-export type EditFragment_target = EditFragment_target_Performer | EditFragment_target_Tag;
+export type EditFragment_target =
+  | EditFragment_target_Performer
+  | EditFragment_target_Tag;
 
 export interface EditFragment_details_PerformerEdit {
   __typename: "PerformerEdit" | "SceneEdit" | "StudioEdit";
@@ -41,7 +43,9 @@ export interface EditFragment_details_TagEdit {
   removed_aliases: string[] | null;
 }
 
-export type EditFragment_details = EditFragment_details_PerformerEdit | EditFragment_details_TagEdit;
+export type EditFragment_details =
+  | EditFragment_details_PerformerEdit
+  | EditFragment_details_TagEdit;
 
 export interface EditFragment_merge_sources_Performer {
   __typename: "Performer" | "Scene" | "Studio";
@@ -55,7 +59,9 @@ export interface EditFragment_merge_sources_Tag {
   deleted: boolean;
 }
 
-export type EditFragment_merge_sources = EditFragment_merge_sources_Performer | EditFragment_merge_sources_Tag;
+export type EditFragment_merge_sources =
+  | EditFragment_merge_sources_Performer
+  | EditFragment_merge_sources_Tag;
 
 export interface EditFragment {
   __typename: "Edit";

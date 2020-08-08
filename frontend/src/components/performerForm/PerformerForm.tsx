@@ -198,7 +198,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
   const { register, handleSubmit, setValue, errors } = useForm<
     PerformerFormData
   >({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
   const history = useHistory();

@@ -101,7 +101,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const fingerprintDuration = useRef<HTMLInputElement>(null);
   const fingerprintAlgorithm = useRef<HTMLSelectElement>(null);
   const { register, handleSubmit, setValue, errors } = useForm<SceneFormData>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
   const [performers, setPerformers] = useState<PerformerInfo[]>(
     scene.performers.map((p) => ({

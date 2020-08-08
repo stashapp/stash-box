@@ -62,7 +62,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
     }))
   );
   const { register, handleSubmit, setValue, errors } = useForm<UserFormData>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
 
   useEffect(() => {

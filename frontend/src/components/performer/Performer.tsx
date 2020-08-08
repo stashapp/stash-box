@@ -19,15 +19,17 @@ const PerformerComponent: React.FC = () => {
   const { loading, data } = useQuery<Performer>(PerformerQuery, {
     variables: { id },
   });
-  const { loading: loadingPerformances, data: performances } = useQuery<Scenes, ScenesVariables>(
-    ScenesQuery,
-    {
-      variables: {
-        sceneFilter: { performers: { value: [id], modifier: CriterionModifier.INCLUDES } },
-        filter: { per_page: 1000 },
+  const { loading: loadingPerformances, data: performances } = useQuery<
+    Scenes,
+    ScenesVariables
+  >(ScenesQuery, {
+    variables: {
+      sceneFilter: {
+        performers: { value: [id], modifier: CriterionModifier.INCLUDES },
       },
-    }
-  );
+      filter: { per_page: 1000 },
+    },
+  });
 
   if (loading || loadingPerformances)
     return <LoadingIndicator message="Loading performer..." />;

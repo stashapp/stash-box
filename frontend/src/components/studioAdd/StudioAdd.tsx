@@ -29,7 +29,7 @@ const StudioAdd: React.FC = () => {
     name: "",
     urls: [],
     images: [],
-    __typename: "Studio"
+    __typename: "Studio",
   } as Studio;
 
   return (

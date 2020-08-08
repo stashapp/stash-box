@@ -30,7 +30,7 @@ interface StudioProps {
 const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
   const history = useHistory();
   const { register, handleSubmit, errors } = useForm<StudioFormData>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
   const [photoURL, setPhotoURL] = useState(getUrlByType(studio.urls, "PHOTO"));
 

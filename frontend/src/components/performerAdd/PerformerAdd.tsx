@@ -55,7 +55,7 @@ const PerformerAdd: React.FC = () => {
       hip: null,
       band_size: null,
       cup_size: null,
-      __typename: "Measurements"
+      __typename: "Measurements",
     },
     country: null,
     ethnicity: null,
@@ -66,7 +66,7 @@ const PerformerAdd: React.FC = () => {
     aliases: [],
     urls: [],
     images: [],
-    __typename: "Performer"
+    __typename: "Performer",
   } as Performer;
 
   return (
