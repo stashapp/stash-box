@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, Link } from "react-router-dom";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import { Button, Form } from "react-bootstrap";
 import * as yup from "yup";
@@ -197,7 +198,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
   const { register, handleSubmit, setValue, errors } = useForm<
     PerformerFormData
   >({
-    validationSchema: schema,
+    resolver: yupResolver(schema)
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
   const history = useHistory();

@@ -3,7 +3,8 @@ import { Button, Form } from "react-bootstrap";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import { RoleEnum, UserUpdateInput } from "src/definitions/globalTypes";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import cx from "classnames";
 
 const schema = yup.object().shape({
@@ -61,7 +62,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
     }))
   );
   const { register, handleSubmit, setValue, errors } = useForm<UserFormData>({
-    validationSchema: schema,
+    resolver: yupResolver(schema)
   });
 
   useEffect(() => {

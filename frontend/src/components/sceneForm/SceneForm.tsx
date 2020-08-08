@@ -2,7 +2,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@apollo/client";
 import { useHistory, Link } from "react-router-dom";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import cx from "classnames";
@@ -100,7 +101,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const fingerprintDuration = useRef<HTMLInputElement>(null);
   const fingerprintAlgorithm = useRef<HTMLSelectElement>(null);
   const { register, handleSubmit, setValue, errors } = useForm<SceneFormData>({
-    validationSchema: schema,
+    resolver: yupResolver(schema)
   });
   const [performers, setPerformers] = useState<PerformerInfo[]>(
     scene.performers.map((p) => ({

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import * as yup from "yup";
 import cx from "classnames";
 
@@ -29,7 +30,7 @@ interface StudioProps {
 const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
   const history = useHistory();
   const { register, handleSubmit, errors } = useForm<StudioFormData>({
-    validationSchema: schema,
+    resolver: yupResolver(schema)
   });
   const [photoURL, setPhotoURL] = useState(getUrlByType(studio.urls, "PHOTO"));
 

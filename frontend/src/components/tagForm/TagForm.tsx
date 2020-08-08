@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useHistory, Link } from "react-router-dom";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
@@ -25,7 +26,7 @@ interface TagProps {
 const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
   const history = useHistory();
   const { register, handleSubmit, setValue, errors } = useForm<TagFormData>({
-    validationSchema: schema,
+    resolver: yupResolver(schema)
   });
 
   useEffect(() => {

@@ -1,7 +1,8 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 import * as yup from "yup";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import cx from "classnames";
 
 const schema = yup.object().shape({
@@ -41,7 +42,7 @@ interface UserProps {
 
 const UserForm: React.FC<UserProps> = ({ callback, error }) => {
   const { register, handleSubmit, errors } = useForm<UserFormData>({
-    validationSchema: schema,
+    resolver: yupResolver(schema)
   });
 
   const onSubmit = (formData: UserFormData) => {

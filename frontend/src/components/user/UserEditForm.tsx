@@ -3,7 +3,8 @@ import { Button, Form } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import cx from "classnames";
 
 import { RoleEnum, UserUpdateInput } from "src/definitions/globalTypes";
@@ -50,7 +51,7 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
     }))
   );
   const { register, handleSubmit, setValue, errors } = useForm<UserFormData>({
-    validationSchema: schema,
+    resolver: yupResolver(schema)
   });
 
   useEffect(() => {
