@@ -347,6 +347,10 @@ export interface StudioCreateInput {
   image_ids?: string[] | null;
 }
 
+export interface StudioDestroyInput {
+  id: string;
+}
+
 export interface StudioFilterType {
   name?: string | null;
   url?: string | null;

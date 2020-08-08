@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { useQuery } from "@apollo/client";
-import { Link, useParams } from "react-router-dom";
+import { useMutation, useQuery } from "@apollo/client";
+import { Link, useHistory, useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
@@ -10,21 +10,28 @@ import {
   CriterionModifier,
   SortDirectionEnum,
 } from "src/definitions/globalTypes";
+import {
+  DeleteStudioMutation,
+  DeleteStudioMutationVariables,
+} from "src/definitions/DeleteStudioMutation";
 
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import { LoadingIndicator } from "src/components/fragments";
 import SceneCard from "src/components/sceneCard";
+import DeleteButton from "src/components/deleteButton";
 
 import { getImage, getUrlByType } from "src/utils/transforms";
-import { canEdit } from "src/utils/auth";
+import { canEdit, isAdmin } from "src/utils/auth";
 import AuthContext from "src/AuthContext";
 
+const DeleteStudio = loader("src/mutations/DeleteStudio.gql");
 const StudioQuery = loader("src/queries/Studio.gql");
 const ScenesQuery = loader("src/queries/Scenes.gql");
 
 const StudioComponent: React.FC = () => {
   const auth = useContext(AuthContext);
+  const history = useHistory();
   const { id = "" } = useParams();
   const { page, setPage } = usePagination();
   const { loading, data } = useQuery<Studio, StudioVariables>(StudioQuery, {
@@ -49,6 +56,15 @@ const StudioComponent: React.FC = () => {
     skip: id === "",
   });
 
+  const [deleteStudio, { loading: deleting }] = useMutation<
+    DeleteStudioMutation,
+    DeleteStudioMutationVariables
+  >(DeleteStudio, {
+    onCompleted: (result) => {
+      if (result.studioDestroy) history.push("/studios/");
+    },
+  });
+
   if (loading || loadingScenes)
     return <LoadingIndicator message="Loading studio..." />;
   if (id === "" || !data?.findStudio) return <div>Studio not found!</div>;
@@ -64,13 +80,21 @@ const StudioComponent: React.FC = () => {
     })
     .map((p) => <SceneCard key={p.id} performance={p} />);
 
-  const handleDelete = () => {};
+  const handleDelete = () => {
+    deleteStudio({
+      variables: {
+        input: {
+          id: studio.id,
+        },
+      },
+    });
+  };
 
   return (
     <>
-      <div className="studio-header">
+      <div className="row no-gutters">
         <div className="studio-title">
-          <h2>{studio.name}</h2>
+          <h3>{studio.name}</h3>
           <h6>
             <a href={getUrlByType(studio.urls, "HOME")}>
               {getUrlByType(studio.urls, "HOME")}
@@ -81,14 +105,16 @@ const StudioComponent: React.FC = () => {
           <img src={getImage(studio.images, "landscape")} alt="Studio logo" />
         </div>
         {canEdit(auth.user) && (
-          <div className="studio-edit">
-            <Link to={`${id}/edit`}>
-              <Button variant="secondary">Edit</Button>
-            </Link>
-            <Button variant="danger" className="ml-2" onClick={handleDelete}>
-              Delete
-            </Button>
-          </div>
+          <Link to={`${id}/edit`}>
+            <Button>Edit</Button>
+          </Link>
+        )}
+        {isAdmin(auth.user) && (
+          <DeleteButton
+            onClick={handleDelete}
+            disabled={deleting}
+            message="Do you want to delete studio? This cannot be undone."
+          />
         )}
       </div>
       <hr />
@@ -96,9 +122,14 @@ const StudioComponent: React.FC = () => {
         <h4>No scenes found for this studio</h4>
       ) : (
         <>
-          <div className="row">
+          <div className="row no-gutters">
             <h3 className="col-4">Scenes</h3>
-            <Pagination onClick={setPage} pages={totalPages} active={page} />
+            <Pagination
+              onClick={setPage}
+              pages={totalPages}
+              active={page}
+              count={sceneData?.queryScenes.count}
+            />
           </div>
           <div className="row">{scenes}</div>
           <div className="row">

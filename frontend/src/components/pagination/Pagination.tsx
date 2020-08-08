@@ -5,12 +5,14 @@ interface PaginationProps {
   active: number;
   pages: number;
   onClick: (page: number) => void;
+  count?: number;
 }
 
 const PaginationComponent: React.FC<PaginationProps> = ({
   active,
   pages,
   onClick,
+  count,
 }) => {
   const showFirst = pages > 5 && active > 3;
   const showLast = pages > 5 && active < pages - 3;
@@ -36,13 +38,16 @@ const PaginationComponent: React.FC<PaginationProps> = ({
   };
 
   return (
-    <Pagination onClick={handleClick} className="mr-0">
-      {showFirst && <Pagination.First data-page={1} />}
-      <Pagination.Prev disabled={active === 1} data-page={active - 1} />
-      {paginationItems}
-      <Pagination.Next disabled={active === pages} data-page={active + 1} />
-      {showLast && <Pagination.Last data-page={pages} />}
-    </Pagination>
+    <div className="ml-auto row no-gutters">
+      {count && <b className="mr-4 mt-2">{count} results</b>}
+      <Pagination onClick={handleClick}>
+        {showFirst && <Pagination.First data-page={1} />}
+        <Pagination.Prev disabled={active === 1} data-page={active - 1} />
+        {paginationItems}
+        <Pagination.Next disabled={active === pages} data-page={active + 1} />
+        {showLast && <Pagination.Last data-page={pages} />}
+      </Pagination>
+    </div>
   );
 };
 

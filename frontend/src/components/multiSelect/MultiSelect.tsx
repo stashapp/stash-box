@@ -5,6 +5,7 @@ import { ValueType, OptionTypeBase } from "react-select";
 interface MultiSelectProps {
   values: string[];
   onChange: (values: string[]) => void;
+  placeholder?: string;
 }
 
 interface IOptionType extends OptionTypeBase {
@@ -15,6 +16,7 @@ interface IOptionType extends OptionTypeBase {
 const MultiSelect: React.FC<MultiSelectProps> = ({
   values: initialValues,
   onChange,
+  placeholder = "Select...",
 }) => {
   const options: IOptionType[] = (initialValues ?? []).map((value) => ({
     label: value,
@@ -40,6 +42,13 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         defaultValue={options}
         options={options}
         onChange={handleChange}
+        placeholder={placeholder}
+        noOptionsMessage={() => null}
+        formatCreateLabel={(value: string) => `Add '${value}'`}
+        components={{
+          DropdownIndicator: () => null,
+          IndicatorSeparator: () => null,
+        }}
       />
     </div>
   );

@@ -128,16 +128,16 @@ const TagComponent: React.FC = () => {
           />
         )}
       </div>
-      { tag.findTag.description && (
+      {tag.findTag.description && (
         <div className="row no-gutters">
           <b className="mr-2">Description:</b>
-          <span>{ tag.findTag.description }</span>
+          <span>{tag.findTag.description}</span>
         </div>
       )}
-      { tag.findTag.aliases.length > 0 && (
+      {tag.findTag.aliases.length > 0 && (
         <div className="row no-gutters">
           <b className="mr-2">Aliases:</b>
-          <span>{ tag.findTag.aliases.join(', ')}</span>
+          <span>{tag.findTag.aliases.join(", ")}</span>
         </div>
       )}
       <hr className="my-2" />

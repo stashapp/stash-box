@@ -1,25 +1,26 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
-import AuthContext from "src/AuthContext";
 import { Scene } from "src/definitions/Scene";
-import { getImage, getUrlByType } from "src/utils/transforms";
-import { canEdit, isAdmin } from "src/utils/auth";
 import {
   DeleteSceneMutation,
   DeleteSceneMutationVariables,
 } from "src/definitions/DeleteSceneMutation";
 
-import Modal from "src/components/modal";
+import AuthContext from "src/AuthContext";
+import { getImage, getUrlByType } from "src/utils/transforms";
+import { canEdit, isAdmin } from "src/utils/auth";
+
 import {
   GenderIcon,
   LoadingIndicator,
   TagLink,
   PerformerName,
 } from "src/components/fragments";
+import DeleteButton from "src/components/deleteButton";
 
 const SceneQuery = loader("src/queries/Scene.gql");
 const DeleteScene = loader("src/mutations/DeleteScene.gql");
@@ -27,7 +28,6 @@ const DeleteScene = loader("src/mutations/DeleteScene.gql");
 const SceneComponent: React.FC = () => {
   const { id } = useParams();
   const history = useHistory();
-  const [showDelete, setShowDelete] = useState(false);
   const { loading, data } = useQuery<Scene>(SceneQuery, {
     variables: { id },
   });
@@ -41,13 +41,10 @@ const SceneComponent: React.FC = () => {
   if (!data?.findScene) return <div>Scene not found!</div>;
   const scene = data.findScene;
 
-  const toggleModal = () => setShowDelete(true);
-  const handleDelete = (status: boolean): void => {
-    if (status)
-      deleteScene({ variables: { input: { id: scene.id } } }).then(() =>
-        history.push("/scenes")
-      );
-    setShowDelete(false);
+  const handleDelete = (): void => {
+    deleteScene({ variables: { input: { id: scene.id } } }).then(() =>
+      history.push("/scenes")
+    );
   };
 
   const performers = data.findScene.performers
@@ -73,41 +70,34 @@ const SceneComponent: React.FC = () => {
       <td>{fingerprint.duration}</td>
     </tr>
   ));
-  const tags = scene.tags.map((tag) => (
-    <li key={tag.name}>
-      <TagLink
-        title={tag.name}
-        link={`/tags/${encodeURIComponent(tag.name)}`}
-      />
-    </li>
-  ));
+  const tags = [...scene.tags]
+    .sort((a, b) => {
+      if (a.name > b.name) return 1;
+      if (a.name < b.name) return -1;
+      return 0;
+    })
+    .map((tag) => (
+      <li key={tag.name}>
+        <TagLink title={tag.name} link={`/tags/${tag.name}`} />
+      </li>
+    ));
 
-  const deleteModal = showDelete && (
-    <Modal
-      message={`Are you sure you want to delete '${scene.title}'? This operation cannot be undone.`}
-      callback={handleDelete}
-    />
-  );
   return (
     <>
-      {deleteModal}
       <Card className="scene-info">
         <Card.Header>
           <div className="float-right">
             {canEdit(auth.user) && (
               <Link to={`${id}/edit`}>
-                <Button variant="secondary">Edit</Button>
+                <Button>Edit</Button>
               </Link>
             )}
             {isAdmin(auth.user) && (
-              <Button
-                variant="danger"
-                className="ml-2"
-                disabled={showDelete || deleting}
-                onClick={toggleModal}
-              >
-                Delete
-              </Button>
+              <DeleteButton
+                onClick={handleDelete}
+                disabled={deleting}
+                message="Do you want to delete scene? This cannot be undone."
+              />
             )}
           </div>
           <h2>{scene.title}</h2>
@@ -151,7 +141,11 @@ const SceneComponent: React.FC = () => {
             <hr />
             <div>
               <strong className="mr-2">Studio: </strong>
-              <a href={getUrlByType(scene.urls, "STUDIO")}>
+              <a
+                href={getUrlByType(scene.urls, "STUDIO")}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {getUrlByType(scene.urls, "STUDIO")}
               </a>
             </div>

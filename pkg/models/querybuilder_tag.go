@@ -153,7 +153,7 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 
 	if q := tagFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
