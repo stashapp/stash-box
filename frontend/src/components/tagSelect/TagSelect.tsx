@@ -37,7 +37,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
   tags: initialTags,
   onChange,
   message = "Add tag:",
-  excludeTags = []
+  excludeTags = [],
 }) => {
   const [tags, setTags] = useState(initialTags);
   const [searchCallback, setCallback] = useState<
@@ -47,16 +47,16 @@ const TagSelect: React.FC<TagSelectProps> = ({
     onCompleted: (result) => {
       if (searchCallback) {
         searchCallback(
-          result.queryTags.tags.filter(tag => (
-            !excludeTags.includes(tag.id)
-          )).map(tag => ({
-            label: tag.name,
-            value: tag,
-            subLabel: tag.description ?? ''
-          }))
+          result.queryTags.tags
+            .filter((tag) => !excludeTags.includes(tag.id))
+            .map((tag) => ({
+              label: tag.name,
+              value: tag,
+              subLabel: tag.description ?? "",
+            }))
         );
       }
-    }
+    },
   });
 
   const handleChange = (result: ValueType<SearchResult>) => {
@@ -84,7 +84,6 @@ const TagSelect: React.FC<TagSelectProps> = ({
       />
     ));
 
-
   const handleSearch = (
     term: string,
     callback: (options: Array<SearchResult>) => void
@@ -101,7 +100,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
     <div className={CLASSNAME}>
       <div className={CLASSNAME_LIST}>{tagList}</div>
       <div className={CLASSNAME_CONTAINER}>
-        <span>{ message }</span>
+        <span>{message}</span>
         <Async
           value={null}
           classNamePrefix="react-select"

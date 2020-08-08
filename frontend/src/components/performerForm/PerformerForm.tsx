@@ -289,13 +289,15 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
   const countryObj = [
     { label: "Unknown", value: "" },
     ...sortBy(
-        Object.keys(CountryList).map((name: string) => {
-            const countryName: string = Array.isArray(CountryList[name]) ? CountryList[name][0] : CountryList[name] as string;
-            return {
-              label: countryName,
-              value: Countries.getAlpha2Code(countryName, 'en'),
-            };
-        }),
+      Object.keys(CountryList).map((name: string) => {
+        const countryName: string = Array.isArray(CountryList[name])
+          ? CountryList[name][0]
+          : (CountryList[name] as string);
+        return {
+          label: countryName,
+          value: Countries.getAlpha2Code(countryName, "en"),
+        };
+      }),
       "label"
     ),
   ];
@@ -615,8 +617,12 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
           </div>
 
           <Form.Group className="d-flex">
-            <Button className="col-2" type="submit">Save</Button>
-            <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
+            <Button className="col-2" type="submit">
+              Save
+            </Button>
+            <Button type="reset" variant="secondary" className="ml-auto mr-2">
+              Reset
+            </Button>
             <Link
               to={performer.id ? `/performers/${performer.id}` : "/performers"}
             >

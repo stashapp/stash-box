@@ -7,9 +7,12 @@ import { loader } from "graphql.macro";
 import { Tag, TagVariables } from "src/definitions/Tag";
 import {
   TagEditMutation as TagEdit,
-  TagEditMutationVariables
+  TagEditMutationVariables,
 } from "src/definitions/TagEditMutation";
-import { OperationEnum, TagEditDetailsInput } from "src/definitions/globalTypes";
+import {
+  OperationEnum,
+  TagEditDetailsInput,
+} from "src/definitions/globalTypes";
 
 import { LoadingIndicator } from "src/components/fragments";
 import TagForm from "src/components/tagForm";
@@ -20,33 +23,35 @@ const TagEditMutation = loader("src/mutations/TagEdit.gql");
 const TagAddComponent: React.FC = () => {
   const { name } = useParams();
   const history = useHistory();
-  const { data: tag, loading: loadingTag } = useQuery<Tag, TagVariables>(TagQuery, { variables: { name: decodeURI(name ?? '') }});
-  const [insertTagEdit] = useMutation<TagEdit, TagEditMutationVariables>(TagEditMutation, {
-    onCompleted: (data) => {
-      if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
-    },
-  });
+  const { data: tag, loading: loadingTag } = useQuery<Tag, TagVariables>(
+    TagQuery,
+    { variables: { name: decodeURI(name ?? "") } }
+  );
+  const [insertTagEdit] = useMutation<TagEdit, TagEditMutationVariables>(
+    TagEditMutation,
+    {
+      onCompleted: (data) => {
+        if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
+      },
+    }
+  );
 
-  if (loadingTag)
-    return <LoadingIndicator message="Loading tag..." />;
-  if (!tag?.findTag?.id)
-    return <div>Tag not found</div>;
-  
+  if (loadingTag) return <LoadingIndicator message="Loading tag..." />;
+  if (!tag?.findTag?.id) return <div>Tag not found</div>;
 
   const doUpdate = (insertData: TagEditDetailsInput) => {
     insertTagEdit({
-      variables:{
+      variables: {
         tagData: {
           edit: {
             id: tag.findTag?.id,
-            operation: OperationEnum.MODIFY
+            operation: OperationEnum.MODIFY,
           },
-          details: insertData
-        }
-      }
+          details: insertData,
+        },
+      },
     });
   };
-
 
   return (
     <div>

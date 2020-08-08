@@ -3,7 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { QuerySpec, EditFilterType, TargetTypeEnum, OperationEnum, VoteStatusEnum } from "./globalTypes";
+import {
+  QuerySpec,
+  EditFilterType,
+  TargetTypeEnum,
+  OperationEnum,
+  VoteStatusEnum,
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Edits
@@ -23,7 +29,9 @@ export interface Edits_queryEdits_edits_target_Tag {
   deleted: boolean;
 }
 
-export type Edits_queryEdits_edits_target = Edits_queryEdits_edits_target_Performer | Edits_queryEdits_edits_target_Tag;
+export type Edits_queryEdits_edits_target =
+  | Edits_queryEdits_edits_target_Performer
+  | Edits_queryEdits_edits_target_Tag;
 
 export interface Edits_queryEdits_edits_details_PerformerEdit {}
 
@@ -34,7 +42,9 @@ export interface Edits_queryEdits_edits_details_TagEdit {
   removed_aliases: string[] | null;
 }
 
-export type Edits_queryEdits_edits_details = Edits_queryEdits_edits_details_PerformerEdit | Edits_queryEdits_edits_details_TagEdit;
+export type Edits_queryEdits_edits_details =
+  | Edits_queryEdits_edits_details_PerformerEdit
+  | Edits_queryEdits_edits_details_TagEdit;
 
 export interface Edits_queryEdits_edits_merge_sources_Performer {}
 
@@ -44,7 +54,9 @@ export interface Edits_queryEdits_edits_merge_sources_Tag {
   description: string | null;
 }
 
-export type Edits_queryEdits_edits_merge_sources = Edits_queryEdits_edits_merge_sources_Performer | Edits_queryEdits_edits_merge_sources_Tag;
+export type Edits_queryEdits_edits_merge_sources =
+  | Edits_queryEdits_edits_merge_sources_Performer
+  | Edits_queryEdits_edits_merge_sources_Tag;
 
 export interface Edits_queryEdits_edits {
   id: string;

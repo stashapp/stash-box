@@ -10,8 +10,11 @@ const usePagination = () => {
     : 1;
 
   const setPage = (pageNumber: number) => {
-    history.push({ search: pageNumber === 1 ? "" : `?page=${pageNumber}`, hash: history.location.hash });
-  }
+    history.push({
+      search: pageNumber === 1 ? "" : `?page=${pageNumber}`,
+      hash: history.location.hash,
+    });
+  };
 
   return { page, setPage };
 };

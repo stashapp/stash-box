@@ -38,7 +38,7 @@ const TagsComponent: React.FC = () => {
         )}
       </div>
       <Card>
-        <Card.Body className="pt-4" >
+        <Card.Body className="pt-4">
           <ul>{tags}</ul>
         </Card.Body>
       </Card>

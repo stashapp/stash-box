@@ -1,8 +1,6 @@
 import React from "react";
 
-import {
-  VoteStatusEnum,
-} from "src/definitions/globalTypes";
+import { VoteStatusEnum } from "src/definitions/globalTypes";
 
 import EditList from "src/components/editList";
 

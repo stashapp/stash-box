@@ -16,22 +16,20 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   values: initialValues,
   onChange,
 }) => {
-  const options: IOptionType[] = (initialValues ?? []).map(value => ({
+  const options: IOptionType[] = (initialValues ?? []).map((value) => ({
     label: value,
-    value
+    value,
   }));
 
   const handleChange = (values: ValueType<IOptionType>) => {
-    if (!values)
-      return;
+    if (!values) return;
     const optionValue = values as IOptionType;
     if (Array.isArray(optionValue)) {
-      onChange(optionValue.map(v => v.value));
-    }
-    else {
+      onChange(optionValue.map((v) => v.value));
+    } else {
       onChange([optionValue.value]);
     }
-  }
+  };
 
   return (
     <div>

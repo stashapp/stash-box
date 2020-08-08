@@ -96,8 +96,12 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
       <img src={photoURL} alt="Studio" className="StudioForm-img m-4" />
 
       <Form.Group className="d-flex">
-        <Button className="col-2" type="submit">Save</Button>
-        <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
+        <Button className="col-2" type="submit">
+          Save
+        </Button>
+        <Button type="reset" variant="secondary" className="ml-auto mr-2">
+          Reset
+        </Button>
         <Link to={studio.id ? `/studios/${studio.id}` : "/studios"}>
           <Button variant="danger" onClick={() => history.goBack()}>
             Cancel

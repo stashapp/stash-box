@@ -12,20 +12,26 @@ interface DeleteButtonProps {
   disabled?: boolean;
 }
 
-const DeleteButton: React.FC<DeleteButtonProps> = ({ message, onClick, disabled = false }) => {
+const DeleteButton: React.FC<DeleteButtonProps> = ({
+  message,
+  onClick,
+  disabled = false,
+}) => {
   const [showDelete, setShowDelete] = useState(false);
   const auth = useContext(AuthContext);
 
   const toggleModal = () => setShowDelete(true);
   const handleDelete = (status: boolean): void => {
-    if (status)
-      onClick();
+    if (status) onClick();
     setShowDelete(false);
   };
 
   const deleteModal = showDelete && (
     <Modal
-      message={message ?? `Are you sure you want to delete this? This operation cannot be undone.`}
+      message={
+        message ??
+        `Are you sure you want to delete this? This operation cannot be undone.`
+      }
       callback={handleDelete}
     />
   );

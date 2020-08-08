@@ -19,7 +19,7 @@ import {
 import {
   ApplyEditMutation,
   ApplyEditMutationVariables,
-  ApplyEditMutation_applyEdit_target_Tag as Tag
+  ApplyEditMutation_applyEdit_target_Tag as Tag,
 } from "src/definitions/ApplyEditMutation";
 
 const EditQuery = loader("src/queries/Edit.gql");
@@ -32,8 +32,10 @@ const EditComponent: React.FC = () => {
   const history = useHistory();
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
-  const { data, loading } = useQuery<Edit, EditVariables>(EditQuery,{ variables: { id }});
-  const [cancelEdit, { loading: cancelling}] = useMutation<
+  const { data, loading } = useQuery<Edit, EditVariables>(EditQuery, {
+    variables: { id },
+  });
+  const [cancelEdit, { loading: cancelling }] = useMutation<
     CancelEditMutation,
     CancelEditMutationVariables
   >(CancelEdit);
@@ -51,8 +53,7 @@ const EditComponent: React.FC = () => {
   const toggleApplyModal = () => setShowApply(true);
 
   const handleCancel = (status: boolean): void => {
-    if (status)
-      cancelEdit({ variables: { input: { id: edit.id } } });
+    if (status) cancelEdit({ variables: { input: { id: edit.id } } });
     setShowCancel(false);
   };
   const handleApply = (status: boolean): void => {
@@ -84,30 +85,35 @@ const EditComponent: React.FC = () => {
 
   const mutating = cancelling || applying;
 
-  const buttons = isAdmin(auth.user) && edit.status === VoteStatusEnum.PENDING ? (
-    <div className="d-flex justify-content-end">
-      <Button
-        variant="danger"
-        className="mr-2"
-        disabled={showCancel || mutating}
-        onClick={toggleCancelModal}
-      >Cancel Edit</Button>
-      <Button
-        variant="danger"
-        disabled={showApply|| mutating}
-        onClick={toggleApplyModal}
-      >Apply Edit</Button>
-    </div>
-  ) : undefined;
+  const buttons =
+    isAdmin(auth.user) && edit.status === VoteStatusEnum.PENDING ? (
+      <div className="d-flex justify-content-end">
+        <Button
+          variant="danger"
+          className="mr-2"
+          disabled={showCancel || mutating}
+          onClick={toggleCancelModal}
+        >
+          Cancel Edit
+        </Button>
+        <Button
+          variant="danger"
+          disabled={showApply || mutating}
+          onClick={toggleApplyModal}
+        >
+          Apply Edit
+        </Button>
+      </div>
+    ) : undefined;
 
   return (
     <div>
       <EditCard edit={edit} />
-      { buttons }
-      { cancelModal }
-      { applyModal }
+      {buttons}
+      {cancelModal}
+      {applyModal}
     </div>
   );
-}
+};
 
 export default EditComponent;

@@ -3,7 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { SceneCreateInput, GenderEnum, FingerprintAlgorithm } from "./globalTypes";
+import {
+  SceneCreateInput,
+  GenderEnum,
+  FingerprintAlgorithm,
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddSceneMutation

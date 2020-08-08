@@ -14,7 +14,7 @@ import {
 } from "src/definitions/globalTypes";
 import {
   TagEditMutation as TagEdit,
-  TagEditMutationVariables
+  TagEditMutationVariables,
 } from "src/definitions/TagEditMutation";
 
 import { usePagination } from "src/hooks";
@@ -38,7 +38,7 @@ const TagComponent: React.FC = () => {
   const { data: tag, loading: loadingTag } = useQuery<Tag, TagVariables>(
     TagQuery,
     {
-      variables: { name: decodeURI(name ?? '') },
+      variables: { name: decodeURI(name ?? "") },
     }
   );
 
@@ -63,17 +63,27 @@ const TagComponent: React.FC = () => {
     skip: !tag?.findTag?.id,
   });
 
-  const [deleteTagEdit, { loading: deleting }] = useMutation<TagEdit, TagEditMutationVariables>(TagEditMutation, {
+  const [deleteTagEdit, { loading: deleting }] = useMutation<
+    TagEdit,
+    TagEditMutationVariables
+  >(TagEditMutation, {
     onCompleted: (data) => {
       if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
     },
   });
 
   const handleDelete = () => {
-    deleteTagEdit({ variables:{ tagData: { edit: { operation: OperationEnum.DESTROY, id: tag?.findTag?.id }}}});
+    deleteTagEdit({
+      variables: {
+        tagData: {
+          edit: { operation: OperationEnum.DESTROY, id: tag?.findTag?.id },
+        },
+      },
+    });
   };
 
-  const setTab = (tab: string) => history.push({ hash: tab === DEFAULT_TAB ? '' : `#${tab}` });
+  const setTab = (tab: string) =>
+    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   if (loadingTag || loadingScenes)
     return <LoadingIndicator message="Loading..." />;
@@ -92,27 +102,41 @@ const TagComponent: React.FC = () => {
       <div className="row no-gutters">
         <h3 className="col-4 mr-auto">
           <span className="mr-2">Tag:</span>
-          { tag.findTag.deleted ? <del>{tag.findTag.name}</del> : <em>{tag.findTag.name}</em> }
+          {tag.findTag.deleted ? (
+            <del>{tag.findTag.name}</del>
+          ) : (
+            <em>{tag.findTag.name}</em>
+          )}
         </h3>
-        <Link to={`/tags/${encodeURI(encodeURI(tag.findTag.name))}/edit`} className="mr-2">
+        <Link
+          to={`/tags/${encodeURI(encodeURI(tag.findTag.name))}/edit`}
+          className="mr-2"
+        >
           <Button>Edit</Button>
         </Link>
-        <Link to={`/tags/${encodeURI(encodeURI(tag.findTag.name))}/merge`} className="mr-2">
+        <Link
+          to={`/tags/${encodeURI(encodeURI(tag.findTag.name))}/merge`}
+          className="mr-2"
+        >
           <Button>Merge into</Button>
         </Link>
-        { !tag.findTag.deleted && (
-          <DeleteButton onClick={handleDelete} disabled={deleting} message="Do you want to delete tag?" /> 
+        {!tag.findTag.deleted && (
+          <DeleteButton
+            onClick={handleDelete}
+            disabled={deleting}
+            message="Do you want to delete tag?"
+          />
         )}
       </div>
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
         <Tab eventKey="scenes" title="Scenes">
-            <div className="row">
-              <Pagination onClick={setPage} pages={totalPages} active={page} />
-            </div>
-            <div className="performers row">{scenes}</div>
-            <div className="row">
-              <Pagination onClick={setPage} pages={totalPages} active={page} />
-            </div>
+          <div className="row">
+            <Pagination onClick={setPage} pages={totalPages} active={page} />
+          </div>
+          <div className="performers row">{scenes}</div>
+          <div className="row">
+            <Pagination onClick={setPage} pages={totalPages} active={page} />
+          </div>
         </Tab>
         <Tab eventKey="edits" title="Edits">
           <EditList type={TargetTypeEnum.TAG} id={tag.findTag.id} />

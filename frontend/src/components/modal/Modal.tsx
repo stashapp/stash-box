@@ -8,7 +8,12 @@ interface ModalProps {
   acceptTerm?: string;
 }
 
-const ModalComponent: React.FC<ModalProps> = ({ message, callback, cancelTerm = "Cancel", acceptTerm = "Delete" }) => {
+const ModalComponent: React.FC<ModalProps> = ({
+  message,
+  callback,
+  cancelTerm = "Cancel",
+  acceptTerm = "Delete",
+}) => {
   const handleCancel = () => callback(false);
   const handleAccept = () => callback(true);
 
@@ -18,10 +23,10 @@ const ModalComponent: React.FC<ModalProps> = ({ message, callback, cancelTerm = 
       <Modal.Body>{message}</Modal.Body>
       <Modal.Footer>
         <Button variant="danger" onClick={handleAccept}>
-          { acceptTerm }
+          {acceptTerm}
         </Button>
         <Button variant="primary" onClick={handleCancel}>
-          { cancelTerm }
+          {cancelTerm}
         </Button>
       </Modal.Footer>
     </Modal>

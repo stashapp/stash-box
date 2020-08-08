@@ -11,7 +11,7 @@ import { loader } from "graphql.macro";
 
 import { Studios, StudiosVariables } from "src/definitions/Studios";
 import { Scene_findScene as Scene } from "src/definitions/Scene";
-import { Tags_queryTags_tags as Tag} from "src/definitions/Tags";
+import { Tags_queryTags_tags as Tag } from "src/definitions/Tags";
 import {
   SceneUpdateInput,
   FingerprintInput,
@@ -138,7 +138,10 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const onStudioChange = (selectedOption: ValueType<IOptionType>) =>
     setValue("studioId", (selectedOption as IOptionType).value);
   const onTagChange = (selectedTags: Tag[]) =>
-    setValue("tags", selectedTags.map(t => t.name));
+    setValue(
+      "tags",
+      selectedTags.map((t) => t.name)
+    );
 
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneUpdateInput = {
@@ -419,8 +422,12 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           </Form.Group>
 
           <Form.Group className="d-flex">
-            <Button className="col-2" type="submit">Save</Button>
-            <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
+            <Button className="col-2" type="submit">
+              Save
+            </Button>
+            <Button type="reset" variant="secondary" className="ml-auto mr-2">
+              Reset
+            </Button>
             <Link to={scene.id ? `/scenes/${scene.id}` : "/scenes"}>
               <Button variant="danger" onClick={() => history.goBack()}>
                 Cancel

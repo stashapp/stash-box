@@ -7,12 +7,13 @@ import {
 } from "src/definitions/Edits";
 
 interface DestroyProps {
-  target?: Target|null;
+  target?: Target | null;
 }
 
-const isTagTarget = (target: Target|null|undefined): target is Tag|undefined => (
-  (target as any)?.__typename === "Tag" || target === undefined
-);
+const isTagTarget = (
+  target: Target | null | undefined
+): target is Tag | undefined =>
+  (target as any)?.__typename === "Tag" || target === undefined;
 
 const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
   if (isTagTarget(target)) {
@@ -21,13 +22,15 @@ const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
         <div className="row">
           <b className="col-2 text-right">Deleting: </b>
           <Link to={`/tags/${target?.name}`}>
-            <span className="text-capitalize bg-danger">{ target?.name.toLowerCase() }</span>
+            <span className="text-capitalize bg-danger">
+              {target?.name.toLowerCase()}
+            </span>
           </Link>
         </div>
       </div>
     );
   }
   return null;
-}
+};
 
 export default DestroyEdit;

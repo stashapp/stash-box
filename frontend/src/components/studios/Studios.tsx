@@ -83,7 +83,7 @@ const StudiosComponent: React.FC = () => {
         )}
       </div>
       <Card>
-        <Card.Body className="pt-4" >
+        <Card.Body className="pt-4">
           <ul>{studioList}</ul>
         </Card.Body>
       </Card>

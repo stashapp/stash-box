@@ -6,9 +6,12 @@ import { loader } from "graphql.macro";
 import { Tag_findTag as Tag } from "src/definitions/Tag";
 import {
   TagEditMutation as TagEdit,
-  TagEditMutationVariables
+  TagEditMutationVariables,
 } from "src/definitions/TagEditMutation";
-import { OperationEnum, TagEditDetailsInput } from "src/definitions/globalTypes";
+import {
+  OperationEnum,
+  TagEditDetailsInput,
+} from "src/definitions/globalTypes";
 
 import TagForm from "src/components/tagForm";
 
@@ -16,22 +19,25 @@ const TagEditMutation = loader("src/mutations/TagEdit.gql");
 
 const TagAddComponent: React.FC = () => {
   const history = useHistory();
-  const [insertTagEdit] = useMutation<TagEdit, TagEditMutationVariables>(TagEditMutation, {
-    onCompleted: (data) => {
-      if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
-    },
-  });
+  const [insertTagEdit] = useMutation<TagEdit, TagEditMutationVariables>(
+    TagEditMutation,
+    {
+      onCompleted: (data) => {
+        if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
+      },
+    }
+  );
 
   const doInsert = (insertData: TagEditDetailsInput) => {
     insertTagEdit({
-      variables:{
+      variables: {
         tagData: {
           edit: {
-            operation: OperationEnum.CREATE
+            operation: OperationEnum.CREATE,
           },
-          details: insertData
-        }
-      }
+          details: insertData,
+        },
+      },
     });
   };
 

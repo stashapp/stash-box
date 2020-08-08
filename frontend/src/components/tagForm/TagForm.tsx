@@ -12,9 +12,7 @@ import MultiSelect from "src/components/multiSelect";
 const schema = yup.object().shape({
   name: yup.string().required("Name is required"),
   description: yup.string(),
-  aliases: yup.array().of(
-    yup.string()
-  )
+  aliases: yup.array().of(yup.string()),
 });
 
 type TagFormData = yup.InferType<typeof schema>;
@@ -40,12 +38,13 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
     const callbackData: TagCreateInput = {
       name: data.name,
       description: data.description ?? null,
-      aliases: data.aliases ?? []
+      aliases: data.aliases ?? [],
     };
     callback(callbackData);
   };
 
-  const handleAliasChange = (newAliases: string[]) => setValue("aliases", newAliases);
+  const handleAliasChange = (newAliases: string[]) =>
+    setValue("aliases", newAliases);
 
   return (
     <Form className="TagForm col-6" onSubmit={handleSubmit(onSubmit)}>
