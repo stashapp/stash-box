@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useState, useEffect, useRef } from "react";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 import { useHistory, Link } from "react-router-dom";
 import useForm from "react-hook-form";
 import Select, { ValueType, OptionTypeBase } from "react-select";

@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { loader } from "graphql.macro";
@@ -56,7 +56,7 @@ const StudioComponent: React.FC = () => {
   const studio = data.findStudio;
 
   const totalPages = Math.ceil((sceneData?.queryScenes?.count ?? 0) / 20);
-  const scenes = (sceneData?.queryScenes?.scenes ?? [])
+  const scenes = [...(sceneData?.queryScenes?.scenes ?? [])]
     .sort((a, b) => {
       if (a.date < b.date) return 1;
       if (a.date > b.date) return -1;

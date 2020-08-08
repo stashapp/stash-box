@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLazyQuery } from "@apollo/react-hooks";
+import { useLazyQuery } from "@apollo/client";
 import Async from "react-select/async";
 import { ValueType, OptionTypeBase } from "react-select";
 import { loader } from "graphql.macro";

@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation, useQuery } from "@apollo/react-hooks";
+import { useMutation, useQuery } from "@apollo/client";
 import { useParams, useHistory } from "react-router-dom";
 import { loader } from "graphql.macro";
 

@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useQuery, useMutation } from "@apollo/react-hooks";
+import { useQuery, useMutation } from "@apollo/client";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import { loader } from "graphql.macro";

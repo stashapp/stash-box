@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation, useQuery } from "@apollo/react-hooks";
+import { useMutation, useQuery } from "@apollo/client";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { loader } from "graphql.macro";

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLazyQuery } from "@apollo/react-hooks";
+import { useLazyQuery } from "@apollo/client";
 import {
   components,
   OptionTypeBase,
