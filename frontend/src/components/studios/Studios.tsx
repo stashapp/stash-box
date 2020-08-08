@@ -1,8 +1,7 @@
 import React, { useContext } from "react";
 import { useQuery } from "@apollo/react-hooks";
-import { Card } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { Button } from "react-bootstrap";
 import { loader } from "graphql.macro";
 import { canEdit } from "src/utils/auth";
 import AuthContext from "src/AuthContext";

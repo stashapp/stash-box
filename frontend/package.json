@@ -11,7 +11,7 @@
     "lint": "yarn lint:css && yarn lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
-    "generate": "apollo client:codegen --target typescript --outputFlat src/definitions --no-addTypename",
+    "generate": "apollo client:codegen --target typescript --outputFlat src/definitions",
     "format": "prettier --write \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\""
   },
   "devDependencies": {
@@ -58,8 +58,8 @@
     "apollo-link-error": "^1.1.12",
     "apollo-link-http": "^1.5.16",
     "bootstrap": "^4.4.1",
-    "graphql": "^14.6.0",
-    "graphql-tag": "^2.10.3",
+    "graphql": "^15.3.0",
+    "graphql-tag": "^2.11.0",
     "i18n-iso-countries": "^6.0.0",
     "lodash": "^4.17.15",
     "query-string": "^6.9.0",

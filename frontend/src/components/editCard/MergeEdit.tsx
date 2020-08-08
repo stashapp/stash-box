@@ -11,7 +11,7 @@ interface MergeEditProps {
 }
 
 const isTagTarget = (target: Target | null): target is Tag =>
-  (target as any)?.__typename === "Tag";
+  target?.__typename === "Tag";
 
 const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
   if (!merges || merges.length === 0) return null;

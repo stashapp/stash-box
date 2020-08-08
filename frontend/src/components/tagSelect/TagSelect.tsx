@@ -106,6 +106,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
           classNamePrefix="react-select"
           className={`react-select ${CLASSNAME_SELECT}`}
           onChange={handleChange}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           loadOptions={debouncedLoadOptions as any}
         />
       </div>

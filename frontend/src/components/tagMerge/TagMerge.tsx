@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useMutation, useQuery } from "@apollo/react-hooks";
-import { useHistory } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { loader } from "graphql.macro";
 
 import { Tag, TagVariables } from "src/definitions/Tag";

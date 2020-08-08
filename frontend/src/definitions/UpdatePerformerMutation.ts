@@ -3,26 +3,20 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import {
-  PerformerUpdateInput,
-  GenderEnum,
-  DateAccuracyEnum,
-  HairColorEnum,
-  EyeColorEnum,
-  EthnicityEnum,
-  BreastTypeEnum,
-} from "./globalTypes";
+import { PerformerUpdateInput, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdatePerformerMutation
 // ====================================================
 
 export interface UpdatePerformerMutation_performerUpdate_birthdate {
+  __typename: "FuzzyDate";
   date: any;
   accuracy: DateAccuracyEnum;
 }
 
 export interface UpdatePerformerMutation_performerUpdate_measurements {
+  __typename: "Measurements";
   waist: number | null;
   hip: number | null;
   band_size: number | null;
@@ -30,16 +24,19 @@ export interface UpdatePerformerMutation_performerUpdate_measurements {
 }
 
 export interface UpdatePerformerMutation_performerUpdate_tattoos {
+  __typename: "BodyModification";
   location: string;
   description: string | null;
 }
 
 export interface UpdatePerformerMutation_performerUpdate_piercings {
+  __typename: "BodyModification";
   location: string;
   description: string | null;
 }
 
 export interface UpdatePerformerMutation_performerUpdate {
+  __typename: "Performer";
   id: string;
   name: string;
   disambiguation: string | null;

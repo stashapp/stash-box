@@ -15,12 +15,12 @@ interface ModifyEditProps {
 }
 
 const isTagCreate = (details: Details | null): details is TagEdit =>
-  (details as any).__typename === "TagEdit";
+  details?.__typename === "TagEdit";
 
 const isTagTarget = (
   target: Target | null | undefined
 ): target is Tag | undefined =>
-  (target as any)?.__typename === "Tag" || target === undefined;
+  target?.__typename === "Tag" || target === undefined;
 
 const ModifyEdit: React.FC<ModifyEditProps> = ({ details, target }) => {
   if (!details) return null;

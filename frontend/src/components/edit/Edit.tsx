@@ -69,7 +69,7 @@ const EditComponent: React.FC = () => {
 
   const cancelModal = showCancel && (
     <Modal
-      message={`Are you sure you want to cancel this edit?`}
+      message="Are you sure you want to cancel this edit?"
       callback={handleCancel}
       acceptTerm="Cancel edit"
     />
@@ -77,7 +77,7 @@ const EditComponent: React.FC = () => {
 
   const applyModal = showApply && (
     <Modal
-      message={`Are you sure you want to apply this edit?`}
+      message="Are you sure you want to apply this edit?"
       callback={handleApply}
       acceptTerm="Apply edit"
     />

@@ -10,49 +10,54 @@ import { TargetTypeEnum, OperationEnum, VoteStatusEnum } from "./globalTypes";
 // ====================================================
 
 export interface Edit_findEdit_user {
+  __typename: "User";
   id: string;
   name: string;
 }
 
-export interface Edit_findEdit_target_Performer {}
+export interface Edit_findEdit_target_Performer {
+  __typename: "Performer" | "Scene" | "Studio";
+}
 
 export interface Edit_findEdit_target_Tag {
+  __typename: "Tag";
   id: string;
   name: string;
   description: string | null;
   deleted: boolean;
 }
 
-export type Edit_findEdit_target =
-  | Edit_findEdit_target_Performer
-  | Edit_findEdit_target_Tag;
+export type Edit_findEdit_target = Edit_findEdit_target_Performer | Edit_findEdit_target_Tag;
 
-export interface Edit_findEdit_details_PerformerEdit {}
+export interface Edit_findEdit_details_PerformerEdit {
+  __typename: "PerformerEdit" | "SceneEdit" | "StudioEdit";
+}
 
 export interface Edit_findEdit_details_TagEdit {
+  __typename: "TagEdit";
   name: string | null;
   description: string | null;
   added_aliases: string[] | null;
   removed_aliases: string[] | null;
 }
 
-export type Edit_findEdit_details =
-  | Edit_findEdit_details_PerformerEdit
-  | Edit_findEdit_details_TagEdit;
+export type Edit_findEdit_details = Edit_findEdit_details_PerformerEdit | Edit_findEdit_details_TagEdit;
 
-export interface Edit_findEdit_merge_sources_Performer {}
+export interface Edit_findEdit_merge_sources_Performer {
+  __typename: "Performer" | "Scene" | "Studio";
+}
 
 export interface Edit_findEdit_merge_sources_Tag {
+  __typename: "Tag";
   id: string;
   name: string;
   description: string | null;
 }
 
-export type Edit_findEdit_merge_sources =
-  | Edit_findEdit_merge_sources_Performer
-  | Edit_findEdit_merge_sources_Tag;
+export type Edit_findEdit_merge_sources = Edit_findEdit_merge_sources_Performer | Edit_findEdit_merge_sources_Tag;
 
 export interface Edit_findEdit {
+  __typename: "Edit";
   id: string;
   target_type: TargetTypeEnum;
   operation: OperationEnum;

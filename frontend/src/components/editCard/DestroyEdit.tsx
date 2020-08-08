@@ -13,7 +13,7 @@ interface DestroyProps {
 const isTagTarget = (
   target: Target | null | undefined
 ): target is Tag | undefined =>
-  (target as any)?.__typename === "Tag" || target === undefined;
+  target?.__typename === "Tag" || target === undefined;
 
 const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
   if (isTagTarget(target)) {

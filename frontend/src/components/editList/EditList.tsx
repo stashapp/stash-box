@@ -1,6 +1,5 @@
 import React from "react";
 import { useQuery } from "@apollo/react-hooks";
-//import { Button, Card } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import { useEditFilter, usePagination } from "src/hooks";
