@@ -114,6 +114,8 @@ type Mutation {
   editComment(input: EditCommentInput!): Edit!
   """Apply edit without voting"""
   applyEdit(input: ApplyEditInput!): Edit!
+  """Cancel edit without voting"""
+  cancelEdit(input: CancelEditInput!): Edit!
 
   submitFingerprint(input: FingerprintSubmission!): Boolean!
 }

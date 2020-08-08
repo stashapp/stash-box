@@ -118,7 +118,7 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 	panic("not implemented")
 }
 
-func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
+func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {
 	if err := validateAdmin(ctx); err != nil {
 		return nil, err
 	}
@@ -127,6 +127,44 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 
     tagID, _ := uuid.FromString(input.ID)
 	eqb := models.NewEditQueryBuilder(tx)
+    edit, err := eqb.Find(tagID)
+    if err != nil {
+        return nil, err
+    }
+    if edit == nil {
+        return nil, errors.New("Edit not found")
+    }
+
+    var status models.VoteStatusEnum
+    resolveEnumString(edit.Status, &status)
+    if status != models.VoteStatusEnumPending {
+        return nil, errors.New("Invalid vote status: " + edit.Status)
+    }
+
+    edit.ImmediateReject()
+    updatedEdit, err := eqb.Update(*edit)
+
+    if err != nil {
+        _ = tx.Rollback()
+        return nil, err
+    }
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+    return updatedEdit, nil
+}
+
+func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
+	if err := validateAdmin(ctx); err != nil {
+		return nil, err
+	}
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+    tagID, _ := uuid.FromString(input.ID)
+    eqb := models.NewEditQueryBuilder(tx)
     edit, err := eqb.Find(tagID)
     if err != nil {
         return nil, err
@@ -166,7 +204,24 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
                 return nil, errors.New("Tag not found: " + tagID.String())
             }
         }
-        _, err = tqb.ApplyEdit(*edit, operation, tag)
+        newTag, err := tqb.ApplyEdit(*edit, operation, tag)
+        if err != nil {
+            _ = tx.Rollback()
+            return nil, err
+        }
+
+        if operation == models.OperationEnumCreate {
+            editTag := models.EditTag{
+                EditID: edit.ID,
+                TagID:  newTag.ID,
+            }
+
+            err = eqb.CreateEditTag(editTag)
+            if err != nil {
+                _ = tx.Rollback()
+                return nil, err
+            }
+        }
     default:
         return nil, errors.New("Not implemented: " + edit.TargetType)
     }

@@ -4,9 +4,11 @@ import { Modal, Button } from "react-bootstrap";
 interface ModalProps {
   message: string;
   callback: (status: boolean) => void;
+  cancelTerm?: string;
+  acceptTerm?: string;
 }
 
-const ModalComponent: React.FC<ModalProps> = ({ message, callback }) => {
+const ModalComponent: React.FC<ModalProps> = ({ message, callback, cancelTerm = "Cancel", acceptTerm = "Delete" }) => {
   const handleCancel = () => callback(false);
   const handleAccept = () => callback(true);
 
@@ -16,10 +18,10 @@ const ModalComponent: React.FC<ModalProps> = ({ message, callback }) => {
       <Modal.Body>{message}</Modal.Body>
       <Modal.Footer>
         <Button variant="danger" onClick={handleAccept}>
-          Delete
+          { acceptTerm }
         </Button>
         <Button variant="primary" onClick={handleCancel}>
-          Cancel
+          { cancelTerm }
         </Button>
       </Modal.Footer>
     </Modal>

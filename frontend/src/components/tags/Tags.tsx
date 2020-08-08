@@ -22,7 +22,7 @@ const TagsComponent: React.FC = () => {
 
   const tags = (data?.queryTags?.tags ?? []).map((tag) => (
     <li key={tag.id}>
-      <Link to={`/tags/${encodeURIComponent(tag.name)}`}>{tag.name}</Link>
+      <Link to={encodeURI(encodeURI(`/tags/${tag.name}`))}>{tag.name}</Link>
       <span className="ml-2">{tag.description}</span>
     </li>
   ));

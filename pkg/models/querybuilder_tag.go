@@ -149,6 +149,7 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 	}
 
 	query := database.NewQueryBuilder(tagDBTable)
+  query.Eq("deleted", false)
 
 	if q := tagFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}

@@ -11,6 +11,7 @@ import { loader } from "graphql.macro";
 
 import { Studios, StudiosVariables } from "src/definitions/Studios";
 import { Scene_findScene as Scene } from "src/definitions/Scene";
+import { Tags_queryTags_tags as Tag} from "src/definitions/Tags";
 import {
   SceneUpdateInput,
   FingerprintInput,
@@ -136,8 +137,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
   const onStudioChange = (selectedOption: ValueType<IOptionType>) =>
     setValue("studioId", (selectedOption as IOptionType).value);
-  const onTagChange = (selectedTags: string[]) =>
-    setValue("tags", selectedTags);
+  const onTagChange = (selectedTags: Tag[]) =>
+    setValue("tags", selectedTags.map(t => t.name));
 
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneUpdateInput = {

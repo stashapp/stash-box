@@ -9,8 +9,9 @@ const usePagination = () => {
     ? Number.parseInt(Array.isArray(queryPage) ? queryPage[0] : queryPage, 10)
     : 1;
 
-  const setPage = (pageNumber: number) =>
-    history.push({ search: pageNumber === 1 ? "" : `?page=${pageNumber}` });
+  const setPage = (pageNumber: number) => {
+    history.push({ search: pageNumber === 1 ? "" : `?page=${pageNumber}`, hash: history.location.hash });
+  }
 
   return { page, setPage };
 };

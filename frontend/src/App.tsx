@@ -24,6 +24,10 @@ import StudioAdd from "./components/studioAdd";
 import Tag from "./components/tag";
 import Tags from "./components/tags";
 import TagAdd from "./components/tagAdd";
+import TagEdit from "./components/tagEdit";
+import TagMerge from "./components/tagMerge";
+import Edit from "./components/edit";
+import Edits from "./components/edits";
 
 import "./App.scss";
 
@@ -101,8 +105,20 @@ const App: React.FC = () => (
             <Route exact path="/tags/add">
               <TagAdd />
             </Route>
+            <Route exact path="/tags/:name/merge">
+              <TagMerge />
+            </Route>
+            <Route exact path="/tags/:name/edit">
+              <TagEdit />
+            </Route>
             <Route exact path="/tags/:name">
               <Tag />
+            </Route>
+            <Route exact path="/edits">
+              <Edits />
+            </Route>
+            <Route exact path="/edits/:id">
+              <Edit />
             </Route>
           </Switch>
         </Main>

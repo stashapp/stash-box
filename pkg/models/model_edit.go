@@ -2,7 +2,6 @@ package models
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"time"
 
@@ -42,7 +41,6 @@ type Edit struct {
 	UserID      uuid.UUID       `db:"user_id" json:"user_id"`
 	TargetType  string          `db:"target_type" json:"target_type"`
 	Operation   string          `db:"operation" json:"operation"`
-	EditComment sql.NullString  `db:"edit_comment" json:"edit_comment"`
 	VoteCount   int             `db:"votes" json:"votes"`
 	Status      string          `db:"status" json:"status"`
 	Applied     bool            `db:"applied" json:"applied"`
@@ -103,6 +101,11 @@ func (p *Edit) ImmediateAccept() {
     p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
+func (p *Edit) ImmediateReject() {
+    p.Status = VoteStatusEnumImmediateRejected.String()
+    p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
 func (e *Edit) SetData(data interface{}) error {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
@@ -115,13 +118,13 @@ func (e *Edit) SetData(data interface{}) error {
 	return nil
 }
 
-func (e *Edit) GetData() (*EditData, error) {
+func (e *Edit) GetData() (*EditData) {
     data := EditData {}
 	err := json.Unmarshal(e.Data, &data)
     if err != nil {
-        return nil, err
+        return nil
     }
-	return &data, nil
+	return &data
 }
 
 func (e *Edit) GetTagData() (*TagEditData, error) {

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
     "errors"
+  "time"
 
     "github.com/gofrs/uuid"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -25,10 +26,16 @@ func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User
 	return user, nil
 }
 
+func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {
     var operation models.OperationEnum
+    var status models.VoteStatusEnum
     resolveEnumString(obj.Operation, &operation)
-    if operation == models.OperationEnumCreate {
+    resolveEnumString(obj.Status, &status)
+    if operation == models.OperationEnumCreate && status != models.VoteStatusEnumAccepted && status != models.VoteStatusEnumImmediateAccepted {
         return nil, nil
     }
 
@@ -64,9 +71,9 @@ func (r *editResolver) TargetType(ctx context.Context, obj *models.Edit) (models
 
 func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]models.EditTarget, error) {
     mergeSources := []models.EditTarget{}
-    editData, err := obj.GetData()
-    if err != nil {
-        return nil, err
+    editData := obj.GetData()
+    if editData == nil {
+      return mergeSources, nil
     }
 
     if len(editData.MergeSources) > 0 {

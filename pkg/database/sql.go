@@ -33,7 +33,7 @@ func NewQueryBuilder(table Table) *QueryBuilder {
 }
 
 func (qb *QueryBuilder) AddJoin(joinTable Table, on string) {
-	qb.Body += "LEFT JOIN " + joinTable.Name() + " ON " + on
+	qb.Body += "JOIN " + joinTable.Name() + " ON " + on
 }
 
 func (qb *QueryBuilder) AddWhere(clauses ...string) {

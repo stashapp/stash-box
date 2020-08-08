@@ -8,11 +8,12 @@ interface IProps {
   link?: string;
   className?: string;
   onRemove?: () => void;
+  disabled?: boolean;
 }
 
-const TagLink: React.FC<IProps> = ({ title, link, className, onRemove }) => (
+const TagLink: React.FC<IProps> = ({ title, link, className, onRemove, disabled = false }) => (
   <Badge className={`tag-item ${className}`} variant="secondary">
-    {link ? <Link to={link}>{title}</Link> : title}
+    {link && !disabled ? <Link to={link}>{title}</Link> : title}
     {onRemove && (
       <Button onClick={onRemove}>
         <Icon icon="times" />

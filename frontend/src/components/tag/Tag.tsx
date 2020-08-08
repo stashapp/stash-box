@@ -1,7 +1,7 @@
 import React from "react";
-import { useQuery } from "@apollo/react-hooks";
-import { useParams } from "react-router-dom";
-import { Tab, Tabs } from "react-bootstrap";
+import { useMutation, useQuery } from "@apollo/react-hooks";
+import { Link, useHistory, useParams } from "react-router-dom";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import { Scenes, ScenesVariables } from "src/definitions/Scenes";
@@ -9,25 +9,39 @@ import { Tag, TagVariables } from "src/definitions/Tag";
 import {
   SortDirectionEnum,
   CriterionModifier,
+  TargetTypeEnum,
+  OperationEnum,
 } from "src/definitions/globalTypes";
+import {
+  TagEditMutation as TagEdit,
+  TagEditMutationVariables
+} from "src/definitions/TagEditMutation";
 
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
+import EditList from "src/components/editList";
+import DeleteButton from "src/components/deleteButton";
 
 const ScenesQuery = loader("src/queries/Scenes.gql");
 const TagQuery = loader("src/queries/Tag.gql");
+const TagEditMutation = loader("src/mutations/TagEdit.gql");
+
+const DEFAULT_TAB = "scenes";
 
 const TagComponent: React.FC = () => {
   const { name } = useParams();
+  const history = useHistory();
   const { page, setPage } = usePagination();
+  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const { data: tag, loading: loadingTag } = useQuery<Tag, TagVariables>(
     TagQuery,
     {
-      variables: { name },
+      variables: { name: decodeURI(name ?? '') },
     }
   );
+
   const { data: sceneData, loading: loadingScenes } = useQuery<
     Scenes,
     ScenesVariables
@@ -49,6 +63,18 @@ const TagComponent: React.FC = () => {
     skip: !tag?.findTag?.id,
   });
 
+  const [deleteTagEdit, { loading: deleting }] = useMutation<TagEdit, TagEditMutationVariables>(TagEditMutation, {
+    onCompleted: (data) => {
+      if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
+    },
+  });
+
+  const handleDelete = () => {
+    deleteTagEdit({ variables:{ tagData: { edit: { operation: OperationEnum.DESTROY, id: tag?.findTag?.id }}}});
+  };
+
+  const setTab = (tab: string) => history.push({ hash: tab === DEFAULT_TAB ? '' : `#${tab}` });
+
   if (loadingTag || loadingScenes)
     return <LoadingIndicator message="Loading..." />;
 
@@ -63,10 +89,22 @@ const TagComponent: React.FC = () => {
 
   return (
     <>
-      <h3>
-        Tag: <em>{tag.findTag.name}</em>
-      </h3>
-      <Tabs defaultActiveKey="scenes" id="tag-tabs" mountOnEnter>
+      <div className="row no-gutters">
+        <h3 className="col-4 mr-auto">
+          <span className="mr-2">Tag:</span>
+          { tag.findTag.deleted ? <del>{tag.findTag.name}</del> : <em>{tag.findTag.name}</em> }
+        </h3>
+        <Link to={`/tags/${encodeURI(encodeURI(tag.findTag.name))}/edit`} className="mr-2">
+          <Button>Edit</Button>
+        </Link>
+        <Link to={`/tags/${encodeURI(encodeURI(tag.findTag.name))}/merge`} className="mr-2">
+          <Button>Merge into</Button>
+        </Link>
+        { !tag.findTag.deleted && (
+          <DeleteButton onClick={handleDelete} disabled={deleting} message="Do you want to delete tag?" /> 
+        )}
+      </div>
+      <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
         <Tab eventKey="scenes" title="Scenes">
             <div className="row">
               <Pagination onClick={setPage} pages={totalPages} active={page} />
@@ -77,6 +115,7 @@ const TagComponent: React.FC = () => {
             </div>
         </Tab>
         <Tab eventKey="edits" title="Edits">
+          <EditList type={TargetTypeEnum.TAG} id={tag.findTag.id} />
         </Tab>
       </Tabs>
     </>

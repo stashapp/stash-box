@@ -75,6 +75,13 @@ export enum HairColorEnum {
   VARIOUS = "VARIOUS",
 }
 
+export enum OperationEnum {
+  CREATE = "CREATE",
+  DESTROY = "DESTROY",
+  MERGE = "MERGE",
+  MODIFY = "MODIFY",
+}
+
 export enum RoleEnum {
   ADMIN = "ADMIN",
   EDIT = "EDIT",
@@ -86,6 +93,25 @@ export enum RoleEnum {
 export enum SortDirectionEnum {
   ASC = "ASC",
   DESC = "DESC",
+}
+
+export enum TargetTypeEnum {
+  PERFORMER = "PERFORMER",
+  SCENE = "SCENE",
+  STUDIO = "STUDIO",
+  TAG = "TAG",
+}
+
+export enum VoteStatusEnum {
+  ACCEPTED = "ACCEPTED",
+  IMMEDIATE_ACCEPTED = "IMMEDIATE_ACCEPTED",
+  IMMEDIATE_REJECTED = "IMMEDIATE_REJECTED",
+  PENDING = "PENDING",
+  REJECTED = "REJECTED",
+}
+
+export interface ApplyEditInput {
+  id: string;
 }
 
 export interface BodyModificationCriterionInput {
@@ -104,9 +130,31 @@ export interface BreastTypeCriterionInput {
   modifier: CriterionModifier;
 }
 
+export interface CancelEditInput {
+  id: string;
+}
+
 export interface DateCriterionInput {
   value: any;
   modifier: CriterionModifier;
+}
+
+export interface EditFilterType {
+  user_id?: string | null;
+  status?: VoteStatusEnum | null;
+  operation?: OperationEnum | null;
+  vote_count?: IntCriterionInput | null;
+  applied?: boolean | null;
+  target_type?: TargetTypeEnum | null;
+  target_id?: string | null;
+}
+
+export interface EditInput {
+  id?: string | null;
+  operation: OperationEnum;
+  edit_id?: string | null;
+  merge_source_ids?: string[] | null;
+  comment?: string | null;
 }
 
 export interface EthnicityCriterionInput {
@@ -318,6 +366,17 @@ export interface TagCreateInput {
   name: string;
   description?: string | null;
   aliases?: string[] | null;
+}
+
+export interface TagEditDetailsInput {
+  name?: string | null;
+  description?: string | null;
+  aliases?: string[] | null;
+}
+
+export interface TagEditInput {
+  edit: EditInput;
+  details?: TagEditDetailsInput | null;
 }
 
 export interface TagFilterType {

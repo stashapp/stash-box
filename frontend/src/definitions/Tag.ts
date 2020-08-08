@@ -11,6 +11,8 @@ export interface Tag_findTag {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
+  deleted: boolean;
 }
 
 export interface Tag {
