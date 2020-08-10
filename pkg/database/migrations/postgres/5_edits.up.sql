@@ -11,6 +11,7 @@ CREATE TABLE "edits" (
   "updated_at" timestamp not null,
   foreign key("user_id") references "users"("id")
 );
+CREATE INDEX edit_merge_sources_idx ON edits USING gin ((data->'merge_sources') jsonb_path_ops);
 
 CREATE TABLE "edit_comments" (
   "id" UUID not null primary key,

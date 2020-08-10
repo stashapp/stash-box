@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/gofrs/uuid"
@@ -124,7 +125,9 @@ func (qb *EditQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 		}
 		if *editFilter.TargetType == "TAG" {
 			query.AddJoin(editTagTable.Table, editTagTable.Name()+".edit_id = edits.id")
-			query.Eq(editTagTable.Name()+".tag_id", *q)
+			query.AddWhere(editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?")
+			jsonID, _ := json.Marshal(*q)
+			query.AddArg(*q, jsonID)
 		} else {
 			panic("TargetType is not yet supported: " + *editFilter.TargetType)
 		}
