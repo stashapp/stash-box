@@ -60,6 +60,12 @@ func (qb *TagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uu
 	return qb.dbi.RawQuery(tagRedirectTable.Table, query, args, nil)
 }
 
+func (qb *TagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+	query := "UPDATE " + sceneTagTable.Table.Name() + " SET tag_id = ? WHERE tag_id = ?"
+	args := []interface{}{newTargetID, oldTargetID}
+	return qb.dbi.RawQuery(sceneTagTable.Table, query, args, nil)
+}
+
 func (qb *TagQueryBuilder) CreateAliases(newJoins TagAliases) error {
 	return qb.dbi.InsertJoins(tagAliasTable, &newJoins)
 }
@@ -218,6 +224,9 @@ func (qb *TagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
 		return err
 	}
 	if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
+		return err
+	}
+	if err := qb.UpdateSceneTags(sourceID, targetID); err != nil {
 		return err
 	}
 	redirect := TagRedirect{SourceID: sourceID, TargetID: targetID}
