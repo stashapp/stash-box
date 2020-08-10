@@ -105,6 +105,9 @@ const Main: React.FC = ({ children }) => {
           <NavLink to="/tags" className="nav-link">
             Tags
           </NavLink>
+          <NavLink to="/edits" className="nav-link">
+            Edits
+          </NavLink>
         </Nav>
         <Nav className="align-items-center">
           {contextValue.authenticated && renderUserNav()}
