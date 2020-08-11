@@ -60,9 +60,11 @@ lint:
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile
 
-.PHONY: ui
-ui:
+.PHONY: ui ui-only
+ui-only:
 	cd frontend && yarn build
+
+ui: ui-only
 	packr2
 
 packr:
@@ -80,6 +82,9 @@ build-osx: OUTPUT := dist/$(OUTPUT)-osx
 build-linux: OUTPUT := dist/$(OUTPUT)-linux
 
 build-win build-osx build-linux: build
+
+cross-compile-docker-packr:
+	docker run --rm --mount type=bind,source="$(shell pwd)",target=/stashdb -w /stashdb stashapp/box-compiler:1 /bin/bash -c "make packr && make build-win && make build-osx && make build-linux" 
 
 cross-compile-docker:
 	docker run --rm --mount type=bind,source="$(shell pwd)",target=/stashdb -w /stashdb stashapp/box-compiler:1 /bin/bash -c "make build-win && make build-osx && make build-linux" 
