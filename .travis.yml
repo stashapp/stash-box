@@ -23,7 +23,6 @@ script:
 #- make lint
 # make it requires postgres. Disabling for now
 - make vet test
-after_success:
 - docker pull stashapp/box-compiler:1
 - make cross-compile-docker-packr
 before_deploy:

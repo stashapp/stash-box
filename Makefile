@@ -18,7 +18,7 @@ endif
 OUTPUT := stashdb$(EXT)
 
 build: pre-build
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) $(BUILDENV) go build -v \
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) $(SET) GO111MODULE=on $(SEPARATOR) $(BUILDENV) go build -v \
 	-ldflags "-X 'github.com/stashapp/stashdb/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stashdb/pkg/api.githash=$(GITHASH)' -s -w $(LDFLAGS)" \
 	-o $(OUTPUT)
 
@@ -68,7 +68,7 @@ ui: ui-only
 	packr2
 
 packr:
-	packr2
+	$(SET) GO111MODULE=on $(SEPARATOR) packr2
 
 # cross compilation targets - use in docker compiler image
 .PHONY: build-win build-osx build-linux cross-compile-docker
