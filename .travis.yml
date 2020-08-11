@@ -21,7 +21,8 @@ before_install:
 script:
 # left lint off to avoid getting extra dependency
 #- make lint
-- make vet it
+# make it requires postgres. Disabling for now
+- make vet test
 after_success:
 - docker pull stashapp/box-compiler:1
 - make cross-compile-docker-packr
