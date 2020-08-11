@@ -1,12 +1,26 @@
 ifeq ($(OS),Windows_NT)
   SEPARATOR := &&
   SET := set
+  EXT := .exe
 endif
 
-build:
-	$(eval DATE := $(shell go run scripts/getDate.go))
+.PHONY: build pre-build
+
+pre-build:
+ifndef BUILD_DATE
+	$(eval BUILD_DATE := $(shell go run -mod=vendor scripts/getDate.go))
+endif
+
+ifndef GITHASH
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -v -ldflags "-X 'github.com/stashapp/stashdb/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stashdb/pkg/api.githash=$(GITHASH)'"
+endif
+
+OUTPUT := stashdb$(EXT)
+
+build: pre-build
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) $(BUILDENV) go build -v \
+	-ldflags "-X 'github.com/stashapp/stashdb/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stashdb/pkg/api.githash=$(GITHASH)' -s -w $(LDFLAGS)" \
+	-o $(OUTPUT)
 
 install:
 	packr2 install
@@ -43,6 +57,9 @@ vet:
 lint:
 	revive -config revive.toml -exclude ./vendor/...  ./...
 
+pre-ui:
+	cd frontend && yarn install --frozen-lockfile
+
 .PHONY: ui
 ui:
 	cd frontend && yarn build
@@ -50,3 +67,19 @@ ui:
 
 packr:
 	packr2
+
+# cross compilation targets - use in docker compiler image
+.PHONY: build-win build-osx build-linux cross-compile-docker
+build-win: BUILDENV := GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++
+build-win: LDFLAGS := -extldflags '-static'
+build-win: OUTPUT := dist/$(OUTPUT)-win.exe
+
+build-osx: BUILDENV := GOOS=darwin GOARCH=amd64 CC=o64-clang CXX=o64-clang++
+build-osx: OUTPUT := dist/$(OUTPUT)-osx
+
+build-linux: OUTPUT := dist/$(OUTPUT)-linux
+
+build-win build-osx build-linux: build
+
+cross-compile-docker:
+	docker run --rm --mount type=bind,source="$(shell pwd)",target=/stashdb -w /stashdb stashapp/box-compiler:1 /bin/bash -c "make build-win && make build-osx && make build-linux" 
