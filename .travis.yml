@@ -5,33 +5,36 @@ git:
   depth: false
 language: go
 go:
-- 1.11.x
+  - 1.11.x
 services:
-- docker
+  - docker
+  - postgresql
 env:
   global:
   - GO111MODULE=on
 before_install:
-- echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
-- nvm install 12
-- travis_retry make pre-ui
-- make generate
-- CI=false make ui-only
-#- go get -v github.com/mgechev/revive
+  - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+  - nvm install 12
+  - travis_retry make pre-ui
+  - make generate
+  - CI=false make ui-only
+  #- go get -v github.com/mgechev/revive
+before_script:
+  - psql -c 'create database stash-box-test;' -U postgres
+  - psql -c 'CREATE EXTENSION pg_trgm;' -U postgres stash-box-test
 script:
-# left lint off to avoid getting extra dependency
-#- make lint
-# make it requires postgres. Disabling for now
-- make vet test
-- docker pull stashapp/box-compiler:1
-- make cross-compile-docker-packr
+  # left lint off to avoid getting extra dependency
+  #- make lint
+  - make vet it
+  - docker pull stashapp/box-compiler:1
+  - make cross-compile-docker-packr
 before_deploy:
-# push the latest tag when on the develop branch
-- if [ "$TRAVIS_BRANCH" = "develop" ]; then git tag -f latest_develop; git push -f --tags; fi
-- export RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')
-- export STASH_VERSION=$(git describe --tags --exclude latest_develop)
-# set TRAVIS_TAG explcitly to the version so that it doesn't pick up latest_develop
-- if [ "$TRAVIS_BRANCH" = "master"]; then export TRAVIS_TAG=${STASH_VERSION}; fi
+  # push the latest tag when on the develop branch
+  - if [ "$TRAVIS_BRANCH" = "develop" ]; then git tag -f latest_develop; git push -f --tags; fi
+  - export RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')
+  - export STASH_VERSION=$(git describe --tags --exclude latest_develop)
+  # set TRAVIS_TAG explcitly to the version so that it doesn't pick up latest_develop
+  - if [ "$TRAVIS_BRANCH" = "master"]; then export TRAVIS_TAG=${STASH_VERSION}; fi
 deploy:
   # latest develop release
   - provider: releases
