@@ -8,7 +8,11 @@ go:
   - 1.11.x
 services:
   - docker
-  - postgresql
+addons:
+  apt:
+    packages:
+      - postgresql-12
+      - postgresql-client-12
 env:
   global:
   - GO111MODULE=on
@@ -26,6 +30,7 @@ script:
   # left lint off to avoid getting extra dependency
   #- make lint
   - make vet it
+after_success:
   - docker pull stashapp/box-compiler:1
   - make cross-compile-docker-packr
 before_deploy:
