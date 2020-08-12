@@ -16,6 +16,8 @@ addons:
 env:
   global:
   - GO111MODULE=on
+  - PGVER=12
+  - PGPORT=5433
 before_install:
   - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
   - nvm install 12
