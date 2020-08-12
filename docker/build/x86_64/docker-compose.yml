@@ -1,0 +1,29 @@
+# APPNICENAME=Stash-box
+# APPDESCRIPTION=Stash App's own OpenSource video indexing and Perceptual Hashing MetaData API for porn
+version: '3.4'
+services:
+  db:
+    image: postgres:12.3
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: stash-box-db
+    volumes:
+      - ./stash-box-data/data:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+  stash-box:
+    image: stash-box/build:latest
+    restart: always
+    depends_on:
+      - "db"
+    environment:
+      STASHDB_DATABASE: postgres:stash-box-db@db/stash-box?sslmode=disable
+    ports:
+      - 9998:9998
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      ## Adjust below paths (the left part) to your liking.
+      ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
+      
+      ## Keep configs here.
+      - ./config:/root/.stashdb
+
