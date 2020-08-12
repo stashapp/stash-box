@@ -20,6 +20,8 @@ env:
   - PGPORT=5433
   - PGUSER=postgres
 before_install:
+  - sudo cp /etc/postgresql/{9.6,11}/main/pg_hba.conf
+  - sudo service postgresql restart 12  
   - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
   - nvm install 12
   - travis_retry make pre-ui
