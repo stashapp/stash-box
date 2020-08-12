@@ -20,7 +20,7 @@ before_install:
   - CI=false make ui-only
   #- go get -v github.com/mgechev/revive
 before_script:
-  - psql -c 'create database stash-box-test;' -U postgres
+  - psql -c 'create database "stash-box-test";' -U postgres
   - psql -c 'CREATE EXTENSION pg_trgm;' -U postgres stash-box-test
 script:
   # left lint off to avoid getting extra dependency
