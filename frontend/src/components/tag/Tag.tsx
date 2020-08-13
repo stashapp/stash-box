@@ -143,12 +143,22 @@ const TagComponent: React.FC = () => {
       <hr className="my-2" />
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
         <Tab eventKey="scenes" title="Scenes">
-          <div className="row">
-            <Pagination onClick={setPage} pages={totalPages} active={page} />
+          <div className="row no-gutters">
+            <Pagination
+              onClick={setPage}
+              pages={totalPages}
+              active={page}
+              count={sceneData.queryScenes.count}
+            />
           </div>
           <div className="performers row">{scenes}</div>
-          <div className="row">
-            <Pagination onClick={setPage} pages={totalPages} active={page} />
+          <div className="row no-gutters">
+            <Pagination
+              onClick={setPage}
+              pages={totalPages}
+              active={page}
+              count={sceneData.queryScenes.count}
+            />
           </div>
         </Tab>
         <Tab eventKey="edits" title="Edits">

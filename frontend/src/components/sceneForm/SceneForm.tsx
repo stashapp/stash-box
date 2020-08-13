@@ -141,7 +141,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const onTagChange = (selectedTags: Tag[]) =>
     setValue(
       "tags",
-      selectedTags.map((t) => t.name)
+      selectedTags.map((t) => t.id)
     );
 
   const onSubmit = (data: SceneFormData) => {

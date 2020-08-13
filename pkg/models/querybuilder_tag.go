@@ -42,7 +42,13 @@ func (qb *TagQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, tagDBTable)
 }
 
+func (qb *TagQueryBuilder) DeleteSceneTags(id uuid.UUID) error {
+	// Delete scene_tags joins
+	return qb.dbi.DeleteJoins(tagSceneTable, id)
+}
+
 func (qb *TagQueryBuilder) SoftDelete(tag Tag) (*Tag, error) {
+	// Delete tag aliases
 	if err := qb.dbi.DeleteJoins(tagAliasTable, tag.ID); err != nil {
 		return nil, err
 	}
@@ -61,8 +67,20 @@ func (qb *TagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uu
 }
 
 func (qb *TagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	query := "UPDATE " + sceneTagTable.Table.Name() + " SET tag_id = ? WHERE tag_id = ?"
+	// Insert new tags for any scenes that have the old tag
+	query := `INSERT INTO scene_tags (scene_id, tag_id)
+            SELECT scene_id, ? 
+            FROM scene_tags WHERE tag_id = ?
+            ON CONFLICT DO NOTHING`
 	args := []interface{}{newTargetID, oldTargetID}
+	err := qb.dbi.RawQuery(sceneTagTable.Table, query, args, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete any joins with the old tag
+	query = `DELETE FROM scene_tags WHERE tag_id = ?`
+	args = []interface{}{oldTargetID}
 	return qb.dbi.RawQuery(sceneTagTable.Table, query, args, nil)
 }
 
@@ -270,6 +288,10 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 		return tag, nil
 	case OperationEnumDestroy:
 		updatedTag, err := qb.SoftDelete(*tag)
+		if err != nil {
+			return nil, err
+		}
+		err = qb.DeleteSceneTags(tag.ID)
 		return updatedTag, err
 	case OperationEnumModify:
 		if err := tag.ValidateModifyEdit(*data); err != nil {
