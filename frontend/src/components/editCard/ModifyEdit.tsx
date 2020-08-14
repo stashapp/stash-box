@@ -2,10 +2,9 @@ import React from "react";
 
 import {
   Edits_queryEdits_edits_details as Details,
-  Edits_queryEdits_edits_details_TagEdit as TagEdit,
   Edits_queryEdits_edits_target as Target,
-  Edits_queryEdits_edits_target_Tag as Tag,
 } from "src/definitions/Edits";
+import { isTagTarget, isTagCreate } from "./utils";
 
 import ChangeRow from "./ChangeRow";
 
@@ -13,14 +12,6 @@ interface ModifyEditProps {
   details?: Details | null;
   target?: Target | null;
 }
-
-const isTagCreate = (details: Details | null): details is TagEdit =>
-  details?.__typename === "TagEdit";
-
-const isTagTarget = (
-  target: Target | null | undefined
-): target is Tag | undefined =>
-  target?.__typename === "Tag" || target === undefined;
 
 const ModifyEdit: React.FC<ModifyEditProps> = ({ details, target }) => {
   if (!details) return null;

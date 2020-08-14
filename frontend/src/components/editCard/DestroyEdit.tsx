@@ -1,19 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import {
-  Edits_queryEdits_edits_target as Target,
-  Edits_queryEdits_edits_target_Tag as Tag,
-} from "src/definitions/Edits";
+import { Edits_queryEdits_edits_target as Target } from "src/definitions/Edits";
+import { isTagTarget } from "./utils";
 
 interface DestroyProps {
   target?: Target | null;
 }
-
-const isTagTarget = (
-  target: Target | null | undefined
-): target is Tag | undefined =>
-  target?.__typename === "Tag" || target === undefined;
 
 const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
   if (isTagTarget(target)) {

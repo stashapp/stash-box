@@ -85,7 +85,7 @@ export interface TagEditMutation_tagEdit {
   /**
    * Objects to merge with the target. Only applicable to merges
    */
-  merge_sources: (TagEditMutation_tagEdit_merge_sources | null)[];
+  merge_sources: TagEditMutation_tagEdit_merge_sources[];
 }
 
 export interface TagEditMutation {

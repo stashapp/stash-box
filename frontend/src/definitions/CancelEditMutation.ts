@@ -84,7 +84,7 @@ export interface CancelEditMutation_cancelEdit {
   /**
    * Objects to merge with the target. Only applicable to merges
    */
-  merge_sources: (CancelEditMutation_cancelEdit_merge_sources | null)[];
+  merge_sources: CancelEditMutation_cancelEdit_merge_sources[];
 }
 
 export interface CancelEditMutation {

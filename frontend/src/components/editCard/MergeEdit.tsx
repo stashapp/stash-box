@@ -1,17 +1,12 @@
 import React from "react";
 
-import {
-  Edits_queryEdits_edits_target as Target,
-  Edits_queryEdits_edits_target_Tag as Tag,
-} from "src/definitions/Edits";
+import { Edits_queryEdits_edits_target as Target } from "src/definitions/Edits";
+import { isTagTarget } from "./utils";
 
 interface MergeEditProps {
   merges?: (Target | null)[] | null;
   target: Target | null;
 }
-
-const isTagTarget = (target: Target | null): target is Tag =>
-  target?.__typename === "Tag";
 
 const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
   if (!merges || merges.length === 0) return null;

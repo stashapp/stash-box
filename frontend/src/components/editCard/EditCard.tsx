@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Edits_queryEdits_edits as Edit } from "src/definitions/Edits";
 import { OperationEnum, VoteStatusEnum } from "src/definitions/globalTypes";
 
+import { isTagTarget } from "./utils";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
@@ -39,6 +40,15 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
   const destruction = edit.operation === OperationEnum.DESTROY && (
     <DestroyEdit target={edit.target} />
   );
+  const modifyHeader = edit.operation === OperationEnum.MODIFY &&
+    isTagTarget(edit.target) && (
+      <h6 className="row mb-4">
+        <span className="col-2 text-right">
+          Modifying {edit.target_type.toLowerCase()}:
+        </span>
+        <Link to={`/tags/${edit?.target?.name}`}>{edit.target.name}</Link>
+      </h6>
+    );
 
   return (
     <Card>
@@ -72,6 +82,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
       </Card.Header>
       <hr />
       <Card.Body className="my-2">
+        {modifyHeader}
         {merges}
         {creation}
         {modifications}

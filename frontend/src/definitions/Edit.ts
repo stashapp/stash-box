@@ -80,7 +80,7 @@ export interface Edit_findEdit {
   /**
    * Objects to merge with the target. Only applicable to merges
    */
-  merge_sources: (Edit_findEdit_merge_sources | null)[];
+  merge_sources: Edit_findEdit_merge_sources[];
 }
 
 export interface Edit {

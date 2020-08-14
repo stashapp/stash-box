@@ -86,7 +86,7 @@ export interface Edits_queryEdits_edits {
   /**
    * Objects to merge with the target. Only applicable to merges
    */
-  merge_sources: (Edits_queryEdits_edits_merge_sources | null)[];
+  merge_sources: Edits_queryEdits_edits_merge_sources[];
 }
 
 export interface Edits_queryEdits {

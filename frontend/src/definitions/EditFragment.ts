@@ -80,5 +80,5 @@ export interface EditFragment {
   /**
    * Objects to merge with the target. Only applicable to merges
    */
-  merge_sources: (EditFragment_merge_sources | null)[];
+  merge_sources: EditFragment_merge_sources[];
 }

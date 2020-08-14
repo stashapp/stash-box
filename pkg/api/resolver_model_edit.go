@@ -54,6 +54,15 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		if err != nil {
 			return nil, err
 		}
+
+		data, err := obj.GetTagData()
+		if err != nil {
+			return nil, err
+		}
+		if data.Old != nil {
+			target.CopyFromTagEdit(*data.Old)
+		}
+
 		return target, nil
 	} else {
 		return nil, errors.New("not implemented")
