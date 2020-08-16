@@ -349,6 +349,22 @@ func (s *testRunner) createTestTagEdit(operation models.OperationEnum, detailsIn
 	return createdEdit, nil
 }
 
+func (s *testRunner) applyEdit(id string) (*models.Edit, error) {
+	s.t.Helper()
+
+  input := models.ApplyEditInput{
+    ID: id,
+  }
+	appliedEdit, err := s.resolver.Mutation().ApplyEdit(s.ctx, input)
+
+	if err != nil {
+		s.t.Errorf("Error applying edit: %s", err.Error())
+		return nil, err
+	}
+
+	return appliedEdit, nil
+}
+
 func (s *testRunner) getEditTagDetails(input *models.Edit) *models.TagEdit {
 	s.t.Helper()
 	r := s.resolver.Edit()
