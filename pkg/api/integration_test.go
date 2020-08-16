@@ -316,6 +316,57 @@ func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User
 	return createdUser, nil
 }
 
+func (s *testRunner) createTestTagEdit(operation models.OperationEnum, detailsInput *models.TagEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+	s.t.Helper()
+
+	if editInput == nil {
+		input := models.EditInput{
+			Operation: operation,
+		}
+		editInput = &input
+	}
+
+	if detailsInput == nil {
+		name := s.generateTagName()
+		input := models.TagEditDetailsInput{
+			Name: &name,
+		}
+		detailsInput = &input
+	}
+
+	tagEditInput := models.TagEditInput{
+		Edit:    editInput,
+		Details: detailsInput,
+	}
+
+	createdEdit, err := s.resolver.Mutation().TagEdit(s.ctx, tagEditInput)
+
+	if err != nil {
+		s.t.Errorf("Error creating edit: %s", err.Error())
+		return nil, err
+	}
+
+	return createdEdit, nil
+}
+
+func (s *testRunner) getEditTagDetails(input *models.Edit) *models.TagEdit {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	details, _ := r.Details(s.ctx, input)
+	tagDetails := details.(*models.TagEdit)
+	return tagDetails
+}
+
+func (s *testRunner) getEditTagTarget(input *models.Edit) *models.Tag {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	target, _ := r.Target(s.ctx, input)
+	tagTarget := target.(*models.Tag)
+	return tagTarget
+}
+
 func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
 	if len(urls) != len(input) {
 		return false
