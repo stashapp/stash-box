@@ -21,9 +21,6 @@ interface EditsProps {
   id?: string;
   status?: VoteStatusEnum;
   operation?: OperationEnum;
-  defaultType?: TargetTypeEnum;
-  defaultStatus?: VoteStatusEnum;
-  defaultOperation?: OperationEnum;
 }
 
 const EditListComponent: React.FC<EditsProps> = ({
@@ -31,9 +28,6 @@ const EditListComponent: React.FC<EditsProps> = ({
   type,
   status,
   operation,
-  defaultType,
-  defaultStatus,
-  defaultOperation,
 }) => {
   const { page, setPage } = usePagination();
   const {
@@ -45,9 +39,6 @@ const EditListComponent: React.FC<EditsProps> = ({
     type,
     status,
     operation,
-    defaultOperation,
-    defaultType,
-    defaultStatus,
   });
   const { data, loading } = useQuery<Edits, EditsVariables>(EditsQuery, {
     variables: {

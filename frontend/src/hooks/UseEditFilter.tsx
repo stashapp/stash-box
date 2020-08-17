@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Form } from "react-bootstrap";
+import { useHistory } from "react-router-dom";
+import queryString from "query-string";
 
 import {
   OperationEnum,
@@ -7,53 +9,54 @@ import {
   VoteStatusEnum,
 } from "src/definitions/globalTypes";
 
+function resolveParam<T>(
+  type: T,
+  param: string | string[] | undefined | null
+): T[keyof T] | undefined {
+  if (!param) return;
+  const strval = Array.isArray(param) ? param[0] : param;
+  return type[strval.toUpperCase() as keyof T];
+}
+
 interface EditFilterProps {
   type?: TargetTypeEnum;
-  defaultType?: TargetTypeEnum;
   status?: VoteStatusEnum;
-  defaultStatus?: VoteStatusEnum;
   operation?: OperationEnum;
-  defaultOperation?: OperationEnum;
 }
 
 const useEditFilter = ({
-  type,
-  status,
-  defaultType,
-  defaultStatus,
-  operation,
-  defaultOperation,
+  type: fixedType,
+  status: fixedStatus,
+  operation: fixedOperation,
 }: EditFilterProps) => {
-  const [selectedStatus, setSelectedStatus] = useState<
-    VoteStatusEnum | undefined
-  >(status ?? defaultStatus);
-  const [selectedType, setSelectedType] = useState<TargetTypeEnum | undefined>(
-    type ?? defaultType
-  );
-  const [selectedOperation, setSelectedOperation] = useState<
-    OperationEnum | undefined
-  >(operation ?? defaultOperation);
+  const history = useHistory();
+  const query = queryString.parse(history.location.search);
+  const operation = resolveParam(OperationEnum, query.operation);
+  const status = resolveParam(VoteStatusEnum, query.status);
+  const type = resolveParam(TargetTypeEnum, query.type);
+  const selectedStatus = fixedStatus ?? status;
+  const selectedType = fixedType ?? type;
+  const selectedOperation = fixedOperation ?? operation;
 
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setSelectedType(
-      (e.currentTarget.value === ""
-        ? undefined
-        : e.currentTarget.value) as TargetTypeEnum
-    );
+  const createQueryString = (
+    updatedParams: Record<string, string | undefined>
+  ) =>
+    queryString
+      .stringify({
+        type: !type ? undefined : type,
+        status: !status ? undefined : status,
+        operation: !operation ? undefined : operation,
+        ...updatedParams,
+      })
+      .toLowerCase();
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setSelectedStatus(
-      (e.currentTarget.value === ""
-        ? undefined
-        : e.currentTarget.value) as VoteStatusEnum
-    );
-
-  const handleOperationChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setSelectedOperation(
-      (e.currentTarget.value === ""
-        ? undefined
-        : e.currentTarget.value) as OperationEnum
-    );
+  const handleChange = (key: string, e: React.ChangeEvent<HTMLSelectElement>) =>
+    history.push({
+      ...history.location,
+      search: createQueryString({
+        [key]: !e.currentTarget.value ? undefined : e.currentTarget.value,
+      }),
+    });
 
   const enumToOptions = (e: Object) =>
     Object.keys(e).map((val) => (
@@ -68,9 +71,11 @@ const useEditFilter = ({
         <Form.Label className="mr-4">Type</Form.Label>
         <Form.Control
           as="select"
-          onChange={handleTypeChange}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            handleChange("type", e)
+          }
           value={selectedType}
-          disabled={!!type}
+          disabled={!!fixedType}
         >
           <option value="" key="all-targets">
             All
@@ -82,9 +87,11 @@ const useEditFilter = ({
         <Form.Label className="mr-4">Status</Form.Label>
         <Form.Control
           as="select"
-          onChange={handleStatusChange}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            handleChange("status", e)
+          }
           value={selectedStatus}
-          disabled={!!status}
+          disabled={!!fixedStatus}
         >
           <option value="" key="all-statuses">
             All
@@ -96,9 +103,11 @@ const useEditFilter = ({
         <Form.Label className="mr-4">Operation</Form.Label>
         <Form.Control
           as="select"
-          onChange={handleOperationChange}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            handleChange("operation", e)
+          }
           value={selectedOperation}
-          disabled={!!operation}
+          disabled={!!fixedOperation}
         >
           <option value="" key="all-operations">
             All
