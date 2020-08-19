@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-  "errors"
+	"errors"
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/models"
@@ -34,9 +34,9 @@ func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprin
 		return nil, err
 	}
 
-  if len(fingerprints) > 20 {
-    return nil, errors.New("Too many fingerprints.")
-  }
+	if len(fingerprints) > 20 {
+		return nil, errors.New("Too many fingerprints.")
+	}
 
 	qb := models.NewSceneQueryBuilder(nil)
 
