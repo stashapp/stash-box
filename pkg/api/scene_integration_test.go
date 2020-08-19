@@ -229,6 +229,43 @@ func (s *sceneTestRunner) testFindSceneByFingerprint() {
 	}
 }
 
+func (s *sceneTestRunner) testFindScenesByFingerprints() {
+	createdScene1, err := s.createTestScene(nil)
+	if err != nil {
+		return
+	}
+	createdScene2, err := s.createTestScene(nil)
+	if err != nil {
+		return
+	}
+
+	fingerprintList := []string{}
+	fingerprints, err := s.resolver.Scene().Fingerprints(s.ctx, createdScene1)
+	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
+	fingerprints, err = s.resolver.Scene().Fingerprints(s.ctx, createdScene2)
+	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
+
+	scenes, err := s.resolver.Query().FindScenesByFingerprints(s.ctx, fingerprintList)
+	if err != nil {
+		s.t.Errorf("Error finding scenes: %s", err.Error())
+		return
+	}
+
+	// ensure two scenes are returned
+	if len(scenes) != 2 {
+		s.t.Error("Did not get correct amount of scenes by fingerprint")
+		return
+	}
+
+	// ensure values were set
+	if createdScene1.Title != scenes[0].Title {
+		s.fieldMismatch(createdScene1.Title, scenes[0].Title, "Title")
+	}
+	if createdScene2.Title != scenes[1].Title {
+		s.fieldMismatch(createdScene2.Title, scenes[1].Title, "Title")
+	}
+}
+
 func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
@@ -754,6 +791,11 @@ func TestFindSceneById(t *testing.T) {
 func TestFindSceneByFingerprint(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testFindSceneByFingerprint()
+}
+
+func TestFindScenesByFingerprints(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testFindScenesByFingerprints()
 }
 
 func TestUpdateScene(t *testing.T) {

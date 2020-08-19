@@ -72,6 +72,18 @@ func (qb *SceneQueryBuilder) FindByFingerprint(algorithm FingerprintAlgorithm, h
 	return qb.queryScenes(query, args)
 }
 
+func (qb *SceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*Scene, error) {
+	query := `
+		SELECT scenes.* FROM scenes
+		LEFT JOIN scene_fingerprints as scenes_join on scenes_join.scene_id = scenes.id
+		WHERE scenes_join.hash IN (?)`
+	query, args, err := sqlx.In(query, fingerprints)
+	if err != nil {
+		return nil, err
+	}
+	return qb.queryScenes(query, args)
+}
+
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
 // 	query := `
 // 		SELECT scenes.* FROM scenes
