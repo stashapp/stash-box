@@ -100,7 +100,7 @@ func GetLogLevel() string {
 		value = defaultValue
 	}
 
-	return value
+	return "Trace"
 }
 
 func IsValid() bool {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/stashapp/stashdb/pkg/dataloader"
 	"github.com/stashapp/stashdb/pkg/models"
 	"github.com/stashapp/stashdb/pkg/utils"
 )
@@ -15,18 +16,11 @@ func (r *performerResolver) ID(ctx context.Context, obj *models.Performer) (stri
 }
 
 func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveNullString(obj.Disambiguation)
+	return resolveNullString(obj.Disambiguation), nil
 }
 
 func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) ([]string, error) {
-	qb := models.NewPerformerQueryBuilder(nil)
-	aliases, err := qb.GetAliases(obj.ID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return aliases, nil
+	return dataloader.For(ctx).PerformerAliasesById.Load(obj.ID)
 }
 
 func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*models.GenderEnum, error) {
@@ -39,20 +33,7 @@ func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]*models.URL, error) {
-	qb := models.NewPerformerQueryBuilder(nil)
-	urls, err := qb.GetUrls(obj.ID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []*models.URL
-	for _, url := range urls {
-		retURL := url.ToURL()
-		ret = append(ret, &retURL)
-	}
-
-	return ret, nil
+	return dataloader.For(ctx).PerformerUrlsById.Load(obj.ID)
 }
 
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
@@ -91,7 +72,7 @@ func (r *performerResolver) Ethnicity(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) Country(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveNullString(obj.Country)
+	return resolveNullString(obj.Country), nil
 }
 
 func (r *performerResolver) EyeColor(ctx context.Context, obj *models.Performer) (*models.EyeColorEnum, error) {
@@ -139,39 +120,15 @@ func (r *performerResolver) CareerEndYear(ctx context.Context, obj *models.Perfo
 }
 
 func (r *performerResolver) Tattoos(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
-	qb := models.NewPerformerQueryBuilder(nil)
-	tattoos, err := qb.GetTattoos(obj.ID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []*models.BodyModification
-	for _, tattoo := range tattoos {
-		bodyMod := tattoo.ToBodyModification()
-		ret = append(ret, &bodyMod)
-	}
-
-	return ret, nil
+	return dataloader.For(ctx).PerformerTattoosById.Load(obj.ID)
 }
 
 func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
-	qb := models.NewPerformerQueryBuilder(nil)
-	piercings, err := qb.GetPiercings(obj.ID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []*models.BodyModification
-	for _, piercing := range piercings {
-		bodyMod := piercing.ToBodyModification()
-		ret = append(ret, &bodyMod)
-	}
-
-	return ret, nil
+	return dataloader.For(ctx).PerformerPiercingsById.Load(obj.ID)
 }
+
 func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]*models.Image, error) {
-	qb := models.NewImageQueryBuilder(nil)
-	return qb.FindByPerformerID(obj.ID)
+	imageIDs, _ := dataloader.For(ctx).PerformerImageIDsById.Load(obj.ID)
+	images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	return images, nil
 }

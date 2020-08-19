@@ -114,8 +114,7 @@ func (qb *TagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_tags as scenes_join on scenes_join.tag_id = tags.id
-		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-		WHERE scenes.id = ?
+		WHERE scenes_join.scene_id = ?
 		GROUP BY tags.id
 	`
 	args := []interface{}{sceneID}

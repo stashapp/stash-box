@@ -147,3 +147,23 @@ func (qb *StudioQueryBuilder) GetUrls(id uuid.UUID) (StudioUrls, error) {
 
 	return joins, err
 }
+
+func (qb *StudioQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
+	joins := StudioUrls{}
+	_ = qb.dbi.FindAllJoins(studioUrlTable, ids, &joins)
+
+	m := make(map[uuid.UUID][]*URL)
+	for _, join := range joins {
+		url := URL{
+			URL:  join.URL,
+			Type: join.Type,
+		}
+		m[join.StudioID] = append(m[join.StudioID], &url)
+	}
+
+	result := make([][]*URL, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stashdb/pkg/dataloader"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
@@ -13,20 +14,7 @@ func (r *studioResolver) ID(ctx context.Context, obj *models.Studio) (string, er
 }
 
 func (r *studioResolver) Urls(ctx context.Context, obj *models.Studio) ([]*models.URL, error) {
-	qb := models.NewStudioQueryBuilder(nil)
-	urls, err := qb.GetUrls(obj.ID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []*models.URL
-	for _, url := range urls {
-		retURL := url.ToURL()
-		ret = append(ret, &retURL)
-	}
-
-	return ret, nil
+	return dataloader.For(ctx).StudioUrlsById.Load(obj.ID)
 }
 
 func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*models.Studio, error) {
@@ -55,6 +43,7 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 	return children, nil
 }
 func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]*models.Image, error) {
-	qb := models.NewImageQueryBuilder(nil)
-	return qb.FindByStudioID(obj.ID)
+	imageIDs, _ := dataloader.For(ctx).StudioImageIDsById.Load(obj.ID)
+	images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	return images, nil
 }
