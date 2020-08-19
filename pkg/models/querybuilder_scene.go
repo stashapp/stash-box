@@ -75,11 +75,11 @@ func (qb *SceneQueryBuilder) FindByFingerprint(algorithm FingerprintAlgorithm, h
 func (qb *SceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*Scene, error) {
 	query := `
 		SELECT scenes.* FROM scenes
-    WHERE id IN (
-      SELECT scene_id id FROM scene_fingerprints
-      WHERE hash IN (?)
-      GROUP BY id
-    )`
+		WHERE id IN (
+			SELECT scene_id id FROM scene_fingerprints
+			WHERE hash IN (?)
+			GROUP BY id
+		)`
 	query, args, err := sqlx.In(query, fingerprints)
 	if err != nil {
 		return nil, err
