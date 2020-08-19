@@ -34,7 +34,7 @@ func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprin
 		return nil, err
 	}
 
-	if len(fingerprints) > 20 {
+	if len(fingerprints) > 100 {
 		return nil, errors.New("Too many fingerprints.")
 	}
 

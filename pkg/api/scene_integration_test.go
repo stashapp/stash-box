@@ -230,7 +230,15 @@ func (s *sceneTestRunner) testFindSceneByFingerprint() {
 }
 
 func (s *sceneTestRunner) testFindScenesByFingerprints() {
-	createdScene1, err := s.createTestScene(nil)
+	scene1Title := "asdasd"
+	scene1Input := models.SceneCreateInput{
+		Title: &scene1Title,
+		Fingerprints: []*models.FingerprintInput{
+			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint(),
+		},
+	}
+	createdScene1, err := s.createTestScene(&scene1Input)
 	if err != nil {
 		return
 	}
@@ -241,7 +249,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 
 	fingerprintList := []string{}
 	fingerprints, err := s.resolver.Scene().Fingerprints(s.ctx, createdScene1)
-	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
+	fingerprintList = append(fingerprintList, fingerprints[0].Hash, fingerprints[1].Hash)
 	fingerprints, err = s.resolver.Scene().Fingerprints(s.ctx, createdScene2)
 	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
 
@@ -251,7 +259,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 		return
 	}
 
-	// ensure two scenes are returned
+	// ensure only two scenes are returned
 	if len(scenes) != 2 {
 		s.t.Error("Did not get correct amount of scenes by fingerprint")
 		return
