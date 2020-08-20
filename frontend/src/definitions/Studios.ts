@@ -10,16 +10,19 @@ import { QuerySpec, StudioFilterType } from "./globalTypes";
 // ====================================================
 
 export interface Studios_queryStudios_studios_parent {
+  __typename: "Studio";
   id: string;
   name: string;
 }
 
 export interface Studios_queryStudios_studios_urls {
+  __typename: "URL";
   url: string;
   type: string;
 }
 
 export interface Studios_queryStudios_studios_images {
+  __typename: "Image";
   id: string;
   url: string;
   height: number | null;
@@ -27,6 +30,7 @@ export interface Studios_queryStudios_studios_images {
 }
 
 export interface Studios_queryStudios_studios {
+  __typename: "Studio";
   id: string;
   name: string;
   parent: Studios_queryStudios_studios_parent | null;
@@ -35,6 +39,7 @@ export interface Studios_queryStudios_studios {
 }
 
 export interface Studios_queryStudios {
+  __typename: "QueryStudiosResultType";
   count: number;
   studios: Studios_queryStudios_studios[];
 }

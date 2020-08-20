@@ -10,6 +10,7 @@ import { TagCreateInput } from "./globalTypes";
 // ====================================================
 
 export interface AddTagMutation_tagCreate {
+  __typename: "Tag";
   name: string;
   description: string | null;
 }

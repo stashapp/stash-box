@@ -54,7 +54,6 @@ func (s *tagTestRunner) verifyCreatedTag(input models.TagCreateInput, tag *model
 	if v, _ := r.Description(s.ctx, tag); !reflect.DeepEqual(v, input.Description) {
 		s.fieldMismatch(*input.Description, v, "Description")
 	}
-
 }
 
 func (s *tagTestRunner) testFindTagById() {

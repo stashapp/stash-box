@@ -5,17 +5,23 @@ interface PaginationProps {
   active: number;
   pages: number;
   onClick: (page: number) => void;
+  count?: number;
 }
 
 const PaginationComponent: React.FC<PaginationProps> = ({
   active,
   pages,
   onClick,
+  count,
 }) => {
-  const showFirst = pages > 5 && active > 3;
-  const showLast = pages > 5 && active < pages - 3;
+  const totalPages = pages === 0 ? 1 : pages;
+  const showFirst = totalPages > 5 && active > 3;
+  const showLast = totalPages > 5 && active < totalPages - 3;
 
-  const maxVal = Math.max(Math.min(active + 2, pages), Math.min(pages, 5));
+  const maxVal = Math.max(
+    Math.min(active + 2, totalPages),
+    Math.min(totalPages, 5)
+  );
   const minVal = Math.max(maxVal - 4, 1);
   const totalItems = maxVal - minVal + 1;
 
@@ -31,18 +37,26 @@ const PaginationComponent: React.FC<PaginationProps> = ({
 
   const handleClick = (e: React.MouseEvent<HTMLUListElement>): void => {
     const page = (e.target as HTMLElement).closest("a")?.dataset.page;
+    if (!page) return;
+
     const pageNumber = page ? Number.parseInt(page, 10) : 1;
     if (pageNumber !== active) onClick(pageNumber);
   };
 
   return (
-    <Pagination onClick={handleClick} className="mr-0">
-      {showFirst && <Pagination.First data-page={1} />}
-      <Pagination.Prev disabled={active === 1} data-page={active - 1} />
-      {paginationItems}
-      <Pagination.Next disabled={active === pages} data-page={active + 1} />
-      {showLast && <Pagination.Last data-page={pages} />}
-    </Pagination>
+    <div className="ml-auto row no-gutters">
+      {!!count && <b className="mr-4 mt-2">{count} results</b>}
+      <Pagination onClick={handleClick}>
+        {showFirst && <Pagination.First data-page={1} />}
+        <Pagination.Prev disabled={active === 1} data-page={active - 1} />
+        {paginationItems}
+        <Pagination.Next
+          disabled={active === totalPages}
+          data-page={active + 1}
+        />
+        {showLast && <Pagination.Last data-page={totalPages} />}
+      </Pagination>
+    </div>
   );
 };
 

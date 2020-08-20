@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
 import { loader } from "graphql.macro";
 
@@ -51,6 +51,7 @@ const SceneAdd: React.FC = () => {
     tags: [],
     fingerprints: [],
     performers: [],
+    __typename: "Scene",
   } as Scene;
 
   return (

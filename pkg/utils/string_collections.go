@@ -32,3 +32,22 @@ func StrMap(vs []string, f func(string) string) []string {
 	}
 	return vsm
 }
+
+// StrSliceCompare returns a slice of strings that are present in subject but
+// not in against - in the added slice - and a slice of strings that are not
+// present in subject, and are in against - in the missing slice.
+func StrSliceCompare(subject []string, against []string) (added []string, missing []string) {
+	for _, v := range subject {
+		if !StrInclude(against, v) && !StrInclude(added, v) {
+			added = append(added, v)
+		}
+	}
+
+	for _, v := range against {
+		if !StrInclude(subject, v) && !StrInclude(missing, v) {
+			missing = append(missing, v)
+		}
+	}
+
+	return
+}

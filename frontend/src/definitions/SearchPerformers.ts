@@ -10,16 +10,19 @@ import { GenderEnum, DateAccuracyEnum } from "./globalTypes";
 // ====================================================
 
 export interface SearchPerformers_searchPerformer_birthdate {
+  __typename: "FuzzyDate";
   date: any;
   accuracy: DateAccuracyEnum;
 }
 
 export interface SearchPerformers_searchPerformer_urls {
+  __typename: "URL";
   url: string;
   type: string;
 }
 
 export interface SearchPerformers_searchPerformer_images {
+  __typename: "Image";
   id: string;
   url: string;
   height: number | null;
@@ -27,6 +30,7 @@ export interface SearchPerformers_searchPerformer_images {
 }
 
 export interface SearchPerformers_searchPerformer {
+  __typename: "Performer";
   id: string;
   name: string;
   disambiguation: string | null;

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import * as yup from "yup";
 import cx from "classnames";
 
@@ -29,7 +30,7 @@ interface StudioProps {
 const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
   const history = useHistory();
   const { register, handleSubmit, errors } = useForm<StudioFormData>({
-    validationSchema: schema,
+    resolver: yupResolver(schema),
   });
   const [photoURL, setPhotoURL] = useState(getUrlByType(studio.urls, "PHOTO"));
 
@@ -96,8 +97,12 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
       <img src={photoURL} alt="Studio" className="StudioForm-img m-4" />
 
       <Form.Group className="d-flex">
-        <Button className="col-2" type="submit">Save</Button>
-        <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
+        <Button className="col-2" type="submit">
+          Save
+        </Button>
+        <Button type="reset" variant="secondary" className="ml-auto mr-2">
+          Reset
+        </Button>
         <Link to={studio.id ? `/studios/${studio.id}` : "/studios"}>
           <Button variant="danger" onClick={() => history.goBack()}>
             Cancel

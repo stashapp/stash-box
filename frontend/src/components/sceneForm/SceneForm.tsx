@@ -1,8 +1,9 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useState, useEffect, useRef } from "react";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 import { useHistory, Link } from "react-router-dom";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import cx from "classnames";
@@ -11,6 +12,7 @@ import { loader } from "graphql.macro";
 
 import { Studios, StudiosVariables } from "src/definitions/Studios";
 import { Scene_findScene as Scene } from "src/definitions/Scene";
+import { Tags_queryTags_tags as Tag } from "src/definitions/Tags";
 import {
   SceneUpdateInput,
   FingerprintInput,
@@ -99,7 +101,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const fingerprintDuration = useRef<HTMLInputElement>(null);
   const fingerprintAlgorithm = useRef<HTMLSelectElement>(null);
   const { register, handleSubmit, setValue, errors } = useForm<SceneFormData>({
-    validationSchema: schema,
+    resolver: yupResolver(schema),
   });
   const [performers, setPerformers] = useState<PerformerInfo[]>(
     scene.performers.map((p) => ({
@@ -136,8 +138,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
   const onStudioChange = (selectedOption: ValueType<IOptionType>) =>
     setValue("studioId", (selectedOption as IOptionType).value);
-  const onTagChange = (selectedTags: string[]) =>
-    setValue("tags", selectedTags);
+  const onTagChange = (selectedTags: Tag[]) =>
+    setValue(
+      "tags",
+      selectedTags.map((t) => t.id)
+    );
 
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneUpdateInput = {
@@ -418,8 +423,12 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           </Form.Group>
 
           <Form.Group className="d-flex">
-            <Button className="col-2" type="submit">Save</Button>
-            <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
+            <Button className="col-2" type="submit">
+              Save
+            </Button>
+            <Button type="reset" variant="secondary" className="ml-auto mr-2">
+              Reset
+            </Button>
             <Link to={scene.id ? `/scenes/${scene.id}` : "/scenes"}>
               <Button variant="danger" onClick={() => history.goBack()}>
                 Cancel

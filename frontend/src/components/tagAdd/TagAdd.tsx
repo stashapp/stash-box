@@ -1,26 +1,44 @@
 import React from "react";
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
 import { loader } from "graphql.macro";
 
 import { Tag_findTag as Tag } from "src/definitions/Tag";
-import { AddTagMutation as AddTag } from "src/definitions/AddTagMutation";
-import { TagCreateInput } from "src/definitions/globalTypes";
+import {
+  TagEditMutation as TagEdit,
+  TagEditMutationVariables,
+} from "src/definitions/TagEditMutation";
+import {
+  OperationEnum,
+  TagEditDetailsInput,
+} from "src/definitions/globalTypes";
 
 import TagForm from "src/components/tagForm";
 
-const AddTagMutation = loader("src/mutations/AddTag.gql");
+const TagEditMutation = loader("src/mutations/TagEdit.gql");
 
 const TagAddComponent: React.FC = () => {
   const history = useHistory();
-  const [insertStudio] = useMutation<AddTag>(AddTagMutation, {
-    onCompleted: (data) => {
-      if (data.tagCreate?.name) history.push(`/tags/${data.tagCreate.name}`);
-    },
-  });
+  const [insertTagEdit] = useMutation<TagEdit, TagEditMutationVariables>(
+    TagEditMutation,
+    {
+      onCompleted: (data) => {
+        if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
+      },
+    }
+  );
 
-  const doInsert = (insertData: TagCreateInput) => {
-    insertStudio({ variables: { tagData: insertData } });
+  const doInsert = (insertData: TagEditDetailsInput) => {
+    insertTagEdit({
+      variables: {
+        tagData: {
+          edit: {
+            operation: OperationEnum.CREATE,
+          },
+          details: insertData,
+        },
+      },
+    });
   };
 
   const emptyTag = {

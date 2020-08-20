@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
 import { loader } from "graphql.macro";
 
@@ -55,6 +55,7 @@ const PerformerAdd: React.FC = () => {
       hip: null,
       band_size: null,
       cup_size: null,
+      __typename: "Measurements",
     },
     country: null,
     ethnicity: null,
@@ -65,6 +66,7 @@ const PerformerAdd: React.FC = () => {
     aliases: [],
     urls: [],
     images: [],
+    __typename: "Performer",
   } as Performer;
 
   return (

@@ -1,54 +1,41 @@
-import React, { useState, useContext } from "react";
-import { useMutation } from "@apollo/react-hooks";
+import React, { useContext } from "react";
+import { useMutation } from "@apollo/client";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Table } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
-import AuthContext from "src/AuthContext";
 import { Performer_findPerformer as Performer } from "src/definitions/Performer";
 import {
   DeletePerformerMutation,
   DeletePerformerMutationVariables,
 } from "src/definitions/DeletePerformerMutation";
-import { getFuzzyDate, getCountryByISO } from "src/utils";
+
+import AuthContext from "src/AuthContext";
 import { canEdit, isAdmin } from "src/utils/auth";
+import { getFuzzyDate, getCountryByISO } from "src/utils";
 import { boobJobStatus, getBodyModification } from "src/utils/transforms";
 import { EthnicityTypes, HairColorTypes, EyeColorTypes } from "src/constants";
 
-import ImageCarousel from "src/components/imageCarousel";
-import Modal from "src/components/modal";
 import { GenderIcon, PerformerName } from "src/components/fragments";
+import ImageCarousel from "src/components/imageCarousel";
+import DeleteButton from "src/components/deleteButton";
 
 const DeletePerformer = loader("src/mutations/DeletePerformer.gql");
 
 const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
   const history = useHistory();
-  const [showDelete, setShowDelete] = useState(false);
+  const auth = useContext(AuthContext);
   const [deletePerformer, { loading: deleting }] = useMutation<
     DeletePerformerMutation,
     DeletePerformerMutationVariables
   >(DeletePerformer, { variables: { input: { id: performer.id } } });
-  const auth = useContext(AuthContext);
 
-  const toggleModal = () => {
-    setShowDelete(true);
+  const handleDelete = (): void => {
+    deletePerformer().then(() => history.push("/performers"));
   };
-
-  const handleDelete = (status: boolean): void => {
-    if (status) deletePerformer().then(() => history.push("/performers"));
-    setShowDelete(false);
-  };
-
-  const showModal = showDelete && (
-    <Modal
-      message={`Are you sure you want to delete '${performer.name}`}
-      callback={handleDelete}
-    />
-  );
 
   return (
     <>
-      {showModal}
       <div className="row mb-4">
         <div className="col-6">
           <Card>
@@ -56,18 +43,15 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
               <div className="float-right">
                 {canEdit(auth?.user) && (
                   <Link to={`${performer.id}/edit`}>
-                    <Button variant="secondary">Edit</Button>
+                    <Button>Edit</Button>
                   </Link>
                 )}
                 {isAdmin(auth.user) && (
-                  <Button
-                    variant="danger"
-                    disabled={showDelete || deleting}
-                    className="ml-2"
-                    onClick={toggleModal}
-                  >
-                    Delete
-                  </Button>
+                  <DeleteButton
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    message="Do you want to delete performer? This cannot be undone."
+                  />
                 )}
               </div>
               <h2>

@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useHistory, Link } from "react-router-dom";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 
 import { Tag_findTag as Tag } from "src/definitions/Tag";
 import { TagCreateInput } from "src/definitions/globalTypes";
+import MultiSelect from "src/components/multiSelect";
 
 const schema = yup.object().shape({
-  name: yup.string(),
+  name: yup.string().required("Name is required"),
   description: yup.string(),
+  aliases: yup.array().of(yup.string()),
 });
 
 type TagFormData = yup.InferType<typeof schema>;
@@ -22,20 +25,30 @@ interface TagProps {
 
 const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
   const history = useHistory();
-  const { register, handleSubmit, errors } = useForm<TagFormData>({
-    validationSchema: schema,
+  const { register, handleSubmit, setValue, errors } = useForm<TagFormData>({
+    resolver: yupResolver(schema),
   });
+
+  useEffect(() => {
+    register({ name: "aliases" });
+    setValue("aliases", tag.aliases);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [register, setValue]);
 
   const onSubmit = (data: TagFormData) => {
     const callbackData: TagCreateInput = {
       name: data.name,
       description: data.description ?? null,
+      aliases: data.aliases ?? [],
     };
     callback(callbackData);
   };
 
+  const handleAliasChange = (newAliases: string[]) =>
+    setValue("aliases", newAliases);
+
   return (
-    <Form className="StudioForm col-6" onSubmit={handleSubmit(onSubmit)}>
+    <Form className="TagForm col-6" onSubmit={handleSubmit(onSubmit)}>
       <Form.Group controlId="name">
         <Form.Label>Name</Form.Label>
         <input
@@ -57,6 +70,11 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
           defaultValue={tag.description ?? ""}
           ref={register}
         />
+      </Form.Group>
+
+      <Form.Group>
+        <Form.Label>Aliases</Form.Label>
+        <MultiSelect values={tag.aliases} onChange={handleAliasChange} />
       </Form.Group>
 
       <Form.Group className="d-flex">

@@ -8,9 +8,12 @@
 // ====================================================
 
 export interface Tag_findTag {
+  __typename: "Tag";
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
+  deleted: boolean;
 }
 
 export interface Tag {

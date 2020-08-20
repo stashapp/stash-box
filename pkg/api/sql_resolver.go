@@ -40,6 +40,17 @@ func resolveEnum(value sql.NullString, out interface{}) bool {
 	return validateEnum(out)
 }
 
+func resolveEnumString(value string, out interface{}) bool {
+	if value == "" {
+		return false
+	}
+
+	outValue := reflect.ValueOf(out).Elem()
+	outValue.SetString(value)
+
+	return validateEnum(out)
+}
+
 func resolveSQLiteDate(value models.SQLiteDate) (*string, error) {
 	if value.Valid {
 		result := utils.GetYMDFromDatabaseDate(value.String)
