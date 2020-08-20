@@ -30,6 +30,12 @@ type VoteComment {
     type: VoteTypeEnum
 }
 
+type EditComment {
+    user: User!
+    date: Time!
+    comment: String!
+}
+
 union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit
 
 enum TargetTypeEnum {
@@ -45,19 +51,30 @@ type Edit {
     id: ID!
     user: User!
     """Object being edited - null if creating a new object"""
-    target: EditTarget!
+    target: EditTarget
     target_type: TargetTypeEnum!
     """Objects to merge with the target. Only applicable to merges"""
-    merge_sources: [EditTarget]
+    merge_sources: [EditTarget!]!
     operation: OperationEnum!
-    editComment: String
-    details: EditDetails!
-    comments: [VoteComment!]!
+    details: EditDetails
+    comments: [EditComment!]!
     votes: [VoteComment!]!
     """ = Accepted - Rejected"""
     vote_count: Int!
     status: VoteStatusEnum!
     applied: Boolean!
+    created: Time!
+}
+
+input EditInput {
+  """Not required for create type"""
+  id: ID
+  operation: OperationEnum!
+  """Required for amending an existing edit"""
+  edit_id: ID
+  """Only required for merge type"""
+  merge_source_ids: [ID!]
+  comment: String
 }
 
 input EditVoteInput {
@@ -91,4 +108,11 @@ input EditFilterType {
   target_type: TargetTypeEnum
   """Filter by target id"""
   target_id: ID
+}
+
+input ApplyEditInput {
+    id: ID!
+}
+input CancelEditInput {
+    id: ID!
 }

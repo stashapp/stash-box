@@ -10,6 +10,7 @@ import { UserUpdateInput, RoleEnum } from "./globalTypes";
 // ====================================================
 
 export interface UpdateUserMutation_userUpdate {
+  __typename: "User";
   id: string;
   name: string;
   /**

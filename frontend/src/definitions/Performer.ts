@@ -17,11 +17,13 @@ import {
 // ====================================================
 
 export interface Performer_findPerformer_birthdate {
+  __typename: "FuzzyDate";
   date: any;
   accuracy: DateAccuracyEnum;
 }
 
 export interface Performer_findPerformer_measurements {
+  __typename: "Measurements";
   waist: number | null;
   hip: number | null;
   band_size: number | null;
@@ -29,21 +31,25 @@ export interface Performer_findPerformer_measurements {
 }
 
 export interface Performer_findPerformer_tattoos {
+  __typename: "BodyModification";
   location: string;
   description: string | null;
 }
 
 export interface Performer_findPerformer_piercings {
+  __typename: "BodyModification";
   location: string;
   description: string | null;
 }
 
 export interface Performer_findPerformer_urls {
+  __typename: "URL";
   url: string;
   type: string;
 }
 
 export interface Performer_findPerformer_images {
+  __typename: "Image";
   id: string;
   url: string;
   height: number | null;
@@ -51,6 +57,7 @@ export interface Performer_findPerformer_images {
 }
 
 export interface Performer_findPerformer {
+  __typename: "Performer";
   id: string;
   name: string;
   disambiguation: string | null;

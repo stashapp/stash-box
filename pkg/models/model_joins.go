@@ -18,7 +18,9 @@ var (
 		return &SceneTag{}
 	})
 
-	tagSceneTable = sceneTagTable.Inverse(tagJoinKey)
+	tagSceneTable = database.NewTableJoin(tagTable, "scene_tags", tagJoinKey, func() interface{} {
+		return &SceneTag{}
+	})
 
 	sceneImageTable = database.NewTableJoin(sceneTable, "scene_images", sceneJoinKey, func() interface{} {
 		return &SceneImage{}

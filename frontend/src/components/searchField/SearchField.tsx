@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLazyQuery } from "@apollo/react-hooks";
+import { useLazyQuery } from "@apollo/client";
 import {
   components,
   OptionTypeBase,
@@ -81,8 +81,8 @@ function handleResult(
     performers = performerResults.map((performer) => ({
       type: "performer",
       value: performer,
-      // eslint-disable-next-line prefer-template
       label: `${performer.name}${
+        // eslint-disable-next-line prefer-template
         performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
       }`,
       subLabel: [
@@ -150,6 +150,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
       ? SearchPerformersQuery
       : SearchAllQuery,
     {
+      fetchPolicy: "network-only",
       onCompleted: (result) => {
         if (searchCallback) handleResult(result, searchCallback);
       },

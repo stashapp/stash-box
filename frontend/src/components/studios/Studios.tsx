@@ -1,8 +1,7 @@
 import React, { useContext } from "react";
-import { useQuery } from "@apollo/react-hooks";
-import { Card } from "react-bootstrap";
+import { useQuery } from "@apollo/client";
+import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { Button } from "react-bootstrap";
 import { loader } from "graphql.macro";
 import { canEdit } from "src/utils/auth";
 import AuthContext from "src/AuthContext";
@@ -83,7 +82,7 @@ const StudiosComponent: React.FC = () => {
         )}
       </div>
       <Card>
-        <Card.Body className="pt-4" >
+        <Card.Body className="pt-4">
           <ul>{studioList}</ul>
         </Card.Body>
       </Card>

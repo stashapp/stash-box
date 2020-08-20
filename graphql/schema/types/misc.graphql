@@ -1,5 +1,6 @@
 scalar Date
 scalar DateTime
+scalar Time
 
 enum DateAccuracyEnum {
   YEAR

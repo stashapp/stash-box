@@ -33,7 +33,7 @@ func NewQueryBuilder(table Table) *QueryBuilder {
 }
 
 func (qb *QueryBuilder) AddJoin(joinTable Table, on string) {
-	qb.Body += "LEFT JOIN " + joinTable.Name() + " ON " + on
+	qb.Body += "JOIN " + joinTable.Name() + " ON " + on
 }
 
 func (qb *QueryBuilder) AddWhere(clauses ...string) {
@@ -137,11 +137,17 @@ func updateObjectByID(tx *sqlx.Tx, table string, object interface{}, updateEmpty
 }
 
 func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
-	if tx == nil {
-		panic("must use a transaction")
-	}
+	ensureTx(tx)
 	idColumnName := getColumn(tableName, "id")
 	query := tx.Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
+	_, err := tx.Exec(query, id)
+	return err
+}
+
+func softDeleteObjectByID(tx *sqlx.Tx, table string, id uuid.UUID) error {
+	ensureTx(tx)
+	idColumnName := getColumn(table, "id")
+	query := tx.Rebind(`UPDATE ` + table + ` SET deleted=TRUE WHERE ` + idColumnName + ` = ?`)
 	_, err := tx.Exec(query, id)
 	return err
 }
@@ -250,6 +256,8 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			if partial || t != 0 {
 				addKey(key)
 			}
+		case bool:
+			addKey(key)
 		case optionalValue:
 			if partial || t.IsValid() {
 				addKey(key)

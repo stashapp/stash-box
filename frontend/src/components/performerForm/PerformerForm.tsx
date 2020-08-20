@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, Link } from "react-router-dom";
-import useForm from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import { Button, Form } from "react-bootstrap";
 import * as yup from "yup";
@@ -197,7 +198,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
   const { register, handleSubmit, setValue, errors } = useForm<
     PerformerFormData
   >({
-    validationSchema: schema,
+    resolver: yupResolver(schema),
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
   const history = useHistory();
@@ -289,13 +290,15 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
   const countryObj = [
     { label: "Unknown", value: "" },
     ...sortBy(
-        Object.keys(CountryList).map((name: string) => {
-            const countryName: string = Array.isArray(CountryList[name]) ? CountryList[name][0] : CountryList[name] as string;
-            return {
-              label: countryName,
-              value: Countries.getAlpha2Code(countryName, 'en'),
-            };
-        }),
+      Object.keys(CountryList).map((name: string) => {
+        const countryName: string = Array.isArray(CountryList[name])
+          ? CountryList[name][0]
+          : (CountryList[name] as string);
+        return {
+          label: countryName,
+          value: Countries.getAlpha2Code(countryName, "en"),
+        };
+      }),
       "label"
     ),
   ];
@@ -615,8 +618,12 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
           </div>
 
           <Form.Group className="d-flex">
-            <Button className="col-2" type="submit">Save</Button>
-            <Button type="reset" variant="secondary" className="ml-auto mr-2">Reset</Button>
+            <Button className="col-2" type="submit">
+              Save
+            </Button>
+            <Button type="reset" variant="secondary" className="ml-auto mr-2">
+              Reset
+            </Button>
             <Link
               to={performer.id ? `/performers/${performer.id}` : "/performers"}
             >

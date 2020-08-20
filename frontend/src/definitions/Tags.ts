@@ -10,12 +10,14 @@ import { QuerySpec, TagFilterType } from "./globalTypes";
 // ====================================================
 
 export interface Tags_queryTags_tags {
+  __typename: "Tag";
   id: string;
   name: string;
   description: string | null;
 }
 
 export interface Tags_queryTags {
+  __typename: "QueryTagsResultType";
   count: number;
   tags: Tags_queryTags_tags[];
 }

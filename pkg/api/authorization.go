@@ -51,6 +51,10 @@ func validateModify(ctx context.Context) error {
 	return validateRole(ctx, models.RoleEnumModify)
 }
 
+func validateEdit(ctx context.Context) error {
+	return validateRole(ctx, models.RoleEnumEdit)
+}
+
 func validateAdmin(ctx context.Context) error {
 	return validateRole(ctx, models.RoleEnumAdmin)
 }

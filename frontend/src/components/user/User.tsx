@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useQuery, useMutation } from "@apollo/react-hooks";
+import { useQuery, useMutation } from "@apollo/client";
 import { useParams, useHistory } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";

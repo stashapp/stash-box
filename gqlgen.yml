@@ -13,17 +13,10 @@ resolver:
 
 struct_tag: gqlgen
 
+autobind:
+  - "github.com/stashapp/stashdb/pkg/models"
+
 models:
-  Performer:
-    model: github.com/stashapp/stashdb/pkg/models.Performer
-  Tag:
-    model: github.com/stashapp/stashdb/pkg/models.Tag
-  Studio:
-    model: github.com/stashapp/stashdb/pkg/models.Studio
-  Scene:
-    model: github.com/stashapp/stashdb/pkg/models.Scene
-  User:
-    model: github.com/stashapp/stashdb/pkg/models.User
   Image:
     model: github.com/stashapp/stashdb/pkg/models.Image
     fields:

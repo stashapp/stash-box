@@ -8,11 +8,23 @@ interface IProps {
   link?: string;
   className?: string;
   onRemove?: () => void;
+  disabled?: boolean;
 }
 
-const TagLink: React.FC<IProps> = ({ title, link, className, onRemove }) => (
+const TagLink: React.FC<IProps> = ({
+  title,
+  link,
+  className,
+  onRemove,
+  disabled = false,
+}) => (
   <Badge className={`tag-item ${className}`} variant="secondary">
-    {link ? <Link to={link}>{title}</Link> : title}
+    {/* encodeURI must be used twice since <Link> decodes it once */}
+    {link && !disabled ? (
+      <Link to={encodeURI(encodeURI(link))}>{title}</Link>
+    ) : (
+      title
+    )}
     {onRemove && (
       <Button onClick={onRemove}>
         <Icon icon="times" />

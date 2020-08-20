@@ -10,6 +10,7 @@ import { UserCreateInput, RoleEnum } from "./globalTypes";
 // ====================================================
 
 export interface AddUserMutation_userCreate {
+  __typename: "User";
   id: string;
   name: string;
   /**

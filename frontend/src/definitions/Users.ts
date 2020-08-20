@@ -10,6 +10,7 @@ import { RoleEnum } from "./globalTypes";
 // ====================================================
 
 export interface Users_queryUsers_users {
+  __typename: "User";
   id: string;
   name: string;
   /**
@@ -31,6 +32,7 @@ export interface Users_queryUsers_users {
 }
 
 export interface Users_queryUsers {
+  __typename: "QueryUsersResultType";
   users: Users_queryUsers_users[];
 }
 

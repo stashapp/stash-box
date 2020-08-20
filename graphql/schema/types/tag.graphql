@@ -3,6 +3,8 @@ type Tag {
   name: String!
   description: String
   aliases: [String!]!
+  deleted: Boolean!
+  edits: [Edit!]!
 }
 
 input TagCreateInput {
@@ -29,14 +31,9 @@ input TagEditDetailsInput {
 }
 
 input TagEditInput {
-  """Not required for create type"""
-  id: ID
-  operation: OperationEnum!
-  """Only required for merge type"""
-  merge_source_ids: [ID!]
+  edit: EditInput!
   """Not required for destroy type"""
   details: TagEditDetailsInput
-  comment: String
 }
 
 type TagEdit {

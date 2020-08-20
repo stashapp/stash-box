@@ -134,21 +134,21 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 
 	if q := sceneFilter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
 	if q := sceneFilter.Title; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
 	if q := sceneFilter.URL; q != nil && *q != "" {
 		searchColumns := []string{"scenes.url"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
