@@ -1,0 +1,58 @@
+type Tag {
+  id: ID!
+  name: String!
+  description: String
+  aliases: [String!]!
+  deleted: Boolean!
+  edits: [Edit!]!
+}
+
+input TagCreateInput {
+  name: String!
+  description: String
+  aliases: [String!]
+}
+
+input TagUpdateInput {
+  id: ID!
+  name: String
+  description: String
+  aliases: [String!]
+}
+
+input TagDestroyInput {
+  id: ID!
+}
+
+input TagEditDetailsInput {
+  name: String
+  description: String
+  aliases: [String!]
+}
+
+input TagEditInput {
+  edit: EditInput!
+  """Not required for destroy type"""
+  details: TagEditDetailsInput
+}
+
+type TagEdit {
+  name: String
+  description: String
+  added_aliases: [String!]
+  removed_aliases: [String!]
+}
+
+type QueryTagsResultType {
+  count: Int!
+  tags: [Tag!]!
+}
+
+input TagFilterType {
+  """Filter to search name, aliases and description - assumes like query unless quoted"""
+  text: String
+  """Searches name and aliases - assumes like query unless quoted"""
+  names: String
+  """Filter to search name - assumes like query unless quoted"""
+  name: String
+}

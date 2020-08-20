@@ -1,0 +1,23 @@
+query SearchPerformers($term: String!) {
+    searchPerformer(term: $term) {
+        id
+        name
+        disambiguation
+        gender
+        aliases
+        birthdate {
+            date
+            accuracy
+        }
+        urls {
+            url
+            type
+        }
+        images {
+            id
+            url
+            height
+            width
+        }
+    }
+}

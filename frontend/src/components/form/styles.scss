@@ -1,0 +1,39 @@
+.BodyModification {
+  &-remove {
+    background: transparent;
+    border: none;
+    color: rgba(0, 0, 0, 0.5);
+    width: 10%;
+
+    &:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+  }
+
+  &-select {
+    width: 100%;
+  }
+
+  &-label {
+    width: 90%;
+  }
+
+  &-location {
+    display: inline-block;
+    margin-right: 5%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: 30%;
+  }
+
+  .form-control {
+    display: inline;
+    width: 65%;
+  }
+
+  h6 {
+    text-transform: capitalize;
+  }
+}

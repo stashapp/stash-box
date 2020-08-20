@@ -1,0 +1,51 @@
+query SearchAll($term: String!) {
+    searchPerformer(term: $term) {
+        id
+        name
+        disambiguation
+        gender
+        aliases
+        birthdate {
+            date
+            accuracy
+        }
+        urls {
+            url
+            type
+        }
+        images {
+            id
+            url
+            height
+            width
+        }
+    }
+    searchScene(term: $term) {
+        id
+        date
+        title
+        urls {
+            url
+            type
+        }
+        images {
+            id
+            url
+            height
+            width
+        }
+        studio {
+            id
+            name
+        }
+        performers {
+            as
+            performer {
+                name
+                id
+                gender
+                aliases
+            }
+        }
+    }
+}
