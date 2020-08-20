@@ -90,6 +90,7 @@ type Performer {
   tattoos: [BodyModification!]
   piercings: [BodyModification!]
   images: [Image!]!
+  deleted: Boolean!
 }
 
 input PerformerCreateInput {
@@ -161,14 +162,9 @@ input PerformerEditDetailsInput {
 }
 
 input PerformerEditInput {
-  """Not required for create type"""
-  id: ID
-  operation: OperationEnum!
-  """Only required for merge type"""
-  merge_source_ids: [ID!]
+  edit: EditInput!
   """Not required for destroy type"""
   details: PerformerEditDetailsInput
-  comment: String
 }
 
 type PerformerEdit {

@@ -19,11 +19,13 @@ import {
 // ====================================================
 
 export interface Performers_queryPerformers_performers_birthdate {
+  __typename: "FuzzyDate";
   date: any;
   accuracy: DateAccuracyEnum;
 }
 
 export interface Performers_queryPerformers_performers_measurements {
+  __typename: "Measurements";
   waist: number | null;
   hip: number | null;
   band_size: number | null;
@@ -31,21 +33,25 @@ export interface Performers_queryPerformers_performers_measurements {
 }
 
 export interface Performers_queryPerformers_performers_tattoos {
+  __typename: "BodyModification";
   location: string;
   description: string | null;
 }
 
 export interface Performers_queryPerformers_performers_piercings {
+  __typename: "BodyModification";
   location: string;
   description: string | null;
 }
 
 export interface Performers_queryPerformers_performers_urls {
+  __typename: "URL";
   type: string;
   url: string;
 }
 
 export interface Performers_queryPerformers_performers_images {
+  __typename: "Image";
   id: string;
   url: string;
   height: number | null;
@@ -53,6 +59,7 @@ export interface Performers_queryPerformers_performers_images {
 }
 
 export interface Performers_queryPerformers_performers {
+  __typename: "Performer";
   id: string;
   name: string;
   disambiguation: string | null;
@@ -79,6 +86,7 @@ export interface Performers_queryPerformers_performers {
 }
 
 export interface Performers_queryPerformers {
+  __typename: "QueryPerformersResultType";
   count: number;
   performers: Performers_queryPerformers_performers[];
 }

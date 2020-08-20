@@ -89,7 +89,7 @@ func (qb *UserQueryBuilder) Query(userFilter *UserFilterType, findFilter *QueryS
 
 	if q := userFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"users.name", "users.email"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}

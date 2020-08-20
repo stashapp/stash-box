@@ -27,6 +27,7 @@ type Studio struct {
 	ParentStudioID uuid.NullUUID   `db:"parent_studio_id,omitempty" json:"parent_studio_id"`
 	CreatedAt      SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt      SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Deleted        bool            `db:"deleted" json:"deleted"`
 }
 
 func (Studio) GetTable() database.Table {

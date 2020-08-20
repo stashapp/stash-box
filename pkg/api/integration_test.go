@@ -23,10 +23,12 @@ type userPopulator struct {
 	read        *models.User
 	admin       *models.User
 	modify      *models.User
-	noneRolls   []models.RoleEnum
+	edit        *models.User
+	noneRoles   []models.RoleEnum
 	readRoles   []models.RoleEnum
 	adminRoles  []models.RoleEnum
 	modifyRoles []models.RoleEnum
+	editRoles   []models.RoleEnum
 }
 
 var userDB *userPopulator
@@ -158,7 +160,11 @@ func asRead(t *testing.T) *testRunner {
 }
 
 func asNone(t *testing.T) *testRunner {
-	return createTestRunner(t, userDB.none, userDB.noneRolls)
+	return createTestRunner(t, userDB.none, userDB.noneRoles)
+}
+
+func asEdit(t *testing.T) *testRunner {
+	return createTestRunner(t, userDB.edit, userDB.editRoles)
 }
 
 func (t *testRunner) doTest(test func()) {
@@ -316,6 +322,73 @@ func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User
 	return createdUser, nil
 }
 
+func (s *testRunner) createTestTagEdit(operation models.OperationEnum, detailsInput *models.TagEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+	s.t.Helper()
+
+	if editInput == nil {
+		input := models.EditInput{
+			Operation: operation,
+		}
+		editInput = &input
+	}
+
+	if detailsInput == nil {
+		name := s.generateTagName()
+		input := models.TagEditDetailsInput{
+			Name: &name,
+		}
+		detailsInput = &input
+	}
+
+	tagEditInput := models.TagEditInput{
+		Edit:    editInput,
+		Details: detailsInput,
+	}
+
+	createdEdit, err := s.resolver.Mutation().TagEdit(s.ctx, tagEditInput)
+
+	if err != nil {
+		s.t.Errorf("Error creating edit: %s", err.Error())
+		return nil, err
+	}
+
+	return createdEdit, nil
+}
+
+func (s *testRunner) applyEdit(id string) (*models.Edit, error) {
+	s.t.Helper()
+
+	input := models.ApplyEditInput{
+		ID: id,
+	}
+	appliedEdit, err := s.resolver.Mutation().ApplyEdit(s.ctx, input)
+
+	if err != nil {
+		s.t.Errorf("Error applying edit: %s", err.Error())
+		return nil, err
+	}
+
+	return appliedEdit, nil
+}
+
+func (s *testRunner) getEditTagDetails(input *models.Edit) *models.TagEdit {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	details, _ := r.Details(s.ctx, input)
+	tagDetails := details.(*models.TagEdit)
+	return tagDetails
+}
+
+func (s *testRunner) getEditTagTarget(input *models.Edit) *models.Tag {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	target, _ := r.Target(s.ctx, input)
+	tagTarget := target.(*models.Tag)
+	return tagTarget
+}
+
 func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
 	if len(urls) != len(input) {
 		return false
@@ -336,4 +409,28 @@ func oneNil(l interface{}, r interface{}) bool {
 
 func bothNil(l interface{}, r interface{}) bool {
 	return l == nil && r == nil
+}
+
+func (s *testRunner) verifyEditOperation(operation string, edit *models.Edit) {
+	if edit.Operation != operation {
+		s.fieldMismatch(operation, edit.Operation, "Operation")
+	}
+}
+
+func (s *testRunner) verifyEditStatus(status string, edit *models.Edit) {
+	if edit.Status != status {
+		s.fieldMismatch(status, edit.Status, "Status")
+	}
+}
+
+func (s *testRunner) verifyEditApplication(applied bool, edit *models.Edit) {
+	if edit.Applied != applied {
+		s.fieldMismatch(applied, edit.Applied, "Applied")
+	}
+}
+
+func (s *testRunner) verifyEditTargetType(targetType string, edit *models.Edit) {
+	if edit.TargetType != targetType {
+		s.fieldMismatch(targetType, edit.TargetType, "TargetType")
+	}
 }

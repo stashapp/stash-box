@@ -105,7 +105,7 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 
 	if q := studioFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}

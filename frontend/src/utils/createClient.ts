@@ -1,11 +1,13 @@
 /* eslint-disable no-console */
 
-import { ApolloClient } from "apollo-client";
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { onError } from "apollo-link-error";
-import { ApolloLink } from "apollo-link";
-import { createHttpLink } from "apollo-link-http";
-import { setContext } from "apollo-link-context";
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloLink,
+  createHttpLink,
+} from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
+import { setContext } from "@apollo/client/link/context";
 
 const isDevEnvironment = () =>
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -60,9 +62,7 @@ const createClient = () =>
       }),
       httpLink,
     ]),
-    cache: new InMemoryCache({
-      dataIdFromObject: (object) => (object as { id?: string }).id || null,
-    }),
+    cache: new InMemoryCache(),
   });
 
 export const setToken = (token: string) => {

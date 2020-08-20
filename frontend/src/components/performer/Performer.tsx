@@ -1,10 +1,11 @@
 import React from "react";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 import { useParams } from "react-router-dom";
 import { loader } from "graphql.macro";
 
 import { Performer } from "src/definitions/Performer";
-import { Scenes } from "src/definitions/Scenes";
+import { Scenes, ScenesVariables } from "src/definitions/Scenes";
+import { CriterionModifier } from "src/definitions/globalTypes";
 
 import PerformerInfo from "src/components/performerInfo";
 import SceneCard from "src/components/sceneCard";
@@ -18,22 +19,24 @@ const PerformerComponent: React.FC = () => {
   const { loading, data } = useQuery<Performer>(PerformerQuery, {
     variables: { id },
   });
-  const { loading: loadingPerformances, data: performances } = useQuery<Scenes>(
-    ScenesQuery,
-    {
-      variables: {
-        sceneFilter: { performers: { value: [id], modifier: "INCLUDES" } },
-        filter: { per_page: 1000 },
+  const { loading: loadingPerformances, data: performances } = useQuery<
+    Scenes,
+    ScenesVariables
+  >(ScenesQuery, {
+    variables: {
+      sceneFilter: {
+        performers: { value: [id], modifier: CriterionModifier.INCLUDES },
       },
-    }
-  );
+      filter: { per_page: 1000 },
+    },
+  });
 
   if (loading || loadingPerformances)
     return <LoadingIndicator message="Loading performer..." />;
 
   if (!data?.findPerformer) return <div>Performer not found.</div>;
 
-  const scenes = (performances?.queryScenes?.scenes ?? [])
+  const scenes = [...(performances?.queryScenes?.scenes ?? [])]
     .sort((a, b) => {
       if (a.date < b.date) return 1;
       if (a.date > b.date) return -1;

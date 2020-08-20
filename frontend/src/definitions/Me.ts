@@ -10,6 +10,7 @@ import { RoleEnum } from "./globalTypes";
 // ====================================================
 
 export interface Me_me {
+  __typename: "User";
   id: string;
   name: string;
   /**

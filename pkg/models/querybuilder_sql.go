@@ -22,11 +22,11 @@ func handleStringCriterion(column string, value *StringCriterionInput, query *da
 		if modifier := value.Modifier.String(); value.Modifier.IsValid() {
 			switch modifier {
 			case "EQUALS":
-				clause, thisArgs := getSearchBinding([]string{column}, value.Value, false)
+				clause, thisArgs := getSearchBinding([]string{column}, value.Value, false, false)
 				query.AddWhere(clause)
 				query.AddArg(thisArgs...)
 			case "NOT_EQUALS":
-				clause, thisArgs := getSearchBinding([]string{column}, value.Value, true)
+				clause, thisArgs := getSearchBinding([]string{column}, value.Value, true, false)
 				query.AddWhere(clause)
 				query.AddArg(thisArgs...)
 			case "IS_NULL":
@@ -195,7 +195,7 @@ func getSearch(columns []string, q string) string {
 	return "(" + likes + ")"
 }
 
-func getSearchBinding(columns []string, q string, not bool) (string, []interface{}) {
+func getSearchBinding(columns []string, q string, not bool, caseInsensitive bool) (string, []interface{}) {
 	var likeClauses []string
 	var args []interface{}
 
@@ -206,20 +206,25 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 		binaryType = " AND "
 	}
 
+	like := " LIKE ?"
+	if caseInsensitive {
+		like = " ILIKE ?"
+	}
+
 	queryWords := strings.Split(q, " ")
 	trimmedQuery := strings.Trim(q, "\"")
 	if trimmedQuery == q {
 		// Search for any word
 		for _, word := range queryWords {
 			for _, column := range columns {
-				likeClauses = append(likeClauses, column+notStr+" LIKE ?")
+				likeClauses = append(likeClauses, column+notStr+like)
 				args = append(args, "%"+word+"%")
 			}
 		}
 	} else {
 		// Search the exact query
 		for _, column := range columns {
-			likeClauses = append(likeClauses, column+notStr+" LIKE ?")
+			likeClauses = append(likeClauses, column+notStr+like)
 			args = append(args, "%"+trimmedQuery+"%")
 		}
 	}

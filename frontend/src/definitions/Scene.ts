@@ -10,11 +10,13 @@ import { GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 // ====================================================
 
 export interface Scene_findScene_urls {
+  __typename: "URL";
   url: string;
   type: string;
 }
 
 export interface Scene_findScene_images {
+  __typename: "Image";
   id: string;
   url: string;
   height: number | null;
@@ -22,11 +24,13 @@ export interface Scene_findScene_images {
 }
 
 export interface Scene_findScene_studio {
+  __typename: "Studio";
   id: string;
   name: string;
 }
 
 export interface Scene_findScene_performers_performer {
+  __typename: "Performer";
   name: string;
   disambiguation: string | null;
   id: string;
@@ -35,6 +39,7 @@ export interface Scene_findScene_performers_performer {
 }
 
 export interface Scene_findScene_performers {
+  __typename: "PerformerAppearance";
   /**
    * Performing as alias
    */
@@ -43,18 +48,21 @@ export interface Scene_findScene_performers {
 }
 
 export interface Scene_findScene_fingerprints {
+  __typename: "Fingerprint";
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
 }
 
 export interface Scene_findScene_tags {
+  __typename: "Tag";
   id: string;
   name: string;
   description: string | null;
 }
 
 export interface Scene_findScene {
+  __typename: "Scene";
   id: string;
   date: any | null;
   title: string | null;

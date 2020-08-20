@@ -10,11 +10,13 @@ import { StudioUpdateInput } from "./globalTypes";
 // ====================================================
 
 export interface UpdateStudioMutation_studioUpdate_urls {
+  __typename: "URL";
   url: string;
   type: string;
 }
 
 export interface UpdateStudioMutation_studioUpdate {
+  __typename: "Studio";
   id: string;
   name: string;
   urls: (UpdateStudioMutation_studioUpdate_urls | null)[];

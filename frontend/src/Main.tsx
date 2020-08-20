@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useHistory } from "react-router-dom";
 import { loader } from "graphql.macro";
@@ -104,6 +104,9 @@ const Main: React.FC = ({ children }) => {
           </NavLink>
           <NavLink to="/tags" className="nav-link">
             Tags
+          </NavLink>
+          <NavLink to="/edits" className="nav-link">
+            Edits
           </NavLink>
         </Nav>
         <Nav className="align-items-center">

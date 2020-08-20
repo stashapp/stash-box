@@ -1,0 +1,6 @@
+#import "./EditFragment.gql"
+query Edit($id: ID) {
+  findEdit(id: $id) {
+    ...EditFragment
+  }
+}
