@@ -1,0 +1,3 @@
+mutation DeletePerformerMutation($input: PerformerDestroyInput!) {
+    performerDestroy(input: $input)
+}

@@ -1,0 +1,19 @@
+type Image {
+  id: ID!
+  url: String!
+  width: Int
+  height: Int
+}
+
+input ImageCreateInput {
+  url: String!
+}
+
+input ImageUpdateInput {
+  id: ID!
+  url: String!
+}
+
+input ImageDestroyInput {
+  id: ID!
+}

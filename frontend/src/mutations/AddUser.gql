@@ -1,0 +1,8 @@
+mutation AddUserMutation($userData: UserCreateInput!) {
+  userCreate(input: $userData) {
+    id
+    name
+    email
+    roles
+  }
+}

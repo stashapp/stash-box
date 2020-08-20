@@ -1,0 +1,10 @@
+query Tags($filter: QuerySpec, $tagFilter: TagFilterType) {
+  queryTags(filter: $filter, tag_filter: $tagFilter) {
+    count
+    tags {
+      id
+      name
+      description
+    }
+  }
+}

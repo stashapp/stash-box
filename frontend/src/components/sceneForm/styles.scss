@@ -1,0 +1,64 @@
+.SceneForm {
+  img {
+    width: 100%;
+  }
+
+  label,
+  .label {
+    font-weight: 700;
+    margin-bottom: 0;
+  }
+
+  .performer-item {
+    align-items: center;
+    display: flex;
+    margin: 0.5rem 0;
+
+    label {
+      margin-left: auto;
+      padding: 0 0.5rem;
+    }
+  }
+
+  .performer-name {
+    font-weight: bold;
+  }
+
+  .remove-item {
+    background: transparent;
+    border: none;
+    color: white;
+    opacity: 1;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  .add-performer {
+    align-items: center;
+    display: flex;
+
+    .SearchField {
+      display: inline-block;
+      margin-left: auto;
+      padding-top: 0.5rem;
+    }
+  }
+
+  .description {
+    height: 10rem;
+  }
+
+  .button-row {
+    display: flex;
+
+    .reset-button {
+      margin-left: auto;
+    }
+  }
+
+  .studio-select .invalid-feedback {
+    display: block;
+  }
+}

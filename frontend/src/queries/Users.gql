@@ -1,0 +1,12 @@
+query Users {
+  queryUsers(user_filter: {}) {
+    users {
+      id
+      name
+      email
+      roles
+      api_key
+      api_calls
+    }
+  }
+}

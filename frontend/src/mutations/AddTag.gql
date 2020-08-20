@@ -1,0 +1,6 @@
+mutation AddTagMutation($tagData: TagCreateInput!) {
+  tagCreate(input: $tagData) {
+      name
+      description
+  }
+}
