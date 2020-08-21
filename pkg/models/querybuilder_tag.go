@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 type TagQueryBuilder struct {
@@ -119,6 +120,48 @@ func (qb *TagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Tag, error) {
 	`
 	args := []interface{}{sceneID}
 	return qb.queryTags(query, args)
+}
+
+func (qb *TagQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	tags := ScenesTags{}
+	err := qb.dbi.FindAllJoins(sceneTagTable, ids, &tags)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, tag := range tags {
+		m[tag.SceneID] = append(m[tag.SceneID], tag.TagID)
+	}
+
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
+func (qb *TagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Tag, []error) {
+	query := `
+		SELECT tags.* FROM tags
+		WHERE id IN (?)
+	`
+	query, args, _ := sqlx.In(query, ids)
+	tags, err := qb.queryTags(query, args)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID]*Tag)
+	for _, tag := range tags {
+		m[tag.ID] = tag
+	}
+
+	result := make([]*Tag, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *TagQueryBuilder) FindByNames(names []string) ([]*Tag, error) {

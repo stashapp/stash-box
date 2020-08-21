@@ -49,24 +49,43 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 }
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
-	qb := models.NewTagQueryBuilder(nil)
-	return qb.FindBySceneID(obj.ID)
+	tagIDs, err := dataloader.For(ctx).SceneTagIDsById.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	tags, errors := dataloader.For(ctx).TagById.LoadAll(tagIDs)
+	for _, err := range errors {
+		if err != nil {
+			return nil, err
+		}
+	}
+	return tags, nil
 }
 
 func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*models.Image, error) {
-	imageIDs, _ := dataloader.For(ctx).SceneImageIDsById.Load(obj.ID)
-	images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	imageIDs, err := dataloader.For(ctx).SceneImageIDsById.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	images, errors := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	for _, err := range errors {
+		if err != nil {
+			return nil, err
+		}
+	}
 	return images, nil
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.PerformerAppearance, error) {
-	appearances, _ := dataloader.For(ctx).SceneAppearancesById.Load(obj.ID)
+	appearances, err := dataloader.For(ctx).SceneAppearancesById.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO - probably a better way to do this
 	var ret []*models.PerformerAppearance
 	for _, appearance := range appearances {
 		performer, err := dataloader.For(ctx).PerformerById.Load(appearance.PerformerID)
-
 		if err != nil {
 			return nil, err
 		}
@@ -81,8 +100,7 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 	return ret, nil
 }
 func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene) ([]*models.Fingerprint, error) {
-	qb := models.NewSceneQueryBuilder(nil)
-	return qb.GetFingerprints(obj.ID)
+	return dataloader.For(ctx).SceneFingerprintsById.Load(obj.ID)
 }
 
 func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]*models.URL, error) {

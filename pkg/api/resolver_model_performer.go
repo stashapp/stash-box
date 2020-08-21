@@ -128,7 +128,15 @@ func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]*models.Image, error) {
-	imageIDs, _ := dataloader.For(ctx).PerformerImageIDsById.Load(obj.ID)
-	images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	imageIDs, err := dataloader.For(ctx).PerformerImageIDsById.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	images, errors := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	for _, err := range errors {
+		if err != nil {
+			return nil, err
+		}
+	}
 	return images, nil
 }

@@ -43,7 +43,15 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 	return children, nil
 }
 func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]*models.Image, error) {
-	imageIDs, _ := dataloader.For(ctx).StudioImageIDsById.Load(obj.ID)
-	images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	imageIDs, err := dataloader.For(ctx).StudioImageIDsById.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	images, errors := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	for _, err := range errors {
+		if err != nil {
+			return nil, err
+		}
+	}
 	return images, nil
 }

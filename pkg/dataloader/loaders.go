@@ -12,6 +12,7 @@ import (
 const loadersKey = "dataloaders"
 
 type Loaders struct {
+	SceneFingerprintsById  FingerprintsLoader
 	ImageById              ImageLoader
 	PerformerById          PerformerLoader
 	PerformerAliasesById   StringsLoader
@@ -24,9 +25,19 @@ type Loaders struct {
 	SceneUrlsById          URLLoader
 	StudioImageIDsById     UUIDsLoader
 	StudioUrlsById         URLLoader
+	SceneTagIDsById        UUIDsLoader
+	TagById                TagLoader
 }
 
 var loaders = Loaders{
+	SceneFingerprintsById: FingerprintsLoader{
+		maxBatch: 100,
+		wait:     1 * time.Millisecond,
+		fetch: func(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
+			qb := models.NewSceneQueryBuilder(nil)
+			return qb.GetAllFingerprints(ids)
+		},
+	},
 	PerformerById: PerformerLoader{
 		maxBatch: 100,
 		wait:     1 * time.Millisecond,
@@ -121,6 +132,22 @@ var loaders = Loaders{
 		fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 			qb := models.NewImageQueryBuilder(nil)
 			return qb.FindIdsByStudioIds(ids)
+		},
+	},
+	SceneTagIDsById: UUIDsLoader{
+		maxBatch: 100,
+		wait:     1 * time.Millisecond,
+		fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+			qb := models.NewTagQueryBuilder(nil)
+			return qb.FindIdsBySceneIds(ids)
+		},
+	},
+	TagById: TagLoader{
+		maxBatch: 1000,
+		wait:     1 * time.Millisecond,
+		fetch: func(ids []uuid.UUID) ([]*models.Tag, []error) {
+			qb := models.NewTagQueryBuilder(nil)
+			return qb.FindByIds(ids)
 		},
 	},
 }

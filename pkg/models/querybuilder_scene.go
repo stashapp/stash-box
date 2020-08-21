@@ -278,6 +278,25 @@ func (qb *SceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*Fingerprint, erro
 	return joins.ToFingerprints(), err
 }
 
+func (qb *SceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*Fingerprint, []error) {
+	joins := SceneFingerprints{}
+	err := qb.dbi.FindAllJoins(sceneFingerprintTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]*Fingerprint)
+	for _, join := range joins {
+		m[join.SceneID] = append(m[join.SceneID], join.ToFingerprint())
+	}
+
+	result := make([][]*Fingerprint, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
 func (qb *SceneQueryBuilder) GetPerformers(id uuid.UUID) (PerformersScenes, error) {
 	joins := PerformersScenes{}
 	err := qb.dbi.FindJoins(scenePerformerTable, id, &joins)
