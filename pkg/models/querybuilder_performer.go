@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -82,7 +83,10 @@ func (qb *PerformerQueryBuilder) Find(id uuid.UUID) (*Performer, error) {
 func (qb *PerformerQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Performer, []error) {
 	query := "SELECT performers.* FROM performers WHERE id IN (?)"
 	query, args, _ := sqlx.In(query, ids)
-	performers, _ := qb.queryPerformers(query, args)
+	performers, err := qb.queryPerformers(query, args)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID]*Performer)
 	for _, performer := range performers {
@@ -300,7 +304,10 @@ func (qb *PerformerQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
 
 func (qb *PerformerQueryBuilder) GetAllAliases(ids []uuid.UUID) ([][]string, []error) {
 	joins := PerformerAliases{}
-	_ = qb.dbi.FindAllJoins(performerAliasTable, ids, &joins)
+	err := qb.dbi.FindAllJoins(performerAliasTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID][]string)
 	for _, join := range joins {
@@ -323,7 +330,10 @@ func (qb *PerformerQueryBuilder) GetUrls(id uuid.UUID) (PerformerUrls, error) {
 
 func (qb *PerformerQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
 	joins := PerformerUrls{}
-	_ = qb.dbi.FindAllJoins(performerUrlTable, ids, &joins)
+	err := qb.dbi.FindAllJoins(performerUrlTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID][]*URL)
 	for _, join := range joins {
@@ -350,7 +360,10 @@ func (qb *PerformerQueryBuilder) GetTattoos(id uuid.UUID) (PerformerBodyMods, er
 
 func (qb *PerformerQueryBuilder) GetAllTattoos(ids []uuid.UUID) ([][]*BodyModification, []error) {
 	joins := PerformerBodyMods{}
-	_ = qb.dbi.FindAllJoins(performerTattooTable, ids, &joins)
+	err := qb.dbi.FindAllJoins(performerTattooTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID][]*BodyModification)
 	for _, join := range joins {
@@ -381,7 +394,10 @@ func (qb *PerformerQueryBuilder) GetPiercings(id uuid.UUID) (PerformerBodyMods, 
 
 func (qb *PerformerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*BodyModification, []error) {
 	joins := PerformerBodyMods{}
-	_ = qb.dbi.FindAllJoins(performerPiercingTable, ids, &joins)
+	err := qb.dbi.FindAllJoins(performerPiercingTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID][]*BodyModification)
 	for _, join := range joins {

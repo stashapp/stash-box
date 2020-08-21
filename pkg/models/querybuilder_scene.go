@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 type SceneQueryBuilder struct {
@@ -286,7 +287,10 @@ func (qb *SceneQueryBuilder) GetPerformers(id uuid.UUID) (PerformersScenes, erro
 
 func (qb *SceneQueryBuilder) GetAllAppearances(ids []uuid.UUID) ([]PerformersScenes, []error) {
 	joins := PerformersScenes{}
-	_ = qb.dbi.FindAllJoins(scenePerformerTable, ids, &joins)
+	err := qb.dbi.FindAllJoins(scenePerformerTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID]PerformersScenes)
 	for _, join := range joins {
@@ -309,7 +313,10 @@ func (qb *SceneQueryBuilder) GetUrls(id uuid.UUID) (SceneUrls, error) {
 
 func (qb *SceneQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
 	joins := SceneUrls{}
-	_ = qb.dbi.FindAllJoins(sceneUrlTable, ids, &joins)
+	err := qb.dbi.FindAllJoins(sceneUrlTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID][]*URL)
 	for _, join := range joins {

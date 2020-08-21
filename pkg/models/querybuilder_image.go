@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 type ImageQueryBuilder struct {
@@ -61,7 +62,10 @@ func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
 		WHERE id IN (?)
 	`
 	query, args, _ := sqlx.In(query, ids)
-	images, _ := qb.queryImages(query, args)
+	images, err := qb.queryImages(query, args)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID]*Image)
 	for _, image := range images {
@@ -77,7 +81,10 @@ func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
 
 func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	images := SceneImages{}
-	_ = qb.dbi.FindAllJoins(sceneImageTable, ids, &images)
+	err := qb.dbi.FindAllJoins(sceneImageTable, ids, &images)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID][]uuid.UUID)
 	for _, image := range images {
@@ -93,7 +100,10 @@ func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, 
 
 func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	images := PerformerImages{}
-	_ = qb.dbi.FindAllJoins(performerImageTable, ids, &images)
+	err := qb.dbi.FindAllJoins(performerImageTable, ids, &images)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID][]uuid.UUID)
 	for _, image := range images {
@@ -130,7 +140,10 @@ func (qb *ImageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*Image, error
 
 func (qb *ImageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	images := StudioImages{}
-	_ = qb.dbi.FindAllJoins(studioImageTable, ids, &images)
+	err := qb.dbi.FindAllJoins(studioImageTable, ids, &images)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
 
 	m := make(map[uuid.UUID][]uuid.UUID)
 	for _, image := range images {
