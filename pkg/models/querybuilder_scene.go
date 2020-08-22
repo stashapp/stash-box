@@ -255,10 +255,10 @@ func (qb *SceneQueryBuilder) getSceneSort(findFilter *QuerySpec) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
-		sort = "title"
-		direction = "ASC"
+		sort = "date"
+		direction = "DESC"
 	} else {
-		sort = findFilter.GetSort("title")
+		sort = findFilter.GetSort("date")
 		direction = findFilter.GetDirection()
 	}
 	return getSort(sort, direction, "scenes")
