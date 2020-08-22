@@ -12,6 +12,7 @@ input PerformerAppearanceInput {
 
 enum FingerprintAlgorithm {
   MD5
+  OSHASH
 }
 
 type Fingerprint {
