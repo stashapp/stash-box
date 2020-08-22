@@ -11,9 +11,9 @@ import (
 )
 
 type QueryBuilder struct {
-	Table Table
-	Body  string
-  Distinct bool
+	Table    Table
+	Body     string
+	Distinct bool
 
 	whereClauses  []string
 	havingClauses []string
@@ -24,8 +24,8 @@ type QueryBuilder struct {
 
 func NewQueryBuilder(table Table) *QueryBuilder {
 	ret := &QueryBuilder{
-		Table: table,
-    Distinct: false,
+		Table:    table,
+		Distinct: false,
 	}
 
 	tableName := table.Name()
@@ -36,7 +36,7 @@ func NewQueryBuilder(table Table) *QueryBuilder {
 
 func (qb *QueryBuilder) AddJoin(joinTable Table, on string) {
 	qb.Body += "JOIN " + joinTable.Name() + " ON " + on
-  qb.Distinct = true
+	qb.Distinct = true
 }
 
 func (qb *QueryBuilder) AddWhere(clauses ...string) {
@@ -78,9 +78,9 @@ func (qb QueryBuilder) buildBody() string {
 	if len(qb.whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(qb.whereClauses, " AND ") // TODO handle AND or OR
 	}
-  if qb.Distinct {
-    body = body + " GROUP BY " + qb.Table.Name() + ".id "
-  }
+	if qb.Distinct {
+		body = body + " GROUP BY " + qb.Table.Name() + ".id "
+	}
 	if len(qb.havingClauses) > 0 {
 		body = body + " HAVING " + strings.Join(qb.havingClauses, " AND ") // TODO handle AND or OR
 	}
