@@ -16,10 +16,10 @@ func (ff QuerySpec) GetDirection() string {
 		if dir := directionFilter.String(); directionFilter.IsValid() {
 			direction = dir
 		} else {
-			direction = "ASC"
+			direction = "DESC"
 		}
 	} else {
-		direction = "ASC"
+		direction = "DESC"
 	}
 	return direction
 }
