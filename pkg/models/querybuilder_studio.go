@@ -4,6 +4,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 type StudioQueryBuilder struct {
@@ -146,4 +147,27 @@ func (qb *StudioQueryBuilder) GetUrls(id uuid.UUID) (StudioUrls, error) {
 	err := qb.dbi.FindJoins(studioUrlTable, id, &joins)
 
 	return joins, err
+}
+
+func (qb *StudioQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
+	joins := StudioUrls{}
+	err := qb.dbi.FindAllJoins(studioUrlTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]*URL)
+	for _, join := range joins {
+		url := URL{
+			URL:  join.URL,
+			Type: join.Type,
+		}
+		m[join.StudioID] = append(m[join.StudioID], &url)
+	}
+
+	result := make([][]*URL, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
