@@ -28,13 +28,13 @@ var (
 
 	imageSceneTable = sceneImageTable.Inverse(imageJoinKey)
 
-	performerImageTable = database.NewTableJoin(performerTable, "performer_images", sceneJoinKey, func() interface{} {
+	performerImageTable = database.NewTableJoin(performerTable, "performer_images", performerJoinKey, func() interface{} {
 		return &PerformerImage{}
 	})
 
 	imagePerformerTable = performerImageTable.Inverse(imageJoinKey)
 
-	studioImageTable = database.NewTableJoin(studioTable, "studio_images", sceneJoinKey, func() interface{} {
+	studioImageTable = database.NewTableJoin(studioTable, "studio_images", studioJoinKey, func() interface{} {
 		return &StudioImage{}
 	})
 

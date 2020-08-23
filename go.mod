@@ -42,6 +42,7 @@ require (
 	github.com/spf13/cobra v0.0.7 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
+	github.com/vektah/dataloaden v0.3.0 // indirect
 	github.com/vektah/gqlparser v1.2.0
 	golang.org/x/crypto v0.0.0-20200403201458-baeed622b8d8
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b

@@ -18,6 +18,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
+	"github.com/stashapp/stashdb/pkg/dataloader"
 	"github.com/stashapp/stashdb/pkg/logger"
 	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/manager/config"
@@ -157,7 +158,7 @@ func Start() {
 	})
 	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, requestMiddleware, websocketUpgrader)
 
-	r.Handle("/graphql", gqlHandler)
+	r.Handle("/graphql", dataloader.Middleware(gqlHandler))
 
 	if !config.GetIsProduction() {
 		r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
