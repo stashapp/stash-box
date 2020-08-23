@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 type SceneQueryBuilder struct {
@@ -277,6 +278,25 @@ func (qb *SceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*Fingerprint, erro
 	return joins.ToFingerprints(), err
 }
 
+func (qb *SceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*Fingerprint, []error) {
+	joins := SceneFingerprints{}
+	err := qb.dbi.FindAllJoins(sceneFingerprintTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]*Fingerprint)
+	for _, join := range joins {
+		m[join.SceneID] = append(m[join.SceneID], join.ToFingerprint())
+	}
+
+	result := make([][]*Fingerprint, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
 func (qb *SceneQueryBuilder) GetPerformers(id uuid.UUID) (PerformersScenes, error) {
 	joins := PerformersScenes{}
 	err := qb.dbi.FindJoins(scenePerformerTable, id, &joins)
@@ -284,11 +304,53 @@ func (qb *SceneQueryBuilder) GetPerformers(id uuid.UUID) (PerformersScenes, erro
 	return joins, err
 }
 
+func (qb *SceneQueryBuilder) GetAllAppearances(ids []uuid.UUID) ([]PerformersScenes, []error) {
+	joins := PerformersScenes{}
+	err := qb.dbi.FindAllJoins(scenePerformerTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID]PerformersScenes)
+	for _, join := range joins {
+		m[join.SceneID] = append(m[join.SceneID], join)
+	}
+
+	result := make([]PerformersScenes, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
 func (qb *SceneQueryBuilder) GetUrls(id uuid.UUID) (SceneUrls, error) {
 	joins := SceneUrls{}
 	err := qb.dbi.FindJoins(sceneUrlTable, id, &joins)
 
 	return joins, err
+}
+
+func (qb *SceneQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
+	joins := SceneUrls{}
+	err := qb.dbi.FindAllJoins(sceneUrlTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]*URL)
+	for _, join := range joins {
+		url := URL{
+			URL:  join.URL,
+			Type: join.Type,
+		}
+		m[join.SceneID] = append(m[join.SceneID], &url)
+	}
+
+	result := make([][]*URL, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {

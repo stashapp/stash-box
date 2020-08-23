@@ -33,6 +33,19 @@ clean:
 generate:
 	go generate
 
+.PHONY: generate-dataloaders
+generate-dataloaders:
+	cd pkg/dataloader; \
+		go run github.com/vektah/dataloaden UUIDsLoader github.com/gofrs/uuid.UUID "[]github.com/gofrs/uuid.UUID"; \
+		go run github.com/vektah/dataloaden URLLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stashdb/pkg/models.URL"; \
+		go run github.com/vektah/dataloaden TagLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stashdb/pkg/models.Tag"; \
+		go run github.com/vektah/dataloaden StringsLoader github.com/gofrs/uuid.UUID "[]string"; \
+		go run github.com/vektah/dataloaden SceneAppearancesLoader github.com/gofrs/uuid.UUID "github.com/stashapp/stashdb/pkg/models.PerformersScenes"; \
+		go run github.com/vektah/dataloaden PerformerLoader  github.com/gofrs/uuid.UUID "*github.com/stashapp/stashdb/pkg/models.Performer"; \
+		go run github.com/vektah/dataloaden ImageLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stashdb/pkg/models.Image"; \
+		go run github.com/vektah/dataloaden FingerprintsLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stashdb/pkg/models.Fingerprint"; \
+		go run github.com/vektah/dataloaden BodyModificationsLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stashdb/pkg/models.BodyModification";
+
 .PHONY: test
 test: 
 	go test ./...

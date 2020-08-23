@@ -53,6 +53,10 @@ type DBI interface {
 	// provided id. The join objects are output to the provided output slice.
 	FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error
 
+	// FindAllJoins returns join objects where the foreign key id is equal to the
+	// provided ids. The join objects are output to the provided output slice.
+	FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error
+
 	// RawQuery performs a query on the provided table using the query string
 	// and argument slice. It outputs the results to the output slice.
 	RawQuery(table Table, query string, args []interface{}, output Models) error
@@ -264,6 +268,15 @@ func (q dbi) DeleteJoins(tableJoin TableJoin, id uuid.UUID) error {
 func (q dbi) FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error {
 	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " = ?"
 	args := []interface{}{id}
+
+	return q.RawQuery(tableJoin.Table, query, args, output)
+}
+
+// FindAllJoins returns join objects where the foreign key id is equal to one of the
+// provided ids. The join objects are output to the provided output slice.
+func (q dbi) FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error {
+	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " IN (?)"
+	query, args, _ := sqlx.In(query, ids)
 
 	return q.RawQuery(tableJoin.Table, query, args, output)
 }

@@ -12,11 +12,11 @@ type validator interface {
 	IsValid() bool
 }
 
-func resolveNullString(value sql.NullString) (*string, error) {
+func resolveNullString(value sql.NullString) *string {
 	if value.Valid {
-		return &value.String, nil
+		return &value.String
 	}
-	return nil, nil
+	return nil
 }
 
 func validateEnum(value interface{}) bool {

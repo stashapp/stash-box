@@ -353,16 +353,6 @@ func GetUserRoles(id string) ([]models.RoleEnum, error) {
 	qb := models.NewUserQueryBuilder(nil)
 
 	userID, _ := uuid.FromString(id)
-	user, err := qb.Find(userID)
-
-	if err != nil {
-		return nil, fmt.Errorf("Error finding user with id %s: %s", id, err.Error())
-	}
-
-	if user == nil {
-		return nil, ErrUserNotExist
-	}
-
 	roles, err := qb.GetRoles(userID)
 
 	if err != nil {

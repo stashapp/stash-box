@@ -12,7 +12,7 @@ func (r *tagResolver) ID(ctx context.Context, obj *models.Tag) (string, error) {
 	return obj.ID.String(), nil
 }
 func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string, error) {
-	return resolveNullString(obj.Description)
+	return resolveNullString(obj.Description), nil
 }
 func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, error) {
 	qb := models.NewTagQueryBuilder(nil)

@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stashdb/pkg/api"
 	"github.com/stashapp/stashdb/pkg/database"
 	dbtest "github.com/stashapp/stashdb/pkg/database/databasetest"
+	"github.com/stashapp/stashdb/pkg/dataloader"
 	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/models"
 
@@ -139,6 +140,7 @@ func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) 
 	ctx := context.TODO()
 	ctx = context.WithValue(ctx, api.ContextUser, user)
 	ctx = context.WithValue(ctx, api.ContextRoles, roles)
+	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders())
 
 	return &testRunner{
 		t:        t,
