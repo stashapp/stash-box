@@ -29,6 +29,9 @@ func (r *Resolver) PerformerEdit() models.PerformerEditResolver {
 func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
 }
+func (r *Resolver) TagCategory() models.TagCategoryResolver {
+	return &tagCategoryResolver{r}
+}
 func (r *Resolver) Image() models.ImageResolver {
 	return &imageResolver{r}
 }

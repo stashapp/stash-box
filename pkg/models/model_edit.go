@@ -219,6 +219,7 @@ type TagEdit struct {
 	Description    *string  `json:"description,omitempty"`
 	AddedAliases   []string `json:"added_aliases,omitempty"`
 	RemovedAliases []string `json:"removed_aliases,omitempty"`
+	CategoryID     *string  `json:"category_id,omitempty"`
 }
 
 func (TagEdit) IsEditDetails() {}

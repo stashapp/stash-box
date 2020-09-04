@@ -3,9 +3,19 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { TagGroupEnum } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: Tag
 // ====================================================
+
+export interface Tag_findTag_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+  group: TagGroupEnum;
+  description: string | null;
+}
 
 export interface Tag_findTag {
   __typename: "Tag";
@@ -14,6 +24,7 @@ export interface Tag_findTag {
   description: string | null;
   aliases: string[];
   deleted: boolean;
+  category: Tag_findTag_category | null;
 }
 
 export interface Tag {

@@ -32,12 +32,18 @@ export interface TagEditMutation_tagEdit_target_Scene {
   __typename: "Scene" | "Studio";
 }
 
+export interface TagEditMutation_tagEdit_target_Tag_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface TagEditMutation_tagEdit_target_Tag {
   __typename: "Tag";
-  id: string;
   name: string;
   description: string | null;
   deleted: boolean;
+  category: TagEditMutation_tagEdit_target_Tag_category | null;
 }
 
 export interface TagEditMutation_tagEdit_target_Performer_birthdate {
@@ -120,6 +126,7 @@ export interface TagEditMutation_tagEdit_details_TagEdit {
   description: string | null;
   added_aliases: string[] | null;
   removed_aliases: string[] | null;
+  category_id: string | null;
 }
 
 export interface TagEditMutation_tagEdit_details_PerformerEdit_added_urls {
@@ -250,12 +257,19 @@ export interface TagEditMutation_tagEdit_merge_sources_Scene {
   __typename: "Scene" | "Studio";
 }
 
+export interface TagEditMutation_tagEdit_merge_sources_Tag_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface TagEditMutation_tagEdit_merge_sources_Tag {
   __typename: "Tag";
   id: string;
   name: string;
   description: string | null;
   deleted: boolean;
+  category: TagEditMutation_tagEdit_merge_sources_Tag_category | null;
 }
 
 export interface TagEditMutation_tagEdit_merge_sources_Performer_birthdate {

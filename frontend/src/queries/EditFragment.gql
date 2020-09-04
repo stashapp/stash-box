@@ -21,10 +21,13 @@ fragment EditFragment on Edit {
   }
   target {
     ... on Tag {
-      id
       name
       description
       deleted
+      category {
+        id
+        name
+      }
     }
     ... on Performer {
       ...PerformerFragment
@@ -36,6 +39,7 @@ fragment EditFragment on Edit {
       description
       added_aliases
       removed_aliases
+      category_id
     }
     ... on PerformerEdit {
       name
@@ -120,6 +124,10 @@ fragment EditFragment on Edit {
       name
       description
       deleted
+      category {
+        id
+        name
+      }
     }
     ... on Performer {
       ...PerformerFragment

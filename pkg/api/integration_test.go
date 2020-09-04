@@ -263,6 +263,25 @@ func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, e
 	return createdTag, nil
 }
 
+func (s *testRunner) createTestTagCategory(input *models.TagCategoryCreateInput) (*models.TagCategory, error) {
+	s.t.Helper()
+	if input == nil {
+		input = &models.TagCategoryCreateInput{
+			Name:  s.generateTagName(),
+			Group: models.TagGroupEnumAction,
+		}
+	}
+
+	createdCategory, err := s.resolver.Mutation().TagCategoryCreate(s.ctx, *input)
+
+	if err != nil {
+		s.t.Errorf("Error creating tagCategory: %s", err.Error())
+		return nil, err
+	}
+
+	return createdCategory, nil
+}
+
 func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Scene, error) {
 	s.t.Helper()
 	if input == nil {
