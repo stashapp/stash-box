@@ -162,6 +162,8 @@ func (p *Tag) CopyFromUpdateInput(input TagUpdateInput) {
 		if err == nil {
 			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
 		}
+	} else {
+		p.CategoryID = uuid.NullUUID{UUID: uuid.UUID{}, Valid: false}
 	}
 }
 
@@ -179,6 +181,8 @@ func (p *Tag) CopyFromTagEdit(input TagEdit) {
 		if err == nil {
 			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
 		}
+	} else {
+		p.CategoryID = uuid.NullUUID{UUID: uuid.UUID{}, Valid: false}
 	}
 }
 

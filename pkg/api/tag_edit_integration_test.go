@@ -273,10 +273,16 @@ func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *models.Tag, input mo
 func (s *tagEditTestRunner) testApplyCreateTagEdit() {
 	name := "Name"
 	description := "Description"
+	category, err := s.createTestTagCategory(nil)
+	if err != nil {
+		return
+	}
+	categoryID := category.ID.String()
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &name,
 		Description: &description,
 		Aliases:     []string{"Alias1"},
+		CategoryID:  &categoryID,
 	}
 	edit, err := s.createTestTagEdit(models.OperationEnumCreate, &tagEditDetailsInput, nil)
 	appliedEdit, err := s.applyEdit(edit.ID.String())
@@ -314,6 +320,10 @@ func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetai
 	if !reflect.DeepEqual(input.Aliases, aliases) {
 		s.fieldMismatch(input.Aliases, aliases, "Aliases")
 	}
+
+	if *input.CategoryID != tag.CategoryID.UUID.String() {
+		s.fieldMismatch(*input.CategoryID, tag.CategoryID.UUID.String(), "CategoryID")
+	}
 }
 
 func (s *tagEditTestRunner) testApplyModifyTagEdit() {
@@ -331,10 +341,16 @@ func (s *tagEditTestRunner) testApplyModifyTagEdit() {
 	newDescription := "newDescription3"
 	newAlias := "newTagAlias3"
 	newName := "newName3"
+	newCategory, err := s.createTestTagCategory(nil)
+	if err != nil {
+		return
+	}
+	newCategoryID := newCategory.ID.String()
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &newName,
 		Description: &newDescription,
 		Aliases:     []string{newAlias},
+		CategoryID:  &newCategoryID,
 	}
 	id := createdTag.ID.String()
 	editInput := models.EditInput{
@@ -374,6 +390,10 @@ func (s *tagEditTestRunner) verifyApplyModifyTagEdit(input models.TagEditDetails
 	tagAliases, _ := s.resolver.Tag().Aliases(s.ctx, updatedTag)
 	if !reflect.DeepEqual(input.Aliases, tagAliases) {
 		s.fieldMismatch(tagAliases, input.Aliases, "Aliases")
+	}
+
+	if !updatedTag.CategoryID.Valid || *input.CategoryID != updatedTag.CategoryID.UUID.String() {
+		s.fieldMismatch(*input.CategoryID, updatedTag.CategoryID.UUID.String(), "CategoryID")
 	}
 }
 

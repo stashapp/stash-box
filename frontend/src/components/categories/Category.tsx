@@ -56,9 +56,11 @@ const TagComponent: React.FC = () => {
 
   return (
     <>
+      <Link to="/categories">
+        <h6 className="mb-4">&larr; Category List</h6>
+      </Link>
       <div className="row no-gutters">
         <h3 className="col-4 mr-auto">
-          <span className="mr-2">Category:</span>
           <em>{category.name}</em>
         </h3>
         {canEdit(auth.user) && (
