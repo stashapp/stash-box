@@ -30,10 +30,7 @@ import TagMerge from "./components/tagMerge";
 import Edit from "./components/edit";
 import Edits from "./components/edits";
 import Register from "./components/register";
-import Category from "./components/categories/category";
-import Categories from "./components/categories/list";
-import CategoryAdd from "./components/categories/add";
-import CategoryEdit from "./components/categories/edit";
+import Categories from "./components/categories";
 
 import "./App.scss";
 import ActivateNewUserPage from "./components/activateNewUser/ActivateNewUser";
@@ -126,17 +123,8 @@ const App: React.FC = () => (
             <Route exact path="/tags/:name">
               <Tag />
             </Route>
-            <Route exact path="/categories">
+            <Route exact path="/categories*">
               <Categories />
-            </Route>
-            <Route exact path="/categories/add">
-              <CategoryAdd />
-            </Route>
-            <Route exact path="/categories/:id/edit">
-              <CategoryEdit />
-            </Route>
-            <Route exact path="/categories/:id">
-              <Category />
             </Route>
             <Route exact path="/edits">
               <Edits />

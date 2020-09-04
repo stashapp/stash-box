@@ -90,8 +90,8 @@ input TagCategoryCreateInput {
 
 input TagCategoryUpdateInput {
   id: ID!
-  name: String!
-  group:  TagGroupEnum!
+  name: String
+  group:  TagGroupEnum
   description: String
 }
 

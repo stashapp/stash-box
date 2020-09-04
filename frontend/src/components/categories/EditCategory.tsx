@@ -10,7 +10,7 @@ import {
 } from "src/definitions/UpdateTagCategoryMutation";
 import { TagCategoryCreateInput } from "src/definitions/globalTypes";
 
-import CategoryForm from "src/components/categories/form";
+import CategoryForm from "./CategoryForm";
 import { LoadingIndicator } from "src/components/fragments";
 
 const UpdateCategoryMutation = loader("src/mutations/UpdateCategory.gql");

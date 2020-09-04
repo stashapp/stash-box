@@ -24,7 +24,7 @@ func (s *tagCategoryTestRunner) testCreateTagCategory() {
 	description := "Description"
 
 	input := models.TagCategoryCreateInput{
-		Name:        s.generateTagName(),
+		Name:        s.generateCategoryName(),
 		Description: &description,
 		Group:       models.TagGroupEnumPeople,
 	}
@@ -106,14 +106,13 @@ func (s *tagCategoryTestRunner) testUpdateTagCategory() {
 		return
 	}
 
-	updateInput.Name = createdCategory.Name
 	s.verifyUpdatedTagCategory(updateInput, updatedCategory)
 }
 
 func (s *tagCategoryTestRunner) verifyUpdatedTagCategory(input models.TagCategoryUpdateInput, category *models.TagCategory) {
 	// ensure basic attributes are set correctly
-	if input.Name != category.Name {
-		s.fieldMismatch(input.Name, category.Name, "Name")
+	if input.Name != nil && *input.Name != category.Name {
+		s.fieldMismatch(*input.Name, category.Name, "Name")
 	}
 
 	r := s.resolver.TagCategory()
@@ -156,7 +155,7 @@ func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 	}
 }
 
-func (s *tagCategoryTestRunner) testUnauthorisedTagCategoryAdmin() {
+func (s *tagCategoryTestRunner) testUnauthorisedTagCategoryModify() {
 	// test each api interface - all require admin so all should fail
 	_, err := s.resolver.Mutation().TagCategoryCreate(s.ctx, models.TagCategoryCreateInput{})
 	if err != api.ErrUnauthorized {
@@ -203,9 +202,9 @@ func TestDestroyTagCategory(t *testing.T) {
 
 func TestUnauthorisedTagCategoryAdmin(t *testing.T) {
 	pt := &tagCategoryTestRunner{
-		testRunner: *asModify(t),
+		testRunner: *asEdit(t),
 	}
-	pt.testUnauthorisedTagCategoryAdmin()
+	pt.testUnauthorisedTagCategoryModify()
 }
 
 func TestUnauthorisedTagCategoryQuery(t *testing.T) {

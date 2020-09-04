@@ -9,7 +9,7 @@ import {
 } from "src/definitions/AddTagCategoryMutation";
 import { TagCategoryCreateInput } from "src/definitions/globalTypes";
 
-import CategoryForm from "src/components/categories/form";
+import CategoryForm from "./CategoryForm";
 
 const AddCategoryMutation = loader("src/mutations/AddCategory.gql");
 
