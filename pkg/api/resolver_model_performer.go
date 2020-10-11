@@ -140,3 +140,8 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 	}
 	return images, nil
 }
+
+func (r *tagResolver) Edits(ctx context.Context, obj *models.Performer) ([]*models.Edit, error) {
+	eqb := models.NewEditQueryBuilder(nil)
+	return eqb.FindByPerformerID(obj.ID)
+}

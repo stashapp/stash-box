@@ -91,6 +91,7 @@ type Performer {
   piercings: [BodyModification!]
   images: [Image!]!
   deleted: Boolean!
+  edits: [Edit!]!
 }
 
 input PerformerCreateInput {
@@ -175,14 +176,18 @@ type PerformerEdit {
   gender: GenderEnum
   added_urls: [URL!]
   removed_urls: [URL!]
-  birthdate: FuzzyDate
+  birthdate: String
+  birthdate_accuracy: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   """Height in cm"""
   height: Int
-  measurements: Measurements
+  cup_size: String
+  band_size: Int
+  waist: Int
+  hip: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int

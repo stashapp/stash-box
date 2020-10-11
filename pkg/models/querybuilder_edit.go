@@ -50,6 +50,10 @@ func (qb *EditQueryBuilder) CreateEditTag(newJoin EditTag) error {
 	return qb.dbi.InsertJoin(editTagTable, newJoin, false)
 }
 
+func (qb *EditQueryBuilder) CreateEditPerformer(newJoin EditPerformer) error {
+	return qb.dbi.InsertJoin(editPerformerTable, newJoin, false)
+}
+
 func (qb *EditQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
 	joins := EditTags{}
 	err := qb.dbi.FindJoins(editTagTable, id, &joins)
@@ -60,6 +64,18 @@ func (qb *EditQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, errors.New("tag edit not found")
 	}
 	return &joins[0].TagID, nil
+}
+
+func (qb *EditQueryBuilder) FindPerformerID(id uuid.UUID) (*uuid.UUID, error) {
+	joins := EditPerformers{}
+	err := qb.dbi.FindJoins(editPerformerTable, id, &joins)
+	if err != nil {
+		return nil, err
+	}
+	if len(joins) == 0 {
+		return nil, errors.New("performer edit not found")
+	}
+	return &joins[0].performerID, nil
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
@@ -128,6 +144,11 @@ func (qb *EditQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 			query.AddWhere(editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
+    } else if *editFilter.TargetType == "PERFORMER" {
+			query.AddJoin(editPerformerTable.Table, editPerformerTable.Name()+".edit_id = edits.id")
+			query.AddWhere(editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?")
+			jsonID, _ := json.Marshal(*q)
+			query.AddArg(*q, jsonID)
 		} else {
 			panic("TargetType is not yet supported: " + *editFilter.TargetType)
 		}
@@ -194,6 +215,16 @@ func (qb *EditQueryBuilder) FindByTagID(id uuid.UUID) ([]*Edit, error) {
         JOIN tag_edits
         ON tag_edits.edit_id = edits.id
         WHERE tag_edits.tag_id = ?`
+	args := []interface{}{id}
+	return qb.queryEdits(query, args)
+}
+
+func (qb *EditQueryBuilder) FindByPerformerID(id uuid.UUID) ([]*Edit, error) {
+	query := `
+        SELECT edits.* FROM edits
+        JOIN performer_edits
+        ON performer_edits.edit_id = edits.id
+        WHERE performer_edits.performer_id = ?`
 	args := []interface{}{id}
 	return qb.queryEdits(query, args)
 }

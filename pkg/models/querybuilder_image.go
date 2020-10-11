@@ -196,7 +196,7 @@ func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UU
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) FindByPerformerID(performerID uuid.UUID) ([]*Image, error) {
+func (qb *ImageQueryBuilder) FindByPerformerID(performerID uuid.UUID) (Images, error) {
 	query := `
 		SELECT images.* FROM images
 		LEFT JOIN performer_images as performers_join on performers_join.image_id = images.id

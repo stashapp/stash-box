@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 const (
@@ -32,6 +33,10 @@ var (
 
 	performerPiercingTable = database.NewTableJoin(performerTable, "performer_piercings", performerJoinKey, func() interface{} {
 		return &PerformerBodyMod{}
+	})
+
+	performerRedirectTable = database.NewTableJoin(tagTable, "performer_redirects", "source_id", func() interface{} {
+		return &PerformerRedirect{}
 	})
 )
 
@@ -79,9 +84,18 @@ func (p *Performers) Add(o interface{}) {
 	*p = append(*p, o.(*Performer))
 }
 
+type PerformerRedirect struct {
+	SourceID uuid.UUID `db:"source_id" json:"source_id"`
+	TargetID uuid.UUID `db:"target_id" json:"target_id"`
+}
+
 type PerformerAlias struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	Alias       string    `db:"alias" json:"alias"`
+}
+
+func (p PerformerAlias) ID() string {
+	return p.Alias
 }
 
 type PerformerAliases []*PerformerAlias
@@ -103,6 +117,16 @@ func (p PerformerAliases) ToAliases() []string {
 	}
 
 	return ret
+}
+
+func (p *PerformerAliases) Remove(id string) {
+	for i, v := range *p {
+		if (*v).ID() == id {
+			(*p)[i] = (*p)[len(*p)-1]
+			*p = (*p)[:len(*p)-1]
+			break
+		}
+	}
 }
 
 func CreatePerformerAliases(performerId uuid.UUID, aliases []string) PerformerAliases {
@@ -141,7 +165,7 @@ func (p *PerformerUrls) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerUrl))
 }
 
-func CreatePerformerUrls(performerId uuid.UUID, urls []*URLInput) PerformerUrls {
+func CreatePerformerUrls(performerId uuid.UUID, urls []*URL) PerformerUrls {
 	var ret PerformerUrls
 
 	for _, urlInput := range urls {
@@ -154,6 +178,13 @@ func CreatePerformerUrls(performerId uuid.UUID, urls []*URLInput) PerformerUrls 
 
 	return ret
 }
+
+type BodyModification struct {
+	Location    string  `json:"location"`
+	Description *string `json:"description"`
+}
+
+type BodyModificationInput = BodyModification
 
 type PerformerBodyMod struct {
 	PerformerID uuid.UUID      `db:"performer_id" json:"performer_id"`
@@ -184,7 +215,16 @@ func (p *PerformerBodyMods) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerBodyMod))
 }
 
-func CreatePerformerBodyMods(performerId uuid.UUID, urls []*BodyModificationInput) PerformerBodyMods {
+func (p PerformerBodyMods) ToBodyModifications() []*BodyModification {
+	mods := make([]*BodyModification, len(p))
+	for i, pmod := range p {
+		mod := pmod.ToBodyModification()
+		mods[i] = &mod
+	}
+	return mods
+}
+
+func CreatePerformerBodyMods(performerId uuid.UUID, urls []*BodyModification) PerformerBodyMods {
 	var ret PerformerBodyMods
 
 	for _, bmInput := range urls {
@@ -305,4 +345,29 @@ func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformersI
 	}
 
 	return imageJoins
+}
+
+func (p *Performer) CopyFromPerformerEdit(input PerformerEdit) {
+	CopyFull(p, input)
+
+	if input.Birthdate != nil {
+		p.Birthdate = SQLiteDate{String: *input.Birthdate, Valid: *input.Birthdate != ""}
+	} else {
+		p.Birthdate = SQLiteDate{String: "", Valid: false}
+	}
+
+	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
+func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
+	if edit.Old.Name != nil && *edit.Old.Name != p.Name {
+		return errors.New("Invalid name. Expected '" + *edit.Old.Name + "'  but was '" + p.Name + "'")
+	}
+	if edit.Old.Disambiguation != nil && *edit.Old.Disambiguation != p.Disambiguation.String {
+		return errors.New("Invalid disambiguation. Expected '" + *edit.Old.Disambiguation + "'  but was '" + p.Disambiguation.String + "'")
+	}
+
+	// TODO: Check rest of properties
+
+	return nil
 }

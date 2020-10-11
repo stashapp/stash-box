@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -162,6 +163,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	}
 
 	query := database.NewQueryBuilder(performerDBTable)
+	query.Eq("deleted", false)
 
 	if q := performerFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"performers.name"}
@@ -295,11 +297,11 @@ func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{
 	return output, err
 }
 
-func (qb *PerformerQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
+func (qb *PerformerQueryBuilder) GetAliases(id uuid.UUID) (PerformerAliases, error) {
 	joins := PerformerAliases{}
 	err := qb.dbi.FindJoins(performerAliasTable, id, &joins)
 
-	return joins.ToAliases(), err
+	return joins, err
 }
 
 func (qb *PerformerQueryBuilder) GetAllAliases(ids []uuid.UUID) ([][]string, []error) {
@@ -321,11 +323,20 @@ func (qb *PerformerQueryBuilder) GetAllAliases(ids []uuid.UUID) ([][]string, []e
 	return result, nil
 }
 
-func (qb *PerformerQueryBuilder) GetUrls(id uuid.UUID) (PerformerUrls, error) {
+func (qb *PerformerQueryBuilder) GetUrls(id uuid.UUID) ([]*URL, error) {
 	joins := PerformerUrls{}
 	err := qb.dbi.FindJoins(performerUrlTable, id, &joins)
 
-	return joins, err
+	urls := make([]*URL, len(joins))
+	for i, u := range joins {
+		url := URL{
+			URL:  u.URL,
+			Type: u.Type,
+		}
+		urls[i] = &url
+	}
+
+	return urls, err
 }
 
 func (qb *PerformerQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
@@ -428,4 +439,210 @@ func (qb *PerformerQueryBuilder) SearchPerformers(term string) (Performers, erro
         LIMIT 5`
 	args := []interface{}{term}
 	return qb.queryPerformers(query, args)
+}
+
+func (qb *PerformerQueryBuilder) DeleteScenePerformers(id uuid.UUID) error {
+	// Delete scene_performers joins
+	return qb.dbi.DeleteJoins(performerSceneTable, id)
+}
+
+func (qb *PerformerQueryBuilder) SoftDelete(performer Performer) (*Performer, error) {
+	// Delete joins
+	if err := qb.dbi.DeleteJoins(performerAliasTable, performer.ID); err != nil {
+		return nil, err
+	}
+	if err := qb.dbi.DeleteJoins(performerPiercingTable, performer.ID); err != nil {
+		return nil, err
+	}
+	if err := qb.dbi.DeleteJoins(performerTattooTable, performer.ID); err != nil {
+		return nil, err
+	}
+	if err := qb.dbi.DeleteJoins(performerUrlTable, performer.ID); err != nil {
+		return nil, err
+	}
+
+	ret, err := qb.dbi.SoftDelete(performer)
+	return qb.toModel(ret), err
+}
+
+func (qb *PerformerQueryBuilder) CreateRedirect(newJoin PerformerRedirect) error {
+	return qb.dbi.InsertJoin(performerRedirectTable, newJoin, false)
+}
+
+func (qb *PerformerQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+	query := "UPDATE " + performerRedirectTable.Table.Name() + " SET target_id = ? WHERE target_id = ?"
+	args := []interface{}{newTargetID, oldTargetID}
+	return qb.dbi.RawQuery(performerRedirectTable.Table, query, args, nil)
+}
+
+func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+	// Insert new performers for any scenes that have the old performers
+	query := `INSERT INTO scene_performers (scene_id, performer_id)
+            SELECT scene_id, ? 
+            FROM scene_performers WHERE tag_id = ?
+            ON CONFLICT DO NOTHING`
+	args := []interface{}{newTargetID, oldTargetID}
+	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete any joins with the old performer
+	query = `DELETE FROM scene_performers WHERE performer_id = ?`
+	args = []interface{}{oldTargetID}
+	return qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
+}
+
+func (qb *PerformerQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
+	performer, err := qb.Find(sourceID)
+	if err != nil {
+		return err
+	}
+	if performer == nil {
+		return errors.New("Merge source performer not found: " + sourceID.String())
+	}
+	if performer.Deleted {
+		return errors.New("Merge source performer is deleted: " + sourceID.String())
+	}
+	_, err = qb.SoftDelete(*performer)
+	if err != nil {
+		return err
+	}
+	if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
+		return err
+	}
+	if err := qb.UpdateScenePerformers(sourceID, targetID); err != nil {
+		return err
+	}
+	redirect := PerformerRedirect{SourceID: sourceID, TargetID: targetID}
+	return qb.CreateRedirect(redirect)
+}
+
+func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, performer *Performer) (*Performer, error) {
+	data, err := edit.GetPerformerData()
+	if err != nil {
+		return nil, err
+	}
+
+	switch operation {
+	case OperationEnumCreate:
+		now := time.Now()
+		UUID, err := uuid.NewV4()
+		if err != nil {
+			return nil, err
+		}
+		newPerformer := Performer{
+			ID:        UUID,
+			CreatedAt: SQLiteTimestamp{Timestamp: now},
+		}
+		if data.New.Name == nil {
+			return nil, errors.New("Missing performer name")
+		}
+		newPerformer.CopyFromPerformerEdit(*data.New)
+
+		performer, err = qb.Create(newPerformer)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(data.New.AddedAliases) > 0 {
+			aliases := CreatePerformerAliases(UUID, data.New.AddedAliases)
+			if err := qb.CreateAliases(aliases); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(data.New.AddedTattoos) > 0 {
+			tattoos := CreatePerformerBodyMods(UUID, data.New.AddedTattoos)
+			if err := qb.CreateTattoos(tattoos); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(data.New.AddedPiercings) > 0 {
+			piercings := CreatePerformerBodyMods(UUID, data.New.AddedPiercings)
+			if err := qb.CreatePiercings(piercings); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(data.New.AddedUrls) > 0 {
+			urls := CreatePerformerUrls(UUID, data.New.AddedUrls)
+			if err := qb.CreateUrls(urls); err != nil {
+				return nil, err
+			}
+		}
+
+		// TODO
+		//if len(data.New.AddedImages) > 0 {
+		//images := CreatePerformerImages(UUID, data.New.AddedImages)
+		//if err := qb.CreateImages(images); err != nil {
+		//return nil, err
+		//}
+		//}
+
+		return performer, nil
+	case OperationEnumDestroy:
+		updatedPerformer, err := qb.SoftDelete(*performer)
+		if err != nil {
+			return nil, err
+		}
+		err = qb.DeleteScenePerformers(performer.ID)
+		return updatedPerformer, err
+	case OperationEnumModify:
+		if err := performer.ValidateModifyEdit(*data); err != nil {
+			return nil, err
+		}
+
+		performer.CopyFromPerformerEdit(*data.New)
+		updatedPerformer, err := qb.Update(*performer)
+
+		currentAliases, err := qb.GetAliases(updatedPerformer.ID)
+		if err != nil {
+			return nil, err
+		}
+		newAliases := CreatePerformerAliases(updatedPerformer.ID, data.New.AddedAliases)
+		oldAliases := CreatePerformerAliases(updatedPerformer.ID, data.New.RemovedAliases)
+		if err := ProcessSlice(&currentAliases, &newAliases, &oldAliases); err != nil {
+			return nil, err
+		}
+		if err := qb.UpdateAliases(updatedPerformer.ID, currentAliases); err != nil {
+			return nil, err
+		}
+
+		return updatedPerformer, err
+	case OperationEnumMerge:
+		if err := tag.ValidateModifyEdit(*data); err != nil {
+			return nil, err
+		}
+
+		tag.CopyFromTagEdit(*data.New)
+		updatedTag, err := qb.Update(*tag)
+
+		for _, v := range data.MergeSources {
+			sourceUUID, _ := uuid.FromString(v)
+			if err := qb.MergeInto(sourceUUID, tag.ID); err != nil {
+				return nil, err
+			}
+		}
+
+		currentAliases, err := qb.GetRawAliases(updatedTag.ID)
+		if err != nil {
+			return nil, err
+		}
+		newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
+		if err := currentAliases.AddAliases(newAliases); err != nil {
+			return nil, err
+		}
+		if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
+			return nil, err
+		}
+		if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
+			return nil, err
+		}
+
+		return updatedTag, nil
+	default:
+		return nil, errors.New("Unsupported operation: " + operation.String())
+	}
 }

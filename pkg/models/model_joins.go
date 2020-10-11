@@ -127,3 +127,10 @@ func (p StudiosImages) Each(fn func(interface{})) {
 func (p *StudiosImages) Add(o interface{}) {
 	*p = append(*p, o.(*StudioImage))
 }
+
+type URL struct {
+	URL  string `json:"url"`
+	Type string `json:"type"`
+}
+
+type URLInput = URL

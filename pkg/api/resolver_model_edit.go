@@ -42,7 +42,6 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 	var targetType models.TargetTypeEnum
 	resolveEnumString(obj.TargetType, &targetType)
 	if targetType == "TAG" {
-
 		eqb := models.NewEditQueryBuilder(nil)
 		tagID, err := eqb.FindTagID(obj.ID)
 		if err != nil {
@@ -61,6 +60,28 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 		if data.Old != nil {
 			target.CopyFromTagEdit(*data.Old)
+		}
+
+		return target, nil
+  } else if targetType == "PERFORMER" {
+		eqb := models.NewEditQueryBuilder(nil)
+		performerID, err := eqb.FindPerformerID(obj.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		pqb := models.NewPerformerQueryBuilder(nil)
+		target, err := pqb.Find(*performerID)
+		if err != nil {
+			return nil, err
+		}
+
+		data, err := obj.GetPerformerData()
+		if err != nil {
+			return nil, err
+		}
+		if data.Old != nil {
+			target.CopyFromPerformerEdit(*data.Old)
 		}
 
 		return target, nil
@@ -97,6 +118,15 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 					mergeSources = append(mergeSources, tag)
 				}
 			}
+    } else if ret == "PERFORMER" {
+			pqb := models.NewPerformerQueryBuilder(nil)
+			for _, performerStringID := range editData.MergeSources {
+				performerID, _ := uuid.FromString(performerStringID)
+				performer, err := pqb.Find(performerID)
+				if err == nil {
+					mergeSources = append(mergeSources, performer)
+				}
+			}
 		} else {
 			return nil, errors.New("not implemented")
 		}
@@ -123,7 +153,13 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 			return nil, err
 		}
 		ret = tagData.New
-	}
+	} else if targetType == "PERFORMER" {
+		performerData, err := obj.GetPerformerData()
+		if err != nil {
+			return nil, err
+		}
+		ret = performerData.New
+  }
 
 	return ret, nil
 }
