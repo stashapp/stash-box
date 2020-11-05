@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/spf13/viper"
 
 	"github.com/stashapp/stashdb/pkg/utils"
@@ -21,6 +23,21 @@ const JWTSignKey = "jwt_secret_key"
 
 // key used for session store
 const SessionStoreKey = "session_store_key"
+
+// invite settings
+const RequireInvite = "require_invite"
+const RequireActivation = "require_activation"
+const ActivationExpiry = "activation_expiry"
+const EmailCooldown = "email_cooldown"
+
+const requireInviteDefault = true
+const requireActivationDefault = true
+
+// 2 hours
+const activationExpiryDefault = 2 * 60 * 60
+
+// 5 minutes
+const emailCooldownDefault = 5 * 60
 
 // Logging options
 const LogFile = "logFile"
@@ -70,6 +87,49 @@ func GetIsProduction() bool {
 	}
 
 	return ret
+}
+
+// GetRequireInvite returns true if new users cannot register without an invite
+// key.
+func GetRequireInvite() bool {
+	ret := requireInviteDefault
+	if viper.IsSet(RequireInvite) {
+		ret = viper.GetBool(RequireInvite)
+	}
+
+	return ret
+}
+
+// GetRequireActivation returns true if new users must validate their email address
+// via activation to create an account.
+func GetRequireActivation() bool {
+	ret := requireActivationDefault
+	if viper.IsSet(RequireActivation) {
+		ret = viper.GetBool(RequireActivation)
+	}
+
+	return ret
+}
+
+// GetActivationExpiry returns the duration before an activation email expires.
+func GetActivationExpiry() time.Duration {
+	ret := activationExpiryDefault
+	if viper.IsSet(ActivationExpiry) {
+		ret = viper.GetInt(ActivationExpiry)
+	}
+
+	return time.Duration(ret * int(time.Second))
+}
+
+// GetEmailCooldown returns the duration before a second activation email may
+// be generated.
+func GetEmailCooldown() time.Duration {
+	ret := emailCooldownDefault
+	if viper.IsSet(EmailCooldown) {
+		ret = viper.GetInt(EmailCooldown)
+	}
+
+	return time.Duration(ret * int(time.Second))
 }
 
 // GetLogFile returns the filename of the file to output logs to.
