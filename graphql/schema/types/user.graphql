@@ -1,54 +1,88 @@
 enum RoleEnum {
-    READ
-    VOTE
-    EDIT
-    MODIFY
-    ADMIN
+  READ
+  VOTE
+  EDIT
+  MODIFY
+  ADMIN
+  """May generate invites without tokens"""
+  INVITE
+  """May grant and rescind invite tokens and resind invite keys"""
+  MANAGE_INVITES
 }
 
 type User {
-    id: ID!
-    name: String!
-    """Should not be visible to other users"""
-    roles: [RoleEnum!]
-    """Should not be visible to other users"""
-    email: String
-    """Should not be visible to other users"""
-    api_key: String
-    successful_edits: Int!
-    unsuccessful_edits: Int!
-    successful_votes: Int!
-    """Votes on unsuccessful edits"""
-    unsuccessful_votes: Int!
-    """Calls to the API from this user over a configurable time period"""
-    api_calls: Int!
+  id: ID!
+  name: String!
+  """Should not be visible to other users"""
+  roles: [RoleEnum!]
+  """Should not be visible to other users"""
+  email: String
+  """Should not be visible to other users"""
+  api_key: String
+  successful_edits: Int!
+  unsuccessful_edits: Int!
+  successful_votes: Int!
+  """Votes on unsuccessful edits"""
+  unsuccessful_votes: Int!
+  """Calls to the API from this user over a configurable time period"""
+  api_calls: Int!
+  invited_by: User
+  invite_tokens: Int
+  active_invite_codes: [String!]
 }
 
 input UserCreateInput {
-    name: String!
-    """Password in plain text"""
-    password: String!
-    roles: [RoleEnum!]!
-    email: String!
+  name: String!
+  """Password in plain text"""
+  password: String!
+  roles: [RoleEnum!]!
+  email: String!
 }
 
 input UserUpdateInput {
-    id: ID!
-    name: String
-    """Password in plain text"""
-    password: String
-    roles: [RoleEnum!]
-    email: String
+  id: ID!
+  name: String
+  """Password in plain text"""
+  password: String
+  roles: [RoleEnum!]
+  email: String
+}
+
+input NewUserInput {
+  email: String!
+  invite_key: String
+}
+
+input ActivateNewUserInput {
+  name: String!
+  email: String!
+  activation_key: String!
+  password: String!
+}
+
+input ResetPasswordInput {
+  email: String!
 }
 
 input UserChangePasswordInput {
   """Password in plain text"""
-  existing_password: String!
+  existing_password: String
   new_password: String!
+  reset_key: String
 }
 
 input UserDestroyInput {
     id: ID!
+}
+
+input GrantInviteInput {
+  user_id: ID!
+  amount: Int!
+}
+
+input RescindInviteInput {
+  user_id: ID!
+  amount: Int!
 }
 
 type QueryUsersResultType {
@@ -81,4 +115,6 @@ input UserFilterType {
   unsuccessful_votes: IntCriterionInput
   """Filter by number of API calls"""
   api_calls: IntCriterionInput
+  """Filter by user that invited"""
+  invited_by: ID
 }

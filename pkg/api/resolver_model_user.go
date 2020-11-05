@@ -42,3 +42,18 @@ func (r *userResolver) UnsuccessfulVotes(ctx context.Context, obj *models.User) 
 	// TODO
 	return 0, nil
 }
+
+func (r *userResolver) InvitedBy(ctx context.Context, obj *models.User) (*models.User, error) {
+	// TODO
+	return nil, nil
+}
+
+func (r *userResolver) InviteTokens(ctx context.Context, obj *models.User) (*int, error) {
+	// TODO
+	return nil, nil
+}
+
+func (r *userResolver) ActiveInviteCodes(ctx context.Context, obj *models.User) ([]string, error) {
+	// TODO
+	return nil, nil
+}

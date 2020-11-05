@@ -149,6 +149,10 @@ func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string)
 	return ret, err
 }
 
+func (r *mutationResolver) ResetPassword(ctx context.Context, input models.ResetPasswordInput) (bool, error) {
+	panic("not implemented")
+}
+
 func (r *mutationResolver) ChangePassword(ctx context.Context, input models.UserChangePasswordInput) (bool, error) {
 	currentUser := getCurrentUser(ctx)
 	if currentUser == nil {
@@ -161,7 +165,9 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	err := manager.ChangeUserPassword(tx, userID, input.ExistingPassword, input.NewPassword)
+	// TODO - handle password reset
+
+	err := manager.ChangeUserPassword(tx, userID, *input.ExistingPassword, input.NewPassword)
 	if err != nil {
 		_ = tx.Rollback()
 		return false, err
@@ -172,4 +178,28 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 	}
 
 	return true, nil
+}
+
+func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInput) (bool, error) {
+	panic("not implemented")
+}
+
+func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.ActivateNewUserInput) (*models.User, error) {
+	panic("not implemented")
+}
+
+func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (string, error) {
+	panic("not implemented")
+}
+
+func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (bool, error) {
+	panic("not implemented")
+}
+
+func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantInviteInput) (bool, error) {
+	panic("not implemented")
+}
+
+func (r *mutationResolver) RepealInvite(ctx context.Context, input models.RescindInviteInput) (bool, error) {
+	panic("not implemented")
 }
