@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/models"
@@ -65,6 +66,8 @@ func removeSensitiveUserDetails(ctx context.Context, users models.Users) {
 	if validateAdmin(ctx) == nil {
 		return
 	}
+
+	// TODO - remove invite related stuff
 
 	// remove sensitive details for users that are not the current user
 	userID := ""

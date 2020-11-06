@@ -9,7 +9,7 @@ CREATE TABLE "invite_keys" (
   "id" uuid not null primary key,
   "generated_by" uuid not null,
   "generated_at" timestamp not null,
-  foreign key("generated_by") references "users"("id") on delete set null
+  foreign key("generated_by") references "users"("id") on delete cascade
 );
 
 CREATE INDEX "invite_keys_generated_by_idx" ON "invite_keys" ("generated_by");
@@ -20,7 +20,7 @@ CREATE TABLE "pending_activations" (
   "invite_key" uuid,
   "type" varchar(255) not null,
   "time" timestamp not null,
-  foreign key("invite_key") references "invite_keys"("id") on delete set null
+  foreign key("invite_key") references "invite_keys"("id")
 );
 
 CREATE INDEX "pending_activation_email_idx" on "pending_activations" ("email");

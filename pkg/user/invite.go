@@ -1,20 +1,18 @@
 package user
 
 import (
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
-// UserFinderUpdater is an interface to find and update User objects.
-type UserFinderUpdater interface {
-	Find(id uuid.UUID) (*models.User, error)
-	Update(updatedUser models.User) (*models.User, error)
-}
+var ErrNoInviteTokens = errors.New("no invite tokens available")
 
 // GrantInviteTokens increments the invite token count for a user by up to 10.
-func GrantInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int, error) {
+func GrantInviteTokens(uf models.UserFinderUpdater, userID uuid.UUID, tokens int) (int, error) {
 	u, err := uf.Find(userID)
 
 	if err != nil {
@@ -37,7 +35,7 @@ func GrantInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int,
 	}
 
 	u.InviteTokens += tokens
-	_, err = uf.Update(*u)
+	_, err = uf.UpdateFull(*u)
 	if err != nil {
 		return 0, err
 	}
@@ -47,7 +45,7 @@ func GrantInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int,
 
 // RepealInviteTokens decrements a user's invite token count by the provided
 // amount. Invite tokens are constrained to a minimum of 0.
-func RepealInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int, error) {
+func RepealInviteTokens(uf models.UserFinderUpdater, userID uuid.UUID, tokens int) (int, error) {
 	u, err := uf.Find(userID)
 
 	if err != nil {
@@ -71,10 +69,100 @@ func RepealInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int
 		u.InviteTokens = 0
 	}
 
-	_, err = uf.Update(*u)
+	_, err = uf.UpdateFull(*u)
 	if err != nil {
 		return 0, err
 	}
 
 	return u.InviteTokens, nil
+}
+
+// GenerateInviteKey creates and returns an invite key, using a token if
+// required. If useToken is true and the user has no invite tokens, then
+// an error is returned.
+func GenerateInviteKey(uf models.UserFinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, useToken bool) (string, error) {
+	if useToken {
+		u, err := uf.Find(userID)
+		if err != nil {
+			return "", err
+		}
+
+		if u == nil {
+			return "", fmt.Errorf("user not found for id %s", userID.String())
+		}
+
+		if u.InviteTokens <= 0 {
+			return "", ErrNoInviteTokens
+		}
+
+		_, err = RepealInviteTokens(uf, userID, 1)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// create the invite key
+	UUID, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+
+	currentTime := time.Now()
+	newKey := models.InviteKey{
+		ID:          UUID,
+		GeneratedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		GeneratedBy: userID,
+	}
+
+	_, err = ic.Create(newKey)
+	if err != nil {
+		return "", err
+	}
+
+	return UUID.String(), nil
+}
+
+// RescindInviteKey makes an invite key invalid, refunding the invite token if
+// required. Returns an error if the invite key is already in use.
+func RescindInviteKey(uf models.UserFinderUpdater, ikd models.InviteKeyDestroyer, key uuid.UUID, userID uuid.UUID, refundToken bool) error {
+	// ensure userID matches that of the invite key
+	k, err := ikd.Find(key)
+	if err != nil {
+		return err
+	}
+
+	if k == nil {
+		return fmt.Errorf("invalid key")
+	}
+
+	if k.GeneratedBy != userID {
+		return fmt.Errorf("invalid key")
+	}
+
+	// TODO - ensure key is not already activated
+
+	// destroy the key
+	err = ikd.Destroy(key)
+	if err != nil {
+		return err
+	}
+
+	// refund the invite token if required
+	if refundToken {
+		u, err := uf.Find(userID)
+		if err != nil {
+			return err
+		}
+
+		if u == nil {
+			return fmt.Errorf("user not found for id %s", userID.String())
+		}
+
+		_, err = GrantInviteTokens(uf, userID, 1)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

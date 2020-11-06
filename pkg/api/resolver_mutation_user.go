@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -190,11 +191,84 @@ func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.Act
 }
 
 func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (string, error) {
-	panic("not implemented")
+	// INVITE role allows generating invite keys without tokens
+	requireToken := true
+	if err := validateInvite(ctx); err == nil {
+		requireToken = false
+	}
+
+	currentUser := getCurrentUser(ctx)
+	var ret string
+	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+		uqb := models.NewUserQueryBuilder(txn.GetTx())
+		ikqb := models.NewInviteCodeQueryBuilder(txn.GetTx())
+
+		var txnErr error
+		ret, txnErr = user.GenerateInviteKey(&uqb, &ikqb, currentUser.ID, requireToken)
+		if txnErr != nil {
+			return txnErr
+		}
+
+		// log the operation
+		logger.Userf(currentUser.Name, "GenerateInviteCode", "%s", ret)
+
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return ret, nil
 }
 
 func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (bool, error) {
-	panic("not implemented")
+	// INVITE role allows generating invite keys without tokens
+	requireToken := true
+	if err := validateInvite(ctx); err == nil {
+		requireToken = false
+	}
+
+	tokenManagerErr := validateManageInvites(ctx)
+
+	currentUser := getCurrentUser(ctx)
+	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+		uqb := models.NewUserQueryBuilder(txn.GetTx())
+		ikqb := models.NewInviteCodeQueryBuilder(txn.GetTx())
+
+		inviteKeyID, _ := uuid.FromString(code)
+		userID := currentUser.ID
+
+		// non-token managers may only rescind their own invite code
+		if tokenManagerErr == nil {
+			inviteKey, err := ikqb.Find(inviteKeyID)
+			if err != nil {
+				return err
+			}
+
+			if inviteKey == nil {
+				return errors.New("invalid key")
+			}
+
+			userID = inviteKey.GeneratedBy
+		}
+
+		txnErr := user.RescindInviteKey(&uqb, &ikqb, inviteKeyID, userID, requireToken)
+		if txnErr != nil {
+			return txnErr
+		}
+
+		// log the operation
+		logger.Userf(currentUser.Name, "RescindInviteCode", "%s", code)
+
+		return nil
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantInviteInput) (int, error) {

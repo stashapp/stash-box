@@ -6,6 +6,12 @@ import (
 	"github.com/stashapp/stashdb/pkg/database"
 )
 
+// UserFinderUpdater is an interface to find and update User objects.
+type UserFinderUpdater interface {
+	Find(id uuid.UUID) (*User, error)
+	UpdateFull(updatedUser User) (*User, error)
+}
+
 type UserQueryBuilder struct {
 	dbi database.DBI
 }
@@ -31,6 +37,11 @@ func (qb *UserQueryBuilder) Create(newUser User) (*User, error) {
 
 func (qb *UserQueryBuilder) Update(updatedUser User) (*User, error) {
 	ret, err := qb.dbi.Update(updatedUser, false)
+	return qb.toModel(ret), err
+}
+
+func (qb *UserQueryBuilder) UpdateFull(updatedUser User) (*User, error) {
+	ret, err := qb.dbi.Update(updatedUser, true)
 	return qb.toModel(ret), err
 }
 

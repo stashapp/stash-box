@@ -49,6 +49,24 @@ func (r *userResolver) InvitedBy(ctx context.Context, obj *models.User) (*models
 }
 
 func (r *userResolver) ActiveInviteCodes(ctx context.Context, obj *models.User) ([]string, error) {
-	// TODO
-	return nil, nil
+	// only show if current user or invite manager
+	currentUser := getCurrentUser(ctx)
+
+	if currentUser.ID != obj.ID {
+		if err := validateManageInvites(ctx); err != nil {
+			return nil, nil
+		}
+	}
+
+	qb := models.NewInviteCodeQueryBuilder(nil)
+	ik, err := qb.FindActiveKeysForUser(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []string
+	for _, k := range ik {
+		ret = append(ret, k.ID.String())
+	}
+	return ret, nil
 }
