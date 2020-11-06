@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stashdb/pkg/user"
 )
 
 func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCreateInput) (*models.User, error) {
@@ -16,13 +16,13 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 		return nil, err
 	}
 
-	if err := manager.ValidateUserCreate(input); err != nil {
+	if err := user.ValidateCreate(input); err != nil {
 		return nil, err
 	}
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	user, err := manager.UserCreate(tx, input)
+	u, err := user.Create(tx, input)
 
 	if err != nil {
 		_ = tx.Rollback()
@@ -34,7 +34,7 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 		return nil, err
 	}
 
-	return user, nil
+	return u, nil
 }
 
 func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpdateInput) (*models.User, error) {
@@ -56,12 +56,12 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 		return nil, fmt.Errorf("user not found for id %s", input.ID)
 	}
 
-	if err := manager.ValidateUserUpdate(input, *current); err != nil {
+	if err := user.ValidateUpdate(input, *current); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
 
-	user, err := manager.UserUpdate(tx, input)
+	user, err := user.Update(tx, input)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
@@ -84,22 +84,22 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 
 	qb := models.NewUserQueryBuilder(tx)
 	userID, _ := uuid.FromString(input.ID)
-	user, err := qb.Find(userID)
+	u, err := qb.Find(userID)
 
 	if err != nil {
 		return false, fmt.Errorf("error finding user: %s", err.Error())
 	}
 
-	if user == nil {
+	if u == nil {
 		return false, fmt.Errorf("user not found for id %s", input.ID)
 	}
 
-	if err = manager.ValidateDestroyUser(user); err != nil {
+	if err = user.ValidateDestroy(u); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}
 
-	ret, err := manager.UserDestroy(tx, input)
+	ret, err := user.Destroy(tx, input)
 
 	if err != nil {
 		_ = tx.Rollback()
@@ -135,7 +135,7 @@ func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string)
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	ret, err := manager.RegenerateUserAPIKey(tx, *userID)
+	ret, err := user.RegenerateAPIKey(tx, *userID)
 
 	if err != nil {
 		_ = tx.Rollback()
@@ -167,7 +167,7 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 
 	// TODO - handle password reset
 
-	err := manager.ChangeUserPassword(tx, userID, *input.ExistingPassword, input.NewPassword)
+	err := user.ChangePassword(tx, userID, *input.ExistingPassword, input.NewPassword)
 	if err != nil {
 		_ = tx.Rollback()
 		return false, err
@@ -197,7 +197,11 @@ func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (
 }
 
 func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantInviteInput) (bool, error) {
-	panic("not implemented")
+	if err := validateManageInvites(ctx); err != nil {
+		return false, err
+	}
+
+	return false, nil
 }
 
 func (r *mutationResolver) RepealInvite(ctx context.Context, input models.RescindInviteInput) (bool, error) {

@@ -1,10 +1,10 @@
-package manager_test
+package user_test
 
 import (
 	"testing"
 
-	. "github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/models"
+	. "github.com/stashapp/stashdb/pkg/user"
 )
 
 const (
