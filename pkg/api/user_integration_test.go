@@ -371,8 +371,9 @@ func (s *userTestRunner) testChangePassword() {
 	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
 
 	updatedPassword := name + "newpassword"
+	existingPassword := "incorrect password"
 	updateInput := models.UserChangePasswordInput{
-		ExistingPassword: "incorrect password",
+		ExistingPassword: &existingPassword,
 		NewPassword:      updatedPassword,
 	}
 
@@ -381,7 +382,7 @@ func (s *userTestRunner) testChangePassword() {
 		s.t.Error("Expected error for incorrect current password")
 	}
 
-	updateInput.ExistingPassword = oldPassword
+	updateInput.ExistingPassword = &oldPassword
 	updateInput.NewPassword = "aaa"
 
 	_, err = s.resolver.Mutation().ChangePassword(ctx, updateInput)

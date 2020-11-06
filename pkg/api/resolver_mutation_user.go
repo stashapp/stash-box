@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/logger"
 	"github.com/stashapp/stashdb/pkg/models"
 	"github.com/stashapp/stashdb/pkg/user"
 )
@@ -196,14 +197,62 @@ func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (
 	panic("not implemented")
 }
 
-func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantInviteInput) (bool, error) {
+func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantInviteInput) (int, error) {
 	if err := validateManageInvites(ctx); err != nil {
-		return false, err
+		return 0, err
 	}
 
-	return false, nil
+	currentUser := getCurrentUser(ctx)
+	var ret int
+	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+		qb := models.NewUserQueryBuilder(txn.GetTx())
+		userID, _ := uuid.FromString(input.UserID)
+
+		var txnErr error
+		ret, txnErr = user.GrantInviteTokens(&qb, userID, input.Amount)
+		if txnErr != nil {
+			return txnErr
+		}
+
+		// log the operation
+		logger.Userf(currentUser.Name, "GrantInvite", "+ %d to %s = %d", input.Amount, userID.String(), ret)
+
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }
 
-func (r *mutationResolver) RepealInvite(ctx context.Context, input models.RescindInviteInput) (bool, error) {
-	panic("not implemented")
+func (r *mutationResolver) RepealInvite(ctx context.Context, input models.RescindInviteInput) (int, error) {
+	if err := validateManageInvites(ctx); err != nil {
+		return 0, err
+	}
+
+	currentUser := getCurrentUser(ctx)
+	var ret int
+	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+		qb := models.NewUserQueryBuilder(txn.GetTx())
+		userID, _ := uuid.FromString(input.UserID)
+
+		var txnErr error
+		ret, txnErr = user.RepealInviteTokens(&qb, userID, input.Amount)
+		if txnErr != nil {
+			return txnErr
+		}
+
+		// log the operation
+		logger.Userf(currentUser.Name, "RepealInvite", "- %d to %s = %d", input.Amount, userID.String(), ret)
+
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }

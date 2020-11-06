@@ -41,6 +41,7 @@ const emailCooldownDefault = 5 * 60
 
 // Logging options
 const LogFile = "logFile"
+const UserLogFile = "userLogFile"
 const LogOut = "logOut"
 const LogLevel = "logLevel"
 
@@ -136,6 +137,13 @@ func GetEmailCooldown() time.Duration {
 // An empty string means that file logging will be disabled.
 func GetLogFile() string {
 	return viper.GetString(LogFile)
+}
+
+// GetUserLogFile returns the filename of the file to output user operation
+// logs to.
+// An empty string means that user operation logging will be output to stderr.
+func GetUserLogFile() string {
+	return viper.GetString(UserLogFile)
 }
 
 // GetLogOut returns true if logging should be output to the terminal

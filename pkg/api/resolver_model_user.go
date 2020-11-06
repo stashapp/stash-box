@@ -48,11 +48,6 @@ func (r *userResolver) InvitedBy(ctx context.Context, obj *models.User) (*models
 	return nil, nil
 }
 
-func (r *userResolver) InviteTokens(ctx context.Context, obj *models.User) (*int, error) {
-	// TODO
-	return nil, nil
-}
-
 func (r *userResolver) ActiveInviteCodes(ctx context.Context, obj *models.User) ([]string, error) {
 	// TODO
 	return nil, nil

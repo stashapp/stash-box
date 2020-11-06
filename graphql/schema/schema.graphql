@@ -101,9 +101,9 @@ type Mutation {
   """Removes a pending invite code - refunding the token"""
   rescindInviteCode(code: String!): Boolean!
   """Adds invite tokens for a user"""
-  grantInvite(input: GrantInviteInput!): Boolean!
+  grantInvite(input: GrantInviteInput!): Int!
   """Removes invite tokens from a user"""
-  repealInvite(input: RescindInviteInput!): Boolean!
+  repealInvite(input: RescindInviteInput!): Int!
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!

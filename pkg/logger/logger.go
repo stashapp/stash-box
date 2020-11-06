@@ -19,6 +19,9 @@ type LogItem struct {
 var logger = logrus.New()
 var progressLogger = logrus.New()
 
+// separate log for user management
+var userLogger = logrus.New()
+
 var LogCache []LogItem
 var mutex = &sync.Mutex{}
 var logSubs []chan []LogItem
@@ -27,7 +30,29 @@ var lastBroadcast = time.Now()
 var logBuffer []LogItem
 
 // Init initialises the logger based on a logging configuration
-func Init(logFile string, logOut bool, logLevel string) {
+func Init(logFile string, userLogFile string, logOut bool, logLevel string) {
+	file := openLogFile(logFile)
+
+	if file != nil && logOut {
+		mw := io.MultiWriter(os.Stderr, file)
+		logger.Out = mw
+	} else if file != nil {
+		logger.Out = file
+	}
+
+	// otherwise, output to StdErr
+
+	SetLogLevel(logLevel)
+
+	// initialise user log
+	userFile := openLogFile(userLogFile)
+
+	if userFile != nil {
+		userLogger.Out = userFile
+	}
+}
+
+func openLogFile(logFile string) *os.File {
 	var file *os.File
 
 	if logFile != "" {
@@ -40,16 +65,7 @@ func Init(logFile string, logOut bool, logLevel string) {
 		}
 	}
 
-	if file != nil && logOut {
-		mw := io.MultiWriter(os.Stderr, file)
-		logger.Out = mw
-	} else if file != nil {
-		logger.Out = file
-	}
-
-	// otherwise, output to StdErr
-
-	SetLogLevel(logLevel)
+	return file
 }
 
 func SetLogLevel(level string) {
@@ -256,6 +272,12 @@ func Fatal(args ...interface{}) {
 
 func Fatalf(format string, args ...interface{}) {
 	logger.Fatalf(format, args...)
+}
+
+// Userf logs a user operation to the user log.
+func Userf(user string, action string, format string, args ...interface{}) {
+	prefix := fmt.Sprintf("%s: %s - ", user, action)
+	userLogger.Infof(prefix+format, args...)
 }
 
 //func WithRequest(req *http.Request) *logrus.Entry {

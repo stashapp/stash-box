@@ -72,7 +72,7 @@ func TestValidateUserNameCreate(t *testing.T) {
 		input := makeValidUserCreateInput()
 		input.Name = v.username
 
-		err := ValidateUserCreate(input)
+		err := ValidateCreate(input)
 
 		if err != v.err {
 			t.Errorf("name: %s - got %v; want %v", v.username, err, v.err)
@@ -85,7 +85,7 @@ func TestValidateUserEmailCreate(t *testing.T) {
 		input := makeValidUserCreateInput()
 		input.Email = v.email
 
-		err := ValidateUserCreate(input)
+		err := ValidateCreate(input)
 
 		if err != v.err {
 			t.Errorf("email: %s - got %v; want %v", v.email, err, v.err)
@@ -98,7 +98,7 @@ func TestValidatePasswordCreate(t *testing.T) {
 		input := makeValidUserCreateInput()
 		input.Email = v.email
 
-		err := ValidateUserCreate(input)
+		err := ValidateCreate(input)
 
 		if err != v.err {
 			t.Errorf("password: %s - got %v; want %v", v.email, err, v.err)
@@ -124,7 +124,7 @@ func TestValidateUserNameUpdate(t *testing.T) {
 		input := makeValidUserUpdateInput()
 		input.Name = &v.username
 
-		err := ValidateUserUpdate(input, makeValidUser())
+		err := ValidateUpdate(input, makeValidUser())
 
 		if err != v.err {
 			t.Errorf("name: %s - got %v; want %v", v.username, err, v.err)
@@ -137,7 +137,7 @@ func TestValidateUserEmailUpdate(t *testing.T) {
 		input := makeValidUserUpdateInput()
 		input.Email = &v.email
 
-		err := ValidateUserUpdate(input, makeValidUser())
+		err := ValidateUpdate(input, makeValidUser())
 
 		if err != v.err {
 			t.Errorf("email: %s - got %v; want %v", v.email, err, v.err)
@@ -150,7 +150,7 @@ func TestValidatePasswordUpdate(t *testing.T) {
 		input := makeValidUserUpdateInput()
 		input.Email = &v.email
 
-		err := ValidateUserUpdate(input, makeValidUser())
+		err := ValidateUpdate(input, makeValidUser())
 
 		if err != v.err {
 			t.Errorf("password: %s - got %v; want %v", v.email, err, v.err)
@@ -165,7 +165,7 @@ func TestChangeRootUsername(t *testing.T) {
 
 	rootUser := makeValidUser()
 	rootUser.Name = "root"
-	err := ValidateUserUpdate(input, rootUser)
+	err := ValidateUpdate(input, rootUser)
 
 	if err != ErrChangeRootName {
 		t.Errorf("change root username: got %v; want %v", err, ErrChangeRootName)
@@ -180,7 +180,7 @@ func TestChangeRootRoles(t *testing.T) {
 
 	rootUser := makeValidUser()
 	rootUser.Name = "root"
-	err := ValidateUserUpdate(input, rootUser)
+	err := ValidateUpdate(input, rootUser)
 
 	if err != ErrChangeRootRoles {
 		t.Errorf("change root roles: got %v; want %v", err, ErrChangeRootRoles)
@@ -198,7 +198,7 @@ func TestDestroyUser(t *testing.T) {
 			Name: v.username,
 		}
 
-		err := ValidateDestroyUser(user)
+		err := ValidateDestroy(user)
 
 		if err != v.err {
 			t.Errorf("username: %s - got %v; want %v", v.username, err, v.err)

@@ -32,7 +32,7 @@ type User struct {
 	APIKey       string          `db:"api_key" json:"api_key"`
 	APICalls     int             `db:"api_calls" json:"api_calls"`
 	InviteTokens int             `db:"invite_tokens" json:"invite_tokens"`
-	InvitedByID  uuid.UUID       `db:"invited_by" json:"invited_by"`
+	InvitedByID  uuid.NullUUID   `db:"invited_by" json:"invited_by"`
 	LastAPICall  SQLiteTimestamp `db:"last_api_call" json:"last_api_call"`
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
