@@ -186,8 +186,8 @@ type PerformerEdit {
   height: Int
   cup_size: String
   band_size: Int
-  waist: Int
-  hip: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int

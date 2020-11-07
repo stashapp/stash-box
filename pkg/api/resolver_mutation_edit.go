@@ -14,9 +14,6 @@ import (
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	panic("not implemented")
 }
-func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
-	panic("not implemented")
-}
 func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
 	panic("not implemented")
 }
@@ -175,9 +172,9 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	if input.Edit.ID != nil {
 		performerID, _ := uuid.FromString(*input.Edit.ID)
 
-		editPerformer := models.EditPerformer {
-			EditID: created.ID,
-			PerformerID:  performerID,
+		editPerformer := models.EditPerformer{
+			EditID:      created.ID,
+			PerformerID: performerID,
 		}
 
 		err = eqb.CreateEditPerformer(editPerformer)
@@ -202,8 +199,6 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 
 	return newEdit, nil
 }
-
-
 
 func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
 	panic("not implemented")
@@ -339,9 +334,9 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 		}
 
 		if operation == models.OperationEnumCreate {
-			editPerformer := models.EditPerformer {
-				EditID: edit.ID,
-				PerformerID:  newPerformer.ID,
+			editPerformer := models.EditPerformer{
+				EditID:      edit.ID,
+				PerformerID: newPerformer.ID,
 			}
 
 			err = eqb.CreateEditPerformer(editPerformer)

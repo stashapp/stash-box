@@ -40,6 +40,11 @@ func (qb *PerformerQueryBuilder) Update(updatedPerformer Performer) (*Performer,
 	return qb.toModel(ret), err
 }
 
+func (qb *PerformerQueryBuilder) UpdatePartial(updatedPerformer Performer) (*Performer, error) {
+	ret, err := qb.dbi.Update(updatedPerformer, false)
+	return qb.toModel(ret), err
+}
+
 func (qb *PerformerQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, performerDBTable)
 }
@@ -595,7 +600,7 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 		}
 
 		performer.CopyFromPerformerEdit(*data.New)
-		updatedPerformer, err := qb.Update(*performer)
+		updatedPerformer, err := qb.UpdatePartial(*performer)
 
 		currentAliases, err := qb.GetAliases(updatedPerformer.ID)
 		if err != nil {
@@ -612,36 +617,36 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 
 		return updatedPerformer, err
 	case OperationEnumMerge:
-		if err := tag.ValidateModifyEdit(*data); err != nil {
+		if err := performer.ValidateModifyEdit(*data); err != nil {
 			return nil, err
 		}
 
-		tag.CopyFromTagEdit(*data.New)
-		updatedTag, err := qb.Update(*tag)
+		performer.CopyFromPerformerEdit(*data.New)
+		updatedPerformer, err := qb.Update(*performer)
 
 		for _, v := range data.MergeSources {
 			sourceUUID, _ := uuid.FromString(v)
-			if err := qb.MergeInto(sourceUUID, tag.ID); err != nil {
+			if err := qb.MergeInto(sourceUUID, performer.ID); err != nil {
 				return nil, err
 			}
 		}
 
-		currentAliases, err := qb.GetRawAliases(updatedTag.ID)
+		currentAliases, err := qb.GetAliases(updatedPerformer.ID)
 		if err != nil {
 			return nil, err
 		}
-		newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
+		newAliases := CreatePerformerAliases(updatedPerformer.ID, data.New.AddedAliases)
 		if err := currentAliases.AddAliases(newAliases); err != nil {
 			return nil, err
 		}
 		if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
 			return nil, err
 		}
-		if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
+		if err := qb.UpdateAliases(updatedPerformer.ID, currentAliases); err != nil {
 			return nil, err
 		}
 
-		return updatedTag, nil
+		return updatedPerformer, nil
 	default:
 		return nil, errors.New("Unsupported operation: " + operation.String())
 	}

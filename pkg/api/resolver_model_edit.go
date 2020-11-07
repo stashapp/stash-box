@@ -63,7 +63,7 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 
 		return target, nil
-  } else if targetType == "PERFORMER" {
+	} else if targetType == "PERFORMER" {
 		eqb := models.NewEditQueryBuilder(nil)
 		performerID, err := eqb.FindPerformerID(obj.ID)
 		if err != nil {
@@ -118,7 +118,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 					mergeSources = append(mergeSources, tag)
 				}
 			}
-    } else if ret == "PERFORMER" {
+		} else if ret == "PERFORMER" {
 			pqb := models.NewPerformerQueryBuilder(nil)
 			for _, performerStringID := range editData.MergeSources {
 				performerID, _ := uuid.FromString(performerStringID)
@@ -159,7 +159,7 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 			return nil, err
 		}
 		ret = performerData.New
-  }
+	}
 
 	return ret, nil
 }

@@ -75,7 +75,7 @@ func (qb *EditQueryBuilder) FindPerformerID(id uuid.UUID) (*uuid.UUID, error) {
 	if len(joins) == 0 {
 		return nil, errors.New("performer edit not found")
 	}
-	return &joins[0].performerID, nil
+	return &joins[0].PerformerID, nil
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
@@ -144,7 +144,7 @@ func (qb *EditQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 			query.AddWhere(editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
-    } else if *editFilter.TargetType == "PERFORMER" {
+		} else if *editFilter.TargetType == "PERFORMER" {
 			query.AddJoin(editPerformerTable.Table, editPerformerTable.Name()+".edit_id = edits.id")
 			query.AddWhere(editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?")
 			jsonID, _ := json.Marshal(*q)

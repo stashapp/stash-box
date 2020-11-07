@@ -67,21 +67,22 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 		oldData.Disambiguation = &orig.Disambiguation.String
 	}
 
-	if e.Gender != nil && (!orig.Gender.Valid || *e.Gender.String() != orig.Gender.String) {
-		newGender := *e.Gender.String()
+	if e.Gender != nil && (!orig.Gender.Valid || e.Gender.String() != orig.Gender.String) {
+		newGender := e.Gender.String()
 		newData.Gender = &newGender
 		oldData.Gender = &orig.Gender.String
 	}
 
-	if e.Birthdate != nil && (!orig.Birthdate.Valid || (e.Birthdate.Date != orig.Birthdate.String && e.Birthdate.Accuracy != orig.BirthdateAccuracy.String)) {
+	if e.Birthdate != nil && (!orig.Birthdate.Valid || (e.Birthdate.Date != orig.Birthdate.String && e.Birthdate.Accuracy.String() != orig.BirthdateAccuracy.String)) {
 		newData.Birthdate = &e.Birthdate.Date
-		newData.BirthdateAccuracy = &e.Birthdate.Accuracy.String()
+		newAccuracy := e.Birthdate.Accuracy.String()
+		newData.BirthdateAccuracy = &newAccuracy
 		oldData.Birthdate = &orig.Birthdate.String
 		oldData.BirthdateAccuracy = &orig.BirthdateAccuracy.String
 	}
 
-	if e.Ethnicity != nil && (!orig.Ethnicity.Valid || *e.Ethnicity.String() != orig.Ethnicity.String) {
-		newEthnicity := *e.Ethnicity.String()
+	if e.Ethnicity != nil && (!orig.Ethnicity.Valid || e.Ethnicity.String() != orig.Ethnicity.String) {
+		newEthnicity := e.Ethnicity.String()
 		newData.Ethnicity = &newEthnicity
 		oldData.Ethnicity = &orig.Ethnicity.String
 	}
@@ -92,20 +93,20 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 		oldData.Country = &orig.Country.String
 	}
 
-	if e.EyeColor != nil && (!orig.EyeColor.Valid || *e.EyeColor.String() != orig.EyeColor.String) {
-		newEyeColor := *e.EyeColor.String()
+	if e.EyeColor != nil && (!orig.EyeColor.Valid || e.EyeColor.String() != orig.EyeColor.String) {
+		newEyeColor := e.EyeColor.String()
 		newData.EyeColor = &newEyeColor
 		oldData.EyeColor = &orig.EyeColor.String
 	}
 
-	if e.HairColor != nil && (!orig.HairColor.Valid || *e.HairColor.String() != orig.HairColor.String) {
-		newHairColor := *e.HairColor.String()
+	if e.HairColor != nil && (!orig.HairColor.Valid || e.HairColor.String() != orig.HairColor.String) {
+		newHairColor := e.HairColor.String()
 		newData.HairColor = &newHairColor
 		oldData.HairColor = &orig.HairColor.String
 	}
 
-	if e.Height != nil && (!orig.Height.Valid || *e.Height != orig.Height.Int64) {
-		newHeight := *e.Height
+	if e.Height != nil && (!orig.Height.Valid || int64(*e.Height) != orig.Height.Int64) {
+		newHeight := int64(*e.Height)
 		newData.Height = &newHeight
 		oldData.Height = &orig.Height.Int64
 	}
@@ -117,44 +118,44 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 			oldData.CupSize = &orig.CupSize.String
 		}
 
-		if e.Measurements.BandSize != nil && (!orig.BandSize.Valid || *e.Measurements.BandSize != orig.BandSize.Int64) {
-			newBand := *e.Measurements.BandSize
+		if e.Measurements.BandSize != nil && (!orig.BandSize.Valid || int64(*e.Measurements.BandSize) != orig.BandSize.Int64) {
+			newBand := int64(*e.Measurements.BandSize)
 			newData.BandSize = &newBand
-			oldData.BandSize = &orig.BandSize.String
+			oldData.BandSize = &orig.BandSize.Int64
 		}
 
-		if e.Measurements.Waist != nil && (!orig.Waist.Valid || *e.Measurements.Waist != orig.Waist.Int64) {
-			newWaist := *e.Measurements.Waist
+		if e.Measurements.Waist != nil && (!orig.WaistSize.Valid || int64(*e.Measurements.Waist) != orig.WaistSize.Int64) {
+			newWaist := int64(*e.Measurements.Waist)
 			newData.WaistSize = &newWaist
-			oldData.WaistSize = &orig.Waist.String
+			oldData.WaistSize = &orig.WaistSize.Int64
 		}
 
-		if e.Measurements.Hip != nil && (!orig.Hip.Valid || *e.Measurements.Hip != orig.Hip.Int64) {
-			newHip := *e.Measurements.Hip
+		if e.Measurements.Hip != nil && (!orig.HipSize.Valid || int64(*e.Measurements.Hip) != orig.HipSize.Int64) {
+			newHip := int64(*e.Measurements.Hip)
 			newData.HipSize = &newHip
-			oldData.HipSize = &orig.Hip.String
+			oldData.HipSize = &orig.HipSize.Int64
 		}
 	}
 
-	if e.BreastType != nil && (!orig.BreastType.Valid || *e.BreastType.String() != orig.BreastType.String) {
-		newBreastType := *e.BreastType.String()
+	if e.BreastType != nil && (!orig.BreastType.Valid || e.BreastType.String() != orig.BreastType.String) {
+		newBreastType := e.BreastType.String()
 		newData.BreastType = &newBreastType
 		oldData.BreastType = &orig.BreastType.String
 	}
 
-	if e.CareerStartYear != nil && (!orig.CareerStartYear.Valid || *e.CareerStartYear != orig.CareerStartYear.Int64) {
-		newCareerStartYear := *e.CareerStartYear
+	if e.CareerStartYear != nil && (!orig.CareerStartYear.Valid || int64(*e.CareerStartYear) != orig.CareerStartYear.Int64) {
+		newCareerStartYear := int64(*e.CareerStartYear)
 		newData.CareerStartYear = &newCareerStartYear
 		oldData.CareerStartYear = &orig.CareerStartYear.Int64
 	}
 
-	if e.CareerStartEnd != nil && (!orig.CareerStartEnd.Valid || *e.CareerStartEnd != orig.CareerStartEnd.Int64) {
-		newCareerStartEnd := *e.CareerStartEnd
-		newData.CareerStartEnd = &newCareerStartEnd
-		oldData.CareerStartEnd = &orig.CareerStartEnd.Int64
+	if e.CareerEndYear != nil && (!orig.CareerEndYear.Valid || int64(*e.CareerEndYear) != orig.CareerEndYear.Int64) {
+		newCareerStartEnd := int64(*e.CareerEndYear)
+		newData.CareerEndYear = &newCareerStartEnd
+		oldData.CareerEndYear = &orig.CareerEndYear.Int64
 	}
 
-	return TagEditData{
+	return PerformerEditData{
 		New: newData,
 		Old: oldData,
 	}
@@ -181,17 +182,18 @@ func (e PerformerEditDetailsInput) PerformerEditFromCreate() PerformerEditData {
 	}
 
 	if e.Gender != nil {
-		newGender := *e.Gender.String()
+		newGender := e.Gender.String()
 		newData.Gender = &newGender
 	}
 
 	if e.Birthdate != nil {
 		newData.Birthdate = &e.Birthdate.Date
-		newData.BirthdateAccuracy = &e.Birthdate.Accuracy
+		newAccuracy := e.Birthdate.Accuracy.String()
+		newData.BirthdateAccuracy = &newAccuracy
 	}
 
 	if e.Ethnicity != nil {
-		newEthnicity := *e.Ethnicity.String()
+		newEthnicity := e.Ethnicity.String()
 		newData.Ethnicity = &newEthnicity
 	}
 
@@ -201,17 +203,17 @@ func (e PerformerEditDetailsInput) PerformerEditFromCreate() PerformerEditData {
 	}
 
 	if e.EyeColor != nil {
-		newEyeColor := *e.EyeColor.String()
+		newEyeColor := e.EyeColor.String()
 		newData.EyeColor = &newEyeColor
 	}
 
 	if e.HairColor != nil {
-		newHairColor := *e.HairColor.String()
+		newHairColor := e.HairColor.String()
 		newData.HairColor = &newHairColor
 	}
 
 	if e.Height != nil {
-		newHeight := *e.Height
+		newHeight := int64(*e.Height)
 		newData.Height = &newHeight
 	}
 
@@ -222,37 +224,37 @@ func (e PerformerEditDetailsInput) PerformerEditFromCreate() PerformerEditData {
 		}
 
 		if e.Measurements.BandSize != nil {
-			newBand := *e.Measurements.BandSize
+			newBand := int64(*e.Measurements.BandSize)
 			newData.BandSize = &newBand
 		}
 
 		if e.Measurements.Waist != nil {
-			newWaist := *e.Measurements.Waist
-			newData.Waist = &newWaist
+			newWaist := int64(*e.Measurements.Waist)
+			newData.WaistSize = &newWaist
 		}
 
 		if e.Measurements.Hip != nil {
-			newHip := *e.Measurements.Hip
-			newData.Hip = &newHip
+			newHip := int64(*e.Measurements.Hip)
+			newData.HipSize = &newHip
 		}
 	}
 
 	if e.BreastType != nil {
-		newBreastType := *e.BreastType.String()
+		newBreastType := e.BreastType.String()
 		newData.BreastType = &newBreastType
 	}
 
 	if e.CareerStartYear != nil {
-		newCareerStartYear := *e.CareerStartYear
+		newCareerStartYear := int64(*e.CareerStartYear)
 		newData.CareerStartYear = &newCareerStartYear
 	}
 
-	if e.CareerStartEnd != nil {
-		newCareerStartEnd := *e.CareerStartEnd
-		newData.CareerStartEnd = &newCareerStartEnd
+	if e.CareerEndYear != nil {
+		newCareerStartEnd := int64(*e.CareerEndYear)
+		newData.CareerEndYear = &newCareerStartEnd
 	}
 
-	return TagEditData{
+	return PerformerEditData{
 		New: newData,
 	}
 }

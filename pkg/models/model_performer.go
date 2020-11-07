@@ -3,10 +3,11 @@ package models
 import (
 	"database/sql"
 
+	"errors"
 	"github.com/gofrs/uuid"
+	"time"
 
 	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/utils"
 )
 
 const (
@@ -127,6 +128,38 @@ func (p *PerformerAliases) Remove(id string) {
 			break
 		}
 	}
+}
+
+func (p *PerformerAliases) AddAliases(newAliases []*PerformerAlias) error {
+	aliasMap := map[string]bool{}
+	for _, x := range *p {
+		aliasMap[x.Alias] = true
+	}
+	for _, v := range newAliases {
+		if aliasMap[v.Alias] {
+			return errors.New("Invalid alias addition. Alias already exists '" + v.Alias + "'")
+		}
+	}
+	for _, v := range newAliases {
+		p.Add(v)
+	}
+	return nil
+}
+
+func (p *PerformerAliases) RemoveAliases(oldAliases []string) error {
+	aliasMap := map[string]bool{}
+	for _, x := range *p {
+		aliasMap[x.Alias] = true
+	}
+	for _, v := range oldAliases {
+		if !aliasMap[v] {
+			return errors.New("Invalid alias removal. Alias does not exist: '" + v + "'")
+		}
+	}
+	for _, v := range oldAliases {
+		p.Remove(v)
+	}
+	return nil
 }
 
 func CreatePerformerAliases(performerId uuid.UUID, aliases []string) PerformerAliases {

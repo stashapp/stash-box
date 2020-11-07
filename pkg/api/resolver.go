@@ -23,6 +23,9 @@ func (r *Resolver) EditComment() models.EditCommentResolver {
 func (r *Resolver) Performer() models.PerformerResolver {
 	return &performerResolver{r}
 }
+func (r *Resolver) PerformerEdit() models.PerformerEditResolver {
+	return &performerEditResolver{r}
+}
 func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
 }
