@@ -6,11 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stashdb/pkg/email"
 	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
-func NewUser(tx *sqlx.Tx, email, inviteKey string) error {
+func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) error {
 	err := ClearExpiredActivations(tx)
 	if err != nil {
 		return err
@@ -33,15 +34,16 @@ func NewUser(tx *sqlx.Tx, email, inviteKey string) error {
 
 	// TODO - if activation not required, go directly to create user
 
-	// TODO - if last emailed before cooldown, emit error
-
 	// generate an activation key and email
-	_, err = generateActivationKey(&aqb, email, inviteID)
+	key, err := generateActivationKey(&aqb, email, inviteID)
 	if err != nil {
 		return err
 	}
 
-	// TODO - send email
+	err = sendNewUserEmail(em, email, key)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -136,4 +138,13 @@ func ClearExpiredActivations(tx *sqlx.Tx) error {
 
 	aqb := models.NewPendingActivationQueryBuilder(tx)
 	return aqb.DestroyExpired(expireTime)
+}
+
+func sendNewUserEmail(em *email.Manager, email, activationKey string) error {
+	subject := "Subject: Activate stash-box account"
+
+	link := config.GetHostURL() + "/activate?email=" + email + "&key=" + activationKey
+	body := "Please click the following link to activate your account: " + link
+
+	return em.Send(email, subject, body)
 }

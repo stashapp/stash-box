@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/stashapp/stashdb/pkg/email"
 	"github.com/stashapp/stashdb/pkg/logger"
 	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/manager/paths"
@@ -20,6 +21,8 @@ type singleton struct {
 	Status JobStatus
 	JSON   *jsonUtils
 	Paths  *paths.Paths
+
+	EmailManager *email.Manager
 }
 
 var instance *singleton
@@ -42,6 +45,8 @@ func Initialize() *singleton {
 			Status: Idle,
 			Paths:  paths.NewPaths(),
 			JSON:   &jsonUtils{},
+
+			EmailManager: email.NewManager(),
 		}
 	})
 
@@ -104,6 +109,11 @@ The database connection string has been defaulted to: %s
 Please ensure this database is created and available, or change the connection string in the configuration file, then rerun stashdb.`,
 			viper.GetViper().ConfigFileUsed(), config.GetDatabasePath())
 		os.Exit(0)
+	}
+
+	missingEmail := config.GetMissingEmailSettings()
+	if len(missingEmail) > 0 {
+		fmt.Printf("%s is set to true, but the following required settings are missing: %s\n", config.RequireActivation, strings.Join(missingEmail, ", "))
 	}
 }
 

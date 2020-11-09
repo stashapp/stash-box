@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/logger"
+	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/models"
 	"github.com/stashapp/stashdb/pkg/user"
 )
@@ -189,7 +190,7 @@ func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInpu
 	}
 
 	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		return user.NewUser(txn.GetTx(), input.Email, inviteKey)
+		return user.NewUser(txn.GetTx(), manager.GetInstance().EmailManager, input.Email, inviteKey)
 	})
 
 	if err != nil {
