@@ -23,5 +23,5 @@ CREATE TABLE "pending_activations" (
   foreign key("invite_key") references "invite_keys"("id")
 );
 
-CREATE INDEX "pending_activation_email_idx" on "pending_activations" ("email");
-CREATE INDEX "pending_activation_invite_key_idx" on "pending_activations" ("invite_key");
+CREATE UNIQUE INDEX "pending_activation_email_idx" on "pending_activations" ("email");
+CREATE UNIQUE INDEX "pending_activation_invite_key_idx" on "pending_activations" ("invite_key");

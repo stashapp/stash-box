@@ -7,8 +7,13 @@ import (
 )
 
 // UserFinderUpdater is an interface to find and update User objects.
-type UserFinderUpdater interface {
+type UserFinder interface {
 	Find(id uuid.UUID) (*User, error)
+	FindByEmail(email string) (*User, error)
+}
+
+type UserFinderUpdater interface {
+	UserFinder
 	UpdateFull(updatedUser User) (*User, error)
 }
 
