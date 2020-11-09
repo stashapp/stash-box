@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
@@ -59,7 +60,7 @@ func (r *userResolver) ActiveInviteCodes(ctx context.Context, obj *models.User) 
 	}
 
 	qb := models.NewInviteCodeQueryBuilder(nil)
-	ik, err := qb.FindActiveKeysForUser(obj.ID)
+	ik, err := qb.FindActiveKeysForUser(obj.ID, config.GetActivationExpireTime())
 	if err != nil {
 		return nil, err
 	}

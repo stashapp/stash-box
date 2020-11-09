@@ -132,10 +132,7 @@ func generateActivationKey(aqb models.PendingActivationCreator, email string, in
 }
 
 func ClearExpiredActivations(tx *sqlx.Tx) error {
-	expiry := config.GetActivationExpiry()
-	currentTime := time.Now()
-
-	expireTime := currentTime.Add(-expiry)
+	expireTime := config.GetActivationExpireTime()
 
 	aqb := models.NewPendingActivationQueryBuilder(tx)
 	return aqb.DestroyExpired(expireTime)

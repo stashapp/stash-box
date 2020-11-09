@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
@@ -51,10 +53,14 @@ func (qb *InviteKeyQueryBuilder) Find(id uuid.UUID) (*InviteKey, error) {
 	return qb.toModel(ret), err
 }
 
-func (qb *InviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID) (InviteKeys, error) {
-	// TODO - exclude keys in activation table
-	query := `SELECT * FROM ` + inviteKeyTable + ` WHERE generated_by = ?`
+func (qb *InviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireTime time.Time) (InviteKeys, error) {
+	query := `SELECT i.* FROM ` + inviteKeyTable + ` i 
+	 LEFT JOIN ` + pendingActivationTable + ` a ON a.invite_key = i.id AND a.time > ?
+	 WHERE i.generated_by = ? AND a.id IS NULL`
 	var args []interface{}
+	args = append(args, SQLiteTimestamp{
+		Timestamp: expireTime,
+	})
 	args = append(args, userID)
 	output := InviteKeys{}
 	err := qb.dbi.RawQuery(inviteKeyDBTable, query, args, &output)
