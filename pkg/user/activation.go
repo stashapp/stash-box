@@ -11,14 +11,17 @@ import (
 )
 
 func NewUser(tx *sqlx.Tx, email, inviteKey string) error {
-	// TODO - clear expired activations
+	err := ClearExpiredActivations(tx)
+	if err != nil {
+		return err
+	}
 
 	// ensure user or pending activation with email does not already exist
 	uqb := models.NewUserQueryBuilder(tx)
 	aqb := models.NewPendingActivationQueryBuilder(tx)
 	iqb := models.NewInviteCodeQueryBuilder(tx)
 
-	err := validateExistingEmail(&uqb, &aqb, email)
+	err = validateExistingEmail(&uqb, &aqb, email)
 	if err != nil {
 		return err
 	}
@@ -126,4 +129,14 @@ func generateActivationKey(aqb models.PendingActivationCreator, email string, in
 	}
 
 	return obj.ID.String(), nil
+}
+
+func ClearExpiredActivations(tx *sqlx.Tx) error {
+	expiry := config.GetActivationExpiry()
+	currentTime := time.Now()
+
+	expireTime := currentTime.Add(-expiry)
+
+	aqb := models.NewPendingActivationQueryBuilder(tx)
+	return aqb.DestroyExpired(expireTime)
 }

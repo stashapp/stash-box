@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stashdb/pkg/database"
@@ -40,6 +42,15 @@ func (qb *PendingActivationQueryBuilder) Create(newActivation PendingActivation)
 
 func (qb *PendingActivationQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, pendingActivationDBTable)
+}
+
+func (qb *PendingActivationQueryBuilder) DestroyExpired(expireTime time.Time) error {
+	q := database.NewDeleteQueryBuilder(pendingActivationDBTable)
+	q.AddWhere("time <= ?")
+	q.AddArg(SQLiteTimestamp{
+		Timestamp: expireTime,
+	})
+	return qb.dbi.DeleteQuery(*q)
 }
 
 func (qb *PendingActivationQueryBuilder) Find(id uuid.UUID) (*PendingActivation, error) {

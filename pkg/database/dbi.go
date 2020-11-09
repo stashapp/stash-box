@@ -45,6 +45,9 @@ type DBI interface {
 	// Soft delete row by setting value of deleted column to TRUE
 	SoftDelete(model Model) (interface{}, error)
 
+	// DeleteQuery deletes table rows that match the query provided.
+	DeleteQuery(query QueryBuilder) error
+
 	// Find returns the row object with the provided id, or returns nil if not
 	// found.
 	Find(id uuid.UUID, table Table) (interface{}, error)
@@ -351,4 +354,11 @@ func (q dbi) Query(query QueryBuilder, output Models) (int, error) {
 	err = q.RawQuery(query.Table, query.buildQuery(), query.args, output)
 
 	return count, err
+}
+
+func (q dbi) DeleteQuery(query QueryBuilder) error {
+	ensureTx(q.tx)
+	queryStr := q.tx.Rebind(query.buildQuery())
+	_, err := q.tx.Exec(queryStr, query.args...)
+	return err
 }
