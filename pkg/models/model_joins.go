@@ -13,7 +13,9 @@ var (
 		return &PerformerScene{}
 	})
 
-	performerSceneTable = scenePerformerTable.Inverse(performerJoinKey)
+	performerSceneTable = database.NewTableJoin(sceneTable, "scene_performers", performerJoinKey, func() interface{} {
+		return &PerformerScene{}
+	})
 
 	sceneTagTable = database.NewTableJoin(sceneTable, "scene_tags", sceneJoinKey, func() interface{} {
 		return &SceneTag{}

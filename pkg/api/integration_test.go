@@ -436,3 +436,115 @@ func (s *testRunner) verifyEditTargetType(targetType string, edit *models.Edit) 
 		s.fieldMismatch(targetType, edit.TargetType, "TargetType")
 	}
 }
+
+func (s *testRunner) createTestPerformerEdit(operation models.OperationEnum, detailsInput *models.PerformerEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+	s.t.Helper()
+
+	if editInput == nil {
+		input := models.EditInput{
+			Operation: operation,
+		}
+		editInput = &input
+	}
+
+	if detailsInput == nil {
+		name := s.generatePerformerName()
+		input := models.PerformerEditDetailsInput{
+			Name: &name,
+		}
+		detailsInput = &input
+	}
+
+	performerEditInput := models.PerformerEditInput{
+		Edit:    editInput,
+		Details: detailsInput,
+	}
+
+	createdEdit, err := s.resolver.Mutation().PerformerEdit(s.ctx, performerEditInput)
+
+	if err != nil {
+		s.t.Errorf("Error creating edit: %s", err.Error())
+		return nil, err
+	}
+
+	return createdEdit, nil
+}
+
+func (s *testRunner) getEditPerformerDetails(input *models.Edit) *models.PerformerEdit {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	details, _ := r.Details(s.ctx, input)
+	performerDetails := details.(*models.PerformerEdit)
+	return performerDetails
+}
+
+func (s *testRunner) getEditPerformerTarget(input *models.Edit) *models.Performer {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	target, _ := r.Target(s.ctx, input)
+	performerTarget := target.(*models.Performer)
+	return performerTarget
+}
+
+func (s *testRunner) createPerformerEditDetailsInput(input *models.Edit) *models.PerformerEditDetailsInput {
+	name := s.generatePerformerName()
+	disambiguation := "Dis Ambiguation"
+	gender := models.GenderEnumFemale
+	ethnicity := models.EthnicityEnumCaucasian
+	eyecolor := models.EyeColorEnumBlue
+	haircolor := models.HairColorEnumAuburn
+	country := "Some Country"
+	height := 160
+	hip := 23
+	waist := 24
+	band := 25
+	cup := "DD"
+	breasttype := models.BreastTypeEnumNatural
+	careerstart := 2019
+	careerend := 2020
+	tattoodesc := "Tatto Desc"
+
+	return &models.PerformerEditDetailsInput{
+		Name:           &name,
+		Disambiguation: &disambiguation,
+		Aliases:        []string{"Alias1"},
+		Gender:         &gender,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Birthdate: &models.FuzzyDateInput{
+			Date:     "2000-02-03",
+			Accuracy: models.DateAccuracyEnumYear,
+		},
+		Ethnicity: &ethnicity,
+		Country:   &country,
+		EyeColor:  &eyecolor,
+		HairColor: &haircolor,
+		Height:    &height,
+		Measurements: &models.MeasurementsInput{
+			Hip:      &hip,
+			Waist:    &waist,
+			BandSize: &band,
+			CupSize:  &cup,
+		},
+		BreastType:      &breasttype,
+		CareerStartYear: &careerstart,
+		CareerEndYear:   &careerend,
+		Tattoos: []*models.BodyModification{
+			{
+				Location:    "Wrist",
+				Description: &tattoodesc,
+			},
+		},
+		Piercings: []*models.BodyModification{
+			{
+				Location: "Ears",
+			},
+		},
+	}
+}

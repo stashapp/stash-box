@@ -484,7 +484,7 @@ func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldTargetID uuid.UUID, ne
 	// Insert new performers for any scenes that have the old performers
 	query := `INSERT INTO scene_performers (scene_id, performer_id)
             SELECT scene_id, ? 
-            FROM scene_performers WHERE tag_id = ?
+            FROM scene_performers WHERE performer_id = ?
             ON CONFLICT DO NOTHING`
 	args := []interface{}{newTargetID, oldTargetID}
 	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
@@ -612,6 +612,50 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 			return nil, err
 		}
 		if err := qb.UpdateAliases(updatedPerformer.ID, currentAliases); err != nil {
+			return nil, err
+		}
+
+		currentTattoos, err := qb.GetTattoos(updatedPerformer.ID)
+		if err != nil {
+			return nil, err
+		}
+		newTattoos := CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedTattoos)
+		oldTattoos := CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedTattoos)
+
+		if err := ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos); err != nil {
+			return nil, err
+		}
+		if err := qb.UpdateTattoos(updatedPerformer.ID, currentTattoos); err != nil {
+			return nil, err
+		}
+
+		currentPiercings, err := qb.GetPiercings(updatedPerformer.ID)
+		if err != nil {
+			return nil, err
+		}
+		newPiercings := CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedPiercings)
+		oldPiercings := CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedPiercings)
+
+		if err := ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings); err != nil {
+			return nil, err
+		}
+		if err := qb.UpdatePiercings(updatedPerformer.ID, currentPiercings); err != nil {
+			return nil, err
+		}
+
+		urls, err := qb.GetUrls(updatedPerformer.ID)
+		currentUrls := CreatePerformerUrls(updatedPerformer.ID, urls)
+		if err != nil {
+			return nil, err
+		}
+		newUrls := CreatePerformerUrls(updatedPerformer.ID, data.New.AddedUrls)
+		oldUrls := CreatePerformerUrls(updatedPerformer.ID, data.New.RemovedUrls)
+
+		if err := ProcessSlice(&currentUrls, &newUrls, &oldUrls); err != nil {
+			return nil, err
+		}
+
+		if err := qb.UpdateUrls(updatedPerformer.ID, currentUrls); err != nil {
 			return nil, err
 		}
 

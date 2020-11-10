@@ -265,6 +265,7 @@ type EditSliceValue interface {
 
 type EditSlice interface {
 	Each(fn func(interface{}))
+	EachPtr(fn func(interface{}))
 	Add(o interface{})
 	Remove(v string)
 }
@@ -286,12 +287,12 @@ func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice) error {
 		idMap[id] = false
 	})
 
-	added.Each(func(v interface{}) {
+	added.EachPtr(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
 		if idMap[id] {
 			err = errors.New("Invalid addition. ID already exists '" + id + "'")
 		}
-		current.Add(id)
+		current.Add(v)
 		idMap[id] = true
 	})
 
