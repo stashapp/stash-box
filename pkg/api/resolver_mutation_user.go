@@ -353,7 +353,7 @@ func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantIn
 	return ret, nil
 }
 
-func (r *mutationResolver) RepealInvite(ctx context.Context, input models.RescindInviteInput) (int, error) {
+func (r *mutationResolver) RevokeInvite(ctx context.Context, input models.RevokeInviteInput) (int, error) {
 	if err := validateManageInvites(ctx); err != nil {
 		return 0, err
 	}
@@ -371,7 +371,7 @@ func (r *mutationResolver) RepealInvite(ctx context.Context, input models.Rescin
 		}
 
 		// log the operation
-		logger.Userf(currentUser.Name, "RepealInvite", "- %d to %s = %d", input.Amount, userID.String(), ret)
+		logger.Userf(currentUser.Name, "RevokeInvite", "- %d to %s = %d", input.Amount, userID.String(), ret)
 
 		return nil
 	})

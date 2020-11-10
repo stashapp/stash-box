@@ -81,7 +81,7 @@ input GrantInviteInput {
   amount: Int!
 }
 
-input RescindInviteInput {
+input RevokeInviteInput {
   user_id: ID!
   amount: Int!
 }
