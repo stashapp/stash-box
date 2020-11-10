@@ -7,51 +7,48 @@ import { useHistory, useLocation } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
-import { ActivateNewUserMutation, ActivateNewUserMutationVariables } from "src/definitions/ActivateNewUserMutation";
+import { ChangePasswordMutation, ChangePasswordMutationVariables } from "src/definitions/ChangePasswordMutation";
 import { Form } from "react-bootstrap";
 
-const ActivateNewUser = loader("src/mutations/ActivateNewUser.gql");
+const ChangePassword = loader("src/mutations/ChangePassword.gql");
 
 const schema = yup.object().shape({
-  name: yup.string().required("Username is required"),
   email: yup.string().email().required("Email is required"),
-  activationKey: yup.string().required("Activation Key is required"),
+  resetKey: yup.string().required("Reset Key is required"),
   password: yup.string().required("Password is required")
 });
-type ActivateNewUserFormData = yup.InferType<typeof schema>;
+type ResetPasswordFormData = yup.InferType<typeof schema>;
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-const ActivateNewUserPage: React.FC = () => {
-  const query = useQuery();
+const ResetPassword: React.FC = () => {
   const history = useHistory();
+  const query = useQuery();
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
-  const { register, handleSubmit, errors } = useForm<ActivateNewUserFormData>({
+  const { register, handleSubmit, errors } = useForm<ResetPasswordFormData>({
     resolver: yupResolver(schema),
   });
 
-  const [activateNewUser] = useMutation<
-    ActivateNewUserMutation,
-    ActivateNewUserMutationVariables
-  >(ActivateNewUser);
+  const [changePassword] = useMutation<
+    ChangePasswordMutation,
+    ChangePasswordMutationVariables
+  >(ChangePassword);
 
   if (Auth.authenticated) history.push("/");
 
-  const onSubmit = (formData: ActivateNewUserFormData) => {
+  const onSubmit = (formData: ResetPasswordFormData) => {
     const userData = {
-      name: formData.name,
-      email: formData.email,
-      activation_key: formData.activationKey,
-      password: formData.password
+      reset_key: formData.resetKey,
+      new_password: formData.password
     };
     setSubmitError(undefined);
-    activateNewUser({ variables: { input: userData } }).then(
+    changePassword({ variables: { userData } }).then(
       () => {
-          history.push("/login");
+        history.push("/login");
       }
     ).catch(err => {
       if (err && err.message) {
@@ -64,22 +61,9 @@ const ActivateNewUserPage: React.FC = () => {
     <div className="LoginPrompt mx-auto d-flex">
       <form className="align-self-center col-8 mx-auto" onSubmit={handleSubmit(onSubmit)}>
         <Form.Control type="hidden" name="email" value={query.get("email") ?? ""} ref={register} />
-        <Form.Control type="hidden" name="activationKey" value={query.get("key") ?? ""} ref={register} />
-
-        <label className="row" htmlFor="name">
-          <span className="col-4">Username: </span>
-          <input
-            className={cx("col-8", { "is-invalid": errors?.name })}
-            name="name"
-            type="text"
-            placeholder="Username"
-            ref={register} 
-          />
-          <div className="invalid-feedback">{errors?.name?.message}</div>
-        </label>
-
+        <Form.Control type="hidden" name="resetKey" value={query.get("key") ?? ""} ref={register} />
         <label className="row" htmlFor="password">
-          <span className="col-4">Password: </span>
+          <span className="col-4">New Password: </span>
           <input
             className={cx("col-8", { "is-invalid": errors?.password })}
             name="password"
@@ -96,7 +80,7 @@ const ActivateNewUserPage: React.FC = () => {
                 type="submit"
                 className="register-button btn btn-primary"
               >
-                Create Account
+                Set Password
               </button>
             </div>
           </div>
@@ -109,4 +93,4 @@ const ActivateNewUserPage: React.FC = () => {
   );
 };
 
-export default ActivateNewUserPage;
+export default ResetPassword;

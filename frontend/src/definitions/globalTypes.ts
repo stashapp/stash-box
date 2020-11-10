@@ -310,6 +310,10 @@ export interface QuerySpec {
   direction?: SortDirectionEnum | null;
 }
 
+export interface ResetPasswordInput {
+  email: string;
+}
+
 export interface RevokeInviteInput {
   user_id: string;
   amount: number;

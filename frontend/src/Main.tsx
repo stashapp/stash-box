@@ -28,11 +28,12 @@ const Main: React.FC = ({ children }) => {
     onError: () => setUser(null),
   });
 
-  function noLogin() {
-    return history.location.pathname === "/activate";
-  }
-
   useEffect(() => {
+    function noLogin() {
+      return history.location.pathname === "/activate" ||
+        history.location.pathname === "/resetPassword";
+    }
+
     if (user === null) {
       if (!noLogin()) {
         history.push("/login");

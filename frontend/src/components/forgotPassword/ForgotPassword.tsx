@@ -5,48 +5,41 @@ import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
-import { NewUserMutation, NewUserMutationVariables } from "src/definitions/NewUserMutation";
 import * as yup from "yup";
 import cx from "classnames";
+import { ResetPasswordMutation, ResetPasswordMutationVariables } from "src/definitions/ResetPasswordMutation";
 
-const NewUser = loader("src/mutations/NewUser.gql");
+const ResetPassword = loader("src/mutations/ResetPassword.gql");
 
 const schema = yup.object().shape({
   email: yup.string().email().required("Email is required"),
-  inviteKey: yup
-    .string(),
 });
-type RegisterFormData = yup.InferType<typeof schema>;
+type ResetPasswordFormData = yup.InferType<typeof schema>;
 
-const Register: React.FC = () => {
+const ForgotPassword: React.FC = () => {
   const history = useHistory();
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
-  const { register, handleSubmit, errors } = useForm<RegisterFormData>({
+  const { register, handleSubmit, errors } = useForm<ResetPasswordFormData>({
     resolver: yupResolver(schema),
   });
 
-  const [newUser] = useMutation<
-    NewUserMutation,
-    NewUserMutationVariables
-  >(NewUser);
+  const [resetPassword] = useMutation<
+    ResetPasswordMutation,
+    ResetPasswordMutationVariables
+  >(ResetPassword);
 
   if (Auth.authenticated) history.push("/");
 
-  const onSubmit = (formData: RegisterFormData) => {
+  const onSubmit = (formData: ResetPasswordFormData) => {
     const userData = {
       email: formData.email,
-      invite_key: formData.inviteKey,
     };
     setSubmitError(undefined);
-    newUser({ variables: { input: userData } }).then(
-      (response) => {
-        if (response.data?.newUser) {
-          history.push(`/activate?email=${formData.email}&key=${response.data.newUser}`);
-        } else {
-          history.push("/login");
-        }
+    resetPassword({ variables: { input: userData } }).then(
+      () => {
+        history.push("/login");
       }
     ).catch(err => {
       if (err && err.message) {
@@ -69,17 +62,6 @@ const Register: React.FC = () => {
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </label>
-        <label className="row" htmlFor="inviteKey">
-          <span className="col-4">Invite Key: </span>
-          <input
-            className={cx("col-8", { "is-invalid": errors?.inviteKey })}
-            name="inviteKey"
-            type="text"
-            placeholder="Invite Key"
-            ref={register} 
-          />
-          <div className="invalid-feedback">{errors?.inviteKey?.message}</div>
-        </label>
         <div className="row">
           <div className="col-3 offset-9 d-flex justify-content-end pr-0">
             <div>
@@ -87,7 +69,7 @@ const Register: React.FC = () => {
                 type="submit"
                 className="register-button btn btn-primary"
               >
-                Register
+                Reset Password
               </button>
             </div>
           </div>
@@ -100,4 +82,4 @@ const Register: React.FC = () => {
   );
 };
 
-export default Register;
+export default ForgotPassword;
