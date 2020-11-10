@@ -63,7 +63,6 @@ func (m *Manager) Send(email, subject, body string) error {
 	from := "From: " + config.GetEmailFrom()
 	to := "To: " + email
 
-	// TODO - get host URL from config
 	msg := []byte(from + endLine + to + endLine + subject + endLine + endLine + body + endLine)
 
 	err = smtp.SendMail(config.GetEmailHost(), m.makeAuth(), config.GetEmailFrom(), []string{email}, msg)

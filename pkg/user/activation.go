@@ -29,6 +29,18 @@ func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) error {
 		return err
 	}
 
+	// if existing activation exists with the same email, then re-create it
+	a, err := aqb.FindByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	if a != nil {
+		if err := aqb.Destroy(a.ID); err != nil {
+			return err
+		}
+	}
+
 	inviteID, err := validateInviteKey(&iqb, &aqb, inviteKey)
 	if err != nil {
 		return err
@@ -56,15 +68,6 @@ func validateExistingEmail(f models.UserFinder, aqb models.PendingActivationFind
 	}
 
 	if u != nil {
-		return errors.New("email already in use")
-	}
-
-	a, err := aqb.FindByEmail(email)
-	if err != nil {
-		return err
-	}
-
-	if a != nil {
 		return errors.New("email already in use")
 	}
 
