@@ -31,6 +31,7 @@ import Edits from "./components/edits";
 import Register from "./components/register";
 
 import "./App.scss";
+import ActivateNewUserPage from "./components/activateNewUser/ActivateNewUser";
 
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
@@ -123,6 +124,9 @@ const App: React.FC = () => (
             </Route>
             <Route exact path="/register">
               <Register />
+            </Route>
+            <Route exact path="/activate">
+              <ActivateNewUserPage />
             </Route>
           </Switch>
         </Main>

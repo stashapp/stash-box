@@ -28,8 +28,16 @@ const Main: React.FC = ({ children }) => {
     onError: () => setUser(null),
   });
 
+  function noLogin() {
+    return history.location.pathname === "/activate";
+  }
+
   useEffect(() => {
-    if (user === null) history.push("/login");
+    if (user === null) {
+      if (!noLogin()) {
+        history.push("/login");
+      }
+    }
     else if (prevUser.current === null) history.push("/");
     prevUser.current = user;
   }, [user, history]);

@@ -41,8 +41,12 @@ const Register: React.FC = () => {
     };
     setSubmitError(undefined);
     newUser({ variables: { input: userData } }).then(
-      () => {
+      (response) => {
+        if (response.data?.newUser) {
+          history.push(`/activate?email=${formData.email}&key=${response.data.newUser}`);
+        } else {
           history.push("/login");
+        }
       }
     ).catch(err => {
       if (err && err.message) {
