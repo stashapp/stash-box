@@ -6,5 +6,11 @@ query User($name: String!) {
     roles
     api_key
     api_calls
+    invited_by {
+      id
+      name
+    }
+    invite_tokens
+    active_invite_codes
   }
 }

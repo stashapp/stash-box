@@ -1,0 +1,3 @@
+mutation RescindInviteCodeMutation($code: String!) {
+    rescindInviteCode(code: $code)
+}

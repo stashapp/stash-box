@@ -53,6 +53,7 @@ export enum EyeColorEnum {
 
 export enum FingerprintAlgorithm {
   MD5 = "MD5",
+  OSHASH = "OSHASH",
 }
 
 export enum GenderEnum {
@@ -85,6 +86,8 @@ export enum OperationEnum {
 export enum RoleEnum {
   ADMIN = "ADMIN",
   EDIT = "EDIT",
+  INVITE = "INVITE",
+  MANAGE_INVITES = "MANAGE_INVITES",
   MODIFY = "MODIFY",
   READ = "READ",
   VOTE = "VOTE",
@@ -176,6 +179,11 @@ export interface FingerprintInput {
 export interface FuzzyDateInput {
   date: any;
   accuracy: DateAccuracyEnum;
+}
+
+export interface GrantInviteInput {
+  user_id: string;
+  amount: number;
 }
 
 export interface HairColorCriterionInput {
@@ -290,6 +298,11 @@ export interface QuerySpec {
   direction?: SortDirectionEnum | null;
 }
 
+export interface RevokeInviteInput {
+  user_id: string;
+  amount: number;
+}
+
 export interface SceneCreateInput {
   title?: string | null;
   details?: string | null;
@@ -395,8 +408,9 @@ export interface URLInput {
 }
 
 export interface UserChangePasswordInput {
-  existing_password: string;
+  existing_password?: string | null;
   new_password: string;
+  reset_key?: string | null;
 }
 
 export interface UserCreateInput {
@@ -404,6 +418,7 @@ export interface UserCreateInput {
   password: string;
   roles: RoleEnum[];
   email: string;
+  invited_by_id?: string | null;
 }
 
 export interface UserDestroyInput {
