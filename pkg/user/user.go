@@ -12,6 +12,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/models"
 	"github.com/stashapp/stashdb/pkg/utils"
 )
@@ -443,4 +444,17 @@ func ChangePassword(tx *sqlx.Tx, userID string, currentPassword string, newPassw
 
 	user, err = qb.Update(*user)
 	return err
+}
+
+func getDefaultUserRoles() []models.RoleEnum {
+	roleStr := config.GetDefaultUserRoles()
+	ret := []models.RoleEnum{}
+	for _, v := range roleStr {
+		e := models.RoleEnum(v)
+		if e.IsValid() {
+			ret = append(ret, e)
+		}
+	}
+
+	return ret
 }

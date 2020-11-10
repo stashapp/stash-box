@@ -201,7 +201,18 @@ func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInpu
 }
 
 func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.ActivateNewUserInput) (*models.User, error) {
-	panic("not implemented")
+	var ret *models.User
+	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+		var txnErr error
+		ret, txnErr = user.ActivateNewUser(txn.GetTx(), input.Name, input.Email, input.ActivationKey, input.Password)
+		return txnErr
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (string, error) {

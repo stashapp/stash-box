@@ -12,8 +12,7 @@ import (
 )
 
 func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) error {
-	err := ClearExpiredActivations(tx)
-	if err != nil {
+	if err := ClearExpiredActivations(tx); err != nil {
 		return err
 	}
 
@@ -22,8 +21,11 @@ func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) error {
 	aqb := models.NewPendingActivationQueryBuilder(tx)
 	iqb := models.NewInviteCodeQueryBuilder(tx)
 
-	err = validateExistingEmail(&uqb, &aqb, email)
-	if err != nil {
+	if err := validateUserEmail(email); err != nil {
+		return err
+	}
+
+	if err := validateExistingEmail(&uqb, &aqb, email); err != nil {
 		return err
 	}
 
@@ -40,8 +42,7 @@ func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) error {
 		return err
 	}
 
-	err = sendNewUserEmail(em, email, key)
-	if err != nil {
+	if err := sendNewUserEmail(em, email, key); err != nil {
 		return err
 	}
 
@@ -147,4 +148,84 @@ func sendNewUserEmail(em *email.Manager, email, activationKey string) error {
 	body := "Please click the following link to activate your account: " + link
 
 	return em.Send(email, subject, body)
+}
+
+func ActivateNewUser(tx *sqlx.Tx, name, email, activationKey, password string) (*models.User, error) {
+	if err := ClearExpiredActivations(tx); err != nil {
+		return nil, err
+	}
+
+	id, err := uuid.FromString(activationKey)
+	if err != nil {
+		return nil, err
+	}
+
+	uqb := models.NewUserQueryBuilder(tx)
+	aqb := models.NewPendingActivationQueryBuilder(tx)
+	iqb := models.NewInviteCodeQueryBuilder(tx)
+
+	a, err := aqb.Find(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if a == nil {
+		return nil, errors.New("invalid activation key")
+	}
+
+	if a.Email != email {
+		return nil, errors.New("mismatched email address")
+	}
+
+	// check expiry
+
+	i, err := iqb.Find(a.InviteKey.UUID)
+	if err != nil {
+		return nil, err
+	}
+
+	if i == nil {
+		return nil, errors.New("cannot find invite key")
+	}
+
+	invitedBy := i.GeneratedBy.String()
+
+	createInput := models.UserCreateInput{
+		Name:        name,
+		Email:       email,
+		Password:    password,
+		InvitedByID: &invitedBy,
+		Roles:       getDefaultUserRoles(),
+	}
+
+	if err := ValidateCreate(createInput); err != nil {
+		return nil, err
+	}
+
+	// ensure user name does not already exist
+	u, err := uqb.FindByName(name)
+	if err != nil {
+		return nil, err
+	}
+
+	if u != nil {
+		return nil, errors.New("username already used")
+	}
+
+	ret, err := Create(tx, createInput)
+	if err != nil {
+		return nil, err
+	}
+
+	// delete the activation
+	if err := aqb.Destroy(id); err != nil {
+		return nil, err
+	}
+
+	// delete the invite key
+	if err := iqb.Destroy(a.InviteKey.UUID); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

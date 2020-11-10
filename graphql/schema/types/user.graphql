@@ -37,6 +37,7 @@ input UserCreateInput {
   password: String!
   roles: [RoleEnum!]!
   email: String!
+  invited_by_id: ID
 }
 
 input UserUpdateInput {

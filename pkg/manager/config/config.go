@@ -33,6 +33,10 @@ const EmailCooldown = "email_cooldown"
 const requireInviteDefault = true
 const requireActivationDefault = true
 
+const DefaultUserRoles = "default_user_roles"
+
+var defaultUserRolesDefault = []string{"READ", "VOTE", "EDIT"}
+
 // 2 hours
 const activationExpiryDefault = 2 * 60 * 60
 
@@ -147,6 +151,17 @@ func GetEmailCooldown() time.Duration {
 	}
 
 	return time.Duration(ret * int(time.Second))
+}
+
+// GetDefaultUserRoles returns the default roles assigned to a new user
+// when created via registration.
+func GetDefaultUserRoles() []string {
+	ret := defaultUserRolesDefault
+	if viper.IsSet(DefaultUserRoles) {
+		ret = viper.GetStringSlice(DefaultUserRoles)
+	}
+
+	return ret
 }
 
 func GetEmailHost() string {

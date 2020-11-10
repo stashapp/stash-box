@@ -45,7 +45,12 @@ func (r *userResolver) UnsuccessfulVotes(ctx context.Context, obj *models.User) 
 }
 
 func (r *userResolver) InvitedBy(ctx context.Context, obj *models.User) (*models.User, error) {
-	// TODO
+	invitedBy := obj.InvitedByID
+	if invitedBy.Valid {
+		qb := models.NewUserQueryBuilder(nil)
+		return qb.Find(invitedBy.UUID)
+	}
+
 	return nil, nil
 }
 

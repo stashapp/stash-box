@@ -9,6 +9,7 @@ import (
 )
 
 type PendingActivationFinder interface {
+	Find(id uuid.UUID) (*PendingActivation, error)
 	FindByEmail(email string) (*PendingActivation, error)
 	FindByKey(key string) (*PendingActivation, error)
 }
