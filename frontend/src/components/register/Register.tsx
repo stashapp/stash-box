@@ -5,7 +5,10 @@ import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
-import { NewUserMutation, NewUserMutationVariables } from "src/definitions/NewUserMutation";
+import {
+  NewUserMutation,
+  NewUserMutationVariables,
+} from "src/definitions/NewUserMutation";
 import * as yup from "yup";
 import cx from "classnames";
 
@@ -13,8 +16,7 @@ const NewUser = loader("src/mutations/NewUser.gql");
 
 const schema = yup.object().shape({
   email: yup.string().email().required("Email is required"),
-  inviteKey: yup
-    .string(),
+  inviteKey: yup.string(),
 });
 type RegisterFormData = yup.InferType<typeof schema>;
 
@@ -27,10 +29,9 @@ const Register: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const [newUser] = useMutation<
-    NewUserMutation,
-    NewUserMutationVariables
-  >(NewUser);
+  const [newUser] = useMutation<NewUserMutation, NewUserMutationVariables>(
+    NewUser
+  );
 
   if (Auth.authenticated) history.push("/");
 
@@ -40,24 +41,29 @@ const Register: React.FC = () => {
       invite_key: formData.inviteKey,
     };
     setSubmitError(undefined);
-    newUser({ variables: { input: userData } }).then(
-      (response) => {
+    newUser({ variables: { input: userData } })
+      .then((response) => {
         if (response.data?.newUser) {
-          history.push(`/activate?email=${formData.email}&key=${response.data.newUser}`);
+          history.push(
+            `/activate?email=${formData.email}&key=${response.data.newUser}`
+          );
         } else {
           history.push("/login");
         }
-      }
-    ).catch(err => {
-      if (err && err.message) {
-        setSubmitError(err.message as string)
-      }
-    });
+      })
+      .catch((err) => {
+        if (err && err.message) {
+          setSubmitError(err.message as string);
+        }
+      });
   };
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
-      <form className="align-self-center col-8 mx-auto" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        className="align-self-center col-8 mx-auto"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <label className="row" htmlFor="email">
           <span className="col-4">Email: </span>
           <input
@@ -65,7 +71,7 @@ const Register: React.FC = () => {
             name="email"
             type="email"
             placeholder="Email"
-            ref={register} 
+            ref={register}
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </label>
@@ -76,17 +82,14 @@ const Register: React.FC = () => {
             name="inviteKey"
             type="text"
             placeholder="Invite Key"
-            ref={register} 
+            ref={register}
           />
           <div className="invalid-feedback">{errors?.inviteKey?.message}</div>
         </label>
         <div className="row">
           <div className="col-3 offset-9 d-flex justify-content-end pr-0">
             <div>
-              <button
-                type="submit"
-                className="register-button btn btn-primary"
-              >
+              <button type="submit" className="register-button btn btn-primary">
                 Register
               </button>
             </div>

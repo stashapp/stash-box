@@ -7,7 +7,10 @@ import { useHistory, useLocation } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
-import { ActivateNewUserMutation, ActivateNewUserMutationVariables } from "src/definitions/ActivateNewUserMutation";
+import {
+  ActivateNewUserMutation,
+  ActivateNewUserMutationVariables,
+} from "src/definitions/ActivateNewUserMutation";
 import { Form } from "react-bootstrap";
 
 const ActivateNewUser = loader("src/mutations/ActivateNewUser.gql");
@@ -16,7 +19,7 @@ const schema = yup.object().shape({
   name: yup.string().required("Username is required"),
   email: yup.string().email().required("Email is required"),
   activationKey: yup.string().required("Activation Key is required"),
-  password: yup.string().required("Password is required")
+  password: yup.string().required("Password is required"),
 });
 type ActivateNewUserFormData = yup.InferType<typeof schema>;
 
@@ -46,25 +49,38 @@ const ActivateNewUserPage: React.FC = () => {
       name: formData.name,
       email: formData.email,
       activation_key: formData.activationKey,
-      password: formData.password
+      password: formData.password,
     };
     setSubmitError(undefined);
-    activateNewUser({ variables: { input: userData } }).then(
-      () => {
-          history.push("/login");
-      }
-    ).catch(err => {
-      if (err && err.message) {
-        setSubmitError(err.message as string)
-      }
-    });
+    activateNewUser({ variables: { input: userData } })
+      .then(() => {
+        history.push("/login");
+      })
+      .catch((err) => {
+        if (err && err.message) {
+          setSubmitError(err.message as string);
+        }
+      });
   };
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
-      <form className="align-self-center col-8 mx-auto" onSubmit={handleSubmit(onSubmit)}>
-        <Form.Control type="hidden" name="email" value={query.get("email") ?? ""} ref={register} />
-        <Form.Control type="hidden" name="activationKey" value={query.get("key") ?? ""} ref={register} />
+      <form
+        className="align-self-center col-8 mx-auto"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        <Form.Control
+          type="hidden"
+          name="email"
+          value={query.get("email") ?? ""}
+          ref={register}
+        />
+        <Form.Control
+          type="hidden"
+          name="activationKey"
+          value={query.get("key") ?? ""}
+          ref={register}
+        />
 
         <label className="row" htmlFor="name">
           <span className="col-4">Username: </span>
@@ -73,7 +89,7 @@ const ActivateNewUserPage: React.FC = () => {
             name="name"
             type="text"
             placeholder="Username"
-            ref={register} 
+            ref={register}
           />
           <div className="invalid-feedback">{errors?.name?.message}</div>
         </label>
@@ -85,17 +101,14 @@ const ActivateNewUserPage: React.FC = () => {
             name="password"
             type="password"
             placeholder="Password"
-            ref={register} 
+            ref={register}
           />
           <div className="invalid-feedback">{errors?.password?.message}</div>
         </label>
         <div className="row">
           <div className="col-3 offset-9 d-flex justify-content-end pr-0">
             <div>
-              <button
-                type="submit"
-                className="register-button btn btn-primary"
-              >
+              <button type="submit" className="register-button btn btn-primary">
                 Create Account
               </button>
             </div>

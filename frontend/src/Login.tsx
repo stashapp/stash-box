@@ -59,10 +59,7 @@ const Login: React.FC = () => {
           </div>
           <div className="col-3 d-flex justify-content-end pr-0">
             <div>
-              <button
-                type="submit"
-                className="login-button btn btn-primary"
-              >
+              <button type="submit" className="login-button btn btn-primary">
                 Login
               </button>
             </div>
