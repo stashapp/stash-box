@@ -113,6 +113,13 @@ export enum VoteStatusEnum {
   REJECTED = "REJECTED",
 }
 
+export interface ActivateNewUserInput {
+  name: string;
+  email: string;
+  activation_key: string;
+  password: string;
+}
+
 export interface ApplyEditInput {
   id: string;
 }
@@ -211,6 +218,11 @@ export interface MeasurementsInput {
 export interface MultiIDCriterionInput {
   value?: string[] | null;
   modifier: CriterionModifier;
+}
+
+export interface NewUserInput {
+  email: string;
+  invite_key?: string | null;
 }
 
 export interface PerformerAppearanceInput {
