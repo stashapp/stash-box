@@ -11,9 +11,11 @@ import (
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
-func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) error {
+// NewUser registers a new user. It returns the activation key only if
+// email verification is not required, otherwise it returns nil.
+func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) (*string, error) {
 	if err := ClearExpiredActivations(tx); err != nil {
-		return err
+		return nil, err
 	}
 
 	// ensure user or pending activation with email does not already exist
@@ -22,43 +24,46 @@ func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) error {
 	iqb := models.NewInviteCodeQueryBuilder(tx)
 
 	if err := validateUserEmail(email); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := validateExistingEmail(&uqb, &aqb, email); err != nil {
-		return err
+		return nil, err
 	}
 
 	// if existing activation exists with the same email, then re-create it
 	a, err := aqb.FindByEmail(email)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if a != nil {
 		if err := aqb.Destroy(a.ID); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	inviteID, err := validateInviteKey(&iqb, &aqb, inviteKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	// TODO - if activation not required, go directly to create user
 
 	// generate an activation key and email
 	key, err := generateActivationKey(&aqb, email, inviteID)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	// if activation is not required, then return the activation key
+	if !config.GetRequireActivation() {
+		return &key, nil
 	}
 
 	if err := sendNewUserEmail(em, email, key); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return nil, nil
 }
 
 func validateExistingEmail(f models.UserFinder, aqb models.PendingActivationFinder, email string) error {

@@ -183,21 +183,24 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 	return true, nil
 }
 
-func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInput) (bool, error) {
+func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInput) (*string, error) {
 	inviteKey := ""
 	if input.InviteKey != nil {
 		inviteKey = *input.InviteKey
 	}
 
+	var ret *string
 	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		return user.NewUser(txn.GetTx(), manager.GetInstance().EmailManager, input.Email, inviteKey)
+		var txnErr error
+		ret, txnErr = user.NewUser(txn.GetTx(), manager.GetInstance().EmailManager, input.Email, inviteKey)
+		return txnErr
 	})
 
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	return true, nil
+	return ret, nil
 }
 
 func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.ActivateNewUserInput) (*models.User, error) {
