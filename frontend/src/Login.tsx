@@ -47,12 +47,12 @@ const Login: React.FC = () => {
         <div className="row">
           <div className="col-9">
             <div>
-              <Link to={`/register`}>
+              <Link to="/register">
                 <small>Register</small>
               </Link>
             </div>
             <div>
-              <Link to={`/forgotPassword`}>
+              <Link to="/forgotPassword">
                 <small>Forgot Password</small>
               </Link>
             </div>
