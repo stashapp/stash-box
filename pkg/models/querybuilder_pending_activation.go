@@ -10,8 +10,8 @@ import (
 
 type PendingActivationFinder interface {
 	Find(id uuid.UUID) (*PendingActivation, error)
-	FindByEmail(email string) (*PendingActivation, error)
-	FindByKey(key string) (*PendingActivation, error)
+	FindByEmail(email string, activationType string) (*PendingActivation, error)
+	FindByInviteKey(key string, activationType string) (*PendingActivation, error)
 }
 
 type PendingActivationCreator interface {
@@ -59,10 +59,11 @@ func (qb *PendingActivationQueryBuilder) Find(id uuid.UUID) (*PendingActivation,
 	return qb.toModel(ret), err
 }
 
-func (qb *PendingActivationQueryBuilder) FindByEmail(email string) (*PendingActivation, error) {
-	query := `SELECT * FROM ` + pendingActivationTable + ` WHERE email = ?`
+func (qb *PendingActivationQueryBuilder) FindByEmail(email string, activationType string) (*PendingActivation, error) {
+	query := `SELECT * FROM ` + pendingActivationTable + ` WHERE email = ? AND type = ?`
 	var args []interface{}
 	args = append(args, email)
+	args = append(args, activationType)
 	output := PendingActivations{}
 	err := qb.dbi.RawQuery(pendingActivationDBTable, query, args, &output)
 	if err != nil {
@@ -75,10 +76,11 @@ func (qb *PendingActivationQueryBuilder) FindByEmail(email string) (*PendingActi
 	return nil, nil
 }
 
-func (qb *PendingActivationQueryBuilder) FindByKey(key string) (*PendingActivation, error) {
-	query := `SELECT * FROM ` + pendingActivationTable + ` WHERE invite_key = ?`
+func (qb *PendingActivationQueryBuilder) FindByInviteKey(key string, activationType string) (*PendingActivation, error) {
+	query := `SELECT * FROM ` + pendingActivationTable + ` WHERE invite_key = ? AND type = ?`
 	var args []interface{}
 	args = append(args, key)
+	args = append(args, activationType)
 	output := PendingActivations{}
 	err := qb.dbi.RawQuery(pendingActivationDBTable, query, args, &output)
 	if err != nil {

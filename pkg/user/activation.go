@@ -11,6 +11,8 @@ import (
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
+var ErrInvalidActivationKey = errors.New("invalid activation key")
+
 // NewUser registers a new user. It returns the activation key only if
 // email verification is not required, otherwise it returns nil.
 func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) (*string, error) {
@@ -32,7 +34,7 @@ func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) (*string, 
 	}
 
 	// if existing activation exists with the same email, then re-create it
-	a, err := aqb.FindByEmail(email)
+	a, err := aqb.FindByEmail(email, models.PendingActivationTypeNewUser)
 	if err != nil {
 		return nil, err
 	}
@@ -87,10 +89,7 @@ func validateInviteKey(iqb models.InviteKeyFinder, aqb models.PendingActivationF
 		}
 
 		var err error
-		ret.UUID, err = uuid.FromString(inviteKey)
-		if err != nil {
-			return ret, err
-		}
+		ret.UUID, _ = uuid.FromString(inviteKey)
 		ret.Valid = true
 
 		key, err := iqb.Find(ret.UUID)
@@ -103,7 +102,7 @@ func validateInviteKey(iqb models.InviteKeyFinder, aqb models.PendingActivationF
 		}
 
 		// ensure key isn't already used
-		a, err := aqb.FindByKey(inviteKey)
+		a, err := aqb.FindByInviteKey(inviteKey, models.PendingActivationTypeNewUser)
 		if err != nil {
 			return ret, err
 		}
@@ -163,10 +162,7 @@ func ActivateNewUser(tx *sqlx.Tx, name, email, activationKey, password string) (
 		return nil, err
 	}
 
-	id, err := uuid.FromString(activationKey)
-	if err != nil {
-		return nil, err
-	}
+	id, _ := uuid.FromString(activationKey)
 
 	uqb := models.NewUserQueryBuilder(tx)
 	aqb := models.NewPendingActivationQueryBuilder(tx)
@@ -177,12 +173,8 @@ func ActivateNewUser(tx *sqlx.Tx, name, email, activationKey, password string) (
 		return nil, err
 	}
 
-	if a == nil {
-		return nil, errors.New("invalid activation key")
-	}
-
-	if a.Email != email {
-		return nil, errors.New("mismatched email address")
+	if a == nil || a.Email != email || a.Type != models.PendingActivationTypeNewUser {
+		return nil, ErrInvalidActivationKey
 	}
 
 	// check expiry
@@ -236,4 +228,131 @@ func ActivateNewUser(tx *sqlx.Tx, name, email, activationKey, password string) (
 	}
 
 	return ret, nil
+}
+
+// ResetPassword generates an email to reset a users password.
+func ResetPassword(tx *sqlx.Tx, em *email.Manager, email string) error {
+	uqb := models.NewUserQueryBuilder(tx)
+	aqb := models.NewPendingActivationQueryBuilder(tx)
+
+	// ensure user exists
+	u, err := uqb.FindByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	if u == nil {
+		// return silently
+		return nil
+	}
+
+	// if existing activation exists with the same email, then re-create it
+	a, err := aqb.FindByEmail(email, models.PendingActivationTypeResetPassword)
+	if err != nil {
+		return err
+	}
+
+	if a != nil {
+		if err := aqb.Destroy(a.ID); err != nil {
+			return err
+		}
+	}
+
+	// generate an activation key and email
+	key, err := generateResetPasswordActivationKey(&aqb, email)
+	if err != nil {
+		return err
+	}
+
+	if err := sendResetPasswordEmail(em, email, key); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func generateResetPasswordActivationKey(aqb models.PendingActivationCreator, email string) (string, error) {
+	UUID, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+
+	currentTime := time.Now()
+
+	activation := models.PendingActivation{
+		ID:    UUID,
+		Email: email,
+		Time: models.SQLiteTimestamp{
+			Timestamp: currentTime,
+		},
+		Type: models.PendingActivationTypeResetPassword,
+	}
+
+	obj, err := aqb.Create(activation)
+	if err != nil {
+		return "", err
+	}
+
+	return obj.ID.String(), nil
+}
+
+func sendResetPasswordEmail(em *email.Manager, email, activationKey string) error {
+	subject := "Subject: Reset stash-box password"
+
+	link := config.GetHostURL() + "/resetPassword?email=" + email + "&key=" + activationKey
+	body := "Please click the following link to set your account password: " + link
+
+	return em.Send(email, subject, body)
+}
+
+func ActivateResetPassword(tx *sqlx.Tx, activationKey string, newPassword string) error {
+	if err := ClearExpiredActivations(tx); err != nil {
+		return err
+	}
+
+	id, _ := uuid.FromString(activationKey)
+
+	uqb := models.NewUserQueryBuilder(tx)
+	aqb := models.NewPendingActivationQueryBuilder(tx)
+
+	a, err := aqb.Find(id)
+	if err != nil {
+		return err
+	}
+
+	if a == nil || a.Type != models.PendingActivationTypeResetPassword {
+		return ErrInvalidActivationKey
+	}
+
+	user, err := uqb.FindByEmail(a.Email)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return errors.New("user does not exist")
+	}
+
+	err = validateUserPassword(user.Name, user.Email, newPassword)
+	if err != nil {
+		return err
+	}
+
+	err = user.SetPasswordHash(newPassword)
+	if err != nil {
+		return err
+	}
+	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+
+	user, err = uqb.Update(*user)
+	if err != nil {
+		return err
+	}
+
+	// delete the activation
+	if err := aqb.Destroy(id); err != nil {
+		return err
+	}
+
+	return nil
 }

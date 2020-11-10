@@ -153,13 +153,39 @@ func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string)
 }
 
 func (r *mutationResolver) ResetPassword(ctx context.Context, input models.ResetPasswordInput) (bool, error) {
-	panic("not implemented")
+	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+		return user.ResetPassword(txn.GetTx(), manager.GetInstance().EmailManager, input.Email)
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *mutationResolver) ChangePassword(ctx context.Context, input models.UserChangePasswordInput) (bool, error) {
 	currentUser := getCurrentUser(ctx)
+
+	if input.ResetKey != nil {
+		err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+			return user.ActivateResetPassword(txn.GetTx(), *input.ResetKey, input.NewPassword)
+		})
+
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+	}
+
+	// just setting password
 	if currentUser == nil {
 		return false, ErrUnauthorized
+	}
+
+	if input.ExistingPassword == nil {
+		return false, user.ErrCurrentPasswordIncorrect
 	}
 
 	// changing current user password
@@ -167,8 +193,6 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 	userID := userIDStr
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-
-	// TODO - handle password reset
 
 	err := user.ChangePassword(tx, userID, *input.ExistingPassword, input.NewPassword)
 	if err != nil {

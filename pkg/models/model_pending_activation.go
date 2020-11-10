@@ -17,7 +17,8 @@ var (
 )
 
 const (
-	PendingActivationTypeNewUser = "newUser"
+	PendingActivationTypeNewUser       = "newUser"
+	PendingActivationTypeResetPassword = "resetPassword"
 )
 
 type PendingActivation struct {
