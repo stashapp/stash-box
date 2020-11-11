@@ -3,14 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import {
-  GenderEnum,
-  DateAccuracyEnum,
-  HairColorEnum,
-  EyeColorEnum,
-  EthnicityEnum,
-  BreastTypeEnum,
-} from "./globalTypes";
+import { GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Performer

@@ -27,9 +27,7 @@ export interface Edit_findEdit_target_Tag {
   deleted: boolean;
 }
 
-export type Edit_findEdit_target =
-  | Edit_findEdit_target_Performer
-  | Edit_findEdit_target_Tag;
+export type Edit_findEdit_target = Edit_findEdit_target_Performer | Edit_findEdit_target_Tag;
 
 export interface Edit_findEdit_details_PerformerEdit {
   __typename: "PerformerEdit" | "SceneEdit" | "StudioEdit";
@@ -43,9 +41,7 @@ export interface Edit_findEdit_details_TagEdit {
   removed_aliases: string[] | null;
 }
 
-export type Edit_findEdit_details =
-  | Edit_findEdit_details_PerformerEdit
-  | Edit_findEdit_details_TagEdit;
+export type Edit_findEdit_details = Edit_findEdit_details_PerformerEdit | Edit_findEdit_details_TagEdit;
 
 export interface Edit_findEdit_merge_sources_Performer {
   __typename: "Performer" | "Scene" | "Studio";
@@ -59,9 +55,7 @@ export interface Edit_findEdit_merge_sources_Tag {
   deleted: boolean;
 }
 
-export type Edit_findEdit_merge_sources =
-  | Edit_findEdit_merge_sources_Performer
-  | Edit_findEdit_merge_sources_Tag;
+export type Edit_findEdit_merge_sources = Edit_findEdit_merge_sources_Performer | Edit_findEdit_merge_sources_Tag;
 
 export interface Edit_findEdit {
   __typename: "Edit";

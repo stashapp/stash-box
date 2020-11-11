@@ -3,12 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import {
-  TagEditInput,
-  TargetTypeEnum,
-  OperationEnum,
-  VoteStatusEnum,
-} from "./globalTypes";
+import { TagEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: TagEditMutation
@@ -32,9 +27,7 @@ export interface TagEditMutation_tagEdit_target_Tag {
   deleted: boolean;
 }
 
-export type TagEditMutation_tagEdit_target =
-  | TagEditMutation_tagEdit_target_Performer
-  | TagEditMutation_tagEdit_target_Tag;
+export type TagEditMutation_tagEdit_target = TagEditMutation_tagEdit_target_Performer | TagEditMutation_tagEdit_target_Tag;
 
 export interface TagEditMutation_tagEdit_details_PerformerEdit {
   __typename: "PerformerEdit" | "SceneEdit" | "StudioEdit";
@@ -48,9 +41,7 @@ export interface TagEditMutation_tagEdit_details_TagEdit {
   removed_aliases: string[] | null;
 }
 
-export type TagEditMutation_tagEdit_details =
-  | TagEditMutation_tagEdit_details_PerformerEdit
-  | TagEditMutation_tagEdit_details_TagEdit;
+export type TagEditMutation_tagEdit_details = TagEditMutation_tagEdit_details_PerformerEdit | TagEditMutation_tagEdit_details_TagEdit;
 
 export interface TagEditMutation_tagEdit_merge_sources_Performer {
   __typename: "Performer" | "Scene" | "Studio";
@@ -64,9 +55,7 @@ export interface TagEditMutation_tagEdit_merge_sources_Tag {
   deleted: boolean;
 }
 
-export type TagEditMutation_tagEdit_merge_sources =
-  | TagEditMutation_tagEdit_merge_sources_Performer
-  | TagEditMutation_tagEdit_merge_sources_Tag;
+export type TagEditMutation_tagEdit_merge_sources = TagEditMutation_tagEdit_merge_sources_Performer | TagEditMutation_tagEdit_merge_sources_Tag;
 
 export interface TagEditMutation_tagEdit {
   __typename: "Edit";

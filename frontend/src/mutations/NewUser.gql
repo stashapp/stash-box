@@ -1,0 +1,3 @@
+mutation NewUserMutation($input: NewUserInput!) {
+    newUser(input: $input)
+}

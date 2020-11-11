@@ -148,24 +148,24 @@ const schema = yup.object().shape({
   boobJob: yup
     .string()
     .transform(nullCheck)
-    .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type")
-    .nullable(),
+    .nullable()
+    .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
   country: yup.string().trim().transform(nullCheck).nullable(),
   ethnicity: yup
     .string()
     .transform(nullCheck)
-    .oneOf([...Object.keys(EthnicityEnum), null], "Invalid ethnicity")
-    .nullable(),
+    .nullable()
+    .oneOf([...Object.keys(EthnicityEnum), null], "Invalid ethnicity"),
   eye_color: yup
     .string()
     .transform(nullCheck)
-    .oneOf([null, ...Object.keys(EyeColorEnum)], "Invalid eye color")
-    .nullable(),
+    .nullable()
+    .oneOf([null, ...Object.keys(EyeColorEnum)], "Invalid eye color"),
   hair_color: yup
     .string()
     .transform(nullCheck)
-    .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color")
-    .nullable(),
+    .nullable()
+    .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
   tattoos: yup
     .array()
     .of(
