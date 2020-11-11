@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/manager/config"
+	"github.com/stashapp/stashdb/pkg/user"
 
 	"github.com/gorilla/sessions"
 )
@@ -29,9 +29,9 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	// authenticate the user
-	userID, err := manager.Authenticate(username, password)
+	userID, err := user.Authenticate(username, password)
 
-	if err == manager.ErrAccessDenied {
+	if err == user.ErrAccessDenied {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	} else if err != nil {

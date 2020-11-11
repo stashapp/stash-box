@@ -33,6 +33,10 @@ clean:
 generate:
 	go generate
 
+.PHONY: generate-ui
+generate-ui:
+	cd frontend && yarn generate
+
 .PHONY: generate-dataloaders
 generate-dataloaders:
 	cd pkg/dataloader; \

@@ -6,6 +6,11 @@ func (r RoleEnum) Implies(other RoleEnum) bool {
 		return true
 	}
 
+	// MANAGE_INVITES implies INVITE
+	if r == RoleEnumManageInvites && other == RoleEnumInvite {
+		return true
+	}
+
 	// until we add a NONE value, all values imply read
 	if r.IsValid() && other == RoleEnumRead {
 		return true

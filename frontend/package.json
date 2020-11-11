@@ -12,7 +12,7 @@
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
     "generate": "apollo client:codegen --target typescript --outputFlat src/definitions",
-    "format": "prettier --write \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\""
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss}\""
   },
   "devDependencies": {
     "@types/classnames": "^2.2.9",

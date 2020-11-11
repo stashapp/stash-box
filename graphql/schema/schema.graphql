@@ -92,13 +92,27 @@ type Mutation {
   imageUpdate(input: ImageUpdateInput!): Image
   imageDestroy(input: ImageDestroyInput!): Boolean!
 
+  """User interface for registering"""
+  newUser(input: NewUserInput!): String
+  activateNewUser(input: ActivateNewUserInput!): User
+
+  """Generates an invite code using an invite token"""
+  generateInviteCode: String!
+  """Removes a pending invite code - refunding the token"""
+  rescindInviteCode(code: String!): Boolean!
+  """Adds invite tokens for a user"""
+  grantInvite(input: GrantInviteInput!): Int!
+  """Removes invite tokens from a user"""
+  revokeInvite(input: RevokeInviteInput!): Int!
+
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
 
+  """Generates an email to reset a user password"""
+  resetPassword(input: ResetPasswordInput!): Boolean!
+
   """Changes the password for the current user"""
   changePassword(input: UserChangePasswordInput!): Boolean!
-
-  # TODO - reset password - needs email integration
 
   # Edit interfaces
   """Propose a new scene or modification to a scene"""

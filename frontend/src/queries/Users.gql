@@ -7,6 +7,11 @@ query Users {
       roles
       api_key
       api_calls
+      invited_by {
+        id
+        name
+      }
+      invite_tokens
     }
   }
 }

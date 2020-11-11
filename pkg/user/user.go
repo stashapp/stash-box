@@ -1,4 +1,4 @@
-package manager
+package user
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/models"
 	"github.com/stashapp/stashdb/pkg/utils"
 )
@@ -50,7 +51,7 @@ var rootUserRoles []models.RoleEnum = []models.RoleEnum{
 	models.RoleEnumAdmin,
 }
 
-func ValidateUserCreate(input models.UserCreateInput) error {
+func ValidateCreate(input models.UserCreateInput) error {
 	// username must be set
 	err := validateUserName(input.Name)
 	if err != nil {
@@ -72,7 +73,7 @@ func ValidateUserCreate(input models.UserCreateInput) error {
 	return nil
 }
 
-func ValidateUserUpdate(input models.UserUpdateInput, current models.User) error {
+func ValidateUpdate(input models.UserUpdateInput, current models.User) error {
 	currentName := current.Name
 	currentEmail := current.Email
 
@@ -118,7 +119,7 @@ func ValidateUserUpdate(input models.UserUpdateInput, current models.User) error
 	return nil
 }
 
-func ValidateDestroyUser(user *models.User) error {
+func ValidateDestroy(user *models.User) error {
 	if user.Name == rootUserName {
 		return ErrDeleteRoot
 	}
@@ -206,7 +207,7 @@ func validateUserPassword(username string, email string, password string) error 
 	return nil
 }
 
-func UserCreate(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error) {
+func Create(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error) {
 	var err error
 
 	UUID, err := uuid.NewV4()
@@ -252,7 +253,7 @@ func UserCreate(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error)
 	return user, nil
 }
 
-func UserUpdate(tx *sqlx.Tx, input models.UserUpdateInput) (*models.User, error) {
+func Update(tx *sqlx.Tx, input models.UserUpdateInput) (*models.User, error) {
 	qb := models.NewUserQueryBuilder(tx)
 
 	// get the existing user and modify it
@@ -286,7 +287,7 @@ func UserUpdate(tx *sqlx.Tx, input models.UserUpdateInput) (*models.User, error)
 	return user, nil
 }
 
-func UserDestroy(tx *sqlx.Tx, input models.UserDestroyInput) (bool, error) {
+func Destroy(tx *sqlx.Tx, input models.UserDestroyInput) (bool, error) {
 	qb := models.NewUserQueryBuilder(tx)
 
 	// references have on delete cascade, so shouldn't be necessary
@@ -304,7 +305,7 @@ func UserDestroy(tx *sqlx.Tx, input models.UserDestroyInput) (bool, error) {
 }
 
 // CreateRootUser creates the initial root user if no users are present
-func CreateRootUser() {
+func CreateRoot() {
 	// if there are no users present, then create a root user with a
 	// generated password and api key, outputting them
 	ctx := context.TODO()
@@ -326,7 +327,7 @@ func CreateRootUser() {
 			Roles:    rootUserRoles,
 		}
 
-		createdUser, err := UserCreate(tx, newUser)
+		createdUser, err := Create(tx, newUser)
 
 		if err == nil {
 			err = tx.Commit()
@@ -343,13 +344,13 @@ func CreateRootUser() {
 	}
 }
 
-func GetUser(id string) (*models.User, error) {
+func Get(id string) (*models.User, error) {
 	qb := models.NewUserQueryBuilder(nil)
 	userID, _ := uuid.FromString(id)
 	return qb.Find(userID)
 }
 
-func GetUserRoles(id string) ([]models.RoleEnum, error) {
+func GetRoles(id string) ([]models.RoleEnum, error) {
 	qb := models.NewUserQueryBuilder(nil)
 
 	userID, _ := uuid.FromString(id)
@@ -383,7 +384,7 @@ func Authenticate(username string, password string) (string, error) {
 	return user.ID.String(), nil
 }
 
-func RegenerateUserAPIKey(tx *sqlx.Tx, userID string) (string, error) {
+func RegenerateAPIKey(tx *sqlx.Tx, userID string) (string, error) {
 	var err error
 
 	qb := models.NewUserQueryBuilder(tx)
@@ -412,7 +413,7 @@ func RegenerateUserAPIKey(tx *sqlx.Tx, userID string) (string, error) {
 	return user.APIKey, nil
 }
 
-func ChangeUserPassword(tx *sqlx.Tx, userID string, currentPassword string, newPassword string) error {
+func ChangePassword(tx *sqlx.Tx, userID string, currentPassword string, newPassword string) error {
 	qb := models.NewUserQueryBuilder(tx)
 
 	userUUID, _ := uuid.FromString(userID)
@@ -443,4 +444,17 @@ func ChangeUserPassword(tx *sqlx.Tx, userID string, currentPassword string, newP
 
 	user, err = qb.Update(*user)
 	return err
+}
+
+func getDefaultUserRoles() []models.RoleEnum {
+	roleStr := config.GetDefaultUserRoles()
+	ret := []models.RoleEnum{}
+	for _, v := range roleStr {
+		e := models.RoleEnum(v)
+		if e.IsValid() {
+			ret = append(ret, e)
+		}
+	}
+
+	return ret
 }

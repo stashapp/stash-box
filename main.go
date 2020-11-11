@@ -6,6 +6,7 @@ import (
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/manager/config"
+	"github.com/stashapp/stashdb/pkg/user"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
@@ -15,7 +16,7 @@ func main() {
 
 	const databaseProvider = "postgres"
 	database.Initialize(databaseProvider, config.GetDatabasePath())
-	manager.CreateRootUser()
+	user.CreateRoot()
 	api.Start()
 	blockForever()
 }

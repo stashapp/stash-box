@@ -29,8 +29,18 @@ const Main: React.FC = ({ children }) => {
   });
 
   useEffect(() => {
-    if (user === null) history.push("/login");
-    else if (prevUser.current === null) history.push("/");
+    function noLogin() {
+      return (
+        history.location.pathname === "/activate" ||
+        history.location.pathname === "/resetPassword"
+      );
+    }
+
+    if (user === null) {
+      if (!noLogin()) {
+        history.push("/login");
+      }
+    } else if (prevUser.current === null) history.push("/");
     prevUser.current = user;
   }, [user, history]);
 
