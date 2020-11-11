@@ -20,10 +20,10 @@ import (
 	"github.com/rs/cors"
 	"github.com/stashapp/stashdb/pkg/dataloader"
 	"github.com/stashapp/stashdb/pkg/logger"
-	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/manager/paths"
 	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stashdb/pkg/user"
 )
 
 var buildstamp string = ""
@@ -34,17 +34,17 @@ var uiBox *packr.Box
 const ApiKeyHeader = "ApiKey"
 
 func getUserAndRoles(userID string) (*models.User, []models.RoleEnum, error) {
-	user, err := manager.GetUser(userID)
+	u, err := user.Get(userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	roles, err := manager.GetUserRoles(userID)
+	roles, err := user.GetRoles(userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return user, roles, nil
+	return u, roles, nil
 }
 
 // returns the userID, a boolean set to true if api key was used, and an error
@@ -57,7 +57,7 @@ func getRequestUserID(w http.ResponseWriter, r *http.Request) (string, bool, err
 	apiKey := r.Header.Get(ApiKeyHeader)
 	if apiKey != "" {
 		isAPIKey = true
-		userID, err = manager.GetUserIDFromAPIKey(apiKey)
+		userID, err = user.GetUserIDFromAPIKey(apiKey)
 	} else {
 		// handle session
 		userID, err = getSessionUserID(w, r)
@@ -76,7 +76,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			apiKey := r.Header.Get(ApiKeyHeader)
 			var err error
 			if apiKey != "" {
-				userID, err = manager.GetUserIDFromAPIKey(apiKey)
+				userID, err = user.GetUserIDFromAPIKey(apiKey)
 			} else {
 				// handle session
 				userID, err = getSessionUserID(w, r)

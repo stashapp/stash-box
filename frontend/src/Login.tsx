@@ -1,5 +1,5 @@
 import React, { useRef, useContext } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
@@ -44,12 +44,27 @@ const Login: React.FC = () => {
             name="password"
           />
         </label>
-        <button
-          type="submit"
-          className="login-button btn btn-primary col-3 offset-9"
-        >
-          Login
-        </button>
+        <div className="row">
+          <div className="col-9">
+            <div>
+              <Link to="/register">
+                <small>Register</small>
+              </Link>
+            </div>
+            <div>
+              <Link to="/forgotPassword">
+                <small>Forgot Password</small>
+              </Link>
+            </div>
+          </div>
+          <div className="col-3 d-flex justify-content-end pr-0">
+            <div>
+              <button type="submit" className="login-button btn btn-primary">
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
       </form>
     </div>
   );

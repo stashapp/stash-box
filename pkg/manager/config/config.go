@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/spf13/viper"
 
 	"github.com/stashapp/stashdb/pkg/utils"
@@ -22,8 +24,35 @@ const JWTSignKey = "jwt_secret_key"
 // key used for session store
 const SessionStoreKey = "session_store_key"
 
+// invite settings
+const RequireInvite = "require_invite"
+const RequireActivation = "require_activation"
+const ActivationExpiry = "activation_expiry"
+const EmailCooldown = "email_cooldown"
+
+const requireInviteDefault = true
+const requireActivationDefault = true
+
+const DefaultUserRoles = "default_user_roles"
+
+var defaultUserRolesDefault = []string{"READ", "VOTE", "EDIT"}
+
+// 2 hours
+const activationExpiryDefault = 2 * 60 * 60
+
+// 5 minutes
+const emailCooldownDefault = 5 * 60
+
+// Email settings
+const EmailHost = "email_host"
+const EmailUser = "email_user"
+const EmailPW = "email_password"
+const EmailFrom = "email_from"
+const HostURL = "host_url"
+
 // Logging options
 const LogFile = "logFile"
+const UserLogFile = "userLogFile"
 const LogOut = "logOut"
 const LogLevel = "logLevel"
 
@@ -72,10 +101,100 @@ func GetIsProduction() bool {
 	return ret
 }
 
+// GetRequireInvite returns true if new users cannot register without an invite
+// key.
+func GetRequireInvite() bool {
+	ret := requireInviteDefault
+	if viper.IsSet(RequireInvite) {
+		ret = viper.GetBool(RequireInvite)
+	}
+
+	return ret
+}
+
+// GetRequireActivation returns true if new users must validate their email address
+// via activation to create an account.
+func GetRequireActivation() bool {
+	ret := requireActivationDefault
+	if viper.IsSet(RequireActivation) {
+		ret = viper.GetBool(RequireActivation)
+	}
+
+	return ret
+}
+
+// GetActivationExpiry returns the duration before an activation email expires.
+func GetActivationExpiry() time.Duration {
+	ret := activationExpiryDefault
+	if viper.IsSet(ActivationExpiry) {
+		ret = viper.GetInt(ActivationExpiry)
+	}
+
+	return time.Duration(ret * int(time.Second))
+}
+
+// GetActivationExpireTime returns the time at which activation emails expire,
+// using the current time as the basis.
+func GetActivationExpireTime() time.Time {
+	expiry := GetActivationExpiry()
+	currentTime := time.Now()
+
+	return currentTime.Add(-expiry)
+}
+
+// GetEmailCooldown returns the duration before a second activation email may
+// be generated.
+func GetEmailCooldown() time.Duration {
+	ret := emailCooldownDefault
+	if viper.IsSet(EmailCooldown) {
+		ret = viper.GetInt(EmailCooldown)
+	}
+
+	return time.Duration(ret * int(time.Second))
+}
+
+// GetDefaultUserRoles returns the default roles assigned to a new user
+// when created via registration.
+func GetDefaultUserRoles() []string {
+	ret := defaultUserRolesDefault
+	if viper.IsSet(DefaultUserRoles) {
+		ret = viper.GetStringSlice(DefaultUserRoles)
+	}
+
+	return ret
+}
+
+func GetEmailHost() string {
+	return viper.GetString(EmailHost)
+}
+
+func GetEmailUser() string {
+	return viper.GetString(EmailUser)
+}
+
+func GetEmailPassword() string {
+	return viper.GetString(EmailPW)
+}
+
+func GetEmailFrom() string {
+	return viper.GetString(EmailFrom)
+}
+
+func GetHostURL() string {
+	return viper.GetString(HostURL)
+}
+
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func GetLogFile() string {
 	return viper.GetString(LogFile)
+}
+
+// GetUserLogFile returns the filename of the file to output user operation
+// logs to.
+// An empty string means that user operation logging will be output to stderr.
+func GetUserLogFile() string {
+	return viper.GetString(UserLogFile)
 }
 
 // GetLogOut returns true if logging should be output to the terminal
@@ -126,4 +245,23 @@ func SetInitialConfig() error {
 	}
 
 	return Write()
+}
+
+func GetMissingEmailSettings() []string {
+	if !GetRequireActivation() {
+		return nil
+	}
+
+	missing := []string{}
+	if GetEmailFrom() == "" {
+		missing = append(missing, EmailFrom)
+	}
+	if GetEmailHost() == "" {
+		missing = append(missing, EmailHost)
+	}
+	if GetHostURL() == "" {
+		missing = append(missing, HostURL)
+	}
+
+	return missing
 }

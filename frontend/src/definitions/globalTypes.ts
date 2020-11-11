@@ -53,6 +53,7 @@ export enum EyeColorEnum {
 
 export enum FingerprintAlgorithm {
   MD5 = "MD5",
+  OSHASH = "OSHASH",
 }
 
 export enum GenderEnum {
@@ -85,6 +86,8 @@ export enum OperationEnum {
 export enum RoleEnum {
   ADMIN = "ADMIN",
   EDIT = "EDIT",
+  INVITE = "INVITE",
+  MANAGE_INVITES = "MANAGE_INVITES",
   MODIFY = "MODIFY",
   READ = "READ",
   VOTE = "VOTE",
@@ -108,6 +111,13 @@ export enum VoteStatusEnum {
   IMMEDIATE_REJECTED = "IMMEDIATE_REJECTED",
   PENDING = "PENDING",
   REJECTED = "REJECTED",
+}
+
+export interface ActivateNewUserInput {
+  name: string;
+  email: string;
+  activation_key: string;
+  password: string;
 }
 
 export interface ApplyEditInput {
@@ -178,6 +188,11 @@ export interface FuzzyDateInput {
   accuracy: DateAccuracyEnum;
 }
 
+export interface GrantInviteInput {
+  user_id: string;
+  amount: number;
+}
+
 export interface HairColorCriterionInput {
   value?: HairColorEnum | null;
   modifier: CriterionModifier;
@@ -203,6 +218,11 @@ export interface MeasurementsInput {
 export interface MultiIDCriterionInput {
   value?: string[] | null;
   modifier: CriterionModifier;
+}
+
+export interface NewUserInput {
+  email: string;
+  invite_key?: string | null;
 }
 
 export interface PerformerAppearanceInput {
@@ -288,6 +308,15 @@ export interface QuerySpec {
   per_page?: number | null;
   sort?: string | null;
   direction?: SortDirectionEnum | null;
+}
+
+export interface ResetPasswordInput {
+  email: string;
+}
+
+export interface RevokeInviteInput {
+  user_id: string;
+  amount: number;
 }
 
 export interface SceneCreateInput {
@@ -395,8 +424,9 @@ export interface URLInput {
 }
 
 export interface UserChangePasswordInput {
-  existing_password: string;
+  existing_password?: string | null;
   new_password: string;
+  reset_key?: string | null;
 }
 
 export interface UserCreateInput {
@@ -404,6 +434,7 @@ export interface UserCreateInput {
   password: string;
   roles: RoleEnum[];
   email: string;
+  invited_by_id?: string | null;
 }
 
 export interface UserDestroyInput {

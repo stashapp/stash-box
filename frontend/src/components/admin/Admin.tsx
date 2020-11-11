@@ -31,14 +31,8 @@ const AdminComponent: React.FC = () => {
       </td>
       <td>{user.email}</td>
       <td>{user?.roles?.join(", ") ?? ""}</td>
-      <td className="apikey">
-        <textarea
-          className="w-100"
-          rows={1}
-          disabled
-          value={user?.api_key ?? ""}
-        />
-      </td>
+      <td>{user?.invited_by?.name ?? ""}</td>
+      <td>{user?.invite_tokens ?? ""}</td>
     </tr>
   ));
 
@@ -54,7 +48,8 @@ const AdminComponent: React.FC = () => {
             <th>Username</th>
             <th>Email</th>
             <th>Roles</th>
-            <th className="apikey">API-key</th>
+            <th>Invited by</th>
+            <th>Invite Tokens</th>
           </tr>
         </thead>
         <tbody>{users}</tbody>

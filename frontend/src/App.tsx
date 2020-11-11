@@ -28,8 +28,12 @@ import TagEdit from "./components/tagEdit";
 import TagMerge from "./components/tagMerge";
 import Edit from "./components/edit";
 import Edits from "./components/edits";
+import Register from "./components/register";
 
 import "./App.scss";
+import ActivateNewUserPage from "./components/activateNewUser/ActivateNewUser";
+import ForgotPassword from "./components/forgotPassword";
+import ResetPassword from "./components/resetPassword";
 
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
@@ -119,6 +123,18 @@ const App: React.FC = () => (
             </Route>
             <Route exact path="/edits/:id">
               <Edit />
+            </Route>
+            <Route exact path="/register">
+              <Register />
+            </Route>
+            <Route exact path="/activate">
+              <ActivateNewUserPage />
+            </Route>
+            <Route exact path="/forgotPassword">
+              <ForgotPassword />
+            </Route>
+            <Route exact path="/resetPassword">
+              <ResetPassword />
             </Route>
           </Switch>
         </Main>

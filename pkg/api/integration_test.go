@@ -11,8 +11,8 @@ import (
 	"github.com/stashapp/stashdb/pkg/database"
 	dbtest "github.com/stashapp/stashdb/pkg/database/databasetest"
 	"github.com/stashapp/stashdb/pkg/dataloader"
-	"github.com/stashapp/stashdb/pkg/manager"
 	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stashdb/pkg/user"
 
 	"github.com/99designs/gqlgen/graphql"
 )
@@ -48,7 +48,7 @@ func (p *userPopulator) PopulateDB() error {
 	}
 
 	var err error
-	p.admin, err = manager.UserCreate(tx, createInput)
+	p.admin, err = user.Create(tx, createInput)
 	p.adminRoles = createInput.Roles
 
 	if err != nil {
@@ -65,7 +65,7 @@ func (p *userPopulator) PopulateDB() error {
 		Email: "modify",
 	}
 
-	p.modify, err = manager.UserCreate(tx, createInput)
+	p.modify, err = user.Create(tx, createInput)
 	p.modifyRoles = createInput.Roles
 
 	if err != nil {
@@ -82,7 +82,7 @@ func (p *userPopulator) PopulateDB() error {
 		Email: "read",
 	}
 
-	p.read, err = manager.UserCreate(tx, createInput)
+	p.read, err = user.Create(tx, createInput)
 	p.readRoles = createInput.Roles
 
 	if err != nil {
@@ -99,7 +99,7 @@ func (p *userPopulator) PopulateDB() error {
 		Email: "none",
 	}
 
-	p.none, err = manager.UserCreate(tx, createInput)
+	p.none, err = user.Create(tx, createInput)
 
 	if err != nil {
 		_ = tx.Rollback()
