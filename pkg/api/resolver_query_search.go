@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"strings"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
@@ -12,6 +14,17 @@ func (r *queryResolver) SearchPerformer(ctx context.Context, term string) ([]*mo
 	}
 
 	qb := models.NewPerformerQueryBuilder(nil)
+
+	trimmedQuery := strings.TrimSpace(term)
+	performerID, err := uuid.FromString(trimmedQuery)
+	if err == nil {
+		var performers []*models.Performer
+		performer, err := qb.Find(performerID)
+		if performer != nil {
+			performers = append(performers, performer)
+		}
+		return performers, err
+	}
 
 	return qb.SearchPerformers(term)
 }
@@ -23,5 +36,16 @@ func (r *queryResolver) SearchScene(ctx context.Context, term string) ([]*models
 
 	qb := models.NewSceneQueryBuilder(nil)
 
-	return qb.SearchScenes(term)
+	trimmedQuery := strings.TrimSpace(term)
+	sceneID, err := uuid.FromString(trimmedQuery)
+	if err == nil {
+		var scenes []*models.Scene
+		scene, err := qb.Find(sceneID)
+		if scene != nil {
+			scenes = append(scenes, scene)
+		}
+		return scenes, err
+	}
+
+	return qb.SearchScenes(trimmedQuery)
 }
