@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"time"
 
 	"github.com/spf13/viper"
@@ -49,6 +50,9 @@ const EmailUser = "email_user"
 const EmailPW = "email_password"
 const EmailFrom = "email_from"
 const HostURL = "host_url"
+
+// Image storage settings
+const ImageLocation = "image_location"
 
 // Logging options
 const LogFile = "logFile"
@@ -182,6 +186,20 @@ func GetEmailFrom() string {
 
 func GetHostURL() string {
 	return viper.GetString(HostURL)
+}
+
+// GetImageLocation returns the path of where to locally store images.
+func GetImageLocation() string {
+	return viper.GetString(ImageLocation)
+}
+
+// ValidateImageLocation returns an error is image_location is not set.
+func ValidateImageLocation() error {
+	if GetImageLocation() == "" {
+		return errors.New(ImageLocation + " not set")
+	}
+
+	return nil
 }
 
 // GetLogFile returns the filename of the file to output logs to.

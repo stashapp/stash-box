@@ -8,6 +8,30 @@ import (
 	"github.com/stashapp/stashdb/pkg/utils"
 )
 
+type ImageRepo interface {
+	ImageCreator
+	ImageUpdater
+	ImageDestroyer
+	ImageFinder
+}
+
+type ImageCreator interface {
+	Create(newImage Image) (*Image, error)
+}
+
+type ImageUpdater interface {
+	Update(updatedImage Image) (*Image, error)
+}
+
+type ImageFinder interface {
+	Find(id uuid.UUID) (*Image, error)
+	FindByChecksum(checksum string) (*Image, error)
+}
+
+type ImageDestroyer interface {
+	Destroy(id uuid.UUID) error
+}
+
 type ImageQueryBuilder struct {
 	dbi database.DBI
 }
@@ -54,6 +78,24 @@ func (qb *ImageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Image, error) 
 	`
 	args := []interface{}{sceneID}
 	return qb.queryImages(query, args)
+}
+
+func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
+	query := `
+		SELECT images.* FROM images
+		WHERE images.checksum = ?
+	`
+	args := []interface{}{checksum}
+	ret, err := qb.queryImages(query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) > 0 {
+		return ret[0], nil
+	}
+
+	return nil, nil
 }
 
 func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
