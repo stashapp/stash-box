@@ -20,7 +20,7 @@ func (r *imageResolver) URL(ctx context.Context, obj *models.Image) (string, err
 		return builder.GetImageURL(), nil
 	}
 
-	return obj.RemoteURL, nil
+	return obj.RemoteURL.String, nil
 }
 func (r *imageResolver) Width(ctx context.Context, obj *models.Image) (*int, error) {
 	return resolveNullInt64(obj.Width)

@@ -23,6 +23,14 @@ func Create(repo models.ImageRepo, input models.ImageCreateInput) (*models.Image
 
 	newImage.CopyFromCreateInput(input)
 
+	// set RemoteURL from URL
+	if input.URL != nil {
+		newImage.RemoteURL = sql.NullString{
+			String: *input.URL,
+			Valid:  true,
+		}
+	}
+
 	// handle image upload
 	if input.File != nil {
 		if err := config.ValidateImageLocation(); err != nil {
@@ -75,6 +83,17 @@ func Update(repo models.ImageRepo, input models.ImageUpdateInput) (*models.Image
 		return nil, models.NotFoundError(imageID)
 	}
 
+	// Populate image from the input
+	updatedImage.CopyFromUpdateInput(input)
+
+	// set RemoteURL from URL
+	if input.URL != nil {
+		updatedImage.RemoteURL = sql.NullString{
+			String: *input.URL,
+			Valid:  true,
+		}
+	}
+
 	// handle image upload
 	if input.File != nil {
 		if err := config.ValidateImageLocation(); err != nil {
@@ -103,9 +122,6 @@ func Update(repo models.ImageRepo, input models.ImageUpdateInput) (*models.Image
 			Valid:  true,
 		}
 	}
-
-	// Populate performer from the input
-	updatedImage.CopyFromUpdateInput(input)
 
 	image, err := repo.Update(*updatedImage)
 	if err != nil {

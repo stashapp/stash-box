@@ -177,6 +177,8 @@ func Start() {
 	})
 	r.HandleFunc("/logout", handleLogout)
 
+	r.Mount("/image", imageRoutes{}.Routes())
+
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)

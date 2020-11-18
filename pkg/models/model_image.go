@@ -21,7 +21,7 @@ var (
 
 type Image struct {
 	ID        uuid.UUID      `db:"id" json:"id"`
-	RemoteURL string         `db:"url" json:"url"`
+	RemoteURL sql.NullString `db:"url" json:"url"`
 	Checksum  sql.NullString `db:"checksum" json:"checksum"`
 	Width     sql.NullInt64  `db:"width" json:"width"`
 	Height    sql.NullInt64  `db:"height" json:"height"`
