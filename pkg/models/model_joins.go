@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
@@ -81,15 +82,15 @@ type SceneImage struct {
 	ImageID uuid.UUID `db:"image_id" json:"image_id"`
 }
 
-type SceneImages []*SceneImage
+type ScenesImages []*SceneImage
 
-func (p SceneImages) Each(fn func(interface{})) {
+func (p ScenesImages) Each(fn func(interface{})) {
 	for _, v := range p {
 		fn(*v)
 	}
 }
 
-func (p *SceneImages) Add(o interface{}) {
+func (p *ScenesImages) Add(o interface{}) {
 	*p = append(*p, o.(*SceneImage))
 }
 

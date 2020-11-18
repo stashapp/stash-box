@@ -40,3 +40,15 @@ func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID uuid.UUID, updatedJoins Sc
 func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID uuid.UUID) error {
 	return qb.dbi.DeleteJoins(sceneTagTable, sceneID)
 }
+
+func (qb *JoinsQueryBuilder) CreateScenesImages(newJoins ScenesImages) error {
+	return qb.dbi.InsertJoins(sceneImageTable, &newJoins)
+}
+
+func (qb *JoinsQueryBuilder) UpdateScenesImages(sceneID uuid.UUID, updatedJoins ScenesImages) error {
+	return qb.dbi.ReplaceJoins(sceneImageTable, sceneID, &updatedJoins)
+}
+
+func (qb *JoinsQueryBuilder) DestroyScenesImages(sceneID uuid.UUID) error {
+	return qb.dbi.DeleteJoins(sceneImageTable, sceneID)
+}

@@ -122,7 +122,7 @@ func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
 }
 
 func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := SceneImages{}
+	images := ScenesImages{}
 	err := qb.dbi.FindAllJoins(sceneImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))

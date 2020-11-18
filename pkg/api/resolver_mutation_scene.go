@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"github.com/gofrs/uuid"
 	"time"
+
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -70,6 +71,15 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
 
 	if err := jqb.CreateScenesTags(tagJoins); err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	// Save the images
+	sceneImages := models.CreateSceneImages(scene.ID, input.ImageIds)
+
+	if err := jqb.CreateScenesImages(sceneImages); err != nil {
+		_ = tx.Rollback()
 		return nil, err
 	}
 
@@ -132,6 +142,13 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	// Save the URLs
 	sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
 	if err := qb.UpdateUrls(scene.ID, sceneUrls); err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	// Save the images
+	sceneImages := models.CreateSceneImages(scene.ID, input.ImageIds)
+	if err := jqb.UpdateScenesImages(scene.ID, sceneImages); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
