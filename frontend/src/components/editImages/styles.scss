@@ -1,0 +1,9 @@
+.edit-image-container {
+  position: relative;
+
+  .edit-image-overlay {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+  }
+}
