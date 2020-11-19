@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { loader } from "graphql.macro";
 
-import { Icon } from "src/components/fragments";
 import { Image } from "src/utils/transforms";
 import { Button, Col, Form, Row } from "react-bootstrap";
 
