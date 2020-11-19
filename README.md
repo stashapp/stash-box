@@ -67,6 +67,8 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `email_password` | (none) | Password for the SMTP server. Optional. |
 | `email_from` | (none) | Email address from which to send emails. |
 | `host_url` | (none) | Base URL for the server. Used when sending emails. Should be in the form of `https://hostname.com`. |
+| `image_location` | (none) | Path to store images, for local image storage. An error will be displayed if this is not set when creating non-URL images. |
+| `userLogFile` | (none) | Path to the user log file, which logs user operations. If not set, then these will be output to stderr. |
 
 ## SSL (HTTPS)
 
