@@ -80,10 +80,15 @@ const schema = yup.object().shape({
     )
     .nullable(),
   tags: yup.array().of(yup.string()).nullable(),
-  images: yup.array().of(yup.object().shape({
-    id: yup.string().required(),
-    url: yup.string(),
-  })).nullable(),
+  images: yup
+    .array()
+    .of(
+      yup.object().shape({
+        id: yup.string().required(),
+        url: yup.string(),
+      })
+    )
+    .nullable(),
 });
 
 type SceneFormData = yup.InferType<typeof schema>;
@@ -164,7 +169,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         performer_id: performance.performerId,
         as: performance.alias,
       })),
-      image_ids: (data.images ?? []).map(i => i.id),
+      image_ids: (data.images ?? []).map((i) => i.id),
       fingerprints: data.fingerprints as FingerprintInput[],
       tag_ids: data.tags,
     };
@@ -291,7 +296,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const onSetImages = (i: Image[]) => {
     setImages(i);
     setValue("images", i);
-  }
+  };
 
   return (
     <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
@@ -400,10 +405,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
           <Form.Group>
             <Form.Label>Images</Form.Label>
-            <EditImages
-              images={images}
-              onImagesChanged={onSetImages}
-            />
+            <EditImages images={images} onImagesChanged={onSetImages} />
           </Form.Group>
 
           <Form.Group>

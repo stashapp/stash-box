@@ -19,10 +19,15 @@ const schema = yup.object().shape({
   title: yup.string().required("Title is required"),
   url: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
   photoURL: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
-  images: yup.array().of(yup.object().shape({
-    id: yup.string().required(),
-    url: yup.string(),
-  })).nullable(),
+  images: yup
+    .array()
+    .of(
+      yup.object().shape({
+        id: yup.string().required(),
+        url: yup.string(),
+      })
+    )
+    .nullable(),
 });
 
 type StudioFormData = yup.InferType<typeof schema>;
@@ -56,7 +61,7 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
     const callbackData: StudioCreateInput = {
       name: data.title,
       urls,
-      image_ids: (data.images ?? []).map(i => i.id),
+      image_ids: (data.images ?? []).map((i) => i.id),
     };
     callback(callbackData);
   };
@@ -64,7 +69,7 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
   const onSetImages = (i: Image[]) => {
     setImages(i);
     setValue("images", i);
-  }
+  };
 
   return (
     <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
@@ -112,15 +117,14 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
           </label>
         </div>
       </div>
-      
-      {photoURL ? <img src={photoURL} alt="Studio" className="StudioForm-img m-4" /> : undefined}
+
+      {photoURL ? (
+        <img src={photoURL} alt="Studio" className="StudioForm-img m-4" />
+      ) : undefined}
 
       <Form.Group>
         <Form.Label>Images</Form.Label>
-        <EditImages
-          images={images}
-          onImagesChanged={onSetImages}
-        />
+        <EditImages images={images} onImagesChanged={onSetImages} />
       </Form.Group>
 
       <Form.Group className="d-flex">

@@ -1,10 +1,6 @@
 /* eslint-disable no-console */
 
-import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloLink,
-} from "@apollo/client";
+import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
 import { createUploadLink } from "apollo-upload-client";

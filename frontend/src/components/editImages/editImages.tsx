@@ -4,7 +4,10 @@ import { loader } from "graphql.macro";
 import { Image } from "src/utils/transforms";
 import { Button, Col, Form, Row } from "react-bootstrap";
 
-import { AddImageMutation as AddImage, AddImageMutationVariables } from "src/definitions/AddImageMutation";
+import {
+  AddImageMutation as AddImage,
+  AddImageMutationVariables,
+} from "src/definitions/AddImageMutation";
 import { useMutation } from "@apollo/client";
 import ImageCarousel from "../imageCarousel";
 
@@ -15,22 +18,23 @@ interface EditImagesProps {
   onImagesChanged: (images: Image[]) => void;
 }
 
-const EditImages: React.FC<EditImagesProps> = ({
-  images,
-  onImagesChanged
-}) => {
+const EditImages: React.FC<EditImagesProps> = ({ images, onImagesChanged }) => {
   const [file, setFile] = useState<File | undefined>();
 
   function onRemoveImage(toRemove: Image) {
-    onImagesChanged(images.filter(i => i.id !== toRemove.id));
+    onImagesChanged(images.filter((i) => i.id !== toRemove.id));
   }
 
-  const [addImage] = useMutation<AddImage, AddImageMutationVariables>(AddImageMutation);
+  const [addImage] = useMutation<AddImage, AddImageMutationVariables>(
+    AddImageMutation
+  );
 
   function onAddImage() {
-    addImage({variables: {
-      imageData: { file }
-    }}).then((i) => {
+    addImage({
+      variables: {
+        imageData: { file },
+      },
+    }).then((i) => {
       if (i.data?.imageCreate) {
         onImagesChanged(images.concat(i.data.imageCreate));
       }
@@ -61,10 +65,7 @@ const EditImages: React.FC<EditImagesProps> = ({
           <Form.File onChange={onFileChange} accept=".png,.jpg" />
         </Col>
         <Col xs={6} className="d-flex justify-content-end">
-          <Button 
-            onClick={() => onAddImage()}
-            disabled={!file}
-          >
+          <Button onClick={() => onAddImage()} disabled={!file}>
             Add
           </Button>
         </Col>
