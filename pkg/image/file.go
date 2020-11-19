@@ -1,13 +1,19 @@
 package image
 
 import (
+	"database/sql"
+	"image"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stashdb/pkg/models"
 	"github.com/stashapp/stashdb/pkg/utils"
+
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 func GetImagePath(imageDir string, checksum string) string {
@@ -50,4 +56,28 @@ func saveFile(fileDir string, file graphql.Upload) (string, error) {
 	}
 
 	return checksum, nil
+}
+
+func populateImageDimensions(fn string, dest *models.Image) error {
+	f, err := os.Open(fn)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	img, _, err := image.Decode(f)
+	if err != nil {
+		return err
+	}
+
+	dest.Width = sql.NullInt64{
+		Int64: int64(img.Bounds().Max.X),
+		Valid: true,
+	}
+	dest.Height = sql.NullInt64{
+		Int64: int64(img.Bounds().Max.Y),
+		Valid: true,
+	}
+
+	return nil
 }

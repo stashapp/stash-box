@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
-func Create(repo models.ImageRepo, input models.ImageCreateInput) (*models.Image, error) {
+func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func Create(repo models.ImageRepo, input models.ImageCreateInput) (*models.Image
 		}
 
 		// check if image already exists with this checksum
-		existing, err := repo.FindByChecksum(checksum)
+		existing, err := s.Repository.FindByChecksum(checksum)
 		if err != nil {
 			return nil, err
 		}
@@ -58,11 +58,15 @@ func Create(repo models.ImageRepo, input models.ImageCreateInput) (*models.Image
 			String: checksum,
 			Valid:  true,
 		}
+
+		if err := populateImageDimensions(GetImagePath(config.GetImageLocation(), checksum), &newImage); err != nil {
+			return nil, err
+		}
 	} else if input.URL != nil {
 		return nil, errors.New("missing URL or file")
 	}
 
-	image, err := repo.Create(newImage)
+	image, err := s.Repository.Create(newImage)
 	if err != nil {
 		return nil, err
 	}
@@ -70,10 +74,10 @@ func Create(repo models.ImageRepo, input models.ImageCreateInput) (*models.Image
 	return image, nil
 }
 
-func Update(repo models.ImageRepo, input models.ImageUpdateInput) (*models.Image, error) {
+func (s *Service) Update(input models.ImageUpdateInput) (*models.Image, error) {
 	// get the existing image and modify it
 	imageID, _ := uuid.FromString(input.ID)
-	updatedImage, err := repo.Find(imageID)
+	updatedImage, err := s.Repository.Find(imageID)
 
 	if err != nil {
 		return nil, err
@@ -106,7 +110,7 @@ func Update(repo models.ImageRepo, input models.ImageUpdateInput) (*models.Image
 		}
 
 		// check if image already exists with this checksum
-		existing, err := repo.FindByChecksum(checksum)
+		existing, err := s.Repository.FindByChecksum(checksum)
 		if err != nil {
 			return nil, err
 		}
@@ -121,9 +125,13 @@ func Update(repo models.ImageRepo, input models.ImageUpdateInput) (*models.Image
 			String: checksum,
 			Valid:  true,
 		}
+
+		if err := populateImageDimensions(GetImagePath(config.GetImageLocation(), checksum), updatedImage); err != nil {
+			return nil, err
+		}
 	}
 
-	image, err := repo.Update(*updatedImage)
+	image, err := s.Repository.Update(*updatedImage)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +139,7 @@ func Update(repo models.ImageRepo, input models.ImageUpdateInput) (*models.Image
 	return image, nil
 }
 
-func Destroy(repo models.ImageRepo, input models.ImageDestroyInput) error {
+func (s *Service) Destroy(input models.ImageDestroyInput) error {
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
 	imageID, err := uuid.FromString(input.ID)
@@ -139,18 +147,65 @@ func Destroy(repo models.ImageRepo, input models.ImageDestroyInput) error {
 		return err
 	}
 
-	i, err := repo.Find(imageID)
+	i, err := s.Repository.Find(imageID)
 	if err != nil {
 		return err
 	}
 
-	if err = repo.Destroy(imageID); err != nil {
+	if err = s.Repository.Destroy(imageID); err != nil {
 		return err
 	}
 
 	// delete the file. Suppress any error
 	if i.Checksum.Valid {
 		os.Remove(GetImagePath(config.GetImageLocation(), i.Checksum.String))
+	}
+
+	return nil
+}
+
+// DestroyUnusedImages destroys all images that are not used for a scene,
+// performer or studio.
+func (s *Service) DestroyUnusedImages() error {
+	unused, err := s.Repository.FindUnused()
+	if err != nil {
+		return err
+	}
+
+	for len(unused) > 0 {
+		for _, i := range unused {
+			err = s.Destroy(models.ImageDestroyInput{
+				ID: i.ID.String(),
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		unused, err = s.Repository.FindUnused()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DestroyUnusedImage destroys the image with the provided ID if it is not used for a scene,
+// performer or studio.
+func (s *Service) DestroyUnusedImage(imageID uuid.UUID) error {
+	unused, err := s.Repository.IsUnused(imageID)
+	if err != nil {
+		return err
+	}
+
+	if unused {
+		err = s.Destroy(models.ImageDestroyInput{
+			ID: imageID.String(),
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
