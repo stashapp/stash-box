@@ -16,12 +16,6 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		return nil, err
 	}
 
-	var err error
-
-	if err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -37,55 +31,53 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 
 	newScene.CopyFromCreateInput(input)
 
-	// Start the transaction and save the scene
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder(tx)
-	scene, err := qb.Create(newScene)
+	var scene *models.Scene
+	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
+		qb := models.NewSceneQueryBuilder(txn.GetTx())
+		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
+
+		var err error
+		scene, err = qb.Create(newScene)
+		if err != nil {
+			return err
+		}
+
+		// Save the checksums
+		sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
+		if err := qb.CreateFingerprints(sceneFingerprints); err != nil {
+			return err
+		}
+
+		// save the performers
+		scenePerformers := models.CreateScenePerformers(scene.ID, input.Performers)
+		if err := jqb.CreatePerformersScenes(scenePerformers); err != nil {
+			return err
+		}
+
+		// Save the URLs
+		sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
+		if err := qb.CreateUrls(sceneUrls); err != nil {
+			return err
+		}
+
+		// Save the tags
+		tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
+
+		if err := jqb.CreateScenesTags(tagJoins); err != nil {
+			return err
+		}
+
+		// Save the images
+		sceneImages := models.CreateSceneImages(scene.ID, input.ImageIds)
+
+		if err := jqb.CreateScenesImages(sceneImages); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the checksums
-	sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
-	if err := qb.CreateFingerprints(sceneFingerprints); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// save the performers
-	scenePerformers := models.CreateScenePerformers(scene.ID, input.Performers)
-	jqb := models.NewJoinsQueryBuilder(tx)
-	if err := jqb.CreatePerformersScenes(scenePerformers); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the URLs
-	sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
-	if err := qb.CreateUrls(sceneUrls); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the tags
-	tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
-
-	if err := jqb.CreateScenesTags(tagJoins); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the images
-	sceneImages := models.CreateSceneImages(scene.ID, input.ImageIds)
-
-	if err := jqb.CreateScenesImages(sceneImages); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
@@ -179,22 +171,38 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		return false, err
 	}
 
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder(tx)
-
-	// references have on delete cascade, so shouldn't be necessary
-	// to remove them explicitly
-
 	sceneID, err := uuid.FromString(input.ID)
 	if err != nil {
 		return false, err
 	}
-	if err = qb.Destroy(sceneID); err != nil {
-		_ = tx.Rollback()
-		return false, err
-	}
 
-	if err := tx.Commit(); err != nil {
+	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
+		qb := models.NewSceneQueryBuilder(txn.GetTx())
+		iqb := models.NewImageQueryBuilder(txn.GetTx())
+
+		existingImages, err := iqb.FindBySceneID(sceneID)
+
+		// references have on delete cascade, so shouldn't be necessary
+		// to remove them explicitly
+		if err = qb.Destroy(sceneID); err != nil {
+			return err
+		}
+
+		// remove images that are no longer used
+		imageService := image.Service{
+			Repository: &iqb,
+		}
+
+		for _, i := range existingImages {
+			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		return false, err
 	}
 	return true, nil

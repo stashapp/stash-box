@@ -183,7 +183,7 @@ func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, 
 }
 
 func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := PerformerImages{}
+	images := PerformersImages{}
 	err := qb.dbi.FindAllJoins(performerImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -223,7 +223,7 @@ func (qb *ImageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*Image, error
 }
 
 func (qb *ImageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := StudioImages{}
+	images := StudiosImages{}
 	err := qb.dbi.FindAllJoins(studioImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
