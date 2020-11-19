@@ -168,3 +168,13 @@ label.is-invalid {
     height: 100%;
   }
 }
+
+.image-container {
+  position: relative;
+
+  .delete-image-overlay {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+  }
+}

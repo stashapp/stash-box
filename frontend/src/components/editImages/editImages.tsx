@@ -7,6 +7,7 @@ import { Button, Col, Form, Row } from "react-bootstrap";
 
 import { AddImageMutation as AddImage, AddImageMutationVariables } from "src/definitions/AddImageMutation";
 import { useMutation } from "@apollo/client";
+import ImageCarousel from "../imageCarousel";
 
 const AddImageMutation = loader("src/mutations/AddImage.gql");
 
@@ -22,29 +23,7 @@ const EditImages: React.FC<EditImagesProps> = ({
   const [file, setFile] = useState<File | undefined>();
 
   function onRemoveImage(toRemove: Image) {
-    onImagesChanged(images.filter(i => i !== toRemove));
-  }
-
-  const renderImages = () => {
-    return images.map(i => (
-      <div key={i.url} className="edit-image-container">
-        <img
-          alt=""
-          src={i.url}
-        />
-        <div className="edit-image-overlay">
-          <Button 
-            variant="danger" 
-            size="sm"
-            onClick={() => onRemoveImage(i)}
-          >
-            <Icon
-              icon="times"
-            />
-          </Button>
-        </div>
-      </div>
-    ))
+    onImagesChanged(images.filter(i => i.id !== toRemove.id));
   }
 
   const [addImage] = useMutation<AddImage, AddImageMutationVariables>(AddImageMutation);
@@ -71,7 +50,12 @@ const EditImages: React.FC<EditImagesProps> = ({
 
   return (
     <div>
-      {renderImages()}
+      <div className="edit-image-images">
+        <ImageCarousel
+          images={images}
+          onDeleteImage={(i) => onRemoveImage(i)}
+        />
+      </div>
 
       <Row className="my-2">
         <Col xs={6}>
