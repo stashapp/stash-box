@@ -260,6 +260,32 @@ export interface PerformerDestroyInput {
   id: string;
 }
 
+export interface PerformerEditDetailsInput {
+  name?: string | null;
+  disambiguation?: string | null;
+  aliases?: string[] | null;
+  gender?: GenderEnum | null;
+  urls?: URLInput[] | null;
+  birthdate?: FuzzyDateInput | null;
+  ethnicity?: EthnicityEnum | null;
+  country?: string | null;
+  eye_color?: EyeColorEnum | null;
+  hair_color?: HairColorEnum | null;
+  height?: number | null;
+  measurements?: MeasurementsInput | null;
+  breast_type?: BreastTypeEnum | null;
+  career_start_year?: number | null;
+  career_end_year?: number | null;
+  tattoos?: BodyModificationInput[] | null;
+  piercings?: BodyModificationInput[] | null;
+  image_ids?: string[] | null;
+}
+
+export interface PerformerEditInput {
+  edit: EditInput;
+  details?: PerformerEditDetailsInput | null;
+}
+
 export interface PerformerFilterType {
   names?: string | null;
   name?: string | null;

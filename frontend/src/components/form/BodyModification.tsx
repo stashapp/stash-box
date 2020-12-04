@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import Creatable from "react-select/creatable";
-import { ValueType, OptionTypeBase } from "react-select";
-
-import { CloseButton } from "src/components/fragments";
+import { ValueType, OptionTypeBase, components } from "react-select";
+import { Button, Form, InputGroup } from 'react-bootstrap';
+import { Controller } from 'react-hook-form';
 
 interface IOptionType extends OptionTypeBase {
   value?: string;
@@ -11,12 +11,12 @@ interface IOptionType extends OptionTypeBase {
 
 interface BodyModificationProps {
   name: string;
-  options: string[];
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  register: any;
+  control: any;
   locationPlaceholder: string;
   descriptionPlaceholder: string;
   defaultValues?: { location: string; description?: string | null }[];
+  formatLabel: (text: string) => string;
 }
 
 const CLASSNAME = "BodyModification";
@@ -25,9 +25,9 @@ const BodyModification: React.FC<BodyModificationProps> = ({
   name,
   locationPlaceholder,
   descriptionPlaceholder,
-  options,
-  register,
+  control,
   defaultValues,
+  formatLabel,
 }) => {
   const [modifications, setModifications] = useState(defaultValues || []);
   const selectRef = useRef(null);
@@ -43,50 +43,63 @@ const BodyModification: React.FC<BodyModificationProps> = ({
 
   const modificationList = modifications.map((mod, index) => {
     const idx = `${name}[${index}]`;
-    const inputName = `${idx}.description`;
     return (
-      <div key={mod.location}>
-        <CloseButton
-          className={`${CLASSNAME}-remove`}
-          handler={() => removeMod(index)}
-        />
-        <input
-          type="hidden"
-          name={`${idx}.location`}
-          value={mod.location}
-          ref={register}
-        />
-        <label htmlFor={inputName} className={`${CLASSNAME}-label`}>
-          <span className={`${CLASSNAME}-location`}>{mod.location}</span>
-          <input
-            type="text"
-            className="form-control"
-            name={inputName}
-            placeholder={descriptionPlaceholder}
-            defaultValue={mod.description ?? ""}
-            ref={register}
+      <Form.Row key={mod.location} className="mb-1">
+        <InputGroup className="col">
+          <InputGroup.Prepend>
+            <InputGroup.Text className="font-weight-bold">Location</InputGroup.Text>
+          </InputGroup.Prepend>
+          <Controller
+            as={<Form.Control />}
+            name={`${idx}.location`}
+            control={control}
+            defaultValue={mod.location}
+            disabled
           />
-        </label>
-      </div>
+          <Controller
+            as={<Form.Control />}
+            name={`${idx}.description`}
+            defaultValue={mod.description}
+            placeholder={descriptionPlaceholder}
+            control={control}
+          />
+          <InputGroup.Append>
+            <Button
+              variant="danger"
+              onClick={() => removeMod(index)}
+            >
+              Remove
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
+      </Form.Row>
     );
   });
 
-  const opts = options.map((opt) => ({ label: opt, value: opt }));
-
   return (
-    <div className={CLASSNAME}>
-      <h6>{name}</h6>
+    <>
+      <Form.Row className={CLASSNAME}>
+        <Form.Group className="col">
+          <Form.Label className="text-capitalize">{name}</Form.Label>
+          <Creatable
+            classNamePrefix="react-select"
+            value={null}
+            ref={selectRef}
+            name={name}
+            placeholder={locationPlaceholder}
+            onChange={handleChange}
+            formatCreateLabel={formatLabel}
+            components={{
+              DropdownIndicator: () => null,
+              Menu: (data) => (
+                data.options.length > 0 ? <components.Menu {...data} /> : <></>
+              ),
+            }}
+          />
+        </Form.Group>
+      </Form.Row>
       {modificationList}
-      <Creatable
-        classNamePrefix="react-select"
-        value={null}
-        ref={selectRef}
-        name={name}
-        options={opts}
-        placeholder={locationPlaceholder}
-        onChange={handleChange}
-      />
-    </div>
+    </>
   );
 };
 

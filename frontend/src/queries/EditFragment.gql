@@ -1,3 +1,5 @@
+#import "./PerformerFragment.gql"
+#import "./ImageFragment.gql"
 fragment EditFragment on Edit {
   id
   target_type
@@ -16,6 +18,9 @@ fragment EditFragment on Edit {
       description
       deleted
     }
+    ... on Performer {
+      ...PerformerFragment
+    }
   }
   details {
     ... on TagEdit {
@@ -24,6 +29,57 @@ fragment EditFragment on Edit {
       added_aliases
       removed_aliases
     }
+    ... on PerformerEdit {
+      name
+      disambiguation
+      added_aliases
+      removed_aliases
+      gender
+      added_urls {
+        url
+        type
+      }
+      removed_urls {
+        url
+        type
+      }
+      birthdate
+      birthdate_accuracy
+      ethnicity
+      country
+      eye_color
+      hair_color
+      height
+      cup_size
+      band_size
+      waist_size
+      hip_size
+      breast_type
+      career_start_year
+      career_end_year
+      added_tattoos {
+        location
+        description
+      }
+      removed_tattoos {
+        location
+        description
+      }
+      added_piercings {
+        location
+        description
+      }
+      removed_piercings {
+        location
+        description
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+    }
   }
   merge_sources {
     ... on Tag {
@@ -31,6 +87,9 @@ fragment EditFragment on Edit {
       name
       description
       deleted
+    }
+    ... on Performer {
+      ...PerformerFragment
     }
   }
 }

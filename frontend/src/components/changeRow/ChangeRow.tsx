@@ -1,6 +1,6 @@
 import React from "react";
 
-interface ChangeRowProps {
+export interface ChangeRowProps {
   name: string;
   newValue?: string | number | null;
   oldValue?: string | number | null;
@@ -12,18 +12,14 @@ const ChangeRow: React.FC<ChangeRowProps> = ({
   newValue,
   oldValue,
   showDiff = false,
-}) => {
-  if (newValue === null || newValue === undefined || newValue === "") {
-    return null;
-  }
-
-  return (
+}) => (
+  (newValue || oldValue) ? (
     <div className="row">
       <b className="col-2 text-right">{name}</b>
-      {showDiff && <span className="col-2 bg-danger">{oldValue}</span>}
-      <span className={`col-2 ${showDiff && "bg-success"}`}>{newValue}</span>
+      {showDiff && <span className="col-5 bg-danger">{oldValue}</span>}
+      <span className={`col-5 ${showDiff && "bg-success"}`}>{newValue}</span>
     </div>
-  );
-};
+  ) : <></>
+);
 
 export default ChangeRow;

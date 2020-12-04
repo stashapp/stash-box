@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { TargetTypeEnum, OperationEnum, VoteStatusEnum } from "./globalTypes";
+import { TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: EditFragment
@@ -15,8 +15,8 @@ export interface EditFragment_user {
   name: string;
 }
 
-export interface EditFragment_target_Performer {
-  __typename: "Performer" | "Scene" | "Studio";
+export interface EditFragment_target_Scene {
+  __typename: "Scene" | "Studio";
 }
 
 export interface EditFragment_target_Tag {
@@ -27,10 +27,78 @@ export interface EditFragment_target_Tag {
   deleted: boolean;
 }
 
-export type EditFragment_target = EditFragment_target_Performer | EditFragment_target_Tag;
+export interface EditFragment_target_Performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
 
-export interface EditFragment_details_PerformerEdit {
-  __typename: "PerformerEdit" | "SceneEdit" | "StudioEdit";
+export interface EditFragment_target_Performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface EditFragment_target_Performer_measurements {
+  __typename: "Measurements";
+  cup_size: string | null;
+  band_size: number | null;
+  waist: number | null;
+  hip: number | null;
+}
+
+export interface EditFragment_target_Performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface EditFragment_target_Performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface EditFragment_target_Performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+}
+
+export interface EditFragment_target_Performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  aliases: string[];
+  gender: GenderEnum | null;
+  urls: EditFragment_target_Performer_urls[];
+  birthdate: EditFragment_target_Performer_birthdate | null;
+  age: number | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  eye_color: EyeColorEnum | null;
+  hair_color: HairColorEnum | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  measurements: EditFragment_target_Performer_measurements;
+  breast_type: BreastTypeEnum | null;
+  career_start_year: number | null;
+  career_end_year: number | null;
+  tattoos: EditFragment_target_Performer_tattoos[] | null;
+  piercings: EditFragment_target_Performer_piercings[] | null;
+  images: EditFragment_target_Performer_images[];
+  deleted: boolean;
+}
+
+export type EditFragment_target = EditFragment_target_Scene | EditFragment_target_Tag | EditFragment_target_Performer;
+
+export interface EditFragment_details_SceneEdit {
+  __typename: "SceneEdit" | "StudioEdit";
 }
 
 export interface EditFragment_details_TagEdit {
@@ -41,10 +109,96 @@ export interface EditFragment_details_TagEdit {
   removed_aliases: string[] | null;
 }
 
-export type EditFragment_details = EditFragment_details_PerformerEdit | EditFragment_details_TagEdit;
+export interface EditFragment_details_PerformerEdit_added_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
 
-export interface EditFragment_merge_sources_Performer {
-  __typename: "Performer" | "Scene" | "Studio";
+export interface EditFragment_details_PerformerEdit_removed_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface EditFragment_details_PerformerEdit_added_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface EditFragment_details_PerformerEdit_removed_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface EditFragment_details_PerformerEdit_added_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface EditFragment_details_PerformerEdit_removed_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface EditFragment_details_PerformerEdit_added_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+}
+
+export interface EditFragment_details_PerformerEdit_removed_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+}
+
+export interface EditFragment_details_PerformerEdit {
+  __typename: "PerformerEdit";
+  name: string | null;
+  disambiguation: string | null;
+  added_aliases: string[] | null;
+  removed_aliases: string[] | null;
+  gender: GenderEnum | null;
+  added_urls: EditFragment_details_PerformerEdit_added_urls[] | null;
+  removed_urls: EditFragment_details_PerformerEdit_removed_urls[] | null;
+  birthdate: string | null;
+  birthdate_accuracy: string | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  eye_color: EyeColorEnum | null;
+  hair_color: HairColorEnum | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  cup_size: string | null;
+  band_size: number | null;
+  waist_size: number | null;
+  hip_size: number | null;
+  breast_type: BreastTypeEnum | null;
+  career_start_year: number | null;
+  career_end_year: number | null;
+  added_tattoos: EditFragment_details_PerformerEdit_added_tattoos[] | null;
+  removed_tattoos: EditFragment_details_PerformerEdit_removed_tattoos[] | null;
+  added_piercings: EditFragment_details_PerformerEdit_added_piercings[] | null;
+  removed_piercings: EditFragment_details_PerformerEdit_removed_piercings[] | null;
+  added_images: EditFragment_details_PerformerEdit_added_images[] | null;
+  removed_images: EditFragment_details_PerformerEdit_removed_images[] | null;
+}
+
+export type EditFragment_details = EditFragment_details_SceneEdit | EditFragment_details_TagEdit | EditFragment_details_PerformerEdit;
+
+export interface EditFragment_merge_sources_Scene {
+  __typename: "Scene" | "Studio";
 }
 
 export interface EditFragment_merge_sources_Tag {
@@ -55,7 +209,75 @@ export interface EditFragment_merge_sources_Tag {
   deleted: boolean;
 }
 
-export type EditFragment_merge_sources = EditFragment_merge_sources_Performer | EditFragment_merge_sources_Tag;
+export interface EditFragment_merge_sources_Performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface EditFragment_merge_sources_Performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface EditFragment_merge_sources_Performer_measurements {
+  __typename: "Measurements";
+  cup_size: string | null;
+  band_size: number | null;
+  waist: number | null;
+  hip: number | null;
+}
+
+export interface EditFragment_merge_sources_Performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface EditFragment_merge_sources_Performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface EditFragment_merge_sources_Performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+}
+
+export interface EditFragment_merge_sources_Performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  aliases: string[];
+  gender: GenderEnum | null;
+  urls: EditFragment_merge_sources_Performer_urls[];
+  birthdate: EditFragment_merge_sources_Performer_birthdate | null;
+  age: number | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  eye_color: EyeColorEnum | null;
+  hair_color: HairColorEnum | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  measurements: EditFragment_merge_sources_Performer_measurements;
+  breast_type: BreastTypeEnum | null;
+  career_start_year: number | null;
+  career_end_year: number | null;
+  tattoos: EditFragment_merge_sources_Performer_tattoos[] | null;
+  piercings: EditFragment_merge_sources_Performer_piercings[] | null;
+  images: EditFragment_merge_sources_Performer_images[];
+  deleted: boolean;
+}
+
+export type EditFragment_merge_sources = EditFragment_merge_sources_Scene | EditFragment_merge_sources_Tag | EditFragment_merge_sources_Performer;
 
 export interface EditFragment {
   __typename: "Edit";

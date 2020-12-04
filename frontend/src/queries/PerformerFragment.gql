@@ -1,0 +1,45 @@
+fragment PerformerFragment on Performer {
+  id
+  name
+  disambiguation
+  aliases
+  gender
+  urls {
+    url
+    type
+  }
+  birthdate {
+    date
+    accuracy
+  }
+  age
+  ethnicity
+  country
+  eye_color
+  hair_color
+  height
+  measurements {
+    cup_size
+    band_size
+    waist
+    hip
+  }
+  breast_type
+  career_start_year
+  career_end_year
+  tattoos {
+    location
+    description
+  }
+  piercings {
+    location
+    description
+  }
+  images {
+    id
+    url
+    width
+    height
+  }
+  deleted
+}

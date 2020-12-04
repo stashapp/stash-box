@@ -9,38 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-/*
-type PerformerEdit struct {
-	Name              *string             `json:"name,omitempty"`
-	Disambiguation    *string             `json:"disambiguation,omitempty"`
-	AddedAliases      []string            `json:"added_aliases,omitempty"`
-	RemovedAliases    []string            `json:"removed_aliases,omitempty"`
-	Gender            *string             `json:"gender,omitempty"`
-	AddedUrls         []*URL              `json:"added_urls,omitempty"`
-	RemovedUrls       []*URL              `json:"removed_urls,omitempty"`
-	Birthdate         *string             `json:"birthdate,omitempty"`
-	BirthdateAccuracy *string             `json:"birthdate_accuracy,omitempty"`
-	Ethnicity         *string             `json:"ethnicity,omitempty"`
-	Country           *string             `json:"country,omitempty"`
-	EyeColor          *string             `json:"eye_color,omitempty"`
-	HairColor         *string             `json:"hair_color,omitempty"`
-	Height            *int64              `json:"height,omitempty"`
-	CupSize           *string             `json:"cup_size,omitempty"`
-	BandSize          *int64              `json:"band_size,omitempty"`
-	WaistSize         *int64              `json:"waist_size,omitempty"`
-	HipSize           *int64              `json:"hip_size,omitempty"`
-	BreastType        *string             `json:"breast_type,omitempty"`
-	CareerStartYear   *int64              `json:"career_start_year,omitempty"`
-	CareerEndYear     *int64              `json:"career_end_year,omitempty"`
-	AddedTattoos      []*BodyModification `json:"added_tattoos,omitempty"`
-	RemovedTattoos    []*BodyModification `json:"removed_tattoos,omitempty"`
-	AddedPiercings    []*BodyModification `json:"added_piercings,omitempty"`
-	RemovedPiercings  []*BodyModification `json:"removed_piercings,omitempty"`
-	AddedImages       []string            `json:"added_images,omitempty"`
-	RemovedImages     []string            `json:"removed_images,omitempty"`
-}
-*/
-
 type performerEditResolver struct{ *Resolver }
 
 func (r *performerEditResolver) Gender(ctx context.Context, obj *models.PerformerEdit) (*models.GenderEnum, error) {
@@ -89,6 +57,10 @@ func (r *performerEditResolver) BreastType(ctx context.Context, obj *models.Perf
 }
 
 func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
+	if len(obj.AddedImages) == 0 {
+		return nil, nil
+	}
+
 	var uuids []uuid.UUID
 	for _, id := range obj.AddedImages {
 		imageID, _ := uuid.FromString(id)
@@ -104,6 +76,10 @@ func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.Per
 }
 
 func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
+	if len(obj.AddedImages) == 0 {
+		return nil, nil
+	}
+
 	var uuids []uuid.UUID
 	for _, id := range obj.RemovedImages {
 		imageID, _ := uuid.FromString(id)

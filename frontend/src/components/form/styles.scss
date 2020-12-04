@@ -37,3 +37,35 @@
     text-transform: capitalize;
   }
 }
+
+.ImageInput {
+  display: flex;
+  flex-wrap: nowrap;
+  margin-bottom: .5rem;
+  width: 100%;
+
+  &-image {
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-left: .5rem;
+    max-height: 200px;
+    max-width: 300px;
+  }
+
+  &-metadata {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
+    overflow: hidden;
+    padding: .5rem;
+
+    &.card {
+      margin-bottom: 0;
+    }
+  }
+
+  &-button {
+    margin-top: auto;
+    width: 6rem;
+  }
+}
