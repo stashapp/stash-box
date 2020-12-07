@@ -1,0 +1,16 @@
+.PerformerMerge {
+  .TargetCard {
+    .PerformerCard-image {
+      border: 2px solid white;
+    }
+  }
+  .PerformerCard {
+    &-image {
+      height: 8rem;
+    }
+
+    .card-footer {
+      display: none;
+    }
+  }
+}

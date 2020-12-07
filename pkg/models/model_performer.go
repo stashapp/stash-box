@@ -2,8 +2,7 @@ package models
 
 import (
 	"database/sql"
-
-	"errors"
+	"fmt"
 	"github.com/gofrs/uuid"
 	"time"
 
@@ -143,7 +142,7 @@ func (p *PerformerAliases) AddAliases(newAliases []*PerformerAlias) error {
 	}
 	for _, v := range newAliases {
 		if aliasMap[v.Alias] {
-			return errors.New("Invalid alias addition. Alias already exists '" + v.Alias + "'")
+			return fmt.Errorf("Invalid alias addition. Alias already exists: '%v'", v.Alias)
 		}
 	}
 	for _, v := range newAliases {
@@ -159,7 +158,7 @@ func (p *PerformerAliases) RemoveAliases(oldAliases []string) error {
 	}
 	for _, v := range oldAliases {
 		if !aliasMap[v] {
-			return errors.New("Invalid alias removal. Alias does not exist: '" + v + "'")
+			return fmt.Errorf("Invalid alias removal. Alias does not exist: '%v'", v)
 		}
 	}
 	for _, v := range oldAliases {
@@ -427,12 +426,58 @@ func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformersI
 }
 
 func (p *Performer) CopyFromPerformerEdit(input PerformerEdit) {
-	CopyFull(p, input)
+	if input.Name != nil {
+		p.Name = *input.Name
+	}
+	if input.Disambiguation != nil {
+		p.Disambiguation = sql.NullString{String: *input.Disambiguation, Valid: true}
+	}
+	if input.Gender != nil {
+		p.Gender = sql.NullString{String: *input.Gender, Valid: true}
+	}
+	if input.Ethnicity != nil {
+		p.Ethnicity = sql.NullString{String: *input.Ethnicity, Valid: true}
+	}
+	if input.Country != nil {
+		p.Country = sql.NullString{String: *input.Country, Valid: true}
+	}
+	if input.EyeColor != nil {
+		p.EyeColor = sql.NullString{String: *input.EyeColor, Valid: true}
+	}
+	if input.HairColor != nil {
+		p.HairColor = sql.NullString{String: *input.HairColor, Valid: true}
+	}
+	if input.Height != nil {
+		p.Height = sql.NullInt64{Int64: *input.Height, Valid: true}
+	}
+	if input.BreastType != nil {
+		p.BreastType = sql.NullString{String: *input.BreastType, Valid: true}
+	}
+	if input.CareerStartYear != nil {
+		p.CareerStartYear = sql.NullInt64{Int64: *input.CareerStartYear, Valid: true}
+	}
+	if input.CareerEndYear != nil {
+		p.CareerEndYear = sql.NullInt64{Int64: *input.CareerEndYear, Valid: true}
+	}
+	if input.CupSize != nil {
+		p.CupSize = sql.NullString{String: *input.CupSize, Valid: *input.CupSize != ""}
+	}
+	if input.BandSize != nil {
+		p.BandSize = sql.NullInt64{Int64: *input.BandSize, Valid: *input.BandSize != 0}
+	}
+	if input.HipSize != nil {
+		p.HipSize = sql.NullInt64{Int64: *input.HipSize, Valid: *input.HipSize != 0}
+	}
+	if input.WaistSize != nil {
+		p.WaistSize = sql.NullInt64{Int64: *input.WaistSize, Valid: *input.WaistSize != 0}
+	}
 
 	if input.Birthdate != nil {
 		p.Birthdate = SQLiteDate{String: *input.Birthdate, Valid: *input.Birthdate != ""}
-	} else {
-		p.Birthdate = SQLiteDate{String: "", Valid: false}
+
+		if input.BirthdateAccuracy != nil {
+			p.BirthdateAccuracy = sql.NullString{String: *input.BirthdateAccuracy, Valid: *input.BirthdateAccuracy != ""}
+		}
 	}
 
 	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
@@ -440,13 +485,56 @@ func (p *Performer) CopyFromPerformerEdit(input PerformerEdit) {
 
 func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
 	if edit.Old.Name != nil && *edit.Old.Name != p.Name {
-		return errors.New("Invalid name. Expected '" + *edit.Old.Name + "'  but was '" + p.Name + "'")
+		return fmt.Errorf("Invalid name. Expected '%v' but was '%v'", *edit.Old.Name, p.Name)
 	}
 	if edit.Old.Disambiguation != nil && *edit.Old.Disambiguation != p.Disambiguation.String {
-		return errors.New("Invalid disambiguation. Expected '" + *edit.Old.Disambiguation + "'  but was '" + p.Disambiguation.String + "'")
+		return fmt.Errorf("Invalid disambiguation. Expected '%v' but was '%v'", *edit.Old.Disambiguation, p.Disambiguation.String)
 	}
-
-	// TODO: Check rest of properties
+	if edit.Old.Gender != nil && *edit.Old.Gender != p.Gender.String {
+		return fmt.Errorf("Invalid gender. Expected '%v' but was '%v'", *edit.Old.Gender, p.Gender.String)
+	}
+	if edit.Old.Ethnicity != nil && *edit.Old.Ethnicity != p.Ethnicity.String {
+		return fmt.Errorf("Invalid ethnicity. Expected '%v' but was '%v'", *edit.Old.Ethnicity, p.Ethnicity.String)
+	}
+	if edit.Old.Country != nil && *edit.Old.Country != p.Country.String {
+		return fmt.Errorf("Invalid country. Expected '%v' but was '%v'", *edit.Old.Country, p.Country.String)
+	}
+	if edit.Old.EyeColor != nil && *edit.Old.EyeColor != p.EyeColor.String {
+		return fmt.Errorf("Invalid eye color. Expected '%v' but was '%v'", *edit.Old.EyeColor, p.EyeColor.String)
+	}
+	if edit.Old.HairColor != nil && *edit.Old.HairColor != p.HairColor.String {
+		return fmt.Errorf("Invalid hair color. Expected '%v' but was '%v'", *edit.Old.HairColor, p.HairColor.String)
+	}
+	if edit.Old.Height != nil && *edit.Old.Height != p.Height.Int64 {
+		return fmt.Errorf("Invalid height. Expected %d but was %d", *edit.Old.Height, p.Height.Int64)
+	}
+	if edit.Old.BreastType != nil && *edit.Old.BreastType != p.BreastType.String {
+		return fmt.Errorf("Invalid breast type. Expected '%v' but was '%v'", *edit.Old.BreastType, p.BreastType.String)
+	}
+	if edit.Old.CareerStartYear != nil && *edit.Old.CareerStartYear != p.CareerStartYear.Int64 {
+		return fmt.Errorf("Invalid career start year. Expected %d but was %d", *edit.Old.CareerStartYear, p.CareerStartYear.Int64)
+	}
+	if edit.Old.CareerEndYear != nil && *edit.Old.CareerEndYear != p.CareerEndYear.Int64 {
+		return fmt.Errorf("Invalid career end year. Expected %d but was %d", *edit.Old.CareerEndYear, p.CareerEndYear.Int64)
+	}
+	if edit.Old.CupSize != nil && *edit.Old.CupSize != p.CupSize.String {
+		return fmt.Errorf("Invalid cup size. Expected '%v' but was '%v'", *edit.Old.CupSize, p.CupSize.String)
+	}
+	if edit.Old.BandSize != nil && *edit.Old.BandSize != p.BandSize.Int64 {
+		return fmt.Errorf("Invalid band size. Expected %d but was %d", *edit.Old.BandSize, p.BandSize.Int64)
+	}
+	if edit.Old.HipSize != nil && *edit.Old.HipSize != p.HipSize.Int64 {
+		return fmt.Errorf("Invalid hip size. Expected %d but was %d", *edit.Old.HipSize, p.HipSize.Int64)
+	}
+	if edit.Old.WaistSize != nil && *edit.Old.WaistSize != p.WaistSize.Int64 {
+		return fmt.Errorf("Invalid waist size. Expected %d but was %d", *edit.Old.WaistSize, p.WaistSize.Int64)
+	}
+	if edit.Old.Birthdate != nil && *edit.Old.Birthdate != p.Birthdate.String {
+		return fmt.Errorf("Invalid birthdate. Expected '%v' but was '%v'", *edit.Old.Birthdate, p.Birthdate.String)
+	}
+	if edit.Old.BirthdateAccuracy != nil && *edit.Old.BirthdateAccuracy != p.BirthdateAccuracy.String {
+		return fmt.Errorf("Invalid birthdate accuracy. Expected '%v' but was '%v'", *edit.Old.BirthdateAccuracy, p.BirthdateAccuracy.String)
+	}
 
 	return nil
 }

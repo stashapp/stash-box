@@ -77,7 +77,12 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 			return err
 		}
 
-		performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, images.ToURLSlice())
+		existingImages := []string{}
+		for _, image := range images {
+			existingImages = append(existingImages, image.ID.String())
+		}
+
+		performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
 	}
 
 	edit.SetData(performerEdit)
@@ -177,7 +182,7 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 
 		existingImages := []string{}
 		for _, image := range images {
-			existingImages = append(existingImages, image.URL)
+			existingImages = append(existingImages, image.ID.String())
 		}
 
 		performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)

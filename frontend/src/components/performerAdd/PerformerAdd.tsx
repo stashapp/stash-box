@@ -66,6 +66,7 @@ const PerformerAdd: React.FC = () => {
     aliases: [],
     urls: [],
     images: [],
+    deleted: false,
     __typename: "Performer",
   } as Performer;
 

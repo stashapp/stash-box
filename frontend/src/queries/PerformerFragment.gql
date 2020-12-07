@@ -1,32 +1,30 @@
+#import "./ImageFragment.gql"
 fragment PerformerFragment on Performer {
   id
   name
   disambiguation
+  deleted
   aliases
   gender
-  urls {
-    url
-    type
-  }
   birthdate {
     date
     accuracy
   }
   age
+  height
+  hair_color
+  eye_color
   ethnicity
   country
-  eye_color
-  hair_color
-  height
+  career_end_year
+  career_start_year
+  breast_type
   measurements {
-    cup_size
-    band_size
     waist
     hip
+    band_size
+    cup_size
   }
-  breast_type
-  career_start_year
-  career_end_year
   tattoos {
     location
     description
@@ -35,11 +33,11 @@ fragment PerformerFragment on Performer {
     location
     description
   }
-  images {
-    id
-    url
-    width
-    height
+  urls {
+      url
+      type
   }
-  deleted
+  images {
+    ... ImageFragment
+  }
 }

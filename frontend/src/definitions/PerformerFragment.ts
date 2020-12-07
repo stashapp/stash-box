@@ -3,17 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnum, BreastTypeEnum } from "./globalTypes";
+import { GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: PerformerFragment
 // ====================================================
-
-export interface PerformerFragment_urls {
-  __typename: "URL";
-  url: string;
-  type: string;
-}
 
 export interface PerformerFragment_birthdate {
   __typename: "FuzzyDate";
@@ -23,10 +17,10 @@ export interface PerformerFragment_birthdate {
 
 export interface PerformerFragment_measurements {
   __typename: "Measurements";
-  cup_size: string | null;
-  band_size: number | null;
   waist: number | null;
   hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
 }
 
 export interface PerformerFragment_tattoos {
@@ -39,6 +33,12 @@ export interface PerformerFragment_piercings {
   __typename: "BodyModification";
   location: string;
   description: string | null;
+}
+
+export interface PerformerFragment_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
 }
 
 export interface PerformerFragment_images {
@@ -54,25 +54,25 @@ export interface PerformerFragment {
   id: string;
   name: string;
   disambiguation: string | null;
+  deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  urls: PerformerFragment_urls[];
   birthdate: PerformerFragment_birthdate | null;
   age: number | null;
-  ethnicity: EthnicityEnum | null;
-  country: string | null;
-  eye_color: EyeColorEnum | null;
-  hair_color: HairColorEnum | null;
   /**
    * Height in cm
    */
   height: number | null;
-  measurements: PerformerFragment_measurements;
-  breast_type: BreastTypeEnum | null;
-  career_start_year: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
   career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: PerformerFragment_measurements;
   tattoos: PerformerFragment_tattoos[] | null;
   piercings: PerformerFragment_piercings[] | null;
+  urls: PerformerFragment_urls[];
   images: PerformerFragment_images[];
-  deleted: boolean;
 }

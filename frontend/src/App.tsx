@@ -13,6 +13,7 @@ import Performers from "./components/performers";
 import Performer from "./components/performer";
 import PerformerEdit from "./components/performerEdit";
 import PerformerAdd from "./components/performerAdd";
+import PerformerMerge from "./components/performerMerge";
 import Scenes from "./components/scenes";
 import Scene from "./components/scene";
 import SceneEdit from "./components/sceneEdit";
@@ -78,6 +79,9 @@ const App: React.FC = () => (
             </Route>
             <Route exact path="/performers/:id/edit">
               <PerformerEdit />
+            </Route>
+            <Route exact path="/performers/:id/merge">
+              <PerformerMerge />
             </Route>
             <Route exact path="/scenes/add">
               <SceneAdd />

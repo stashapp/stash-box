@@ -61,6 +61,10 @@ func (qb *PerformerQueryBuilder) CreateUrls(newJoins PerformerUrls) error {
 	return qb.dbi.InsertJoins(performerUrlTable, &newJoins)
 }
 
+func (qb *PerformerQueryBuilder) CreateImages(newJoins PerformerImages) error {
+	return qb.dbi.InsertJoins(performerImageTable, &newJoins)
+}
+
 func (qb *PerformerQueryBuilder) UpdateUrls(performerID uuid.UUID, updatedJoins PerformerUrls) error {
 	return qb.dbi.ReplaceJoins(performerUrlTable, performerID, &updatedJoins)
 }
@@ -480,21 +484,32 @@ func (qb *PerformerQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTarge
 	return qb.dbi.RawQuery(performerRedirectTable.Table, query, args, nil)
 }
 
-func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	// Insert new performers for any scenes that have the old performers
-	query := `INSERT INTO scene_performers (scene_id, performer_id)
-            SELECT scene_id, ? 
-            FROM scene_performers WHERE performer_id = ?
-            ON CONFLICT DO NOTHING`
-	args := []interface{}{newTargetID, oldTargetID}
+func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldPerformer *Performer, newTargetID uuid.UUID) error {
+	// Set old name as scene performance alias where one isn't already set
+	query := `UPDATE scene_performers
+						SET "as" = ?
+						WHERE performer_id = ?
+						AND "as" IS NULL`
+	args := []interface{}{oldPerformer.Name, oldPerformer.ID}
 	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
 	if err != nil {
 		return err
 	}
 
-	// Delete any joins with the old performer
+	// Reassign scene performances to new id where it isn't already assigned
+	query = `UPDATE scene_performers
+					 SET performer_id = ?
+					 WHERE performer_id = ?
+					 AND scene_id NOT IN (SELECT scene_id from scene_performers WHERE performer_id = ?)`
+	args = []interface{}{newTargetID, oldPerformer.ID, newTargetID}
+	err = qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete any remaining joins with the old performer
 	query = `DELETE FROM scene_performers WHERE performer_id = ?`
-	args = []interface{}{oldTargetID}
+	args = []interface{}{oldPerformer.ID}
 	return qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
 }
 
@@ -516,7 +531,7 @@ func (qb *PerformerQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUI
 	if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
 		return err
 	}
-	if err := qb.UpdateScenePerformers(sourceID, targetID); err != nil {
+	if err := qb.UpdateScenePerformers(performer, targetID); err != nil {
 		return err
 	}
 	redirect := PerformerRedirect{SourceID: sourceID, TargetID: targetID}
@@ -578,13 +593,12 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 			}
 		}
 
-		// TODO
-		//if len(data.New.AddedImages) > 0 {
-		//images := CreatePerformerImages(UUID, data.New.AddedImages)
-		//if err := qb.CreateImages(images); err != nil {
-		//return nil, err
-		//}
-		//}
+		if len(data.New.AddedImages) > 0 {
+			images := CreatePerformerImages(UUID, data.New.AddedImages)
+			if err := qb.CreateImages(images); err != nil {
+				return nil, err
+			}
+		}
 
 		return performer, nil
 	case OperationEnumDestroy:
@@ -593,80 +607,17 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 			return nil, err
 		}
 		err = qb.DeleteScenePerformers(performer.ID)
+
+		// TODO: Delete images
+
 		return updatedPerformer, err
 	case OperationEnumModify:
-		if err := performer.ValidateModifyEdit(*data); err != nil {
-			return nil, err
-		}
-
-		performer.CopyFromPerformerEdit(*data.New)
-		updatedPerformer, err := qb.UpdatePartial(*performer)
-
-		currentAliases, err := qb.GetAliases(updatedPerformer.ID)
-		if err != nil {
-			return nil, err
-		}
-		newAliases := CreatePerformerAliases(updatedPerformer.ID, data.New.AddedAliases)
-		oldAliases := CreatePerformerAliases(updatedPerformer.ID, data.New.RemovedAliases)
-		if err := ProcessSlice(&currentAliases, &newAliases, &oldAliases); err != nil {
-			return nil, err
-		}
-		if err := qb.UpdateAliases(updatedPerformer.ID, currentAliases); err != nil {
-			return nil, err
-		}
-
-		currentTattoos, err := qb.GetTattoos(updatedPerformer.ID)
-		if err != nil {
-			return nil, err
-		}
-		newTattoos := CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedTattoos)
-		oldTattoos := CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedTattoos)
-
-		if err := ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos); err != nil {
-			return nil, err
-		}
-		if err := qb.UpdateTattoos(updatedPerformer.ID, currentTattoos); err != nil {
-			return nil, err
-		}
-
-		currentPiercings, err := qb.GetPiercings(updatedPerformer.ID)
-		if err != nil {
-			return nil, err
-		}
-		newPiercings := CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedPiercings)
-		oldPiercings := CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedPiercings)
-
-		if err := ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings); err != nil {
-			return nil, err
-		}
-		if err := qb.UpdatePiercings(updatedPerformer.ID, currentPiercings); err != nil {
-			return nil, err
-		}
-
-		urls, err := qb.GetUrls(updatedPerformer.ID)
-		currentUrls := CreatePerformerUrls(updatedPerformer.ID, urls)
-		if err != nil {
-			return nil, err
-		}
-		newUrls := CreatePerformerUrls(updatedPerformer.ID, data.New.AddedUrls)
-		oldUrls := CreatePerformerUrls(updatedPerformer.ID, data.New.RemovedUrls)
-
-		if err := ProcessSlice(&currentUrls, &newUrls, &oldUrls); err != nil {
-			return nil, err
-		}
-
-		if err := qb.UpdateUrls(updatedPerformer.ID, currentUrls); err != nil {
-			return nil, err
-		}
-
-		return updatedPerformer, err
+		return qb.ApplyModifyEdit(performer, data)
 	case OperationEnumMerge:
-		if err := performer.ValidateModifyEdit(*data); err != nil {
+		updatedPerformer, err := qb.ApplyModifyEdit(performer, data)
+		if err != nil {
 			return nil, err
 		}
-
-		performer.CopyFromPerformerEdit(*data.New)
-		updatedPerformer, err := qb.Update(*performer)
 
 		for _, v := range data.MergeSources {
 			sourceUUID, _ := uuid.FromString(v)
@@ -675,23 +626,76 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 			}
 		}
 
-		currentAliases, err := qb.GetAliases(updatedPerformer.ID)
-		if err != nil {
-			return nil, err
-		}
-		newAliases := CreatePerformerAliases(updatedPerformer.ID, data.New.AddedAliases)
-		if err := currentAliases.AddAliases(newAliases); err != nil {
-			return nil, err
-		}
-		if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
-			return nil, err
-		}
-		if err := qb.UpdateAliases(updatedPerformer.ID, currentAliases); err != nil {
-			return nil, err
-		}
-
 		return updatedPerformer, nil
 	default:
 		return nil, errors.New("Unsupported operation: " + operation.String())
 	}
+}
+
+func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *PerformerEditData) (*Performer, error) {
+	if err := performer.ValidateModifyEdit(*data); err != nil {
+		return nil, err
+	}
+
+	performer.CopyFromPerformerEdit(*data.New)
+	updatedPerformer, err := qb.UpdatePartial(*performer)
+
+	currentAliases, err := qb.GetAliases(updatedPerformer.ID)
+	if err != nil {
+		return nil, err
+	}
+	newAliases := CreatePerformerAliases(updatedPerformer.ID, data.New.AddedAliases)
+	oldAliases := CreatePerformerAliases(updatedPerformer.ID, data.New.RemovedAliases)
+	if err := ProcessSlice(&currentAliases, &newAliases, &oldAliases); err != nil {
+		return nil, err
+	}
+	if err := qb.UpdateAliases(updatedPerformer.ID, currentAliases); err != nil {
+		return nil, err
+	}
+
+	currentTattoos, err := qb.GetTattoos(updatedPerformer.ID)
+	if err != nil {
+		return nil, err
+	}
+	newTattoos := CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedTattoos)
+	oldTattoos := CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedTattoos)
+
+	if err := ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos); err != nil {
+		return nil, err
+	}
+	if err := qb.UpdateTattoos(updatedPerformer.ID, currentTattoos); err != nil {
+		return nil, err
+	}
+
+	currentPiercings, err := qb.GetPiercings(updatedPerformer.ID)
+	if err != nil {
+		return nil, err
+	}
+	newPiercings := CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedPiercings)
+	oldPiercings := CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedPiercings)
+
+	if err := ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings); err != nil {
+		return nil, err
+	}
+	if err := qb.UpdatePiercings(updatedPerformer.ID, currentPiercings); err != nil {
+		return nil, err
+	}
+
+	urls, err := qb.GetUrls(updatedPerformer.ID)
+	currentUrls := CreatePerformerUrls(updatedPerformer.ID, urls)
+	if err != nil {
+		return nil, err
+	}
+	newUrls := CreatePerformerUrls(updatedPerformer.ID, data.New.AddedUrls)
+	oldUrls := CreatePerformerUrls(updatedPerformer.ID, data.New.RemovedUrls)
+
+	if err := ProcessSlice(&currentUrls, &newUrls, &oldUrls); err != nil {
+		return nil, err
+	}
+
+	if err := qb.UpdateUrls(updatedPerformer.ID, currentUrls); err != nil {
+		return nil, err
+	}
+
+	return updatedPerformer, err
 }

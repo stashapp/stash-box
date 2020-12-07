@@ -90,7 +90,7 @@ const Main: React.FC = ({ children }) => {
             Admin
           </NavLink>
         )}
-        <NavLink to="/logout" onClick={handleLogout} className="nav-link">
+        <NavLink to="/logout" onClick={handleLogout} className="nav-link mr-4">
           Logout
         </NavLink>
       </>
@@ -121,7 +121,7 @@ const Main: React.FC = ({ children }) => {
         </Nav>
         <Nav className="align-items-center">
           {contextValue.authenticated && renderUserNav()}
-          <SearchField searchType={SearchType.Combined} />
+          <SearchField searchType={SearchType.Combined} navigate />
         </Nav>
       </Navbar>
       <div className="StashDBContent container-fluid">

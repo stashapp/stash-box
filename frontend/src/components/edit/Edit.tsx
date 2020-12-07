@@ -9,6 +9,7 @@ import { isAdmin } from "src/utils/auth";
 import { LoadingIndicator } from "src/components/fragments";
 import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
+import { isTag, isPerformer } from "src/utils";
 
 import { VoteStatusEnum } from "src/definitions/globalTypes";
 import { Edit, EditVariables } from "src/definitions/Edit";
@@ -19,7 +20,6 @@ import {
 import {
   ApplyEditMutation,
   ApplyEditMutationVariables,
-  ApplyEditMutation_applyEdit_target_Tag as Tag,
 } from "src/definitions/ApplyEditMutation";
 
 const EditQuery = loader("src/queries/Edit.gql");
@@ -33,6 +33,7 @@ const EditComponent: React.FC = () => {
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const { data, loading } = useQuery<Edit, EditVariables>(EditQuery, {
+    fetchPolicy: 'no-cache',
     variables: { id },
   });
   const [cancelEdit, { loading: cancelling }] = useMutation<
@@ -59,10 +60,14 @@ const EditComponent: React.FC = () => {
   const handleApply = (status: boolean): void => {
     if (status)
       applyEdit({ variables: { input: { id: edit.id } } }).then((result) => {
-        if (edit.target_type === "TAG" && result.data) {
-          const target = result.data.applyEdit.target as Tag;
+        const target = result.data?.applyEdit.target;
+        if (!target)
+          return;
+
+        if (isTag(target))
           history.push(`/tags/${target.name}#edits`);
-        }
+        else if (isPerformer(target))
+          history.push(`/performers/${target.id}#edits`);
       });
     setShowApply(false);
   };

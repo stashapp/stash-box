@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, Card, Form } from 'react-bootstrap';
+import { Controller } from 'react-hook-form';
 
 import { Performer_findPerformer_images as Image } from 'src/definitions/Performer';
 
@@ -8,7 +9,7 @@ interface ImageProps {
   onRemove: (index: number) => void;
   index: number;
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  register: any;
+  control: any;
 };
 
 const CLASSNAME = "ImageInput";
@@ -18,18 +19,18 @@ const CLASSNAME_BUTTON = `${CLASSNAME}-button`;
 
 const ImageInput: React.FC<ImageProps> = ({
   image,
-  register,
+  control,
   onRemove,
   index
 }) => {
   return (
-    <Form.Row className={CLASSNAME} key={image.id}>
+    <Form.Row className={CLASSNAME}>
       <Card className={CLASSNAME_METADATA}>
-        <Form.Control
+        <Controller
           type="hidden"
           name={`images[${index}]`}
-          value={image.id}
-          ref={register}
+          control={control}
+          defaultValue={image.id}
         />
         <div><b>ID:</b> { image.id }</div>
         <div className="text-truncate"><b>URL:</b> { image.url}</div>

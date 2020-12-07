@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers";
 import Select from "react-select";
-import { Button, Form, Tabs, Tab } from "react-bootstrap";
+import { Button, Col, Form, Tabs, Tab } from "react-bootstrap";
 import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
@@ -20,7 +20,10 @@ import {
   PerformerEditDetailsInput,
 } from "src/definitions/globalTypes";
 import { getBraSize } from "src/utils/transforms";
-import { Performer_findPerformer as Performer } from "src/definitions/Performer";
+import {
+  Performer_findPerformer as Performer,
+  Performer_findPerformer_images as PerformerImage,
+} from "src/definitions/Performer";
 
 import { BodyModification, Image } from "src/components/form";
 import MultiSelect from 'src/components/multiSelect';
@@ -191,23 +194,35 @@ const schema = yup.object().shape({
     .array()
     .of(
       yup.string().trim().transform(nullCheck)
-    )
+    ),
+  note: yup
+    .string()
+    .nullable()
 });
 
 export type PerformerFormData = yup.InferType<typeof schema>;
 
 interface PerformerProps {
   performer: Performer;
-  callback: (data: PerformerEditDetailsInput, id?: string) => void;
+  callback: (data: PerformerEditDetailsInput, note?: string, id?: string) => void;
+  initialAliases?: string[];
+  initialImages?: PerformerImage[]
 }
 
-const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
+const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialAliases = [], initialImages = [] }) => {
   const { register, control, handleSubmit, errors, watch } = useForm<PerformerFormData>({
     resolver: yupResolver(schema),
     mode: 'onBlur',
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
-  const [images, setImages] = useState(performer.images || []);
+  const [images, setImages] = useState([
+    ...performer.images,
+    ...initialImages,
+  ]);
+  const aliases = [
+    ...performer.aliases,
+    ...initialAliases,
+  ];
   const [activeTab, setActiveTab] = useState("personal");
   const fieldData = watch();
   const changes = useMemo(() => DiffPerformer(performer, schema.cast(fieldData)), [fieldData, performer]);
@@ -288,7 +303,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
           accuracy: DateAccuracyEnum.YEAR,
         };
 
-    callback(performerData, data.id);
+    callback(performerData, data.note ?? undefined, data.id);
   };
 
   const countryObj = [
@@ -348,10 +363,10 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
               <Controller
                 control={control}
                 name="aliases"
-                defaultValue={performer.aliases}
+                defaultValue={aliases}
                 render={({ onChange }) => (
                   <MultiSelect
-                    values={performer.aliases ?? []}
+                    values={aliases}
                     onChange={onChange}
                     placeholder="Enter name..."
                   />
@@ -625,8 +640,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
             ).reverse().map(image => (
 
               <Image
+                key={image.id}
                 image={image}
-                register={register}
+                control={control}
                 index={image.index}
                 onRemove={handleRemoveImage}
               />))
@@ -652,12 +668,23 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
             <h6>No changes.</h6>
           )}
           { changes.map(c => (<ChangeRow {...c} />)) }
+          <Form.Row className="my-4">
+            <Col md={{ span: 6, offset: 6 }}>
+              <Form.Label>Edit Note</Form.Label>
+              <Form.Control
+                  as="textarea"
+                  name="note"
+                  ref={register}
+              />
+              <Form.Text>Please add any relevant sources or other supporting information for your edit.</Form.Text>
+            </Col>
+          </Form.Row>
           <Form.Row className="mt-2">
             <Button variant="danger" className="ml-auto mr-2" onClick={() => history.goBack()}>
               Cancel
             </Button>
             <Button type="submit" disabled={changes.length === 0}>
-              Save
+              Submit Edit
             </Button>
           </Form.Row>
         </Tab>

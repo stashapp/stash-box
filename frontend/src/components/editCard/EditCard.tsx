@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Edits_queryEdits_edits as Edit } from "src/definitions/Edits";
 import { OperationEnum, VoteStatusEnum } from "src/definitions/globalTypes";
 
-import { isTagTarget } from "./utils";
+import { isPerformer, isTag } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
@@ -35,13 +35,13 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
     <ModifyEdit details={edit.details} />
   );
   const modifications = edit.operation !== OperationEnum.CREATE && (
-    <ModifyEdit details={edit.details} target={edit.target} />
+    <ModifyEdit details={edit.details} oldDetails={edit.old_details} />
   );
   const destruction = edit.operation === OperationEnum.DESTROY && (
     <DestroyEdit target={edit.target} />
   );
   const modifyHeader = edit.operation === OperationEnum.MODIFY &&
-    isTagTarget(edit.target) && (
+    (isTag(edit.target) || isPerformer(edit.target)) && (
       <h6 className="row mb-4">
         <span className="col-2 text-right">
           Modifying {edit.target_type.toLowerCase()}:

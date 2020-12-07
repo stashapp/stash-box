@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { TagEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnum, BreastTypeEnum } from "./globalTypes";
+import { TagEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: TagEditMutation
@@ -27,12 +27,6 @@ export interface TagEditMutation_tagEdit_target_Tag {
   deleted: boolean;
 }
 
-export interface TagEditMutation_tagEdit_target_Performer_urls {
-  __typename: "URL";
-  url: string;
-  type: string;
-}
-
 export interface TagEditMutation_tagEdit_target_Performer_birthdate {
   __typename: "FuzzyDate";
   date: any;
@@ -41,10 +35,10 @@ export interface TagEditMutation_tagEdit_target_Performer_birthdate {
 
 export interface TagEditMutation_tagEdit_target_Performer_measurements {
   __typename: "Measurements";
-  cup_size: string | null;
-  band_size: number | null;
   waist: number | null;
   hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
 }
 
 export interface TagEditMutation_tagEdit_target_Performer_tattoos {
@@ -57,6 +51,12 @@ export interface TagEditMutation_tagEdit_target_Performer_piercings {
   __typename: "BodyModification";
   location: string;
   description: string | null;
+}
+
+export interface TagEditMutation_tagEdit_target_Performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
 }
 
 export interface TagEditMutation_tagEdit_target_Performer_images {
@@ -72,27 +72,27 @@ export interface TagEditMutation_tagEdit_target_Performer {
   id: string;
   name: string;
   disambiguation: string | null;
+  deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  urls: TagEditMutation_tagEdit_target_Performer_urls[];
   birthdate: TagEditMutation_tagEdit_target_Performer_birthdate | null;
   age: number | null;
-  ethnicity: EthnicityEnum | null;
-  country: string | null;
-  eye_color: EyeColorEnum | null;
-  hair_color: HairColorEnum | null;
   /**
    * Height in cm
    */
   height: number | null;
-  measurements: TagEditMutation_tagEdit_target_Performer_measurements;
-  breast_type: BreastTypeEnum | null;
-  career_start_year: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
   career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: TagEditMutation_tagEdit_target_Performer_measurements;
   tattoos: TagEditMutation_tagEdit_target_Performer_tattoos[] | null;
   piercings: TagEditMutation_tagEdit_target_Performer_piercings[] | null;
+  urls: TagEditMutation_tagEdit_target_Performer_urls[];
   images: TagEditMutation_tagEdit_target_Performer_images[];
-  deleted: boolean;
 }
 
 export type TagEditMutation_tagEdit_target = TagEditMutation_tagEdit_target_Scene | TagEditMutation_tagEdit_target_Tag | TagEditMutation_tagEdit_target_Performer;
@@ -197,6 +197,42 @@ export interface TagEditMutation_tagEdit_details_PerformerEdit {
 
 export type TagEditMutation_tagEdit_details = TagEditMutation_tagEdit_details_SceneEdit | TagEditMutation_tagEdit_details_TagEdit | TagEditMutation_tagEdit_details_PerformerEdit;
 
+export interface TagEditMutation_tagEdit_old_details_SceneEdit {
+  __typename: "SceneEdit" | "StudioEdit";
+}
+
+export interface TagEditMutation_tagEdit_old_details_TagEdit {
+  __typename: "TagEdit";
+  name: string | null;
+  description: string | null;
+}
+
+export interface TagEditMutation_tagEdit_old_details_PerformerEdit {
+  __typename: "PerformerEdit";
+  name: string | null;
+  disambiguation: string | null;
+  gender: GenderEnum | null;
+  birthdate: string | null;
+  birthdate_accuracy: string | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  eye_color: EyeColorEnum | null;
+  hair_color: HairColorEnum | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  cup_size: string | null;
+  band_size: number | null;
+  waist_size: number | null;
+  hip_size: number | null;
+  breast_type: BreastTypeEnum | null;
+  career_start_year: number | null;
+  career_end_year: number | null;
+}
+
+export type TagEditMutation_tagEdit_old_details = TagEditMutation_tagEdit_old_details_SceneEdit | TagEditMutation_tagEdit_old_details_TagEdit | TagEditMutation_tagEdit_old_details_PerformerEdit;
+
 export interface TagEditMutation_tagEdit_merge_sources_Scene {
   __typename: "Scene" | "Studio";
 }
@@ -209,12 +245,6 @@ export interface TagEditMutation_tagEdit_merge_sources_Tag {
   deleted: boolean;
 }
 
-export interface TagEditMutation_tagEdit_merge_sources_Performer_urls {
-  __typename: "URL";
-  url: string;
-  type: string;
-}
-
 export interface TagEditMutation_tagEdit_merge_sources_Performer_birthdate {
   __typename: "FuzzyDate";
   date: any;
@@ -223,10 +253,10 @@ export interface TagEditMutation_tagEdit_merge_sources_Performer_birthdate {
 
 export interface TagEditMutation_tagEdit_merge_sources_Performer_measurements {
   __typename: "Measurements";
-  cup_size: string | null;
-  band_size: number | null;
   waist: number | null;
   hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
 }
 
 export interface TagEditMutation_tagEdit_merge_sources_Performer_tattoos {
@@ -239,6 +269,12 @@ export interface TagEditMutation_tagEdit_merge_sources_Performer_piercings {
   __typename: "BodyModification";
   location: string;
   description: string | null;
+}
+
+export interface TagEditMutation_tagEdit_merge_sources_Performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
 }
 
 export interface TagEditMutation_tagEdit_merge_sources_Performer_images {
@@ -254,27 +290,27 @@ export interface TagEditMutation_tagEdit_merge_sources_Performer {
   id: string;
   name: string;
   disambiguation: string | null;
+  deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  urls: TagEditMutation_tagEdit_merge_sources_Performer_urls[];
   birthdate: TagEditMutation_tagEdit_merge_sources_Performer_birthdate | null;
   age: number | null;
-  ethnicity: EthnicityEnum | null;
-  country: string | null;
-  eye_color: EyeColorEnum | null;
-  hair_color: HairColorEnum | null;
   /**
    * Height in cm
    */
   height: number | null;
-  measurements: TagEditMutation_tagEdit_merge_sources_Performer_measurements;
-  breast_type: BreastTypeEnum | null;
-  career_start_year: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
   career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: TagEditMutation_tagEdit_merge_sources_Performer_measurements;
   tattoos: TagEditMutation_tagEdit_merge_sources_Performer_tattoos[] | null;
   piercings: TagEditMutation_tagEdit_merge_sources_Performer_piercings[] | null;
+  urls: TagEditMutation_tagEdit_merge_sources_Performer_urls[];
   images: TagEditMutation_tagEdit_merge_sources_Performer_images[];
-  deleted: boolean;
 }
 
 export type TagEditMutation_tagEdit_merge_sources = TagEditMutation_tagEdit_merge_sources_Scene | TagEditMutation_tagEdit_merge_sources_Tag | TagEditMutation_tagEdit_merge_sources_Performer;
@@ -293,6 +329,10 @@ export interface TagEditMutation_tagEdit {
    */
   target: TagEditMutation_tagEdit_target | null;
   details: TagEditMutation_tagEdit_details | null;
+  /**
+   * Previous state of fields being modified - null if operation is create or delete.
+   */
+  old_details: TagEditMutation_tagEdit_old_details | null;
   /**
    * Objects to merge with the target. Only applicable to merges
    */

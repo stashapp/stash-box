@@ -43,6 +43,7 @@ const EditListComponent: React.FC<EditsProps> = ({
     operation,
   });
   const { data, loading } = useQuery<Edits, EditsVariables>(EditsQuery, {
+    fetchPolicy: 'no-cache',
     variables: {
       filter: {
         page,

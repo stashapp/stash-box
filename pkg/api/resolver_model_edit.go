@@ -54,14 +54,6 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 			return nil, err
 		}
 
-		data, err := obj.GetTagData()
-		if err != nil {
-			return nil, err
-		}
-		if data.Old != nil {
-			target.CopyFromTagEdit(*data.Old)
-		}
-
 		return target, nil
 	} else if targetType == "PERFORMER" {
 		eqb := models.NewEditQueryBuilder(nil)
@@ -74,14 +66,6 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		target, err := pqb.Find(*performerID)
 		if err != nil {
 			return nil, err
-		}
-
-		data, err := obj.GetPerformerData()
-		if err != nil {
-			return nil, err
-		}
-		if data.Old != nil {
-			target.CopyFromPerformerEdit(*data.Old)
 		}
 
 		return target, nil
@@ -159,6 +143,27 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 			return nil, err
 		}
 		ret = performerData.New
+	}
+
+	return ret, nil
+}
+
+func (r *editResolver) OldDetails(ctx context.Context, obj *models.Edit) (models.EditDetails, error) {
+	var ret models.EditDetails
+	var targetType models.TargetTypeEnum
+	resolveEnumString(obj.TargetType, &targetType)
+	if targetType == "TAG" {
+		tagData, err := obj.GetTagData()
+		if err != nil {
+			return nil, err
+		}
+		ret = tagData.Old
+	} else if targetType == "PERFORMER" {
+		performerData, err := obj.GetPerformerData()
+		if err != nil {
+			return nil, err
+		}
+		ret = performerData.Old
 	}
 
 	return ret, nil

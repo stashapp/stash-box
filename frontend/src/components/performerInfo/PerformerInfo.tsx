@@ -4,11 +4,12 @@ import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Table } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
+import { OperationEnum } from "src/definitions/globalTypes";
 import { Performer_findPerformer as Performer } from "src/definitions/Performer";
 import {
-  DeletePerformerMutation,
-  DeletePerformerMutationVariables,
-} from "src/definitions/DeletePerformerMutation";
+  PerformerEditMutation as PerformerEdit,
+  PerformerEditMutationVariables,
+} from "src/definitions/PerformerEditMutation";
 
 import AuthContext from "src/AuthContext";
 import { canEdit, isAdmin } from "src/utils/auth";
@@ -20,18 +21,28 @@ import { GenderIcon, PerformerName } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 import DeleteButton from "src/components/deleteButton";
 
-const DeletePerformer = loader("src/mutations/DeletePerformer.gql");
+const PerformerEditMutation = loader("src/mutations/PerformerEdit.gql");
 
 const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
   const history = useHistory();
   const auth = useContext(AuthContext);
-  const [deletePerformer, { loading: deleting }] = useMutation<
-    DeletePerformerMutation,
-    DeletePerformerMutationVariables
-  >(DeletePerformer, { variables: { input: { id: performer.id } } });
+  const [deletePerformerEdit, { loading: deleting }] = useMutation<
+    PerformerEdit,
+   PerformerEditMutationVariables 
+  >(PerformerEditMutation, {
+    onCompleted: (data) => {
+      if (data.performerEdit.id) history.push(`/edits/${data.performerEdit.id}`);
+    },
+  });
 
   const handleDelete = (): void => {
-    deletePerformer().then(() => history.push("/performers"));
+    deletePerformerEdit({
+      variables: {
+        performerData: {
+          edit: { operation: OperationEnum.DESTROY, id: performer.id },
+        },
+      },
+    });
   };
 
   return (
@@ -40,20 +51,30 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
         <div className="col-6">
           <Card>
             <Card.Header>
-              <div className="float-right">
-                {canEdit(auth?.user) && (
-                  <Link to={`${performer.id}/edit`}>
-                    <Button>Edit</Button>
+              { !performer.deleted && (
+                <div className="float-right">
+                  {canEdit(auth?.user) && (
+                    <Link
+                      to={`${performer.id}/edit`}
+                      className="mr-2"
+                    >
+                      <Button>Edit</Button>
+                    </Link>
+                  )}
+                  <Link
+                    to={`/performers/${performer.id}/merge`}
+                  >
+                    <Button>Merge into</Button>
                   </Link>
-                )}
-                {isAdmin(auth.user) && (
-                  <DeleteButton
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    message="Do you want to delete performer? This cannot be undone."
-                  />
-                )}
-              </div>
+                  {isAdmin(auth.user) && !performer.deleted && (
+                    <DeleteButton
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      message="Do you want to delete performer? This cannot be undone."
+                    />
+                  )}
+                </div>
+              )}
               <h2>
                 <GenderIcon gender={performer?.gender} />
                 <PerformerName performer={performer} />

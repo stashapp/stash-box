@@ -81,6 +81,31 @@ fragment EditFragment on Edit {
       }
     }
   }
+  old_details {
+    ... on TagEdit {
+      name
+      description
+    }
+    ... on PerformerEdit {
+      name
+      disambiguation
+      gender
+      birthdate
+      birthdate_accuracy
+      ethnicity
+      country
+      eye_color
+      hair_color
+      height
+      cup_size
+      band_size
+      waist_size
+      hip_size
+      breast_type
+      career_start_year
+      career_end_year
+    }
+  }
   merge_sources {
     ... on Tag {
       id
