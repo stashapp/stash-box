@@ -58,7 +58,7 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
   if (isPerformerDetails(details) && isPerformerOldDetails(oldDetails)) {
     return (
       <>
-        { details.name && (
+        {details.name && (
           <ChangeRow
             name="Name"
             newValue={details.name}
@@ -116,8 +116,10 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
         />
         <ChangeRow
           name="Bra Size"
-          newValue={`${details.band_size || ''}${details.cup_size ?? ''}`}
-          oldValue={`${oldDetails?.band_size || ''}${oldDetails?.cup_size ?? ''}`}
+          newValue={`${details.band_size || ""}${details.cup_size ?? ""}`}
+          oldValue={`${oldDetails?.band_size || ""}${
+            oldDetails?.cup_size ?? ""
+          }`}
           showDiff={showDiff}
         />
         <ChangeRow
@@ -158,14 +160,22 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
         />
         <ChangeRow
           name="Tattoos"
-          newValue={(details?.added_tattoos ?? []).map(tatt => `${tatt.location}: ${tatt.description}`).join('\n')}
-          oldValue={(details?.removed_tattoos ?? []).map(tatt => `${tatt.location}: ${tatt.description}`).join('\n')}
+          newValue={(details?.added_tattoos ?? [])
+            .map((tatt) => `${tatt.location}: ${tatt.description}`)
+            .join("\n")}
+          oldValue={(details?.removed_tattoos ?? [])
+            .map((tatt) => `${tatt.location}: ${tatt.description}`)
+            .join("\n")}
           showDiff={showDiff}
         />
         <ChangeRow
           name="Piercings"
-          newValue={(details?.added_piercings ?? []).map(piercing => `${piercing.location}: ${piercing.description}`).join('\n')}
-          oldValue={(details?.removed_piercings ?? []).map(piercing => `${piercing.location}: ${piercing.description}`).join('\n')}
+          newValue={(details?.added_piercings ?? [])
+            .map((piercing) => `${piercing.location}: ${piercing.description}`)
+            .join("\n")}
+          oldValue={(details?.removed_piercings ?? [])
+            .map((piercing) => `${piercing.location}: ${piercing.description}`)
+            .join("\n")}
           showDiff={showDiff}
         />
         <ImageChangeRow

@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import Creatable from "react-select/creatable";
 import { ValueType, OptionTypeBase, components } from "react-select";
-import { Button, Form, InputGroup } from 'react-bootstrap';
-import { Controller } from 'react-hook-form';
+import { Button, Form, InputGroup } from "react-bootstrap";
+import { Controller } from "react-hook-form";
 
 interface IOptionType extends OptionTypeBase {
   value?: string;
@@ -47,7 +47,9 @@ const BodyModification: React.FC<BodyModificationProps> = ({
       <Form.Row key={mod.location} className="mb-1">
         <InputGroup className="col">
           <InputGroup.Prepend>
-            <InputGroup.Text className="font-weight-bold">Location</InputGroup.Text>
+            <InputGroup.Text className="font-weight-bold">
+              Location
+            </InputGroup.Text>
           </InputGroup.Prepend>
           <Controller
             as={<Form.Control />}
@@ -64,10 +66,7 @@ const BodyModification: React.FC<BodyModificationProps> = ({
             control={control}
           />
           <InputGroup.Append>
-            <Button
-              variant="danger"
-              onClick={() => removeMod(index)}
-            >
+            <Button variant="danger" onClick={() => removeMod(index)}>
               Remove
             </Button>
           </InputGroup.Append>
@@ -91,9 +90,8 @@ const BodyModification: React.FC<BodyModificationProps> = ({
             formatCreateLabel={formatLabel}
             components={{
               DropdownIndicator: () => null,
-              Menu: (data) => (
-                data.options.length > 0 ? <components.Menu {...data} /> : <></>
-              ),
+              Menu: (data) =>
+                data.options.length > 0 ? <components.Menu {...data} /> : <></>,
             }}
           />
         </Form.Group>

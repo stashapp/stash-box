@@ -24,11 +24,14 @@ export const isPerformer = (
 export const isTagDetails = (details?: TypeName | null): details is TagEdit =>
   details?.__typename === "TagEdit";
 
-export const isPerformerDetails = (details?: TypeName | null): details is PerformerEdit =>
-  details?.__typename === "PerformerEdit";
+export const isPerformerDetails = (
+  details?: TypeName | null
+): details is PerformerEdit => details?.__typename === "PerformerEdit";
 
-export const isTagOldDetails = (details?: TypeName | null): details is OldTagEdit =>
-  details?.__typename === "TagEdit";
+export const isTagOldDetails = (
+  details?: TypeName | null
+): details is OldTagEdit => details?.__typename === "TagEdit";
 
-export const isPerformerOldDetails = (details?: TypeName | null): details is OldPerformerEdit =>
-  details?.__typename === "PerformerEdit";
+export const isPerformerOldDetails = (
+  details?: TypeName | null
+): details is OldPerformerEdit => details?.__typename === "PerformerEdit";

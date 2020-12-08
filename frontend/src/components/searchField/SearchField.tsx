@@ -74,7 +74,7 @@ const resultIsSearchAll = (
 function handleResult(
   result: SearchAll | SearchPerformers,
   callback: (result: SearchGroup[]) => void,
-  excludeIDs: string[],
+  excludeIDs: string[]
 ) {
   let performers: SearchResult[] = [];
   let scenes: SearchResult[] = [];
@@ -84,60 +84,60 @@ function handleResult(
       (p) => p !== null
     ) ?? []) as PerformerAllResult[];
     performers = performerResults
-      .filter(performer => !excludeIDs.includes(performer.id))
+      .filter((performer) => !excludeIDs.includes(performer.id))
       .map((performer) => ({
-      type: "performer",
-      value: performer,
-      label: `${performer.name}${
-        // eslint-disable-next-line prefer-template
-        performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
-      }`,
-      subLabel: [
-        performer?.birthdate
-          ? `Born: ${formatFuzzyDate(performer.birthdate)}`
-          : null,
-        performer?.aliases.length
-          ? `AKA: ${performer.aliases.join(", ")}`
-          : null,
-      ]
-        .filter((p) => p !== null)
-        .join(", "),
-    }));
+        type: "performer",
+        value: performer,
+        label: `${performer.name}${
+          // eslint-disable-next-line prefer-template
+          performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
+        }`,
+        subLabel: [
+          performer?.birthdate
+            ? `Born: ${formatFuzzyDate(performer.birthdate)}`
+            : null,
+          performer?.aliases.length
+            ? `AKA: ${performer.aliases.join(", ")}`
+            : null,
+        ]
+          .filter((p) => p !== null)
+          .join(", "),
+      }));
 
     const sceneResults = (result?.searchScene?.filter((p) => p !== null) ??
       []) as SceneAllResult[];
     scenes = sceneResults
-      .filter(scene => !excludeIDs.includes(scene.id))
+      .filter((scene) => !excludeIDs.includes(scene.id))
       .map((scene) => ({
-      type: "scene",
-      value: scene,
-      label: `${scene.title} ${scene.date ? `(${scene.date})` : ""}`,
-      subLabel: `${scene?.studio?.name ?? ""}${
-        scene.performers && scene.studio ? " • " : ""
-      }
+        type: "scene",
+        value: scene,
+        label: `${scene.title} ${scene.date ? `(${scene.date})` : ""}`,
+        subLabel: `${scene?.studio?.name ?? ""}${
+          scene.performers && scene.studio ? " • " : ""
+        }
           ${scene.performers.map((p) => p.as || p.performer.name).join(", ")}`,
-    }));
+      }));
   } else {
     const performerResults = (result?.searchPerformer?.filter(
       (p) => p !== null
     ) ?? []) as PerformerOnlyResult[];
     performers = performerResults
-      .filter(performer => !excludeIDs.includes(performer.id))
+      .filter((performer) => !excludeIDs.includes(performer.id))
       .map((performer) => ({
-      type: "performer",
-      value: performer,
-      label: performer.name,
-      subLabel: [
-        performer.birthdate
-          ? `Born: ${formatFuzzyDate(performer.birthdate)}`
-          : null,
-        performer.aliases.length
-          ? `AKA: ${performer.aliases.join(", ")}`
-          : null,
-      ]
-        .filter((p) => p !== null)
-        .join(", "),
-    }));
+        type: "performer",
+        value: performer,
+        label: performer.name,
+        subLabel: [
+          performer.birthdate
+            ? `Born: ${formatFuzzyDate(performer.birthdate)}`
+            : null,
+          performer.aliases.length
+            ? `AKA: ${performer.aliases.join(", ")}`
+            : null,
+        ]
+          .filter((p) => p !== null)
+          .join(", "),
+      }));
   }
 
   const options = [];
@@ -187,7 +187,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
   const handleChange = (result: ValueType<SearchResult>) => {
     if (result) {
       const res = result as SearchResult;
-      if (res.value.__typename === 'Performer') onClickPerformer?.(res.value);
+      if (res.value.__typename === "Performer") onClickPerformer?.(res.value);
       onClick?.(res.value);
       if (navigate) history.push(`/${res.type}s/${res.value.id}`);
     }

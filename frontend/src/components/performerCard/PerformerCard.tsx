@@ -21,7 +21,11 @@ const PerformerCard: React.FC<PerformerCardProps> = ({ performer }) => (
     <Card>
       <Link to={`/performers/${performer.id}`}>
         <div className={CLASSNAME_IMAGE}>
-          <img src={getImage(performer.images, "portrait")} alt={performer.name} title={performer.name} />
+          <img
+            src={getImage(performer.images, "portrait")}
+            alt={performer.name}
+            title={performer.name}
+          />
         </div>
         <Card.Footer>
           <h5>

@@ -1,5 +1,5 @@
 import React from "react";
-import cx from 'classnames';
+import cx from "classnames";
 
 export interface ChangeRowProps {
   name: string;
@@ -13,8 +13,8 @@ const ChangeRow: React.FC<ChangeRowProps> = ({
   newValue,
   oldValue,
   showDiff = false,
-}) => (
-  (newValue || oldValue) ? (
+}) =>
+  newValue || oldValue ? (
     <div className="row mb-2">
       <b className="col-2 text-right">{name}</b>
       {showDiff && (
@@ -23,10 +23,13 @@ const ChangeRow: React.FC<ChangeRowProps> = ({
         </span>
       )}
       <span className="col-5">
-        <div className={cx('px-1 rounded', { "bg-success": showDiff })}>{newValue}</div>
+        <div className={cx("px-1 rounded", { "bg-success": showDiff })}>
+          {newValue}
+        </div>
       </span>
     </div>
-  ) : <></>
-);
+  ) : (
+    <></>
+  );
 
 export default ChangeRow;

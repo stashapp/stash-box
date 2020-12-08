@@ -3,9 +3,7 @@ import React, { useState } from "react";
 import { TagLink } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
 
-import {
-  SearchPerformers_searchPerformer as Performer
-} from "src/definitions/SearchPerformers";
+import { SearchPerformers_searchPerformer as Performer } from "src/definitions/SearchPerformers";
 
 interface PerformerSelectProps {
   performers: Performer[];

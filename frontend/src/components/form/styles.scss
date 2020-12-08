@@ -41,14 +41,14 @@
 .ImageInput {
   display: flex;
   flex-wrap: nowrap;
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
   width: 100%;
 
   &-image {
     border-radius: 3px;
     flex-shrink: 0;
     height: 100%;
-    margin-left: .5rem;
+    margin-left: 0.5rem;
     max-height: 200px;
     max-width: 300px;
     object-fit: cover;
@@ -59,7 +59,7 @@
     flex-shrink: 1;
     margin: 0;
     overflow: hidden;
-    padding: .5rem;
+    padding: 0.5rem;
 
     &.card {
       margin-bottom: 0;

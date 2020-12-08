@@ -10,7 +10,7 @@ const PerformerName: React.FC<PerformerNameProps> = ({ performer, as }) => {
   if (!as)
     return (
       <>
-        { performer.deleted ? (
+        {performer.deleted ? (
           <del>{performer.name}</del>
         ) : (
           <span>{performer.name}</span>
@@ -25,11 +25,7 @@ const PerformerName: React.FC<PerformerNameProps> = ({ performer, as }) => {
   return (
     <>
       <span>{as}</span>
-      { performer.deleted ? (
-        <del>{as}</del>
-      ) : (
-        <span>{as}</span>
-      )}
+      {performer.deleted ? <del>{as}</del> : <span>{as}</span>}
       <small className="ml-1 text-small text-muted">
         ({performer.name})
         {performer.disambiguation && (

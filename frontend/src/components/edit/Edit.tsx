@@ -59,11 +59,9 @@ const EditComponent: React.FC = () => {
     if (status)
       applyEdit({ variables: { input: { id: edit.id } } }).then((result) => {
         const target = result.data?.applyEdit.target;
-        if (!target)
-          return;
+        if (!target) return;
 
-        if (isTag(target))
-          history.push(`/tags/${target.name}#edits`);
+        if (isTag(target)) history.push(`/tags/${target.name}#edits`);
         else if (isPerformer(target))
           history.push(`/performers/${target.id}#edits`);
       });

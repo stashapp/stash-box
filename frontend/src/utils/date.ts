@@ -7,8 +7,8 @@ export const formatFuzzyDate = (date: FuzzyDateInput) => {
   return date.date.slice(0, 4);
 };
 
-export const formatDateTime = (dateTime: Date|string) => {
-  const date = (dateTime instanceof Date) ? dateTime : new Date(dateTime);
+export const formatDateTime = (dateTime: Date | string) => {
+  const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
   return `${date.toLocaleString("en-us", {
     month: "short",
     year: "numeric",

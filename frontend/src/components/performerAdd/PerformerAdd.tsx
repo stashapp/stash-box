@@ -4,10 +4,13 @@ import { useHistory } from "react-router-dom";
 import { loader } from "graphql.macro";
 
 import { Performer_findPerformer as Performer } from "src/definitions/Performer";
-import { PerformerEditMutation, PerformerEditMutationVariables} from "src/definitions/PerformerEditMutation";
+import {
+  PerformerEditMutation,
+  PerformerEditMutationVariables,
+} from "src/definitions/PerformerEditMutation";
 import {
   OperationEnum,
-  PerformerEditDetailsInput
+  PerformerEditDetailsInput,
 } from "src/definitions/globalTypes";
 
 import PerformerForm from "src/components/performerForm";
@@ -18,7 +21,7 @@ const PerformerAdd: React.FC = () => {
   const history = useHistory();
   const [submitPerformerEdit] = useMutation<
     PerformerEditMutation,
-   PerformerEditMutationVariables 
+    PerformerEditMutationVariables
   >(PerformerEdit, {
     onCompleted: (data) => {
       if (data.performerEdit.id)
@@ -33,9 +36,9 @@ const PerformerAdd: React.FC = () => {
           edit: {
             operation: OperationEnum.CREATE,
           },
-          details: updateData
-        }
-      }
+          details: updateData,
+        },
+      },
     });
   };
 

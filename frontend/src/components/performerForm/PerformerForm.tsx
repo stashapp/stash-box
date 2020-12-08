@@ -26,9 +26,9 @@ import {
 } from "src/definitions/Performer";
 
 import { BodyModification, Image } from "src/components/form";
-import MultiSelect from 'src/components/multiSelect';
-import ChangeRow from 'src/components/changeRow';
-import DiffPerformer from './diff';
+import MultiSelect from "src/components/multiSelect";
+import ChangeRow from "src/components/changeRow";
+import DiffPerformer from "./diff";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en");
@@ -106,11 +106,7 @@ const schema = yup.object().shape({
     .string()
     .oneOf(Object.keys(GenderEnum), "Invalid gender")
     .required("Gender is required"),
-  disambiguation: yup
-    .string()
-    .trim()
-    .transform(nullCheck)
-    .nullable(),
+  disambiguation: yup.string().trim().transform(nullCheck).nullable(),
   birthdate: yup
     .string()
     .transform(nullCheck)
@@ -140,7 +136,10 @@ const schema = yup.object().shape({
   braSize: yup
     .string()
     .transform(nullCheck)
-    .matches(/\d{2,3}[a-zA-Z]{1,4}/, "Invalid cup size. Only american sizes are accepted.")
+    .matches(
+      /\d{2,3}[a-zA-Z]{1,4}/,
+      "Invalid cup size. Only american sizes are accepted."
+    )
     .nullable(),
   waistSize: yup
     .number()
@@ -154,11 +153,7 @@ const schema = yup.object().shape({
     .transform(nullCheck)
     .nullable()
     .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
-  country: yup
-    .string()
-    .trim()
-    .transform(nullCheck)
-    .nullable(),
+  country: yup.string().trim().transform(nullCheck).nullable(),
   ethnicity: yup
     .string()
     .transform(nullCheck)
@@ -192,49 +187,48 @@ const schema = yup.object().shape({
       })
     )
     .nullable(),
-  aliases: yup
-    .array()
-    .of(
-      yup.string().trim().transform(nullCheck)
-    ),
+  aliases: yup.array().of(yup.string().trim().transform(nullCheck)),
   images: yup
     .array()
-    .of(
-      yup.string().trim().transform(nullCheck)
-    )
-  .transform((_, obj) => Object.keys(obj ?? [])),
-  note: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
+    .of(yup.string().trim().transform(nullCheck))
+    .transform((_, obj) => Object.keys(obj ?? [])),
+  note: yup.string().transform(nullCheck).nullable(),
 });
 
 export type PerformerFormData = yup.InferType<typeof schema>;
 
 interface PerformerProps {
   performer: Performer;
-  callback: (data: PerformerEditDetailsInput, note?: string, id?: string) => void;
+  callback: (
+    data: PerformerEditDetailsInput,
+    note?: string,
+    id?: string
+  ) => void;
   initialAliases?: string[];
-  initialImages?: PerformerImage[]
+  initialImages?: PerformerImage[];
 }
 
-const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialAliases = [], initialImages = [] }) => {
-  const { register, control, handleSubmit, errors, watch } = useForm<PerformerFormData>({
+const PerformerForm: React.FC<PerformerProps> = ({
+  performer,
+  callback,
+  initialAliases = [],
+  initialImages = [],
+}) => {
+  const { register, control, handleSubmit, errors, watch } = useForm<
+    PerformerFormData
+  >({
     resolver: yupResolver(schema),
-    mode: 'onBlur',
+    mode: "onBlur",
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
-  const [images, setImages] = useState([
-    ...performer.images,
-    ...initialImages,
-  ]);
-  const aliases = [
-    ...performer.aliases,
-    ...initialAliases,
-  ];
+  const [images, setImages] = useState([...performer.images, ...initialImages]);
+  const aliases = [...performer.aliases, ...initialAliases];
   const [activeTab, setActiveTab] = useState("personal");
   const fieldData = watch();
-  const changes = useMemo(() => DiffPerformer(performer, schema.cast(fieldData)), [fieldData, performer]);
+  const changes = useMemo(
+    () => DiffPerformer(performer, schema.cast(fieldData)),
+    [fieldData, performer]
+  );
   const history = useHistory();
 
   const onGenderChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -248,8 +242,8 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
     ));
 
   const handleRemoveImage = (id: string) => {
-    setImages(images.filter(i => i.id !== id));
-  }
+    setImages(images.filter((i) => i.id !== id));
+  };
 
   const onSubmit = (data: PerformerFormData) => {
     const performerData: PerformerEditDetailsInput = {
@@ -266,9 +260,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
       ethnicity:
         EthnicityEnum[data.ethnicity as keyof typeof EthnicityEnum] || null,
       country: data.country,
-      aliases: data.aliases
-        ? data.aliases.map((p: string) => p.trim())
-        : null,
+      aliases: data.aliases ? data.aliases.map((p: string) => p.trim()) : null,
       piercings: data.piercings,
       tattoos: data.tattoos,
       breast_type: BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum],
@@ -293,7 +285,10 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
       performerData.measurements.cup_size = braSize;
       performerData.measurements.band_size = bandSize ?? 0;
     }
-    if (data.gender === GenderEnum.MALE || data.gender === GenderEnum.TRANSGENDER_MALE)
+    if (
+      data.gender === GenderEnum.MALE ||
+      data.gender === GenderEnum.TRANSGENDER_MALE
+    )
       performerData.breast_type = BreastTypeEnum.NA;
     if (data.birthdate !== null)
       if (data.birthdate.length === 10)
@@ -339,30 +334,34 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
         value={performer.id}
         ref={register({ required: true })}
       />
-      <Tabs activeKey={activeTab} onSelect={key => key && setActiveTab(key)}>
+      <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
         <Tab eventKey="personal" title="Personal Information">
           <Form.Row>
             <Form.Group controlId="name" className="col-6">
               <Form.Label>Name</Form.Label>
               <Form.Control
-                  className={cx({ "is-invalid": errors.name })}
-                  defaultValue={performer.name}
-                  name="name"
-                  ref={register({ required: true })}
+                className={cx({ "is-invalid": errors.name })}
+                defaultValue={performer.name}
+                name="name"
+                ref={register({ required: true })}
               />
-              <Form.Control.Feedback type="invalid">{errors?.name?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors?.name?.message}
+              </Form.Control.Feedback>
               <Form.Text>The primary name used by the performer.</Form.Text>
             </Form.Group>
             <Form.Group controlId="disambiguation" className="col-6">
               <Form.Label>Disambiguation</Form.Label>
               <Form.Control
-                  className={cx({ "is-invalid": errors.disambiguation })}
-                  defaultValue={performer.disambiguation ?? ""}
-                  name="disambiguation"
-                  ref={register}
+                className={cx({ "is-invalid": errors.disambiguation })}
+                defaultValue={performer.disambiguation ?? ""}
+                name="disambiguation"
+                ref={register}
               />
               <Form.Text>Required if the primary name is not unique.</Form.Text>
-              <Form.Control.Feedback type="invalid">{errors?.disambiguation?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors?.disambiguation?.message}
+              </Form.Control.Feedback>
             </Form.Group>
           </Form.Row>
 
@@ -381,7 +380,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
                   />
                 )}
               />
-              <Form.Text>Any names used by the performer different from the primary name.</Form.Text>
+              <Form.Text>
+                Any names used by the performer different from the primary name.
+              </Form.Text>
             </Form.Group>
           </Form.Row>
 
@@ -398,7 +399,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
               >
                 {enumOptions(GENDER)}
               </Form.Control>
-              <Form.Control.Feedback type="invalid">{errors?.gender?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors?.gender?.message}
+              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group controlId="birthdate" className="col-6">
@@ -407,11 +410,20 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
                 className={cx({ "is-invalid": errors.birthdate })}
                 placeholder="YYYY-MM-DD"
                 name="birthdate"
-                defaultValue={performer.birthdate ? formatFuzzyDate(performer.birthdate) : ""}
+                defaultValue={
+                  performer.birthdate
+                    ? formatFuzzyDate(performer.birthdate)
+                    : ""
+                }
                 ref={register}
               />
-              <Form.Control.Feedback type="invalid">{errors?.birthdate?.message}</Form.Control.Feedback>
-              <Form.Text>If the precise date is unknown the date and or month can be omitted.</Form.Text>
+              <Form.Control.Feedback type="invalid">
+                {errors?.birthdate?.message}
+              </Form.Control.Feedback>
+              <Form.Text>
+                If the precise date is unknown the date and or month can be
+                omitted.
+              </Form.Text>
             </Form.Group>
           </Form.Row>
 
@@ -431,7 +443,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
               >
                 {enumOptions(EYE)}
               </Form.Control>
-              <Form.Control.Feedback>{errors?.eye_color?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback>
+                {errors?.eye_color?.message}
+              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group controlId="hair_color" className="col-6">
@@ -449,7 +463,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
               >
                 {enumOptions(HAIR)}
               </Form.Control>
-              <Form.Control.Feedback>{errors?.hair_color?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback>
+                {errors?.hair_color?.message}
+              </Form.Control.Feedback>
             </Form.Group>
           </Form.Row>
 
@@ -463,11 +479,15 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
                 defaultValue={performer?.height ?? ""}
                 ref={register}
               />
-              <Form.Control.Feedback type="invalid">{errors?.height?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors?.height?.message}
+              </Form.Control.Feedback>
               <Form.Text>Height in centimeters</Form.Text>
             </Form.Group>
 
-            {(gender === "FEMALE" || gender === "TRANSGENDER_FEMALE" || gender === "INTERSEX") && (
+            {(gender === "FEMALE" ||
+              gender === "TRANSGENDER_FEMALE" ||
+              gender === "INTERSEX") && (
               <Form.Group controlId="boobJob" className="col-6">
                 <Form.Label>Breast type</Form.Label>
                 <Form.Control
@@ -490,47 +510,54 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
             )}
           </Form.Row>
 
-          {(gender !== GenderEnum.MALE && gender !== GenderEnum.TRANSGENDER_MALE) && (
-            <Form.Row>
-              <Form.Group controlId="braSize" className="col-4">
-                <Form.Label>Bra size</Form.Label>
-                <Form.Control
-                  className={cx({ "is-invalid": errors.braSize })}
-                  name="braSize"
-                  defaultValue={getBraSize(performer.measurements)}
-                  ref={register({ pattern: /\d{2,3}[a-zA-Z]{1,4}/i })}
-                />
-                <Form.Control.Feedback type="invalid">{errors?.braSize?.message}</Form.Control.Feedback>
-                <Form.Text>US Bra Size</Form.Text>
-              </Form.Group>
+          {gender !== GenderEnum.MALE &&
+            gender !== GenderEnum.TRANSGENDER_MALE && (
+              <Form.Row>
+                <Form.Group controlId="braSize" className="col-4">
+                  <Form.Label>Bra size</Form.Label>
+                  <Form.Control
+                    className={cx({ "is-invalid": errors.braSize })}
+                    name="braSize"
+                    defaultValue={getBraSize(performer.measurements)}
+                    ref={register({ pattern: /\d{2,3}[a-zA-Z]{1,4}/i })}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors?.braSize?.message}
+                  </Form.Control.Feedback>
+                  <Form.Text>US Bra Size</Form.Text>
+                </Form.Group>
 
-              <Form.Group controlId="waistSize" className="col-4">
-                <Form.Label>Waist size</Form.Label>
-                <Form.Control
-                  className={cx({ "is-invalid": errors.waistSize })}
-                  type="number"
-                  name="waistSize"
-                  defaultValue={performer.measurements.waist ?? ""}
-                  ref={register}
-                />
-                <Form.Control.Feedback type="invalid">{errors?.waistSize?.message}</Form.Control.Feedback>
-                <Form.Text>Waist circumference in inches</Form.Text>
-              </Form.Group>
+                <Form.Group controlId="waistSize" className="col-4">
+                  <Form.Label>Waist size</Form.Label>
+                  <Form.Control
+                    className={cx({ "is-invalid": errors.waistSize })}
+                    type="number"
+                    name="waistSize"
+                    defaultValue={performer.measurements.waist ?? ""}
+                    ref={register}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors?.waistSize?.message}
+                  </Form.Control.Feedback>
+                  <Form.Text>Waist circumference in inches</Form.Text>
+                </Form.Group>
 
-              <Form.Group controlId="hipSize" className="col-4">
-                <Form.Label>Hip size</Form.Label>
-                <Form.Control
-                  className={cx({ "is-invalid": errors.hipSize })}
-                  type="number"
-                  name="hipSize"
-                  defaultValue={performer.measurements.hip ?? ""}
-                  ref={register}
-                />
-                <Form.Control.Feedback type="invalid">{errors?.hipSize?.message}</Form.Control.Feedback>
-                <Form.Text>Hip circumference in inches</Form.Text>
-              </Form.Group>
-            </Form.Row>
-          )}
+                <Form.Group controlId="hipSize" className="col-4">
+                  <Form.Label>Hip size</Form.Label>
+                  <Form.Control
+                    className={cx({ "is-invalid": errors.hipSize })}
+                    type="number"
+                    name="hipSize"
+                    defaultValue={performer.measurements.hip ?? ""}
+                    ref={register}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors?.hipSize?.message}
+                  </Form.Control.Feedback>
+                  <Form.Text>Hip circumference in inches</Form.Text>
+                </Form.Group>
+              </Form.Row>
+            )}
 
           <Form.Row>
             <Form.Group controlId="country" className="col-6">
@@ -542,7 +569,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
                 render={({ onChange }) => (
                   <Select
                     classNamePrefix="react-select"
-                    onChange={(option) => onChange((option as { value: string })?.value) }
+                    onChange={(option) =>
+                      onChange((option as { value: string })?.value)
+                    }
                     options={countryObj}
                     defaultValue={
                       countryObj.find(
@@ -552,7 +581,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
                   />
                 )}
               />
-              <Form.Control.Feedback type="invalid">{errors?.country?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors?.country?.message}
+              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group controlId="ethnicity" className="col-6">
@@ -570,7 +601,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
               >
                 {enumOptions(ETHNICITY)}
               </Form.Control>
-              <Form.Control.Feedback type="invalid">{errors?.ethnicity?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors?.ethnicity?.message}
+              </Form.Control.Feedback>
             </Form.Group>
           </Form.Row>
 
@@ -585,7 +618,9 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
                 defaultValue={performer?.career_start_year ?? ""}
                 ref={register}
               />
-              <Form.Control.Feedback type="invalid">{errors?.career_start_year?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors?.career_start_year?.message}
+              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group controlId="career_end_year" className="col-6">
@@ -598,17 +633,24 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
                 defaultValue={performer?.career_end_year ?? ""}
                 ref={register}
               />
-              <Form.Control.Feedback type="invalid">{errors?.career_end_year?.message}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors?.career_end_year?.message}
+              </Form.Control.Feedback>
             </Form.Group>
           </Form.Row>
 
           <Form.Row>
-            <Button variant="danger" className="ml-auto mr-2" onClick={() => history.goBack()}>
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
               Cancel
             </Button>
-            <Button className="mr-1" onClick={() => setActiveTab("bodymod")}>Next</Button>
+            <Button className="mr-1" onClick={() => setActiveTab("bodymod")}>
+              Next
+            </Button>
           </Form.Row>
-
         </Tab>
 
         <Tab eventKey="bodymod" title="Tattoos and Piercings">
@@ -631,65 +673,80 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
           />
 
           <Form.Row className="mt-3">
-            <Button variant="danger" className="ml-auto mr-2" onClick={() => history.goBack()}>
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
               Cancel
             </Button>
-            <Button className="mr-1" onClick={() => setActiveTab("images")}>Next</Button>
+            <Button className="mr-1" onClick={() => setActiveTab("images")}>
+              Next
+            </Button>
           </Form.Row>
         </Tab>
 
         <Tab eventKey="images" title="Images">
           <Form.Row>
-            { images.length === 0 && (
-              <h4>No images found.</h4>
-            )}
+            {images.length === 0 && <h4>No images found.</h4>}
             {
-            // Set index and sort from largest to smallest
-            sortBy(
-              images.map((image, i) => ({ ...image, index: i })),
-              i => (i?.width ?? 1) * (i.height ?? 1),
-            ).reverse().map(image => (
-
-              <Image
-                image={image}
-                control={control}
-                onRemove={handleRemoveImage}
-              />))
+              // Set index and sort from largest to smallest
+              sortBy(
+                images.map((image, i) => ({ ...image, index: i })),
+                (i) => (i?.width ?? 1) * (i.height ?? 1)
+              )
+                .reverse()
+                .map((image) => (
+                  <Image
+                    image={image}
+                    control={control}
+                    onRemove={handleRemoveImage}
+                  />
+                ))
             }
           </Form.Row>
 
           <Form.Row className="mt-1">
-            <Button variant="danger" className="ml-auto mr-2" onClick={() => history.goBack()}>
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
               Cancel
             </Button>
-            <Button className="mr-1" onClick={() => setActiveTab("confirm")}>Next</Button>
+            <Button className="mr-1" onClick={() => setActiveTab("confirm")}>
+              Next
+            </Button>
           </Form.Row>
         </Tab>
 
         <Tab eventKey="confirm" title="Confirm" className="mt-2">
-          { changes.length > 0 && (
+          {changes.length > 0 && (
             <Form.Row>
               <h6 className="col-5 offset-2">Remove</h6>
               <h6 className="col-5">Add</h6>
             </Form.Row>
           )}
-          { changes.length === 0 && (
-            <h6>No changes.</h6>
-          )}
-          { changes.map(c => (<ChangeRow {...c} />)) }
+          {changes.length === 0 && <h6>No changes.</h6>}
+          {changes.map((c) => (
+            <ChangeRow {...c} />
+          ))}
           <Form.Row className="my-4">
             <Col md={{ span: 6, offset: 6 }}>
               <Form.Label>Edit Note</Form.Label>
-              <Form.Control
-                  as="textarea"
-                  name="note"
-                  ref={register}
-              />
-              <Form.Text>Please add any relevant sources or other supporting information for your edit.</Form.Text>
+              <Form.Control as="textarea" name="note" ref={register} />
+              <Form.Text>
+                Please add any relevant sources or other supporting information
+                for your edit.
+              </Form.Text>
             </Col>
           </Form.Row>
           <Form.Row className="mt-2">
-            <Button variant="danger" className="ml-auto mr-2" onClick={() => history.goBack()}>
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={changes.length === 0}>

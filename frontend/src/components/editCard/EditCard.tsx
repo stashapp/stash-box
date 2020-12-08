@@ -9,7 +9,7 @@ import { isPerformer, isTag, formatDateTime } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
-import EditComment from './EditComment';
+import EditComment from "./EditComment";
 
 interface EditsProps {
   edit: Edit;
@@ -49,7 +49,9 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         <Link to={`/tags/${edit?.target?.name}`}>{edit.target.name}</Link>
       </h6>
     );
-  const comments = (edit.comments ?? []).map(comment => <EditComment comment={comment} />);
+  const comments = (edit.comments ?? []).map((comment) => (
+    <EditComment comment={comment} />
+  ));
 
   return (
     <Card>
@@ -68,7 +70,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         <div className="flex-column col-4 ml-auto text-right">
           <div>
             <b className="mr-2">Created:</b>
-            <span>{ formatDateTime(date) }</span>
+            <span>{formatDateTime(date)}</span>
           </div>
           <div>
             <b className="mr-2">Status:</b>
@@ -84,9 +86,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         {modifications}
         {destruction}
         <Row>
-          <Col md={{ offset: 4, span: 8 }}>
-            {comments}
-          </Col>
+          <Col md={{ offset: 4, span: 8 }}>{comments}</Col>
         </Row>
       </Card.Body>
     </Card>
