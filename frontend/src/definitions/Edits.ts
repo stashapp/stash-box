@@ -9,6 +9,19 @@ import { QuerySpec, EditFilterType, TargetTypeEnum, OperationEnum, VoteStatusEnu
 // GraphQL query operation: Edits
 // ====================================================
 
+export interface Edits_queryEdits_edits_comments_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_comments {
+  __typename: "EditComment";
+  user: Edits_queryEdits_edits_comments_user;
+  date: any;
+  comment: string;
+}
+
 export interface Edits_queryEdits_edits_user {
   __typename: "User";
   id: string;
@@ -323,6 +336,7 @@ export interface Edits_queryEdits_edits {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  comments: Edits_queryEdits_edits_comments[];
   user: Edits_queryEdits_edits_user;
   /**
    * Object being edited - null if creating a new object

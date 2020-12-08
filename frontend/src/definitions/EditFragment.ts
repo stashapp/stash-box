@@ -9,6 +9,19 @@ import { TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracy
 // GraphQL fragment: EditFragment
 // ====================================================
 
+export interface EditFragment_comments_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface EditFragment_comments {
+  __typename: "EditComment";
+  user: EditFragment_comments_user;
+  date: any;
+  comment: string;
+}
+
 export interface EditFragment_user {
   __typename: "User";
   id: string;
@@ -323,6 +336,7 @@ export interface EditFragment {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  comments: EditFragment_comments[];
   user: EditFragment_user;
   /**
    * Object being edited - null if creating a new object

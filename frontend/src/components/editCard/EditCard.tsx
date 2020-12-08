@@ -1,14 +1,15 @@
 import React from "react";
-import { Card, Badge, BadgeProps } from "react-bootstrap";
+import { Badge, BadgeProps, Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits as Edit } from "src/definitions/Edits";
 import { OperationEnum, VoteStatusEnum } from "src/definitions/globalTypes";
 
-import { isPerformer, isTag } from "src/utils";
+import { isPerformer, isTag, formatDateTime } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
+import EditComment from './EditComment';
 
 interface EditsProps {
   edit: Edit;
@@ -17,7 +18,6 @@ interface EditsProps {
 const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
   const date = new Date(edit.created);
-  const locale = navigator.languages[0];
   let editVariant: BadgeProps["variant"] = "warning";
   if (
     edit.status === VoteStatusEnum.REJECTED ||
@@ -49,6 +49,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         <Link to={`/tags/${edit?.target?.name}`}>{edit.target.name}</Link>
       </h6>
     );
+  const comments = (edit.comments ?? []).map(comment => <EditComment comment={comment} />);
 
   return (
     <Card>
@@ -66,13 +67,8 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         </div>
         <div className="flex-column col-4 ml-auto text-right">
           <div>
-            <b>Created:</b>{" "}
-            {`${date.toLocaleString("en-us", {
-              month: "short",
-              year: "numeric",
-              day: "numeric",
-              timeZone: "UTC",
-            })} ${date.toLocaleTimeString(locale, { timeZone: "UTC" })}`}
+            <b className="mr-2">Created:</b>
+            <span>{ formatDateTime(date) }</span>
           </div>
           <div>
             <b className="mr-2">Status:</b>
@@ -81,12 +77,17 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         </div>
       </Card.Header>
       <hr />
-      <Card.Body className="my-2">
+      <Card.Body>
         {modifyHeader}
         {merges}
         {creation}
         {modifications}
         {destruction}
+        <Row>
+          <Col md={{ offset: 4, span: 8 }}>
+            {comments}
+          </Col>
+        </Row>
       </Card.Body>
     </Card>
   );

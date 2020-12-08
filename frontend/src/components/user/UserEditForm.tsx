@@ -8,7 +8,7 @@ import { yupResolver } from "@hookform/resolvers";
 import cx from "classnames";
 
 import { RoleEnum, UserUpdateInput } from "src/definitions/globalTypes";
-import { isAdmin } from "src/utils/auth";
+import { isAdmin } from "src/utils";
 
 import AuthContext from "src/AuthContext";
 

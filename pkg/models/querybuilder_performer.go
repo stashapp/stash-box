@@ -65,6 +65,10 @@ func (qb *PerformerQueryBuilder) CreateImages(newJoins PerformerImages) error {
 	return qb.dbi.InsertJoins(performerImageTable, &newJoins)
 }
 
+func (qb *PerformerQueryBuilder) UpdateImages(performerID uuid.UUID, updatedJoins PerformerImages) error {
+	return qb.dbi.ReplaceJoins(performerImageTable, performerID, &updatedJoins)
+}
+
 func (qb *PerformerQueryBuilder) UpdateUrls(performerID uuid.UUID, updatedJoins PerformerUrls) error {
 	return qb.dbi.ReplaceJoins(performerUrlTable, performerID, &updatedJoins)
 }
@@ -309,6 +313,13 @@ func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{
 func (qb *PerformerQueryBuilder) GetAliases(id uuid.UUID) (PerformerAliases, error) {
 	joins := PerformerAliases{}
 	err := qb.dbi.FindJoins(performerAliasTable, id, &joins)
+
+	return joins, err
+}
+
+func (qb *PerformerQueryBuilder) GetImages(id uuid.UUID) (PerformerImages, error) {
+	joins := PerformerImages{}
+	err := qb.dbi.FindJoins(performerImageTable, id, &joins)
 
 	return joins, err
 }
@@ -694,6 +705,21 @@ func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *Per
 	}
 
 	if err := qb.UpdateUrls(updatedPerformer.ID, currentUrls); err != nil {
+		return nil, err
+	}
+
+	currentImages, err := qb.GetImages(updatedPerformer.ID)
+	if err != nil {
+		return nil, err
+	}
+	newImages := CreatePerformerImages(updatedPerformer.ID, data.New.AddedImages)
+	oldImages := CreatePerformerImages(updatedPerformer.ID, data.New.RemovedImages)
+
+	if err := ProcessSlice(&currentImages, &newImages, &oldImages); err != nil {
+		return nil, err
+	}
+
+	if err := qb.UpdateImages(updatedPerformer.ID, currentImages); err != nil {
 		return nil, err
 	}
 

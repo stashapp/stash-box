@@ -101,6 +101,10 @@ type PerformerImage struct {
 	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
 }
 
+func (p PerformerImage) ID() string {
+	return p.ImageID.String()
+}
+
 type PerformersImages []*PerformerImage
 
 func (p PerformersImages) Each(fn func(interface{})) {
@@ -111,6 +115,22 @@ func (p PerformersImages) Each(fn func(interface{})) {
 
 func (p *PerformersImages) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerImage))
+}
+
+func (p PerformersImages) EachPtr(fn func(interface{})) {
+	for _, v := range p {
+		fn(v)
+	}
+}
+
+func (p *PerformersImages) Remove(id string) {
+	for i, v := range *p {
+		if (*v).ID() == id {
+			(*p)[i] = (*p)[len(*p)-1]
+			*p = (*p)[:len(*p)-1]
+			break
+		}
+	}
 }
 
 type StudioImage struct {

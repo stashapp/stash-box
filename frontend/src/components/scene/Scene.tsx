@@ -11,8 +11,7 @@ import {
 } from "src/definitions/DeleteSceneMutation";
 
 import AuthContext from "src/AuthContext";
-import { getImage, getUrlByType } from "src/utils/transforms";
-import { canEdit, isAdmin } from "src/utils/auth";
+import { canEdit, isAdmin, getImage, getUrlByType } from "src/utils";
 
 import {
   GenderIcon,

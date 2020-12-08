@@ -17,7 +17,7 @@ import {
   RescindInviteCodeMutationVariables,
 } from "src/definitions/RescindInviteCodeMutation";
 import { GenerateInviteCodeMutation } from "src/definitions/GenerateInviteCodeMutation";
-import { canEdit, isAdmin } from "src/utils/auth";
+import { canEdit, isAdmin } from "src/utils";
 
 import Modal from "src/components/modal";
 import { Icon, LoadingIndicator } from "src/components/fragments";

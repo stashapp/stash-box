@@ -9,6 +9,19 @@ import { PerformerEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, Gend
 // GraphQL mutation operation: PerformerEditMutation
 // ====================================================
 
+export interface PerformerEditMutation_performerEdit_comments_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEditMutation_performerEdit_comments {
+  __typename: "EditComment";
+  user: PerformerEditMutation_performerEdit_comments_user;
+  date: any;
+  comment: string;
+}
+
 export interface PerformerEditMutation_performerEdit_user {
   __typename: "User";
   id: string;
@@ -323,6 +336,7 @@ export interface PerformerEditMutation_performerEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  comments: PerformerEditMutation_performerEdit_comments[];
   user: PerformerEditMutation_performerEdit_user;
   /**
    * Object being edited - null if creating a new object

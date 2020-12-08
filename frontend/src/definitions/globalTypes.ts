@@ -256,10 +256,6 @@ export interface PerformerCreateInput {
   image_ids?: string[] | null;
 }
 
-export interface PerformerDestroyInput {
-  id: string;
-}
-
 export interface PerformerEditDetailsInput {
   name?: string | null;
   disambiguation?: string | null;

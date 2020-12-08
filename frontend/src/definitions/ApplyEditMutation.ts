@@ -9,6 +9,19 @@ import { ApplyEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEn
 // GraphQL mutation operation: ApplyEditMutation
 // ====================================================
 
+export interface ApplyEditMutation_applyEdit_comments_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEditMutation_applyEdit_comments {
+  __typename: "EditComment";
+  user: ApplyEditMutation_applyEdit_comments_user;
+  date: any;
+  comment: string;
+}
+
 export interface ApplyEditMutation_applyEdit_user {
   __typename: "User";
   id: string;
@@ -323,6 +336,7 @@ export interface ApplyEditMutation_applyEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  comments: ApplyEditMutation_applyEdit_comments[];
   user: ApplyEditMutation_applyEdit_user;
   /**
    * Object being edited - null if creating a new object

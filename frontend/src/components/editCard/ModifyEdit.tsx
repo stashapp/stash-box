@@ -1,12 +1,13 @@
 import React from "react";
-import { getCountryByISO } from 'src/utils/country';
 
 import {
   Edits_queryEdits_edits_details as Details,
   Edits_queryEdits_edits_old_details as OldDetails,
 } from "src/definitions/Edits";
 import ChangeRow from "src/components/changeRow";
+import ImageChangeRow from "src/components/imageChangeRow";
 import {
+  getCountryByISO,
   isTagDetails,
   isPerformerDetails,
   isTagOldDetails,
@@ -25,7 +26,7 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
 
   if (isTagDetails(details) && isTagOldDetails(oldDetails)) {
     return (
-      <div>
+      <>
         <ChangeRow
           name="Name"
           newValue={details.name}
@@ -50,13 +51,13 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
           oldValue=""
           showDiff={showDiff}
         />
-      </div>
+      </>
     );
   }
 
   if (isPerformerDetails(details) && isPerformerOldDetails(oldDetails)) {
     return (
-      <div>
+      <>
         { details.name && (
           <ChangeRow
             name="Name"
@@ -115,8 +116,8 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
         />
         <ChangeRow
           name="Bra Size"
-          newValue={`${details.band_size ?? ''}${details.cup_size ?? ''}`}
-          oldValue={`${oldDetails?.band_size ?? ''}${oldDetails?.cup_size ?? ''}`}
+          newValue={`${details.band_size || ''}${details.cup_size ?? ''}`}
+          oldValue={`${oldDetails?.band_size || ''}${oldDetails?.cup_size ?? ''}`}
           showDiff={showDiff}
         />
         <ChangeRow
@@ -167,13 +168,11 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
           oldValue={(details?.removed_piercings ?? []).map(piercing => `${piercing.location}: ${piercing.description}`).join('\n')}
           showDiff={showDiff}
         />
-        <ChangeRow
-          name="ImageIDs"
-          newValue={(details?.added_images ?? []).map(i => i.id).join('\n')}
-          oldValue={(details?.removed_images ?? []).map(i => i.id).join('\n')}
-          showDiff={showDiff}
+        <ImageChangeRow
+          newImages={details?.added_images}
+          oldImages={details?.removed_images}
         />
-      </div>
+      </>
     );
   }
 

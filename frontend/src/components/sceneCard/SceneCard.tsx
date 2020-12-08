@@ -4,7 +4,7 @@ import { Card } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 
 import { Scenes_queryScenes_scenes as Performance } from "src/definitions/Scenes";
-import { getImage } from "src/utils/transforms";
+import { getImage } from "src/utils";
 
 const CLASSNAME = "SceneCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;

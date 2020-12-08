@@ -20,7 +20,7 @@ import {
   SearchPerformers,
   SearchPerformers_searchPerformer as PerformerOnlyResult,
 } from "src/definitions/SearchPerformers";
-import GetFuzzyDate from "src/utils/date";
+import { formatFuzzyDate } from "src/utils";
 
 const SearchAllQuery = loader("src/queries/SearchAll.gql");
 const SearchPerformersQuery = loader("src/queries/SearchPerformers.gql");
@@ -94,7 +94,7 @@ function handleResult(
       }`,
       subLabel: [
         performer?.birthdate
-          ? `Born: ${GetFuzzyDate(performer.birthdate)}`
+          ? `Born: ${formatFuzzyDate(performer.birthdate)}`
           : null,
         performer?.aliases.length
           ? `AKA: ${performer.aliases.join(", ")}`
@@ -129,7 +129,7 @@ function handleResult(
       label: performer.name,
       subLabel: [
         performer.birthdate
-          ? `Born: ${GetFuzzyDate(performer.birthdate)}`
+          ? `Born: ${formatFuzzyDate(performer.birthdate)}`
           : null,
         performer.aliases.length
           ? `AKA: ${performer.aliases.join(", ")}`

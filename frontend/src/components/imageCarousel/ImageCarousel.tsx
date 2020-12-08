@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 
 import { Icon } from "src/components/fragments";
-import { Image, sortImageURLs } from "src/utils/transforms";
+import { Image, sortImageURLs } from "src/utils";
 
 interface ImageCarouselProps {
   images: Image[];

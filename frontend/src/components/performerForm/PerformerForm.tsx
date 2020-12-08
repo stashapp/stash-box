@@ -19,7 +19,7 @@ import {
   DateAccuracyEnum,
   PerformerEditDetailsInput,
 } from "src/definitions/globalTypes";
-import { getBraSize } from "src/utils/transforms";
+import { getBraSize, formatFuzzyDate } from "src/utils";
 import {
   Performer_findPerformer as Performer,
   Performer_findPerformer_images as PerformerImage,
@@ -28,7 +28,6 @@ import {
 import { BodyModification, Image } from "src/components/form";
 import MultiSelect from 'src/components/multiSelect';
 import ChangeRow from 'src/components/changeRow';
-import getFuzzyDate from "src/utils/date";
 import DiffPerformer from './diff';
 
 Countries.registerLocale(english);
@@ -107,7 +106,11 @@ const schema = yup.object().shape({
     .string()
     .oneOf(Object.keys(GenderEnum), "Invalid gender")
     .required("Gender is required"),
-  disambiguation: yup.string().trim(),
+  disambiguation: yup
+    .string()
+    .trim()
+    .transform(nullCheck)
+    .nullable(),
   birthdate: yup
     .string()
     .transform(nullCheck)
@@ -134,7 +137,7 @@ const schema = yup.object().shape({
     .min(100, "Invalid height, Height must be in centimeters.")
     .max(230, "Invalid height")
     .nullable(),
-  cupSize: yup
+  braSize: yup
     .string()
     .transform(nullCheck)
     .matches(/\d{2,3}[a-zA-Z]{1,4}/, "Invalid cup size. Only american sizes are accepted.")
@@ -151,7 +154,11 @@ const schema = yup.object().shape({
     .transform(nullCheck)
     .nullable()
     .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
-  country: yup.string().trim().transform(nullCheck).nullable(),
+  country: yup
+    .string()
+    .trim()
+    .transform(nullCheck)
+    .nullable(),
   ethnicity: yup
     .string()
     .transform(nullCheck)
@@ -194,9 +201,11 @@ const schema = yup.object().shape({
     .array()
     .of(
       yup.string().trim().transform(nullCheck)
-    ),
+    )
+  .transform((_, obj) => Object.keys(obj ?? [])),
   note: yup
     .string()
+    .transform(nullCheck)
     .nullable()
 });
 
@@ -238,8 +247,8 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
       </option>
     ));
 
-  const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+  const handleRemoveImage = (id: string) => {
+    setImages(images.filter(i => i.id !== id));
   }
 
   const onSubmit = (data: PerformerFormData) => {
@@ -272,19 +281,19 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
       waist: data.waistSize ?? 0,
       hip: data.hipSize ?? 0,
     };
-    if (data.cupSize != null) {
-      const band = data.cupSize.match(/^\d+/)?.[0];
+    if (data.braSize != null) {
+      const band = data.braSize.match(/^\d+/)?.[0];
       const bandSize = band ? Number.parseInt(band, 10) : null;
       const cup = bandSize
-        ? data.cupSize.replace(bandSize.toString(), "")
+        ? data.braSize.replace(bandSize.toString(), "")
         : null;
-      const cupSize = cup
+      const braSize = cup
         ? cup.match(/^[a-zA-Z]+/)?.[0]?.toUpperCase() ?? null
         : null;
-      performerData.measurements.cup_size = cupSize;
+      performerData.measurements.cup_size = braSize;
       performerData.measurements.band_size = bandSize ?? 0;
     }
-    if (data.gender === "MALE" || data.gender === "TRANSGENDER_MALE")
+    if (data.gender === GenderEnum.MALE || data.gender === GenderEnum.TRANSGENDER_MALE)
       performerData.breast_type = BreastTypeEnum.NA;
     if (data.birthdate !== null)
       if (data.birthdate.length === 10)
@@ -398,7 +407,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
                 className={cx({ "is-invalid": errors.birthdate })}
                 placeholder="YYYY-MM-DD"
                 name="birthdate"
-                defaultValue={performer.birthdate ? getFuzzyDate(performer.birthdate) : ""}
+                defaultValue={performer.birthdate ? formatFuzzyDate(performer.birthdate) : ""}
                 ref={register}
               />
               <Form.Control.Feedback type="invalid">{errors?.birthdate?.message}</Form.Control.Feedback>
@@ -481,45 +490,47 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
             )}
           </Form.Row>
 
-          <Form.Row>
-            <Form.Group controlId="cupSize" className="col-4">
-              <Form.Label>Bra size</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.cupSize })}
-                name="cupSize"
-                defaultValue={getBraSize(performer.measurements)}
-                ref={register({ pattern: /\d{2,3}[a-zA-Z]{1,4}/i })}
-              />
-              <Form.Control.Feedback type="invalid">{errors?.cupSize?.message}</Form.Control.Feedback>
-              <Form.Text>US Bra Size</Form.Text>
-            </Form.Group>
+          {(gender !== GenderEnum.MALE && gender !== GenderEnum.TRANSGENDER_MALE) && (
+            <Form.Row>
+              <Form.Group controlId="braSize" className="col-4">
+                <Form.Label>Bra size</Form.Label>
+                <Form.Control
+                  className={cx({ "is-invalid": errors.braSize })}
+                  name="braSize"
+                  defaultValue={getBraSize(performer.measurements)}
+                  ref={register({ pattern: /\d{2,3}[a-zA-Z]{1,4}/i })}
+                />
+                <Form.Control.Feedback type="invalid">{errors?.braSize?.message}</Form.Control.Feedback>
+                <Form.Text>US Bra Size</Form.Text>
+              </Form.Group>
 
-            <Form.Group controlId="waistSize" className="col-4">
-              <Form.Label>Waist size</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.waistSize })}
-                type="number"
-                name="waistSize"
-                defaultValue={performer.measurements.waist ?? ""}
-                ref={register}
-              />
-              <Form.Control.Feedback type="invalid">{errors?.waistSize?.message}</Form.Control.Feedback>
-              <Form.Text>Waist circumference in inches</Form.Text>
-            </Form.Group>
+              <Form.Group controlId="waistSize" className="col-4">
+                <Form.Label>Waist size</Form.Label>
+                <Form.Control
+                  className={cx({ "is-invalid": errors.waistSize })}
+                  type="number"
+                  name="waistSize"
+                  defaultValue={performer.measurements.waist ?? ""}
+                  ref={register}
+                />
+                <Form.Control.Feedback type="invalid">{errors?.waistSize?.message}</Form.Control.Feedback>
+                <Form.Text>Waist circumference in inches</Form.Text>
+              </Form.Group>
 
-            <Form.Group controlId="hipSize" className="col-4">
-              <Form.Label>Hip size</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.hipSize })}
-                type="number"
-                name="hipSize"
-                defaultValue={performer.measurements.hip ?? ""}
-                ref={register}
-              />
-              <Form.Control.Feedback type="invalid">{errors?.hipSize?.message}</Form.Control.Feedback>
-              <Form.Text>Hip circumference in inches</Form.Text>
-            </Form.Group>
-          </Form.Row>
+              <Form.Group controlId="hipSize" className="col-4">
+                <Form.Label>Hip size</Form.Label>
+                <Form.Control
+                  className={cx({ "is-invalid": errors.hipSize })}
+                  type="number"
+                  name="hipSize"
+                  defaultValue={performer.measurements.hip ?? ""}
+                  ref={register}
+                />
+                <Form.Control.Feedback type="invalid">{errors?.hipSize?.message}</Form.Control.Feedback>
+                <Form.Text>Hip circumference in inches</Form.Text>
+              </Form.Group>
+            </Form.Row>
+          )}
 
           <Form.Row>
             <Form.Group controlId="country" className="col-6">
@@ -640,10 +651,8 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback, initialA
             ).reverse().map(image => (
 
               <Image
-                key={image.id}
                 image={image}
                 control={control}
-                index={image.index}
                 onRemove={handleRemoveImage}
               />))
             }

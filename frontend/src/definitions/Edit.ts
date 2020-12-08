@@ -9,6 +9,19 @@ import { TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracy
 // GraphQL query operation: Edit
 // ====================================================
 
+export interface Edit_findEdit_comments_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface Edit_findEdit_comments {
+  __typename: "EditComment";
+  user: Edit_findEdit_comments_user;
+  date: any;
+  comment: string;
+}
+
 export interface Edit_findEdit_user {
   __typename: "User";
   id: string;
@@ -323,6 +336,7 @@ export interface Edit_findEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  comments: Edit_findEdit_comments[];
   user: Edit_findEdit_user;
   /**
    * Object being edited - null if creating a new object

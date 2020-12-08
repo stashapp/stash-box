@@ -6,7 +6,7 @@ import { Performers_queryPerformers_performers as Performer } from "src/definiti
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/definitions/SearchPerformers";
 
 import { PerformerName } from "src/components/fragments";
-import { getImage } from "src/utils/transforms";
+import { getImage } from "src/utils";
 
 interface PerformerCardProps {
   performer: Performer | SearchPerformer;

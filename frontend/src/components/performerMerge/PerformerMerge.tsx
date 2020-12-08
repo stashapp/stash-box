@@ -97,7 +97,7 @@ const PerformerMerge: React.FC = () => {
             </Col>
             <Col xs={9}>
               <Row className="mt-4">
-                { mergeSources.map(performer => <PerformerCard performer={performer} className="col-4" />) }
+                { mergeSources.map(source => <PerformerCard performer={source} className="col-4" />) }
               </Row>
             </Col>
           </Row>

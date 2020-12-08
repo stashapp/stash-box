@@ -3,7 +3,7 @@ import { useQuery } from "@apollo/client";
 import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { loader } from "graphql.macro";
-import { canEdit } from "src/utils/auth";
+import { canEdit } from "src/utils";
 import AuthContext from "src/AuthContext";
 
 import {
@@ -82,7 +82,7 @@ const StudiosComponent: React.FC = () => {
         )}
       </div>
       <Card>
-        <Card.Body className="pt-4">
+        <Card.Body>
           <ul>{studioList}</ul>
         </Card.Body>
       </Card>

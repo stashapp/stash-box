@@ -68,7 +68,7 @@ const DiffPerformer = (original: Performer, updated: PerformerFormData): ChangeR
   changes.push(diffValue('Hair Color', original.hair_color, updated.hair_color));
   changes.push(diffValue('Height', original.height, updated.height));
   changes.push(diffValue('Breast Type', original.breast_type, updated.boobJob));
-  changes.push(diffValue('Bra Size', `${original.measurements.band_size ?? ''}${original.measurements.cup_size}`, updated.cupSize));
+  changes.push(diffValue('Bra Size', `${original.measurements.band_size ?? ''}${original.measurements.cup_size ?? ''}`, updated.braSize));
   changes.push(diffValue('Waist Size', original.measurements.waist, updated.waistSize));
   changes.push(diffValue('Hip Size', original.measurements.hip, updated.hipSize));
   changes.push(diffValue('Nationality', original.country, updated.country));

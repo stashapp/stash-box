@@ -47,9 +47,11 @@
   &-image {
     border-radius: 3px;
     flex-shrink: 0;
+    height: 100%;
     margin-left: .5rem;
     max-height: 200px;
     max-width: 300px;
+    object-fit: cover;
   }
 
   &-metadata {

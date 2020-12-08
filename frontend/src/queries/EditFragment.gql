@@ -7,6 +7,14 @@ fragment EditFragment on Edit {
   status
   applied
   created
+  comments {
+    user {
+      id
+      name
+    }
+    date
+    comment
+  }
   user {
     id
     name

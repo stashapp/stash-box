@@ -76,7 +76,7 @@ func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.Per
 }
 
 func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
-	if len(obj.AddedImages) == 0 {
+	if len(obj.RemovedImages) == 0 {
 		return nil, nil
 	}
 

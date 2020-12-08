@@ -6,8 +6,7 @@ import { Performer_findPerformer_images as Image } from 'src/definitions/Perform
 
 interface ImageProps {
   image: Image;
-  onRemove: (index: number) => void;
-  index: number;
+  onRemove: (id: string) => void;
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   control: any;
 };
@@ -21,21 +20,24 @@ const ImageInput: React.FC<ImageProps> = ({
   image,
   control,
   onRemove,
-  index
 }) => {
   return (
-    <Form.Row className={CLASSNAME}>
+    <Form.Row className={CLASSNAME} key={image.id}>
       <Card className={CLASSNAME_METADATA}>
-        <Controller
-          type="hidden"
-          name={`images[${index}]`}
-          control={control}
-          defaultValue={image.id}
-        />
-        <div><b>ID:</b> { image.id }</div>
-        <div className="text-truncate"><b>URL:</b> { image.url}</div>
-        <div><b>Dimensions:</b> { `${image.width}x${image.height}` }</div>
-        <Button variant="danger" className={CLASSNAME_BUTTON} onClick={() => onRemove(index)}>Remove</Button>
+        <Card.Body>
+          <Controller
+            type="hidden"
+            name={`images[${image.id}]`}
+            control={control}
+            defaultValue={image.id}
+          />
+          <div><b>ID:</b> { image.id }</div>
+          <div className="text-truncate"><b>URL:</b> { image.url}</div>
+          <div><b>Dimensions:</b> { `${image.width}x${image.height}` }</div>
+        </Card.Body>
+        <Card.Footer>
+          <Button variant="danger" className={CLASSNAME_BUTTON} onClick={() => onRemove(image.id)}>Remove</Button>
+        </Card.Footer>
       </Card>
       <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
     </Form.Row>

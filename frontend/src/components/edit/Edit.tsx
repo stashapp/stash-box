@@ -5,11 +5,10 @@ import { useHistory, useParams } from "react-router-dom";
 import { loader } from "graphql.macro";
 
 import AuthContext from "src/AuthContext";
-import { isAdmin } from "src/utils/auth";
 import { LoadingIndicator } from "src/components/fragments";
 import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
-import { isTag, isPerformer } from "src/utils";
+import { isAdmin, isTag, isPerformer } from "src/utils";
 
 import { VoteStatusEnum } from "src/definitions/globalTypes";
 import { Edit, EditVariables } from "src/definitions/Edit";
@@ -33,7 +32,6 @@ const EditComponent: React.FC = () => {
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const { data, loading } = useQuery<Edit, EditVariables>(EditQuery, {
-    fetchPolicy: 'no-cache',
     variables: { id },
   });
   const [cancelEdit, { loading: cancelling }] = useMutation<

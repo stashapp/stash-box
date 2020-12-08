@@ -9,6 +9,19 @@ import { TagEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum
 // GraphQL mutation operation: TagEditMutation
 // ====================================================
 
+export interface TagEditMutation_tagEdit_comments_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface TagEditMutation_tagEdit_comments {
+  __typename: "EditComment";
+  user: TagEditMutation_tagEdit_comments_user;
+  date: any;
+  comment: string;
+}
+
 export interface TagEditMutation_tagEdit_user {
   __typename: "User";
   id: string;
@@ -323,6 +336,7 @@ export interface TagEditMutation_tagEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  comments: TagEditMutation_tagEdit_comments[];
   user: TagEditMutation_tagEdit_user;
   /**
    * Object being edited - null if creating a new object

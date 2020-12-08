@@ -141,12 +141,12 @@ func (qb *EditQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 		}
 		if *editFilter.TargetType == "TAG" {
 			query.AddJoin(editTagTable.Table, editTagTable.Name()+".edit_id = edits.id")
-			query.AddWhere(editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?")
+			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
 		} else if *editFilter.TargetType == "PERFORMER" {
 			query.AddJoin(editPerformerTable.Table, editPerformerTable.Name()+".edit_id = edits.id")
-			query.AddWhere(editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?")
+			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
 		} else {
