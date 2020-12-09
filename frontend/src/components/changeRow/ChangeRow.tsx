@@ -19,11 +19,11 @@ const ChangeRow: React.FC<ChangeRowProps> = ({
       <b className="col-2 text-right">{name}</b>
       {showDiff && (
         <span className="col-5">
-          <div className="px-1 bg-danger rounded h-100">{oldValue}</div>
+          <div className="EditDiff bg-danger h-100">{oldValue}</div>
         </span>
       )}
       <span className="col-5">
-        <div className={cx("px-1 rounded", { "bg-success": showDiff })}>
+        <div className={cx("EditDiff", { "bg-success": showDiff })}>
           {newValue}
         </div>
       </span>

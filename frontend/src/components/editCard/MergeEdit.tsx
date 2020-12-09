@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits_target as Target } from "src/definitions/Edits";
 import { isTag, isPerformer } from "src/utils";
@@ -20,14 +21,14 @@ const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
             if (isTag(source)) {
               return (
                 <div key={source.id}>
-                  <a href={`/tags/${source.name}`}>{source.name}</a>
+                  <Link to={`/tags/${source.name}`}>{source.name}</Link>
                 </div>
               );
             }
             if (isPerformer(source)) {
               return (
                 <div key={source.id}>
-                  <a href={`/performers/${source.id}`}>{source.name}</a>
+                  <Link to={`/performers/${source.id}`}>{source.name}</Link>
                 </div>
               );
             }
@@ -39,12 +40,12 @@ const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
         <div>
           {isTag(target) && (
             <div>
-              <a href={`/tags/${target.name}`}>{target.name}</a>
+              <Link to={`/tags/${target.name}`}>{target.name}</Link>
             </div>
           )}
           {isPerformer(target) && (
             <div>
-              <a href={`/performers/${target.id}`}>{target.name}</a>
+              <Link to={`/performers/${target.id}`}>{target.name}</Link>
             </div>
           )}
         </div>

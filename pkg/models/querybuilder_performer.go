@@ -480,6 +480,9 @@ func (qb *PerformerQueryBuilder) SoftDelete(performer Performer) (*Performer, er
 	if err := qb.dbi.DeleteJoins(performerUrlTable, performer.ID); err != nil {
 		return nil, err
 	}
+	if err := qb.dbi.DeleteJoins(performerImageTable, performer.ID); err != nil {
+		return nil, err
+	}
 
 	ret, err := qb.dbi.SoftDelete(performer)
 	return qb.toModel(ret), err

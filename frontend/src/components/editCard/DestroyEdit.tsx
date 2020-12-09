@@ -9,33 +9,19 @@ interface DestroyProps {
 }
 
 const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
-  if (isTag(target))
-    return (
-      <div>
-        <div className="row">
-          <b className="col-2 text-right">Deleting: </b>
-          <Link to={`/tags/${target?.name}`}>
-            <span className="text-capitalize bg-danger">
-              {target?.name.toLowerCase()}
-            </span>
-          </Link>
-        </div>
+  if (!isTag(target) && !isPerformer(target))
+    return <span>Unsupported target type</span>;
+
+  return (
+    <div>
+      <div className="row">
+        <b className="col-2 text-right">Deleting: </b>
+        <Link to={`/performers/${target?.id}`}>
+          <span className="EditDiff bg-danger">{target?.name}</span>
+        </Link>
       </div>
-    );
-  if (isPerformer(target))
-    return (
-      <div>
-        <div className="row">
-          <b className="col-2 text-right">Deleting: </b>
-          <Link to={`/performers/${target?.id}`}>
-            <span className="text-capitalize bg-danger">
-              {target?.name.toLowerCase()}
-            </span>
-          </Link>
-        </div>
-      </div>
-    );
-  return null;
+    </div>
+  );
 };
 
 export default DestroyEdit;
