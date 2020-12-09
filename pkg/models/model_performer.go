@@ -191,7 +191,7 @@ func (p *PerformerUrl) ToURL() URL {
 	return url
 }
 
-func (p *PerformerUrl) ID() string {
+func (p PerformerUrl) ID() string {
 	return p.URL + p.Type
 }
 

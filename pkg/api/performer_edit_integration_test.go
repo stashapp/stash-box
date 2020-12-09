@@ -392,17 +392,32 @@ func (s *performerEditTestRunner) verifyAppliedPerformerCreateEdit(input models.
 }
 
 func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
-	existingName := "performerName3"
-	existingAlias := "performerAlias3"
 	performerCreateInput := models.PerformerCreateInput{
-		Name:    existingName,
-		Aliases: []string{existingAlias},
+		Name:    "performerName3",
+		Aliases: []string{"modfied performer alias"},
+		Tattoos: []*models.BodyModification{
+			{
+				Location: "some tattoo location",
+			},
+		},
+		Piercings: []*models.BodyModification{
+			{
+				Location: "some piercing location",
+			},
+		},
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org/asd",
+				Type: "someothertype",
+			},
+		},
 	}
 	createdPerformer, err := s.createTestPerformer(&performerCreateInput)
 	if err != nil {
 		return
 	}
 
+	// Create edit that replaces all metadata for the performer
 	performerEditDetailsInput := s.createPerformerEditDetailsInput(nil)
 	id := createdPerformer.ID.String()
 	editInput := models.EditInput{
@@ -421,6 +436,31 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 
 	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
 	s.verifyApplyModifyPerformerEdit(*performerEditDetailsInput, modifiedPerformer, appliedEdit)
+
+	// Create edit that only replaces a single field for the performer
+	updatedName := "updated performer name"
+	performerReEditInput := models.PerformerEditDetailsInput{
+		Name: &updatedName,
+	}
+	id = createdPerformer.ID.String()
+	editInput = models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	createdUpdateEdit, err = s.createTestPerformerEdit(models.OperationEnumModify, &performerReEditInput, &editInput)
+	if err != nil {
+		return
+	}
+	appliedEdit, err = s.applyEdit(createdUpdateEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	performerEditDetailsInput.Name = &updatedName
+	modifiedPerformer, _ = s.resolver.Query().FindPerformer(s.ctx, id)
+	s.verifyApplyModifyPerformerEdit(*performerEditDetailsInput, modifiedPerformer, appliedEdit)
+
 }
 
 func (s *performerEditTestRunner) verifyApplyModifyPerformerEdit(input models.PerformerEditDetailsInput, updatedPerformer *models.Performer, edit *models.Edit) {
