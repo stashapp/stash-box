@@ -127,7 +127,9 @@ function handleResult(
         type: "performer",
         value: performer,
         // eslint-disable-next-line prefer-template
-        label: `${performer.name} ${performer.disambiguation ? '(' + performer.disambiguation + ')' : ''}`,
+        label: `${performer.name} ${
+          performer.disambiguation ? "(" + performer.disambiguation + ")" : ""
+        }`,
         subLabel: [
           performer.birthdate
             ? `Born: ${formatFuzzyDate(performer.birthdate)}`
