@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers";
 import Select from "react-select";
-import { Button, Col, Form, Tabs, Tab } from "react-bootstrap";
+import { Button, Col, Form, Row, Tabs, Tab } from "react-bootstrap";
 import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
@@ -722,10 +722,10 @@ const PerformerForm: React.FC<PerformerProps> = ({
 
         <Tab eventKey="confirm" title="Confirm" className="mt-2">
           {changes.length > 0 && (
-            <Form.Row>
+            <Row>
               <h6 className="col-5 offset-2">Remove</h6>
               <h6 className="col-5">Add</h6>
-            </Form.Row>
+            </Row>
           )}
           {changes.length === 0 && <h6>No changes.</h6>}
           {changes.map((c) => (

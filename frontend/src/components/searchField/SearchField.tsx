@@ -126,7 +126,8 @@ function handleResult(
       .map((performer) => ({
         type: "performer",
         value: performer,
-        label: performer.name,
+        // eslint-disable-next-line prefer-template
+        label: `${performer.name} ${performer.disambiguation ? '(' + performer.disambiguation + ')' : ''}`,
         subLabel: [
           performer.birthdate
             ? `Born: ${formatFuzzyDate(performer.birthdate)}`
