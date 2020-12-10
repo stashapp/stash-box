@@ -24,7 +24,10 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
 
   const showDiff = !!oldDetails;
 
-  if (isTagDetails(details) && isTagOldDetails(oldDetails)) {
+  if (
+    isTagDetails(details) &&
+    (isTagOldDetails(oldDetails) || oldDetails === undefined)
+  ) {
     return (
       <>
         <ChangeRow
@@ -55,7 +58,10 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
     );
   }
 
-  if (isPerformerDetails(details) && isPerformerOldDetails(oldDetails)) {
+  if (
+    isPerformerDetails(details) &&
+    (isPerformerOldDetails(oldDetails) || oldDetails === undefined)
+  ) {
     return (
       <>
         {details.name && (

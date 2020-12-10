@@ -5,11 +5,12 @@ import { Link } from "react-router-dom";
 import { Edits_queryEdits_edits as Edit } from "src/definitions/Edits";
 import { OperationEnum, VoteStatusEnum } from "src/definitions/globalTypes";
 
-import { isPerformer, isTag, formatDateTime } from "src/utils";
+import { formatDateTime } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
 import EditComment from "./EditComment";
+import EditHeader from "./EditHeader";
 
 interface EditsProps {
   edit: Edit;
@@ -40,15 +41,6 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
   const destruction = edit.operation === OperationEnum.DESTROY && (
     <DestroyEdit target={edit.target} />
   );
-  const modifyHeader = edit.operation === OperationEnum.MODIFY &&
-    (isTag(edit.target) || isPerformer(edit.target)) && (
-      <h6 className="row mb-4">
-        <span className="col-2 text-right">
-          Modifying {edit.target_type.toLowerCase()}:
-        </span>
-        <Link to={`/tags/${edit?.target?.name}`}>{edit.target.name}</Link>
-      </h6>
-    );
   const comments = (edit.comments ?? []).map((comment) => (
     <EditComment comment={comment} />
   ));
@@ -80,7 +72,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
       </Card.Header>
       <hr />
       <Card.Body>
-        {modifyHeader}
+        <EditHeader edit={edit} />
         {merges}
         {creation}
         {modifications}
