@@ -62,7 +62,8 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `activation_expiry` | `7200` (2 hours) | The time - in seconds - after which an activation key (emailed to the user for email verification or password reset purposes) expires. |
 | `email_cooldown` | `300` (5 minutes) | The time - in seconds - that a user must wait before submitting an activation or reset password request for a specific email address. |
 | `default_user_roles` | `READ`, `VOTE`, `EDIT` | The roles assigned to new users when registering. This field must be expressed as a yaml array. |
-| `email_host` | (none) | Address of the SMTP server, including port number. Required to send emails for activation and recovery purposes. |
+| `email_host` | (none) | Address of the SMTP server. Required to send emails for activation and recovery purposes. |
+| `email_port` | `25` | Port of the SMTP server. |
 | `email_user` | (none) | Username for the SMTP server. Optional. |
 | `email_password` | (none) | Password for the SMTP server. Optional. |
 | `email_from` | (none) | Email address from which to send emails. |
