@@ -45,6 +45,7 @@ const emailCooldownDefault = 5 * 60
 
 // Email settings
 const EmailHost = "email_host"
+const EmailPort = "email_port"
 const EmailUser = "email_user"
 const EmailPW = "email_password"
 const EmailFrom = "email_from"
@@ -166,6 +167,15 @@ func GetDefaultUserRoles() []string {
 
 func GetEmailHost() string {
 	return viper.GetString(EmailHost)
+}
+
+func GetEmailPort() int {
+	// Default SMTP port
+	port := 25
+	if viper.IsSet(EmailPort) {
+		port = viper.GetInt(EmailPort)
+	}
+	return port
 }
 
 func GetEmailUser() string {
