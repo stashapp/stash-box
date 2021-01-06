@@ -17,7 +17,7 @@ import {
 
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
-import { LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import SceneCard from "src/components/sceneCard";
 import DeleteButton from "src/components/deleteButton";
 
@@ -28,6 +28,8 @@ import AuthContext from "src/AuthContext";
 const DeleteStudio = loader("src/mutations/DeleteStudio.gql");
 const StudioQuery = loader("src/queries/Studio.gql");
 const ScenesQuery = loader("src/queries/Scenes.gql");
+
+const PER_PAGE = 20;
 
 const StudioComponent: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -45,7 +47,7 @@ const StudioComponent: React.FC = () => {
     variables: {
       filter: {
         page,
-        per_page: 20,
+        per_page: PER_PAGE,
         sort: "DATE",
         direction: SortDirectionEnum.DESC,
       },
@@ -65,20 +67,15 @@ const StudioComponent: React.FC = () => {
     },
   });
 
-  if (loading || loadingScenes)
-    return <LoadingIndicator message="Loading studio..." />;
-  if (id === "" || !data?.findStudio) return <div>Studio not found!</div>;
+  if (loading) return <LoadingIndicator message="Loading studio..." />;
+  if (id === "" || !data?.findStudio)
+    return <ErrorMessage error="Studio not found." />;
 
   const studio = data.findStudio;
 
-  const totalPages = Math.ceil((sceneData?.queryScenes?.count ?? 0) / 20);
-  const scenes = [...(sceneData?.queryScenes?.scenes ?? [])]
-    .sort((a, b) => {
-      if (a.date < b.date) return 1;
-      if (a.date > b.date) return -1;
-      return -1;
-    })
-    .map((p) => <SceneCard key={p.id} performance={p} />);
+  const scenes = (sceneData?.queryScenes?.scenes ?? []).map((p) => (
+    <SceneCard key={p.id} performance={p} />
+  ));
 
   const handleDelete = () => {
     deleteStudio({
@@ -118,22 +115,30 @@ const StudioComponent: React.FC = () => {
         )}
       </div>
       <hr />
-      {scenes.length === 0 ? (
-        <h4>No scenes found for this studio</h4>
+      {loadingScenes ? (
+        <LoadingIndicator message="Loading scenes..." />
+      ) : !sceneData ? (
+        <ErrorMessage error="Failed to loading scenes." />
       ) : (
         <>
           <div className="row no-gutters">
             <h3 className="col-4">Scenes</h3>
             <Pagination
               onClick={setPage}
-              pages={totalPages}
+              count={sceneData.queryScenes.count}
               active={page}
-              count={sceneData?.queryScenes.count}
+              perPage={PER_PAGE}
+              showCount
             />
           </div>
           <div className="row">{scenes}</div>
           <div className="row">
-            <Pagination onClick={setPage} pages={totalPages} active={page} />
+            <Pagination
+              onClick={setPage}
+              count={sceneData.queryScenes.count}
+              perPage={PER_PAGE}
+              active={page}
+            />
           </div>
         </>
       )}

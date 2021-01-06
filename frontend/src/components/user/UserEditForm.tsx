@@ -82,7 +82,8 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
     <Form onSubmit={handleSubmit(onSubmit)}>
       <Form.Row>
         <Form.Control type="hidden" name="id" ref={register} value={user.id} />
-        <Form.Group controlId="email" className="col-2">
+        <Form.Group controlId="email" className="col-6">
+          <Form.Label>Email</Form.Label>
           <Form.Control
             className={cx({ "is-invalid": errors.email })}
             name="email"
@@ -93,8 +94,11 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </Form.Group>
-        {isAdmin(Auth.user) && (
-          <Form.Group className="col-4">
+      </Form.Row>
+      {isAdmin(Auth.user) && (
+        <Form.Row>
+          <Form.Group className="col-6">
+            <Form.Label>Roles</Form.Label>
             <Select
               classNamePrefix="react-select"
               name="roles"
@@ -105,14 +109,14 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
               isMulti
             />
           </Form.Group>
-        )}
-      </Form.Row>
+        </Form.Row>
+      )}
       <Form.Row>
-        <div className="offset-2">
+        <div className="col-6">
           <Button variant="primary" type="submit">
             Save
           </Button>
-          <LinkContainer to={`/users/${username}`}>
+          <LinkContainer to={`/users/${username}`} className="ml-2">
             <Button variant="secondary">Cancel</Button>
           </LinkContainer>
           <div className="invalid-feedback d-block">{error}</div>

@@ -17,7 +17,7 @@ const NewUser = loader("src/mutations/NewUser.gql");
 
 const schema = yup.object().shape({
   email: yup.string().email().required("Email is required"),
-  inviteKey: yup.string(),
+  inviteKey: yup.string().required("Invite key is required"),
 });
 type RegisterFormData = yup.InferType<typeof schema>;
 
@@ -86,7 +86,9 @@ const Register: React.FC = () => {
             placeholder="Email"
             ref={register}
           />
-          <div className="invalid-feedback">{errors?.email?.message}</div>
+          <div className="invalid-feedback text-right">
+            {errors?.email?.message}
+          </div>
         </label>
         <label className="row" htmlFor="inviteKey">
           <span className="col-4">Invite Key: </span>
@@ -97,7 +99,9 @@ const Register: React.FC = () => {
             placeholder="Invite Key"
             ref={register}
           />
-          <div className="invalid-feedback">{errors?.inviteKey?.message}</div>
+          <div className="invalid-feedback text-right">
+            {errors?.inviteKey?.message}
+          </div>
         </label>
         <div className="row">
           <div className="col-3 offset-9 d-flex justify-content-end pr-0">
@@ -109,7 +113,7 @@ const Register: React.FC = () => {
           </div>
         </div>
         <div className="row">
-          <div className="text-danger">{submitError}</div>
+          <p className="col text-danger text-right">{submitError}</p>
         </div>
       </form>
     </div>

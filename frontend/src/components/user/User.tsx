@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { useParams, useHistory } from "react-router-dom";
-import { Button } from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import { loader } from "graphql.macro";
 
@@ -43,6 +43,7 @@ const AddUserComponent: React.FC = () => {
   const { username = "" } = useParams();
   const [showDelete, setShowDelete] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
+
   const [deleteUser, { loading: deleting }] = useMutation<
     DeleteUserMutation,
     DeleteUserMutationVariables
@@ -141,82 +142,112 @@ const AddUserComponent: React.FC = () => {
   };
 
   return (
-    <>
-      {deleteModal}
-      {rescindCodeModal}
-      {isAdmin(Auth.user) && (
-        <Button
-          className="float-right"
-          variant="danger"
-          disabled={showDelete || deleting}
-          onClick={toggleModal}
-        >
-          Delete User
-        </Button>
-      )}
-      {canEdit(Auth.user) && (
-        <LinkContainer to={`/users/${user.name}/edit`}>
-          <Button className="float-right">Edit User</Button>
-        </LinkContainer>
-      )}
-      {isUser() && (
-        <LinkContainer to="/users/change-password">
-          <Button className="float-right">Change Password</Button>
-        </LinkContainer>
-      )}
-      <h2>{username}</h2>
-      <hr />
-      <div className="row">
-        <span className="col-2">Email</span>
-        <span className="col">{user?.email}</span>
-      </div>
-      <div className="row">
-        <span className="col-2">Roles</span>
-        <span className="col">{(user?.roles ?? []).join(", ")}</span>
-      </div>
-      <div className="row">
-        <span className="col-2">API key</span>
-        <textarea disabled className="col">
-          {user.api_key}
-        </textarea>
-      </div>
-      <div className="row">
-        <span className="col-2">Invite Tokens</span>
-        <div className="col">
-          {isAdmin(Auth.user) && (
-            <Button variant="link" onClick={() => handleRevokeInvite()}>
-              <Icon icon="minus" />
-            </Button>
-          )}
-          <span>{user?.invite_tokens}</span>
-          {isAdmin(Auth.user) && (
-            <Button variant="link" onClick={() => handleGrantInvite()}>
-              <Icon icon="plus" />
-            </Button>
-          )}
-        </div>
-      </div>
-      <div className="row">
-        <span className="col-2">Invite Keys</span>
-        <div className="col">
-          {user.active_invite_codes?.map((c) => (
-            <div>
-              <code>{c}</code>
-              <Button variant="link" onClick={() => setShowRescindCode(c)}>
-                <Icon icon="trash" />
+    <Row className="justify-content-center">
+      <Col lg={10}>
+        {deleteModal}
+        {rescindCodeModal}
+        {isAdmin(Auth.user) && (
+          <Button
+            className="float-right mx-1"
+            variant="danger"
+            disabled={showDelete || deleting}
+            onClick={toggleModal}
+          >
+            Delete User
+          </Button>
+        )}
+        {canEdit(Auth.user) && (
+          <LinkContainer to={`/users/${user.name}/edit`} className="mx-1">
+            <Button className="float-right">Edit User</Button>
+          </LinkContainer>
+        )}
+        {isUser() && (
+          <LinkContainer to="/users/change-password" className="mx-1">
+            <Button className="float-right">Change Password</Button>
+          </LinkContainer>
+        )}
+        <h2>{username}</h2>
+        <hr />
+        <Row>
+          <span className="col-2">Email</span>
+          <span className="col">{user?.email}</span>
+        </Row>
+        <Row>
+          <span className="col-2">Roles</span>
+          <span className="col">{(user?.roles ?? []).join(", ")}</span>
+        </Row>
+        <Row className="my-3">
+          <span className="col-2">API key</span>
+          <InputGroup className="col-10">
+            <Form.Control value={user.api_key ?? ""} disabled />
+            <InputGroup.Append>
+              <Button
+                onClick={() =>
+                  navigator.clipboard?.writeText(user.api_key ?? "")
+                }
+              >
+                Copy to Clipboard
               </Button>
-            </div>
-          ))}
-          <div>
-            {isUser() && (
-              <Button variant="link" onClick={() => handleGenerateCode()}>
-                <Icon icon="plus" />
-              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+        </Row>
+        <Row>
+          <span className="col-2">Invite Tokens</span>
+          <InputGroup className="col">
+            {isAdmin(Auth.user) && (
+              <InputGroup.Prepend>
+                <Button onClick={() => handleRevokeInvite()}>
+                  <Icon icon="minus" />
+                </Button>
+              </InputGroup.Prepend>
             )}
+            <InputGroup.Text className="col-1 text-center">
+              {user?.invite_tokens ?? 0}
+            </InputGroup.Text>
+            {isAdmin(Auth.user) && (
+              <InputGroup.Append>
+                <Button onClick={() => handleGrantInvite()}>
+                  <Icon icon="plus" />
+                </Button>
+              </InputGroup.Append>
+            )}
+          </InputGroup>
+        </Row>
+        <Row className="my-2">
+          <span className="col-2">Invite Keys</span>
+          <div className="col">
+            {user.active_invite_codes?.map((c) => (
+              <InputGroup className="mb-2">
+                <InputGroup.Text>
+                  <code>{c}</code>
+                </InputGroup.Text>
+                <InputGroup.Append>
+                  <Button onClick={() => navigator.clipboard?.writeText(c)}>
+                    Copy
+                  </Button>
+                </InputGroup.Append>
+                <InputGroup.Append>
+                  <Button
+                    variant="danger"
+                    onClick={() => setShowRescindCode(c)}
+                  >
+                    <Icon icon="trash" />
+                  </Button>
+                </InputGroup.Append>
+              </InputGroup>
+            ))}
+            <div>
+              {isUser() && (
+                <Button variant="link" onClick={() => handleGenerateCode()}>
+                  <Icon icon="plus" className="mr-2" />
+                  Generate Key
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
-    </>
+        </Row>
+      </Col>
+    </Row>
   );
 };
 

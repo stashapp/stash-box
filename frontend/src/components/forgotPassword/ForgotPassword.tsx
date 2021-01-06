@@ -57,7 +57,10 @@ const ForgotPassword: React.FC = () => {
       <div className="LoginPrompt mx-auto d-flex">
         <div className="align-self-center col-8 mx-auto">
           <h5>Pasword reset</h5>
-          <p>If a matching account was found an email was sent to { resetEmail } to allow you to reset your password.</p>
+          <p>
+            If a matching account was found an email was sent to {resetEmail} to
+            allow you to reset your password.
+          </p>
           <a href="/login">Return to login</a>
         </div>
       </div>
@@ -83,7 +86,11 @@ const ForgotPassword: React.FC = () => {
         <div className="row">
           <div className="col-3 offset-9 d-flex justify-content-end pr-0">
             <div>
-              <button type="submit" className="register-button btn btn-primary" disabled={loading}>
+              <button
+                type="submit"
+                className="register-button btn btn-primary"
+                disabled={loading}
+              >
                 Reset Password
               </button>
             </div>

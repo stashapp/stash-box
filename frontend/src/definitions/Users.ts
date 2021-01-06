@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { RoleEnum } from "./globalTypes";
+import { UserFilterType, QuerySpec, RoleEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Users
@@ -41,9 +41,15 @@ export interface Users_queryUsers_users {
 
 export interface Users_queryUsers {
   __typename: "QueryUsersResultType";
+  count: number;
   users: Users_queryUsers_users[];
 }
 
 export interface Users {
   queryUsers: Users_queryUsers;
+}
+
+export interface UsersVariables {
+  userFilter?: UserFilterType | null;
+  filter?: QuerySpec | null;
 }
