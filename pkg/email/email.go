@@ -3,6 +3,7 @@ package email
 import (
 	"errors"
 	"net/smtp"
+	"strconv"
 	"time"
 
 	"github.com/stashapp/stashdb/pkg/manager/config"
@@ -62,10 +63,11 @@ func (m *Manager) Send(email, subject, body string) error {
 	const endLine = "\r\n"
 	from := "From: " + config.GetEmailFrom()
 	to := "To: " + email
+	port := strconv.Itoa(config.GetEmailPort())
 
 	msg := []byte(from + endLine + to + endLine + subject + endLine + endLine + body + endLine)
 
-	err = smtp.SendMail(config.GetEmailHost(), m.makeAuth(), config.GetEmailFrom(), []string{email}, msg)
+	err = smtp.SendMail(config.GetEmailHost()+":"+port, m.makeAuth(), config.GetEmailFrom(), []string{email}, msg)
 
 	if err != nil {
 		return err
