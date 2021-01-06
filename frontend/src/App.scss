@@ -141,6 +141,10 @@ label.is-invalid {
 .LoginPrompt {
   height: 70vh;
   width: 960px;
+
+  a {
+    color: $link-color;
+  }
 }
 
 .image-carousel {

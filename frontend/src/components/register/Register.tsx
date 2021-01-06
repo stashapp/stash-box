@@ -4,6 +4,7 @@ import { loader } from "graphql.macro";
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
+
 import AuthContext, { ContextType } from "src/AuthContext";
 import {
   NewUserMutation,
@@ -22,6 +23,7 @@ type RegisterFormData = yup.InferType<typeof schema>;
 
 const Register: React.FC = () => {
   const history = useHistory();
+  const [awaitingActivation, setAwaitingActivation] = useState(false);
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
@@ -48,7 +50,7 @@ const Register: React.FC = () => {
             `/activate?email=${formData.email}&key=${response.data.newUser}`
           );
         } else {
-          history.push("/login");
+          setAwaitingActivation(true);
         }
       })
       .catch((err) => {
@@ -57,6 +59,17 @@ const Register: React.FC = () => {
         }
       });
   };
+
+  if (awaitingActivation)
+    return (
+      <div className="LoginPrompt mx-auto d-flex">
+        <div className="align-self-center col-8 mx-auto">
+          <h5>Invite key accepted</h5>
+          <p>Please check your email to complete your registration.</p>
+          <a href="/login">Return to login</a>
+        </div>
+      </div>
+    );
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
