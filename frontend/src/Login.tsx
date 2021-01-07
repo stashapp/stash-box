@@ -22,6 +22,7 @@ const Messages: Record<string, string> = {
 };
 
 const Login: React.FC = () => {
+  const [loading, setLoading] = useState(false);
   const history = useHistory();
   const [loginError, setLoginError] = useState("");
   const msg = new URLSearchParams(history.location.search.substr(1)).get("msg");
@@ -33,6 +34,7 @@ const Login: React.FC = () => {
   if (Auth.authenticated) history.push("/");
 
   const onSubmit = async (formData: LoginFormData) => {
+    setLoading(true);
     const body = new FormData();
     body.append("username", formData.username);
     body.append("password", formData.password);
@@ -40,7 +42,7 @@ const Login: React.FC = () => {
       method: "POST",
       body,
       credentials: getCredentialsSetting(),
-    });
+    }).finally(() => setLoading(false));
     if (res.ok) window.location.replace("/");
     else setLoginError("Access denied");
   };
@@ -90,7 +92,7 @@ const Login: React.FC = () => {
           </div>
           <div className="col-3 d-flex justify-content-end pr-0">
             <div>
-              <button type="submit" className="login-button btn btn-primary">
+              <button type="submit" className="login-button btn btn-primary" disabled={loading}>
                 Login
               </button>
             </div>

@@ -201,7 +201,7 @@ const AddUserComponent: React.FC = () => {
                 </Button>
               </InputGroup.Prepend>
             )}
-            <InputGroup.Text className="col-1 text-center">
+            <InputGroup.Text>
               {user?.invite_tokens ?? 0}
             </InputGroup.Text>
             {isAdmin(Auth.user) && (
