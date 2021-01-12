@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
@@ -81,15 +82,15 @@ type SceneImage struct {
 	ImageID uuid.UUID `db:"image_id" json:"image_id"`
 }
 
-type SceneImages []*SceneImage
+type ScenesImages []*SceneImage
 
-func (p SceneImages) Each(fn func(interface{})) {
+func (p ScenesImages) Each(fn func(interface{})) {
 	for _, v := range p {
 		fn(*v)
 	}
 }
 
-func (p *SceneImages) Add(o interface{}) {
+func (p *ScenesImages) Add(o interface{}) {
 	*p = append(*p, o.(*SceneImage))
 }
 
@@ -98,15 +99,15 @@ type PerformerImage struct {
 	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
 }
 
-type PerformerImages []*PerformerImage
+type PerformersImages []*PerformerImage
 
-func (p PerformerImages) Each(fn func(interface{})) {
+func (p PerformersImages) Each(fn func(interface{})) {
 	for _, v := range p {
 		fn(*v)
 	}
 }
 
-func (p *PerformerImages) Add(o interface{}) {
+func (p *PerformersImages) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerImage))
 }
 
@@ -115,14 +116,14 @@ type StudioImage struct {
 	ImageID  uuid.UUID `db:"image_id" json:"image_id"`
 }
 
-type StudioImages []*StudioImage
+type StudiosImages []*StudioImage
 
-func (p StudioImages) Each(fn func(interface{})) {
+func (p StudiosImages) Each(fn func(interface{})) {
 	for _, v := range p {
 		fn(*v)
 	}
 }
 
-func (p *StudioImages) Add(o interface{}) {
+func (p *StudiosImages) Add(o interface{}) {
 	*p = append(*p, o.(*StudioImage))
 }

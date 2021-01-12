@@ -2,10 +2,12 @@ package api
 
 import (
 	"context"
-	"github.com/gofrs/uuid"
 	"time"
 
+	"github.com/gofrs/uuid"
+
 	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stashdb/pkg/image"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
@@ -35,26 +37,36 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	newStudio.CopyFromCreateInput(input)
 
-	// Start the transaction and save the studio
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder(tx)
-	studio, err := qb.Create(newStudio)
+	var studio *models.Studio
+	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
+		qb := models.NewStudioQueryBuilder(txn.GetTx())
+		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
+
+		var err error
+		studio, err = qb.Create(newStudio)
+		if err != nil {
+			return err
+		}
+
+		// TODO - save child studios
+
+		// Save the URLs
+		studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
+		if err := qb.CreateUrls(studioUrls); err != nil {
+			return err
+		}
+
+		// Save the images
+		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
+
+		if err := jqb.CreateStudiosImages(studioImages); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// TODO - save child studios
-
-	// Save the URLs
-	studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
-	if err := qb.CreateUrls(studioUrls); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
@@ -66,41 +78,64 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder(tx)
+	var studio *models.Studio
+	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+		qb := models.NewStudioQueryBuilder(txn.GetTx())
+		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
+		iqb := models.NewImageQueryBuilder(txn.GetTx())
 
-	// get the existing studio and modify it
-	studioID, _ := uuid.FromString(input.ID)
-	updatedStudio, err := qb.Find(studioID)
+		// get the existing studio and modify it
+		studioID, _ := uuid.FromString(input.ID)
+		updatedStudio, err := qb.Find(studioID)
+
+		if err != nil {
+			return err
+		}
+
+		updatedStudio.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+
+		// Populate studio from the input
+		updatedStudio.CopyFromUpdateInput(input)
+
+		studio, err = qb.Update(*updatedStudio)
+		if err != nil {
+			return err
+		}
+
+		// Save the URLs
+		// TODO - only do this if provided
+		studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
+
+		if err := qb.UpdateUrls(studio.ID, studioUrls); err != nil {
+			return err
+		}
+
+		// TODO - handle child studios
+
+		// Save the images
+		// get the existing images
+		existingImages, err := iqb.FindByStudioID(studio.ID)
+
+		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
+		if err := jqb.UpdateStudiosImages(studio.ID, studioImages); err != nil {
+			return err
+		}
+
+		// remove images that are no longer used
+		imageService := image.Service{
+			Repository: &iqb,
+		}
+
+		for _, i := range existingImages {
+			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 
 	if err != nil {
-		return nil, err
-	}
-
-	updatedStudio.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
-
-	// Populate studio from the input
-	updatedStudio.CopyFromUpdateInput(input)
-
-	studio, err := qb.Update(*updatedStudio)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the URLs
-	// TODO - only do this if provided
-	studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
-
-	if err := qb.UpdateUrls(studio.ID, studioUrls); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// TODO - handle child studios
-
-	// Commit
-	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
@@ -112,22 +147,38 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		return false, err
 	}
 
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder(tx)
-
-	// references have on delete cascade, so shouldn't be necessary
-	// to remove them explicitly
-
 	studioID, err := uuid.FromString(input.ID)
 	if err != nil {
 		return false, err
 	}
-	if err = qb.Destroy(studioID); err != nil {
-		_ = tx.Rollback()
-		return false, err
-	}
 
-	if err := tx.Commit(); err != nil {
+	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
+		qb := models.NewStudioQueryBuilder(txn.GetTx())
+		iqb := models.NewImageQueryBuilder(txn.GetTx())
+
+		existingImages, err := iqb.FindByStudioID(studioID)
+
+		// references have on delete cascade, so shouldn't be necessary
+		// to remove them explicitly
+		if err = qb.Destroy(studioID); err != nil {
+			return err
+		}
+
+		// remove images that are no longer used
+		imageService := image.Service{
+			Repository: &iqb,
+		}
+
+		for _, i := range existingImages {
+			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		return false, err
 	}
 	return true, nil
