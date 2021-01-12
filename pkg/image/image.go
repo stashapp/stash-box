@@ -54,10 +54,7 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 		}
 
 		// set the checksum in the new image
-		newImage.Checksum = sql.NullString{
-			String: checksum,
-			Valid:  true,
-		}
+		newImage.Checksum = checksum
 
 		if err := populateImageDimensions(GetImagePath(config.GetImageLocation(), checksum), &newImage); err != nil {
 			return nil, err
@@ -121,10 +118,7 @@ func (s *Service) Update(input models.ImageUpdateInput) (*models.Image, error) {
 		}
 
 		// set the checksum in the new image
-		updatedImage.Checksum = sql.NullString{
-			String: checksum,
-			Valid:  true,
-		}
+		updatedImage.Checksum = checksum
 
 		if err := populateImageDimensions(GetImagePath(config.GetImageLocation(), checksum), updatedImage); err != nil {
 			return nil, err
@@ -157,9 +151,7 @@ func (s *Service) Destroy(input models.ImageDestroyInput) error {
 	}
 
 	// delete the file. Suppress any error
-	if i.Checksum.Valid {
-		os.Remove(GetImagePath(config.GetImageLocation(), i.Checksum.String))
-	}
+	os.Remove(GetImagePath(config.GetImageLocation(), i.Checksum))
 
 	return nil
 }

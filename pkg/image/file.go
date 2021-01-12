@@ -1,7 +1,6 @@
 package image
 
 import (
-	"database/sql"
 	"image"
 	"io"
 	"io/ioutil"
@@ -70,14 +69,8 @@ func populateImageDimensions(fn string, dest *models.Image) error {
 		return err
 	}
 
-	dest.Width = sql.NullInt64{
-		Int64: int64(img.Bounds().Max.X),
-		Valid: true,
-	}
-	dest.Height = sql.NullInt64{
-		Int64: int64(img.Bounds().Max.Y),
-		Valid: true,
-	}
+	dest.Width = int64(img.Bounds().Max.X)
+	dest.Height = int64(img.Bounds().Max.Y)
 
 	return nil
 }

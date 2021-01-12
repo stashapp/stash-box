@@ -54,6 +54,7 @@ const HostURL = "host_url"
 
 // Image storage settings
 const ImageLocation = "image_location"
+const ImageBackend = "image_backend"
 
 // Logging options
 const LogFile = "logFile"
@@ -201,6 +202,21 @@ func GetHostURL() string {
 // GetImageLocation returns the path of where to locally store images.
 func GetImageLocation() string {
 	return viper.GetString(ImageLocation)
+}
+
+type ImageBackendType string
+
+const (
+	LocalBackend ImageBackendType = "local"
+	S3Backend    ImageBackendType = "s3"
+)
+
+// GetImageBackend returns the backend used to store images.
+func GetImageBackend() ImageBackendType {
+	if viper.IsSet(ImageBackend) {
+		return ImageBackendType(viper.GetString(ImageBackend))
+	}
+	return LocalBackend
 }
 
 // ValidateImageLocation returns an error is image_location is not set.
