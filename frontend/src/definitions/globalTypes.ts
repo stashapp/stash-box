@@ -203,6 +203,11 @@ export interface IDCriterionInput {
   modifier: CriterionModifier;
 }
 
+export interface ImageCreateInput {
+  url?: string | null;
+  file?: any | null;
+}
+
 export interface IntCriterionInput {
   value: number;
   modifier: CriterionModifier;

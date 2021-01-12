@@ -7,14 +7,18 @@ import { Image, sortImageURLs } from "src/utils/transforms";
 interface ImageCarouselProps {
   images: Image[];
   orientation?: "portrait" | "landscape";
+  onDeleteImage?: (toDelete: Image) => void;
 }
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({
   images,
-  orientation = "portrait",
+  orientation,
+  onDeleteImage,
 }) => {
   const [activeImage, setActiveImage] = useState(0);
-  const sortedImages = sortImageURLs(images, orientation);
+  const sortedImages = orientation
+    ? sortImageURLs(images, orientation)
+    : images;
 
   if (sortedImages.length === 0) return <div />;
 
@@ -29,11 +33,25 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
 
   return (
     <div className="image-carousel">
-      <img
-        src={sortedImages[activeImage].url}
-        alt=""
-        className="image-carousel-img"
-      />
+      <div className="image-container">
+        <img
+          src={sortedImages[activeImage].url}
+          alt=""
+          className="image-carousel-img"
+        />
+        {onDeleteImage ? (
+          <div className="delete-image-overlay">
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => onDeleteImage(sortedImages[activeImage])}
+            >
+              <Icon icon="times" />
+            </Button>
+          </div>
+        ) : undefined}
+      </div>
+
       <div className="d-flex align-items-center">
         <Button className="mr-auto" onClick={setPrev}>
           <Icon icon="arrow-left" />

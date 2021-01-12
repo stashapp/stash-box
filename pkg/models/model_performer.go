@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
@@ -292,8 +293,8 @@ func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
 	return nil
 }
 
-func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformerImages {
-	var imageJoins PerformerImages
+func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformersImages {
+	var imageJoins PerformersImages
 	for _, iid := range imageIds {
 		imageID := uuid.FromStringOrNil(iid)
 		imageJoin := &PerformerImage{

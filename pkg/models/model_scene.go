@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/database"
@@ -164,8 +165,8 @@ func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
 	return tagJoins
 }
 
-func CreateSceneImages(sceneID uuid.UUID, imageIds []string) SceneImages {
-	var imageJoins SceneImages
+func CreateSceneImages(sceneID uuid.UUID, imageIds []string) ScenesImages {
+	var imageJoins ScenesImages
 	for _, iid := range imageIds {
 		imageID := uuid.FromStringOrNil(iid)
 		imageJoin := &SceneImage{

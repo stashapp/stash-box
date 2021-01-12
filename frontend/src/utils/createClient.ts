@@ -1,13 +1,9 @@
 /* eslint-disable no-console */
 
-import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloLink,
-  createHttpLink,
-} from "@apollo/client";
+import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
+import { createUploadLink } from "apollo-upload-client";
 
 const isDevEnvironment = () =>
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -29,7 +25,7 @@ export const getPlatformURL = () => {
   return platformUrl;
 };
 
-const httpLink = createHttpLink({
+const httpLink = createUploadLink({
   uri: `${getPlatformURL().toString().slice(0, -1)}/graphql`,
   fetchOptions: {
     mode: "cors",

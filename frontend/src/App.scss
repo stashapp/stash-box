@@ -15,6 +15,7 @@
 @import "./components/studio/styles.scss";
 @import "./components/tag/styles.scss";
 @import "./components/tagSelect/styles.scss";
+@import "./components/editImages/styles.scss";
 
 body {
   color: $text-color;
@@ -165,5 +166,15 @@ label.is-invalid {
   .slider-wrapper,
   .slider {
     height: 100%;
+  }
+}
+
+.image-container {
+  position: relative;
+
+  .delete-image-overlay {
+    left: 5px;
+    position: absolute;
+    top: 5px;
   }
 }

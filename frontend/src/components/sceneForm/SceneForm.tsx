@@ -18,7 +18,7 @@ import {
   FingerprintInput,
   FingerprintAlgorithm,
 } from "src/definitions/globalTypes";
-import { getUrlByType } from "src/utils/transforms";
+import { getUrlByType, Image } from "src/utils/transforms";
 
 import {
   GenderIcon,
@@ -28,6 +28,7 @@ import {
 } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
 import TagSelect from "src/components/tagSelect";
+import EditImages from "../editImages";
 
 const StudioQuery = loader("src/queries/Studios.gql");
 
@@ -79,6 +80,15 @@ const schema = yup.object().shape({
     )
     .nullable(),
   tags: yup.array().of(yup.string()).nullable(),
+  images: yup
+    .array()
+    .of(
+      yup.object().shape({
+        id: yup.string().required(),
+        url: yup.string(),
+      })
+    )
+    .nullable(),
 });
 
 type SceneFormData = yup.InferType<typeof schema>;
@@ -118,18 +128,22 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       duration: f.duration,
     }))
   );
+  const [images, setImages] = useState<Image[]>(scene.images);
   const { loading: loadingStudios, data: studios } = useQuery<
     Studios,
     StudiosVariables
   >(StudioQuery, {
     variables: { filter: { page: 0, per_page: 1000 } },
   });
+
   useEffect(() => {
     register({ name: "studioId" });
     register({ name: "tags" });
     register({ name: "fingerprints" });
+    register({ name: "images" });
     setValue("fingerprints", fingerprints);
     setValue("tags", scene.tags ? scene.tags.map((tag) => tag.id) : []);
+    setValue("images", images);
     if (scene?.studio?.id) setValue("studioId", scene.studio.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [register, setValue]);
@@ -155,6 +169,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         performer_id: performance.performerId,
         as: performance.alias,
       })),
+      image_ids: (data.images ?? []).map((i) => i.id),
       fingerprints: data.fingerprints as FingerprintInput[],
       tag_ids: data.tags,
     };
@@ -278,6 +293,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     );
   };
 
+  const onSetImages = (i: Image[]) => {
+    setImages(i);
+    setValue("images", i);
+  };
+
   return (
     <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
       <input
@@ -381,6 +401,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           <Form.Group>
             <Form.Label>Tags</Form.Label>
             <TagSelect tags={scene.tags} onChange={onTagChange} />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Label>Images</Form.Label>
+            <EditImages images={images} onImagesChanged={onSetImages} />
           </Form.Group>
 
           <Form.Group>

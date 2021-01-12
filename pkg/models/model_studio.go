@@ -115,8 +115,8 @@ func (p *Studio) CopyFromUpdateInput(input StudioUpdateInput) {
 	}
 }
 
-func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudioImages {
-	var imageJoins StudioImages
+func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudiosImages {
+	var imageJoins StudiosImages
 	for _, iid := range imageIds {
 		imageID := uuid.FromStringOrNil(iid)
 		imageJoin := &StudioImage{

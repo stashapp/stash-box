@@ -19,11 +19,12 @@ import {
   DateAccuracyEnum,
   PerformerUpdateInput,
 } from "src/definitions/globalTypes";
-import { getBraSize } from "src/utils/transforms";
+import { getBraSize, Image } from "src/utils/transforms";
 import { Performer_findPerformer as Performer } from "src/definitions/Performer";
 
 import { BodyModification } from "src/components/form";
 import getFuzzyDate from "src/utils/date";
+import EditImages from "../editImages";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en");
@@ -185,6 +186,15 @@ const schema = yup.object().shape({
     )
     .nullable(),
   aliases: yup.string().trim().transform(nullCheck).nullable(),
+  images: yup
+    .array()
+    .of(
+      yup.object().shape({
+        id: yup.string().required(),
+        url: yup.string(),
+      })
+    )
+    .nullable(),
 });
 
 type PerformerFormData = yup.InferType<typeof schema>;
@@ -201,11 +211,14 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
     resolver: yupResolver(schema),
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
+  const [images, setImages] = useState<Image[]>(performer.images);
   const history = useHistory();
 
   useEffect(() => {
     register({ name: "country" });
+    register({ name: "images" });
     setValue("country", performer.country);
+    setValue("images", images);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [register, setValue]);
 
@@ -245,6 +258,7 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
       piercings: data.piercings,
       tattoos: data.tattoos,
       breast_type: BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum],
+      image_ids: (data.images ?? []).map((i) => i.id),
     };
 
     performerData.measurements = {
@@ -302,6 +316,11 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
       "label"
     ),
   ];
+
+  const onSetImages = (i: Image[]) => {
+    setImages(i);
+    setValue("images", i);
+  };
 
   return (
     // estlint-ignore-next-line
@@ -616,6 +635,11 @@ const PerformerForm: React.FC<PerformerProps> = ({ performer, callback }) => {
               />
             </div>
           </div>
+
+          <Form.Group>
+            <Form.Label>Images</Form.Label>
+            <EditImages images={images} onImagesChanged={onSetImages} />
+          </Form.Group>
 
           <Form.Group className="d-flex">
             <Button className="col-2" type="submit">

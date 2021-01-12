@@ -8,6 +8,32 @@ import (
 	"github.com/stashapp/stashdb/pkg/utils"
 )
 
+type ImageRepo interface {
+	ImageCreator
+	ImageUpdater
+	ImageDestroyer
+	ImageFinder
+}
+
+type ImageCreator interface {
+	Create(newImage Image) (*Image, error)
+}
+
+type ImageUpdater interface {
+	Update(updatedImage Image) (*Image, error)
+}
+
+type ImageFinder interface {
+	Find(id uuid.UUID) (*Image, error)
+	FindByChecksum(checksum string) (*Image, error)
+	FindUnused() ([]*Image, error)
+	IsUnused(imageID uuid.UUID) (bool, error)
+}
+
+type ImageDestroyer interface {
+	Destroy(id uuid.UUID) error
+}
+
 type ImageQueryBuilder struct {
 	dbi database.DBI
 }
@@ -56,7 +82,65 @@ func (qb *ImageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Image, error) 
 	return qb.queryImages(query, args)
 }
 
+func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
+	query := `
+		SELECT images.* FROM images
+		WHERE images.checksum = ?
+	`
+	args := []interface{}{checksum}
+	ret, err := qb.queryImages(query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) > 0 {
+		return ret[0], nil
+	}
+
+	return nil, nil
+}
+
+func (qb *ImageQueryBuilder) FindUnused() ([]*Image, error) {
+	query := `
+		SELECT images.* from images
+		LEFT JOIN scene_images ON scene_images.image_id = images.id
+		LEFT JOIN performer_images ON performer_images.image_id = images.id
+		LEFT JOIN studio_images ON studio_images.image_id = images.id
+		WHERE 
+		scene_images.scene_id IS NULL AND 
+		performer_images.performer_id IS NULL AND
+		studio_images IS NULL LIMIT 1000
+	`
+	args := []interface{}{}
+
+	return qb.queryImages(query, args)
+}
+
+func (qb *ImageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
+	query := database.NewQueryBuilder(imageDBTable)
+	query.Body = `
+		SELECT images.id from images
+		LEFT JOIN scene_images ON scene_images.image_id = images.id
+		LEFT JOIN performer_images ON performer_images.image_id = images.id
+		LEFT JOIN studio_images ON studio_images.image_id = images.id`
+
+	query.AddWhere("images.id = ?")
+	query.AddArg(imageID)
+
+	query.AddWhere("scene_images.scene_id IS NULL")
+	query.AddWhere("performer_images.performer_id IS NULL")
+	query.AddWhere("studio_images.studio_id IS NULL")
+
+	count, err := qb.dbi.Count(*query)
+	if err != nil {
+		return false, err
+	}
+
+	return count == 1, nil
+}
+
 func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
+
 	query := `
 		SELECT images.* FROM images
 		WHERE id IN (?)
@@ -80,7 +164,7 @@ func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
 }
 
 func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := SceneImages{}
+	images := ScenesImages{}
 	err := qb.dbi.FindAllJoins(sceneImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -99,7 +183,7 @@ func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, 
 }
 
 func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := PerformerImages{}
+	images := PerformersImages{}
 	err := qb.dbi.FindAllJoins(performerImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -139,7 +223,7 @@ func (qb *ImageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*Image, error
 }
 
 func (qb *ImageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := StudioImages{}
+	images := StudiosImages{}
 	err := qb.dbi.FindAllJoins(studioImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
