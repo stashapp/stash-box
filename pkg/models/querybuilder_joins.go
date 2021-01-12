@@ -40,3 +40,39 @@ func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID uuid.UUID, updatedJoins Sc
 func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID uuid.UUID) error {
 	return qb.dbi.DeleteJoins(sceneTagTable, sceneID)
 }
+
+func (qb *JoinsQueryBuilder) CreateScenesImages(newJoins ScenesImages) error {
+	return qb.dbi.InsertJoins(sceneImageTable, &newJoins)
+}
+
+func (qb *JoinsQueryBuilder) UpdateScenesImages(sceneID uuid.UUID, updatedJoins ScenesImages) error {
+	return qb.dbi.ReplaceJoins(sceneImageTable, sceneID, &updatedJoins)
+}
+
+func (qb *JoinsQueryBuilder) DestroyScenesImages(sceneID uuid.UUID) error {
+	return qb.dbi.DeleteJoins(sceneImageTable, sceneID)
+}
+
+func (qb *JoinsQueryBuilder) CreatePerformersImages(newJoins PerformersImages) error {
+	return qb.dbi.InsertJoins(performerImageTable, &newJoins)
+}
+
+func (qb *JoinsQueryBuilder) UpdatePerformersImages(performerID uuid.UUID, updatedJoins PerformersImages) error {
+	return qb.dbi.ReplaceJoins(performerImageTable, performerID, &updatedJoins)
+}
+
+func (qb *JoinsQueryBuilder) DestroyPerformersImages(performerID uuid.UUID) error {
+	return qb.dbi.DeleteJoins(performerImageTable, performerID)
+}
+
+func (qb *JoinsQueryBuilder) CreateStudiosImages(newJoins StudiosImages) error {
+	return qb.dbi.InsertJoins(studioImageTable, &newJoins)
+}
+
+func (qb *JoinsQueryBuilder) UpdateStudiosImages(studioID uuid.UUID, updatedJoins StudiosImages) error {
+	return qb.dbi.ReplaceJoins(studioImageTable, studioID, &updatedJoins)
+}
+
+func (qb *JoinsQueryBuilder) DestroyStudiosImages(studioID uuid.UUID) error {
+	return qb.dbi.DeleteJoins(studioImageTable, studioID)
+}
