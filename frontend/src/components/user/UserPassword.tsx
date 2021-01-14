@@ -33,7 +33,7 @@ const ChangePasswordComponent: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="col-6">
       <h2>Change Password</h2>
       <hr />
       <UserPassword error={queryError} callback={doUpdate} />

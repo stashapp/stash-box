@@ -324,6 +324,11 @@ export interface RevokeInviteInput {
   amount: number;
 }
 
+export interface RoleCriterionInput {
+  value: RoleEnum[];
+  modifier: CriterionModifier;
+}
+
 export interface SceneCreateInput {
   title?: string | null;
   details?: string | null;
@@ -444,6 +449,19 @@ export interface UserCreateInput {
 
 export interface UserDestroyInput {
   id: string;
+}
+
+export interface UserFilterType {
+  name?: string | null;
+  email?: string | null;
+  roles?: RoleCriterionInput | null;
+  apiKey?: string | null;
+  successful_edits?: IntCriterionInput | null;
+  unsuccessful_edits?: IntCriterionInput | null;
+  successful_votes?: IntCriterionInput | null;
+  unsuccessful_votes?: IntCriterionInput | null;
+  api_calls?: IntCriterionInput | null;
+  invited_by?: string | null;
 }
 
 export interface UserUpdateInput {

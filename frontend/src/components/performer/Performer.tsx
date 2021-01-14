@@ -9,13 +9,18 @@ import { CriterionModifier } from "src/definitions/globalTypes";
 
 import PerformerInfo from "src/components/performerInfo";
 import SceneCard from "src/components/sceneCard";
-import { LoadingIndicator } from "src/components/fragments";
+import Pagination from "src/components/pagination";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { usePagination } from "src/hooks";
 
 const PerformerQuery = loader("src/queries/Performer.gql");
 const ScenesQuery = loader("src/queries/Scenes.gql");
 
+const PER_PAGE = 40;
+
 const PerformerComponent: React.FC = () => {
   const { id } = useParams();
+  const { page, setPage } = usePagination();
   const { loading, data } = useQuery<Performer>(PerformerQuery, {
     variables: { id },
   });
@@ -27,22 +32,17 @@ const PerformerComponent: React.FC = () => {
       sceneFilter: {
         performers: { value: [id], modifier: CriterionModifier.INCLUDES },
       },
-      filter: { per_page: 1000 },
+      filter: { per_page: PER_PAGE, page },
     },
   });
 
-  if (loading || loadingPerformances)
-    return <LoadingIndicator message="Loading performer..." />;
+  if (loading) return <LoadingIndicator message="Loading performer..." />;
+  if (!data?.findPerformer)
+    return <ErrorMessage error="Failed to load performer." />;
 
-  if (!data?.findPerformer) return <div>Performer not found.</div>;
-
-  const scenes = [...(performances?.queryScenes?.scenes ?? [])]
-    .sort((a, b) => {
-      if (a.date < b.date) return 1;
-      if (a.date > b.date) return -1;
-      return -1;
-    })
-    .map((p) => <SceneCard key={p.id} performance={p} />);
+  const scenes = (performances?.queryScenes?.scenes ?? []).map((p) => (
+    <SceneCard key={p.id} performance={p} />
+  ));
 
   return (
     <>
@@ -50,7 +50,30 @@ const PerformerComponent: React.FC = () => {
         <PerformerInfo performer={data.findPerformer} />
       </div>
       <hr />
-      <div className="row performer-scenes">{scenes}</div>
+      {loadingPerformances ? (
+        <LoadingIndicator message="Loading scene performances..." />
+      ) : !performances ? (
+        <ErrorMessage error="Failed to load scene performances." />
+      ) : (
+        <>
+          <div className="ml-auto">
+            <Pagination
+              active={page}
+              onClick={setPage}
+              count={performances.queryScenes.count}
+              perPage={PER_PAGE}
+              showCount
+            />
+          </div>
+          <div className="row performer-scenes">{scenes}</div>
+          <Pagination
+            active={page}
+            onClick={setPage}
+            count={performances.queryScenes.count}
+            perPage={PER_PAGE}
+          />
+        </>
+      )}
     </>
   );
 };

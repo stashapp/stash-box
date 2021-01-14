@@ -54,7 +54,7 @@ const ActivateNewUserPage: React.FC = () => {
     setSubmitError(undefined);
     activateNewUser({ variables: { input: userData } })
       .then(() => {
-        history.push("/login");
+        history.push("/login?msg=account-created");
       })
       .catch((err) => {
         if (err && err.message) {

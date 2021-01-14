@@ -36,7 +36,7 @@ const ResetPassword: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const [changePassword] = useMutation<
+  const [changePassword, { loading }] = useMutation<
     ChangePasswordMutation,
     ChangePasswordMutationVariables
   >(ChangePassword);
@@ -51,11 +51,11 @@ const ResetPassword: React.FC = () => {
     setSubmitError(undefined);
     changePassword({ variables: { userData } })
       .then(() => {
-        history.push("/login");
+        history.push("/login?msg=password-reset");
       })
       .catch((err) => {
         if (err && err.message) {
-          setSubmitError(err.message as string);
+          setSubmitError(err.message);
         }
       });
   };
@@ -92,7 +92,11 @@ const ResetPassword: React.FC = () => {
         <div className="row">
           <div className="col-3 offset-9 d-flex justify-content-end pr-0">
             <div>
-              <button type="submit" className="register-button btn btn-primary">
+              <button
+                type="submit"
+                className="register-button btn btn-primary"
+                disabled={loading}
+              >
                 Set Password
               </button>
             </div>

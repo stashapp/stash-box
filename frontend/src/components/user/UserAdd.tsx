@@ -40,8 +40,8 @@ const AddUserComponent: React.FC = () => {
   } as UserData;
 
   return (
-    <div>
-      <h2>Add new performer</h2>
+    <div className="col-6">
+      <h2>Add user</h2>
       <hr />
       <UserForm user={emptyUser} error={queryError} callback={doInsert} />
     </div>

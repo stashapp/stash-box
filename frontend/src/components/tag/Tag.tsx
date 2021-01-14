@@ -20,7 +20,7 @@ import {
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
-import { LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import EditList from "src/components/editList";
 import DeleteButton from "src/components/deleteButton";
 
@@ -28,6 +28,7 @@ const ScenesQuery = loader("src/queries/Scenes.gql");
 const TagQuery = loader("src/queries/Tag.gql");
 const TagEditMutation = loader("src/mutations/TagEdit.gql");
 
+const PER_PAGE = 20;
 const DEFAULT_TAB = "scenes";
 
 const TagComponent: React.FC = () => {
@@ -49,7 +50,7 @@ const TagComponent: React.FC = () => {
     variables: {
       filter: {
         page,
-        per_page: 20,
+        per_page: PER_PAGE,
         sort: "DATE",
         direction: SortDirectionEnum.DESC,
       },
@@ -89,9 +90,8 @@ const TagComponent: React.FC = () => {
     return <LoadingIndicator message="Loading..." />;
 
   if (!tag?.findTag?.id) return <div>Tag not found!</div>;
-  if (!sceneData?.queryScenes) return <div>Scene data not found!</div>;
-
-  const totalPages = Math.ceil(sceneData.queryScenes.count / 20);
+  if (!sceneData?.queryScenes)
+    return <ErrorMessage error="Scene data not found." />;
 
   const scenes = sceneData.queryScenes.scenes.map((scene) => (
     <SceneCard key={scene.id} performance={scene} />
@@ -146,16 +146,17 @@ const TagComponent: React.FC = () => {
           <div className="row no-gutters">
             <Pagination
               onClick={setPage}
-              pages={totalPages}
+              perPage={PER_PAGE}
               active={page}
               count={sceneData.queryScenes.count}
+              showCount
             />
           </div>
           <div className="performers row">{scenes}</div>
           <div className="row no-gutters">
             <Pagination
               onClick={setPage}
-              pages={totalPages}
+              perPage={PER_PAGE}
               active={page}
               count={sceneData.queryScenes.count}
             />

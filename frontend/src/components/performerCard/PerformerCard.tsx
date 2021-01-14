@@ -14,7 +14,7 @@ const CLASSNAME = "PerformerCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 
 const PerformerCard: React.FC<PerformerCardProps> = ({ performer }) => (
-  <div key={performer.id} className={`col-12 col-lg-3 col-md-6 ${CLASSNAME}`}>
+  <div key={performer.id} className={`col-3 ${CLASSNAME}`}>
     <Card>
       <Link to={`/performers/${performer.id}`}>
         <div className={CLASSNAME_IMAGE}>

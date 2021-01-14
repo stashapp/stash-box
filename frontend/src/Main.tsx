@@ -44,7 +44,7 @@ const Main: React.FC = ({ children }) => {
     prevUser.current = user;
   }, [user, history]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <></>;
 
   const isRole = (role: string) =>
     (user?.roles ?? []).includes(role as RoleEnum);

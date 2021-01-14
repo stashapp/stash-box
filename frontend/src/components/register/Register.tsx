@@ -4,6 +4,7 @@ import { loader } from "graphql.macro";
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
+
 import AuthContext, { ContextType } from "src/AuthContext";
 import {
   NewUserMutation,
@@ -16,12 +17,13 @@ const NewUser = loader("src/mutations/NewUser.gql");
 
 const schema = yup.object().shape({
   email: yup.string().email().required("Email is required"),
-  inviteKey: yup.string(),
+  inviteKey: yup.string().required("Invite key is required"),
 });
 type RegisterFormData = yup.InferType<typeof schema>;
 
 const Register: React.FC = () => {
   const history = useHistory();
+  const [awaitingActivation, setAwaitingActivation] = useState(false);
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
@@ -48,7 +50,7 @@ const Register: React.FC = () => {
             `/activate?email=${formData.email}&key=${response.data.newUser}`
           );
         } else {
-          history.push("/login");
+          setAwaitingActivation(true);
         }
       })
       .catch((err) => {
@@ -57,6 +59,17 @@ const Register: React.FC = () => {
         }
       });
   };
+
+  if (awaitingActivation)
+    return (
+      <div className="LoginPrompt mx-auto d-flex">
+        <div className="align-self-center col-8 mx-auto">
+          <h5>Invite key accepted</h5>
+          <p>Please check your email to complete your registration.</p>
+          <a href="/login">Return to login</a>
+        </div>
+      </div>
+    );
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
@@ -73,7 +86,9 @@ const Register: React.FC = () => {
             placeholder="Email"
             ref={register}
           />
-          <div className="invalid-feedback">{errors?.email?.message}</div>
+          <div className="invalid-feedback text-right">
+            {errors?.email?.message}
+          </div>
         </label>
         <label className="row" htmlFor="inviteKey">
           <span className="col-4">Invite Key: </span>
@@ -84,7 +99,9 @@ const Register: React.FC = () => {
             placeholder="Invite Key"
             ref={register}
           />
-          <div className="invalid-feedback">{errors?.inviteKey?.message}</div>
+          <div className="invalid-feedback text-right">
+            {errors?.inviteKey?.message}
+          </div>
         </label>
         <div className="row">
           <div className="col-3 offset-9 d-flex justify-content-end pr-0">
@@ -96,7 +113,7 @@ const Register: React.FC = () => {
           </div>
         </div>
         <div className="row">
-          <div className="text-danger">{submitError}</div>
+          <p className="col text-danger text-right">{submitError}</p>
         </div>
       </form>
     </div>
