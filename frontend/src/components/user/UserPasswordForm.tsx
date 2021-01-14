@@ -4,10 +4,11 @@ import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers";
 import cx from "classnames";
+import { useHistory } from "react-router-dom";
 
 const schema = yup.object().shape({
   id: yup.string(),
-  existingPassword: yup.string(),
+  existingPassword: yup.string().required("Existing password is required"),
   newPassword: yup
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -41,6 +42,7 @@ interface UserProps {
 }
 
 const UserForm: React.FC<UserProps> = ({ callback, error }) => {
+  const history = useHistory();
   const { register, handleSubmit, errors } = useForm<UserFormData>({
     resolver: yupResolver(schema),
   });
@@ -55,7 +57,7 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="existingPassword" className="col-2">
+      <Form.Group controlId="existingPassword">
         <Form.Control
           className={cx({ "is-invalid": errors.existingPassword })}
           name="existingPassword"
@@ -67,7 +69,7 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
           {errors?.existingPassword?.message}
         </div>
       </Form.Group>
-      <Form.Group controlId="newPassword" className="col-2">
+      <Form.Group controlId="newPassword">
         <Form.Control
           className={cx({ "is-invalid": errors.newPassword })}
           name="newPassword"
@@ -77,7 +79,7 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
         />
         <div className="invalid-feedback">{errors?.newPassword?.message}</div>
       </Form.Group>
-      <Form.Group controlId="confirmNewPassword" className="col-2">
+      <Form.Group controlId="confirmNewPassword">
         <Form.Control
           className={cx({ "is-invalid": errors.confirmNewPassword })}
           name="confirmNewPassword"
@@ -89,8 +91,15 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
           {errors?.confirmNewPassword?.message}
         </div>
       </Form.Group>
-      <div className="offset-2">
+      <div>
         <Button type="submit">Save</Button>
+        <Button
+          variant="secondary"
+          className="ml-2"
+          onClick={() => history.goBack()}
+        >
+          Cancel
+        </Button>
         <div className="invalid-feedback d-block">{error}</div>
       </div>
     </Form>
