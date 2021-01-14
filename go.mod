@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.17.7
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/gobuffalo/buffalo-plugins v1.13.1 // indirect
 	github.com/gobuffalo/events v1.4.1 // indirect
@@ -32,21 +33,23 @@ require (
 	github.com/gorilla/sessions v1.1.3
 	github.com/gorilla/websocket v1.4.0
 	github.com/h2non/filetype v1.0.8
+	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/karrick/godirwalk v1.15.5 // indirect
+	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/lib/pq v1.3.0
 	github.com/markbates/oncer v1.0.0 // indirect
+	github.com/minio/minio-go/v7 v7.0.7
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.6.0
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v0.0.7 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/vektah/dataloaden v0.3.0 // indirect
 	github.com/vektah/gqlparser v1.2.0
-	golang.org/x/crypto v0.0.0-20200403201458-baeed622b8d8
-	golang.org/x/image v0.0.0-20190802002840-cff245a6509b
+	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
-	golang.org/x/sys v0.0.0-20200331124033-c3d80250170d // indirect
 	golang.org/x/tools v0.0.0-20200403190813-44a64ad78b9b // indirect
 )

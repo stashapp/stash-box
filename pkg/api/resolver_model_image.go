@@ -18,6 +18,9 @@ func (r *imageResolver) URL(ctx context.Context, obj *models.Image) (string, err
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 		builder := urlbuilders.NewImageURLBuilder(baseURL, obj.Checksum)
 		return builder.GetImageURL(), nil
+	} else if config.GetImageBackend() == config.S3Backend {
+		builder := urlbuilders.NewS3ImageURLBuilder(obj)
+		return builder.GetImageURL(), nil
 	}
 
 	return obj.RemoteURL.String, nil

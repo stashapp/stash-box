@@ -1,76 +1,40 @@
 package image
 
 import (
-	"image"
-	"io"
+	"bytes"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
-	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stashdb/pkg/manager/config"
 	"github.com/stashapp/stashdb/pkg/models"
 	"github.com/stashapp/stashdb/pkg/utils"
-
-	_ "image/jpeg"
-	_ "image/png"
 )
 
-func GetImagePath(imageDir string, checksum string) string {
-	return filepath.Join(imageDir, checksum)
-}
+type FileBackend struct{}
 
-func saveFile(fileDir string, file graphql.Upload) (string, error) {
-	// save the file from the file to a temporary file so we can get the
-	// checksum
-	f, err := ioutil.TempFile(fileDir, "temp")
-	if err != nil {
-		return "", err
-	}
-
-	if _, err := io.Copy(f, file.File); err != nil {
-		os.Remove(f.Name())
-		return "", err
-	}
-
-	f.Close()
-
-	checksum, err := utils.MD5FromFilePath(f.Name())
-	if err != nil {
-		os.Remove(f.Name())
-		return "", err
-	}
+func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
+	fileDir := config.GetImageLocation()
 
 	// check fileDir for the identical file
-	fn := GetImagePath(fileDir, checksum)
+	fn := GetImagePath(fileDir, image.Checksum)
 	if exists, _ := utils.FileExists(fn); exists {
-		// remove the temp file and just return the existing checksum
-		os.Remove(f.Name())
-		return checksum, nil
+		// file already exists
+		return nil
 	}
 
-	// rename the temporary file to the checksum
-	if err := os.Rename(f.Name(), fn); err != nil {
-		os.Remove(f.Name())
-		return "", err
-	}
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(file)
 
-	return checksum, nil
-}
-
-func populateImageDimensions(fn string, dest *models.Image) error {
-	f, err := os.Open(fn)
-	if err != nil {
+	// write the file
+	path := GetImagePath(fileDir, image.Checksum)
+	if err := ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0644)); err != nil {
+		os.Remove(path)
 		return err
 	}
-	defer f.Close()
-
-	img, _, err := image.Decode(f)
-	if err != nil {
-		return err
-	}
-
-	dest.Width = int64(img.Bounds().Max.X)
-	dest.Height = int64(img.Bounds().Max.Y)
 
 	return nil
+}
+
+func (s *FileBackend) DestroyFile(image *models.Image) error {
+	return os.Remove(GetImagePath(config.GetImageLocation(), image.Checksum))
 }

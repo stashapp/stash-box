@@ -15,7 +15,6 @@ input ImageCreateInput {
 input ImageUpdateInput {
   id: ID!
   url: String
-  file: Upload
 }
 
 input ImageDestroyInput {

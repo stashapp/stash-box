@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stashdb/pkg/logger"
 	"github.com/stashapp/stashdb/pkg/utils"
 )
 
@@ -55,6 +56,7 @@ const HostURL = "host_url"
 // Image storage settings
 const ImageLocation = "image_location"
 const ImageBackend = "image_backend"
+const S3 = "s3"
 
 // Logging options
 const LogFile = "logFile"
@@ -217,6 +219,28 @@ func GetImageBackend() ImageBackendType {
 		return ImageBackendType(viper.GetString(ImageBackend))
 	}
 	return LocalBackend
+}
+
+type S3Config struct {
+	BaseURL      string `mapstructure:"base_url"`
+	Endpoint     string `mapstructure:"endpoint"`
+	Bucket       string `mapstructure:"bucket"`
+	AccessKey    string `mapstructure:"access_key"`
+	Secret       string `mapstructure:"secret"`
+	MaxDimension int64  `mapstructure:"max_dimension"`
+}
+
+func GetS3Config() *S3Config {
+	if viper.IsSet(S3) {
+		var config S3Config
+		err := viper.UnmarshalKey(S3, &config)
+		if err != nil {
+			logger.Errorf("Error reading S3 config: %s", err.Error())
+		} else {
+			return &config
+		}
+	}
+	return nil
 }
 
 // ValidateImageLocation returns an error is image_location is not set.

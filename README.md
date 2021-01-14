@@ -69,7 +69,14 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `email_from` | (none) | Email address from which to send emails. |
 | `host_url` | (none) | Base URL for the server. Used when sending emails. Should be in the form of `https://hostname.com`. |
 | `image_location` | (none) | Path to store images, for local image storage. An error will be displayed if this is not set when creating non-URL images. |
+| `image_backend` | (`local`) | Storage solution for images. Can be set to either `local` or `s3`. |
 | `userLogFile` | (none) | Path to the user log file, which logs user operations. If not set, then these will be output to stderr. |
+| `s3.endpoint` | (none) | Hostname to s3 endpoint used for image storage. |
+| `s3.base_url` | (none) | Base URL to access images in S3. Should be in the form of `https://hostname.com`. |
+| `s3.bucket` | (none) | Name of S3 bucket used to store images. |
+| `s3.access_key` | (none) | Access key used for authentication. |
+| `s3.secret ` | (none) | Secret Access key used for authentication. |
+| `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original.
 
 ## SSL (HTTPS)
 
