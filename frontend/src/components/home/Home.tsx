@@ -41,21 +41,18 @@ const ScenesComponent: React.FC = () => {
     },
   });
 
-  const scenes = loadingScenes ? (
-    <LoadingIndicator message="Loading scenes..." />
-  ) : (
-    (sceneData?.queryScenes?.scenes ?? []).map((scene) => (
-      <SceneCard key={scene.id} performance={scene} />
-    ))
-  );
+  if (loadingScenes && loadingPerformers)
+    return <LoadingIndicator message="Loading..." />;
 
-  const performers = loadingPerformers ? (
-    <LoadingIndicator message="Loading performers" />
-  ) : (
-    (performerData?.queryPerformers?.performers ?? []).map((performer) => (
-      <PerformerCard key={performer.id} performer={performer} />
-    ))
-  );
+  const scenes = (sceneData?.queryScenes?.scenes ?? []).map((scene) => (
+    <SceneCard key={scene.id} performance={scene} />
+  ));
+
+  const performers = (
+    performerData?.queryPerformers?.performers ?? []
+  ).map((performer) => (
+    <PerformerCard key={performer.id} performer={performer} />
+  ));
 
   return (
     <>

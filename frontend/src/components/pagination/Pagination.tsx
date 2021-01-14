@@ -3,17 +3,20 @@ import { Pagination } from "react-bootstrap";
 
 interface PaginationProps {
   active: number;
-  pages: number;
   onClick: (page: number) => void;
-  count?: number;
+  count: number;
+  perPage: number;
+  showCount?: boolean;
 }
 
 const PaginationComponent: React.FC<PaginationProps> = ({
   active,
-  pages,
+  perPage,
   onClick,
   count,
+  showCount = false,
 }) => {
+  const pages = Math.ceil(count / perPage);
   const totalPages = pages === 0 ? 1 : pages;
   const showFirst = totalPages > 5 && active > 3;
   const showLast = totalPages > 5 && active < totalPages - 3;
@@ -45,7 +48,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
 
   return (
     <div className="ml-auto row no-gutters">
-      {!!count && <b className="mr-4 mt-2">{count} results</b>}
+      {showCount && <b className="mr-4 mt-2">{count} results</b>}
       <Pagination onClick={handleClick}>
         {showFirst && <Pagination.First data-page={1} />}
         <Pagination.Prev disabled={active === 1} data-page={active - 1} />

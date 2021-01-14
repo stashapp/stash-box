@@ -9,13 +9,13 @@ import { SortDirectionEnum } from "src/definitions/globalTypes";
 
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
-import { LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { canEdit } from "src/utils/auth";
 import AuthContext from "src/AuthContext";
 
 const TagsQuery = loader("src/queries/Tags.gql");
 
-const TAG_COUNT = 40;
+const PER_PAGE = 40;
 
 const TagsComponent: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -25,7 +25,7 @@ const TagsComponent: React.FC = () => {
     variables: {
       filter: {
         page,
-        per_page: TAG_COUNT,
+        per_page: PER_PAGE,
         sort: "name",
         direction: SortDirectionEnum.ASC,
       },
@@ -35,9 +35,10 @@ const TagsComponent: React.FC = () => {
     },
   });
 
-  const totalPages = Math.ceil((data?.queryTags?.count ?? 0) / TAG_COUNT);
+  if (loading) return <LoadingIndicator />;
+  if (!data) return <ErrorMessage error="Failed to load tags." />;
 
-  const tags = (data?.queryTags?.tags ?? []).map((tag) => (
+  const tags = data.queryTags.tags.map((tag) => (
     <li key={tag.id}>
       <Link to={encodeURI(encodeURI(`/tags/${tag.name}`))}>{tag.name}</Link>
       {tag.description && (
@@ -65,9 +66,10 @@ const TagsComponent: React.FC = () => {
         )}
         <Pagination
           onClick={setPage}
-          pages={totalPages}
+          perPage={PER_PAGE}
           active={page}
-          count={data?.queryTags.count}
+          count={data.queryTags.count}
+          showCount
         />
       </div>
       <Card>
@@ -83,7 +85,12 @@ const TagsComponent: React.FC = () => {
         </Card.Body>
       </Card>
       <div className="row no-gutters">
-        <Pagination onClick={setPage} pages={totalPages} active={page} />
+        <Pagination
+          onClick={setPage}
+          count={data.queryTags.count}
+          perPage={PER_PAGE}
+          active={page}
+        />
       </div>
     </>
   );
