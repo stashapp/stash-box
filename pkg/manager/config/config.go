@@ -209,8 +209,8 @@ func GetImageLocation() string {
 type ImageBackendType string
 
 const (
-	LocalBackend ImageBackendType = "local"
-	S3Backend    ImageBackendType = "s3"
+	FileBackend ImageBackendType = "file"
+	S3Backend   ImageBackendType = "s3"
 )
 
 // GetImageBackend returns the backend used to store images.
@@ -218,7 +218,7 @@ func GetImageBackend() ImageBackendType {
 	if viper.IsSet(ImageBackend) {
 		return ImageBackendType(viper.GetString(ImageBackend))
 	}
-	return LocalBackend
+	return FileBackend
 }
 
 type S3Config struct {

@@ -14,7 +14,7 @@ func (r *imageResolver) ID(ctx context.Context, obj *models.Image) (string, erro
 	return obj.ID.String(), nil
 }
 func (r *imageResolver) URL(ctx context.Context, obj *models.Image) (string, error) {
-	if config.GetImageBackend() == config.LocalBackend {
+	if config.GetImageBackend() == config.FileBackend {
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 		builder := urlbuilders.NewImageURLBuilder(baseURL, obj.Checksum)
 		return builder.GetImageURL(), nil
