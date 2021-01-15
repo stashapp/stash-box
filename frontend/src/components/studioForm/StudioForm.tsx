@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
@@ -9,7 +9,7 @@ import cx from "classnames";
 import { Studio_findStudio as Studio } from "src/definitions/Studio";
 import { StudioCreateInput } from "src/definitions/globalTypes";
 
-import { getUrlByType, Image } from "src/utils/transforms";
+import { getUrlByType } from "src/utils/transforms";
 import EditImages from "../editImages";
 
 const nullCheck = (input: string | null) =>
@@ -21,13 +21,8 @@ const schema = yup.object().shape({
   photoURL: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
   images: yup
     .array()
-    .of(
-      yup.object().shape({
-        id: yup.string().required(),
-        url: yup.string(),
-      })
-    )
-    .nullable(),
+    .of(yup.string().trim().transform(nullCheck))
+    .transform((_, obj) => Object.keys(obj ?? [])),
 });
 
 type StudioFormData = yup.InferType<typeof schema>;
@@ -39,20 +34,13 @@ interface StudioProps {
 
 const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
   const history = useHistory();
-  const { register, handleSubmit, setValue, errors } = useForm<StudioFormData>({
+  const { register, control, handleSubmit, errors } = useForm<StudioFormData>({
     resolver: yupResolver(schema),
   });
   const [photoURL, setPhotoURL] = useState(getUrlByType(studio.urls, "PHOTO"));
-  const [images, setImages] = useState<Image[]>(studio.images);
 
   const onURLChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setPhotoURL(e.currentTarget.value);
-
-  useEffect(() => {
-    register({ name: "images" });
-    setValue("images", images);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [register, setValue]);
 
   const onSubmit = (data: StudioFormData) => {
     const urls = [];
@@ -61,14 +49,9 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
     const callbackData: StudioCreateInput = {
       name: data.title,
       urls,
-      image_ids: (data.images ?? []).map((i) => i.id),
+      image_ids: data.images,
     };
     callback(callbackData);
-  };
-
-  const onSetImages = (i: Image[]) => {
-    setImages(i);
-    setValue("images", i);
   };
 
   return (
@@ -124,7 +107,7 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
 
       <Form.Group>
         <Form.Label>Images</Form.Label>
-        <EditImages images={images} onImagesChanged={onSetImages} />
+        <EditImages initialImages={studio.images} control={control} />
       </Form.Group>
 
       <Form.Group className="d-flex">

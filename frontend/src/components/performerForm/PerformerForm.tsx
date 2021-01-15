@@ -22,12 +22,13 @@ import {
 import { getBraSize, formatFuzzyDate } from "src/utils";
 import {
   Performer_findPerformer as Performer,
-  Performer_findPerformer_images as PerformerImage,
 } from "src/definitions/Performer";
+import { Image } from "src/utils/transforms";
 
-import { BodyModification, Image } from "src/components/form";
+import { BodyModification } from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
 import ChangeRow from "src/components/changeRow";
+import EditImages from "src/components/editImages";
 import DiffPerformer from "./diff";
 
 Countries.registerLocale(english);
@@ -205,7 +206,7 @@ interface PerformerProps {
     id?: string
   ) => void;
   initialAliases?: string[];
-  initialImages?: PerformerImage[];
+  initialImages?: Image[];
 }
 
 const PerformerForm: React.FC<PerformerProps> = ({
@@ -221,7 +222,6 @@ const PerformerForm: React.FC<PerformerProps> = ({
     mode: "onBlur",
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
-  const [images, setImages] = useState([...performer.images, ...initialImages]);
   const aliases = [...performer.aliases, ...initialAliases];
   const [activeTab, setActiveTab] = useState("personal");
   const fieldData = watch();
@@ -230,6 +230,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
     [fieldData, performer]
   );
   const history = useHistory();
+  const images = [...performer.images, ...initialImages];
 
   const onGenderChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setGender(e.currentTarget.value);
@@ -240,10 +241,6 @@ const PerformerForm: React.FC<PerformerProps> = ({
         {obj.label}
       </option>
     ));
-
-  const handleRemoveImage = (id: string) => {
-    setImages(images.filter((i) => i.id !== id));
-  };
 
   const onSubmit = (data: PerformerFormData) => {
     const performerData: PerformerEditDetailsInput = {
@@ -334,8 +331,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
         value={performer.id}
         ref={register({ required: true })}
       />
-      <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
-        <Tab eventKey="personal" title="Personal Information">
+      <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)} className="row">
+        <Tab eventKey="personal" title="Personal Information" className="col-xl-9">
           <Form.Row>
             <Form.Group controlId="name" className="col-6">
               <Form.Label>Name</Form.Label>
@@ -653,7 +650,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
           </Form.Row>
         </Tab>
 
-        <Tab eventKey="bodymod" title="Tattoos and Piercings">
+        <Tab eventKey="bodymod" title="Tattoos and Piercings" className="col-xl-9">
           <BodyModification
             control={control}
             name="tattoos"
@@ -688,22 +685,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <Form.Row>
-            {images.length === 0 && <h4>No images found.</h4>}
-            {
-              // Set index and sort from largest to smallest
-              sortBy(
-                images.map((image, i) => ({ ...image, index: i })),
-                (i) => (i?.width ?? 1) * (i.height ?? 1)
-              )
-                .reverse()
-                .map((image) => (
-                  <Image
-                    image={image}
-                    control={control}
-                    onRemove={handleRemoveImage}
-                  />
-                ))
-            }
+            <EditImages initialImages={images} control={control} />
           </Form.Row>
 
           <Form.Row className="mt-1">
@@ -720,7 +702,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
           </Form.Row>
         </Tab>
 
-        <Tab eventKey="confirm" title="Confirm" className="mt-2">
+        <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
           {changes.length > 0 && (
             <Row>
               <h6 className="col-5 offset-2">Remove</h6>

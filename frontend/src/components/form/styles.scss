@@ -39,35 +39,27 @@
 }
 
 .ImageInput {
-  display: flex;
-  flex-wrap: nowrap;
-  margin-bottom: 0.5rem;
-  width: 100%;
+  position: relative;
+  margin: .5rem;
 
   &-image {
     border-radius: 3px;
     flex-shrink: 0;
-    height: 100%;
-    margin-left: 0.5rem;
     max-height: 200px;
-    max-width: 300px;
-    object-fit: cover;
+    min-width: 100px;
+    min-height: 100px;
   }
 
-  &-metadata {
-    flex-grow: 1;
-    flex-shrink: 1;
-    margin: 0;
-    overflow: hidden;
-    padding: 0.5rem;
-
-    &.card {
-      margin-bottom: 0;
-    }
+  &-remove {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    opacity: .6;
+    padding: 0px 5px;
   }
 
-  &-button {
-    margin-top: auto;
-    width: 6rem;
+  &:hover &-remove {
+    opacity: 1;
   }
+
 }

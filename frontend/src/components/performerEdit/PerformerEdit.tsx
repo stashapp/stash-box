@@ -65,11 +65,7 @@ const PerformerModify: React.FC = () => {
         </i>
       </h2>
       <hr />
-      <Row>
-        <Col xl={9}>
-          <PerformerForm performer={data.findPerformer} callback={doUpdate} />
-        </Col>
-      </Row>
+      <PerformerForm performer={data.findPerformer} callback={doUpdate} />
     </>
   );
 };
