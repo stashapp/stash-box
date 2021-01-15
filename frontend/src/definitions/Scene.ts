@@ -19,8 +19,8 @@ export interface Scene_findScene_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface Scene_findScene_studio {
@@ -31,9 +31,10 @@ export interface Scene_findScene_studio {
 
 export interface Scene_findScene_performers_performer {
   __typename: "Performer";
+  id: string;
   name: string;
   disambiguation: string | null;
-  id: string;
+  deleted: boolean;
   gender: GenderEnum | null;
   aliases: string[];
 }

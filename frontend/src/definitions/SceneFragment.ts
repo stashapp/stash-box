@@ -19,8 +19,8 @@ export interface SceneFragment_images {
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface SceneFragment_studio {

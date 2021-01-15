@@ -25,8 +25,8 @@ export interface SearchPerformers_searchPerformer_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface SearchPerformers_searchPerformer {
@@ -34,6 +34,7 @@ export interface SearchPerformers_searchPerformer {
   id: string;
   name: string;
   disambiguation: string | null;
+  deleted: boolean;
   gender: GenderEnum | null;
   aliases: string[];
   birthdate: SearchPerformers_searchPerformer_birthdate | null;

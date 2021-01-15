@@ -25,8 +25,8 @@ export interface SearchAll_searchPerformer_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface SearchAll_searchPerformer {
@@ -34,6 +34,7 @@ export interface SearchAll_searchPerformer {
   id: string;
   name: string;
   disambiguation: string | null;
+  deleted: boolean;
   gender: GenderEnum | null;
   aliases: string[];
   birthdate: SearchAll_searchPerformer_birthdate | null;
@@ -51,8 +52,8 @@ export interface SearchAll_searchScene_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface SearchAll_searchScene_studio {
@@ -63,10 +64,12 @@ export interface SearchAll_searchScene_studio {
 
 export interface SearchAll_searchScene_performers_performer {
   __typename: "Performer";
-  name: string;
   id: string;
+  name: string;
+  disambiguation: string | null;
   gender: GenderEnum | null;
   aliases: string[];
+  deleted: boolean;
 }
 
 export interface SearchAll_searchScene_performers {

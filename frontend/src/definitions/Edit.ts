@@ -76,8 +76,8 @@ export interface Edit_findEdit_target_Performer_images {
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface Edit_findEdit_target_Performer {
@@ -162,16 +162,16 @@ export interface Edit_findEdit_details_PerformerEdit_added_images {
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface Edit_findEdit_details_PerformerEdit_removed_images {
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface Edit_findEdit_details_PerformerEdit {
@@ -294,8 +294,8 @@ export interface Edit_findEdit_merge_sources_Performer_images {
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface Edit_findEdit_merge_sources_Performer {

@@ -76,8 +76,8 @@ export interface PerformerEditMutation_performerEdit_target_Performer_images {
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface PerformerEditMutation_performerEdit_target_Performer {
@@ -162,16 +162,16 @@ export interface PerformerEditMutation_performerEdit_details_PerformerEdit_added
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface PerformerEditMutation_performerEdit_details_PerformerEdit_removed_images {
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface PerformerEditMutation_performerEdit_details_PerformerEdit {
@@ -294,8 +294,8 @@ export interface PerformerEditMutation_performerEdit_merge_sources_Performer_ima
   __typename: "Image";
   id: string;
   url: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export interface PerformerEditMutation_performerEdit_merge_sources_Performer {
