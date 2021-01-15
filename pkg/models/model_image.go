@@ -22,9 +22,9 @@ var (
 type Image struct {
 	ID        uuid.UUID      `db:"id" json:"id"`
 	RemoteURL sql.NullString `db:"url" json:"url"`
-	Checksum  sql.NullString `db:"checksum" json:"checksum"`
-	Width     sql.NullInt64  `db:"width" json:"width"`
-	Height    sql.NullInt64  `db:"height" json:"height"`
+	Checksum  string         `db:"checksum" json:"checksum"`
+	Width     int64          `db:"width" json:"width"`
+	Height    int64          `db:"height" json:"height"`
 }
 
 func (Image) GetTable() database.Table {
