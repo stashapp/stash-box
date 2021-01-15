@@ -22,8 +22,8 @@ export interface URL {
 export interface Image {
   url: string;
   id: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
 }
 
 export const sortImageURLs = (
@@ -35,20 +35,16 @@ export const sortImageURLs = (
       ...u,
       aspect:
         orientation === "portrait"
-          ? (u?.height ?? 1) / (u?.width ?? 1) > 1
-          : (u?.width ?? 1) / (u?.height ?? 1) > 1,
+          ? u.height / u.width > 1
+          : u.width / u.height > 1,
     }))
     .sort((a, b) => {
       if (a.aspect > b.aspect) return -1;
       if (a.aspect < b.aspect) return 1;
-      if (orientation === "portrait" && (a.height ?? 1) > (b.height ?? 1))
-        return -1;
-      if (orientation === "portrait" && (a.height ?? 1) < (b.height ?? 1))
-        return 1;
-      if (orientation === "landscape" && (a.width ?? 1) > (b.width ?? 1))
-        return -1;
-      if (orientation === "landscape" && (a.width ?? 1) < (b.width ?? 1))
-        return 1;
+      if (orientation === "portrait" && a.height > b.height) return -1;
+      if (orientation === "portrait" && a.height < b.height) return 1;
+      if (orientation === "landscape" && a.width > b.width) return -1;
+      if (orientation === "landscape" && a.width < b.width) return 1;
       return 0;
     });
 

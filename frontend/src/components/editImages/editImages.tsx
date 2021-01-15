@@ -62,7 +62,7 @@ const EditImages: React.FC<EditImagesProps> = ({ images, onImagesChanged }) => {
 
       <Row className="my-2">
         <Col xs={6}>
-          <Form.File onChange={onFileChange} accept=".png,.jpg" />
+          <Form.File onChange={onFileChange} accept=".png,.jpg,.webp,.svg" />
         </Col>
         <Col xs={6} className="d-flex justify-content-end">
           <Button onClick={() => onAddImage()} disabled={!file}>

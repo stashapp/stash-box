@@ -10,17 +10,12 @@ import (
 
 type ImageRepo interface {
 	ImageCreator
-	ImageUpdater
 	ImageDestroyer
 	ImageFinder
 }
 
 type ImageCreator interface {
 	Create(newImage Image) (*Image, error)
-}
-
-type ImageUpdater interface {
-	Update(updatedImage Image) (*Image, error)
 }
 
 type ImageFinder interface {

@@ -3,8 +3,8 @@ scalar Upload
 type Image {
   id: ID!
   url: String!
-  width: Int
-  height: Int
+  width: Int!
+  height: Int!
 }
 
 input ImageCreateInput {
@@ -15,7 +15,6 @@ input ImageCreateInput {
 input ImageUpdateInput {
   id: ID!
   url: String
-  file: Upload
 }
 
 input ImageDestroyInput {

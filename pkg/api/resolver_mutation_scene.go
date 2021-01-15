@@ -146,9 +146,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		}
 
 		// remove images that are no longer used
-		imageService := image.Service{
-			Repository: &iqb,
-		}
+		imageService := image.GetService(&iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
@@ -189,9 +187,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		}
 
 		// remove images that are no longer used
-		imageService := image.Service{
-			Repository: &iqb,
-		}
+		imageService := image.GetService(&iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {

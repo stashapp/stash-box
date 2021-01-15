@@ -89,7 +89,6 @@ type Mutation {
   userDestroy(input: UserDestroyInput!): Boolean!
 
   imageCreate(input: ImageCreateInput!): Image
-  imageUpdate(input: ImageUpdateInput!): Image
   imageDestroy(input: ImageDestroyInput!): Boolean!
 
   """User interface for registering"""

@@ -155,9 +155,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		}
 
 		// remove images that are no longer used
-		imageService := image.Service{
-			Repository: &iqb,
-		}
+		imageService := image.GetService(&iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
@@ -200,9 +198,7 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 		}
 
 		// remove images that are no longer used
-		imageService := image.Service{
-			Repository: &iqb,
-		}
+		imageService := image.GetService(&iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
