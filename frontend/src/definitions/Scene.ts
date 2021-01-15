@@ -19,8 +19,8 @@ export interface Scene_findScene_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number | null;
-  width: number | null;
+  height: number;
+  width: number;
 }
 
 export interface Scene_findScene_studio {

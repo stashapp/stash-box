@@ -25,8 +25,8 @@ export interface Studios_queryStudios_studios_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number | null;
-  width: number | null;
+  height: number;
+  width: number;
 }
 
 export interface Studios_queryStudios_studios {

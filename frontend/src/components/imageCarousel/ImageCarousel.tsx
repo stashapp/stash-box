@@ -31,6 +31,14 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
       activeImage === 0 ? sortedImages.length - 1 : activeImage - 1
     );
 
+  const handleDelete = () => {
+    const deletedImage = sortedImages[activeImage];
+    if (onDeleteImage && deletedImage) {
+      onDeleteImage(deletedImage);
+      setActiveImage(activeImage === 0 ? 0 : activeImage - 1);
+    }
+  };
+
   return (
     <div className="image-carousel">
       <div className="image-container">
@@ -41,11 +49,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
         />
         {onDeleteImage ? (
           <div className="delete-image-overlay">
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={() => onDeleteImage(sortedImages[activeImage])}
-            >
+            <Button variant="danger" size="sm" onClick={handleDelete}>
               <Icon icon="times" />
             </Button>
           </div>
