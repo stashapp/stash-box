@@ -51,8 +51,8 @@ type StudioEdit {
   parent: Studio
   added_child_studios: [Studio!]
   removed_child_studios: [Studio!]
-  added_images: [Image!]
-  removed_images: [Image!]
+  added_images: [Image]
+  removed_images: [Image]
 }
 
 type QueryStudiosResultType {
