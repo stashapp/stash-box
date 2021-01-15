@@ -40,7 +40,7 @@
 
 .ImageInput {
   position: relative;
-  margin: .5rem;
+  margin: 0.5rem;
 
   &-image {
     border-radius: 3px;
@@ -54,12 +54,11 @@
     position: absolute;
     top: 5px;
     left: 5px;
-    opacity: .6;
+    opacity: 0.6;
     padding: 0px 5px;
   }
 
   &:hover &-remove {
     opacity: 1;
   }
-
 }

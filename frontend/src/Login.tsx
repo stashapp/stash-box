@@ -92,7 +92,11 @@ const Login: React.FC = () => {
           </div>
           <div className="col-3 d-flex justify-content-end pr-0">
             <div>
-              <button type="submit" className="login-button btn btn-primary" disabled={loading}>
+              <button
+                type="submit"
+                className="login-button btn btn-primary"
+                disabled={loading}
+              >
                 Login
               </button>
             </div>

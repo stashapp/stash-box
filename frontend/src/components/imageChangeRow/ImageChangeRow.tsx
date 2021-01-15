@@ -7,17 +7,21 @@ const CLASSNAME = "ImageChangeRow";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 
 export interface ImageChangeRowProps {
-  newImages?: Image[] | null;
-  oldImages?: Image[] | null;
+  newImages?: (Image | null)[] | null;
+  oldImages?: (Image | null)[] | null;
 }
 
-const Images: React.FC<{ images: Image[] | null | undefined }> = ({
+const Images: React.FC<{ images: (Image | null)[] | null | undefined }> = ({
   images,
 }) => (
   <>
-    {(images ?? []).map((image) => (
-      <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
-    ))}
+    {(images ?? []).map((image) =>
+      image === null ? (
+        <img className={CLASSNAME_IMAGE} alt="Deleted" />
+      ) : (
+        <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
+      )
+    )}
   </>
 );
 

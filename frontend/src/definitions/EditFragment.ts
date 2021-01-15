@@ -204,8 +204,8 @@ export interface EditFragment_details_PerformerEdit {
   removed_tattoos: EditFragment_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: EditFragment_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: EditFragment_details_PerformerEdit_removed_piercings[] | null;
-  added_images: EditFragment_details_PerformerEdit_added_images[] | null;
-  removed_images: EditFragment_details_PerformerEdit_removed_images[] | null;
+  added_images: (EditFragment_details_PerformerEdit_added_images | null)[] | null;
+  removed_images: (EditFragment_details_PerformerEdit_removed_images | null)[] | null;
 }
 
 export type EditFragment_details = EditFragment_details_SceneEdit | EditFragment_details_TagEdit | EditFragment_details_PerformerEdit;

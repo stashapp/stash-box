@@ -1,7 +1,6 @@
 import React from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { useHistory, useParams } from "react-router-dom";
-import { Col, Row } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import {

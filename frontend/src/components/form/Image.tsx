@@ -25,7 +25,11 @@ const ImageInput: React.FC<ImageProps> = ({ image, control, onRemove }) => {
         control={control}
         defaultValue={image.id}
       />
-      <Button variant="danger" className={CLASSNAME_REMOVE} onClick={() => onRemove(image.id)}>
+      <Button
+        variant="danger"
+        className={CLASSNAME_REMOVE}
+        onClick={() => onRemove(image.id)}
+      >
         <Icon icon="times" />
       </Button>
       <img src={image.url} className={CLASSNAME_IMAGE} alt="" />

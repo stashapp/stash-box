@@ -20,9 +20,7 @@ import {
   PerformerEditDetailsInput,
 } from "src/definitions/globalTypes";
 import { getBraSize, formatFuzzyDate } from "src/utils";
-import {
-  Performer_findPerformer as Performer,
-} from "src/definitions/Performer";
+import { Performer_findPerformer as Performer } from "src/definitions/Performer";
 import { Image } from "src/utils/transforms";
 
 import { BodyModification } from "src/components/form";
@@ -331,8 +329,16 @@ const PerformerForm: React.FC<PerformerProps> = ({
         value={performer.id}
         ref={register({ required: true })}
       />
-      <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)} className="row">
-        <Tab eventKey="personal" title="Personal Information" className="col-xl-9">
+      <Tabs
+        activeKey={activeTab}
+        onSelect={(key) => key && setActiveTab(key)}
+        className="row"
+      >
+        <Tab
+          eventKey="personal"
+          title="Personal Information"
+          className="col-xl-9"
+        >
           <Form.Row>
             <Form.Group controlId="name" className="col-6">
               <Form.Label>Name</Form.Label>
@@ -650,7 +656,11 @@ const PerformerForm: React.FC<PerformerProps> = ({
           </Form.Row>
         </Tab>
 
-        <Tab eventKey="bodymod" title="Tattoos and Piercings" className="col-xl-9">
+        <Tab
+          eventKey="bodymod"
+          title="Tattoos and Piercings"
+          className="col-xl-9"
+        >
           <BodyModification
             control={control}
             name="tattoos"

@@ -204,8 +204,8 @@ export interface Edit_findEdit_details_PerformerEdit {
   removed_tattoos: Edit_findEdit_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: Edit_findEdit_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: Edit_findEdit_details_PerformerEdit_removed_piercings[] | null;
-  added_images: Edit_findEdit_details_PerformerEdit_added_images[] | null;
-  removed_images: Edit_findEdit_details_PerformerEdit_removed_images[] | null;
+  added_images: (Edit_findEdit_details_PerformerEdit_added_images | null)[] | null;
+  removed_images: (Edit_findEdit_details_PerformerEdit_removed_images | null)[] | null;
 }
 
 export type Edit_findEdit_details = Edit_findEdit_details_SceneEdit | Edit_findEdit_details_TagEdit | Edit_findEdit_details_PerformerEdit;

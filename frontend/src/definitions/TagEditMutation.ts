@@ -204,8 +204,8 @@ export interface TagEditMutation_tagEdit_details_PerformerEdit {
   removed_tattoos: TagEditMutation_tagEdit_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: TagEditMutation_tagEdit_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: TagEditMutation_tagEdit_details_PerformerEdit_removed_piercings[] | null;
-  added_images: TagEditMutation_tagEdit_details_PerformerEdit_added_images[] | null;
-  removed_images: TagEditMutation_tagEdit_details_PerformerEdit_removed_images[] | null;
+  added_images: (TagEditMutation_tagEdit_details_PerformerEdit_added_images | null)[] | null;
+  removed_images: (TagEditMutation_tagEdit_details_PerformerEdit_removed_images | null)[] | null;
 }
 
 export type TagEditMutation_tagEdit_details = TagEditMutation_tagEdit_details_SceneEdit | TagEditMutation_tagEdit_details_TagEdit | TagEditMutation_tagEdit_details_PerformerEdit;
