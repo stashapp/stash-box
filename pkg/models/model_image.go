@@ -46,7 +46,7 @@ func (p Images) Each(fn func(interface{})) {
 func (p Images) ToURLSlice() []string {
 	urls := make([]string, len(p))
 	for i, v := range p {
-		urls[i] = v.URL
+		urls[i] = v.RemoteURL.String
 	}
 	return urls
 }

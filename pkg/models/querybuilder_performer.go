@@ -61,11 +61,11 @@ func (qb *PerformerQueryBuilder) CreateUrls(newJoins PerformerUrls) error {
 	return qb.dbi.InsertJoins(performerUrlTable, &newJoins)
 }
 
-func (qb *PerformerQueryBuilder) CreateImages(newJoins PerformerImages) error {
+func (qb *PerformerQueryBuilder) CreateImages(newJoins PerformersImages) error {
 	return qb.dbi.InsertJoins(performerImageTable, &newJoins)
 }
 
-func (qb *PerformerQueryBuilder) UpdateImages(performerID uuid.UUID, updatedJoins PerformerImages) error {
+func (qb *PerformerQueryBuilder) UpdateImages(performerID uuid.UUID, updatedJoins PerformersImages) error {
 	return qb.dbi.ReplaceJoins(performerImageTable, performerID, &updatedJoins)
 }
 
@@ -317,8 +317,8 @@ func (qb *PerformerQueryBuilder) GetAliases(id uuid.UUID) (PerformerAliases, err
 	return joins, err
 }
 
-func (qb *PerformerQueryBuilder) GetImages(id uuid.UUID) (PerformerImages, error) {
-	joins := PerformerImages{}
+func (qb *PerformerQueryBuilder) GetImages(id uuid.UUID) (PerformersImages, error) {
+	joins := PerformersImages{}
 	err := qb.dbi.FindJoins(performerImageTable, id, &joins)
 
 	return joins, err
