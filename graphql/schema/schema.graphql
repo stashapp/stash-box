@@ -142,6 +142,10 @@ type Mutation {
   cancelEdit(input: CancelEditInput!): Edit!
 
   submitFingerprint(input: FingerprintSubmission!): Boolean!
+
+  # Bulk ingest
+  analyzeData(input: BulkImportInput!): BulkAnalyzeResult!
+  importData(input: BulkImportInput!): BulkImportResult!
 }
 
 schema {

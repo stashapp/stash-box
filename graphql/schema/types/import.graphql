@@ -1,0 +1,66 @@
+input BulkImportInput {
+  type: ImportDataType!
+  data: Upload!
+  columns: [ImportColumn!]!
+  mainStudio: String!
+}
+
+type BulkAnalyzeResult {
+  results: [SceneImportResult!]!
+  errors: [String!]!
+}
+
+type BulkImportResult {
+  scenesImported: Int!
+}
+
+enum ImportDataType {
+    CSV
+    JSON
+}
+
+input ImportColumn {
+  name: String!
+  type: ImportColumnType!
+  regularExpression: String
+}
+
+enum ImportColumnType {
+  TITLE
+  DATE
+  IMAGE
+  URL
+  DESCRIPTION
+  DURATION
+  PERFORMERS
+  STUDIO
+  TAGS
+}
+
+type SceneImportResult {
+  title: String
+  date: String
+  description: String
+  image: String
+  url: String
+  duration: Int
+  existingScene: Scene
+  studio: StudioImportResult
+  performers: [PerformerImportResult!]!
+  tags: [TagImportResult!]!
+}
+
+type StudioImportResult {
+  name: String
+  existingStudio: Studio
+}
+
+type PerformerImportResult {
+  name: String
+  existingPerformer: Performer
+}
+
+type TagImportResult {
+  name: String
+  existingTag: Tag
+}

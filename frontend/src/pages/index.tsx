@@ -16,6 +16,7 @@ import {
   ROUTE_FORGOT_PASSWORD,
   ROUTE_RESET_PASSWORD,
   ROUTE_SEARCH,
+  ROUTE_IMPORT,
 } from "src/constants/route";
 
 import Home from "src/pages/home";
@@ -32,6 +33,7 @@ import ActivateUser from "src/pages/activateUser";
 import ForgotPassword from "src/pages/forgotPassword";
 import ResetPassword from "src/pages/resetPassword";
 import Search from "src/pages/search";
+import Import from "src/pages/import";
 
 const Pages: React.FC = () => (
   <Switch>
@@ -76,6 +78,9 @@ const Pages: React.FC = () => (
     </Route>
     <Route exact path={ROUTE_SEARCH}>
       <Search />
+    </Route>
+    <Route exact path={ROUTE_IMPORT}>
+      <Import />
     </Route>
   </Switch>
 );

@@ -1,0 +1,262 @@
+import React, { useState } from "react";
+import { Button, Card, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { useMutation } from "@apollo/client";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import { loader } from "graphql.macro";
+import { yupResolver } from "@hookform/resolvers";
+import * as yup from "yup";
+
+import {
+  AnalyzeDataMutation,
+  AnalyzeDataMutationVariables,
+  AnalyzeDataMutation_analyzeData_results as AnalyzeResult,
+} from "src/definitions/AnalyzeDataMutation";
+import { ImportColumnType, ImportDataType } from "src/definitions/globalTypes";
+import { Icon } from "src/components/fragments";
+
+const AnalyzeData = loader("src/mutations/AnalyzeData.gql");
+
+const schema = yup.object().shape({
+  mainStudio: yup.string().required(),
+  columns: yup.array().of(
+    yup.object().shape({
+      enabled: yup.bool(),
+      name: yup.string(),
+      regularExpression: yup.string().nullable(),
+      type:  yup
+        .string()
+        .nullable()
+        .oneOf(Object.keys(ImportColumnType), "Invalid column type"),
+    })
+  ),
+});
+
+const columns = [{
+  name: "Title",
+  type: ImportColumnType.TITLE,
+  defaultValue: "title",
+}, {
+  name: "Description",
+  type: ImportColumnType.DESCRIPTION,
+  defaultValue: "description",
+}, {
+  name: "Date",
+  type: ImportColumnType.DATE,
+  defaultValue: "date",
+}, {
+  name: "Duration",
+  type: ImportColumnType.DURATION,
+  defaultValue: "duration",
+}, {
+  name: "Image",
+  type: ImportColumnType.IMAGE,
+  defaultValue: "image",
+}, {
+  name: "URL",
+  type: ImportColumnType.URL,
+  defaultValue: "url",
+}, {
+  name: "Studio",
+  type: ImportColumnType.STUDIO,
+  defaultValue: "studio",
+}, {
+  name: "Performers",
+  type: ImportColumnType.PERFORMERS,
+  defaultValue: "performers",
+}, {
+  name: "Tags",
+  type: ImportColumnType.TAGS,
+  defaultValue: "tags",
+}];
+
+type ColumnData = yup.InferType<typeof schema>;
+
+const Import: React.FC = () => {
+  const [file, setFile] = useState<File>();
+  const [analyzeData] = useMutation<AnalyzeDataMutation, AnalyzeDataMutationVariables>(AnalyzeData);
+  const { register, handleSubmit } = useForm<ColumnData>({ resolver: yupResolver(schema) });
+  const [results, setResults] = useState<AnalyzeResult[]>([]);
+  const [parseErrors, setParseErrors] = useState<string[]>([]);
+
+  const submitData = (data: ColumnData) => {
+    const columnData = data.columns.filter(c => c.enabled).map(c => ({
+      name: (c.name || "") as string,
+      type: c.type as ImportColumnType,
+      regularExpression: (c?.regularExpression ?? "").trim() === "" ? null : (c?.regularExpression ?? "").trim(),
+    }));
+
+    analyzeData({
+      variables: {
+        input: {
+          type: ImportDataType.CSV,
+          columns: columnData,
+          mainStudio: data.mainStudio,
+          data: file,
+        }
+      },
+    }).then(res => {
+      setResults(res.data?.analyzeData.results ?? []);
+      setParseErrors(res.data?.analyzeData.errors ?? []);
+    });
+  }
+
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (
+      event.target.validity.valid &&
+      event.target.files?.[0]
+    ) {
+      setFile(event.target.files[0]);
+    }
+  }
+
+  return (
+    <Form onSubmit={handleSubmit(submitData)}>
+      <h2>Bulk Import</h2>
+      <Form.File onChange={onFileChange} accept=".json,.csv" />
+      <Form.Group controlId="mainStudio">
+        <Form.Label>Main Studio</Form.Label>
+        <Form.Control name="mainStudio" ref={register} />
+      </Form.Group>
+      <div>
+        <h4>Columns:</h4>
+        { columns.map((c, i) => (
+          <Form.Row key={c.type}>
+            <Form.Control type="hidden" name={`columns[${i}].type`} value={c.type} ref={register} />
+            <Form.Group controlId={`columns[${i}].enabled`} className="align-self-end col-2">
+              <Form.Check name={`columns[${i}].enabled`} ref={register} defaultChecked inline />
+              <Form.Label>{ c.name }</Form.Label>
+            </Form.Group>
+            <Form.Group as={Col}>
+              <InputGroup>
+                <InputGroup.Prepend>
+                  <InputGroup.Text>Name</InputGroup.Text>
+                </InputGroup.Prepend>
+                <Form.Control name={`columns[${i}].name`} ref={register} defaultValue={c.defaultValue ?? ""} />
+              </InputGroup>
+            </Form.Group>
+            <Form.Group as={Col} xs={6}>
+              <InputGroup>
+                <InputGroup.Prepend>
+                  <InputGroup.Text>Regular Expression</InputGroup.Text>
+                </InputGroup.Prepend>
+                <Form.Control name={`columns[${i}].regularExpression`} ref={register} />
+              </InputGroup>
+            </Form.Group>
+          </Form.Row>
+        ))}
+      </div>
+      <Button type="submit" disabled={!file}>Submit</Button>
+
+      { parseErrors.length > 0 && (
+        <>
+          <h4>Errors:</h4>
+          <ul>
+            { parseErrors.map(error => <li>{error}</li>) }
+          </ul>
+        </>
+      )}
+      { results.length > 0 && (
+        <>
+          <hr />
+          <h2>{ results.length } Results:</h2>
+        </>
+      )}
+      { results.length > 0 && results.map(result => (
+        <Card className="p-2">
+            <Row>
+              <Col xs={8}>
+                <Row>
+                  <Col>
+                    <b>Title:</b> {result.title}
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    { result.date && (
+                      <span className="mr-2">
+                        <b>Date:</b> { result.date }
+                      </span>
+                    )}
+                    { result.duration && (
+                      <span className="mr-2">
+                        <b>Duration:</b> { result.duration}
+                      </span>
+                    )}
+                    { result.studio && (
+                      <span className="mr-2">
+                        <b>Studio:</b> { result.studio.existingStudio
+                          ? <span>
+                              <Icon icon="video" className="mr-1" />
+                              <Link to={`/studios/${result.studio.existingStudio.id}`}>{result.studio.existingStudio.name}</Link>
+                            </span>
+                          : <span>
+                              <Icon icon="star" color="gold" className="mr-1" />
+                              <span>{result.studio?.name ?? ""}</span>
+                            </span>
+                        }
+                      </span>
+                    )}
+                  </Col>
+                </Row>
+                <Row>
+                  <Col><b>URL:</b> { result.url }</Col>
+                </Row>
+                <Row>
+                  <Col><b>Performers:</b> { result.performers.map(p => (
+                    p?.existingPerformer
+                    ? <span className="mr-2">
+                        <Icon icon="user-check" color="success" className="mr-1" />
+                        <Link to={`/performers/${p.existingPerformer.id}`}>{p.existingPerformer.name}</Link>
+                      </span>
+                    : <span className="mr-2">
+                        <Icon icon="star" color="gold" className="mr-1" />
+                        <span>{p.name ?? ""}</span>
+                      </span>
+                    ))}
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>{ result.tags.length > 0 && (
+                    <>
+                      <b>Tags:</b> {
+                        result.tags.map(t => (
+                          t?.existingTag
+                          ? <small className="mr-2">
+                              <Icon icon="tag" className="mr-1" />
+                              <Link to={`/tags/${t.existingTag.name}`}>{t.existingTag.name}</Link>
+                            </small>
+                          : <small className="mr-2">
+                              <Icon icon="star" color="gold" className="mr-1" />
+                              <span>{t.name ?? ""}</span>
+                            </small>
+                        ))
+                      }
+                    </>
+                  )}
+                  </Col>
+                </Row>
+                { result.description && (
+                  <Row>
+                    <Col>
+                      <b>Description:</b>
+                      <div>
+                        <small>{ result.description }</small>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+              </Col>
+              <Col xs={4}>
+                { result.image && (
+                  <img src={result.image} alt="" className="w-100" />
+                )}
+              </Col>
+            </Row>
+        </Card>
+      ))}
+    </Form>
+  );
+}
+
+export default Import;

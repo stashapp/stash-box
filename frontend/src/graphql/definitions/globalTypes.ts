@@ -98,6 +98,23 @@ export enum HairColorEnum {
   VARIOUS = "VARIOUS",
 }
 
+export enum ImportColumnType {
+  DATE = "DATE",
+  DESCRIPTION = "DESCRIPTION",
+  DURATION = "DURATION",
+  IMAGE = "IMAGE",
+  PERFORMERS = "PERFORMERS",
+  STUDIO = "STUDIO",
+  TAGS = "TAGS",
+  TITLE = "TITLE",
+  URL = "URL",
+}
+
+export enum ImportDataType {
+  CSV = "CSV",
+  JSON = "JSON",
+}
+
 export enum OperationEnum {
   CREATE = "CREATE",
   DESTROY = "DESTROY",
@@ -166,6 +183,13 @@ export interface BodyModificationInput {
 export interface BreastTypeCriterionInput {
   value?: BreastTypeEnum | null;
   modifier: CriterionModifier;
+}
+
+export interface BulkImportInput {
+  type: ImportDataType;
+  data: any;
+  columns: ImportColumn[];
+  mainStudio: string;
 }
 
 export interface CancelEditInput {
@@ -237,6 +261,12 @@ export interface IDCriterionInput {
 export interface ImageCreateInput {
   url?: string | null;
   file?: any | null;
+}
+
+export interface ImportColumn {
+  name: string;
+  type: ImportColumnType;
+  regularExpression?: string | null;
 }
 
 export interface IntCriterionInput {

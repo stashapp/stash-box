@@ -1,0 +1,34 @@
+mutation AnalyzeDataMutation($input: BulkImportInput!) {
+  analyzeData(input: $input) {
+    errors
+    results {
+      title
+      date
+      description
+      image
+      url
+      duration
+      studio {
+        name
+        existingStudio {
+          name
+          id
+        }
+      }
+      performers {
+        name
+        existingPerformer {
+          name
+          id
+        }
+      }
+      tags {
+        name
+        existingTag {
+          name
+          id
+        }
+      }
+    }
+  }
+}

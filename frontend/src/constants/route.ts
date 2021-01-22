@@ -38,3 +38,4 @@ export const ROUTE_ACTIVATE = "/activate";
 export const ROUTE_FORGOT_PASSWORD = "/forgotPassword";
 export const ROUTE_RESET_PASSWORD = "/resetPassword";
 export const ROUTE_SEARCH = "/search/:term?";
+export const ROUTE_IMPORT = "/import";
