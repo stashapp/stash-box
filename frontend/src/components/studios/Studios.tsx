@@ -36,8 +36,8 @@ const StudiosComponent: React.FC = () => {
       newStudios[studio.parent.id] = {
         ...newStudios[studio.parent.id],
         subStudios: [
-          ...(newStudios?.[studio.parent.id]?.subStudios ?? []),
           studio,
+          ...(newStudios?.[studio.parent.id]?.subStudios ?? []),
         ],
       };
     else

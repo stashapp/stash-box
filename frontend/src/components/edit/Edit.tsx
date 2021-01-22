@@ -10,7 +10,7 @@ import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
 import { isAdmin, isTag, isPerformer } from "src/utils";
 
-import { VoteStatusEnum } from "src/definitions/globalTypes";
+import { VoteStatusEnum, OperationEnum } from "src/definitions/globalTypes";
 import { Edit, EditVariables } from "src/definitions/Edit";
 import {
   CancelEditMutation,
@@ -61,9 +61,16 @@ const EditComponent: React.FC = () => {
         const target = result.data?.applyEdit.target;
         if (!target) return;
 
-        if (isTag(target)) history.push(`/tags/${target.name}#edits`);
+        let url = '';
+        if (isTag(target))
+          url = `/tags/${target.name}#edits`;
         else if (isPerformer(target))
-          history.push(`/performers/${target.id}#edits`);
+          url = `/performers/${target.id}#edits`;
+
+        if (edit.operation === OperationEnum.MERGE || edit.operation === OperationEnum.DESTROY)
+          window.location.href = url;
+        else
+          history.push(url);
       });
     setShowApply(false);
   };

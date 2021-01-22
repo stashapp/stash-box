@@ -455,6 +455,7 @@ func (qb *PerformerQueryBuilder) SearchPerformers(term string) (Performers, erro
         SELECT * FROM performers
         WHERE name % $1
         AND similarity(name, $1) > 0.5
+        AND deleted = FALSE
         ORDER BY similarity(name, $1) DESC
         LIMIT 5`
 	args := []interface{}{term}
