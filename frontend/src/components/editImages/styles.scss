@@ -1,14 +1,14 @@
 .EditImages {
   &-drop {
-    position: relative;
-    display: flex;
+    align-items: center;
     border: 3px dashed $text-color;
     border-radius: 10px;
+    display: flex;
     height: 400px;
-    width: 400px;
-    margin: auto;
     justify-content: center;
-    align-items: center;
+    margin: auto;
+    position: relative;
+    width: 400px;
 
     &:hover {
       background-color: #394b59;
@@ -28,17 +28,17 @@
   }
 
   &-image {
+    margin: auto;
     max-height: 600px;
     max-width: 100%;
-    margin: auto;
     padding-bottom: 1rem;
     position: relative;
 
     img {
-      min-height: 200px;
-      min-width: 200px;
       max-height: 600px;
       max-width: 100%;
+      min-height: 200px;
+      min-width: 200px;
     }
 
     .LoadingIndicator {
@@ -53,6 +53,7 @@
       img {
         opacity: 0.5;
       }
+
       .LoadingIndicator {
         display: block;
         opacity: 1;
@@ -62,11 +63,11 @@
 
   .form-control-file {
     cursor: pointer;
-    position: absolute;
-    width: 100%;
     height: 100%;
-    opacity: 0;
-    top: 0;
     left: 0;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
   }
 }

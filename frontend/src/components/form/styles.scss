@@ -39,23 +39,23 @@
 }
 
 .ImageInput {
-  position: relative;
   margin: 0.5rem;
+  position: relative;
 
   &-image {
     border-radius: 3px;
     flex-shrink: 0;
     max-height: 200px;
-    min-width: 100px;
     min-height: 100px;
+    min-width: 100px;
   }
 
   &-remove {
-    position: absolute;
-    top: 5px;
     left: 5px;
     opacity: 0.6;
-    padding: 0px 5px;
+    padding: 0 5px;
+    position: absolute;
+    top: 5px;
   }
 
   &:hover &-remove {
