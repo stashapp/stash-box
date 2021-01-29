@@ -11,7 +11,10 @@ const usePagination = () => {
 
   const setPage = (pageNumber: number) => {
     history.push({
-      search: pageNumber === 1 ? "" : `?page=${pageNumber}`,
+      search: queryString.stringify({
+        ...queryString.parse(location.search),
+        page: pageNumber === 1 ? undefined : pageNumber,
+      }),
       hash: history.location.hash,
     });
   };

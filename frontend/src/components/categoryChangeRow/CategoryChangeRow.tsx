@@ -9,27 +9,39 @@ const CategoryQuery = loader("src/queries/Category.gql");
 
 interface CategoryChangeRowProps {
   newCategoryID?: string | null;
-  oldCategory?: string | null;
+  oldCategoryID?: string | null;
   showDiff?: boolean;
 }
 
 const CategoryChangeRow: React.FC<CategoryChangeRowProps> = ({
   newCategoryID,
-  oldCategory,
+  oldCategoryID,
   showDiff = false,
 }) => {
-  const { data } = useQuery<Category, CategoryVariables>(CategoryQuery, {
-    variables: {
-      id: newCategoryID ?? "",
-    },
-    skip: !newCategoryID,
-  });
+  const { data: newData } = useQuery<Category, CategoryVariables>(
+    CategoryQuery,
+    {
+      variables: {
+        id: newCategoryID ?? "",
+      },
+      skip: !newCategoryID,
+    }
+  );
+  const { data: oldData } = useQuery<Category, CategoryVariables>(
+    CategoryQuery,
+    {
+      variables: {
+        id: oldCategoryID ?? "",
+      },
+      skip: !oldCategoryID,
+    }
+  );
 
   return (
     <ChangeRow
       name="Category"
-      oldValue={oldCategory}
-      newValue={data?.findTagCategory?.name}
+      oldValue={oldData?.findTagCategory?.name}
+      newValue={newData?.findTagCategory?.name}
       showDiff={showDiff}
     />
   );

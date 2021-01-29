@@ -10,7 +10,7 @@ import {
   isPerformerDetails,
   isTagOldDetails,
   isPerformerOldDetails,
-} from 'src/utils';
+} from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
 import CategoryChangeRow from "src/components/categoryChangeRow";
@@ -45,7 +45,7 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
         />
         <CategoryChangeRow
           newCategoryID={details.category_id}
-          oldCategory={oldDetails?.category?.name}
+          oldCategoryID={oldDetails?.category_id}
           showDiff={showDiff}
         />
         <ChangeRow

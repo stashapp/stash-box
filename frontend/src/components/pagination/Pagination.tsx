@@ -44,11 +44,16 @@ const PaginationComponent: React.FC<PaginationProps> = ({
 
     const pageNumber = page ? Number.parseInt(page, 10) : 1;
     if (pageNumber !== active) onClick(pageNumber);
+    e.preventDefault();
   };
 
   return (
     <div className="ml-auto row no-gutters">
-      {showCount && <b className="mr-4 mt-2">{count} results</b>}
+      {showCount && (
+        <b className="mr-4 mt-2">
+          {new Intl.NumberFormat().format(count)} results
+        </b>
+      )}
       <Pagination onClick={handleClick}>
         {showFirst && <Pagination.First data-page={1} />}
         <Pagination.Prev disabled={active === 1} data-page={active - 1} />

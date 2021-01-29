@@ -40,6 +40,7 @@ export interface ApplyEditMutation_applyEdit_target_Tag_category {
 
 export interface ApplyEditMutation_applyEdit_target_Tag {
   __typename: "Tag";
+  id: string;
   name: string;
   description: string | null;
   deleted: boolean;
@@ -225,6 +226,7 @@ export interface ApplyEditMutation_applyEdit_old_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
+  category_id: string | null;
 }
 
 export interface ApplyEditMutation_applyEdit_old_details_PerformerEdit {

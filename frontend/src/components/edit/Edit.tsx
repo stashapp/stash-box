@@ -61,16 +61,16 @@ const EditComponent: React.FC = () => {
         const target = result.data?.applyEdit.target;
         if (!target) return;
 
-        let url = '';
-        if (isTag(target))
-          url = `/tags/${target.name}#edits`;
-        else if (isPerformer(target))
-          url = `/performers/${target.id}#edits`;
+        let url = "";
+        if (isTag(target)) url = `/tags/${target.name}#edits`;
+        else if (isPerformer(target)) url = `/performers/${target.id}#edits`;
 
-        if (edit.operation === OperationEnum.MERGE || edit.operation === OperationEnum.DESTROY)
+        if (
+          edit.operation === OperationEnum.MERGE ||
+          edit.operation === OperationEnum.DESTROY
+        )
           window.location.href = url;
-        else
-          history.push(url);
+        else history.push(url);
       });
     setShowApply(false);
   };

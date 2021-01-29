@@ -21,6 +21,7 @@ fragment EditFragment on Edit {
   }
   target {
     ... on Tag {
+      id
       name
       description
       deleted
@@ -97,6 +98,7 @@ fragment EditFragment on Edit {
     ... on TagEdit {
       name
       description
+      category_id
     }
     ... on PerformerEdit {
       name

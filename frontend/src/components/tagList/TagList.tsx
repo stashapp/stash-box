@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { Button, Card } from "react-bootstrap";
@@ -9,13 +9,13 @@ import { SortDirectionEnum, TagFilterType } from "src/definitions/globalTypes";
 
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
-import { LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { canEdit } from "src/utils/auth";
 import AuthContext from "src/AuthContext";
 
 const TagsQuery = loader("src/queries/Tags.gql");
 
-const TAG_COUNT = 40;
+const PER_PAGE = 40;
 
 interface TagListProps {
   tagFilter: TagFilterType;
@@ -29,13 +29,14 @@ const TagList: React.FC<TagListProps> = ({
   showCategoryLink = false,
 }) => {
   const auth = useContext(AuthContext);
+  const [count, setCount] = useState(0);
   const [query, setQuery] = useState("");
   const { page, setPage } = usePagination();
   const { loading, data } = useQuery<Tags, TagsVariables>(TagsQuery, {
     variables: {
       filter: {
         page,
-        per_page: TAG_COUNT,
+        per_page: PER_PAGE,
         sort: "name",
         direction: SortDirectionEnum.ASC,
       },
@@ -46,7 +47,9 @@ const TagList: React.FC<TagListProps> = ({
     },
   });
 
-  const totalPages = Math.ceil((data?.queryTags?.count ?? 0) / TAG_COUNT);
+  useEffect(() => {
+    if (!loading) setCount(data?.queryTags.count ?? 0);
+  }, [data, loading]);
 
   const tags = (data?.queryTags?.tags ?? []).map((tag) => (
     <li key={tag.id}>
@@ -65,7 +68,8 @@ const TagList: React.FC<TagListProps> = ({
     setPage(1);
   };
 
-  const isEmpty = tags.length === 0;
+  if (!loading && !data)
+    return <ErrorMessage error="Failed to load performers" />;
 
   return (
     <>
@@ -78,9 +82,10 @@ const TagList: React.FC<TagListProps> = ({
         )}
         <Pagination
           onClick={setPage}
-          pages={totalPages}
+          perPage={PER_PAGE}
+          count={count}
           active={page}
-          count={data?.queryTags.count}
+          showCount
         />
       </div>
       <Card>
@@ -98,13 +103,18 @@ const TagList: React.FC<TagListProps> = ({
           </div>
           {loading && <LoadingIndicator message="Loading tags..." />}
           {!loading && <ul>{tags}</ul>}
-          {!loading && isEmpty && (
+          {!loading && tags.length === 0 && (
             <h5 className="text-center m-4">No tags found</h5>
           )}
         </Card.Body>
       </Card>
       <div className="row no-gutters">
-        <Pagination onClick={setPage} pages={totalPages} active={page} />
+        <Pagination
+          onClick={setPage}
+          perPage={PER_PAGE}
+          count={count}
+          active={page}
+        />
       </div>
     </>
   );

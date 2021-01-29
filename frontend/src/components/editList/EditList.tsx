@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { loader } from "graphql.macro";
 
@@ -31,6 +31,7 @@ const EditListComponent: React.FC<EditsProps> = ({
   status,
   operation,
 }) => {
+  const [count, setCount] = useState(0);
   const { page, setPage } = usePagination();
   const {
     editFilter,
@@ -58,9 +59,11 @@ const EditListComponent: React.FC<EditsProps> = ({
       },
     },
   });
+  useEffect(() => {
+    if (!loading) setCount(data?.queryEdits.count ?? 0);
+  }, [data, loading]);
 
-  if (loading) return <LoadingIndicator />;
-  if (!data) return <ErrorMessage error="Failed to load edits." />;
+  if (!loading && !data) return <ErrorMessage error="Failed to load edits." />;
 
   const edits =
     data?.queryEdits?.edits.map((edit) => (
@@ -74,14 +77,26 @@ const EditListComponent: React.FC<EditsProps> = ({
         <div className="col-4 d-flex justify-content-end">
           <Pagination
             onClick={setPage}
-            count={data.queryEdits.count}
+            count={count}
             perPage={PER_PAGE}
             active={page}
             showCount
           />
         </div>
       </div>
-      <div>{edits}</div>
+      {loading ? (
+        <LoadingIndicator message="Loading edits..." />
+      ) : (
+        <div>{edits}</div>
+      )}
+      <div className="row no-gutters">
+        <Pagination
+          onClick={setPage}
+          perPage={PER_PAGE}
+          count={count}
+          active={page}
+        />
+      </div>
     </>
   );
 };
