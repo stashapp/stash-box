@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/stashapp/stashdb/pkg/manager/config"
-	"github.com/stashapp/stashdb/pkg/user"
+	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/user"
 
 	"github.com/gorilla/sessions"
 )

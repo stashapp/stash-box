@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stashapp/stashdb/pkg/api"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type sceneTestRunner struct {

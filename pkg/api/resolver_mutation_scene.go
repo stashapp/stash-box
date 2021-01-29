@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/image"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/image"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCreateInput) (*models.Scene, error) {

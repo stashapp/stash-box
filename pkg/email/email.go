@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stashdb/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
 type Manager struct {

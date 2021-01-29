@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stashapp/stashdb/pkg/api"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type studioTestRunner struct {

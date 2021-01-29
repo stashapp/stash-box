@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"github.com/stashapp/stashdb/pkg/manager/jsonschema"
+	"github.com/stashapp/stash-box/pkg/manager/jsonschema"
 )
 
 type jsonUtils struct{}

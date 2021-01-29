@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/logger"
-	"github.com/stashapp/stashdb/pkg/manager"
-	"github.com/stashapp/stashdb/pkg/models"
-	"github.com/stashapp/stashdb/pkg/user"
+	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/logger"
+	"github.com/stashapp/stash-box/pkg/manager"
+	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCreateInput) (*models.User, error) {

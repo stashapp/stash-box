@@ -16,7 +16,7 @@ services:
     depends_on:
       - "db"
     environment:
-      STASHDB_DATABASE: postgres:stash-box-db@db/stash-box?sslmode=disable
+      STASH_BOX_DATABASE: postgres:stash-box-db@db/stash-box?sslmode=disable
     ports:
       - 9998:9998
     volumes:
@@ -25,5 +25,4 @@ services:
       ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
       
       ## Keep configs here.
-      - ./config:/root/.stashdb
-
+      - ./config:/root/.stash-box

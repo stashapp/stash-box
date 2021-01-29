@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stashapp/stashdb/pkg/api"
-	"github.com/stashapp/stashdb/pkg/database"
-	dbtest "github.com/stashapp/stashdb/pkg/database/databasetest"
-	"github.com/stashapp/stashdb/pkg/dataloader"
-	"github.com/stashapp/stashdb/pkg/models"
-	"github.com/stashapp/stashdb/pkg/user"
+	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/stashapp/stash-box/pkg/database"
+	dbtest "github.com/stashapp/stash-box/pkg/database/databasetest"
+	"github.com/stashapp/stash-box/pkg/dataloader"
+	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 
 	"github.com/99designs/gqlgen/graphql"
 )

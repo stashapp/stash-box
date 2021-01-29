@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stashdb/pkg/dataloader"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/dataloader"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type sceneResolver struct{ *Resolver }

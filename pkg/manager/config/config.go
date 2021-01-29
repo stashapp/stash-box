@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/stashapp/stashdb/pkg/logger"
-	"github.com/stashapp/stashdb/pkg/utils"
+	"github.com/stashapp/stash-box/pkg/logger"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 const Stash = "stash"

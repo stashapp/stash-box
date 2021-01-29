@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stash-box/pkg/database"
 )
 
 const defaultTestDB = "postgres@localhost/stash-box-test?sslmode=disable"

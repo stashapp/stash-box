@@ -14,11 +14,11 @@ resolver:
 struct_tag: gqlgen
 
 autobind:
-  - "github.com/stashapp/stashdb/pkg/models"
+  - "github.com/stashapp/stash-box/pkg/models"
 
 models:
   Image:
-    model: github.com/stashapp/stashdb/pkg/models.Image
+    model: github.com/stashapp/stash-box/pkg/models.Image
     fields:
       url:
         resolver: true
