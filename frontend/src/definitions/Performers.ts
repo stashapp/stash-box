@@ -54,6 +54,7 @@ export interface Performers_queryPerformers_performers {
   id: string;
   name: string;
   disambiguation: string | null;
+  deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
   birthdate: Performers_queryPerformers_performers_birthdate | null;

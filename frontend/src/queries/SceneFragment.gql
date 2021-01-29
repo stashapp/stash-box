@@ -1,0 +1,36 @@
+#import "./ImageFragment.gql"
+#import "./ScenePerformerFragment.gql"
+fragment SceneFragment on Scene {
+  id
+  date
+  title,
+  details,
+  director,
+  urls {
+    url,
+    type
+  }
+  images {
+    ...ImageFragment
+  }
+  studio {
+    id
+    name
+  }
+  performers {
+    as
+    performer {
+      ...ScenePerformerFragment
+    }
+  }
+  fingerprints {
+    hash
+    algorithm
+    duration
+  }
+  tags {
+    id
+    name
+    description
+  }
+}

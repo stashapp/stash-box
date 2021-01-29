@@ -19,8 +19,8 @@ export interface Scenes_queryScenes_scenes_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface Scenes_queryScenes_scenes_studio {
@@ -33,11 +33,18 @@ export interface Scenes_queryScenes_scenes_performers_performer {
   __typename: "Performer";
   id: string;
   name: string;
+  disambiguation: string | null;
+  deleted: boolean;
   gender: GenderEnum | null;
+  aliases: string[];
 }
 
 export interface Scenes_queryScenes_scenes_performers {
   __typename: "PerformerAppearance";
+  /**
+   * Performing as alias
+   */
+  as: string | null;
   performer: Scenes_queryScenes_scenes_performers_performer;
 }
 

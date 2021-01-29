@@ -1,0 +1,43 @@
+#import "./ImageFragment.gql"
+fragment PerformerFragment on Performer {
+  id
+  name
+  disambiguation
+  deleted
+  aliases
+  gender
+  birthdate {
+    date
+    accuracy
+  }
+  age
+  height
+  hair_color
+  eye_color
+  ethnicity
+  country
+  career_end_year
+  career_start_year
+  breast_type
+  measurements {
+    waist
+    hip
+    band_size
+    cup_size
+  }
+  tattoos {
+    location
+    description
+  }
+  piercings {
+    location
+    description
+  }
+  urls {
+      url
+      type
+  }
+  images {
+    ... ImageFragment
+  }
+}

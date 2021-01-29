@@ -18,7 +18,7 @@ import {
   FingerprintInput,
   FingerprintAlgorithm,
 } from "src/definitions/globalTypes";
-import { getUrlByType, Image } from "src/utils/transforms";
+import { getUrlByType } from "src/utils/transforms";
 
 import {
   GenderIcon,
@@ -82,13 +82,8 @@ const schema = yup.object().shape({
   tags: yup.array().of(yup.string()).nullable(),
   images: yup
     .array()
-    .of(
-      yup.object().shape({
-        id: yup.string().required(),
-        url: yup.string(),
-      })
-    )
-    .nullable(),
+    .of(yup.string().trim().transform(nullCheck))
+    .transform((_, obj) => Object.keys(obj ?? [])),
 });
 
 type SceneFormData = yup.InferType<typeof schema>;
@@ -110,7 +105,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const fingerprintHash = useRef<HTMLInputElement>(null);
   const fingerprintDuration = useRef<HTMLInputElement>(null);
   const fingerprintAlgorithm = useRef<HTMLSelectElement>(null);
-  const { register, handleSubmit, setValue, errors } = useForm<SceneFormData>({
+  const { register, control, handleSubmit, setValue, errors } = useForm<
+    SceneFormData
+  >({
     resolver: yupResolver(schema),
   });
   const [performers, setPerformers] = useState<PerformerInfo[]>(
@@ -128,7 +125,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       duration: f.duration,
     }))
   );
-  const [images, setImages] = useState<Image[]>(scene.images);
   const { loading: loadingStudios, data: studios } = useQuery<
     Studios,
     StudiosVariables
@@ -140,10 +136,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     register({ name: "studioId" });
     register({ name: "tags" });
     register({ name: "fingerprints" });
-    register({ name: "images" });
     setValue("fingerprints", fingerprints);
     setValue("tags", scene.tags ? scene.tags.map((tag) => tag.id) : []);
-    setValue("images", images);
     if (scene?.studio?.id) setValue("studioId", scene.studio.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [register, setValue]);
@@ -169,7 +163,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         performer_id: performance.performerId,
         as: performance.alias,
       })),
-      image_ids: (data.images ?? []).map((i) => i.id),
+      image_ids: data.images,
       fingerprints: data.fingerprints as FingerprintInput[],
       tag_ids: data.tags,
     };
@@ -293,11 +287,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     );
   };
 
-  const onSetImages = (i: Image[]) => {
-    setImages(i);
-    setValue("images", i);
-  };
-
   return (
     <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
       <input
@@ -405,7 +394,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
           <Form.Group>
             <Form.Label>Images</Form.Label>
-            <EditImages images={images} onImagesChanged={onSetImages} />
+            <EditImages initialImages={scene.images} control={control} />
           </Form.Group>
 
           <Form.Group>

@@ -13,7 +13,9 @@ var (
 		return &PerformerScene{}
 	})
 
-	performerSceneTable = scenePerformerTable.Inverse(performerJoinKey)
+	performerSceneTable = database.NewTableJoin(sceneTable, "scene_performers", performerJoinKey, func() interface{} {
+		return &PerformerScene{}
+	})
 
 	sceneTagTable = database.NewTableJoin(sceneTable, "scene_tags", sceneJoinKey, func() interface{} {
 		return &SceneTag{}
@@ -99,6 +101,10 @@ type PerformerImage struct {
 	ImageID     uuid.UUID `db:"image_id" json:"image_id"`
 }
 
+func (p PerformerImage) ID() string {
+	return p.ImageID.String()
+}
+
 type PerformersImages []*PerformerImage
 
 func (p PerformersImages) Each(fn func(interface{})) {
@@ -109,6 +115,22 @@ func (p PerformersImages) Each(fn func(interface{})) {
 
 func (p *PerformersImages) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerImage))
+}
+
+func (p PerformersImages) EachPtr(fn func(interface{})) {
+	for _, v := range p {
+		fn(v)
+	}
+}
+
+func (p *PerformersImages) Remove(id string) {
+	for i, v := range *p {
+		if (*v).ID() == id {
+			(*p)[i] = (*p)[len(*p)-1]
+			*p = (*p)[:len(*p)-1]
+			break
+		}
+	}
 }
 
 type StudioImage struct {
@@ -127,3 +149,10 @@ func (p StudiosImages) Each(fn func(interface{})) {
 func (p *StudiosImages) Add(o interface{}) {
 	*p = append(*p, o.(*StudioImage))
 }
+
+type URL struct {
+	URL  string `json:"url"`
+	Type string `json:"type"`
+}
+
+type URLInput = URL

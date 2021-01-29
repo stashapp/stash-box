@@ -45,8 +45,8 @@ export interface Performer_findPerformer_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface Performer_findPerformer {
@@ -54,6 +54,7 @@ export interface Performer_findPerformer {
   id: string;
   name: string;
   disambiguation: string | null;
+  deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
   birthdate: Performer_findPerformer_birthdate | null;

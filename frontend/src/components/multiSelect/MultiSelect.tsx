@@ -24,7 +24,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   }));
 
   const handleChange = (values: ValueType<IOptionType>) => {
-    if (!values) return;
+    if (!values) {
+      onChange([]);
+      return;
+    }
+
     const optionValue = values as IOptionType;
     if (Array.isArray(optionValue)) {
       onChange(optionValue.map((v) => v.value));

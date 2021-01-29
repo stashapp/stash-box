@@ -10,7 +10,7 @@ import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
-import { canEdit } from "src/utils/auth";
+import { canEdit } from "src/utils";
 import AuthContext from "src/AuthContext";
 
 const PerformersQuery = loader("src/queries/Performers.gql");

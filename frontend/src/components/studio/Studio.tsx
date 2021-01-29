@@ -21,8 +21,7 @@ import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import SceneCard from "src/components/sceneCard";
 import DeleteButton from "src/components/deleteButton";
 
-import { getImage, getUrlByType } from "src/utils/transforms";
-import { canEdit, isAdmin } from "src/utils/auth";
+import { canEdit, isAdmin, getImage, getUrlByType } from "src/utils";
 import AuthContext from "src/AuthContext";
 
 const DeleteStudio = loader("src/mutations/DeleteStudio.gql");

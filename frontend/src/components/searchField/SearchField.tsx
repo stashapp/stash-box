@@ -20,7 +20,7 @@ import {
   SearchPerformers,
   SearchPerformers_searchPerformer as PerformerOnlyResult,
 } from "src/definitions/SearchPerformers";
-import GetFuzzyDate from "src/utils/date";
+import { formatFuzzyDate } from "src/utils";
 
 const SearchAllQuery = loader("src/queries/SearchAll.gql");
 const SearchPerformersQuery = loader("src/queries/SearchPerformers.gql");
@@ -32,7 +32,11 @@ export enum SearchType {
 
 interface SearchFieldProps {
   onClick?: (result: SceneResult | PerformerResult) => void;
+  onClickPerformer?: (result: PerformerResult) => void;
   searchType: SearchType;
+  excludeIDs?: string[];
+  navigate?: boolean;
+  placeholder?: string;
 }
 
 export type PerformerResult = PerformerAllResult | PerformerOnlyResult;
@@ -69,7 +73,8 @@ const resultIsSearchAll = (
 
 function handleResult(
   result: SearchAll | SearchPerformers,
-  callback: (result: SearchGroup[]) => void
+  callback: (result: SearchGroup[]) => void,
+  excludeIDs: string[]
 ) {
   let performers: SearchResult[] = [];
   let scenes: SearchResult[] = [];
@@ -78,55 +83,64 @@ function handleResult(
     const performerResults = (result?.searchPerformer?.filter(
       (p) => p !== null
     ) ?? []) as PerformerAllResult[];
-    performers = performerResults.map((performer) => ({
-      type: "performer",
-      value: performer,
-      label: `${performer.name}${
-        // eslint-disable-next-line prefer-template
-        performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
-      }`,
-      subLabel: [
-        performer?.birthdate
-          ? `Born: ${GetFuzzyDate(performer.birthdate)}`
-          : null,
-        performer?.aliases.length
-          ? `AKA: ${performer.aliases.join(", ")}`
-          : null,
-      ]
-        .filter((p) => p !== null)
-        .join(", "),
-    }));
+    performers = performerResults
+      .filter((performer) => !excludeIDs.includes(performer.id))
+      .map((performer) => ({
+        type: "performer",
+        value: performer,
+        label: `${performer.name}${
+          // eslint-disable-next-line prefer-template
+          performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
+        }`,
+        subLabel: [
+          performer?.birthdate
+            ? `Born: ${formatFuzzyDate(performer.birthdate)}`
+            : null,
+          performer?.aliases.length
+            ? `AKA: ${performer.aliases.join(", ")}`
+            : null,
+        ]
+          .filter((p) => p !== null)
+          .join(", "),
+      }));
 
     const sceneResults = (result?.searchScene?.filter((p) => p !== null) ??
       []) as SceneAllResult[];
-    scenes = sceneResults.map((scene) => ({
-      type: "scene",
-      value: scene,
-      label: `${scene.title} ${scene.date ? `(${scene.date})` : ""}`,
-      subLabel: `${scene?.studio?.name ?? ""}${
-        scene.performers && scene.studio ? " • " : ""
-      }
+    scenes = sceneResults
+      .filter((scene) => !excludeIDs.includes(scene.id))
+      .map((scene) => ({
+        type: "scene",
+        value: scene,
+        label: `${scene.title} ${scene.date ? `(${scene.date})` : ""}`,
+        subLabel: `${scene?.studio?.name ?? ""}${
+          scene.performers && scene.studio ? " • " : ""
+        }
           ${scene.performers.map((p) => p.as || p.performer.name).join(", ")}`,
-    }));
+      }));
   } else {
     const performerResults = (result?.searchPerformer?.filter(
       (p) => p !== null
     ) ?? []) as PerformerOnlyResult[];
-    performers = performerResults.map((performer) => ({
-      type: "performer",
-      value: performer,
-      label: performer.name,
-      subLabel: [
-        performer.birthdate
-          ? `Born: ${GetFuzzyDate(performer.birthdate)}`
-          : null,
-        performer.aliases.length
-          ? `AKA: ${performer.aliases.join(", ")}`
-          : null,
-      ]
-        .filter((p) => p !== null)
-        .join(", "),
-    }));
+    performers = performerResults
+      .filter((performer) => !excludeIDs.includes(performer.id))
+      .map((performer) => ({
+        type: "performer",
+        value: performer,
+        // eslint-disable-next-line prefer-template
+        label: `${performer.name} ${
+          performer.disambiguation ? "(" + performer.disambiguation + ")" : ""
+        }`,
+        subLabel: [
+          performer.birthdate
+            ? `Born: ${formatFuzzyDate(performer.birthdate)}`
+            : null,
+          performer.aliases.length
+            ? `AKA: ${performer.aliases.join(", ")}`
+            : null,
+        ]
+          .filter((p) => p !== null)
+          .join(", "),
+      }));
   }
 
   const options = [];
@@ -138,7 +152,11 @@ function handleResult(
 
 const SearchField: React.FC<SearchFieldProps> = ({
   onClick,
+  onClickPerformer,
   searchType = SearchType.Performer,
+  excludeIDs = [],
+  navigate = false,
+  placeholder,
 }) => {
   const history = useHistory();
   const [selectedValue, setSelected] = useState(null);
@@ -152,7 +170,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
     {
       fetchPolicy: "network-only",
       onCompleted: (result) => {
-        if (searchCallback) handleResult(result, searchCallback);
+        if (searchCallback) handleResult(result, searchCallback, excludeIDs);
       },
     }
   );
@@ -172,15 +190,16 @@ const SearchField: React.FC<SearchFieldProps> = ({
   const handleChange = (result: ValueType<SearchResult>) => {
     if (result) {
       const res = result as SearchResult;
-      if (onClick) onClick(res.value);
-      else history.push(`/${res.type}s/${res.value.id}`);
+      if (res.value.__typename === "Performer") onClickPerformer?.(res.value);
+      onClick?.(res.value);
+      if (navigate) history.push(`/${res.type}s/${res.value.id}`);
     }
 
     setSelected(null);
   };
 
   return (
-    <div className="SearchField ml-4">
+    <div className="SearchField">
       <Async
         classNamePrefix="react-select"
         autoload={false}
@@ -190,9 +209,10 @@ const SearchField: React.FC<SearchFieldProps> = ({
         loadOptions={debouncedLoadOptions as any}
         onChange={handleChange}
         placeholder={
-          searchType === SearchType.Performer
+          placeholder ??
+          (searchType === SearchType.Performer
             ? "Search for performer..."
-            : "Search for performer or scene..."
+            : "Search for performer or scene...")
         }
         components={{
           Option,
