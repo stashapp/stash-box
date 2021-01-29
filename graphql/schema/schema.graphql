@@ -26,6 +26,10 @@ type Query {
 
   queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType!
 
+  """Find a tag cateogry by ID"""
+  findTagCategory(id: ID!): TagCategory
+
+  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType!
 
   #### Scenes ####
 
@@ -103,6 +107,10 @@ type Mutation {
   grantInvite(input: GrantInviteInput!): Int!
   """Removes invite tokens from a user"""
   revokeInvite(input: RevokeInviteInput!): Int!
+
+  tagCategoryCreate(input: TagCategoryCreateInput!): TagCategory
+  tagCategoryUpdate(input: TagCategoryUpdateInput!): TagCategory
+  tagCategoryDestroy(input: TagCategoryDestroyInput!): Boolean!
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!

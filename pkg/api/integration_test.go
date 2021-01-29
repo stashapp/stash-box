@@ -132,6 +132,7 @@ var studioSuffix int
 var tagSuffix int
 var sceneChecksumSuffix int
 var userSuffix int
+var categorySuffix int
 
 func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) *testRunner {
 	resolver := api.Resolver{}
@@ -322,6 +323,34 @@ func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User
 	}
 
 	return createdUser, nil
+}
+
+func (s *testRunner) generateCategoryName() string {
+	categorySuffix += 1
+	return "category-" + strconv.Itoa(categorySuffix)
+}
+
+func (s *testRunner) createTestTagCategory(input *models.TagCategoryCreateInput) (*models.TagCategory, error) {
+	s.t.Helper()
+
+	if input == nil {
+		name := s.generateCategoryName()
+		desc := "Description for " + name
+		input = &models.TagCategoryCreateInput{
+			Name:        name,
+			Description: &desc,
+			Group:       models.TagGroupEnumAction,
+		}
+	}
+
+	createdCategory, err := s.resolver.Mutation().TagCategoryCreate(s.ctx, *input)
+
+	if err != nil {
+		s.t.Errorf("Error creating tag category: %s", err.Error())
+		return nil, err
+	}
+
+	return createdCategory, nil
 }
 
 func (s *testRunner) createTestTagEdit(operation models.OperationEnum, detailsInput *models.TagEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {

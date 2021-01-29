@@ -35,6 +35,11 @@ func (qb *TagQueryBuilder) Create(newTag Tag) (*Tag, error) {
 }
 
 func (qb *TagQueryBuilder) Update(updatedTag Tag) (*Tag, error) {
+	ret, err := qb.dbi.Update(updatedTag, true)
+	return qb.toModel(ret), err
+}
+
+func (qb *TagQueryBuilder) UpdatePartial(updatedTag Tag) (*Tag, error) {
 	ret, err := qb.dbi.Update(updatedTag, false)
 	return qb.toModel(ret), err
 }
@@ -185,11 +190,15 @@ func (qb *TagQueryBuilder) FindByAliases(names []string) ([]*Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByName(name string) ([]*Tag, error) {
+func (qb *TagQueryBuilder) FindByName(name string) (*Tag, error) {
 	query := "SELECT * FROM tags WHERE upper(name) = upper(?)"
-	var args []interface{}
-	args = append(args, name)
-	return qb.queryTags(query, args)
+
+	args := []interface{}{name}
+	results, err := qb.queryTags(query, args)
+	if err != nil || len(results) < 1 {
+		return nil, err
+	}
+	return results[0], nil
 }
 
 func (qb *TagQueryBuilder) FindByAlias(name string) ([]*Tag, error) {
@@ -206,7 +215,7 @@ func (qb *TagQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
-func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec) ([]*Tag, int) {
+func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec) ([]*Tag, int, error) {
 	if tagFilter == nil {
 		tagFilter = &TagFilterType{}
 	}
@@ -223,6 +232,10 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
+	if q := tagFilter.CategoryID; q != nil && *q != "" {
+		catID, _ := uuid.FromString(*q)
+		query.Eq("tags.category_id", catID)
+	}
 
 	query.SortAndPagination = qb.getTagSort(findFilter) + getPagination(findFilter)
 	var tags Tags
@@ -230,11 +243,10 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 	countResult, err := qb.dbi.Query(*query, &tags)
 
 	if err != nil {
-		// TODO
-		panic(err)
+		return nil, 0, err
 	}
 
-	return tags, countResult
+	return tags, countResult, nil
 }
 
 func (qb *TagQueryBuilder) getTagSort(findFilter *QuerySpec) string {
@@ -309,11 +321,12 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 		newTag := Tag{
 			ID:        UUID,
 			CreatedAt: SQLiteTimestamp{Timestamp: now},
+			UpdatedAt: SQLiteTimestamp{Timestamp: now},
 		}
 		if data.New.Name == nil {
 			return nil, errors.New("Missing tag name")
 		}
-		newTag.CopyFromTagEdit(*data.New)
+		newTag.CopyFromTagEdit(*data.New, nil)
 
 		tag, err = qb.Create(newTag)
 		if err != nil {
@@ -340,7 +353,7 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 			return nil, err
 		}
 
-		tag.CopyFromTagEdit(*data.New)
+		tag.CopyFromTagEdit(*data.New, data.Old)
 		updatedTag, err := qb.Update(*tag)
 
 		currentAliases, err := qb.GetRawAliases(updatedTag.ID)
@@ -364,7 +377,7 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 			return nil, err
 		}
 
-		tag.CopyFromTagEdit(*data.New)
+		tag.CopyFromTagEdit(*data.New, data.Old)
 		updatedTag, err := qb.Update(*tag)
 
 		for _, v := range data.MergeSources {

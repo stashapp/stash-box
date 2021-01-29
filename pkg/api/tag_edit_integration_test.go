@@ -20,12 +20,18 @@ func createTagEditTestRunner(t *testing.T) *tagEditTestRunner {
 }
 
 func (s *tagEditTestRunner) testCreateTagEdit() {
+	category, err := s.createTestTagCategory(nil)
+	if err != nil {
+		return
+	}
+	categoryID := category.ID.String()
 	name := "Name"
 	description := "Description"
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &name,
 		Description: &description,
 		Aliases:     []string{"Alias1"},
+		CategoryID:  &categoryID,
 	}
 	edit, err := s.createTestTagEdit(models.OperationEnumCreate, &tagEditDetailsInput, nil)
 	if err == nil {
@@ -61,6 +67,10 @@ func (s *tagEditTestRunner) verifyCreatedTagEdit(input models.TagEditDetailsInpu
 	if !reflect.DeepEqual(input.Aliases, tagDetails.AddedAliases) {
 		s.fieldMismatch(input.Aliases, tagDetails.AddedAliases, "Aliases")
 	}
+
+	if *input.CategoryID != *tagDetails.CategoryID {
+		s.fieldMismatch(*input.CategoryID, *tagDetails.CategoryID, "CategoryID")
+	}
 }
 
 func (s *tagEditTestRunner) testFindEditById() {
@@ -84,17 +94,28 @@ func (s *tagEditTestRunner) testFindEditById() {
 }
 
 func (s *tagEditTestRunner) testModifyTagEdit() {
+	existingCategory, err := s.createTestTagCategory(nil)
+	if err != nil {
+		return
+	}
+	existingCategoryID := existingCategory.ID.String()
 	existingName := "tagName"
 	existingAlias := "tagAlias"
 	tagCreateInput := models.TagCreateInput{
-		Name:    existingName,
-		Aliases: []string{existingAlias},
+		Name:       existingName,
+		Aliases:    []string{existingAlias},
+		CategoryID: &existingCategoryID,
 	}
 	createdTag, err := s.createTestTag(&tagCreateInput)
 	if err != nil {
 		return
 	}
 
+	newCategory, err := s.createTestTagCategory(nil)
+	if err != nil {
+		return
+	}
+	newCategoryID := newCategory.ID.String()
 	newDescription := "newDescription"
 	newAlias := "newTagAlias"
 	newName := "newName"
@@ -102,6 +123,7 @@ func (s *tagEditTestRunner) testModifyTagEdit() {
 		Name:        &newName,
 		Description: &newDescription,
 		Aliases:     []string{newAlias},
+		CategoryID:  &newCategoryID,
 	}
 	id := createdTag.ID.String()
 	editInput := models.EditInput{
@@ -138,6 +160,10 @@ func (s *tagEditTestRunner) verifyUpdatedTagEdit(originalTag *models.Tag, input 
 
 	if !reflect.DeepEqual(input.Aliases, tagDetails.AddedAliases) {
 		s.fieldMismatch(input.Aliases, tagDetails.AddedAliases, "AddedAliases")
+	}
+
+	if *input.CategoryID != *tagDetails.CategoryID {
+		s.fieldMismatch(*input.CategoryID, *tagDetails.CategoryID, "CategoryID")
 	}
 }
 
@@ -247,10 +273,16 @@ func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *models.Tag, input mo
 func (s *tagEditTestRunner) testApplyCreateTagEdit() {
 	name := "Name"
 	description := "Description"
+	category, err := s.createTestTagCategory(nil)
+	if err != nil {
+		return
+	}
+	categoryID := category.ID.String()
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &name,
 		Description: &description,
 		Aliases:     []string{"Alias1"},
+		CategoryID:  &categoryID,
 	}
 	edit, err := s.createTestTagEdit(models.OperationEnumCreate, &tagEditDetailsInput, nil)
 	appliedEdit, err := s.applyEdit(edit.ID.String())
@@ -288,6 +320,10 @@ func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetai
 	if !reflect.DeepEqual(input.Aliases, aliases) {
 		s.fieldMismatch(input.Aliases, aliases, "Aliases")
 	}
+
+	if *input.CategoryID != tag.CategoryID.UUID.String() {
+		s.fieldMismatch(*input.CategoryID, tag.CategoryID.UUID.String(), "CategoryID")
+	}
 }
 
 func (s *tagEditTestRunner) testApplyModifyTagEdit() {
@@ -305,10 +341,16 @@ func (s *tagEditTestRunner) testApplyModifyTagEdit() {
 	newDescription := "newDescription3"
 	newAlias := "newTagAlias3"
 	newName := "newName3"
+	newCategory, err := s.createTestTagCategory(nil)
+	if err != nil {
+		return
+	}
+	newCategoryID := newCategory.ID.String()
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &newName,
 		Description: &newDescription,
 		Aliases:     []string{newAlias},
+		CategoryID:  &newCategoryID,
 	}
 	id := createdTag.ID.String()
 	editInput := models.EditInput{
@@ -348,6 +390,10 @@ func (s *tagEditTestRunner) verifyApplyModifyTagEdit(input models.TagEditDetails
 	tagAliases, _ := s.resolver.Tag().Aliases(s.ctx, updatedTag)
 	if !reflect.DeepEqual(input.Aliases, tagAliases) {
 		s.fieldMismatch(tagAliases, input.Aliases, "Aliases")
+	}
+
+	if !updatedTag.CategoryID.Valid || *input.CategoryID != updatedTag.CategoryID.UUID.String() {
+		s.fieldMismatch(*input.CategoryID, updatedTag.CategoryID.UUID.String(), "CategoryID")
 	}
 }
 

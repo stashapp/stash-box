@@ -76,7 +76,6 @@ const EditImages: React.FC<EditImagesProps> = ({ initialImages, control }) => {
       reader.readAsDataURL(event.target.files[0]);
     }
   };
-  console.log(imageData);
 
   return (
     <Form.Row className={CLASSNAME}>

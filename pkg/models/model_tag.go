@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"time"
 
 	"database/sql"
 	"github.com/gofrs/uuid"
@@ -32,6 +31,7 @@ var (
 type Tag struct {
 	ID          uuid.UUID       `db:"id" json:"id"`
 	Name        string          `db:"name" json:"name"`
+	CategoryID  uuid.NullUUID   `db:"category_id" json:"category_id"`
 	Description sql.NullString  `db:"description" json:"description"`
 	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
@@ -145,22 +145,43 @@ func (p *Tag) IsEditTarget() {
 
 func (p *Tag) CopyFromCreateInput(input TagCreateInput) {
 	CopyFull(p, input)
+
+	if input.CategoryID != nil {
+		UUID, err := uuid.FromString(*input.CategoryID)
+		if err == nil {
+			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
+		}
+	}
 }
 
 func (p *Tag) CopyFromUpdateInput(input TagUpdateInput) {
 	CopyFull(p, input)
+
+	if input.CategoryID != nil {
+		UUID, err := uuid.FromString(*input.CategoryID)
+		if err == nil {
+			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
+		}
+	} else {
+		p.CategoryID = uuid.NullUUID{UUID: uuid.UUID{}, Valid: false}
+	}
 }
 
-func (p *Tag) CopyFromTagEdit(input TagEdit) {
+func (p *Tag) CopyFromTagEdit(input TagEdit, existing *TagEdit) {
 	if input.Name != nil {
 		p.Name = *input.Name
 	}
 	if input.Description != nil {
 		p.Description = sql.NullString{String: *input.Description, Valid: true}
-	} else {
-		p.Description = sql.NullString{Valid: false}
 	}
-	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	if input.CategoryID != nil {
+		UUID, err := uuid.FromString(*input.CategoryID)
+		if err == nil {
+			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
+		}
+	} else if existing != nil && existing.CategoryID != nil {
+		p.CategoryID = uuid.NullUUID{UUID: uuid.UUID{}, Valid: false}
+	}
 }
 
 func (p *Tag) ValidateModifyEdit(edit TagEditData) error {
@@ -169,6 +190,9 @@ func (p *Tag) ValidateModifyEdit(edit TagEditData) error {
 	}
 	if edit.Old.Description != nil && *edit.Old.Description != p.Description.String {
 		return errors.New("Invalid description. Expected '" + *edit.Old.Description + "'  but was '" + p.Description.String + "'")
+	}
+	if edit.Old.CategoryID != nil && (!p.CategoryID.Valid || (*edit.Old.CategoryID != p.CategoryID.UUID.String())) {
+		return errors.New("Invalid CategoryID. Expected '" + *edit.Old.CategoryID)
 	}
 
 	return nil

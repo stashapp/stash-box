@@ -30,6 +30,7 @@ import TagMerge from "./components/tagMerge";
 import Edit from "./components/edit";
 import Edits from "./components/edits";
 import Register from "./components/register";
+import Categories from "./components/categories";
 
 import "./App.scss";
 import ActivateNewUserPage from "./components/activateNewUser/ActivateNewUser";
@@ -121,6 +122,9 @@ const App: React.FC = () => (
             </Route>
             <Route exact path="/tags/:name">
               <Tag />
+            </Route>
+            <Route exact path="/categories*">
+              <Categories />
             </Route>
             <Route exact path="/edits">
               <Edits />

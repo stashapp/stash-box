@@ -134,6 +134,14 @@ const TagComponent: React.FC = () => {
           <span>{tag.findTag.description}</span>
         </div>
       )}
+      {tag.findTag.category && (
+        <div className="row no-gutters">
+          <b className="mr-2">Category:</b>
+          <Link to={`/categories/${tag.findTag.category.id}`}>
+            {tag.findTag.category.name}
+          </Link>
+        </div>
+      )}
       {tag.findTag.aliases.length > 0 && (
         <div className="row no-gutters">
           <b className="mr-2">Aliases:</b>

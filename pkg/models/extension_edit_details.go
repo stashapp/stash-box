@@ -17,7 +17,21 @@ func (e TagEditDetailsInput) TagEditFromDiff(orig Tag) TagEditData {
 	if e.Description != nil && (!orig.Description.Valid || *e.Description != orig.Description.String) {
 		newDesc := *e.Description
 		newData.Description = &newDesc
-		oldData.Description = &orig.Description.String
+		if orig.Description.Valid {
+			oldData.Description = &orig.Description.String
+		}
+	}
+
+	if e.CategoryID == nil && orig.CategoryID.Valid {
+		oldCategory := orig.CategoryID.UUID.String()
+		oldData.CategoryID = &oldCategory
+	} else if e.CategoryID != nil && (!orig.CategoryID.Valid || *e.CategoryID != orig.CategoryID.UUID.String()) {
+		newCategory := *e.CategoryID
+		newData.CategoryID = &newCategory
+		if orig.CategoryID.Valid {
+			oldCategory := orig.CategoryID.UUID.String()
+			oldData.CategoryID = &oldCategory
+		}
 	}
 
 	return TagEditData{
@@ -44,6 +58,11 @@ func (e TagEditDetailsInput) TagEditFromCreate() TagEditData {
 	if e.Description != nil {
 		newDesc := *e.Description
 		newData.Description = &newDesc
+	}
+
+	if e.CategoryID != nil {
+		newCategory := *e.CategoryID
+		newData.CategoryID = &newCategory
 	}
 
 	return TagEditData{
