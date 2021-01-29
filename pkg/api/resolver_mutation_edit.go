@@ -14,9 +14,6 @@ import (
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	panic("not implemented")
 }
-func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
-	panic("not implemented")
-}
 func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
 	panic("not implemented")
 }
@@ -96,7 +93,7 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 		}
 	}
 
-	if input.Edit.Comment != nil {
+	if input.Edit.Comment != nil && len(*input.Edit.Comment) > 0 {
 		commentID, _ := uuid.NewV4()
 		comment := models.NewEditComment(commentID, currentUser, created, *input.Edit.Comment)
 		if err := eqb.CreateComment(*comment); err != nil {
@@ -111,6 +108,98 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 
 	return newEdit, nil
 }
+
+func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
+	if err := validateEdit(ctx); err != nil {
+		return nil, err
+	}
+
+	// TODO - handle modification of existing edit
+
+	UUID, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
+	// create the edit
+	currentUser := getCurrentUser(ctx)
+
+	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumPerformer, input.Edit)
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	if input.Edit.Operation == models.OperationEnumModify {
+		err = edit.ModifyPerformerEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	} else if input.Edit.Operation == models.OperationEnumMerge {
+		err = edit.MergePerformerEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	} else if input.Edit.Operation == models.OperationEnumDestroy {
+		err = edit.DestroyPerformerEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	} else if input.Edit.Operation == models.OperationEnumCreate {
+		err = edit.CreatePerformerEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	} else {
+		panic("not implemented")
+	}
+
+	// save the edit
+	eqb := models.NewEditQueryBuilder(tx)
+
+	created, err := eqb.Create(*newEdit)
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	if input.Edit.ID != nil {
+		performerID, _ := uuid.FromString(*input.Edit.ID)
+
+		editPerformer := models.EditPerformer{
+			EditID:      created.ID,
+			PerformerID: performerID,
+		}
+
+		err = eqb.CreateEditPerformer(editPerformer)
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	if input.Edit.Comment != nil && len(*input.Edit.Comment) > 0 {
+		commentID, _ := uuid.NewV4()
+		comment := models.NewEditComment(commentID, currentUser, created, *input.Edit.Comment)
+		if err := eqb.CreateComment(*comment); err != nil {
+			return nil, err
+		}
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return newEdit, nil
+}
+
 func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
 	panic("not implemented")
 }
@@ -125,9 +214,9 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	tagID, _ := uuid.FromString(input.ID)
+	editID, _ := uuid.FromString(input.ID)
 	eqb := models.NewEditQueryBuilder(tx)
-	edit, err := eqb.Find(tagID)
+	edit, err := eqb.Find(editID)
 	if err != nil {
 		return nil, err
 	}
@@ -163,9 +252,9 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	tagID, _ := uuid.FromString(input.ID)
+	editID, _ := uuid.FromString(input.ID)
 	eqb := models.NewEditQueryBuilder(tx)
-	edit, err := eqb.Find(tagID)
+	edit, err := eqb.Find(editID)
 	if err != nil {
 		return nil, err
 	}
@@ -217,6 +306,40 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 			}
 
 			err = eqb.CreateEditTag(editTag)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+		}
+	case models.TargetTypeEnumPerformer:
+		pqb := models.NewPerformerQueryBuilder(tx)
+		var performer *models.Performer = nil
+		if operation != models.OperationEnumCreate {
+			performerID, err := eqb.FindPerformerID(edit.ID)
+			if err != nil {
+				return nil, err
+			}
+			performer, err = pqb.Find(*performerID)
+			if err != nil {
+				return nil, err
+			}
+			if performer == nil {
+				return nil, errors.New("Performer not found: " + performerID.String())
+			}
+		}
+		newPerformer, err := pqb.ApplyEdit(*edit, operation, performer)
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+
+		if operation == models.OperationEnumCreate {
+			editPerformer := models.EditPerformer{
+				EditID:      edit.ID,
+				PerformerID: newPerformer.ID,
+			}
+
+			err = eqb.CreateEditPerformer(editPerformer)
 			if err != nil {
 				_ = tx.Rollback()
 				return nil, err

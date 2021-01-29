@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 
 import { Icon } from "src/components/fragments";
-import { Image, sortImageURLs } from "src/utils/transforms";
+import { Image, sortImageURLs } from "src/utils";
 
 interface ImageCarouselProps {
   images: Image[];
@@ -57,13 +57,21 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
       </div>
 
       <div className="d-flex align-items-center">
-        <Button className="mr-auto" onClick={setPrev}>
+        <Button
+          className="mr-auto"
+          onClick={setPrev}
+          disabled={sortedImages.length === 1}
+        >
           <Icon icon="arrow-left" />
         </Button>
         <h5>
           Image {activeImage + 1} of {sortedImages.length}
         </h5>
-        <Button className="ml-auto" onClick={setNext}>
+        <Button
+          className="ml-auto"
+          onClick={setNext}
+          disabled={sortedImages.length === 1}
+        >
           <Icon icon="arrow-right" />
         </Button>
       </div>

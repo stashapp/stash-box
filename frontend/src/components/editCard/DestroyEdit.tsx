@@ -2,28 +2,26 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits_target as Target } from "src/definitions/Edits";
-import { isTagTarget } from "./utils";
+import { isTag, isPerformer } from "src/utils";
 
 interface DestroyProps {
   target?: Target | null;
 }
 
 const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
-  if (isTagTarget(target)) {
-    return (
-      <div>
-        <div className="row">
-          <b className="col-2 text-right">Deleting: </b>
-          <Link to={`/tags/${target?.name}`}>
-            <span className="text-capitalize bg-danger">
-              {target?.name.toLowerCase()}
-            </span>
-          </Link>
-        </div>
+  if (!isTag(target) && !isPerformer(target))
+    return <span>Unsupported target type</span>;
+
+  return (
+    <div>
+      <div className="row">
+        <b className="col-2 text-right">Deleting: </b>
+        <Link to={`/performers/${target?.id}`}>
+          <span className="EditDiff bg-danger">{target?.name}</span>
+        </Link>
       </div>
-    );
-  }
-  return null;
+    </div>
+  );
 };
 
 export default DestroyEdit;

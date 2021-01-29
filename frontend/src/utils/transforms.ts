@@ -1,18 +1,23 @@
-import { MeasurementsInput, BreastTypeEnum } from "src/definitions/globalTypes";
+import { Performer_findPerformer_measurements as Measurements } from "src/definitions/Performer";
 
-export const boobJobStatus = (val: BreastTypeEnum) => {
-  if (val === BreastTypeEnum.NATURAL) return "Natural";
-  if (val === BreastTypeEnum.FAKE) return "Augmented";
-  if (val === BreastTypeEnum.NA) return "N/A";
-  return "Unknown";
-};
+export const formatCareer = (
+  start?: number | null,
+  end?: number | null
+): string | undefined =>
+  start || end ? `Active ${start ?? "????"}\u2013${end ?? ""}` : undefined;
 
-export const getBraSize = (measurements: MeasurementsInput) =>
-  measurements === null ||
-  measurements.band_size === null ||
-  measurements.cup_size === null
-    ? ""
-    : (measurements.band_size ?? "??") + (measurements.cup_size ?? "?");
+export const formatMeasurements = (val?: Measurements): string | undefined =>
+  (val?.cup_size && val.band_size) || val?.hip || val?.waist
+    ? `${val.cup_size && val.band_size ? val.band_size + val.cup_size : "??"}-${
+        val.waist ?? "??"
+      }-${val.hip ?? "??"}`
+    : undefined;
+
+export const getBraSize = (measurements: Measurements): string | undefined =>
+  (measurements.cup_size &&
+    measurements.cup_size &&
+    `${measurements.band_size}${measurements.cup_size}`) ??
+  undefined;
 
 export interface URL {
   url: string;
@@ -59,8 +64,8 @@ export const getImage = (
 export const getUrlByType = (urls: (URL | null)[], type: string) =>
   (urls && (urls.find((url) => url?.type === type) || {}).url) || "";
 
-export const getBodyModification = (
-  bodyMod?: { location: string; description?: string | null }[]
+export const formatBodyModifications = (
+  bodyMod?: { location: string; description?: string | null }[] | null
 ) =>
   (bodyMod ?? [])
     .map(

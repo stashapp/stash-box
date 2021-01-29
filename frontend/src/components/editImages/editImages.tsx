@@ -1,76 +1,142 @@
 import React, { useState } from "react";
 import { loader } from "graphql.macro";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import cx from "classnames";
 
 import { Image } from "src/utils/transforms";
-import { Button, Col, Form, Row } from "react-bootstrap";
-
 import {
   AddImageMutation as AddImage,
   AddImageMutationVariables,
 } from "src/definitions/AddImageMutation";
 import { useMutation } from "@apollo/client";
-import ImageCarousel from "../imageCarousel";
+import { Image as ImageInput } from "src/components/form";
+import { Icon, LoadingIndicator } from "src/components/fragments";
 
 const AddImageMutation = loader("src/mutations/AddImage.gql");
 
+const CLASSNAME = "EditImages";
+const CLASSNAME_DROP = `${CLASSNAME}-drop`;
+const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
+const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
+const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
+
 interface EditImagesProps {
-  images: Image[];
-  onImagesChanged: (images: Image[]) => void;
+  initialImages: Image[];
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  control: any;
 }
 
-const EditImages: React.FC<EditImagesProps> = ({ images, onImagesChanged }) => {
+const EditImages: React.FC<EditImagesProps> = ({ initialImages, control }) => {
+  const [images, setImages] = useState(initialImages);
   const [file, setFile] = useState<File | undefined>();
-
-  function onRemoveImage(toRemove: Image) {
-    onImagesChanged(images.filter((i) => i.id !== toRemove.id));
-  }
+  const [imageData, setImageData] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
 
   const [addImage] = useMutation<AddImage, AddImageMutationVariables>(
     AddImageMutation
   );
 
-  function onAddImage() {
+  const handleAddImage = () => {
+    setUploading(true);
     addImage({
       variables: {
         imageData: { file },
       },
-    }).then((i) => {
-      if (i.data?.imageCreate) {
-        onImagesChanged(images.concat(i.data.imageCreate));
-      }
-    });
-  }
+    })
+      .then((i) => {
+        if (i.data?.imageCreate?.id) {
+          setImages([...images, i.data.imageCreate]);
+          setFile(undefined);
+          setImageData("");
+        }
+      })
+      .finally(() => {
+        setUploading(false);
+      });
+  };
 
-  function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    if (
-      event.target.validity.valid &&
-      event.target.files &&
-      event.target.files.length > 0
-    ) {
+  const handleRemoveImage = (id: string) => {
+    setImages(images.filter((i) => i.id !== id));
+  };
+
+  const removeImage = () => {
+    setFile(undefined);
+    setImageData("");
+  };
+
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.validity.valid && event.target.files?.[0]) {
       setFile(event.target.files[0]);
+
+      const reader = new FileReader();
+      reader.onload = (e) =>
+        e.target?.result && setImageData(e.target.result as string);
+      reader.onerror = () => setImageData("");
+      reader.onabort = () => setImageData("");
+      reader.readAsDataURL(event.target.files[0]);
     }
-  }
+  };
+  console.log(imageData);
 
   return (
-    <div>
-      <div className="edit-image-images">
-        <ImageCarousel
-          images={images}
-          onDeleteImage={(i) => onRemoveImage(i)}
-        />
-      </div>
-
-      <Row className="my-2">
-        <Col xs={6}>
-          <Form.File onChange={onFileChange} accept=".png,.jpg,.webp,.svg" />
-        </Col>
-        <Col xs={6} className="d-flex justify-content-end">
-          <Button onClick={() => onAddImage()} disabled={!file}>
-            Add
-          </Button>
-        </Col>
-      </Row>
-    </div>
+    <Form.Row className={CLASSNAME}>
+      <Col xs={7} className="d-flex flex-wrap justify-content-between">
+        {images.map((i) => (
+          <ImageInput
+            control={control}
+            image={i}
+            onRemove={handleRemoveImage}
+            key={i.id}
+          />
+        ))}
+      </Col>
+      <Col xs={5}>
+        <Row>
+          {file ? (
+            <div
+              className={cx(CLASSNAME_IMAGE, {
+                [CLASSNAME_UPLOADING]: uploading,
+              })}
+            >
+              <img src={imageData} alt="" />
+              <LoadingIndicator message="Uploading image..." />
+            </div>
+          ) : (
+            <div className={CLASSNAME_DROP}>
+              <Form.File
+                onChange={onFileChange}
+                accept=".png,.jpg,.webp,.svg"
+              />
+              <div className={CLASSNAME_PLACEHOLDER}>
+                <Icon icon="images" />
+                <span>Add image</span>
+              </div>
+            </div>
+          )}
+        </Row>
+        <Row className="mt-1">
+          {file && (
+            <>
+              <Button
+                variant="danger"
+                onClick={() => removeImage()}
+                disabled={!file || uploading}
+                className="ml-auto"
+              >
+                Remove
+              </Button>
+              <Button
+                onClick={() => handleAddImage()}
+                disabled={!file || uploading}
+                className="ml-2 mr-auto"
+              >
+                Upload
+              </Button>
+            </>
+          )}
+        </Row>
+      </Col>
+    </Form.Row>
   );
 };
 

@@ -1,12 +1,16 @@
 @import "./styles/_theme.scss";
 @import "./components/admin/styles.scss";
+@import "./components/editCard/styles.scss";
 @import "./components/form/styles.scss";
 @import "./components/fragments/styles.scss";
 @import "./components/imageCarousel/styles.scss";
+@import "./components/imageChangeRow/styles.scss";
 @import "./components/performer/styles.scss";
 @import "./components/performers/styles.scss";
 @import "./components/performerCard/styles.scss";
 @import "./components/performerForm/styles.scss";
+@import "./components/performerMerge/styles.scss";
+@import "./components/performerSelect/styles.scss";
 @import "./components/scene/styles.scss";
 @import "./components/scenes/styles.scss";
 @import "./components/sceneCard/styles.scss";
@@ -109,10 +113,6 @@ div.react-select__menu {
   margin: auto;
   max-width: 1200px;
   padding-top: 2rem;
-
-  .card-body {
-    padding: 0;
-  }
 }
 
 .user-nav {

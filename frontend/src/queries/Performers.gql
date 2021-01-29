@@ -5,6 +5,7 @@ query Performers($filter: QuerySpec, $performerFilter: PerformerFilterType) {
       id
       name
       disambiguation
+      deleted
       aliases
       gender
       birthdate {
