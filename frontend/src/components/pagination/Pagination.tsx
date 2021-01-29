@@ -44,7 +44,6 @@ const PaginationComponent: React.FC<PaginationProps> = ({
 
     const pageNumber = page ? Number.parseInt(page, 10) : 1;
     if (pageNumber !== active) onClick(pageNumber);
-    e.preventDefault();
   };
 
   return (
