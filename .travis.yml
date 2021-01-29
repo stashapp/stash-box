@@ -37,7 +37,7 @@ script:
   - make vet it
 after_success:
   - docker pull stashapp/box-compiler:1
-  - make cross-compile-docker-packr
+  - sh ./scripts/cross-compile.sh
 before_deploy:
   # push the latest tag when on the develop branch
   - if [ "$TRAVIS_BRANCH" = "develop" ]; then git tag -f latest_develop; git push -f --tags; fi
