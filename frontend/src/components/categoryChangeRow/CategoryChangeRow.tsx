@@ -3,7 +3,7 @@ import { useQuery } from "@apollo/client";
 import { loader } from "graphql.macro";
 
 import { Category, CategoryVariables } from "src/definitions/Category";
-import ChangeRow from "./ChangeRow";
+import ChangeRow from "src/components/changeRow";
 
 const CategoryQuery = loader("src/queries/Category.gql");
 

@@ -445,8 +445,8 @@ export interface TagCategoryDestroyInput {
 
 export interface TagCategoryUpdateInput {
   id: string;
-  name: string;
-  group: TagGroupEnum;
+  name?: string | null;
+  group?: TagGroupEnum | null;
   description?: string | null;
 }
 

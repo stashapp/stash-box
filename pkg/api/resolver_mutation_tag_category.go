@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func (r *mutationResolver) TagCategoryCreate(ctx context.Context, input models.TagCategoryCreateInput) (*models.TagCategory, error) {

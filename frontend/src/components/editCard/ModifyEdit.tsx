@@ -13,8 +13,7 @@ import {
 } from 'src/utils';
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
-import CategoryChangeRow from "./CategoryChangeRow";
-
+import CategoryChangeRow from "src/components/categoryChangeRow";
 
 interface ModifyEditProps {
   details: Details | null;
