@@ -24,7 +24,7 @@ Before building the binary the frontend project needs to be built.
 * Run `yarn install --frozen-lockfile` in the `stash-box/frontend` folder.
 * Run `make generate`, followed by `make ui build` from the main folder.
 
-Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stashdb-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
+Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stash-box-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
 
 The database must be created and available, and `CREATE EXTENSION pg_trgm;` needs to be run by a superuser in the database before rerunning stash-box. The schema will be created within the database if it is not already present. 
 
@@ -36,13 +36,13 @@ The second time that stash-box is run, stash-box will run the schema migrations 
 
 ## CLI
 
-Stash-box provides some command line options.  See what is currently available by running `stashdb --help`.
+Stash-box provides some command line options.  See what is currently available by running `stash-box --help`.
 
-For example, to run stash locally on port 80 run it like this (OSX / Linux) `stashdb --host 127.0.0.1 --port 80`.
+For example, to run stash locally on port 80 run it like this (OSX / Linux) `stash-box --host 127.0.0.1 --port 80`.
 
 ## Configuration
 
-Stash-box generates a configuration file `stashdb-config.yml` in the current working directory when it is first started up. This configuration file is generated with the following defaults:
+Stash-box generates a configuration file `stash-box-config.yml` in the current working directory when it is first started up. This configuration file is generated with the following defaults:
 - running on `0.0.0.0` port `9998`
 
 The graphql playground and cross-domain cookies can be disabled by setting `is_production: true`.
@@ -82,11 +82,11 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 
 Stash-box supports HTTPS with some additional work.  First you must generate a SSL certificate and key combo.  Here is an example using openssl:
 
-`openssl req -x509 -newkey rsa:4096 -sha256 -days 7300 -nodes -keyout stashdb.key -out stashdb.crt -extensions san -config <(echo "[req]"; echo distinguished_name=req; echo "[san]"; echo subjectAltName=DNS:stashdb.server,IP:127.0.0.1) -subj /CN=stashdb.server`
+`openssl req -x509 -newkey rsa:4096 -sha256 -days 7300 -nodes -keyout stash-box.key -out stash-box.crt -extensions san -config <(echo "[req]"; echo distinguished_name=req; echo "[san]"; echo subjectAltName=DNS:stash-box.server,IP:127.0.0.1) -subj /CN=stash-box.server`
 
 This command would need customizing for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
 
-Once you have a certificate and key file name them `stashdb.crt` and `stashdb.key` and place them in the directory where stash-box is run from. Stash-box detects these and starts up using HTTPS rather than HTTP.
+Once you have a certificate and key file name them `stash-box.crt` and `stash-box.key` and place them in the directory where stash-box is run from. Stash-box detects these and starts up using HTTPS rather than HTTP.
 
 ## Frontend development
 

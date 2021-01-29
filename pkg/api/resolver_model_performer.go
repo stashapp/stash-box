@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/stashapp/stashdb/pkg/dataloader"
-	"github.com/stashapp/stashdb/pkg/models"
-	"github.com/stashapp/stashdb/pkg/utils"
+	"github.com/stashapp/stash-box/pkg/dataloader"
+	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type performerResolver struct{ *Resolver }

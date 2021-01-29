@@ -2,11 +2,11 @@
 package main
 
 import (
-	"github.com/stashapp/stashdb/pkg/api"
-	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/manager"
-	"github.com/stashapp/stashdb/pkg/manager/config"
-	"github.com/stashapp/stashdb/pkg/user"
+	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/manager"
+	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/user"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )

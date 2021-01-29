@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type editCommentResolver struct{ *Resolver }

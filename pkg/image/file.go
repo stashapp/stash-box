@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/stashapp/stashdb/pkg/manager/config"
-	"github.com/stashapp/stashdb/pkg/models"
-	"github.com/stashapp/stashdb/pkg/utils"
+	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type FileBackend struct{}

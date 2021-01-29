@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/utils"
+	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type SceneQueryBuilder struct {

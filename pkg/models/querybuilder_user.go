@@ -3,7 +3,7 @@ package models
 import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stash-box/pkg/database"
 )
 
 // UserFinderUpdater is an interface to find and update User objects.

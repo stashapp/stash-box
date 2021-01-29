@@ -6,7 +6,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
-	"github.com/stashapp/stashdb/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
 var ErrInvalidToken = errors.New("invalid apikey")

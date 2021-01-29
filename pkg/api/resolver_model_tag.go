@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type tagResolver struct{ *Resolver }

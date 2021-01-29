@@ -54,6 +54,7 @@ node_modules
 *.db
 
 stashdb
+stash-box
 dist
 
 pkg/models/generated_*.go

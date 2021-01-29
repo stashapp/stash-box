@@ -43,9 +43,9 @@ RUN make build
 FROM ubuntu:19.10 as app
 
 RUN apt-get update && apt-get -y install ca-certificates
-COPY --from=compiler /stash-box/stashdb /usr/bin/
+COPY --from=compiler /stash-box/stash-box /usr/bin/
 
 EXPOSE 9998
-CMD ["stashdb", "--config_file", "/root/.stashdb/stashdb-config.yml"]
+CMD ["stash-box", "--config_file", "/root/.stash-box/stash-box-config.yml"]
 
 

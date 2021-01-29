@@ -4,8 +4,8 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 
-	"github.com/stashapp/stashdb/pkg/manager/config"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type S3ImageURLBuilder struct {

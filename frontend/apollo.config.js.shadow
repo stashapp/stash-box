@@ -1,7 +1,7 @@
 module.exports = {
     client: {
         service: {
-            name: 'stashdb',
+            name: 'stash-box',
             url: 'https://stashdb.org/graphql',
         },
         excludes: ['**/queries/**/_*', '**/mutations/**/_*', '**/__tests__/**/*', '**/node_modules']

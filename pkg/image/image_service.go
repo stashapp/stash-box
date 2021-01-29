@@ -2,8 +2,8 @@ package image
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stashdb/pkg/manager/config"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type ImageService interface {
