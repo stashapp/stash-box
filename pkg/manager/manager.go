@@ -10,11 +10,11 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/stashapp/stashdb/pkg/email"
-	"github.com/stashapp/stashdb/pkg/logger"
-	"github.com/stashapp/stashdb/pkg/manager/config"
-	"github.com/stashapp/stashdb/pkg/manager/paths"
-	"github.com/stashapp/stashdb/pkg/utils"
+	"github.com/stashapp/stash-box/pkg/email"
+	"github.com/stashapp/stash-box/pkg/logger"
+	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/manager/paths"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type singleton struct {
@@ -106,7 +106,7 @@ func initConfig() {
 		fmt.Printf(`
 A new config file has been generated at %s.
 The database connection string has been defaulted to: %s
-Please ensure this database is created and available, or change the connection string in the configuration file, then rerun stashdb.`,
+Please ensure this database is created and available, or change the connection string in the configuration file, then rerun stash-box.`,
 			viper.GetViper().ConfigFileUsed(), config.GetDatabasePath())
 		os.Exit(0)
 	}
@@ -126,10 +126,10 @@ func initFlags() {
 }
 
 func initEnvs() {
-	viper.SetEnvPrefix("stashdb") // will be uppercased automatically
-	viper.BindEnv("host")         // STASHDB_HOST
-	viper.BindEnv("port")         // STASHDB_PORT
-	viper.BindEnv("database")     // STASHDB_DATABASE
+	viper.SetEnvPrefix("stash_box") // will be uppercased automatically
+	viper.BindEnv("host")           // STASH_BOX_HOST
+	viper.BindEnv("port")           // STASH_BOX_PORT
+	viper.BindEnv("database")       // STASH_BOX_DATABASE
 }
 
 func initLog() {

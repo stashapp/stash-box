@@ -6,8 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 
-	"github.com/stashapp/stashdb/pkg/models"
-	"github.com/stashapp/stashdb/pkg/utils"
+	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 // InputSpecifiedFunc is function that returns true if the qualified field name

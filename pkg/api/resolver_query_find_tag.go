@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (*models.Tag, error) {

@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/stashapp/stashdb/pkg/image"
-	"github.com/stashapp/stashdb/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/image"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
 type imageRoutes struct{}

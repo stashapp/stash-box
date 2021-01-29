@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"github.com/stashapp/stashdb/pkg/utils"
+	"github.com/stashapp/stash-box/pkg/utils"
 	"strings"
 	"time"
 )

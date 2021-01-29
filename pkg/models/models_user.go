@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stash-box/pkg/database"
 )
 
 const (

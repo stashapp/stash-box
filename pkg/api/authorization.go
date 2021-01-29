@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 var ErrUnauthorized = errors.New("Not authorized")

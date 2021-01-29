@@ -4,7 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stashdb/pkg/database"
+	"github.com/stashapp/stash-box/pkg/database"
 )
 
 type JoinsQueryBuilder struct {

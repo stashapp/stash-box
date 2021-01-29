@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stashdb/pkg/manager"
+	"github.com/stashapp/stash-box/pkg/manager"
 )
 
 func (r *queryResolver) MetadataImport(ctx context.Context) (string, error) {

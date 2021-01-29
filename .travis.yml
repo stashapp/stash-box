@@ -53,9 +53,9 @@ deploy:
     api_key:
       secure: NTTT3AiH8zfwf69RBXm6r3abDnuL16be89BTUscdAuLVXvE+FHaPGDCjpyZHY9nIcYQRO5MvPl8UfK0Fauwh970yh6hBGZ9C9jwJ5FJPc9i2PfVxETL7HvMdqONaNyArFE1HirHnAO/ePxbUS1omb6EDaf/q5nQbZECL18rhtVdtuyceN6qMlZNsDahPyUwCtCaVvbDB0sOLR/Lvx+nReOyumNWquHHZrmP6Z7q6lLT1MeLzCakUiy7NG1zB4XZg1qUk9fM3hwfXGZM695wegQ7GyIRWu9fsT7Fb4h211OHiHF8Tw4cNSN5JPcamoGm58CHij7ivTchVF+HbMCc4I2BgeRuTGlD4EKmGlrEOEjN65Rfqmr49Sd8ymsNC/XMnj9edUJj0smPJyMc4uHjDVODr1CzuSLFmQsjF3wkIW529x5//NBAnxfe18sG1edQwphj08SMGav6rL4p57sKX0ea3UaOCHmBqKHa6CxBPlrYXxdQt8Q9Q3H0LzQvrInHi0koUpuA4ccj8T+q9pozX3SxYPlLtJTZWKLKKUBfDWsr4esAXzp7T+SpTtoehsYckroGANzkkNXrULr3JChr+Tl7bvSWWiuVu3cgjKYfpi/VMBaZNWb9Ferq6XyYmYWsxvwH3nKsMX7v67/3k+CWtev8z+iqQjwiy00TF770d+Bg=
     file:
-    - dist/stashdb-osx
-    - dist/stashdb-win.exe
-    - dist/stashdb-linux
+    - dist/stash-box-osx
+    - dist/stash-box-win.exe
+    - dist/stash-box-linux
     skip_cleanup: true
     overwrite: true
     name: "${STASH_VERSION}: Latest development build"
@@ -76,9 +76,9 @@ deploy:
     api_key:
       secure: NTTT3AiH8zfwf69RBXm6r3abDnuL16be89BTUscdAuLVXvE+FHaPGDCjpyZHY9nIcYQRO5MvPl8UfK0Fauwh970yh6hBGZ9C9jwJ5FJPc9i2PfVxETL7HvMdqONaNyArFE1HirHnAO/ePxbUS1omb6EDaf/q5nQbZECL18rhtVdtuyceN6qMlZNsDahPyUwCtCaVvbDB0sOLR/Lvx+nReOyumNWquHHZrmP6Z7q6lLT1MeLzCakUiy7NG1zB4XZg1qUk9fM3hwfXGZM695wegQ7GyIRWu9fsT7Fb4h211OHiHF8Tw4cNSN5JPcamoGm58CHij7ivTchVF+HbMCc4I2BgeRuTGlD4EKmGlrEOEjN65Rfqmr49Sd8ymsNC/XMnj9edUJj0smPJyMc4uHjDVODr1CzuSLFmQsjF3wkIW529x5//NBAnxfe18sG1edQwphj08SMGav6rL4p57sKX0ea3UaOCHmBqKHa6CxBPlrYXxdQt8Q9Q3H0LzQvrInHi0koUpuA4ccj8T+q9pozX3SxYPlLtJTZWKLKKUBfDWsr4esAXzp7T+SpTtoehsYckroGANzkkNXrULr3JChr+Tl7bvSWWiuVu3cgjKYfpi/VMBaZNWb9Ferq6XyYmYWsxvwH3nKsMX7v67/3k+CWtev8z+iqQjwiy00TF770d+Bg=
     file:
-    - dist/stashdb-osx
-    - dist/stashdb-win.exe
-    - dist/stashdb-linux
+    - dist/stash-box-osx
+    - dist/stash-box-win.exe
+    - dist/stash-box-linux
     # make the release a draft so the maintainers can confirm before releasing
     draft: true
     skip_cleanup: true
