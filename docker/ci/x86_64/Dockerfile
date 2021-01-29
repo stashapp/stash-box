@@ -4,7 +4,7 @@
 FROM alpine as app
 LABEL MAINTAINER="https://discord.gg/Uz29ny"
 
-COPY /stashdb-linux /usr/bin/stash-box
+COPY /stash-box-linux /usr/bin/stash-box
 
 EXPOSE 9998
-CMD ["stash-box"]
+CMD ["stash-box", "--config_file", "/root/.stash-box/stash-box-config.yml"]
