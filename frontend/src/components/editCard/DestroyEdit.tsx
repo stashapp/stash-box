@@ -12,11 +12,13 @@ const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
   if (!isTag(target) && !isPerformer(target))
     return <span>Unsupported target type</span>;
 
+  const route = isTag(target) ? "tags" : "performers";
+
   return (
     <div>
       <div className="row">
         <b className="col-2 text-right">Deleting: </b>
-        <Link to={`/performers/${target?.id}`}>
+        <Link to={`/${route}/${target?.id}`}>
           <span className="EditDiff bg-danger">{target?.name}</span>
         </Link>
       </div>

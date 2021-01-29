@@ -1,3 +1,9 @@
+enum TagGroupEnum {
+  PEOPLE
+  SCENE
+  ACTION
+}
+
 type Tag {
   id: ID!
   name: String!
@@ -5,12 +11,14 @@ type Tag {
   aliases: [String!]!
   deleted: Boolean!
   edits: [Edit!]!
+  category: TagCategory
 }
 
 input TagCreateInput {
   name: String!
   description: String
   aliases: [String!]
+  category_id: ID
 }
 
 input TagUpdateInput {
@@ -18,6 +26,7 @@ input TagUpdateInput {
   name: String
   description: String
   aliases: [String!]
+  category_id: ID
 }
 
 input TagDestroyInput {
@@ -28,6 +37,7 @@ input TagEditDetailsInput {
   name: String
   description: String
   aliases: [String!]
+  category_id: ID
 }
 
 input TagEditInput {
@@ -41,11 +51,17 @@ type TagEdit {
   description: String
   added_aliases: [String!]
   removed_aliases: [String!]
+  category_id: ID
 }
 
 type QueryTagsResultType {
   count: Int!
   tags: [Tag!]!
+}
+
+type QueryTagCategoriesResultType {
+  count: Int!
+  tag_categories: [TagCategory!]!
 }
 
 input TagFilterType {
@@ -55,4 +71,30 @@ input TagFilterType {
   names: String
   """Filter to search name - assumes like query unless quoted"""
   name: String
+  """Filter to category ID"""
+  category_id: ID
+}
+
+type TagCategory {
+  id: ID!
+  name: String!
+  group:  TagGroupEnum!
+  description: String
+}
+
+input TagCategoryCreateInput {
+  name: String!
+  group:  TagGroupEnum!
+  description: String
+}
+
+input TagCategoryUpdateInput {
+  id: ID!
+  name: String
+  group:  TagGroupEnum
+  description: String
+}
+
+input TagCategoryDestroyInput {
+  id: ID!
 }

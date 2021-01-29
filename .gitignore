@@ -57,6 +57,8 @@ stashdb
 stash-box
 dist
 
+stash-box-config.yml
+
 pkg/models/generated_*.go
 packrd
 # TODO - we'll add this in later

@@ -18,7 +18,7 @@ func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (
 		idUUID, _ := uuid.FromString(*id)
 		return qb.Find(idUUID)
 	} else if name != nil {
-		return qb.FindByNameOrAlias(*name)
+		return qb.FindByName(*name)
 	}
 
 	return nil, nil
@@ -31,7 +31,11 @@ func (r *queryResolver) QueryTags(ctx context.Context, tagFilter *models.TagFilt
 
 	qb := models.NewTagQueryBuilder(nil)
 
-	tags, count := qb.Query(tagFilter, filter)
+	tags, count, err := qb.Query(tagFilter, filter)
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.QueryTagsResultType{
 		Tags:  tags,
 		Count: count,

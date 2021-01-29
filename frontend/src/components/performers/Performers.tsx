@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useQuery } from "@apollo/client";
 import { loader } from "graphql.macro";
 import { Link } from "react-router-dom";
@@ -19,8 +19,9 @@ const PER_PAGE = 20;
 
 const PerformersComponent: React.FC = () => {
   const auth = useContext(AuthContext);
+  const [count, setCount] = useState(0);
   const { page, setPage } = usePagination();
-  const { loading: loadingData, data } = useQuery<Performers>(PerformersQuery, {
+  const { loading, data } = useQuery<Performers>(PerformersQuery, {
     variables: {
       filter: {
         page,
@@ -31,12 +32,16 @@ const PerformersComponent: React.FC = () => {
     },
   });
 
-  if (loadingData) return <LoadingIndicator message="Loading performers..." />;
-  if (!data) return <ErrorMessage error="Failed to load performers" />;
+  useEffect(() => {
+    if (!loading) setCount(data?.queryPerformers.count ?? 0);
+  }, [data, loading]);
 
-  const performers = data.queryPerformers.performers.map((performer) => (
-    <PerformerCard performer={performer} />
-  ));
+  if (!loading && !data)
+    return <ErrorMessage error="Failed to load performers" />;
+
+  const performers = (
+    data?.queryPerformers.performers ?? []
+  ).map((performer) => <PerformerCard performer={performer} />);
 
   return (
     <>
@@ -50,16 +55,20 @@ const PerformersComponent: React.FC = () => {
         <Pagination
           onClick={setPage}
           perPage={PER_PAGE}
-          count={data?.queryPerformers.count}
+          count={count}
           active={page}
           showCount
         />
       </div>
-      <div className="performers row">{performers}</div>
+      {loading ? (
+        <LoadingIndicator message="Loading performers..." />
+      ) : (
+        <div className="performers row">{performers}</div>
+      )}
       <div className="row">
         <Pagination
           onClick={setPage}
-          count={data.queryPerformers.count}
+          count={count}
           perPage={PER_PAGE}
           active={page}
         />

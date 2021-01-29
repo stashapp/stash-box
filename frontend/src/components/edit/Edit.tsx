@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { Button } from "react-bootstrap";
-import { useHistory, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { loader } from "graphql.macro";
 
 import AuthContext from "src/AuthContext";
@@ -10,7 +10,7 @@ import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
 import { isAdmin, isTag, isPerformer } from "src/utils";
 
-import { VoteStatusEnum, OperationEnum } from "src/definitions/globalTypes";
+import { VoteStatusEnum } from "src/definitions/globalTypes";
 import { Edit, EditVariables } from "src/definitions/Edit";
 import {
   CancelEditMutation,
@@ -28,7 +28,6 @@ const ApplyEdit = loader("src/mutations/ApplyEdit.gql");
 const EditComponent: React.FC = () => {
   const auth = useContext(AuthContext);
   const { id } = useParams();
-  const history = useHistory();
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const { data, loading } = useQuery<Edit, EditVariables>(EditQuery, {
@@ -61,16 +60,11 @@ const EditComponent: React.FC = () => {
         const target = result.data?.applyEdit.target;
         if (!target) return;
 
-        let url = '';
-        if (isTag(target))
-          url = `/tags/${target.name}#edits`;
-        else if (isPerformer(target))
-          url = `/performers/${target.id}#edits`;
+        let url = "";
+        if (isTag(target)) url = `/tags/${target.name}#edits`;
+        else if (isPerformer(target)) url = `/performers/${target.id}#edits`;
 
-        if (edit.operation === OperationEnum.MERGE || edit.operation === OperationEnum.DESTROY)
-          window.location.href = url;
-        else
-          history.push(url);
+        window.location.href = url;
       });
     setShowApply(false);
   };

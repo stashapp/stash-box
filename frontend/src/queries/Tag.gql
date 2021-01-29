@@ -5,5 +5,11 @@ query Tag($name: String, $id: ID) {
         description
         aliases
         deleted
+        category {
+          id
+          name
+          group
+          description
+        }
     }
 }

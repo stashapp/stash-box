@@ -80,7 +80,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	// Populate performer from the input
 	updatedTag.CopyFromUpdateInput(input)
 
-	tag, err := qb.Update(*updatedTag)
+	tag, err := qb.UpdatePartial(*updatedTag)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err

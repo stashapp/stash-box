@@ -126,8 +126,8 @@ function handleResult(
       .map((performer) => ({
         type: "performer",
         value: performer,
-        // eslint-disable-next-line prefer-template
         label: `${performer.name} ${
+          // eslint-disable-next-line prefer-template
           performer.disambiguation ? "(" + performer.disambiguation + ")" : ""
         }`,
         subLabel: [
