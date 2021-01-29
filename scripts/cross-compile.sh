@@ -11,4 +11,4 @@ LINUX_AMD64="echo '=== Building Linux (amd64) binary ==='; $SETENV GOOS=linux GO
 
 COMMAND="$SETUP $WINDOWS $DARWIN $LINUX_AMD64 echo '=== Build complete ==='"
 
-docker run --rm --mount type=bind,source="$(pwd)",target=/stash-box -w /stash-box stashapp/box-compiler:4 /bin/bash -c "$COMMAND"
+docker run --rm --mount type=bind,source="$(pwd)",target=/stash-box -w /stash-box stashapp/box-compiler:1 /bin/bash -c "$COMMAND"
