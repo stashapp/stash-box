@@ -167,21 +167,19 @@ func (p *Tag) CopyFromUpdateInput(input TagUpdateInput) {
 	}
 }
 
-func (p *Tag) CopyFromTagEdit(input TagEdit) {
+func (p *Tag) CopyFromTagEdit(input TagEdit, existing *TagEdit) {
 	if input.Name != nil {
 		p.Name = *input.Name
 	}
 	if input.Description != nil {
 		p.Description = sql.NullString{String: *input.Description, Valid: true}
-	} else {
-		p.Description = sql.NullString{Valid: false}
 	}
 	if input.CategoryID != nil {
 		UUID, err := uuid.FromString(*input.CategoryID)
 		if err == nil {
 			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
 		}
-	} else {
+	} else if existing != nil && existing.CategoryID != nil {
 		p.CategoryID = uuid.NullUUID{UUID: uuid.UUID{}, Valid: false}
 	}
 }

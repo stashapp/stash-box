@@ -30,11 +30,7 @@ const schema = yup.object().shape({
   name: yup.string().required("Name is required"),
   description: yup.string(),
   aliases: yup.array().of(yup.string()),
-  categoryId: yup
-    .string()
-    .typeError("Category is required")
-    .transform(nullCheck)
-    .required("Category is required"),
+  categoryId: yup.string().transform(nullCheck).nullable(),
 });
 
 type TagFormData = yup.InferType<typeof schema>;
@@ -125,12 +121,12 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
           className={cx({ "is-invalid": errors.categoryId })}
           name="categoryId"
           onChange={onCategoryChange}
-          options={categoryObj}
+          options={[{ value: "", label: "None" }, ...categoryObj]}
           placeholder="Category"
           defaultValue={
             tag?.category?.id
               ? categoryObj.find((s) => s.value === tag.category?.id)
-              : { label: "", value: "" }
+              : { label: "None", value: "" }
           }
         />
         <div className="invalid-feedback">{errors?.categoryId?.message}</div>

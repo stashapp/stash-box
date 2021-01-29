@@ -35,6 +35,11 @@ func (qb *TagQueryBuilder) Create(newTag Tag) (*Tag, error) {
 }
 
 func (qb *TagQueryBuilder) Update(updatedTag Tag) (*Tag, error) {
+	ret, err := qb.dbi.Update(updatedTag, true)
+	return qb.toModel(ret), err
+}
+
+func (qb *TagQueryBuilder) UpdatePartial(updatedTag Tag) (*Tag, error) {
 	ret, err := qb.dbi.Update(updatedTag, false)
 	return qb.toModel(ret), err
 }
@@ -321,7 +326,7 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 		if data.New.Name == nil {
 			return nil, errors.New("Missing tag name")
 		}
-		newTag.CopyFromTagEdit(*data.New)
+		newTag.CopyFromTagEdit(*data.New, nil)
 
 		tag, err = qb.Create(newTag)
 		if err != nil {
@@ -348,7 +353,7 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 			return nil, err
 		}
 
-		tag.CopyFromTagEdit(*data.New)
+		tag.CopyFromTagEdit(*data.New, data.Old)
 		updatedTag, err := qb.Update(*tag)
 
 		currentAliases, err := qb.GetRawAliases(updatedTag.ID)
@@ -372,7 +377,7 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 			return nil, err
 		}
 
-		tag.CopyFromTagEdit(*data.New)
+		tag.CopyFromTagEdit(*data.New, data.Old)
 		updatedTag, err := qb.Update(*tag)
 
 		for _, v := range data.MergeSources {

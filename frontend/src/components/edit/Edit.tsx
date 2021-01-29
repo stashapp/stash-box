@@ -65,12 +65,7 @@ const EditComponent: React.FC = () => {
         if (isTag(target)) url = `/tags/${target.name}#edits`;
         else if (isPerformer(target)) url = `/performers/${target.id}#edits`;
 
-        if (
-          edit.operation === OperationEnum.MERGE ||
-          edit.operation === OperationEnum.DESTROY
-        )
-          window.location.href = url;
-        else history.push(url);
+        window.location.href = url;
       });
     setShowApply(false);
   };

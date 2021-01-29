@@ -22,7 +22,10 @@ func (e TagEditDetailsInput) TagEditFromDiff(orig Tag) TagEditData {
 		}
 	}
 
-	if e.CategoryID != nil && (!orig.CategoryID.Valid || *e.CategoryID != orig.CategoryID.UUID.String()) {
+	if e.CategoryID == nil && orig.CategoryID.Valid {
+		oldCategory := orig.CategoryID.UUID.String()
+		oldData.CategoryID = &oldCategory
+	} else if e.CategoryID != nil && (!orig.CategoryID.Valid || *e.CategoryID != orig.CategoryID.UUID.String()) {
 		newCategory := *e.CategoryID
 		newData.CategoryID = &newCategory
 		if orig.CategoryID.Valid {
