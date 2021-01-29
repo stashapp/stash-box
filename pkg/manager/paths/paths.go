@@ -23,7 +23,7 @@ func GetDefaultDatabaseFilePath() string {
 }
 
 func GetConfigName() string {
-	return "stashdb-config"
+	return "stash-box-config"
 }
 
 func GetDefaultConfigFilePath() string {
@@ -31,9 +31,9 @@ func GetDefaultConfigFilePath() string {
 }
 
 func GetSSLKey() string {
-	return filepath.Join(GetConfigDirectory(), "stashdb.key")
+	return filepath.Join(GetConfigDirectory(), "stash-box.key")
 }
 
 func GetSSLCert() string {
-	return filepath.Join(GetConfigDirectory(), "stashdb.crt")
+	return filepath.Join(GetConfigDirectory(), "stash-box.crt")
 }

@@ -5,8 +5,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 
-	"github.com/stashapp/stashdb/pkg/models"
-	"github.com/stashapp/stashdb/pkg/utils"
+	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type Resolver struct{}

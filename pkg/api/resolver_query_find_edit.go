@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func (r *queryResolver) FindEdit(ctx context.Context, id *string) (*models.Edit, error) {

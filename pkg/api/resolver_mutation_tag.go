@@ -5,8 +5,8 @@ import (
 	"github.com/gofrs/uuid"
 	"time"
 
-	"github.com/stashapp/stashdb/pkg/database"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreateInput) (*models.Tag, error) {

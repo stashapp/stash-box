@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type tagEditTestRunner struct {

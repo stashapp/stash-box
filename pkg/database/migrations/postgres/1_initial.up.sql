@@ -1,3 +1,5 @@
+CREATE EXTENSION pg_trgm;
+
 CREATE TABLE "performers" (
   "id" uuid not null primary key,
   "name" varchar(255) not null,

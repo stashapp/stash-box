@@ -3,7 +3,7 @@ package manager
 import (
 	//"sync"
 
-	"github.com/stashapp/stashdb/pkg/logger"
+	"github.com/stashapp/stash-box/pkg/logger"
 )
 
 func (s *singleton) Import() {

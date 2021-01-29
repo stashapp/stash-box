@@ -3,8 +3,8 @@ package user_test
 import (
 	"testing"
 
-	"github.com/stashapp/stashdb/pkg/models"
-	. "github.com/stashapp/stashdb/pkg/user"
+	"github.com/stashapp/stash-box/pkg/models"
+	. "github.com/stashapp/stash-box/pkg/user"
 )
 
 const (

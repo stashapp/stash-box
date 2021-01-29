@@ -18,12 +18,12 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
-	"github.com/stashapp/stashdb/pkg/dataloader"
-	"github.com/stashapp/stashdb/pkg/logger"
-	"github.com/stashapp/stashdb/pkg/manager/config"
-	"github.com/stashapp/stashdb/pkg/manager/paths"
-	"github.com/stashapp/stashdb/pkg/models"
-	"github.com/stashapp/stashdb/pkg/user"
+	"github.com/stashapp/stash-box/pkg/dataloader"
+	"github.com/stashapp/stash-box/pkg/logger"
+	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/manager/paths"
+	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 var buildstamp string = ""
@@ -208,7 +208,7 @@ func Start() {
 
 		go func() {
 			printVersion()
-			logger.Infof("stashdb is running on HTTPS at https://" + address + "/")
+			logger.Infof("stash-box is running on HTTPS at https://" + address + "/")
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 		}()
 	} else {
@@ -219,14 +219,14 @@ func Start() {
 
 		go func() {
 			printVersion()
-			logger.Infof("stashdb is running on HTTP at http://" + address + "/")
+			logger.Infof("stash-box is running on HTTP at http://" + address + "/")
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}
 }
 
 func printVersion() {
-	fmt.Printf("stashdb version: %s (%s)\n", githash, buildstamp)
+	fmt.Printf("stash-box version: %s (%s)\n", githash, buildstamp)
 }
 
 func GetVersion() (string, string) {

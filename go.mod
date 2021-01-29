@@ -1,4 +1,4 @@
-module github.com/stashapp/stashdb
+module github.com/stashapp/stash-box
 
 go 1.12
 

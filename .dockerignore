@@ -55,6 +55,7 @@ frontend/build/*
 *.db
 
 stashdb
+stash-box
 dist
 
 pkg/models/generated_*.go
