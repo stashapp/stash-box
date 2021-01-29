@@ -3,6 +3,7 @@ package bulkimport
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/stashapp/stashdb/pkg/models"
 )
@@ -114,10 +115,53 @@ func (p *Parser) ParseStudio(value *string, column *models.ImportColumn) (*model
 	return &studio, nil, nil
 }
 
+func (p *Parser) ParseDuration(value *string, column *models.ImportColumn) (int, error) {
+	if column.RegularExpression == nil || len(*column.RegularExpression) == 0 {
+		return 0, nil
+	}
+	re, err := regexp.Compile(*column.RegularExpression)
+	if err != nil {
+		return 0, err
+	}
+
+	match := re.FindStringSubmatch(*value)
+
+	results := map[string]string{}
+	for i, name := range match {
+		results[re.SubexpNames()[i]] = name
+	}
+
+	var duration int64
+	if seconds, ok := results["seconds"]; ok {
+		dur, err := strconv.ParseInt(seconds, 10, 32)
+		if err != nil {
+			return 0, err
+		}
+		duration = dur
+	}
+	if minutes, ok := results["minutes"]; ok {
+		dur, err := strconv.ParseInt(minutes, 10, 32)
+		if err != nil {
+			return 0, err
+		}
+		duration = duration + dur*60
+	}
+	if hours, ok := results["hours"]; ok {
+		dur, err := strconv.ParseInt(hours, 10, 32)
+		if err != nil {
+			return 0, err
+		}
+		duration = duration + dur*3600
+	}
+
+	returnVal := int(duration)
+	return returnVal, nil
+}
+
 func runRegularExpression(value *string, column *models.ImportColumn) ([]*string, *string) {
 	var results []*string
 
-	if column.RegularExpression == nil {
+	if column == nil || column.RegularExpression == nil {
 		results = append(results, value)
 	} else {
 		re, err := regexp.Compile(*column.RegularExpression)

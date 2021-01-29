@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"io"
 
+	"github.com/araddon/dateparse"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
@@ -76,6 +77,14 @@ func parseData(rows []map[string]string, input *models.BulkImportInput) (*models
 		Studios:    map[string]*models.StudioImportResult{},
 	}
 
+	mainStudioResult, studioError, err := parser.ParseStudio(&input.MainStudio, nil)
+	if err != nil {
+		return nil, err
+	}
+	if studioError != nil {
+		errors = append(errors, *studioError)
+	}
+
 	for _, row := range rows {
 		result := models.SceneImportResult{}
 		for _, column := range input.Columns {
@@ -85,10 +94,19 @@ func parseData(rows []map[string]string, input *models.BulkImportInput) (*models
 			case models.ImportColumnTypeTitle:
 				result.Title = &value
 			case models.ImportColumnTypeDate:
-				result.Date = &value
+				parsedDate, err := dateparse.ParseAny(value)
+				if err == nil {
+					isoDate := parsedDate.Format("2006-01-02")
+					result.Date = &isoDate
+				}
 			case models.ImportColumnTypeDuration:
-				duration := 0
-				result.Duration = &duration
+				duration, err := parser.ParseDuration(&value, column)
+				if err != nil {
+					return nil, err
+				}
+				if duration != 0 {
+					result.Duration = &duration
+				}
 			case models.ImportColumnTypeURL:
 				result.URL = &value
 			case models.ImportColumnTypeImage:
@@ -126,6 +144,9 @@ func parseData(rows []map[string]string, input *models.BulkImportInput) (*models
 					result.Performers = performerResult
 				}
 			}
+		}
+		if result.Studio == nil {
+			result.Studio = mainStudioResult
 		}
 		results = append(results, &result)
 		if len(errors) > 0 {

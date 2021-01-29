@@ -178,9 +178,9 @@ const Import: React.FC = () => {
                         <b>Date:</b> { result.date }
                       </span>
                     )}
-                    { result.duration && (
+                    { result.duration !== null && result.duration !== 0 && (
                       <span className="mr-2">
-                        <b>Duration:</b> { result.duration}
+                        <b>Duration:</b> { new Date(result.duration * 1000).toISOString().substr(11, 8) }
                       </span>
                     )}
                     { result.studio && (
@@ -200,7 +200,7 @@ const Import: React.FC = () => {
                   </Col>
                 </Row>
                 <Row>
-                  <Col><b>URL:</b> { result.url }</Col>
+                  <Col><b>URL:</b> <a href={ result.url ?? '' } target="_blank" rel="noopener noreferrer">{ result.url }</a></Col>
                 </Row>
                 <Row>
                   <Col><b>Performers:</b> { result.performers.map(p => (
