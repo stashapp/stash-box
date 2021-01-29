@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Button } from "react-bootstrap";
 
 import AuthContext from "src/AuthContext";
-import { isAdmin } from "src/utils/auth";
+import { isAdmin } from "src/utils";
 
 import Modal from "src/components/modal";
 

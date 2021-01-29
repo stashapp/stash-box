@@ -73,7 +73,7 @@ const TagsComponent: React.FC = () => {
         />
       </div>
       <Card>
-        <Card.Body className="pt-4">
+        <Card.Body>
           <div className="row no-gutters justify-content-end">
             <label className="mr-4" htmlFor="tag-filter">
               <b className="mr-2">Filter name:</b>

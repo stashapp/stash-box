@@ -1,7 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits_target as Target } from "src/definitions/Edits";
-import { isTagTarget } from "./utils";
+import { isTag, isPerformer } from "src/utils";
 
 interface MergeEditProps {
   merges?: (Target | null)[] | null;
@@ -17,10 +18,17 @@ const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
         <b className="col-2 text-right">Merge</b>
         <div>
           {merges?.map((source) => {
-            if (isTagTarget(source)) {
+            if (isTag(source)) {
               return (
                 <div key={source.id}>
-                  <a href={`/tags/${source.name}`}>{source.name}</a>
+                  <Link to={`/tags/${source.name}`}>{source.name}</Link>
+                </div>
+              );
+            }
+            if (isPerformer(source)) {
+              return (
+                <div key={source.id}>
+                  <Link to={`/performers/${source.id}`}>{source.name}</Link>
                 </div>
               );
             }
@@ -30,9 +38,14 @@ const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
       <div className="row">
         <b className="col-2 text-right">Into</b>
         <div>
-          {isTagTarget(target) && (
+          {isTag(target) && (
             <div>
-              <a href={`/tags/${target.name}`}>{target.name}</a>
+              <Link to={`/tags/${target.name}`}>{target.name}</Link>
+            </div>
+          )}
+          {isPerformer(target) && (
+            <div>
+              <Link to={`/performers/${target.id}`}>{target.name}</Link>
             </div>
           )}
         </div>

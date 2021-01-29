@@ -5,38 +5,41 @@ import { loader } from "graphql.macro";
 
 import { Performer_findPerformer as Performer } from "src/definitions/Performer";
 import {
-  AddPerformerMutation,
-  AddPerformerMutationVariables,
-} from "src/definitions/AddPerformerMutation";
+  PerformerEditMutation,
+  PerformerEditMutationVariables,
+} from "src/definitions/PerformerEditMutation";
 import {
-  PerformerUpdateInput,
-  PerformerCreateInput,
+  OperationEnum,
+  PerformerEditDetailsInput,
 } from "src/definitions/globalTypes";
 
 import PerformerForm from "src/components/performerForm";
 
-const AddPerformer = loader("src/mutations/AddPerformer.gql");
+const PerformerEdit = loader("src/mutations/PerformerEdit.gql");
 
 const PerformerAdd: React.FC = () => {
   const history = useHistory();
-  const [insertPerformer] = useMutation<
-    AddPerformerMutation,
-    AddPerformerMutationVariables
-  >(AddPerformer, {
+  const [submitPerformerEdit] = useMutation<
+    PerformerEditMutation,
+    PerformerEditMutationVariables
+  >(PerformerEdit, {
     onCompleted: (data) => {
-      if (data?.performerCreate?.id)
-        history.push(`/performers/${data.performerCreate.id}`);
+      if (data.performerEdit.id)
+        history.push(`/edits/${data.performerEdit.id}`);
     },
   });
 
-  const doInsert = (updateData: PerformerUpdateInput) => {
-    const { id, ...performerData } = updateData;
-    if (!updateData.name) return;
-    const insertData: PerformerCreateInput = {
-      ...performerData,
-      name: updateData.name,
-    };
-    insertPerformer({ variables: { performerData: insertData } });
+  const doInsert = (updateData: PerformerEditDetailsInput) => {
+    submitPerformerEdit({
+      variables: {
+        performerData: {
+          edit: {
+            operation: OperationEnum.CREATE,
+          },
+          details: updateData,
+        },
+      },
+    });
   };
 
   const emptyPerformer = {
@@ -66,6 +69,7 @@ const PerformerAdd: React.FC = () => {
     aliases: [],
     urls: [],
     images: [],
+    deleted: false,
     __typename: "Performer",
   } as Performer;
 

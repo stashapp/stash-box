@@ -1,4 +1,72 @@
-.edit-image-images .image-container {
-  height: 25rem;
-  margin-top: 5px;
+.EditImages {
+  &-drop {
+    position: relative;
+    display: flex;
+    border: 3px dashed $text-color;
+    border-radius: 10px;
+    height: 400px;
+    width: 400px;
+    margin: auto;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+      background-color: #394b59;
+    }
+  }
+
+  &-placeholder {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    font-size: 2rem;
+    text-align: center;
+
+    .fa-images {
+      font-size: 4rem;
+    }
+  }
+
+  &-image {
+    max-height: 600px;
+    max-width: 100%;
+    margin: auto;
+    padding-bottom: 1rem;
+    position: relative;
+
+    img {
+      min-height: 200px;
+      min-width: 200px;
+      max-height: 600px;
+      max-width: 100%;
+    }
+
+    .LoadingIndicator {
+      display: none;
+      position: absolute;
+      text-align: center;
+      text-shadow: 2px 2px black;
+      top: 40%;
+    }
+
+    &-uploading {
+      img {
+        opacity: 0.5;
+      }
+      .LoadingIndicator {
+        display: block;
+        opacity: 1;
+      }
+    }
+  }
+
+  .form-control-file {
+    cursor: pointer;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    top: 0;
+    left: 0;
+  }
 }

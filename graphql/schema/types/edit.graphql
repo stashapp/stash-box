@@ -57,6 +57,8 @@ type Edit {
     merge_sources: [EditTarget!]!
     operation: OperationEnum!
     details: EditDetails
+    """Previous state of fields being modified - null if operation is create or delete."""
+    old_details: EditDetails
     comments: [EditComment!]!
     votes: [VoteComment!]!
     """ = Accepted - Rejected"""

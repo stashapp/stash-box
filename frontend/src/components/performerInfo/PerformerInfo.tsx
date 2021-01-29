@@ -4,34 +4,57 @@ import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Table } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
+import { OperationEnum, GenderEnum } from "src/definitions/globalTypes";
 import { Performer_findPerformer as Performer } from "src/definitions/Performer";
 import {
-  DeletePerformerMutation,
-  DeletePerformerMutationVariables,
-} from "src/definitions/DeletePerformerMutation";
+  PerformerEditMutation as PerformerEdit,
+  PerformerEditMutationVariables,
+} from "src/definitions/PerformerEditMutation";
 
 import AuthContext from "src/AuthContext";
-import { canEdit, isAdmin } from "src/utils/auth";
-import { getFuzzyDate, getCountryByISO } from "src/utils";
-import { boobJobStatus, getBodyModification } from "src/utils/transforms";
-import { EthnicityTypes, HairColorTypes, EyeColorTypes } from "src/constants";
+import {
+  canEdit,
+  isAdmin,
+  formatFuzzyDate,
+  getCountryByISO,
+  formatBodyModifications,
+  formatMeasurements,
+  formatCareer,
+} from "src/utils";
+import {
+  EthnicityTypes,
+  HairColorTypes,
+  EyeColorTypes,
+  BreastTypes,
+} from "src/constants";
 
 import { GenderIcon, PerformerName } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 import DeleteButton from "src/components/deleteButton";
 
-const DeletePerformer = loader("src/mutations/DeletePerformer.gql");
+const PerformerEditMutation = loader("src/mutations/PerformerEdit.gql");
 
 const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
   const history = useHistory();
   const auth = useContext(AuthContext);
-  const [deletePerformer, { loading: deleting }] = useMutation<
-    DeletePerformerMutation,
-    DeletePerformerMutationVariables
-  >(DeletePerformer, { variables: { input: { id: performer.id } } });
+  const [deletePerformerEdit, { loading: deleting }] = useMutation<
+    PerformerEdit,
+    PerformerEditMutationVariables
+  >(PerformerEditMutation, {
+    onCompleted: (data) => {
+      if (data.performerEdit.id)
+        history.push(`/edits/${data.performerEdit.id}`);
+    },
+  });
 
   const handleDelete = (): void => {
-    deletePerformer().then(() => history.push("/performers"));
+    deletePerformerEdit({
+      variables: {
+        performerData: {
+          edit: { operation: OperationEnum.DESTROY, id: performer.id },
+        },
+      },
+    });
   };
 
   return (
@@ -40,47 +63,47 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
         <div className="col-6">
           <Card>
             <Card.Header>
-              <div className="float-right">
-                {canEdit(auth?.user) && (
-                  <Link to={`${performer.id}/edit`}>
-                    <Button>Edit</Button>
+              {!performer.deleted && (
+                <div className="float-right">
+                  {canEdit(auth?.user) && (
+                    <Link to={`${performer.id}/edit`} className="mr-2">
+                      <Button>Edit</Button>
+                    </Link>
+                  )}
+                  <Link to={`/performers/${performer.id}/merge`}>
+                    <Button>Merge into</Button>
                   </Link>
-                )}
-                {isAdmin(auth.user) && (
-                  <DeleteButton
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    message="Do you want to delete performer? This cannot be undone."
-                  />
-                )}
-              </div>
+                  {isAdmin(auth.user) && !performer.deleted && (
+                    <DeleteButton
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      message="Do you want to delete performer? This cannot be undone."
+                    />
+                  )}
+                </div>
+              )}
               <h2>
                 <GenderIcon gender={performer?.gender} />
                 <PerformerName performer={performer} />
               </h2>
             </Card.Header>
-            <Card.Body className="performer-card-body">
-              <Table striped className="performer-table">
+            <Card.Body className="p-0">
+              <Table striped>
                 <tbody>
                   <tr>
                     <td>Career</td>
                     <td>
-                      {performer.career_end_year
-                        ? `Active ${performer.career_start_year || "????"}
-                                                    -${
-                                                      performer.career_end_year
-                                                    }`
-                        : performer.career_start_year
-                        ? `Active from ${performer.career_start_year}`
-                        : "Unknown Activity"}
+                      {formatCareer(
+                        performer.career_start_year,
+                        performer.career_end_year
+                      )}
                     </td>
                   </tr>
                   <tr>
                     <td>Birthdate</td>
                     <td>
-                      {performer.birthdate
-                        ? getFuzzyDate(performer.birthdate)
-                        : ""}
+                      {performer.birthdate &&
+                        formatFuzzyDate(performer.birthdate)}
                     </td>
                   </tr>
                   <tr>
@@ -89,29 +112,22 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                       <div>{performer.height && `${performer.height}cm`}</div>
                     </td>
                   </tr>
-                  <tr>
-                    <td>Measurements</td>
-                    <td>
-                      {performer.measurements.cup_size &&
-                      performer.measurements.band_size
-                        ? `${performer.measurements.band_size}` +
-                          `${performer.measurements.cup_size}-`
-                        : "??-"}
-                      {`${performer.measurements.waist || "??"}-`}
-                      {performer.measurements.hip || "??"}
-                    </td>
-                  </tr>
-                  {(performer.gender === "FEMALE" ||
-                    performer.gender === "TRANSGENDER_FEMALE") && (
-                    <tr>
-                      <td>Breast type</td>
-                      <td>
-                        {performer.breast_type
-                          ? boobJobStatus(performer.breast_type)
-                          : ""}
-                      </td>
-                    </tr>
-                  )}
+                  {performer.gender !== GenderEnum.MALE &&
+                    performer.gender !== GenderEnum.TRANSGENDER_MALE && (
+                      <>
+                        <tr>
+                          <td>Measurements</td>
+                          <td>{formatMeasurements(performer.measurements)}</td>
+                        </tr>
+                        <tr>
+                          <td>Breast type</td>
+                          <td>
+                            {performer.breast_type &&
+                              BreastTypes[performer.breast_type]}
+                          </td>
+                        </tr>
+                      </>
+                    )}
                   <tr>
                     <td>Nationality</td>
                     <td>{getCountryByISO(performer.country)}</td>
@@ -119,38 +135,31 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                   <tr>
                     <td>Ethnicity</td>
                     <td>
-                      {performer.ethnicity
-                        ? EthnicityTypes[performer.ethnicity]
-                        : ""}
+                      {performer.ethnicity &&
+                        EthnicityTypes[performer.ethnicity]}
                     </td>
                   </tr>
                   <tr>
                     <td>Eye color</td>
                     <td>
-                      {performer.eye_color
-                        ? EyeColorTypes[performer.eye_color]
-                        : ""}
+                      {performer.eye_color &&
+                        EyeColorTypes[performer.eye_color]}
                     </td>
                   </tr>
                   <tr>
                     <td>Hair color</td>
                     <td>
-                      {performer.hair_color
-                        ? HairColorTypes[performer.hair_color]
-                        : ""}
+                      {performer.hair_color &&
+                        HairColorTypes[performer.hair_color]}
                     </td>
                   </tr>
                   <tr>
                     <td>Tattoos</td>
-                    <td>
-                      {getBodyModification(performer?.tattoos ?? undefined)}
-                    </td>
+                    <td>{formatBodyModifications(performer?.tattoos)}</td>
                   </tr>
                   <tr>
                     <td>Piercings</td>
-                    <td>
-                      {getBodyModification(performer?.piercings ?? undefined)}
-                    </td>
+                    <td>{formatBodyModifications(performer?.piercings)}</td>
                   </tr>
                   <tr>
                     <td>Aliases</td>

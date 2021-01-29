@@ -1,24 +1,8 @@
+#import "./ImageFragment.gql"
+#import "./SearchPerformerFragment.gql"
 query SearchAll($term: String!) {
     searchPerformer(term: $term) {
-        id
-        name
-        disambiguation
-        gender
-        aliases
-        birthdate {
-            date
-            accuracy
-        }
-        urls {
-            url
-            type
-        }
-        images {
-            id
-            url
-            height
-            width
-        }
+      ...SearchPerformerFragment
     }
     searchScene(term: $term) {
         id
@@ -29,10 +13,7 @@ query SearchAll($term: String!) {
             type
         }
         images {
-            id
-            url
-            height
-            width
+          ...ImageFragment
         }
         studio {
             id
@@ -41,10 +22,12 @@ query SearchAll($term: String!) {
         performers {
             as
             performer {
-                name
                 id
+                name
+                disambiguation
                 gender
                 aliases
+                deleted
             }
         }
     }

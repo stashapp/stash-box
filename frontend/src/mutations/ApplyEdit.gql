@@ -1,37 +1,6 @@
+#import "../queries/EditFragment.gql"
 mutation ApplyEditMutation($input: ApplyEditInput!) {
-    applyEdit(input: $input) {
-      id
-      target_type
-      operation
-      status
-      applied
-      created
-      user {
-        id
-        name
-      }
-      target {
-        ... on Tag {
-          id
-          name
-          description
-          deleted
-        }
-      }
-      details {
-        ... on TagEdit {
-          name
-          description
-          added_aliases
-          removed_aliases
-        }
-      }
-      merge_sources {
-        ... on Tag {
-          id
-          name
-          description
-        }
-      }
+  applyEdit(input: $input) {
+    ...EditFragment
   }
 }
