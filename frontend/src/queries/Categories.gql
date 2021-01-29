@@ -1,0 +1,11 @@
+query Categories($filter: QuerySpec) {
+  queryTagCategories(filter: $filter) {
+    count
+    tag_categories {
+      id
+      name
+      description
+      group
+    }
+  }
+}

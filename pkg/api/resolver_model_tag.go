@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -28,4 +29,12 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, e
 func (r *tagResolver) Edits(ctx context.Context, obj *models.Tag) ([]*models.Edit, error) {
 	eqb := models.NewEditQueryBuilder(nil)
 	return eqb.FindByTagID(obj.ID)
+}
+
+func (r *tagResolver) Category(ctx context.Context, obj *models.Tag) (*models.TagCategory, error) {
+	if obj.CategoryID.Valid {
+		return dataloader.For(ctx).TagCategoryById.Load(obj.CategoryID.UUID)
+	} else {
+		return nil, nil
+	}
 }

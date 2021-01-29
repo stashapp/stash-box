@@ -4,8 +4,6 @@ import {
   Edits_queryEdits_edits_details as Details,
   Edits_queryEdits_edits_old_details as OldDetails,
 } from "src/definitions/Edits";
-import ChangeRow from "src/components/changeRow";
-import ImageChangeRow from "src/components/imageChangeRow";
 import {
   getCountryByISO,
   isTagDetails,
@@ -13,6 +11,9 @@ import {
   isTagOldDetails,
   isPerformerOldDetails,
 } from "src/utils";
+import ChangeRow from "src/components/changeRow";
+import ImageChangeRow from "src/components/imageChangeRow";
+import CategoryChangeRow from "src/components/categoryChangeRow";
 
 interface ModifyEditProps {
   details: Details | null;
@@ -40,6 +41,11 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
           name="Description"
           newValue={details.description}
           oldValue={oldDetails?.description}
+          showDiff={showDiff}
+        />
+        <CategoryChangeRow
+          newCategoryID={details.category_id}
+          oldCategoryID={oldDetails?.category_id}
           showDiff={showDiff}
         />
         <ChangeRow

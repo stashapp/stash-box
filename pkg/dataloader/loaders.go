@@ -27,6 +27,7 @@ type Loaders struct {
 	StudioUrlsById         URLLoader
 	SceneTagIDsById        UUIDsLoader
 	TagById                TagLoader
+	TagCategoryById        TagCategoryLoader
 }
 
 func Middleware(next http.Handler) http.Handler {
@@ -163,6 +164,14 @@ func GetLoaders() *Loaders {
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Tag, []error) {
 				qb := models.NewTagQueryBuilder(nil)
+				return qb.FindByIds(ids)
+			},
+		},
+		TagCategoryById: TagCategoryLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.TagCategory, []error) {
+				qb := models.NewTagCategoryQueryBuilder(nil)
 				return qb.FindByIds(ids)
 			},
 		},

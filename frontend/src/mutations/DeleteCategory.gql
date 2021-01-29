@@ -1,0 +1,3 @@
+mutation DeleteCategoryMutation($input: TagCategoryDestroyInput!) {
+  tagCategoryDestroy(input: $input)
+}

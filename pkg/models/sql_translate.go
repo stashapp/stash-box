@@ -100,4 +100,7 @@ func translateField(targetFieldValue reflect.Value, sourceFieldValue reflect.Val
 		output := sql.NullString{String: sourceFieldValue.String(), Valid: true}
 		targetFieldValue.Set(reflect.ValueOf(output))
 	}
+	if targetFieldType == reflect.TypeOf(string("")) && sourceFieldType.Implements(reflect.TypeOf((*fmt.Stringer)(nil)).Elem()) {
+		targetFieldValue.Set(reflect.ValueOf(sourceFieldValue.String()))
+	}
 }

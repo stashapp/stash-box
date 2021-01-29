@@ -98,6 +98,12 @@ export enum SortDirectionEnum {
   DESC = "DESC",
 }
 
+export enum TagGroupEnum {
+  ACTION = "ACTION",
+  PEOPLE = "PEOPLE",
+  SCENE = "SCENE",
+}
+
 export enum TargetTypeEnum {
   PERFORMER = "PERFORMER",
   SCENE = "SCENE",
@@ -427,16 +433,35 @@ export interface StudioUpdateInput {
   image_ids?: string[] | null;
 }
 
+export interface TagCategoryCreateInput {
+  name: string;
+  group: TagGroupEnum;
+  description?: string | null;
+}
+
+export interface TagCategoryDestroyInput {
+  id: string;
+}
+
+export interface TagCategoryUpdateInput {
+  id: string;
+  name?: string | null;
+  group?: TagGroupEnum | null;
+  description?: string | null;
+}
+
 export interface TagCreateInput {
   name: string;
   description?: string | null;
   aliases?: string[] | null;
+  category_id?: string | null;
 }
 
 export interface TagEditDetailsInput {
   name?: string | null;
   description?: string | null;
   aliases?: string[] | null;
+  category_id?: string | null;
 }
 
 export interface TagEditInput {
@@ -448,6 +473,7 @@ export interface TagFilterType {
   text?: string | null;
   names?: string | null;
   name?: string | null;
+  category_id?: string | null;
 }
 
 export interface URLInput {
