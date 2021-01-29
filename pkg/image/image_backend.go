@@ -3,7 +3,7 @@ package image
 import (
 	"bytes"
 
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type ImageBackend interface {

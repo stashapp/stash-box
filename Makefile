@@ -28,7 +28,7 @@ release: generate ui build-release
 
 pre-build:
 ifndef BUILD_DATE
-	$(eval BUILD_DATE := $(shell go run -mod=vendor scripts/getDate.go))
+	$(eval BUILD_DATE := $(shell go run scripts/getDate.go))
 endif
 
 ifndef GITHASH
@@ -36,12 +36,12 @@ ifndef GITHASH
 endif
 
 ifndef STASH_BOX_VERSION
-	$(eval STASH_BOX_VERSION := $(shell git describe --tags --exclude latest_develop))
+	$(eval STASH_BOX_VERSION := 0.0.0)
 endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)')
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -mod=vendor -v -tags "osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -v -tags "osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
 # consider -trimpath in go build if we move to go 1.13+

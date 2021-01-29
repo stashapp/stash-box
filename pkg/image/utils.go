@@ -15,7 +15,7 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/h2non/go-is-svg"
 
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error {
