@@ -1,21 +1,14 @@
 import React, { useState } from "react";
 import { Button, Card, Col, Form, InputGroup, Row } from "react-bootstrap";
-import { useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { loader } from "graphql.macro";
-import { yupResolver } from "@hookform/resolvers";
+import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import {
-  AnalyzeDataMutation,
-  AnalyzeDataMutationVariables,
-  AnalyzeDataMutation_analyzeData_results as AnalyzeResult,
-} from "src/definitions/AnalyzeDataMutation";
-import { ImportColumnType, ImportDataType } from "src/definitions/globalTypes";
+import { ImportColumnType, ImportDataType, useAnalyzeData } from "src/graphql";
+import { AnalyzeData_analyzeData_results as AnalyzeResult } from "src/graphql/definitions/AnalyzeData";
 import { Icon } from "src/components/fragments";
-
-const AnalyzeData = loader("src/mutations/AnalyzeData.gql");
+import Pagination from "src/components/pagination";
 
 const schema = yup.object().shape({
   mainStudio: yup.string().required(),
@@ -70,16 +63,22 @@ const columns = [{
   defaultValue: "tags",
 }];
 
+const PER_PAGE = 40;
+
 type ColumnData = yup.InferType<typeof schema>;
 
 const Import: React.FC = () => {
   const [file, setFile] = useState<File>();
-  const [analyzeData] = useMutation<AnalyzeDataMutation, AnalyzeDataMutationVariables>(AnalyzeData);
+  const [page, setPage] = useState(1);
+  const [analyzeData] = useAnalyzeData();
+  const [importData] = useImportData();
   const { register, handleSubmit } = useForm<ColumnData>({ resolver: yupResolver(schema) });
   const [results, setResults] = useState<AnalyzeResult[]>([]);
   const [parseErrors, setParseErrors] = useState<string[]>([]);
 
   const submitData = (data: ColumnData) => {
+    if (!data.columns) return;
+
     const columnData = data.columns.filter(c => c.enabled).map(c => ({
       name: (c.name || "") as string,
       type: c.type as ImportColumnType,
@@ -146,7 +145,8 @@ const Import: React.FC = () => {
           </Form.Row>
         ))}
       </div>
-      <Button type="submit" disabled={!file}>Submit</Button>
+      <Button type="submit" disabled={!file}>Analyze</Button>
+      <Button type="submit" className="ml-2" disabled={!file || !results.length} variant="danger">Submit</Button>
 
       { parseErrors.length > 0 && (
         <>
@@ -159,11 +159,14 @@ const Import: React.FC = () => {
       { results.length > 0 && (
         <>
           <hr />
-          <h2>{ results.length } Results:</h2>
+          <Row noGutters>
+            <h2>{ results.length } Results:</h2>
+            <Pagination perPage={PER_PAGE} active={page} onClick={setPage} count={results.length}  />
+          </Row>
         </>
       )}
-      { results.length > 0 && results.map(result => (
-        <Card className="p-2">
+      { results.length > 0 && results.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(result => (
+        <Card className="p-3">
             <Row>
               <Col xs={8}>
                 <Row>

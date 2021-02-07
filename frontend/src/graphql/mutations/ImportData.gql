@@ -1,0 +1,6 @@
+mutation ImportData($input: BulkImportInput!) {
+  importData(input: $input) {
+    errors
+    scenesImported
+  }
+}

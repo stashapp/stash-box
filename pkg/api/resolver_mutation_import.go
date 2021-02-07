@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stashdb/pkg/manager/bulkimport"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/manager/bulkimport"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func (r *mutationResolver) AnalyzeData(ctx context.Context, input models.BulkImportInput) (*models.BulkAnalyzeResult, error) {

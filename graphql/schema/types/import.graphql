@@ -12,6 +12,7 @@ type BulkAnalyzeResult {
 
 type BulkImportResult {
   scenesImported: Int!
+  errors: [String!]!
 }
 
 enum ImportDataType {

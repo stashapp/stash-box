@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type Parser struct {
@@ -64,7 +64,7 @@ func (p *Parser) ParseTags(value *string, column *models.ImportColumn) ([]*model
 			continue
 		}
 
-		existingTags, err := p.TQB.FindByName(*name)
+		existingTag, err := p.TQB.FindByName(*name)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -72,9 +72,7 @@ func (p *Parser) ParseTags(value *string, column *models.ImportColumn) ([]*model
 		tag := models.TagImportResult{
 			Name: name,
 		}
-		if len(existingTags) > 0 {
-			tag.ExistingTag = existingTags[0]
-		}
+		tag.ExistingTag = existingTag
 
 		p.Tags[*name] = &tag
 		tags = append(tags, &tag)

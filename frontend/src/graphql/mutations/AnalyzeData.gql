@@ -1,4 +1,4 @@
-mutation AnalyzeDataMutation($input: BulkImportInput!) {
+mutation AnalyzeData($input: BulkImportInput!) {
   analyzeData(input: $input) {
     errors
     results {

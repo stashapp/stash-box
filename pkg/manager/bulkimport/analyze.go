@@ -2,10 +2,12 @@ package bulkimport
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
+	"time"
 
 	"github.com/araddon/dateparse"
-	"github.com/stashapp/stashdb/pkg/models"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func Analyze(input models.BulkImportInput) (*models.BulkAnalyzeResult, error) {
@@ -76,6 +78,8 @@ func parseData(rows []map[string]string, input *models.BulkImportInput) (*models
 		Tags:       map[string]*models.TagImportResult{},
 		Studios:    map[string]*models.StudioImportResult{},
 	}
+
+	start := time.Now()
 
 	mainStudioResult, studioError, err := parser.ParseStudio(&input.MainStudio, nil)
 	if err != nil {
@@ -153,6 +157,9 @@ func parseData(rows []map[string]string, input *models.BulkImportInput) (*models
 			break
 		}
 	}
+
+	elapsed := time.Since(start)
+	fmt.Println(fmt.Printf("Analyze took %s", elapsed))
 
 	return &models.BulkAnalyzeResult{
 		Results: results,
