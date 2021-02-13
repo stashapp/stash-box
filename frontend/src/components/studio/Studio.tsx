@@ -55,34 +55,44 @@ const StudioComponent: React.FC = () => {
     });
   };
 
+  const studioImage = getImage(studio.images, "landscape");
+
   return (
     <>
-      <div className="row no-gutters">
-        <div className="studio-title">
+      <div className="d-flex">
+        <div className="studio-title mr-auto">
           <h3>{studio.name}</h3>
           <h6>
-            <a href={getUrlByType(studio.urls, "HOME")}>
+            <a
+              href={getUrlByType(studio.urls, "HOME")}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
               {getUrlByType(studio.urls, "HOME")}
             </a>
           </h6>
         </div>
-        <div className="studio-photo">
-          <img src={getImage(studio.images, "landscape")} alt="Studio logo" />
+        {studioImage && (
+          <div className="studio-photo">
+            <img src={getImage(studio.images, "landscape")} alt="Studio logo" />
+          </div>
+        )}
+        <div>
+          {canEdit(auth.user) && (
+            <Link to={`${id}/edit`} className="ml-2">
+              <Button>Edit</Button>
+            </Link>
+          )}
+          {isAdmin(auth.user) && (
+            <DeleteButton
+              onClick={handleDelete}
+              disabled={deleting}
+              className="ml-2"
+              message="Do you want to delete studio? This cannot be undone."
+            />
+          )}
         </div>
-        {canEdit(auth.user) && (
-          <Link to={`${id}/edit`}>
-            <Button>Edit</Button>
-          </Link>
-        )}
-        {isAdmin(auth.user) && (
-          <DeleteButton
-            onClick={handleDelete}
-            disabled={deleting}
-            message="Do you want to delete studio? This cannot be undone."
-          />
-        )}
       </div>
-      <hr />
       <SceneList
         filter={{
           studios: { value: [id], modifier: CriterionModifier.INCLUDES },

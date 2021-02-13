@@ -49,6 +49,7 @@ const SceneList: React.FC<Props> = ({ perPage = PER_PAGE, filter = {} }) => {
       perPage={perPage}
       listCount={data?.queryScenes.count}
       loading={loading}
+      entityName="scenes"
     >
       <Row>{scenes}</Row>
     </List>

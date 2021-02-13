@@ -94,6 +94,7 @@ const SceneComponent: React.FC = () => {
             {isAdmin(auth.user) && (
               <DeleteButton
                 onClick={handleDelete}
+                className="ml-2"
                 disabled={deleting}
                 message="Do you want to delete scene? This cannot be undone."
               />

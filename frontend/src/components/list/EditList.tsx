@@ -68,6 +68,7 @@ const EditListComponent: React.FC<EditsProps> = ({
 
   return (
     <List
+      entityName="edits"
       loading={loading}
       listCount={data?.queryEdits.count}
       filters={editFilter}

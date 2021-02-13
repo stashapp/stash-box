@@ -76,7 +76,7 @@ const StudiosComponent: React.FC = () => {
       <div className="d-flex">
         <h2 className="mr-4">Studios</h2>
         {canEdit(auth.user) && (
-          <Link to="/studios/add">
+          <Link to="/studios/add" className="ml-auto">
             <Button className="mr-auto">Create</Button>
           </Link>
         )}

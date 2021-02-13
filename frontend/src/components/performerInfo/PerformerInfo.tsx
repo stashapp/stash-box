@@ -62,30 +62,34 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
       <div className="row mb-4">
         <div className="col-6">
           <Card>
-            <Card.Header>
+            <Card.Header className="d-flex">
+              <h2>
+                <GenderIcon gender={performer?.gender} />
+                <PerformerName performer={performer} />
+              </h2>
               {!performer.deleted && (
-                <div className="float-right">
+                <div className="ml-auto">
                   {canEdit(auth?.user) && (
-                    <Link to={`${performer.id}/edit`} className="mr-2">
+                    <Link to={`${performer.id}/edit`}>
                       <Button>Edit</Button>
                     </Link>
                   )}
-                  <Link to={`/performers/${performer.id}/merge`}>
+                  <Link
+                    to={`/performers/${performer.id}/merge`}
+                    className="ml-2"
+                  >
                     <Button>Merge into</Button>
                   </Link>
                   {isAdmin(auth.user) && !performer.deleted && (
                     <DeleteButton
                       onClick={handleDelete}
                       disabled={deleting}
-                      message="Do you want to delete performer? This cannot be undone."
+                      className="ml-2"
+                      message="Do you want to delete performer?"
                     />
                   )}
                 </div>
               )}
-              <h2>
-                <GenderIcon gender={performer?.gender} />
-                <PerformerName performer={performer} />
-              </h2>
             </Card.Header>
             <Card.Body className="p-0">
               <Table striped>

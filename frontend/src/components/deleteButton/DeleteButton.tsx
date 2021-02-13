@@ -10,12 +10,14 @@ interface DeleteButtonProps {
   message?: string;
   onClick: () => void;
   disabled?: boolean;
+  className?: string;
 }
 
 const DeleteButton: React.FC<DeleteButtonProps> = ({
   message,
   onClick,
   disabled = false,
+  className,
 }) => {
   const [showDelete, setShowDelete] = useState(false);
   const auth = useContext(AuthContext);
@@ -43,6 +45,7 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
           variant="danger"
           disabled={showDelete || disabled}
           onClick={toggleModal}
+          className={className}
         >
           Delete
         </Button>

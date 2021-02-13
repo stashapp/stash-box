@@ -6,8 +6,8 @@ import { loader } from "graphql.macro";
 
 import { Users, UsersVariables } from "src/definitions/Users";
 import { usePagination } from "src/hooks";
-import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
-import Pagination from "src/components/pagination";
+import { ErrorMessage, Icon } from "src/components/fragments";
+import { List } from "src/components/list";
 
 const UsersQuery = loader("src/queries/Users.gql");
 
@@ -24,10 +24,9 @@ const AdminComponent: React.FC = () => {
     },
   });
 
-  if (loading) return <LoadingIndicator />;
-  if (!data) return <ErrorMessage error="Failed to load users." />;
+  if (!loading && !data) return <ErrorMessage error="Failed to load users." />;
 
-  const users = data.queryUsers.users.map((user) => (
+  const users = data?.queryUsers.users.map((user) => (
     <tr key={user.id}>
       <td>
         <Link to={`/users/${user.name}/edit`}>
@@ -49,34 +48,33 @@ const AdminComponent: React.FC = () => {
   ));
 
   return (
-    <div className="users">
+    <>
       <div className="d-flex">
-        <h4 className="mr-4">Users:</h4>
-        <Link to="/users/add">
+        <h4>Users:</h4>
+        <Link to="/users/add" className="ml-auto">
           <Button>Add User</Button>
         </Link>
-        <Pagination
-          active={page}
-          perPage={PER_PAGE}
-          onClick={setPage}
-          count={data.queryUsers.count}
-          showCount
-        />
       </div>
-      <Table striped className="users-table">
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Roles</th>
-            <th>Invited by</th>
-            <th>Invite Tokens</th>
-          </tr>
-        </thead>
-        <tbody>{users}</tbody>
-      </Table>
-      <hr />
-    </div>
+      <List
+        page={page}
+        setPage={setPage}
+        loading={loading}
+        listCount={data?.queryUsers.count}
+      >
+        <Table striped className="users-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Roles</th>
+              <th>Invited by</th>
+              <th>Invite Tokens</th>
+            </tr>
+          </thead>
+          <tbody>{users}</tbody>
+        </Table>
+      </List>
+    </>
   );
 };
 
