@@ -1,6 +1,6 @@
 import React from "react";
 
-import EditList from "src/components/editList";
+import { EditList } from "src/components/list";
 
 const EditsComponent: React.FC = () => {
   return (

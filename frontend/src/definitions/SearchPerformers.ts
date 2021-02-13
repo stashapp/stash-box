@@ -37,15 +37,20 @@ export interface SearchPerformers_searchPerformer {
   deleted: boolean;
   gender: GenderEnum | null;
   aliases: string[];
+  country: string | null;
+  career_start_year: number | null;
+  career_end_year: number | null;
+  scene_count: number;
   birthdate: SearchPerformers_searchPerformer_birthdate | null;
   urls: SearchPerformers_searchPerformer_urls[];
   images: SearchPerformers_searchPerformer_images[];
 }
 
 export interface SearchPerformers {
-  searchPerformer: (SearchPerformers_searchPerformer | null)[];
+  searchPerformer: SearchPerformers_searchPerformer[];
 }
 
 export interface SearchPerformersVariables {
   term: string;
+  limit: number;
 }

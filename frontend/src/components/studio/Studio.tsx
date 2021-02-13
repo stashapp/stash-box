@@ -5,55 +5,28 @@ import { Button } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import { Studio, StudioVariables } from "src/definitions/Studio";
-import { Scenes, ScenesVariables } from "src/definitions/Scenes";
-import {
-  CriterionModifier,
-  SortDirectionEnum,
-} from "src/definitions/globalTypes";
+import { CriterionModifier } from "src/definitions/globalTypes";
 import {
   DeleteStudioMutation,
   DeleteStudioMutationVariables,
 } from "src/definitions/DeleteStudioMutation";
 
-import { usePagination } from "src/hooks";
-import Pagination from "src/components/pagination";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import SceneCard from "src/components/sceneCard";
 import DeleteButton from "src/components/deleteButton";
+import { SceneList } from "src/components/list";
 
 import { canEdit, isAdmin, getImage, getUrlByType } from "src/utils";
 import AuthContext from "src/AuthContext";
 
 const DeleteStudio = loader("src/mutations/DeleteStudio.gql");
 const StudioQuery = loader("src/queries/Studio.gql");
-const ScenesQuery = loader("src/queries/Scenes.gql");
-
-const PER_PAGE = 20;
 
 const StudioComponent: React.FC = () => {
   const auth = useContext(AuthContext);
   const history = useHistory();
   const { id = "" } = useParams();
-  const { page, setPage } = usePagination();
   const { loading, data } = useQuery<Studio, StudioVariables>(StudioQuery, {
     variables: { id },
-    skip: id === "",
-  });
-  const { loading: loadingScenes, data: sceneData } = useQuery<
-    Scenes,
-    ScenesVariables
-  >(ScenesQuery, {
-    variables: {
-      filter: {
-        page,
-        per_page: PER_PAGE,
-        sort: "DATE",
-        direction: SortDirectionEnum.DESC,
-      },
-      sceneFilter: {
-        studios: { value: [id], modifier: CriterionModifier.INCLUDES },
-      },
-    },
     skip: id === "",
   });
 
@@ -71,10 +44,6 @@ const StudioComponent: React.FC = () => {
     return <ErrorMessage error="Studio not found." />;
 
   const studio = data.findStudio;
-
-  const scenes = (sceneData?.queryScenes?.scenes ?? []).map((p) => (
-    <SceneCard key={p.id} performance={p} />
-  ));
 
   const handleDelete = () => {
     deleteStudio({
@@ -114,33 +83,11 @@ const StudioComponent: React.FC = () => {
         )}
       </div>
       <hr />
-      {loadingScenes ? (
-        <LoadingIndicator message="Loading scenes..." />
-      ) : !sceneData ? (
-        <ErrorMessage error="Failed to loading scenes." />
-      ) : (
-        <>
-          <div className="row no-gutters">
-            <h3 className="col-4">Scenes</h3>
-            <Pagination
-              onClick={setPage}
-              count={sceneData.queryScenes.count}
-              active={page}
-              perPage={PER_PAGE}
-              showCount
-            />
-          </div>
-          <div className="row">{scenes}</div>
-          <div className="row">
-            <Pagination
-              onClick={setPage}
-              count={sceneData.queryScenes.count}
-              perPage={PER_PAGE}
-              active={page}
-            />
-          </div>
-        </>
-      )}
+      <SceneList
+        filter={{
+          studios: { value: [id], modifier: CriterionModifier.INCLUDES },
+        }}
+      />
     </>
   );
 };

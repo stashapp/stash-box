@@ -64,7 +64,11 @@ const PerformerModify: React.FC = () => {
         </i>
       </h2>
       <hr />
-      <PerformerForm performer={data.findPerformer} callback={doUpdate} />
+      <PerformerForm
+        performer={data.findPerformer}
+        callback={doUpdate}
+        changeType="modify"
+      />
     </>
   );
 };

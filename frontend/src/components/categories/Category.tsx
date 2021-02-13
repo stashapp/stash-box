@@ -14,7 +14,7 @@ import AuthContext from "src/AuthContext";
 import { canEdit, isAdmin } from "src/utils/auth";
 import { LoadingIndicator } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
-import TagList from "src/components/tagList";
+import { TagList } from "src/components/list";
 
 const CategoryQuery = loader("src/queries/Category.gql");
 const DeleteCategory = loader("src/mutations/DeleteCategory.gql");

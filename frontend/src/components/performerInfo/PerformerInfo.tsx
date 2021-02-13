@@ -109,7 +109,10 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                   <tr>
                     <td>Height</td>
                     <td>
-                      <div>{performer.height && `${performer.height}cm`}</div>
+                      <div>
+                        {(performer?.height ?? 0) > 0 &&
+                          `${performer.height}cm`}
+                      </div>
                     </td>
                   </tr>
                   {performer.gender !== GenderEnum.MALE &&

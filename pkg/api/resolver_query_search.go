@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) SearchPerformer(ctx context.Context, term string) ([]*models.Performer, error) {
+func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit *int) ([]*models.Performer, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err
 	}
@@ -26,10 +26,15 @@ func (r *queryResolver) SearchPerformer(ctx context.Context, term string) ([]*mo
 		return performers, err
 	}
 
-	return qb.SearchPerformers(term)
+	searchLimit := 5
+	if limit != nil {
+		searchLimit = *limit
+	}
+
+	return qb.SearchPerformers(term, searchLimit)
 }
 
-func (r *queryResolver) SearchScene(ctx context.Context, term string) ([]*models.Scene, error) {
+func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int) ([]*models.Scene, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err
 	}
@@ -47,5 +52,10 @@ func (r *queryResolver) SearchScene(ctx context.Context, term string) ([]*models
 		return scenes, err
 	}
 
-	return qb.SearchScenes(trimmedQuery)
+	searchLimit := 10
+	if limit != nil {
+		searchLimit = *limit
+	}
+
+	return qb.SearchScenes(trimmedQuery, searchLimit)
 }

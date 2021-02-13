@@ -11,7 +11,7 @@ import {
 } from "src/definitions/DeleteSceneMutation";
 
 import AuthContext from "src/AuthContext";
-import { canEdit, isAdmin, getImage, getUrlByType } from "src/utils";
+import { canEdit, isAdmin, getImage, getUrlByType, tagHref } from "src/utils";
 
 import {
   GenderIcon,
@@ -77,7 +77,7 @@ const SceneComponent: React.FC = () => {
     })
     .map((tag) => (
       <li key={tag.name}>
-        <TagLink title={tag.name} link={`/tags/${tag.name}`} />
+        <TagLink title={tag.name} link={tagHref(tag)} />
       </li>
     ));
 

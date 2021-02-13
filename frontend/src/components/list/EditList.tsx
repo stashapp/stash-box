@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useQuery } from "@apollo/client";
 import { loader } from "graphql.macro";
 
 import { useEditFilter, usePagination } from "src/hooks";
-import Pagination from "src/components/pagination";
 import {
   TargetTypeEnum,
   SortDirectionEnum,
@@ -11,8 +10,9 @@ import {
   OperationEnum,
 } from "src/definitions/globalTypes";
 import { Edits, EditsVariables } from "src/definitions/Edits";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage } from "src/components/fragments";
 import EditCard from "src/components/editCard";
+import List from "./List";
 
 const EditsQuery = loader("src/queries/Edits.gql");
 
@@ -31,7 +31,6 @@ const EditListComponent: React.FC<EditsProps> = ({
   status,
   operation,
 }) => {
-  const [count, setCount] = useState(0);
   const { page, setPage } = usePagination();
   const {
     editFilter,
@@ -59,9 +58,6 @@ const EditListComponent: React.FC<EditsProps> = ({
       },
     },
   });
-  useEffect(() => {
-    if (!loading) setCount(data?.queryEdits.count ?? 0);
-  }, [data, loading]);
 
   if (!loading && !data) return <ErrorMessage error="Failed to load edits." />;
 
@@ -71,33 +67,15 @@ const EditListComponent: React.FC<EditsProps> = ({
     )) ?? [];
 
   return (
-    <>
-      <div className="row no-gutters">
-        <div className="col-8">{editFilter}</div>
-        <div className="col-4 d-flex justify-content-end">
-          <Pagination
-            onClick={setPage}
-            count={count}
-            perPage={PER_PAGE}
-            active={page}
-            showCount
-          />
-        </div>
-      </div>
-      {loading ? (
-        <LoadingIndicator message="Loading edits..." />
-      ) : (
-        <div>{edits}</div>
-      )}
-      <div className="row no-gutters">
-        <Pagination
-          onClick={setPage}
-          perPage={PER_PAGE}
-          count={count}
-          active={page}
-        />
-      </div>
-    </>
+    <List
+      loading={loading}
+      listCount={data?.queryEdits.count}
+      filters={editFilter}
+      page={page}
+      setPage={setPage}
+    >
+      <div>{edits}</div>
+    </List>
   );
 };
 

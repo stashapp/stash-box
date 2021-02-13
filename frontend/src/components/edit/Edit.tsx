@@ -8,7 +8,7 @@ import AuthContext from "src/AuthContext";
 import { LoadingIndicator } from "src/components/fragments";
 import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
-import { isAdmin, isTag, isPerformer } from "src/utils";
+import { isAdmin, isTag, isPerformer, tagHref, performerHref } from "src/utils";
 
 import { VoteStatusEnum } from "src/definitions/globalTypes";
 import { Edit, EditVariables } from "src/definitions/Edit";
@@ -61,8 +61,8 @@ const EditComponent: React.FC = () => {
         if (!target) return;
 
         let url = "";
-        if (isTag(target)) url = `/tags/${target.name}#edits`;
-        else if (isPerformer(target)) url = `/performers/${target.id}#edits`;
+        if (isTag(target)) url = `${tagHref(target)}#edits`;
+        else if (isPerformer(target)) url = `${performerHref(target)}#edits`;
 
         window.location.href = url;
       });

@@ -205,6 +205,7 @@ interface PerformerProps {
   ) => void;
   initialAliases?: string[];
   initialImages?: Image[];
+  changeType: "modify" | "create" | "merge";
 }
 
 const PerformerForm: React.FC<PerformerProps> = ({
@@ -212,6 +213,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
   callback,
   initialAliases = [],
   initialImages = [],
+  changeType,
 }) => {
   const { register, control, handleSubmit, errors, watch } = useForm<
     PerformerFormData
@@ -741,7 +743,10 @@ const PerformerForm: React.FC<PerformerProps> = ({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={changes.length === 0}>
+            <Button
+              type="submit"
+              disabled={changes.length === 0 && changeType !== "merge"}
+            >
               Submit Edit
             </Button>
           </Form.Row>

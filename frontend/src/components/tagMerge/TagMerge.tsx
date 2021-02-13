@@ -21,12 +21,12 @@ const TagQuery = loader("src/queries/Tag.gql");
 const TagEditMutation = loader("src/mutations/TagEdit.gql");
 
 const TagMerge: React.FC = () => {
-  const { name } = useParams();
+  const { id } = useParams();
   const history = useHistory();
   const [mergeSources, setMergeSources] = useState<string[]>([]);
   const { data: tag, loading: loadingTag } = useQuery<Tag, TagVariables>(
     TagQuery,
-    { variables: { name: decodeURI(name ?? "") } }
+    { variables: { id } }
   );
   const [insertTagEdit] = useMutation<TagEdit, TagEditMutationVariables>(
     TagEditMutation,

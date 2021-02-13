@@ -15,22 +15,24 @@ import {
 
 import { LoadingIndicator } from "src/components/fragments";
 import TagForm from "src/components/tagForm";
+import { ROUTE_EDIT } from "src/constants/route";
+import { createHref } from "src/utils/route";
 
 const TagQuery = loader("src/queries/Tag.gql");
 const TagEditMutation = loader("src/mutations/TagEdit.gql");
 
 const TagAddComponent: React.FC = () => {
-  const { name } = useParams();
+  const { id } = useParams();
   const history = useHistory();
   const { data: tag, loading: loadingTag } = useQuery<Tag, TagVariables>(
     TagQuery,
-    { variables: { name: decodeURI(name ?? "") } }
+    { variables: { id } }
   );
   const [insertTagEdit] = useMutation<TagEdit, TagEditMutationVariables>(
     TagEditMutation,
     {
       onCompleted: (data) => {
-        if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
+        if (data.tagEdit.id) history.push(createHref(ROUTE_EDIT, data.tagEdit));
       },
     }
   );

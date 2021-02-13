@@ -8,7 +8,8 @@ import { sortBy, groupBy } from "lodash";
 import { Categories, CategoriesVariables } from "src/definitions/Categories";
 
 import { LoadingIndicator } from "src/components/fragments";
-import { isAdmin } from "src/utils/auth";
+import { isAdmin, createHref } from "src/utils";
+import { ROUTE_CATEGORY } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
 const CategoriesQuery = loader("src/queries/Categories.gql");
@@ -30,7 +31,7 @@ const CategoryList: React.FC = () => {
       <ul>
         {categoryGroups[group].map((category) => (
           <li key={category.id}>
-            <Link to={encodeURI(encodeURI(`/categories/${category.id}`))}>
+            <Link to={createHref(ROUTE_CATEGORY, category)}>
               {category.name}
             </Link>
             {category.description && (

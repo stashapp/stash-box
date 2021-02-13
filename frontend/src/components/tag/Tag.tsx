@@ -21,8 +21,15 @@ import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import EditList from "src/components/editList";
+import { EditList } from "src/components/list";
 import DeleteButton from "src/components/deleteButton";
+import { createHref, tagHref } from "src/utils/route";
+import {
+  ROUTE_TAG_EDIT,
+  ROUTE_TAG_MERGE,
+  ROUTE_EDIT,
+  ROUTE_CATEGORY,
+} from "src/constants/route";
 
 const ScenesQuery = loader("src/queries/Scenes.gql");
 const TagQuery = loader("src/queries/Tag.gql");
@@ -32,16 +39,14 @@ const PER_PAGE = 20;
 const DEFAULT_TAB = "scenes";
 
 const TagComponent: React.FC = () => {
-  const { name } = useParams();
+  const { id } = useParams();
   const history = useHistory();
   const { page, setPage } = usePagination();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
-  const { data: tag, loading: loadingTag } = useQuery<Tag, TagVariables>(
-    TagQuery,
-    {
-      variables: { name: decodeURI(name ?? "") },
-    }
-  );
+  const { data, loading: loadingTag } = useQuery<Tag, TagVariables>(TagQuery, {
+    variables: { id },
+  });
+  const tag = data?.findTag;
 
   const { data: sceneData, loading: loadingScenes } = useQuery<
     Scenes,
@@ -56,20 +61,21 @@ const TagComponent: React.FC = () => {
       },
       sceneFilter: {
         tags: {
-          value: [tag?.findTag?.id ?? ""],
+          value: [tag?.id ?? ""],
           modifier: CriterionModifier.INCLUDES,
         },
       },
     },
-    skip: !tag?.findTag?.id,
+    skip: !tag?.id,
   });
 
   const [deleteTagEdit, { loading: deleting }] = useMutation<
     TagEdit,
     TagEditMutationVariables
   >(TagEditMutation, {
-    onCompleted: (data) => {
-      if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
+    onCompleted: (result) => {
+      if (result.tagEdit.id)
+        history.push(createHref(ROUTE_EDIT, result.tagEdit));
     },
   });
 
@@ -77,7 +83,7 @@ const TagComponent: React.FC = () => {
     deleteTagEdit({
       variables: {
         tagData: {
-          edit: { operation: OperationEnum.DESTROY, id: tag?.findTag?.id },
+          edit: { operation: OperationEnum.DESTROY, id: tag?.id },
         },
       },
     });
@@ -89,7 +95,7 @@ const TagComponent: React.FC = () => {
   if (loadingTag || loadingScenes)
     return <LoadingIndicator message="Loading..." />;
 
-  if (!tag?.findTag?.id) return <div>Tag not found!</div>;
+  if (!tag?.id) return <div>Tag not found!</div>;
   if (!sceneData?.queryScenes)
     return <ErrorMessage error="Scene data not found." />;
 
@@ -102,25 +108,15 @@ const TagComponent: React.FC = () => {
       <div className="row no-gutters">
         <h3 className="col-4 mr-auto">
           <span className="mr-2">Tag:</span>
-          {tag.findTag.deleted ? (
-            <del>{tag.findTag.name}</del>
-          ) : (
-            <em>{tag.findTag.name}</em>
-          )}
+          {tag.deleted ? <del>{tag.name}</del> : <em>{tag.name}</em>}
         </h3>
-        <Link
-          to={`/tags/${encodeURI(encodeURI(tag.findTag.name))}/edit`}
-          className="mr-2"
-        >
+        <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="mr-2">
           <Button>Edit</Button>
         </Link>
-        <Link
-          to={`/tags/${encodeURI(encodeURI(tag.findTag.name))}/merge`}
-          className="mr-2"
-        >
+        <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="mr-2">
           <Button>Merge into</Button>
         </Link>
-        {!tag.findTag.deleted && (
+        {!tag.deleted && (
           <DeleteButton
             onClick={handleDelete}
             disabled={deleting}
@@ -128,24 +124,24 @@ const TagComponent: React.FC = () => {
           />
         )}
       </div>
-      {tag.findTag.description && (
+      {tag.description && (
         <div className="row no-gutters">
           <b className="mr-2">Description:</b>
-          <span>{tag.findTag.description}</span>
+          <span>{tag.description}</span>
         </div>
       )}
-      {tag.findTag.category && (
+      {tag.category && (
         <div className="row no-gutters">
           <b className="mr-2">Category:</b>
-          <Link to={`/categories/${tag.findTag.category.id}`}>
-            {tag.findTag.category.name}
+          <Link to={createHref(ROUTE_CATEGORY, tag.category)}>
+            {tag.category.name}
           </Link>
         </div>
       )}
-      {tag.findTag.aliases.length > 0 && (
+      {tag.aliases.length > 0 && (
         <div className="row no-gutters">
           <b className="mr-2">Aliases:</b>
-          <span>{tag.findTag.aliases.join(", ")}</span>
+          <span>{tag.aliases.join(", ")}</span>
         </div>
       )}
       <hr className="my-2" />
@@ -171,7 +167,7 @@ const TagComponent: React.FC = () => {
           </div>
         </Tab>
         <Tab eventKey="edits" title="Edits">
-          <EditList type={TargetTypeEnum.TAG} id={tag.findTag.id} />
+          <EditList type={TargetTypeEnum.TAG} id={tag.id} />
         </Tab>
       </Tabs>
     </>

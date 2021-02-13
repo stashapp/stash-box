@@ -37,6 +37,10 @@ export interface SearchPerformerFragment {
   deleted: boolean;
   gender: GenderEnum | null;
   aliases: string[];
+  country: string | null;
+  career_start_year: number | null;
+  career_end_year: number | null;
+  scene_count: number;
   birthdate: SearchPerformerFragment_birthdate | null;
   urls: SearchPerformerFragment_urls[];
   images: SearchPerformerFragment_images[];

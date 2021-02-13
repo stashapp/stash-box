@@ -92,6 +92,7 @@ type Performer {
   images: [Image!]!
   deleted: Boolean!
   edits: [Edit!]!
+  scene_count: Int!
 }
 
 input PerformerCreateInput {

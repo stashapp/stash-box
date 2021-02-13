@@ -51,7 +51,7 @@ const useEditFilter = ({
       .toLowerCase();
 
   const handleChange = (key: string, e: React.ChangeEvent<HTMLSelectElement>) =>
-    history.push({
+    history.replace({
       ...history.location,
       search: createQueryString({
         [key]: !e.currentTarget.value ? undefined : e.currentTarget.value,
@@ -66,9 +66,9 @@ const useEditFilter = ({
     ));
 
   const editFilter = (
-    <Form className="row align-items-center font-weight-bold mx-0">
-      <div className="col-4 d-flex align-items-center">
-        <Form.Label className="mr-4">Type</Form.Label>
+    <Form className="d-flex align-items-center font-weight-bold mx-0">
+      <Form.Group className="d-flex align-items-center">
+        <Form.Label className="mr-4 mb-0">Type</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -82,9 +82,9 @@ const useEditFilter = ({
           </option>
           {enumToOptions(TargetTypeEnum)}
         </Form.Control>
-      </div>
-      <div className="col-4 d-flex align-items-center">
-        <Form.Label className="mr-4">Status</Form.Label>
+      </Form.Group>
+      <Form.Group className="d-flex align-items-center">
+        <Form.Label className="mx-4 mb-0">Status</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -98,9 +98,9 @@ const useEditFilter = ({
           </option>
           {enumToOptions(VoteStatusEnum)}
         </Form.Control>
-      </div>
-      <div className="col-4 d-flex align-items-center">
-        <Form.Label className="mr-4">Operation</Form.Label>
+      </Form.Group>
+      <Form.Group className="d-flex align-items-center">
+        <Form.Label className="mx-4 mb-0">Operation</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -114,7 +114,7 @@ const useEditFilter = ({
           </option>
           {enumToOptions(OperationEnum)}
         </Form.Control>
-      </div>
+      </Form.Group>
     </Form>
   );
 

@@ -450,15 +450,15 @@ func (qb *PerformerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*BodyModi
 	return result, nil
 }
 
-func (qb *PerformerQueryBuilder) SearchPerformers(term string) (Performers, error) {
+func (qb *PerformerQueryBuilder) SearchPerformers(term string, limit int) (Performers, error) {
 	query := `
         SELECT * FROM performers
         WHERE name % $1
         AND similarity(name, $1) > 0.5
         AND deleted = FALSE
         ORDER BY similarity(name, $1) DESC
-        LIMIT 5`
-	args := []interface{}{term}
+        LIMIT $2`
+	args := []interface{}{term, limit}
 	return qb.queryPerformers(query, args)
 }
 

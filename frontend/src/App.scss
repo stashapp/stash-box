@@ -20,6 +20,7 @@
 @import "./components/tag/styles.scss";
 @import "./components/tagSelect/styles.scss";
 @import "./components/editImages/styles.scss";
+@import "./components/search/search.scss";
 
 body {
   color: $text-color;
@@ -121,6 +122,7 @@ div.react-select__menu {
 }
 
 .card {
+  margin: 0;
   margin-bottom: 1rem;
 }
 

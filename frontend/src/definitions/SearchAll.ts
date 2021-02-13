@@ -37,6 +37,10 @@ export interface SearchAll_searchPerformer {
   deleted: boolean;
   gender: GenderEnum | null;
   aliases: string[];
+  country: string | null;
+  career_start_year: number | null;
+  career_end_year: number | null;
+  scene_count: number;
   birthdate: SearchAll_searchPerformer_birthdate | null;
   urls: SearchAll_searchPerformer_urls[];
   images: SearchAll_searchPerformer_images[];
@@ -93,10 +97,11 @@ export interface SearchAll_searchScene {
 }
 
 export interface SearchAll {
-  searchPerformer: (SearchAll_searchPerformer | null)[];
-  searchScene: (SearchAll_searchScene | null)[];
+  searchPerformer: SearchAll_searchPerformer[];
+  searchScene: SearchAll_searchScene[];
 }
 
 export interface SearchAllVariables {
   term: string;
+  limit?: number | null;
 }

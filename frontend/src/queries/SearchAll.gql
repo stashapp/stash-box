@@ -1,10 +1,10 @@
 #import "./ImageFragment.gql"
 #import "./SearchPerformerFragment.gql"
-query SearchAll($term: String!) {
-    searchPerformer(term: $term) {
+query SearchAll($term: String!, $limit: Int = 5) {
+    searchPerformer(term: $term, limit: $limit) {
       ...SearchPerformerFragment
     }
-    searchScene(term: $term) {
+    searchScene(term: $term, limit: $limit) {
         id
         date
         title

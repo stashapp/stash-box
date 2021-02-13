@@ -12,6 +12,7 @@ import {
 } from "src/definitions/Tags";
 
 import { TagLink } from "src/components/fragments";
+import { tagHref } from "src/utils/route";
 
 const TagsQuery = loader("src/queries/Tags.gql");
 
@@ -78,7 +79,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
     .map((tag) => (
       <TagLink
         title={tag.name}
-        link={`/tags/${tag.id}`}
+        link={tagHref(tag)}
         onRemove={() => removeTag(tag.id)}
         key={tag.id}
         disabled

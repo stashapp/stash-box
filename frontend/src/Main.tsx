@@ -121,7 +121,7 @@ const Main: React.FC = ({ children }) => {
         </Nav>
         <Nav className="align-items-center">
           {contextValue.authenticated && renderUserNav()}
-          <SearchField searchType={SearchType.Combined} navigate />
+          <SearchField searchType={SearchType.Combined} navigate showAllLink />
         </Nav>
       </Navbar>
       <div className="StashDBContent container-fluid">

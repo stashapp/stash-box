@@ -1,6 +1,7 @@
 import React from "react";
 import { useQuery } from "@apollo/client";
 import { loader } from "graphql.macro";
+import { Col } from "react-bootstrap";
 
 import { Scenes, ScenesVariables } from "src/definitions/Scenes";
 import { Performers, PerformersVariables } from "src/definitions/Performers";
@@ -48,11 +49,13 @@ const ScenesComponent: React.FC = () => {
     <SceneCard key={scene.id} performance={scene} />
   ));
 
-  const performers = (
-    performerData?.queryPerformers?.performers ?? []
-  ).map((performer) => (
-    <PerformerCard key={performer.id} performer={performer} />
-  ));
+  const performers = (performerData?.queryPerformers?.performers ?? []).map(
+    (performer) => (
+      <Col xs={3} key={performer.id}>
+        <PerformerCard performer={performer} />
+      </Col>
+    )
+  );
 
   return (
     <>

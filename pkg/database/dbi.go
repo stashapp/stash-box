@@ -275,6 +275,14 @@ func (q dbi) FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error {
 	return q.RawQuery(tableJoin.Table, query, args, output)
 }
 
+// CountJoins returns number of joins where the foreign key id is equal to the provided id.
+func (q dbi) CountJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error {
+	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " = ?"
+	args := []interface{}{id}
+
+	return q.RawQuery(tableJoin.Table, query, args, output)
+}
+
 // FindAllJoins returns join objects where the foreign key id is equal to one of the
 // provided ids. The join objects are output to the provided output slice.
 func (q dbi) FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error {

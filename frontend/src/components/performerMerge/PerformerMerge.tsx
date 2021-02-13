@@ -109,7 +109,9 @@ const PerformerMerge: React.FC = () => {
               <Col xs={9}>
                 <Row className="mt-4">
                   {mergeSources.map((source) => (
-                    <PerformerCard performer={source} className="col-4" />
+                    <Col xs={4} key={source.id}>
+                      <PerformerCard performer={source} className="col-4" />
+                    </Col>
                   ))}
                 </Row>
               </Col>
@@ -143,6 +145,7 @@ const PerformerMerge: React.FC = () => {
             ]}
             initialImages={flatMap(mergeSources, (i) => i.images)}
             callback={doUpdate}
+            changeType="merge"
           />
         </>
       )}

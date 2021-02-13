@@ -1,0 +1,70 @@
+.SearchPage {
+  &-input {
+    position: relative;
+    font-size: 1.5rem;
+
+    .form-control {
+      font-size: 1.5rem;
+      padding-left: 2.5rem;
+    }
+
+    .fa-search {
+      left: 0.6rem;
+      position: absolute;
+      top: 0.8rem;
+
+      path {
+        fill: $text-muted;
+      }
+    }
+  }
+
+  &-performer,
+  &-scene {
+    display: block;
+
+    &:hover {
+      text-decoration: none;
+
+      .card {
+        background-color: #495b68;
+      }
+    }
+
+    .card {
+      padding: 10px;
+      display: flex;
+      flex-direction: row;
+    }
+
+    &-image {
+      border-radius: 3px;
+      flex-shrink: 0;
+      overflow: hidden;
+      object-fit: cover;
+      image-rendering: smooth;
+
+      &[src=""] {
+        visibility: hidden;
+      }
+    }
+  }
+
+  &-performer {
+    &-image {
+      height: 7rem;
+      width: 4.6667rem;
+    }
+  }
+
+  &-scene {
+    &-image {
+      height: 7rem;
+      width: 12.4444rem;
+    }
+  }
+
+  .fa-icon {
+    margin-right: 10px;
+  }
+}

@@ -77,7 +77,11 @@ const PerformerAdd: React.FC = () => {
     <div>
       <h2>Add new performer</h2>
       <hr />
-      <PerformerForm performer={emptyPerformer} callback={doInsert} />
+      <PerformerForm
+        performer={emptyPerformer}
+        callback={doInsert}
+        changeType="create"
+      />
     </div>
   );
 };

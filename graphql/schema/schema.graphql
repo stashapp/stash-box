@@ -63,8 +63,8 @@ type Query {
   me: User
 
   ### Full text search ###
-  searchPerformer(term: String!): [Performer]!
-  searchScene(term: String!): [Scene]!
+  searchPerformer(term: String!, limit: Int): [Performer!]!
+  searchScene(term: String!, limit: Int): [Scene!]!
 
   #### Version ####
   version: Version!

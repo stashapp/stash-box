@@ -15,6 +15,8 @@ import { TagCreateInput } from "src/definitions/globalTypes";
 
 import { LoadingIndicator } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
+import { createHref, tagHref } from "src/utils";
+import { ROUTE_TAGS } from "src/constants/route";
 
 const CategoriesQuery = loader("src/queries/Categories.gql");
 
@@ -85,7 +87,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
   }));
 
   return (
-    <Form className="TagForm col-6" onSubmit={handleSubmit(onSubmit)}>
+    <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
       <Form.Group controlId="name">
         <Form.Label>Name</Form.Label>
         <input
@@ -139,7 +141,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
         <Button type="reset" className="ml-auto mr-2">
           Reset
         </Button>
-        <Link to={tag.id ? `/tags/${tag.id}` : "/tags"}>
+        <Link to={tag.name ? tagHref(tag) : createHref(ROUTE_TAGS)}>
           <Button variant="danger" onClick={() => history.goBack()}>
             Cancel
           </Button>

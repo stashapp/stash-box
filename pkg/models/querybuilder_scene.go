@@ -353,7 +353,7 @@ func (qb *SceneQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
 	return result, nil
 }
 
-func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {
+func (qb *SceneQueryBuilder) SearchScenes(term string, limit int) ([]*Scene, error) {
 	query := `
         SELECT S.* FROM scenes S
         LEFT JOIN scene_search SS ON SS.scene_id = S.id
@@ -363,8 +363,14 @@ func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {
 			to_tsvector('english', COALESCE(performer_names, '')) ||
 			to_tsvector('english', scene_title)
         ) @@ plainto_tsquery(?)
-        LIMIT 10`
+        LIMIT ?`
 	var args []interface{}
-	args = append(args, term)
+	args = append(args, term, limit)
 	return qb.queryScenes(query, args)
+}
+
+func (qb *SceneQueryBuilder) CountByPerformer(id uuid.UUID) (int, error) {
+	var args []interface{}
+	args = append(args, id)
+	return runCountQuery(buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
 }

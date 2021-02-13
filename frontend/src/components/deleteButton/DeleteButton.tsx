@@ -41,7 +41,6 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
       {isAdmin(auth.user) && (
         <Button
           variant="danger"
-          className="ml-2"
           disabled={showDelete || disabled}
           onClick={toggleModal}
         >
