@@ -1,0 +1,11 @@
+.studio-photo {
+  flex-grow: 1;
+  margin-right: 1rem;
+  max-height: 100px;
+  text-align: right;
+
+  img {
+    height: 100%;
+    max-width: 20rem;
+  }
+}
