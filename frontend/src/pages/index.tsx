@@ -6,6 +6,7 @@ import {
   ROUTE_LOGIN,
   ROUTE_USERS,
   ROUTE_PERFORMERS,
+  ROUTE_SCENES,
   ROUTE_STUDIOS,
   ROUTE_TAGS,
   ROUTE_EDITS,
@@ -21,6 +22,7 @@ import Home from "src/pages/home";
 import Login from "src/Login";
 import Users from "src/pages/users";
 import Performers from "src/pages/performers";
+import Scenes from "src/pages/scenes";
 import Studios from "src/pages/studios";
 import Tags from "src/pages/tags";
 import Edits from "src/pages/edits";
@@ -44,6 +46,9 @@ const Pages: React.FC = () => (
     </Route>
     <Route path={ROUTE_PERFORMERS}>
       <Performers />
+    </Route>
+    <Route path={ROUTE_SCENES}>
+      <Scenes />
     </Route>
     <Route path={ROUTE_STUDIOS}>
       <Studios />

@@ -7,7 +7,7 @@ import { yupResolver } from "@hookform/resolvers";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import cx from "classnames";
-import { Button, Form, Table } from "react-bootstrap";
+import { Button, Col, Form, Row, Table } from "react-bootstrap";
 import { loader } from "graphql.macro";
 
 import { Studios, StudiosVariables } from "src/definitions/Studios";
@@ -295,8 +295,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         value={scene.id}
         ref={register({ required: true })}
       />
-      <div className="row">
-        <div className="col-8">
+      <Row>
+        <Col lg={8}>
           <div className="form-group row">
             <label htmlFor="title" className="col-8">
               <div>Title</div>
@@ -437,20 +437,21 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           </Form.Group>
 
           <Form.Group className="d-flex">
-            <Button className="col-2" type="submit">
-              Save
-            </Button>
-            <Button type="reset" variant="secondary" className="ml-auto mr-2">
+            <Button type="submit">Save</Button>
+            <Button type="reset" variant="secondary" className="ml-auto">
               Reset
             </Button>
-            <Link to={scene.id ? `/scenes/${scene.id}` : "/scenes"}>
+            <Link
+              to={scene.id ? `/scenes/${scene.id}` : "/scenes"}
+              className="ml-2"
+            >
               <Button variant="danger" onClick={() => history.goBack()}>
                 Cancel
               </Button>
             </Link>
           </Form.Group>
-        </div>
-      </div>
+        </Col>
+      </Row>
     </Form>
   );
 };
