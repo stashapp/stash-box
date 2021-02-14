@@ -14,6 +14,7 @@ import {
 } from "src/definitions/PerformerEditMutation";
 
 import { LoadingIndicator } from "src/components/fragments";
+import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 
 const PerformerEdit = loader("src/mutations/PerformerEdit.gql");
@@ -34,7 +35,7 @@ const PerformerModify: React.FC = () => {
   >(PerformerEdit, {
     onCompleted: (editData) => {
       if (editData.performerEdit.id)
-        history.push(`/edits/${editData.performerEdit.id}`);
+        history.push(editHref(editData.performerEdit));
     },
   });
 

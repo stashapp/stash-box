@@ -8,6 +8,7 @@ import {
   AddUserMutationVariables,
 } from "src/definitions/AddUserMutation";
 
+import { ROUTE_USERS } from "src/constants/route";
 import UserForm, { UserData } from "./UserForm";
 
 const AddUser = loader("src/mutations/AddUser.gql");
@@ -19,7 +20,7 @@ const AddUserComponent: React.FC = () => {
     AddUser,
     {
       onCompleted: () => {
-        history.push("/admin/");
+        history.push(ROUTE_USERS);
       },
     }
   );
@@ -27,7 +28,7 @@ const AddUserComponent: React.FC = () => {
   const doInsert = (formData: UserData) => {
     const { id, ...userData } = formData;
     insertUser({ variables: { userData } })
-      .then(() => history.push("/admin"))
+      .then(() => history.push(ROUTE_USERS))
       .catch((res) => setQueryError(res.message));
   };
 

@@ -15,6 +15,7 @@ import {
 
 import { LoadingIndicator } from "src/components/fragments";
 import TagSelect from "src/components/tagSelect";
+import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 
 const TagQuery = loader("src/queries/Tag.gql");
@@ -32,7 +33,7 @@ const TagMerge: React.FC = () => {
     TagEditMutation,
     {
       onCompleted: (data) => {
-        if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
+        if (data.tagEdit.id) history.push(editHref(data.tagEdit));
       },
     }
   );

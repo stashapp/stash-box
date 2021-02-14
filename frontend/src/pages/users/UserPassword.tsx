@@ -9,6 +9,7 @@ import {
 } from "src/definitions/ChangePasswordMutation";
 
 import AuthContext from "src/AuthContext";
+import { userHref } from "src/utils";
 import UserPassword, { UserPasswordData } from "./UserPasswordForm";
 
 const ChangePassword = loader("src/mutations/ChangePassword.gql");
@@ -28,7 +29,7 @@ const ChangePasswordComponent: React.FC = () => {
       new_password: formData.newPassword,
     };
     changePassword({ variables: { userData } })
-      .then(() => history.push(`/users/${Auth.user?.name ?? ""}`))
+      .then(() => Auth.user && history.push(userHref(Auth.user)))
       .catch((res) => setQueryError(res.message));
   };
 

@@ -17,7 +17,12 @@ import {
   RescindInviteCodeMutationVariables,
 } from "src/definitions/RescindInviteCodeMutation";
 import { GenerateInviteCodeMutation } from "src/definitions/GenerateInviteCodeMutation";
-import { canEdit, isAdmin } from "src/utils";
+import { canEdit, isAdmin, createHref } from "src/utils";
+import {
+  ROUTE_USER_EDIT,
+  ROUTE_USER_PASSWORD,
+  ROUTE_USERS,
+} from "src/constants/route";
 
 import Modal from "src/components/modal";
 import { Icon, LoadingIndicator } from "src/components/fragments";
@@ -40,7 +45,7 @@ const RevokeInvite = loader("src/mutations/RevokeInvite.gql");
 const AddUserComponent: React.FC = () => {
   const history = useHistory();
   const Auth = useContext(AuthContext);
-  const { username = "" } = useParams();
+  const { name = "" } = useParams();
   const [showDelete, setShowDelete] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
 
@@ -65,22 +70,22 @@ const AddUserComponent: React.FC = () => {
   >(RevokeInvite);
 
   const { data, loading, refetch } = useQuery<User, UserVariables>(UserQuery, {
-    variables: { name: username },
-    skip: username === "",
+    variables: { name },
+    skip: name === "",
   });
 
   if (loading) return <LoadingIndicator />;
-  if (username === "" || !data?.findUser) return <div>No user found!</div>;
+  if (name === "" || !data?.findUser) return <div>No user found!</div>;
 
   const user = data.findUser;
 
-  const isUser = () => Auth.user?.name === username;
+  const isUser = () => Auth.user?.name === name;
 
   const toggleModal = () => setShowDelete(true);
   const handleDelete = (status: boolean): void => {
     if (status)
       deleteUser({ variables: { input: { id: user.id } } }).then(() =>
-        history.push("/admin")
+        history.push(ROUTE_USERS)
       );
     setShowDelete(false);
   };
@@ -157,16 +162,19 @@ const AddUserComponent: React.FC = () => {
           </Button>
         )}
         {canEdit(Auth.user) && (
-          <LinkContainer to={`/users/${user.name}/edit`} className="mx-1">
+          <LinkContainer
+            to={createHref(ROUTE_USER_EDIT, user)}
+            className="mx-1"
+          >
             <Button className="float-right">Edit User</Button>
           </LinkContainer>
         )}
         {isUser() && (
-          <LinkContainer to="/users/change-password" className="mx-1">
+          <LinkContainer to={ROUTE_USER_PASSWORD} className="mx-1">
             <Button className="float-right">Change Password</Button>
           </LinkContainer>
         )}
-        <h2>{username}</h2>
+        <h2>{name}</h2>
         <hr />
         <Row>
           <span className="col-2">Email</span>

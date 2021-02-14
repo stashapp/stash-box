@@ -7,6 +7,20 @@ import SearchField, { SearchType } from "src/components/searchField";
 import { Me } from "src/definitions/Me";
 import { RoleEnum } from "src/definitions/globalTypes";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
+import { userHref } from "src/utils";
+import {
+  ROUTE_SCENES,
+  ROUTE_PERFORMERS,
+  ROUTE_TAGS,
+  ROUTE_STUDIOS,
+  ROUTE_EDITS,
+  ROUTE_LOGOUT,
+  ROUTE_LOGIN,
+  ROUTE_USERS,
+  ROUTE_ACTIVATE,
+  ROUTE_RESET_PASSWORD,
+  ROUTE_HOME,
+} from "src/constants/route";
 import AuthContext from "./AuthContext";
 
 const ME = loader("src/queries/Me.gql");
@@ -31,16 +45,16 @@ const Main: React.FC = ({ children }) => {
   useEffect(() => {
     function noLogin() {
       return (
-        history.location.pathname === "/activate" ||
-        history.location.pathname === "/resetPassword"
+        history.location.pathname === ROUTE_ACTIVATE ||
+        history.location.pathname === ROUTE_RESET_PASSWORD
       );
     }
 
     if (user === null) {
       if (!noLogin()) {
-        history.push("/login");
+        history.push(ROUTE_LOGIN);
       }
-    } else if (prevUser.current === null) history.push("/");
+    } else if (prevUser.current === null) history.push(ROUTE_HOME);
     prevUser.current = user;
   }, [user, history]);
 
@@ -71,7 +85,7 @@ const Main: React.FC = ({ children }) => {
     const res = await fetch(`${getPlatformURL()}logout`, {
       credentials: getCredentialsSetting(),
     });
-    if (res.ok) window.location.href = "/";
+    if (res.ok) window.location.href = ROUTE_HOME;
     return false;
   };
 
@@ -80,17 +94,21 @@ const Main: React.FC = ({ children }) => {
       <>
         <span>Logged in as</span>
         <NavLink
-          to={`/users/${contextValue!.user!.name}`}
+          to={userHref(contextValue.user!)}
           className="nav-link ml-auto mr-2"
         >
           {contextValue!.user!.name}
         </NavLink>
         {isRole("ADMIN") && (
-          <NavLink exact to="/admin" className="nav-link">
-            Admin
+          <NavLink exact to={ROUTE_USERS} className="nav-link">
+            Users
           </NavLink>
         )}
-        <NavLink to="/logout" onClick={handleLogout} className="nav-link mr-4">
+        <NavLink
+          to={ROUTE_LOGOUT}
+          onClick={handleLogout}
+          className="nav-link mr-4"
+        >
           Logout
         </NavLink>
       </>
@@ -103,19 +121,19 @@ const Main: React.FC = ({ children }) => {
           <NavLink exact to="/" className="nav-link">
             Home
           </NavLink>
-          <NavLink to="/performers" className="nav-link">
+          <NavLink to={ROUTE_PERFORMERS} className="nav-link">
             Performers
           </NavLink>
-          <NavLink to="/scenes" className="nav-link">
+          <NavLink to={ROUTE_SCENES} className="nav-link">
             Scenes
           </NavLink>
-          <NavLink to="/studios" className="nav-link">
+          <NavLink to={ROUTE_STUDIOS} className="nav-link">
             Studios
           </NavLink>
-          <NavLink to="/tags" className="nav-link">
+          <NavLink to={ROUTE_TAGS} className="nav-link">
             Tags
           </NavLink>
-          <NavLink to="/edits" className="nav-link">
+          <NavLink to={ROUTE_EDITS} className="nav-link">
             Edits
           </NavLink>
         </Nav>

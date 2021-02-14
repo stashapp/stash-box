@@ -12,6 +12,7 @@ import {
 } from "src/definitions/globalTypes";
 
 import { LoadingIndicator } from "src/components/fragments";
+import { studioHref } from "src/utils";
 import StudioForm from "./studioForm";
 
 const StudioQuery = loader("src/queries/Studio.gql");
@@ -27,8 +28,7 @@ const StudioEdit: React.FC = () => {
     UpdateStudioMutation,
     {
       onCompleted: () => {
-        if (data?.findStudio?.id)
-          history.push(`/studios/${data.findStudio.id}`);
+        if (data?.findStudio?.id) history.push(studioHref(data.findStudio));
       },
     }
   );

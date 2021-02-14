@@ -8,7 +8,7 @@ import { yupResolver } from "@hookform/resolvers";
 import cx from "classnames";
 
 import { RoleEnum, UserUpdateInput } from "src/definitions/globalTypes";
-import { isAdmin } from "src/utils";
+import { isAdmin, userHref } from "src/utils";
 
 import AuthContext from "src/AuthContext";
 
@@ -116,7 +116,7 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
           <Button variant="primary" type="submit">
             Save
           </Button>
-          <LinkContainer to={`/users/${username}`} className="ml-2">
+          <LinkContainer to={userHref({ name: username })} className="ml-2">
             <Button variant="secondary">Cancel</Button>
           </LinkContainer>
           <div className="invalid-feedback d-block">{error}</div>

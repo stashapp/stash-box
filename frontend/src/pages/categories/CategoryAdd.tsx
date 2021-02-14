@@ -9,6 +9,7 @@ import {
 } from "src/definitions/AddTagCategoryMutation";
 import { TagCategoryCreateInput } from "src/definitions/globalTypes";
 
+import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
 const AddCategoryMutation = loader("src/mutations/AddCategory.gql");
@@ -21,7 +22,7 @@ const AddCategory: React.FC = () => {
   >(AddCategoryMutation, {
     onCompleted: (data) => {
       if (data?.tagCategoryCreate?.id)
-        history.push(`/categories/${data.tagCategoryCreate.id}`);
+        history.push(categoryHref(data.tagCategoryCreate));
     },
   });
 

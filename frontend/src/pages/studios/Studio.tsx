@@ -15,7 +15,14 @@ import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
 import { SceneList } from "src/components/list";
 
-import { canEdit, isAdmin, getImage, getUrlByType } from "src/utils";
+import {
+  canEdit,
+  isAdmin,
+  getImage,
+  getUrlByType,
+  createHref,
+} from "src/utils";
+import { ROUTE_STUDIO_EDIT, ROUTE_STUDIOS } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
 const DeleteStudio = loader("src/mutations/DeleteStudio.gql");
@@ -35,7 +42,7 @@ const StudioComponent: React.FC = () => {
     DeleteStudioMutationVariables
   >(DeleteStudio, {
     onCompleted: (result) => {
-      if (result.studioDestroy) history.push("/studios/");
+      if (result.studioDestroy) history.push(ROUTE_STUDIOS);
     },
   });
 
@@ -79,7 +86,7 @@ const StudioComponent: React.FC = () => {
         )}
         <div>
           {canEdit(auth.user) && (
-            <Link to={`${id}/edit`} className="ml-2">
+            <Link to={createHref(ROUTE_STUDIO_EDIT, { id })} className="ml-2">
               <Button>Edit</Button>
             </Link>
           )}

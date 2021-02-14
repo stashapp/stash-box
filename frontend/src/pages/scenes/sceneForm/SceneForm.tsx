@@ -18,7 +18,8 @@ import {
   FingerprintInput,
   FingerprintAlgorithm,
 } from "src/definitions/globalTypes";
-import { getUrlByType } from "src/utils/transforms";
+import { getUrlByType, createHref } from "src/utils";
+import { ROUTE_SCENES, ROUTE_SCENE } from "src/constants/route";
 
 import {
   GenderIcon,
@@ -442,7 +443,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               Reset
             </Button>
             <Link
-              to={scene.id ? `/scenes/${scene.id}` : "/scenes"}
+              to={createHref(scene.id ? ROUTE_SCENE : ROUTE_SCENES, scene)}
               className="ml-2"
             >
               <Button variant="danger" onClick={() => history.goBack()}>

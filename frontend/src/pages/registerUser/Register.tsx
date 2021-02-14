@@ -13,7 +13,7 @@ import {
 } from "src/definitions/NewUserMutation";
 import * as yup from "yup";
 
-import { ROUTE_HOME } from "src/constants/route";
+import { ROUTE_HOME, ROUTE_ACTIVATE, ROUTE_LOGIN } from "src/constants/route";
 
 const NewUser = loader("src/mutations/NewUser.gql");
 
@@ -49,7 +49,7 @@ const Register: React.FC = () => {
       .then((response) => {
         if (response.data?.newUser) {
           history.push(
-            `/activate?email=${formData.email}&key=${response.data.newUser}`
+            `${ROUTE_ACTIVATE}?email=${formData.email}&key=${response.data.newUser}`
           );
         } else {
           setAwaitingActivation(true);
@@ -68,7 +68,7 @@ const Register: React.FC = () => {
         <div className="align-self-center col-8 mx-auto">
           <h5>Invite key accepted</h5>
           <p>Please check your email to complete your registration.</p>
-          <a href="/login">Return to login</a>
+          <a href={ROUTE_LOGIN}>Return to login</a>
         </div>
       </div>
     );

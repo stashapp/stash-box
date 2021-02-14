@@ -8,6 +8,12 @@ import { Users, UsersVariables } from "src/definitions/Users";
 import { usePagination } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
+import { createHref } from "src/utils";
+import {
+  ROUTE_USER_EDIT,
+  ROUTE_USER,
+  ROUTE_USER_ADD,
+} from "src/constants/route";
 
 const UsersQuery = loader("src/queries/Users.gql");
 
@@ -29,12 +35,12 @@ const UsersComponent: React.FC = () => {
   const users = data?.queryUsers.users.map((user) => (
     <tr key={user.id}>
       <td>
-        <Link to={`/users/${user.name}/edit`}>
+        <Link to={createHref(ROUTE_USER_EDIT, user)}>
           <Button variant="secondary" className="minimal">
             <Icon icon="user-edit" />
           </Button>
         </Link>
-        <Link to={`/users/${user.name}`}>
+        <Link to={createHref(ROUTE_USER, user)}>
           <Button variant="link">
             <span>{user.name}</span>
           </Button>
@@ -51,7 +57,7 @@ const UsersComponent: React.FC = () => {
     <>
       <div className="d-flex">
         <h2>Users</h2>
-        <Link to="/users/add" className="ml-auto">
+        <Link to={ROUTE_USER_ADD} className="ml-auto">
           <Button>Add User</Button>
         </Link>
       </div>

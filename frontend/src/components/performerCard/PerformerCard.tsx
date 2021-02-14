@@ -6,7 +6,7 @@ import { Performers_queryPerformers_performers as Performer } from "src/definiti
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/definitions/SearchPerformers";
 
 import { PerformerName } from "src/components/fragments";
-import { getImage } from "src/utils";
+import { getImage, performerHref } from "src/utils";
 
 interface PerformerCardProps {
   performer: Performer | SearchPerformer;
@@ -18,7 +18,7 @@ const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 
 const PerformerCard: React.FC<PerformerCardProps> = ({ performer }) => (
   <Card className={CLASSNAME}>
-    <Link to={`/performers/${performer.id}`}>
+    <Link to={performerHref(performer)}>
       <div className={CLASSNAME_IMAGE}>
         <img
           src={getImage(performer.images, "portrait")}

@@ -9,7 +9,7 @@ import { Categories, CategoriesVariables } from "src/definitions/Categories";
 
 import { LoadingIndicator } from "src/components/fragments";
 import { isAdmin, createHref } from "src/utils";
-import { ROUTE_CATEGORY } from "src/constants/route";
+import { ROUTE_CATEGORY, ROUTE_CATEGORY_ADD } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
 const CategoriesQuery = loader("src/queries/Categories.gql");
@@ -51,7 +51,7 @@ const CategoryList: React.FC = () => {
       <div className="row no-gutters">
         <h3 className="mr-4">Categories</h3>
         {isAdmin(auth.user) && (
-          <Link to="/categories/add" className="ml-auto">
+          <Link to={ROUTE_CATEGORY_ADD} className="ml-auto">
             <Button>Create</Button>
           </Link>
         )}

@@ -3,7 +3,8 @@ import { useQuery } from "@apollo/client";
 import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { loader } from "graphql.macro";
-import { canEdit } from "src/utils";
+import { canEdit, studioHref, createHref } from "src/utils";
+import { ROUTE_STUDIO_ADD } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
 import {
@@ -58,12 +59,12 @@ const StudiosComponent: React.FC = () => {
 
   const studioList = studios.map((parent) => (
     <li key={parent.studio.id}>
-      <Link to={`/studios/${parent.studio.id}`}>{parent.studio.name}</Link>
+      <Link to={studioHref(parent.studio)}>{parent.studio.name}</Link>
       {parent.subStudios && (
         <ul>
           {parent.subStudios.map((sub) => (
             <li key={sub.id}>
-              <Link to={`/studios/${sub.id}`}>{sub.name}</Link>
+              <Link to={studioHref(sub)}>{sub.name}</Link>
             </li>
           ))}
         </ul>
@@ -76,7 +77,7 @@ const StudiosComponent: React.FC = () => {
       <div className="d-flex">
         <h2 className="mr-4">Studios</h2>
         {canEdit(auth.user) && (
-          <Link to="/studios/add" className="ml-auto">
+          <Link to={createHref(ROUTE_STUDIO_ADD)} className="ml-auto">
             <Button className="mr-auto">Create</Button>
           </Link>
         )}

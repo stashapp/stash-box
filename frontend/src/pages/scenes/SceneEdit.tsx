@@ -8,6 +8,7 @@ import { UpdateSceneMutationVariables } from "src/definitions/UpdateSceneMutatio
 import { SceneUpdateInput } from "src/definitions/globalTypes";
 
 import { LoadingIndicator } from "src/components/fragments";
+import { sceneHref } from "src/utils";
 import SceneForm from "./sceneForm";
 
 const SceneQuery = loader("src/queries/Scene.gql");
@@ -23,7 +24,7 @@ const SceneEdit: React.FC = () => {
     UpdateSceneMutation,
     {
       onCompleted: () => {
-        if (data?.findScene?.id) history.push(`/scenes/${data.findScene.id}`);
+        if (data?.findScene?.id) history.push(sceneHref(data.findScene));
       },
     }
   );

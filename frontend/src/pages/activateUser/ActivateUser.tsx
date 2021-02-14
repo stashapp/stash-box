@@ -13,7 +13,7 @@ import {
 } from "src/definitions/ActivateNewUserMutation";
 import { Form } from "react-bootstrap";
 
-import { ROUTE_HOME } from "src/constants/route";
+import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
 const ActivateNewUser = loader("src/mutations/ActivateNewUser.gql");
 
@@ -56,7 +56,7 @@ const ActivateNewUserPage: React.FC = () => {
     setSubmitError(undefined);
     activateNewUser({ variables: { input: userData } })
       .then(() => {
-        history.push("/login?msg=account-created");
+        history.push(`${ROUTE_LOGIN}?msg=account-created`);
       })
       .catch((err) => {
         if (err && err.message) {

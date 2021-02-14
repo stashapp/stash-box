@@ -21,7 +21,8 @@ import {
   SearchPerformers,
   SearchPerformers_searchPerformer as PerformerOnlyResult,
 } from "src/definitions/SearchPerformers";
-import { formatFuzzyDate } from "src/utils";
+import { formatFuzzyDate, createHref } from "src/utils";
+import { ROUTE_SEARCH } from "src/constants/route";
 
 const SearchAllQuery = loader("src/queries/SearchAll.gql");
 const SearchPerformersQuery = loader("src/queries/SearchPerformers.gql");
@@ -212,7 +213,9 @@ const SearchField: React.FC<SearchFieldProps> = ({
     if (option) {
       if (valueIsPerformer(option.value)) onClickPerformer?.(option.value);
       if (option.type === "ALL")
-        return history.push(`/search/${searchTerm.current}`);
+        return history.push(
+          createHref(ROUTE_SEARCH, { term: searchTerm.current })
+        );
       onClick?.(option.value);
       if (navigate) history.push(`/${option.type}s/${option.value.id}`);
     }
@@ -222,7 +225,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current) {
-      history.push(`/search/${searchTerm.current}`);
+      history.push(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
     }
   };
 

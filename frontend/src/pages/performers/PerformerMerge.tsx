@@ -19,6 +19,7 @@ import {
 import { LoadingIndicator } from "src/components/fragments";
 import PerformerSelect from "src/components/performerSelect";
 import PerformerCard from "src/components/performerCard";
+import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 
 const PerformerQuery = loader("src/queries/Performer.gql");
@@ -40,8 +41,7 @@ const PerformerMerge: React.FC = () => {
     PerformerEditMutationVariables
   >(PerformerEditMutation, {
     onCompleted: (data) => {
-      if (data.performerEdit.id)
-        history.push(`/edits/${data.performerEdit.id}`);
+      if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
   });
 

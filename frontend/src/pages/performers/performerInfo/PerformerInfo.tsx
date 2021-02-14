@@ -20,6 +20,8 @@ import {
   formatBodyModifications,
   formatMeasurements,
   formatCareer,
+  createHref,
+  editHref,
 } from "src/utils";
 import {
   EthnicityTypes,
@@ -27,6 +29,11 @@ import {
   EyeColorTypes,
   BreastTypes,
 } from "src/constants";
+
+import {
+  ROUTE_PERFORMER_EDIT,
+  ROUTE_PERFORMER_MERGE,
+} from "src/constants/route";
 
 import { GenderIcon, PerformerName } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
@@ -42,8 +49,7 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
     PerformerEditMutationVariables
   >(PerformerEditMutation, {
     onCompleted: (data) => {
-      if (data.performerEdit.id)
-        history.push(`/edits/${data.performerEdit.id}`);
+      if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
   });
 
@@ -69,11 +75,14 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
             {!performer.deleted && (
               <div className="ml-auto">
                 {canEdit(auth?.user) && (
-                  <Link to={`${performer.id}/edit`}>
+                  <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
                     <Button>Edit</Button>
                   </Link>
                 )}
-                <Link to={`/performers/${performer.id}/merge`} className="ml-2">
+                <Link
+                  to={createHref(ROUTE_PERFORMER_MERGE, performer)}
+                  className="ml-2"
+                >
                   <Button>Merge into</Button>
                 </Link>
                 {isAdmin(auth.user) && !performer.deleted && (

@@ -1,9 +1,10 @@
 export const ROUTE_HOME = "/";
 export const ROUTE_LOGIN = "/login";
+export const ROUTE_LOGOUT = "/logout";
 export const ROUTE_USERS = "/users";
 export const ROUTE_USER_ADD = "/users/add";
-export const ROUTE_USER = "/users/:username";
-export const ROUTE_USER_EDIT = "/users/:username/edit";
+export const ROUTE_USER = "/users/:name";
+export const ROUTE_USER_EDIT = "/users/:name/edit";
 export const ROUTE_USER_PASSWORD = "/users/change-password";
 export const ROUTE_PERFORMER = "/performers/:id";
 export const ROUTE_PERFORMER_ADD = "/performers/add";

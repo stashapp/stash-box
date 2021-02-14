@@ -13,6 +13,7 @@ import {
   TagEditDetailsInput,
 } from "src/definitions/globalTypes";
 
+import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 
 const TagEditMutation = loader("src/mutations/TagEdit.gql");
@@ -23,7 +24,7 @@ const TagAddComponent: React.FC = () => {
     TagEditMutation,
     {
       onCompleted: (data) => {
-        if (data.tagEdit.id) history.push(`/edits/${data.tagEdit.id}`);
+        if (data.tagEdit.id) history.push(editHref(data.tagEdit));
       },
     }
   );

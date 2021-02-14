@@ -11,7 +11,17 @@ import {
 } from "src/definitions/DeleteSceneMutation";
 
 import AuthContext from "src/AuthContext";
-import { canEdit, isAdmin, getImage, getUrlByType, tagHref } from "src/utils";
+import {
+  canEdit,
+  isAdmin,
+  getImage,
+  getUrlByType,
+  tagHref,
+  performerHref,
+  studioHref,
+  createHref,
+} from "src/utils";
+import { ROUTE_SCENE_EDIT, ROUTE_SCENES } from "src/constants/route";
 
 import {
   GenderIcon,
@@ -42,7 +52,7 @@ const SceneComponent: React.FC = () => {
 
   const handleDelete = (): void => {
     deleteScene({ variables: { input: { id: scene.id } } }).then(() =>
-      history.push("/scenes")
+      history.push(ROUTE_SCENES)
     );
   };
 
@@ -52,7 +62,7 @@ const SceneComponent: React.FC = () => {
       return (
         <Link
           key={performer.id}
-          to={`/performers/${performer.id}`}
+          to={performerHref(performer)}
           className="scene-performer"
         >
           <GenderIcon gender={performer.gender} />
@@ -87,7 +97,7 @@ const SceneComponent: React.FC = () => {
         <Card.Header>
           <div className="float-right">
             {canEdit(auth.user) && (
-              <Link to={`${id}/edit`}>
+              <Link to={createHref(ROUTE_SCENE_EDIT, { id })}>
                 <Button>Edit</Button>
               </Link>
             )}
@@ -104,9 +114,7 @@ const SceneComponent: React.FC = () => {
           <h6>
             {scene.studio && (
               <>
-                <Link to={`/studios/${scene.studio.id}`}>
-                  {scene.studio.name}
-                </Link>
+                <Link to={studioHref(scene.studio)}>{scene.studio.name}</Link>
                 <span className="mx-1">•</span>
               </>
             )}

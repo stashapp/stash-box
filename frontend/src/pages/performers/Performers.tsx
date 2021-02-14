@@ -13,6 +13,7 @@ import PerformerCard from "src/components/performerCard";
 import { canEdit } from "src/utils";
 import AuthContext from "src/AuthContext";
 import { List } from "src/components/list";
+import { ROUTE_PERFORMER_ADD } from "src/constants/route";
 
 const PerformersQuery = loader("src/queries/Performers.gql");
 
@@ -51,7 +52,7 @@ const PerformersComponent: React.FC = () => {
       <div className="d-flex">
         <h3 className="mr-4">Performers</h3>
         {canEdit(auth.user) && (
-          <Link to="/performers/add" className="ml-auto">
+          <Link to={ROUTE_PERFORMER_ADD} className="ml-auto">
             <Button>Create</Button>
           </Link>
         )}

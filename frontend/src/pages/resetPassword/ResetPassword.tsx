@@ -14,7 +14,7 @@ import {
   ChangePasswordMutationVariables,
 } from "src/definitions/ChangePasswordMutation";
 
-import { ROUTE_HOME } from "src/constants/route";
+import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
 const ChangePassword = loader("src/mutations/ChangePassword.gql");
 
@@ -54,7 +54,7 @@ const ResetPassword: React.FC = () => {
     setSubmitError(undefined);
     changePassword({ variables: { userData } })
       .then(() => {
-        history.push("/login?msg=password-reset");
+        history.push(`${ROUTE_LOGIN}?msg=password-reset`);
       })
       .catch((err) => {
         if (err && err.message) {

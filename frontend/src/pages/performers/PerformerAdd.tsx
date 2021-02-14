@@ -12,6 +12,7 @@ import {
   OperationEnum,
   PerformerEditDetailsInput,
 } from "src/definitions/globalTypes";
+import { editHref } from "src/utils";
 
 import PerformerForm from "./performerForm";
 
@@ -24,8 +25,7 @@ const PerformerAdd: React.FC = () => {
     PerformerEditMutationVariables
   >(PerformerEdit, {
     onCompleted: (data) => {
-      if (data.performerEdit.id)
-        history.push(`/edits/${data.performerEdit.id}`);
+      if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
   });
 

@@ -11,6 +11,8 @@ import {
   TagGroupEnum,
   TagCategoryCreateInput,
 } from "src/definitions/globalTypes";
+import { createHref } from "src/utils";
+import { ROUTE_CATEGORIES, ROUTE_CATEGORY } from "src/constants/route";
 
 const groups = Object.keys(TagGroupEnum);
 
@@ -91,7 +93,7 @@ const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
         <Button type="reset" className="ml-auto mr-2">
           Reset
         </Button>
-        <Link to={id ? `/categories/${id}` : "/categories"}>
+        <Link to={createHref(id ? ROUTE_CATEGORY : ROUTE_CATEGORIES, { id })}>
           <Button variant="danger" onClick={() => history.goBack()}>
             Cancel
           </Button>

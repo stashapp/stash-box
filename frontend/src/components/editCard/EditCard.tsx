@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Edits_queryEdits_edits as Edit } from "src/definitions/Edits";
 import { OperationEnum, VoteStatusEnum } from "src/definitions/globalTypes";
 
-import { formatDateTime } from "src/utils";
+import { formatDateTime, editHref, userHref } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
@@ -49,12 +49,12 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
     <Card>
       <Card.Header className="row">
         <div className="flex-column col-4">
-          <Link to={`/edits/${edit?.id}`}>
+          <Link to={editHref(edit)}>
             <h5 className="text-capitalize">{title.toLowerCase()}</h5>
           </Link>
           <div>
             <b className="mr-2">Author:</b>
-            <Link to={`/users/${edit.user.name}`}>
+            <Link to={userHref(edit.user)}>
               <span>{edit.user.name}</span>
             </Link>
           </div>

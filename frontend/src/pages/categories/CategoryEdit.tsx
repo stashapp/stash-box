@@ -11,6 +11,7 @@ import {
 import { TagCategoryCreateInput } from "src/definitions/globalTypes";
 
 import { LoadingIndicator } from "src/components/fragments";
+import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
 const UpdateCategoryMutation = loader("src/mutations/UpdateCategory.gql");
@@ -29,7 +30,7 @@ const UpdateCategory: React.FC = () => {
   >(UpdateCategoryMutation, {
     onCompleted: (result) => {
       if (result?.tagCategoryUpdate?.id)
-        history.push(`/categories/${result.tagCategoryUpdate.id}`);
+        history.push(categoryHref(result.tagCategoryUpdate));
     },
   });
 

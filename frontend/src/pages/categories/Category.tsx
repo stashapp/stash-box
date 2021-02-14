@@ -11,10 +11,11 @@ import {
 } from "src/definitions/DeleteCategoryMutation";
 
 import AuthContext from "src/AuthContext";
-import { canEdit, isAdmin } from "src/utils/auth";
+import { canEdit, isAdmin, createHref } from "src/utils";
 import { LoadingIndicator } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
+import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
 
 const CategoryQuery = loader("src/queries/Category.gql");
 const DeleteCategory = loader("src/mutations/DeleteCategory.gql");
@@ -36,7 +37,7 @@ const TagComponent: React.FC = () => {
     DeleteCategoryMutationVariables
   >(DeleteCategory, {
     onCompleted: (result) => {
-      if (result) history.push("/categories");
+      if (result) history.push(ROUTE_CATEGORIES);
     },
   });
 
@@ -56,7 +57,7 @@ const TagComponent: React.FC = () => {
 
   return (
     <>
-      <Link to="/categories">
+      <Link to={ROUTE_CATEGORIES}>
         <h6 className="mb-4">&larr; Category List</h6>
       </Link>
       <div className="row no-gutters">
@@ -64,7 +65,7 @@ const TagComponent: React.FC = () => {
           <em>{category.name}</em>
         </h3>
         {canEdit(auth.user) && (
-          <Link to={`/categories/${category.id}/edit`} className="mr-2">
+          <Link to={createHref(ROUTE_CATEGORY_EDIT, category)} className="mr-2">
             <Button>Edit</Button>
           </Link>
         )}

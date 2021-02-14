@@ -12,6 +12,7 @@ import {
   SceneUpdateInput,
   SceneCreateInput,
 } from "src/definitions/globalTypes";
+import { sceneHref } from "src/utils";
 
 import SceneForm from "./sceneForm";
 
@@ -23,8 +24,7 @@ const SceneAdd: React.FC = () => {
     AddSceneMutation,
     {
       onCompleted: (data) => {
-        if (data?.sceneCreate?.id)
-          history.push(`/scenes/${data.sceneCreate.id}`);
+        if (data?.sceneCreate?.id) history.push(sceneHref(data.sceneCreate));
       },
     }
   );

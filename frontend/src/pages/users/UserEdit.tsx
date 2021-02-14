@@ -10,15 +10,16 @@ import {
 import { User, UserVariables } from "src/definitions/User";
 
 import { LoadingIndicator } from "src/components/fragments";
+import { userHref } from "src/utils";
 import UserEditForm, { UserEditData } from "./UserEditForm";
 
 const UpdateUser = loader("src/mutations/UpdateUser.gql");
 const UserQuery = loader("src/queries/User.gql");
 
 const EditUserComponent: React.FC = () => {
-  const { username = "" } = useParams();
+  const { name = "" } = useParams();
   const { data, loading } = useQuery<User, UserVariables>(UserQuery, {
-    variables: { name: username },
+    variables: { name },
   });
   const [queryError, setQueryError] = useState();
   const history = useHistory();
@@ -28,13 +29,13 @@ const EditUserComponent: React.FC = () => {
   >(UpdateUser);
 
   if (loading) return <LoadingIndicator />;
-  if (username === "" || !data?.findUser) return <div>User not found!</div>;
+  if (name === "" || !data?.findUser) return <div>User not found!</div>;
 
   const user = data.findUser;
 
   const doUpdate = (userData: UserEditData) => {
     updateUser({ variables: { userData } })
-      .then(() => history.push(`/users/${user.name}`))
+      .then(() => history.push(userHref(user)))
       .catch((res) => setQueryError(res.message));
   };
 

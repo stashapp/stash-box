@@ -10,7 +10,8 @@ import { Studio_findStudio as Studio } from "src/definitions/Studio";
 import { StudioCreateInput } from "src/definitions/globalTypes";
 
 import EditImages from "src/components/editImages";
-import { getUrlByType } from "src/utils/transforms";
+import { getUrlByType, createHref } from "src/utils";
+import { ROUTE_STUDIOS, ROUTE_STUDIO } from "src/constants/route";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
@@ -117,7 +118,7 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
         <Button type="reset" variant="secondary" className="ml-auto mr-2">
           Reset
         </Button>
-        <Link to={studio.id ? `/studios/${studio.id}` : "/studios"}>
+        <Link to={createHref(studio.id ? ROUTE_STUDIO : ROUTE_STUDIOS, studio)}>
           <Button variant="danger" onClick={() => history.goBack()}>
             Cancel
           </Button>

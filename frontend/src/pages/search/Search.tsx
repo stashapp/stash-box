@@ -17,7 +17,15 @@ import {
   LoadingIndicator,
   PerformerName,
 } from "src/components/fragments";
-import { formatFuzzyDate, getImage, getCountryByISO } from "src/utils";
+import {
+  formatFuzzyDate,
+  getImage,
+  getCountryByISO,
+  sceneHref,
+  performerHref,
+  createHref,
+} from "src/utils";
+import { ROUTE_SEARCH } from "src/constants/route";
 
 const SearchAllQuery = loader("src/queries/SearchAll.gql");
 
@@ -29,7 +37,7 @@ const CLASSNAME_SCENE = `${CLASSNAME}-scene`;
 const CLASSNAME_SCENE_IMAGE = `${CLASSNAME_SCENE}-image`;
 
 const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
-  <Link to={`/performers/${performer.id}`} className={CLASSNAME_PERFORMER}>
+  <Link to={performerHref(performer)} className={CLASSNAME_PERFORMER}>
     <Card>
       <img
         src={getImage(performer.images, "portrait")}
@@ -70,7 +78,7 @@ const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
 );
 
 const SceneCard: React.FC<{ scene: Scene }> = ({ scene }) => (
-  <Link to={`/scenes/${scene.id}`} className={CLASSNAME_SCENE}>
+  <Link to={sceneHref(scene)} className={CLASSNAME_SCENE}>
     <Card>
       <img
         src={getImage(scene.images, "landscape")}
@@ -121,7 +129,8 @@ const Search: React.FC = () => {
   const debouncedSearch = useMemo(
     () =>
       debounce(
-        (searchTerm: string) => history.replace(`/search/${searchTerm}`),
+        (searchTerm: string) =>
+          history.replace(createHref(ROUTE_SEARCH, { term: searchTerm })),
         200
       ),
     [history]
