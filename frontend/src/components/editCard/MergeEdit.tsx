@@ -32,6 +32,7 @@ const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
                 </div>
               );
             }
+            return null;
           })}
         </div>
       </div>

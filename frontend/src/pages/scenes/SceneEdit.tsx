@@ -7,7 +7,7 @@ import { sceneHref } from "src/utils";
 import SceneForm from "./sceneForm";
 
 const SceneEdit: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { loading, data } = useScene({ id });
   const [updateScene] = useUpdateScene({

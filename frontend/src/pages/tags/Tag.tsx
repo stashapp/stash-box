@@ -30,7 +30,7 @@ const PER_PAGE = 20;
 const DEFAULT_TAB = "scenes";
 
 const TagComponent: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { page, setPage } = usePagination();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;

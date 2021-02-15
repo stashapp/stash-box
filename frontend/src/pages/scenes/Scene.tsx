@@ -24,7 +24,7 @@ import {
 import DeleteButton from "src/components/deleteButton";
 
 const SceneComponent: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { loading, data } = useScene({ id });
   const [deleteScene, { loading: deleting }] = useDeleteScene();

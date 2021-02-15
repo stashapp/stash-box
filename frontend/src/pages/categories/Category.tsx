@@ -11,7 +11,7 @@ import { TagList } from "src/components/list";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
 
 const TagComponent: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const auth = useContext(AuthContext);
 

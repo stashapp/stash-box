@@ -16,7 +16,7 @@ import { isAdmin, isTag, isPerformer, tagHref, performerHref } from "src/utils";
 
 const EditComponent: React.FC = () => {
   const auth = useContext(AuthContext);
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const { data, loading } = useEdit({ id });

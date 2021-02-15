@@ -21,7 +21,7 @@ import AuthContext from "src/AuthContext";
 const StudioComponent: React.FC = () => {
   const auth = useContext(AuthContext);
   const history = useHistory();
-  const { id = "" } = useParams();
+  const { id = "" } = useParams<{ id?: string }>();
   const { loading, data } = useStudio({ id }, id === "");
 
   const [deleteStudio, { loading: deleting }] = useDeleteStudio({

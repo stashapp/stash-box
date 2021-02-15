@@ -24,7 +24,7 @@ import { Icon, LoadingIndicator } from "src/components/fragments";
 const AddUserComponent: React.FC = () => {
   const history = useHistory();
   const Auth = useContext(AuthContext);
-  const { name = "" } = useParams();
+  const { name = "" } = useParams<{ name?: string }>();
   const [showDelete, setShowDelete] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
 

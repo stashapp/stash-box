@@ -20,7 +20,7 @@ import PerformerForm from "./performerForm";
 const CLASSNAME = "PerformerMerge";
 
 const PerformerMerge: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);

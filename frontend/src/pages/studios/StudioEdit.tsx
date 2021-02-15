@@ -12,7 +12,7 @@ import { studioHref } from "src/utils";
 import StudioForm from "./studioForm";
 
 const StudioEdit: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { loading, data } = useStudio({ id });
   const [updateStudio] = useUpdateStudio({

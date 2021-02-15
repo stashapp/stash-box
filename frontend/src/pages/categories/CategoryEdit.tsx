@@ -11,7 +11,7 @@ import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
 const UpdateCategory: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { data, loading } = useCategory({ id });
   const [updateCategory] = useUpdateCategory({

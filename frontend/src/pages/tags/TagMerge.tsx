@@ -14,7 +14,7 @@ import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 
 const TagMerge: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const [mergeSources, setMergeSources] = useState<string[]>([]);
   const { data: tag, loading: loadingTag } = useTag({ id });

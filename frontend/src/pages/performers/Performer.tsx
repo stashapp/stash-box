@@ -11,7 +11,7 @@ import PerformerInfo from "./performerInfo";
 const DEFAULT_TAB = "scenes";
 
 const PerformerComponent: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const { loading, data } = usePerformer({ id });

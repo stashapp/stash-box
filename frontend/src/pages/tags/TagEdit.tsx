@@ -14,7 +14,7 @@ import { createHref } from "src/utils/route";
 import TagForm from "./tagForm";
 
 const TagAddComponent: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { data: tag, loading: loadingTag } = useTag({ id });
   const [insertTagEdit] = useTagEdit({
