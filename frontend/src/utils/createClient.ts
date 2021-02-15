@@ -56,7 +56,7 @@ const createClient = () =>
           );
         if (networkError) console.log(`[Network error]: ${networkError}`);
       }),
-      httpLink as unknown as ApolloLink,
+      (httpLink as unknown) as ApolloLink,
     ]),
     cache: new InMemoryCache(),
   });

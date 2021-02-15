@@ -215,9 +215,13 @@ const PerformerForm: React.FC<PerformerProps> = ({
   initialImages = [],
   changeType,
 }) => {
-  const { register, control, handleSubmit, errors, watch } = useForm<
-    PerformerFormData
-  >({
+  const {
+    register,
+    control,
+    handleSubmit,
+    errors,
+    watch,
+  } = useForm<PerformerFormData>({
     resolver: yupResolver(schema),
     mode: "onBlur",
   });

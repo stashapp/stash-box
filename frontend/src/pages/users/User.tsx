@@ -110,32 +110,33 @@ const AddUserComponent: React.FC = () => {
   return (
     <Row className="justify-content-center">
       <Col lg={10}>
-        {deleteModal}
-        {rescindCodeModal}
-        {isAdmin(Auth.user) && (
-          <Button
-            className="float-right mx-1"
-            variant="danger"
-            disabled={showDelete || deleting}
-            onClick={toggleModal}
-          >
-            Delete User
-          </Button>
-        )}
-        {canEdit(Auth.user) && (
-          <Link
-            to={createHref(ROUTE_USER_EDIT, user)}
-            className="mx-1"
-          >
-            <Button className="float-right">Edit User</Button>
-          </Link>
-        )}
-        {isUser() && (
-          <Link to={ROUTE_USER_PASSWORD} className="mx-1">
-            <Button className="float-right">Change Password</Button>
-          </Link>
-        )}
-        <h2>{name}</h2>
+        <div className="d-flex">
+          <h2>{name}</h2>
+          {deleteModal}
+          {rescindCodeModal}
+          <div className="ml-auto">
+            {canEdit(Auth.user) && (
+              <Link to={createHref(ROUTE_USER_EDIT, user)} className="ml-2">
+                <Button>Edit User</Button>
+              </Link>
+            )}
+            {isUser() && (
+              <Link to={ROUTE_USER_PASSWORD} className="ml-2">
+                <Button>Change Password</Button>
+              </Link>
+            )}
+            {isAdmin(Auth.user) && (
+              <Button
+                className="ml-2"
+                variant="danger"
+                disabled={showDelete || deleting}
+                onClick={toggleModal}
+              >
+                Delete User
+              </Button>
+            )}
+          </div>
+        </div>
         <hr />
         <Row>
           <span className="col-2">Email</span>
