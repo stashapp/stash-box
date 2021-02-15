@@ -4,6 +4,9 @@ import {
   EyeColorEnum,
   HairColorEnum,
   GenderEnum,
+  OperationEnum,
+  TargetTypeEnum,
+  VoteStatusEnum,
 } from "src/graphql";
 
 type EnumDictionary<T extends string | symbol | number, U> = {
@@ -54,4 +57,26 @@ export const GenderTypes: EnumDictionary<GenderEnum, string> = {
   [GenderEnum.INTERSEX]: "Intersex",
   [GenderEnum.TRANSGENDER_MALE]: "Transmale",
   [GenderEnum.TRANSGENDER_FEMALE]: "Transfemale",
+};
+
+export const EditOperationTypes: EnumDictionary<OperationEnum, string> = {
+  [OperationEnum.MERGE]: "Merge",
+  [OperationEnum.CREATE]: "Create",
+  [OperationEnum.MODIFY]: "Modify",
+  [OperationEnum.DESTROY]: "Destory",
+};
+
+export const EditTargetTypes: EnumDictionary<TargetTypeEnum, string> = {
+  [TargetTypeEnum.TAG]: "Tag",
+  [TargetTypeEnum.PERFORMER]: "Performer",
+  [TargetTypeEnum.SCENE]: "Scene",
+  [TargetTypeEnum.STUDIO]: "Studio",
+};
+
+export const EditStatusTypes: EnumDictionary<VoteStatusEnum, string> = {
+  [VoteStatusEnum.PENDING]: "Pending",
+  [VoteStatusEnum.IMMEDIATE_ACCEPTED]: "Approved",
+  [VoteStatusEnum.IMMEDIATE_REJECTED]: "Cancelled",
+  [VoteStatusEnum.ACCEPTED]: "Accepted",
+  [VoteStatusEnum.REJECTED]: "Rejected",
 };

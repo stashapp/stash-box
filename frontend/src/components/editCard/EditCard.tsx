@@ -6,6 +6,7 @@ import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 import { OperationEnum, VoteStatusEnum } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
+import { EditStatusTypes } from "src/constants/enums";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
@@ -66,7 +67,9 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
           </div>
           <div>
             <b className="mr-2">Status:</b>
-            <Badge variant={editVariant}>{edit.status}</Badge>
+            <Badge className="text-uppercase" variant={editVariant}>
+              {EditStatusTypes[edit.status]}
+            </Badge>
           </div>
         </div>
       </Card.Header>

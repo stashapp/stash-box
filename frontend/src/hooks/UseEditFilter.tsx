@@ -4,6 +4,11 @@ import { useHistory } from "react-router-dom";
 import queryString from "query-string";
 
 import { OperationEnum, TargetTypeEnum, VoteStatusEnum } from "src/graphql";
+import {
+  EditOperationTypes,
+  EditTargetTypes,
+  EditStatusTypes,
+} from "src/constants/enums";
 
 function resolveParam<T>(
   type: T,
@@ -54,10 +59,10 @@ const useEditFilter = ({
       }),
     });
 
-  const enumToOptions = (e: Object) =>
-    Object.keys(e).map((val) => (
-      <option key={val} value={val}>
-        {val}
+  const enumToOptions = (e: Record<string, string>) =>
+    Object.keys(e).map((key) => (
+      <option key={key} value={key}>
+        {e[key]}
       </option>
     ));
 
@@ -76,7 +81,7 @@ const useEditFilter = ({
           <option value="" key="all-targets">
             All
           </option>
-          {enumToOptions(TargetTypeEnum)}
+          {enumToOptions(EditTargetTypes)}
         </Form.Control>
       </Form.Group>
       <Form.Group className="d-flex align-items-center">
@@ -92,7 +97,7 @@ const useEditFilter = ({
           <option value="" key="all-statuses">
             All
           </option>
-          {enumToOptions(VoteStatusEnum)}
+          {enumToOptions(EditStatusTypes)}
         </Form.Control>
       </Form.Group>
       <Form.Group className="d-flex align-items-center">
@@ -108,7 +113,7 @@ const useEditFilter = ({
           <option value="" key="all-operations">
             All
           </option>
-          {enumToOptions(OperationEnum)}
+          {enumToOptions(EditOperationTypes)}
         </Form.Control>
       </Form.Group>
     </Form>
