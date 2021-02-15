@@ -1,7 +1,7 @@
 import { isEqual } from "lodash";
 
-import { BodyModificationInput } from "src/definitions/globalTypes";
-import { Performer_findPerformer as Performer } from "src/definitions/Performer";
+import { BodyModificationInput } from "src/graphql";
+import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { ChangeRowProps } from "src/components/changeRow/ChangeRow";
 import { PerformerFormData } from "./PerformerForm";
 

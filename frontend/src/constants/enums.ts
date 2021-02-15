@@ -4,7 +4,7 @@ import {
   EyeColorEnum,
   HairColorEnum,
   GenderEnum,
-} from "src/definitions/globalTypes";
+} from "src/graphql";
 
 type EnumDictionary<T extends string | symbol | number, U> = {
   [K in T]: U;

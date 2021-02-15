@@ -6,8 +6,8 @@ import { yupResolver } from "@hookform/resolvers";
 import * as yup from "yup";
 import cx from "classnames";
 
-import { Studio_findStudio as Studio } from "src/definitions/Studio";
-import { StudioCreateInput } from "src/definitions/globalTypes";
+import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
+import { StudioCreateInput } from "src/graphql";
 
 import EditImages from "src/components/editImages";
 import { getUrlByType, createHref } from "src/utils";

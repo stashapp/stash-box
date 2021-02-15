@@ -3,7 +3,7 @@ import React from "react";
 import {
   Edits_queryEdits_edits_details as Details,
   Edits_queryEdits_edits_old_details as OldDetails,
-} from "src/definitions/Edits";
+} from "src/graphql/definitions/Edits";
 import {
   getCountryByISO,
   isTagDetails,

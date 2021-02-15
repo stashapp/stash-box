@@ -16,16 +16,18 @@ import {
   SearchAll,
   SearchAll_searchScene as SceneAllResult,
   SearchAll_searchPerformer as PerformerAllResult,
-} from "src/definitions/SearchAll";
+} from "src/graphql/definitions/SearchAll";
 import {
   SearchPerformers,
   SearchPerformers_searchPerformer as PerformerOnlyResult,
-} from "src/definitions/SearchPerformers";
+} from "src/graphql/definitions/SearchPerformers";
 import { formatFuzzyDate, createHref } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
 
-const SearchAllQuery = loader("src/queries/SearchAll.gql");
-const SearchPerformersQuery = loader("src/queries/SearchPerformers.gql");
+const SearchAllQuery = loader("src/graphql/queries/SearchAll.gql");
+const SearchPerformersQuery = loader(
+  "src/graphql/queries/SearchPerformers.gql"
+);
 
 export enum SearchType {
   Performer = "performer",

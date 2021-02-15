@@ -7,9 +7,8 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers";
 import cx from "classnames";
 
-import { RoleEnum, UserUpdateInput } from "src/definitions/globalTypes";
+import { RoleEnum, UserUpdateInput } from "src/graphql";
 import { isAdmin, userHref } from "src/utils";
-
 import AuthContext from "src/AuthContext";
 
 const schema = yup.object().shape({

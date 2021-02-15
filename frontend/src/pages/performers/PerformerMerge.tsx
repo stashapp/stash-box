@@ -1,29 +1,21 @@
 import React, { useState } from "react";
-import { useMutation, useQuery } from "@apollo/client";
 import { useParams, useHistory } from "react-router-dom";
 import { Button, Col, Row } from "react-bootstrap";
-import { loader } from "graphql.macro";
 import { flatMap } from "lodash";
 
-import { Performer, PerformerVariables } from "src/definitions/Performer";
-import { SearchPerformers_searchPerformer as SearchPerformer } from "src/definitions/SearchPerformers";
+import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 import {
-  PerformerEditMutation as PerformerEdit,
-  PerformerEditMutationVariables,
-} from "src/definitions/PerformerEditMutation";
-import {
+  usePerformer,
+  usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
-} from "src/definitions/globalTypes";
+} from "src/graphql";
 
 import { LoadingIndicator } from "src/components/fragments";
 import PerformerSelect from "src/components/performerSelect";
 import PerformerCard from "src/components/performerCard";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
-
-const PerformerQuery = loader("src/queries/Performer.gql");
-const PerformerEditMutation = loader("src/mutations/PerformerEdit.gql");
 
 const CLASSNAME = "PerformerMerge";
 
@@ -32,14 +24,8 @@ const PerformerMerge: React.FC = () => {
   const history = useHistory();
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
-  const { data: performer, loading: loadingPerformer } = useQuery<
-    Performer,
-    PerformerVariables
-  >(PerformerQuery, { variables: { id } });
-  const [insertPerformerEdit] = useMutation<
-    PerformerEdit,
-    PerformerEditMutationVariables
-  >(PerformerEditMutation, {
+  const { data: performer, loading: loadingPerformer } = usePerformer({ id });
+  const [insertPerformerEdit] = usePerformerEdit({
     onCompleted: (data) => {
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },

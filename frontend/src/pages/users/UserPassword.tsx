@@ -1,27 +1,16 @@
 import React, { useContext, useState } from "react";
-import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import {
-  ChangePasswordMutation,
-  ChangePasswordMutationVariables,
-} from "src/definitions/ChangePasswordMutation";
-
+import { useChangePassword } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import { userHref } from "src/utils";
 import UserPassword, { UserPasswordData } from "./UserPasswordForm";
-
-const ChangePassword = loader("src/mutations/ChangePassword.gql");
 
 const ChangePasswordComponent: React.FC = () => {
   const Auth = useContext(AuthContext);
   const [queryError, setQueryError] = useState();
   const history = useHistory();
-  const [changePassword] = useMutation<
-    ChangePasswordMutation,
-    ChangePasswordMutationVariables
-  >(ChangePassword);
+  const [changePassword] = useChangePassword();
 
   const doUpdate = (formData: UserPasswordData) => {
     const userData = {

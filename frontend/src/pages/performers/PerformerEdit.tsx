@@ -1,38 +1,22 @@
 import React from "react";
-import { useQuery, useMutation } from "@apollo/client";
 import { useHistory, useParams } from "react-router-dom";
-import { loader } from "graphql.macro";
 
 import {
+  usePerformer,
+  usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
-} from "src/definitions/globalTypes";
-import { Performer, PerformerVariables } from "src/definitions/Performer";
-import {
-  PerformerEditMutation,
-  PerformerEditMutationVariables,
-} from "src/definitions/PerformerEditMutation";
+} from "src/graphql";
 
 import { LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 
-const PerformerEdit = loader("src/mutations/PerformerEdit.gql");
-const PerformerQuery = loader("src/queries/Performer.gql");
-
 const PerformerModify: React.FC = () => {
   const { id } = useParams();
   const history = useHistory();
-  const { loading, data } = useQuery<Performer, PerformerVariables>(
-    PerformerQuery,
-    {
-      variables: { id },
-    }
-  );
-  const [submitPerformerEdit] = useMutation<
-    PerformerEditMutation,
-    PerformerEditMutationVariables
-  >(PerformerEdit, {
+  const { loading, data } = usePerformer({ id });
+  const [submitPerformerEdit] = usePerformerEdit({
     onCompleted: (editData) => {
       if (editData.performerEdit.id)
         history.push(editHref(editData.performerEdit));

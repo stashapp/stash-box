@@ -1,29 +1,18 @@
 import React, { useState } from "react";
-import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import {
-  AddUserMutation,
-  AddUserMutationVariables,
-} from "src/definitions/AddUserMutation";
-
+import { useAddUser } from "src/graphql";
 import { ROUTE_USERS } from "src/constants/route";
 import UserForm, { UserData } from "./UserForm";
-
-const AddUser = loader("src/mutations/AddUser.gql");
 
 const AddUserComponent: React.FC = () => {
   const [queryError, setQueryError] = useState();
   const history = useHistory();
-  const [insertUser] = useMutation<AddUserMutation, AddUserMutationVariables>(
-    AddUser,
-    {
-      onCompleted: () => {
-        history.push(ROUTE_USERS);
-      },
-    }
-  );
+  const [insertUser] = useAddUser({
+    onCompleted: () => {
+      history.push(ROUTE_USERS);
+    },
+  });
 
   const doInsert = (formData: UserData) => {
     const { id, ...userData } = formData;

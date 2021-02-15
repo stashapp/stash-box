@@ -1,5 +1,5 @@
 import React from "react";
-import { Performer_findPerformer as Performer } from "src/definitions/Performer";
+import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 
 interface PerformerNameProps {
   performer: Pick<Performer, "name" | "disambiguation" | "deleted">;

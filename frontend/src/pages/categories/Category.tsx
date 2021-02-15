@@ -1,15 +1,8 @@
 import React, { useContext } from "react";
-import { useMutation, useQuery } from "@apollo/client";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
-import { loader } from "graphql.macro";
 
-import { Category, CategoryVariables } from "src/definitions/Category";
-import {
-  DeleteCategoryMutation,
-  DeleteCategoryMutationVariables,
-} from "src/definitions/DeleteCategoryMutation";
-
+import { useCategory, useDeleteCategory } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import { canEdit, isAdmin, createHref } from "src/utils";
 import { LoadingIndicator } from "src/components/fragments";
@@ -17,25 +10,14 @@ import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
 
-const CategoryQuery = loader("src/queries/Category.gql");
-const DeleteCategory = loader("src/mutations/DeleteCategory.gql");
-
 const TagComponent: React.FC = () => {
   const { id } = useParams();
   const history = useHistory();
   const auth = useContext(AuthContext);
 
-  const { data, loading } = useQuery<Category, CategoryVariables>(
-    CategoryQuery,
-    {
-      variables: { id },
-    }
-  );
+  const { data, loading } = useCategory({ id });
 
-  const [deleteCategory, { loading: deleting }] = useMutation<
-    DeleteCategoryMutation,
-    DeleteCategoryMutationVariables
-  >(DeleteCategory, {
+  const [deleteCategory, { loading: deleting }] = useDeleteCategory({
     onCompleted: (result) => {
       if (result) history.push(ROUTE_CATEGORIES);
     },

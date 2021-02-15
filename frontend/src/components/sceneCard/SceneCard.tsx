@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 
-import { Scenes_queryScenes_scenes as Performance } from "src/definitions/Scenes";
+import { Scenes_queryScenes_scenes as Performance } from "src/graphql/definitions/Scenes";
 import { getImage, sceneHref, studioHref } from "src/utils";
 
 const CLASSNAME = "SceneCard";

@@ -1,44 +1,27 @@
 import React from "react";
-import { useQuery } from "@apollo/client";
-import { loader } from "graphql.macro";
 import { Col } from "react-bootstrap";
 
-import { Scenes, ScenesVariables } from "src/definitions/Scenes";
-import { Performers, PerformersVariables } from "src/definitions/Performers";
-import { SortDirectionEnum } from "src/definitions/globalTypes";
+import { useScenes, usePerformers, SortDirectionEnum } from "src/graphql";
 
 import PerformerCard from "src/components/performerCard";
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
 
-const ScenesQuery = loader("src/queries/Scenes.gql");
-const PerformersQuery = loader("src/queries/Performers.gql");
-
 const ScenesComponent: React.FC = () => {
-  const { loading: loadingScenes, data: sceneData } = useQuery<
-    Scenes,
-    ScenesVariables
-  >(ScenesQuery, {
-    variables: {
-      filter: {
-        page: 0,
-        per_page: 8,
-        sort: "DATE",
-        direction: SortDirectionEnum.DESC,
-      },
+  const { loading: loadingScenes, data: sceneData } = useScenes({
+    filter: {
+      page: 0,
+      per_page: 8,
+      sort: "DATE",
+      direction: SortDirectionEnum.DESC,
     },
   });
-  const { loading: loadingPerformers, data: performerData } = useQuery<
-    Performers,
-    PerformersVariables
-  >(PerformersQuery, {
-    variables: {
-      filter: {
-        page: 0,
-        per_page: 4,
-        sort: "BIRTHDATE",
-        direction: SortDirectionEnum.DESC,
-      },
+  const { loading: loadingPerformers, data: performerData } = usePerformers({
+    filter: {
+      page: 0,
+      per_page: 4,
+      sort: "BIRTHDATE",
+      direction: SortDirectionEnum.DESC,
     },
   });
 

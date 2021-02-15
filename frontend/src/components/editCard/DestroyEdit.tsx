@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import { Edits_queryEdits_edits_target as Target } from "src/definitions/Edits";
+import { Edits_queryEdits_edits_target as Target } from "src/graphql/definitions/Edits";
 import { isTag, isPerformer, createHref } from "src/utils";
 import { ROUTE_TAG, ROUTE_PERFORMER } from "src/constants/route";
 
@@ -19,7 +19,7 @@ const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
     <div>
       <div className="row">
         <b className="col-2 text-right">Deleting: </b>
-        <Link to={createHref(route, target)}>
+        <Link to={createHref(route, target ?? undefined)}>
           <span className="EditDiff bg-danger">{target?.name}</span>
         </Link>
       </div>

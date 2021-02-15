@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Edits_queryEdits_edits as Edit } from "src/definitions/Edits";
-import { OperationEnum } from "src/definitions/globalTypes";
+import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
+import { OperationEnum } from "src/graphql";
 import { isPerformer, isTag, tagHref, performerHref } from "src/utils";
 
 interface EditHeaderProps {

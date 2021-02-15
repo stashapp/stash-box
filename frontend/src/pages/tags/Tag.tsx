@@ -1,21 +1,16 @@
 import React from "react";
-import { useMutation, useQuery } from "@apollo/client";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
-import { loader } from "graphql.macro";
 
-import { Scenes, ScenesVariables } from "src/definitions/Scenes";
-import { Tag, TagVariables } from "src/definitions/Tag";
 import {
+  useScenes,
+  useTag,
+  useTagEdit,
   SortDirectionEnum,
   CriterionModifier,
   TargetTypeEnum,
   OperationEnum,
-} from "src/definitions/globalTypes";
-import {
-  TagEditMutation as TagEdit,
-  TagEditMutationVariables,
-} from "src/definitions/TagEditMutation";
+} from "src/graphql";
 
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
@@ -31,10 +26,6 @@ import {
   ROUTE_CATEGORY,
 } from "src/constants/route";
 
-const ScenesQuery = loader("src/queries/Scenes.gql");
-const TagQuery = loader("src/queries/Tag.gql");
-const TagEditMutation = loader("src/mutations/TagEdit.gql");
-
 const PER_PAGE = 20;
 const DEFAULT_TAB = "scenes";
 
@@ -43,16 +34,11 @@ const TagComponent: React.FC = () => {
   const history = useHistory();
   const { page, setPage } = usePagination();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
-  const { data, loading: loadingTag } = useQuery<Tag, TagVariables>(TagQuery, {
-    variables: { id },
-  });
+  const { data, loading: loadingTag } = useTag({ id });
   const tag = data?.findTag;
 
-  const { data: sceneData, loading: loadingScenes } = useQuery<
-    Scenes,
-    ScenesVariables
-  >(ScenesQuery, {
-    variables: {
+  const { data: sceneData, loading: loadingScenes } = useScenes(
+    {
       filter: {
         page,
         per_page: PER_PAGE,
@@ -66,13 +52,10 @@ const TagComponent: React.FC = () => {
         },
       },
     },
-    skip: !tag?.id,
-  });
+    !tag?.id
+  );
 
-  const [deleteTagEdit, { loading: deleting }] = useMutation<
-    TagEdit,
-    TagEditMutationVariables
-  >(TagEditMutation, {
+  const [deleteTagEdit, { loading: deleting }] = useTagEdit({
     onCompleted: (result) => {
       if (result.tagEdit.id)
         history.push(createHref(ROUTE_EDIT, result.tagEdit));

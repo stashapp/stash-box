@@ -1,16 +1,13 @@
 import React, { useMemo } from "react";
-import { useQuery } from "@apollo/client";
 import { useHistory, useParams, Link } from "react-router-dom";
 import { Card, Col, Form, Row } from "react-bootstrap";
-import { loader } from "graphql.macro";
 import { debounce } from "lodash";
 
 import {
-  SearchAll,
-  SearchAllVariables,
   SearchAll_searchPerformer as Performer,
   SearchAll_searchScene as Scene,
-} from "src/definitions/SearchAll";
+} from "src/graphql/definitions/SearchAll";
+import { useSearchAll } from "src/graphql";
 import {
   Icon,
   GenderIcon,
@@ -26,8 +23,6 @@ import {
   createHref,
 } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-
-const SearchAllQuery = loader("src/queries/SearchAll.gql");
 
 const CLASSNAME = "SearchPage";
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;
@@ -115,15 +110,12 @@ interface IParams {
 const Search: React.FC = () => {
   const { term } = useParams<IParams>();
   const history = useHistory();
-  const { loading, data } = useQuery<SearchAll, SearchAllVariables>(
-    SearchAllQuery,
+  const { loading, data } = useSearchAll(
     {
-      skip: !term,
-      variables: {
-        term: term ?? "",
-        limit: 10,
-      },
-    }
+      term: term ?? "",
+      limit: 10,
+    },
+    !term
   );
 
   const debouncedSearch = useMemo(

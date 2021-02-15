@@ -1,33 +1,19 @@
 import React from "react";
-import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import { Tag_findTag as Tag } from "src/definitions/Tag";
-import {
-  TagEditMutation as TagEdit,
-  TagEditMutationVariables,
-} from "src/definitions/TagEditMutation";
-import {
-  OperationEnum,
-  TagEditDetailsInput,
-} from "src/definitions/globalTypes";
+import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
+import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
 
 import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 
-const TagEditMutation = loader("src/mutations/TagEdit.gql");
-
 const TagAddComponent: React.FC = () => {
   const history = useHistory();
-  const [insertTagEdit] = useMutation<TagEdit, TagEditMutationVariables>(
-    TagEditMutation,
-    {
-      onCompleted: (data) => {
-        if (data.tagEdit.id) history.push(editHref(data.tagEdit));
-      },
-    }
-  );
+  const [insertTagEdit] = useTagEdit({
+    onCompleted: (data) => {
+      if (data.tagEdit.id) history.push(editHref(data.tagEdit));
+    },
+  });
 
   const doInsert = (insertData: TagEditDetailsInput) => {
     insertTagEdit({
@@ -42,11 +28,15 @@ const TagAddComponent: React.FC = () => {
     });
   };
 
-  const emptyTag = {
+  const emptyTag: Tag = {
     id: "",
     name: "",
     description: "",
-  } as Tag;
+    deleted: false,
+    aliases: [],
+    category: null,
+    __typename: "Tag",
+  };
 
   return (
     <div>

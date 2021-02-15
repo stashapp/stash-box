@@ -1,24 +1,19 @@
 import React, { useEffect } from "react";
 import { useHistory, Link } from "react-router-dom";
-import { useQuery } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select, { ValueType, OptionTypeBase } from "react-select";
-import { loader } from "graphql.macro";
 
-import { Categories } from "src/definitions/Categories";
-import { Tag_findTag as Tag } from "src/definitions/Tag";
-import { TagCreateInput } from "src/definitions/globalTypes";
+import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
+import { useCategories, TagEditDetailsInput } from "src/graphql";
 
 import { LoadingIndicator } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
 import { createHref, tagHref } from "src/utils";
 import { ROUTE_TAGS } from "src/constants/route";
-
-const CategoriesQuery = loader("src/queries/Categories.gql");
 
 interface IOptionType extends OptionTypeBase {
   value: string;
@@ -39,7 +34,7 @@ type TagFormData = yup.InferType<typeof schema>;
 
 interface TagProps {
   tag: Tag;
-  callback: (data: TagCreateInput) => void;
+  callback: (data: TagEditDetailsInput) => void;
 }
 
 const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
@@ -48,9 +43,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
     resolver: yupResolver(schema),
   });
 
-  const { loading: loadingCategories, data: categories } = useQuery<Categories>(
-    CategoriesQuery
-  );
+  const { loading: loadingCategories, data: categories } = useCategories();
 
   useEffect(() => {
     register({ name: "categoryId" });
@@ -67,7 +60,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
     setValue("categoryId", (selectedOption as IOptionType).value);
 
   const onSubmit = (data: TagFormData) => {
-    const callbackData: TagCreateInput = {
+    const callbackData: TagEditDetailsInput = {
       name: data.name,
       description: data.description ?? null,
       aliases: data.aliases ?? [],

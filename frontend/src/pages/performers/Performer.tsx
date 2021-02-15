@@ -1,17 +1,12 @@
 import React from "react";
-import { useQuery } from "@apollo/client";
 import { useParams, useHistory } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
-import { loader } from "graphql.macro";
 
-import { Performer } from "src/definitions/Performer";
-import { CriterionModifier, TargetTypeEnum } from "src/definitions/globalTypes";
+import { usePerformer, CriterionModifier, TargetTypeEnum } from "src/graphql";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { EditList, SceneList } from "src/components/list";
 import PerformerInfo from "./performerInfo";
-
-const PerformerQuery = loader("src/queries/Performer.gql");
 
 const DEFAULT_TAB = "scenes";
 
@@ -19,9 +14,7 @@ const PerformerComponent: React.FC = () => {
   const { id } = useParams();
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
-  const { loading, data } = useQuery<Performer>(PerformerQuery, {
-    variables: { id },
-  });
+  const { loading, data } = usePerformer({ id });
 
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });

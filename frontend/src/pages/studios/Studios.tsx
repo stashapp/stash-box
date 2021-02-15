@@ -1,20 +1,13 @@
 import React, { useContext } from "react";
-import { useQuery } from "@apollo/client";
 import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { loader } from "graphql.macro";
 import { canEdit, studioHref, createHref } from "src/utils";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
-import {
-  Studios,
-  Studios_queryStudios_studios as Studio,
-} from "src/definitions/Studios";
-
+import { Studios_queryStudios_studios as Studio } from "src/graphql/definitions/Studios";
+import { useStudios } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
-
-const StudiosQuery = loader("src/queries/Studios.gql");
 
 interface ParentStudio {
   studio: Studio;
@@ -23,8 +16,8 @@ interface ParentStudio {
 
 const StudiosComponent: React.FC = () => {
   const auth = useContext(AuthContext);
-  const { loading: loadingData, data } = useQuery<Studios>(StudiosQuery, {
-    variables: { filter: { page: 0, per_page: 10000 } },
+  const { loading: loadingData, data } = useStudios({
+    filter: { page: 0, per_page: 10000 },
   });
 
   if (loadingData) return <LoadingIndicator message="Loading studios..." />;

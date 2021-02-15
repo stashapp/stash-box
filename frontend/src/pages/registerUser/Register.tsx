@@ -1,21 +1,14 @@
-import { useMutation } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers";
-import { loader } from "graphql.macro";
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import cx from "classnames";
 
+import { useNewUser } from "src/graphql";
 import AuthContext, { ContextType } from "src/AuthContext";
-import {
-  NewUserMutation,
-  NewUserMutationVariables,
-} from "src/definitions/NewUserMutation";
 import * as yup from "yup";
 
 import { ROUTE_HOME, ROUTE_ACTIVATE, ROUTE_LOGIN } from "src/constants/route";
-
-const NewUser = loader("src/mutations/NewUser.gql");
 
 const schema = yup.object().shape({
   email: yup.string().email().required("Email is required"),
@@ -33,9 +26,7 @@ const Register: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const [newUser] = useMutation<NewUserMutation, NewUserMutationVariables>(
-    NewUser
-  );
+  const [newUser] = useNewUser();
 
   if (Auth.authenticated) history.push(ROUTE_HOME);
 

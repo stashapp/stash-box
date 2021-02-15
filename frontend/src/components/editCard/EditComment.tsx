@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { Edit_findEdit_comments as Comment } from "src/definitions/Edit";
+import { Edit_findEdit_comments as Comment } from "src/graphql/definitions/Edit";
 import { formatDateTime, userHref } from "src/utils";
 
 const CLASSNAME = "EditComment";

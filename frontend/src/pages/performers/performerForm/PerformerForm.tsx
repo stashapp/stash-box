@@ -18,9 +18,9 @@ import {
   EthnicityEnum,
   DateAccuracyEnum,
   PerformerEditDetailsInput,
-} from "src/definitions/globalTypes";
+} from "src/graphql";
 import { getBraSize, formatFuzzyDate } from "src/utils";
-import { Performer_findPerformer as Performer } from "src/definitions/Performer";
+import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { Image } from "src/utils/transforms";
 
 import { BodyModification } from "src/components/form";

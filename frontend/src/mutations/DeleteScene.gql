@@ -1,3 +1,0 @@
-mutation DeleteSceneMutation($input: SceneDestroyInput!) {
-    sceneDestroy(input: $input)
-}

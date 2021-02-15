@@ -1,20 +1,13 @@
 import React, { useState } from "react";
-import { useLazyQuery } from "@apollo/client";
 import Async from "react-select/async";
 import { ValueType, OptionTypeBase } from "react-select";
-import { loader } from "graphql.macro";
 import { debounce } from "lodash";
 
-import {
-  Tags,
-  TagsVariables,
-  Tags_queryTags_tags as Tag,
-} from "src/definitions/Tags";
+import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 
+import { useLazyTags } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
-
-const TagsQuery = loader("src/queries/Tags.gql");
 
 interface TagSelectProps {
   tags: Tag[];
@@ -44,7 +37,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
   const [searchCallback, setCallback] = useState<
     (result: SearchResult[]) => void
   >();
-  const [search] = useLazyQuery<Tags, TagsVariables>(TagsQuery, {
+  const [search] = useLazyTags({
     fetchPolicy: "network-only",
     onCompleted: (result) => {
       if (searchCallback) {

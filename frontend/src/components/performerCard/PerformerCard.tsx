@@ -2,8 +2,8 @@ import React from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { Performers_queryPerformers_performers as Performer } from "src/definitions/Performers";
-import { SearchPerformers_searchPerformer as SearchPerformer } from "src/definitions/SearchPerformers";
+import { Performers_queryPerformers_performers as Performer } from "src/graphql/definitions/Performers";
+import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 
 import { PerformerName } from "src/components/fragments";
 import { getImage, performerHref } from "src/utils";

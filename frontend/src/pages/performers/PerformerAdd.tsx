@@ -1,29 +1,19 @@
 import React from "react";
-import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import { Performer_findPerformer as Performer } from "src/definitions/Performer";
+import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import {
-  PerformerEditMutation,
-  PerformerEditMutationVariables,
-} from "src/definitions/PerformerEditMutation";
-import {
+  usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
-} from "src/definitions/globalTypes";
+} from "src/graphql";
 import { editHref } from "src/utils";
 
 import PerformerForm from "./performerForm";
 
-const PerformerEdit = loader("src/mutations/PerformerEdit.gql");
-
 const PerformerAdd: React.FC = () => {
   const history = useHistory();
-  const [submitPerformerEdit] = useMutation<
-    PerformerEditMutation,
-    PerformerEditMutationVariables
-  >(PerformerEdit, {
+  const [submitPerformerEdit] = usePerformerEdit({
     onCompleted: (data) => {
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },

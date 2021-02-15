@@ -2,8 +2,8 @@ import React from "react";
 import { Badge, BadgeProps, Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { Edits_queryEdits_edits as Edit } from "src/definitions/Edits";
-import { OperationEnum, VoteStatusEnum } from "src/definitions/globalTypes";
+import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
+import { OperationEnum, VoteStatusEnum } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
 import ModifyEdit from "./ModifyEdit";

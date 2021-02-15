@@ -1,12 +1,8 @@
 import React, { useContext } from "react";
-import { useQuery } from "@apollo/client";
-import { loader } from "graphql.macro";
 import { Link } from "react-router-dom";
 import { Button, Col, Row } from "react-bootstrap";
 
-import { Performers, PerformersVariables } from "src/definitions/Performers";
-import { SortDirectionEnum } from "src/definitions/globalTypes";
-
+import { usePerformers, SortDirectionEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
@@ -15,26 +11,19 @@ import AuthContext from "src/AuthContext";
 import { List } from "src/components/list";
 import { ROUTE_PERFORMER_ADD } from "src/constants/route";
 
-const PerformersQuery = loader("src/queries/Performers.gql");
-
 const PER_PAGE = 20;
 
 const PerformersComponent: React.FC = () => {
   const auth = useContext(AuthContext);
   const { page, setPage } = usePagination();
-  const { loading, data } = useQuery<Performers, PerformersVariables>(
-    PerformersQuery,
-    {
-      variables: {
-        filter: {
-          page,
-          per_page: PER_PAGE,
-          sort: "BIRTHDATE",
-          direction: SortDirectionEnum.DESC,
-        },
-      },
-    }
-  );
+  const { loading, data } = usePerformers({
+    filter: {
+      page,
+      per_page: PER_PAGE,
+      sort: "BIRTHDATE",
+      direction: SortDirectionEnum.DESC,
+    },
+  });
 
   if (!loading && !data)
     return <ErrorMessage error="Failed to load performers" />;

@@ -1,16 +1,10 @@
 import React, { useContext } from "react";
-import { useMutation } from "@apollo/client";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
-import { loader } from "graphql.macro";
 
-import { OperationEnum, GenderEnum } from "src/definitions/globalTypes";
-import { Performer_findPerformer as Performer } from "src/definitions/Performer";
-import {
-  PerformerEditMutation as PerformerEdit,
-  PerformerEditMutationVariables,
-} from "src/definitions/PerformerEditMutation";
+import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 
+import { usePerformerEdit, OperationEnum, GenderEnum } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   canEdit,
@@ -39,15 +33,10 @@ import { GenderIcon, PerformerName } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 import DeleteButton from "src/components/deleteButton";
 
-const PerformerEditMutation = loader("src/mutations/PerformerEdit.gql");
-
 const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
   const history = useHistory();
   const auth = useContext(AuthContext);
-  const [deletePerformerEdit, { loading: deleting }] = useMutation<
-    PerformerEdit,
-    PerformerEditMutationVariables
-  >(PerformerEditMutation, {
+  const [deletePerformerEdit, { loading: deleting }] = usePerformerEdit({
     onCompleted: (data) => {
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },

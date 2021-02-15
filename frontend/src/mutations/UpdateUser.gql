@@ -1,8 +1,0 @@
-mutation UpdateUserMutation($userData: UserUpdateInput!) {
-  userUpdate(input: $userData) {
-    id
-    name
-    email
-    roles
-  }
-}

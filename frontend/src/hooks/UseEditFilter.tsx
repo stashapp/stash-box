@@ -3,11 +3,7 @@ import { Form } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import queryString from "query-string";
 
-import {
-  OperationEnum,
-  TargetTypeEnum,
-  VoteStatusEnum,
-} from "src/definitions/globalTypes";
+import { OperationEnum, TargetTypeEnum, VoteStatusEnum } from "src/graphql";
 
 function resolveParam<T>(
   type: T,

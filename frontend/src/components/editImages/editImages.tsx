@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import { loader } from "graphql.macro";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import cx from "classnames";
 
+import { useAddImage } from "src/graphql";
 import { Image } from "src/utils/transforms";
-import {
-  AddImageMutation as AddImage,
-  AddImageMutationVariables,
-} from "src/definitions/AddImageMutation";
-import { useMutation } from "@apollo/client";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
-
-const AddImageMutation = loader("src/mutations/AddImage.gql");
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_DROP = `${CLASSNAME}-drop`;
@@ -32,9 +25,7 @@ const EditImages: React.FC<EditImagesProps> = ({ initialImages, control }) => {
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
-  const [addImage] = useMutation<AddImage, AddImageMutationVariables>(
-    AddImageMutation
-  );
+  const [addImage] = useAddImage();
 
   const handleAddImage = () => {
     setUploading(true);

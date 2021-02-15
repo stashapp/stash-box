@@ -1,6 +1,4 @@
-import { useMutation } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers";
-import { loader } from "graphql.macro";
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory, useLocation } from "react-router-dom";
@@ -9,14 +7,8 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Form } from "react-bootstrap";
 
-import {
-  ChangePasswordMutation,
-  ChangePasswordMutationVariables,
-} from "src/definitions/ChangePasswordMutation";
-
+import { useChangePassword } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
-
-const ChangePassword = loader("src/mutations/ChangePassword.gql");
 
 const schema = yup.object().shape({
   email: yup.string().email().required("Email is required"),
@@ -39,10 +31,7 @@ const ResetPassword: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const [changePassword, { loading }] = useMutation<
-    ChangePasswordMutation,
-    ChangePasswordMutationVariables
-  >(ChangePassword);
+  const [changePassword, { loading }] = useChangePassword();
 
   if (Auth.authenticated) history.push(ROUTE_HOME);
 

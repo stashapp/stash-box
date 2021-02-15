@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
+import { useHistory } from "react-router-dom";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
-import { RoleEnum, UserUpdateInput } from "src/definitions/globalTypes";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers";
 import cx from "classnames";
-import { useHistory } from "react-router-dom";
+
+import { RoleEnum, UserUpdateInput } from "src/graphql";
 
 const schema = yup.object().shape({
   id: yup.string(),

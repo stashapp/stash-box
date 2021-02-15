@@ -1,21 +1,14 @@
-import { useMutation } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers";
-import { loader } from "graphql.macro";
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory, useLocation } from "react-router-dom";
+import { Form } from "react-bootstrap";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
-import {
-  ActivateNewUserMutation,
-  ActivateNewUserMutationVariables,
-} from "src/definitions/ActivateNewUserMutation";
-import { Form } from "react-bootstrap";
 
+import { useActivateUser } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
-
-const ActivateNewUser = loader("src/mutations/ActivateNewUser.gql");
 
 const schema = yup.object().shape({
   name: yup.string().required("Username is required"),
@@ -39,10 +32,7 @@ const ActivateNewUserPage: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const [activateNewUser] = useMutation<
-    ActivateNewUserMutation,
-    ActivateNewUserMutationVariables
-  >(ActivateNewUser);
+  const [activateNewUser] = useActivateUser();
 
   if (Auth.authenticated) history.push(ROUTE_HOME);
 

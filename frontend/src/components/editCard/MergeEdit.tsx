@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import { Edits_queryEdits_edits_target as Target } from "src/definitions/Edits";
+import { Edits_queryEdits_edits_target as Target } from "src/graphql/definitions/Edits";
 import { isTag, isPerformer, tagHref, performerHref } from "src/utils";
 
 interface MergeEditProps {

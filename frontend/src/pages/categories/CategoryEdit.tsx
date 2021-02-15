@@ -1,33 +1,20 @@
 import React from "react";
-import { useMutation, useQuery } from "@apollo/client";
 import { useHistory, useParams } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import { Category, CategoryVariables } from "src/definitions/Category";
 import {
-  UpdateTagCategoryMutation,
-  UpdateTagCategoryMutationVariables,
-} from "src/definitions/UpdateTagCategoryMutation";
-import { TagCategoryCreateInput } from "src/definitions/globalTypes";
-
+  useCategory,
+  useUpdateCategory,
+  TagCategoryCreateInput,
+} from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
 import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
-const UpdateCategoryMutation = loader("src/mutations/UpdateCategory.gql");
-const FindCategoryQuery = loader("src/queries/Category.gql");
-
 const UpdateCategory: React.FC = () => {
   const { id } = useParams();
   const history = useHistory();
-  const { data, loading } = useQuery<Category, CategoryVariables>(
-    FindCategoryQuery,
-    { variables: { id } }
-  );
-  const [updateCategory] = useMutation<
-    UpdateTagCategoryMutation,
-    UpdateTagCategoryMutationVariables
-  >(UpdateCategoryMutation, {
+  const { data, loading } = useCategory({ id });
+  const [updateCategory] = useUpdateCategory({
     onCompleted: (result) => {
       if (result?.tagCategoryUpdate?.id)
         history.push(categoryHref(result.tagCategoryUpdate));

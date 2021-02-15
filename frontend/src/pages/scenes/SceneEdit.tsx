@@ -1,33 +1,20 @@
 import React from "react";
-import { useQuery, useMutation } from "@apollo/client";
 import { useHistory, useParams } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import { Scene } from "src/definitions/Scene";
-import { UpdateSceneMutationVariables } from "src/definitions/UpdateSceneMutation";
-import { SceneUpdateInput } from "src/definitions/globalTypes";
-
+import { useScene, useUpdateScene, SceneUpdateInput } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
 import { sceneHref } from "src/utils";
 import SceneForm from "./sceneForm";
 
-const SceneQuery = loader("src/queries/Scene.gql");
-const UpdateSceneMutation = loader("src/mutations/UpdateScene.gql");
-
 const SceneEdit: React.FC = () => {
   const { id } = useParams();
   const history = useHistory();
-  const { loading, data } = useQuery<Scene>(SceneQuery, {
-    variables: { id },
+  const { loading, data } = useScene({ id });
+  const [updateScene] = useUpdateScene({
+    onCompleted: () => {
+      if (data?.findScene?.id) history.push(sceneHref(data.findScene));
+    },
   });
-  const [updateScene] = useMutation<Scene, UpdateSceneMutationVariables>(
-    UpdateSceneMutation,
-    {
-      onCompleted: () => {
-        if (data?.findScene?.id) history.push(sceneHref(data.findScene));
-      },
-    }
-  );
 
   const doUpdate = (updateData: SceneUpdateInput) => {
     updateScene({ variables: { updateData } });

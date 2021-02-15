@@ -1,21 +1,15 @@
 import React from "react";
 import { Link, useHistory } from "react-router-dom";
-import { useQuery } from "@apollo/client";
 import { Card, Form, Row } from "react-bootstrap";
-import { loader } from "graphql.macro";
 import { debounce } from "lodash";
 import querystring from "query-string";
 
-import { Tags, TagsVariables } from "src/definitions/Tags";
-import { SortDirectionEnum, TagFilterType } from "src/definitions/globalTypes";
-
+import { useTags, SortDirectionEnum, TagFilterType } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import { createHref, tagHref } from "src/utils/route";
 import { ROUTE_CATEGORIES } from "src/constants/route";
 import List from "./List";
-
-const TagsQuery = loader("src/queries/Tags.gql");
 
 const PER_PAGE = 40;
 
@@ -32,18 +26,16 @@ const TagList: React.FC<TagListProps> = ({
   const queries = querystring.parse(history.location.search);
   const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
   const { page, setPage } = usePagination();
-  const { loading, data } = useQuery<Tags, TagsVariables>(TagsQuery, {
-    variables: {
-      filter: {
-        page,
-        per_page: PER_PAGE,
-        sort: "name",
-        direction: SortDirectionEnum.ASC,
-      },
-      tagFilter: {
-        name: query,
-        ...tagFilter,
-      },
+  const { loading, data } = useTags({
+    filter: {
+      page,
+      per_page: PER_PAGE,
+      sort: "name",
+      direction: SortDirectionEnum.ASC,
+    },
+    tagFilter: {
+      name: query,
+      ...tagFilter,
     },
   });
 

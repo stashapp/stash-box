@@ -1,37 +1,25 @@
 import React from "react";
-import { useQuery, useMutation } from "@apollo/client";
 import { useHistory, useParams } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import { UpdateStudioMutationVariables } from "src/definitions/UpdateStudioMutation";
-
-import { Studio } from "src/definitions/Studio";
 import {
-  StudioUpdateInput,
+  useStudio,
+  useUpdateStudio,
   StudioCreateInput,
-} from "src/definitions/globalTypes";
-
+  StudioUpdateInput,
+} from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
 import { studioHref } from "src/utils";
 import StudioForm from "./studioForm";
 
-const StudioQuery = loader("src/queries/Studio.gql");
-const UpdateStudioMutation = loader("src/mutations/UpdateStudio.gql");
-
 const StudioEdit: React.FC = () => {
   const { id } = useParams();
   const history = useHistory();
-  const { loading, data } = useQuery<Studio>(StudioQuery, {
-    variables: { id },
+  const { loading, data } = useStudio({ id });
+  const [updateStudio] = useUpdateStudio({
+    onCompleted: () => {
+      if (data?.findStudio?.id) history.push(studioHref(data.findStudio));
+    },
   });
-  const [updateStudio] = useMutation<Studio, UpdateStudioMutationVariables>(
-    UpdateStudioMutation,
-    {
-      onCompleted: () => {
-        if (data?.findStudio?.id) history.push(studioHref(data.findStudio));
-      },
-    }
-  );
 
   const doUpdate = (updateData: StudioCreateInput) => {
     if (!id) return;

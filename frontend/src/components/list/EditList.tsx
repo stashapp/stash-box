@@ -1,20 +1,16 @@
 import React from "react";
-import { useQuery } from "@apollo/client";
-import { loader } from "graphql.macro";
 
 import { useEditFilter, usePagination } from "src/hooks";
 import {
+  useEdits,
   TargetTypeEnum,
   SortDirectionEnum,
   VoteStatusEnum,
   OperationEnum,
-} from "src/definitions/globalTypes";
-import { Edits, EditsVariables } from "src/definitions/Edits";
+} from "src/graphql";
 import { ErrorMessage } from "src/components/fragments";
 import EditCard from "src/components/editCard";
 import List from "./List";
-
-const EditsQuery = loader("src/queries/Edits.gql");
 
 interface EditsProps {
   type?: TargetTypeEnum;
@@ -42,20 +38,18 @@ const EditListComponent: React.FC<EditsProps> = ({
     status,
     operation,
   });
-  const { data, loading } = useQuery<Edits, EditsVariables>(EditsQuery, {
-    variables: {
-      filter: {
-        page,
-        per_page: PER_PAGE,
-        sort: "created_at",
-        direction: SortDirectionEnum.DESC,
-      },
-      editFilter: {
-        target_type: selectedType,
-        target_id: id,
-        status: selectedStatus,
-        operation: selectedOperation,
-      },
+  const { data, loading } = useEdits({
+    filter: {
+      page,
+      per_page: PER_PAGE,
+      sort: "created_at",
+      direction: SortDirectionEnum.DESC,
+    },
+    editFilter: {
+      target_type: selectedType,
+      target_id: id,
+      status: selectedStatus,
+      operation: selectedOperation,
     },
   });
 

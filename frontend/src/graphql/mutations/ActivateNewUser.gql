@@ -1,0 +1,5 @@
+mutation ActivateNewUser($input: ActivateNewUserInput!) {
+    activateNewUser(input: $input) { 
+        id
+    }
+}

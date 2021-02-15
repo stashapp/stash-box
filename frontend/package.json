@@ -11,7 +11,7 @@
     "lint": "yarn lint:css && yarn lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
-    "generate": "apollo client:codegen --target typescript --outputFlat src/definitions",
+    "generate": "apollo client:codegen --target typescript --outputFlat src/graphql/definitions",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss}\""
   },
   "devDependencies": {

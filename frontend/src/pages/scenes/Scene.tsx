@@ -1,15 +1,8 @@
 import React, { useContext } from "react";
-import { useQuery, useMutation } from "@apollo/client";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
-import { loader } from "graphql.macro";
 
-import { Scene } from "src/definitions/Scene";
-import {
-  DeleteSceneMutation,
-  DeleteSceneMutationVariables,
-} from "src/definitions/DeleteSceneMutation";
-
+import { useScene, useDeleteScene } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   canEdit,
@@ -22,7 +15,6 @@ import {
   createHref,
 } from "src/utils";
 import { ROUTE_SCENE_EDIT, ROUTE_SCENES } from "src/constants/route";
-
 import {
   GenderIcon,
   LoadingIndicator,
@@ -31,19 +23,11 @@ import {
 } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
 
-const SceneQuery = loader("src/queries/Scene.gql");
-const DeleteScene = loader("src/mutations/DeleteScene.gql");
-
 const SceneComponent: React.FC = () => {
   const { id } = useParams();
   const history = useHistory();
-  const { loading, data } = useQuery<Scene>(SceneQuery, {
-    variables: { id },
-  });
-  const [deleteScene, { loading: deleting }] = useMutation<
-    DeleteSceneMutation,
-    DeleteSceneMutationVariables
-  >(DeleteScene);
+  const { loading, data } = useScene({ id });
+  const [deleteScene, { loading: deleting }] = useDeleteScene();
   const auth = useContext(AuthContext);
 
   if (loading) return <LoadingIndicator message="Loading scene..." />;

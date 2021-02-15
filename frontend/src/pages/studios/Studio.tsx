@@ -1,15 +1,8 @@
 import React, { useContext } from "react";
-import { useMutation, useQuery } from "@apollo/client";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
-import { loader } from "graphql.macro";
 
-import { Studio, StudioVariables } from "src/definitions/Studio";
-import { CriterionModifier } from "src/definitions/globalTypes";
-import {
-  DeleteStudioMutation,
-  DeleteStudioMutationVariables,
-} from "src/definitions/DeleteStudioMutation";
+import { useStudio, useDeleteStudio, CriterionModifier } from "src/graphql";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
@@ -25,22 +18,13 @@ import {
 import { ROUTE_STUDIO_EDIT, ROUTE_STUDIOS } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
-const DeleteStudio = loader("src/mutations/DeleteStudio.gql");
-const StudioQuery = loader("src/queries/Studio.gql");
-
 const StudioComponent: React.FC = () => {
   const auth = useContext(AuthContext);
   const history = useHistory();
   const { id = "" } = useParams();
-  const { loading, data } = useQuery<Studio, StudioVariables>(StudioQuery, {
-    variables: { id },
-    skip: id === "",
-  });
+  const { loading, data } = useStudio({ id }, id === "");
 
-  const [deleteStudio, { loading: deleting }] = useMutation<
-    DeleteStudioMutation,
-    DeleteStudioMutationVariables
-  >(DeleteStudio, {
+  const [deleteStudio, { loading: deleting }] = useDeleteStudio({
     onCompleted: (result) => {
       if (result.studioDestroy) history.push(ROUTE_STUDIOS);
     },

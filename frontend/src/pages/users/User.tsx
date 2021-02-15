@@ -1,46 +1,25 @@
 import React, { useState, useContext } from "react";
-import { useQuery, useMutation } from "@apollo/client";
 import { useParams, useHistory } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
-import { loader } from "graphql.macro";
 
-import { User, UserVariables } from "src/definitions/User";
-
+import {
+  useUser,
+  useDeleteUser,
+  useRescindInviteCode,
+  useGenerateInviteCode,
+  useGrantInvite,
+  useRevokeInvite,
+} from "src/graphql";
 import AuthContext from "src/AuthContext";
-import {
-  DeleteUserMutation,
-  DeleteUserMutationVariables,
-} from "src/definitions/DeleteUserMutation";
-import {
-  RescindInviteCodeMutation,
-  RescindInviteCodeMutationVariables,
-} from "src/definitions/RescindInviteCodeMutation";
-import { GenerateInviteCodeMutation } from "src/definitions/GenerateInviteCodeMutation";
-import { canEdit, isAdmin, createHref } from "src/utils";
 import {
   ROUTE_USER_EDIT,
   ROUTE_USER_PASSWORD,
   ROUTE_USERS,
 } from "src/constants/route";
-
+import { canEdit, isAdmin, createHref } from "src/utils";
 import Modal from "src/components/modal";
 import { Icon, LoadingIndicator } from "src/components/fragments";
-import {
-  GrantInviteMutation,
-  GrantInviteMutationVariables,
-} from "src/definitions/GrantInviteMutation";
-import {
-  RevokeInviteMutation,
-  RevokeInviteMutationVariables,
-} from "src/definitions/RevokeInviteMutation";
-
-const UserQuery = loader("src/queries/User.gql");
-const DeleteUser = loader("src/mutations/DeleteUser.gql");
-const RescindInviteCode = loader("src/mutations/RescindInviteCode.gql");
-const GenerateInviteCode = loader("src/mutations/GenerateInviteCode.gql");
-const GrantInvite = loader("src/mutations/GrantInvite.gql");
-const RevokeInvite = loader("src/mutations/RevokeInvite.gql");
 
 const AddUserComponent: React.FC = () => {
   const history = useHistory();
@@ -49,30 +28,13 @@ const AddUserComponent: React.FC = () => {
   const [showDelete, setShowDelete] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
 
-  const [deleteUser, { loading: deleting }] = useMutation<
-    DeleteUserMutation,
-    DeleteUserMutationVariables
-  >(DeleteUser);
-  const [rescindInviteCode] = useMutation<
-    RescindInviteCodeMutation,
-    RescindInviteCodeMutationVariables
-  >(RescindInviteCode);
-  const [generateInviteCode] = useMutation<GenerateInviteCodeMutation>(
-    GenerateInviteCode
-  );
-  const [grantInvite] = useMutation<
-    GrantInviteMutation,
-    GrantInviteMutationVariables
-  >(GrantInvite);
-  const [revokeInvite] = useMutation<
-    RevokeInviteMutation,
-    RevokeInviteMutationVariables
-  >(RevokeInvite);
+  const [deleteUser, { loading: deleting }] = useDeleteUser();
+  const [rescindInviteCode] = useRescindInviteCode();
+  const [generateInviteCode] = useGenerateInviteCode();
+  const [grantInvite] = useGrantInvite();
+  const [revokeInvite] = useRevokeInvite();
 
-  const { data, loading, refetch } = useQuery<User, UserVariables>(UserQuery, {
-    variables: { name },
-    skip: name === "",
-  });
+  const { data, loading, refetch } = useUser({ name }, name === "");
 
   if (loading) return <LoadingIndicator />;
   if (name === "" || !data?.findUser) return <div>No user found!</div>;

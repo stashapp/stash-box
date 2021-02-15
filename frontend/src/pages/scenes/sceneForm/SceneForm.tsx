@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useState, useEffect, useRef } from "react";
-import { useQuery } from "@apollo/client";
 import { useHistory, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers";
@@ -8,16 +7,15 @@ import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Col, Form, Row, Table } from "react-bootstrap";
-import { loader } from "graphql.macro";
 
-import { Studios, StudiosVariables } from "src/definitions/Studios";
-import { Scene_findScene as Scene } from "src/definitions/Scene";
-import { Tags_queryTags_tags as Tag } from "src/definitions/Tags";
+import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
+import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 import {
+  useStudios,
   SceneUpdateInput,
   FingerprintInput,
   FingerprintAlgorithm,
-} from "src/definitions/globalTypes";
+} from "src/graphql";
 import { getUrlByType, createHref } from "src/utils";
 import { ROUTE_SCENES, ROUTE_SCENE } from "src/constants/route";
 
@@ -30,8 +28,6 @@ import {
 import SearchField, { SearchType } from "src/components/searchField";
 import TagSelect from "src/components/tagSelect";
 import EditImages from "src/components/editImages";
-
-const StudioQuery = loader("src/queries/Studios.gql");
 
 interface IOptionType extends OptionTypeBase {
   value: string;
@@ -126,11 +122,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       duration: f.duration,
     }))
   );
-  const { loading: loadingStudios, data: studios } = useQuery<
-    Studios,
-    StudiosVariables
-  >(StudioQuery, {
-    variables: { filter: { page: 0, per_page: 1000 } },
+  const { loading: loadingStudios, data: studios } = useStudios({
+    filter: { page: 0, per_page: 1000 },
   });
 
   useEffect(() => {

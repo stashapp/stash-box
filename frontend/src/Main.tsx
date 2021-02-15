@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useQuery } from "@apollo/client";
 import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useHistory } from "react-router-dom";
-import { loader } from "graphql.macro";
+
+import { useMe } from "src/graphql";
+import { RoleEnum } from "src/graphql/definitions/globalTypes";
 import SearchField, { SearchType } from "src/components/searchField";
-import { Me } from "src/definitions/Me";
-import { RoleEnum } from "src/definitions/globalTypes";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 import { userHref } from "src/utils";
 import {
@@ -23,8 +22,6 @@ import {
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
-const ME = loader("src/queries/Me.gql");
-
 interface User {
   id: string;
   name: string;
@@ -35,7 +32,7 @@ const Main: React.FC = ({ children }) => {
   const history = useHistory();
   const [user, setUser] = useState<User | null>();
   const prevUser = useRef<User | null>();
-  const { loading } = useQuery<Me>(ME, {
+  const { loading } = useMe({
     onCompleted: (data) => {
       if (data?.me) setUser(data.me);
     },
@@ -118,7 +115,7 @@ const Main: React.FC = ({ children }) => {
     <div>
       <Navbar bg="dark" variant="dark" className="px-4">
         <Nav className="row mr-auto">
-          <NavLink exact to="/" className="nav-link">
+          <NavLink exact to={ROUTE_HOME} className="nav-link">
             Home
           </NavLink>
           <NavLink to={ROUTE_PERFORMERS} className="nav-link">

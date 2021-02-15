@@ -1,6 +1,4 @@
-import { useMutation } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers";
-import { loader } from "graphql.macro";
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
@@ -8,14 +6,8 @@ import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
 
-import {
-  ResetPasswordMutation,
-  ResetPasswordMutationVariables,
-} from "src/definitions/ResetPasswordMutation";
-
+import { useResetPassword } from "src/graphql";
 import { ROUTE_HOME } from "src/constants/route";
-
-const ResetPassword = loader("src/mutations/ResetPassword.gql");
 
 const schema = yup.object().shape({
   email: yup.string().email().required("Email is required"),
@@ -32,10 +24,7 @@ const ForgotPassword: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const [resetPassword, { loading }] = useMutation<
-    ResetPasswordMutation,
-    ResetPasswordMutationVariables
-  >(ResetPassword);
+  const [resetPassword, { loading }] = useResetPassword();
 
   if (Auth.authenticated) history.push(ROUTE_HOME);
 

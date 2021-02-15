@@ -1,24 +1,17 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@apollo/client";
 import { Button, Card } from "react-bootstrap";
-import { loader } from "graphql.macro";
 import { sortBy, groupBy } from "lodash";
 
-import { Categories, CategoriesVariables } from "src/definitions/Categories";
-
+import { useCategories } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
 import { isAdmin, createHref } from "src/utils";
 import { ROUTE_CATEGORY, ROUTE_CATEGORY_ADD } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
-const CategoriesQuery = loader("src/queries/Categories.gql");
-
 const CategoryList: React.FC = () => {
   const auth = useContext(AuthContext);
-  const { loading, data } = useQuery<Categories, CategoriesVariables>(
-    CategoriesQuery
-  );
+  const { loading, data } = useCategories();
 
   const categoryGroups = groupBy(
     sortBy(data?.queryTagCategories?.tag_categories ?? [], (cat) => cat.name),

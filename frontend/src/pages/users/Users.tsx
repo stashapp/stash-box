@@ -1,10 +1,8 @@
 import React from "react";
-import { useQuery } from "@apollo/client";
 import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import { Users, UsersVariables } from "src/definitions/Users";
+import { useUsers } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
@@ -15,18 +13,14 @@ import {
   ROUTE_USER_ADD,
 } from "src/constants/route";
 
-const UsersQuery = loader("src/queries/Users.gql");
-
 const PER_PAGE = 20;
 
 const UsersComponent: React.FC = () => {
   const { page, setPage } = usePagination();
-  const { loading, data } = useQuery<Users, UsersVariables>(UsersQuery, {
-    variables: {
-      filter: {
-        page,
-        per_page: PER_PAGE,
-      },
+  const { loading, data } = useUsers({
+    filter: {
+      page,
+      per_page: PER_PAGE,
     },
   });
 

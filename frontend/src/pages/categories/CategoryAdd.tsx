@@ -1,25 +1,13 @@
 import React from "react";
-import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
-import { loader } from "graphql.macro";
 
-import {
-  AddTagCategoryMutation,
-  AddTagCategoryMutationVariables,
-} from "src/definitions/AddTagCategoryMutation";
-import { TagCategoryCreateInput } from "src/definitions/globalTypes";
-
+import { useAddCategory, TagCategoryCreateInput } from "src/graphql";
 import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
-const AddCategoryMutation = loader("src/mutations/AddCategory.gql");
-
 const AddCategory: React.FC = () => {
   const history = useHistory();
-  const [createCategory] = useMutation<
-    AddTagCategoryMutation,
-    AddTagCategoryMutationVariables
-  >(AddCategoryMutation, {
+  const [createCategory] = useAddCategory({
     onCompleted: (data) => {
       if (data?.tagCategoryCreate?.id)
         history.push(categoryHref(data.tagCategoryCreate));
