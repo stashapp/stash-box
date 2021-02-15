@@ -53,8 +53,8 @@ const diffBodyMod = (
 
 const diffValue = (
   name: string,
-  original: string | number | null,
-  updated: string | number | null
+  original: string | number | null | undefined,
+  updated: string | number | null | undefined
 ) => {
   const valueA = original || null;
   const valueB = updated || null;
@@ -80,7 +80,7 @@ const DiffPerformer = (
   changes.push(
     diffValue("Disambiguation", original.disambiguation, updated.disambiguation)
   );
-  changes.push(diffArray("Aliases", original.aliases, updated.aliases));
+  changes.push(diffArray("Aliases", original.aliases, (updated.aliases?.filter(a => a) ?? []) as string[]));
   changes.push(diffValue("Gender", original.gender, updated.gender));
   changes.push(
     diffValue("Birthdate", original.birthdate?.date, updated.birthdate)
@@ -124,7 +124,7 @@ const DiffPerformer = (
     diffArray(
       "ImageIDs",
       original.images.map((i) => i.id),
-      updated.images
+      (updated.images?.filter(i => i) ?? []) as string[]
     )
   );
 

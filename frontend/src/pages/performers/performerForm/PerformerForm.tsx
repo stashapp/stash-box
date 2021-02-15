@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers";
+import { yupResolver } from "@hookform/resolvers/yup";
 import Select from "react-select";
 import { Button, Col, Form, Row, Tabs, Tab } from "react-bootstrap";
 import * as yup from "yup";

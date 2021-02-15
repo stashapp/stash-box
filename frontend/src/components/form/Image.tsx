@@ -23,6 +23,7 @@ const ImageInput: React.FC<ImageProps> = ({ image, control, onRemove }) => (
       name={`images[${image.id}]`}
       control={control}
       defaultValue={image.id}
+      render={() => <></>}
     />
     <Button
       variant="danger"

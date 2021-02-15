@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
 
 import {
   useUser,
@@ -124,17 +123,17 @@ const AddUserComponent: React.FC = () => {
           </Button>
         )}
         {canEdit(Auth.user) && (
-          <LinkContainer
+          <Link
             to={createHref(ROUTE_USER_EDIT, user)}
             className="mx-1"
           >
             <Button className="float-right">Edit User</Button>
-          </LinkContainer>
+          </Link>
         )}
         {isUser() && (
-          <LinkContainer to={ROUTE_USER_PASSWORD} className="mx-1">
+          <Link to={ROUTE_USER_PASSWORD} className="mx-1">
             <Button className="float-right">Change Password</Button>
-          </LinkContainer>
+          </Link>
         )}
         <h2>{name}</h2>
         <hr />

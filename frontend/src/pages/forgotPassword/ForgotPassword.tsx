@@ -1,5 +1,5 @@
-import { yupResolver } from "@hookform/resolvers";
 import React, { useContext, useState } from "react";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";

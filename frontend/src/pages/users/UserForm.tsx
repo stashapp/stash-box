@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers";
+import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
 import { RoleEnum, UserUpdateInput } from "src/graphql";

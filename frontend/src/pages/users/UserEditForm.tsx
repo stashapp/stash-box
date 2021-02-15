@@ -1,10 +1,10 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
+import { Link } from "react-router-dom";
 import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers";
+import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
 import { RoleEnum, UserUpdateInput } from "src/graphql";
@@ -115,9 +115,9 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
           <Button variant="primary" type="submit">
             Save
           </Button>
-          <LinkContainer to={userHref({ name: username })} className="ml-2">
+          <Link to={userHref({ name: username })} className="ml-2">
             <Button variant="secondary">Cancel</Button>
-          </LinkContainer>
+          </Link>
           <div className="invalid-feedback d-block">{error}</div>
         </div>
       </Form.Row>
