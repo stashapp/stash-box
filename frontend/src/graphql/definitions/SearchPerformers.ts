@@ -52,5 +52,5 @@ export interface SearchPerformers {
 
 export interface SearchPerformersVariables {
   term: string;
-  limit: number;
+  limit?: number | null;
 }

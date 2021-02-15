@@ -54,11 +54,12 @@ const TagSelect: React.FC<TagSelectProps> = ({
     },
   });
 
-  const handleChange = (result: ValueType<SearchResult>) => {
-    const res = result as SearchResult;
-    const newTags = [...tags, res.value];
-    setTags(newTags);
-    onChange(newTags);
+  const handleChange = (result: ValueType<SearchResult, false>) => {
+    if (result?.value) {
+      const newTags = [...tags, result.value];
+      setTags(newTags);
+      onChange(newTags);
+    }
   };
 
   const removeTag = (id: string) => {
@@ -97,7 +98,6 @@ const TagSelect: React.FC<TagSelectProps> = ({
       <div className={CLASSNAME_CONTAINER}>
         <span>{message}</span>
         <Async
-          value={null}
           classNamePrefix="react-select"
           className={`react-select ${CLASSNAME_SELECT}`}
           onChange={handleChange}

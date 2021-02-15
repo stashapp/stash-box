@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useParams, useHistory, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 
 import {
@@ -21,7 +21,6 @@ import Modal from "src/components/modal";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
 const AddUserComponent: React.FC = () => {
-  const history = useHistory();
   const Auth = useContext(AuthContext);
   const { name = "" } = useParams<{ name?: string }>();
   const [showDelete, setShowDelete] = useState(false);
@@ -45,9 +44,9 @@ const AddUserComponent: React.FC = () => {
   const toggleModal = () => setShowDelete(true);
   const handleDelete = (status: boolean): void => {
     if (status)
-      deleteUser({ variables: { input: { id: user.id } } }).then(() =>
-        history.push(ROUTE_USERS)
-      );
+      deleteUser({ variables: { input: { id: user.id } } }).then(() => {
+        window.location.href = ROUTE_USERS;
+      });
     setShowDelete(false);
   };
   const deleteModal = showDelete && (

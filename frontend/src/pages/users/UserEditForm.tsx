@@ -68,9 +68,9 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
     callback(userData);
   };
 
-  const onRoleChange = (selectedRoles: ValueType<IOptionType>) => {
-    const val = selectedRoles as IOptionType[];
-    setUserRoles(val);
+  const onRoleChange = (selectedRoles: ValueType<IOptionType, true>) => {
+    const val = selectedRoles ?? [];
+    setUserRoles([...val]);
     setValue(
       "roles",
       val.map((role) => role.value)

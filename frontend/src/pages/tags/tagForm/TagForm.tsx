@@ -56,8 +56,8 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
   if (loadingCategories)
     return <LoadingIndicator message="Loading tag categories..." />;
 
-  const onCategoryChange = (selectedOption: ValueType<IOptionType>) =>
-    setValue("categoryId", (selectedOption as IOptionType).value);
+  const onCategoryChange = (selectedOption: ValueType<IOptionType, false>) =>
+    setValue("categoryId", selectedOption?.value ?? null);
 
   const onSubmit = (data: TagFormData) => {
     const callbackData: TagEditDetailsInput = {

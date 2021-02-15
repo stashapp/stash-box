@@ -10,7 +10,7 @@ const AddUserComponent: React.FC = () => {
   const history = useHistory();
   const [insertUser] = useAddUser({
     onCompleted: () => {
-      history.push(ROUTE_USERS);
+      window.location.href = ROUTE_USERS;
     },
   });
 

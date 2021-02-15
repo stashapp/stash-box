@@ -32,10 +32,9 @@ const BodyModification: React.FC<BodyModificationProps> = ({
   const [modifications, setModifications] = useState(defaultValues || []);
   const selectRef = useRef(null);
 
-  const handleChange = (newValue: ValueType<IOptionType>) => {
-    const val = newValue as IOptionType;
-    if (val?.value)
-      setModifications([...modifications, { location: val.value }]);
+  const handleChange = (newValue: ValueType<IOptionType, false>) => {
+    if (newValue?.value)
+      setModifications([...modifications, { location: newValue.value }]);
   };
 
   const removeMod = (index: number) =>

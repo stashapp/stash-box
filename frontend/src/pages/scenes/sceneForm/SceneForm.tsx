@@ -142,8 +142,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
   if (loadingStudios) return <LoadingIndicator message="Loading scene..." />;
 
-  const onStudioChange = (selectedOption: ValueType<IOptionType>) =>
-    setValue("studioId", (selectedOption as IOptionType).value);
+  const onStudioChange = (selectedOption: ValueType<IOptionType, false>) => {
+    if (selectedOption?.value) setValue("studioId", selectedOption?.value);
+  };
   const onTagChange = (selectedTags: Tag[]) =>
     setValue(
       "tags",

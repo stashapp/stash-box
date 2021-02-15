@@ -58,7 +58,7 @@ interface SearchResult extends OptionTypeBase {
   subLabel?: string;
 }
 
-const Option = (props: OptionProps<SearchResult>) => {
+const Option = (props: OptionProps<SearchResult, false>) => {
   const {
     data: { label, subLabel },
   } = props;
@@ -210,7 +210,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
     debouncedLoadOptions(term, callback);
   };
 
-  const handleChange = (result: ValueType<SearchResult>) => {
+  const handleChange = (result: ValueType<SearchResult, false>) => {
     const option = Array.isArray(result) ? result[0] : result;
     if (option) {
       if (valueIsPerformer(option.value)) onClickPerformer?.(option.value);
