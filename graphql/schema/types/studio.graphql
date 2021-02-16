@@ -67,4 +67,5 @@ input StudioFilterType {
   url: String
   
   parent: IDCriterionInput
+  has_parent: Boolean
 }

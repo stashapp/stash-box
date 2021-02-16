@@ -24,6 +24,7 @@ const StudioAdd: React.FC = () => {
     name: "",
     urls: [],
     images: [],
+    parent: null,
     __typename: "Studio",
   };
 

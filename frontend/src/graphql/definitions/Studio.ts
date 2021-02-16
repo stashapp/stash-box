@@ -7,6 +7,12 @@
 // GraphQL query operation: Studio
 // ====================================================
 
+export interface Studio_findStudio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface Studio_findStudio_urls {
   __typename: "URL";
   url: string;
@@ -25,6 +31,7 @@ export interface Studio_findStudio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: Studio_findStudio_parent | null;
   urls: (Studio_findStudio_urls | null)[];
   images: Studio_findStudio_images[];
 }

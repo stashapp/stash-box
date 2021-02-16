@@ -126,6 +126,10 @@ export const useStudios = (variables: StudiosVariables) =>
     variables,
   });
 
+export const useLazyStudios = (
+  options?: LazyQueryHookOptions<Studios, StudiosVariables>
+) => useLazyQuery(StudiosQuery, options);
+
 export const useTag = (variables: TagVariables) =>
   useQuery<Tag, TagVariables>(TagQuery, {
     variables,

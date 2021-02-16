@@ -1,9 +1,8 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useState, useEffect, useRef } from "react";
 import { useHistory, Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import Select, { ValueType, OptionTypeBase } from "react-select";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Col, Form, Row, Table } from "react-bootstrap";
@@ -11,7 +10,6 @@ import { Button, Col, Form, Row, Table } from "react-bootstrap";
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 import {
-  useStudios,
   SceneUpdateInput,
   FingerprintInput,
   FingerprintAlgorithm,
@@ -19,20 +17,11 @@ import {
 import { getUrlByType, createHref } from "src/utils";
 import { ROUTE_SCENES, ROUTE_SCENE } from "src/constants/route";
 
-import {
-  GenderIcon,
-  LoadingIndicator,
-  CloseButton,
-  Icon,
-} from "src/components/fragments";
+import { GenderIcon, CloseButton, Icon } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
 import TagSelect from "src/components/tagSelect";
+import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
-
-interface IOptionType extends OptionTypeBase {
-  value: string;
-  label: string;
-}
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
@@ -49,21 +38,18 @@ const schema = yup.object().shape({
       message: "Invalid date",
     })
     .nullable(),
-  studioId: yup
+  studio: yup
     .string()
     .typeError("Studio is required")
     .transform(nullCheck)
     .required("Studio is required"),
   studioURL: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
-  performers: yup
-    .array()
-    .of(
-      yup.object().shape({
-        performerId: yup.string().required(),
-        alias: yup.string().transform(nullCheck).nullable(),
-      })
-    )
-    .nullable(),
+  performers: yup.array().of(
+    yup.object().shape({
+      performerId: yup.string().required(),
+      alias: yup.string().transform(nullCheck).nullable(),
+    })
+  ),
   fingerprints: yup
     .array()
     .of(
@@ -90,13 +76,6 @@ interface SceneProps {
   callback: (updateData: SceneUpdateInput) => void;
 }
 
-interface PerformerInfo {
-  alias: string[];
-  name: string;
-  id: string;
-  gender: string | null;
-}
-
 const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const history = useHistory();
   const fingerprintHash = useRef<HTMLInputElement>(null);
@@ -110,15 +89,21 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     errors,
   } = useForm<SceneFormData>({
     resolver: yupResolver(schema),
+    defaultValues: {
+      performers: scene.performers.map((p) => ({
+        id: p.performer.id,
+        name: p.performer.name,
+        alias: p.as ?? "",
+        gender: p.performer.gender,
+      })),
+    },
   });
-  const [performers, setPerformers] = useState<PerformerInfo[]>(
-    scene.performers.map((p) => ({
-      id: p.performer.id,
-      name: p.performer.name,
-      alias: p.as ? [p.as] : [],
-      gender: p.performer.gender,
-    }))
-  );
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "performers",
+    keyName: "key",
+  });
+
   const [fingerprints, setFingerprints] = useState<FingerprintInput[]>(
     scene.fingerprints.map((f) => ({
       hash: f.hash,
@@ -126,12 +111,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       duration: f.duration,
     }))
   );
-  const { loading: loadingStudios, data: studios } = useStudios({
-    filter: { page: 0, per_page: 1000 },
-  });
 
   useEffect(() => {
-    register({ name: "studioId" });
     register({ name: "tags" });
     register({ name: "fingerprints" });
     setValue("fingerprints", fingerprints);
@@ -140,11 +121,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [register, setValue]);
 
-  if (loadingStudios) return <LoadingIndicator message="Loading scene..." />;
-
-  const onStudioChange = (selectedOption: ValueType<IOptionType, false>) => {
-    if (selectedOption?.value) setValue("studioId", selectedOption?.value);
-  };
   const onTagChange = (selectedTags: Tag[]) =>
     setValue(
       "tags",
@@ -157,7 +133,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       title: data.title,
       date: data.date,
       details: data.details,
-      studio_id: data.studioId,
+      studio_id: data.studio,
       performers: (data.performers ?? []).map((performance) => ({
         performer_id: performance.performerId,
         as: performance.alias,
@@ -173,36 +149,25 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     callback(sceneData);
   };
 
-  const studioObj = (studios?.queryStudios?.studios ?? []).map((studio) => ({
-    value: studio.id,
-    label: studio.name,
-  }));
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const addPerformer = (result: any) =>
-    setPerformers([
-      ...performers,
-      {
-        name: result.name,
-        id: result.id,
-        gender: result.gender,
-        alias: [],
-      },
-    ]);
-  const removePerformer = (id: string) =>
-    setPerformers(performers.filter((p) => p.id !== id));
-  const performerList = performers.map((p, index) => (
-    <div className="performer-item" key={p.id}>
-      <CloseButton
-        className="remove-item"
-        handler={() => removePerformer(p.id)}
-      />
+  const addPerformer = (result: any) => {
+    append({
+      name: result.name,
+      id: result.id,
+      gender: result.gender,
+      alias: "",
+    });
+  };
+
+  const performerList = fields.map((p, index) => (
+    <div className="performer-item" key={p.key}>
+      <CloseButton className="remove-item" handler={() => remove(index)} />
       <GenderIcon gender={p.gender} />
       <input
         type="hidden"
-        value={p.id}
+        defaultValue={p.id}
         name={`performers[${index}].performerId`}
-        ref={register}
+        ref={register()}
       />
       <span className="performer-name">{p.name}</span>
       <label htmlFor={`performers[${index}].alias`}>
@@ -213,7 +178,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           name={`performers[${index}].alias`}
           defaultValue={p.alias?.[0] !== p.name ? p.alias[0] : ""}
           placeholder={p.name}
-          ref={register}
+          ref={register()}
         />
       </label>
     </div>
@@ -295,7 +260,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         ref={register({ required: true })}
       />
       <Row>
-        <Col lg={8}>
+        <Col xs={8}>
           <div className="form-group row">
             <label htmlFor="title" className="col-8">
               <div>Title</div>
@@ -340,21 +305,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           <div className="form-group row">
             <label htmlFor="studioId" className="studio-select col-6">
               <div>Studio</div>
-              <Select
-                classNamePrefix="react-select"
-                className={cx({ "is-invalid": errors.studioId })}
-                name="studioId"
-                onChange={onStudioChange}
-                options={studioObj}
-                defaultValue={
-                  scene?.studio?.id
-                    ? studioObj.find((s) => s.value === scene.studio?.id)
-                    : { label: "", value: "" }
-                }
+              <StudioSelect
+                initialStudio={scene.studio?.id}
+                control={control}
               />
-              <div className="invalid-feedback">
-                {errors?.studioId?.message}
-              </div>
+              <div className="invalid-feedback">{errors?.studio?.message}</div>
             </label>
             <label htmlFor="studioURL" className="col-6">
               <div>Studio URL</div>
@@ -393,7 +348,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
           <Form.Group>
             <Form.Label>Images</Form.Label>
-            <EditImages initialImages={scene.images} control={control} />
+            <EditImages
+              initialImages={scene.images}
+              control={control}
+              maxImages={1}
+            />
           </Form.Group>
 
           <Form.Group>
@@ -435,8 +394,10 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             </Button>
           </Form.Group>
 
-          <Form.Group className="d-flex">
-            <Button type="submit">Save</Button>
+          <Form.Group className="row">
+            <Col>
+              <Button type="submit">Save</Button>
+            </Col>
             <Button type="reset" variant="secondary" className="ml-auto">
               Reset
             </Button>

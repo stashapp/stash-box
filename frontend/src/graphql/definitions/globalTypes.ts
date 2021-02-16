@@ -379,6 +379,7 @@ export interface StudioFilterType {
   name?: string | null;
   url?: string | null;
   parent?: IDCriterionInput | null;
+  has_parent?: boolean | null;
 }
 
 export interface StudioUpdateInput {

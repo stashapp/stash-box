@@ -80,7 +80,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         {creation}
         {modifications}
         {destruction}
-        <Row>
+        <Row className="mt-2">
           <Col md={{ offset: 4, span: 8 }}>{comments}</Col>
         </Row>
       </Card.Body>

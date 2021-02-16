@@ -3,7 +3,6 @@ import { Link, useHistory, useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
 import { useStudio, useDeleteStudio, CriterionModifier } from "src/graphql";
-
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
 import { SceneList } from "src/components/list";
@@ -14,6 +13,7 @@ import {
   getImage,
   getUrlByType,
   createHref,
+  studioHref,
 } from "src/utils";
 import { ROUTE_STUDIO_EDIT, ROUTE_STUDIOS } from "src/constants/route";
 import AuthContext from "src/AuthContext";
@@ -62,6 +62,14 @@ const StudioComponent: React.FC = () => {
               {getUrlByType(studio.urls, "HOME")}
             </a>
           </h6>
+          {studio.parent && (
+            <span>
+              Part of{" "}
+              <b>
+                <Link to={studioHref(studio.parent)}>{studio.parent.name}</Link>
+              </b>
+            </span>
+          )}
         </div>
         {studioImage && (
           <div className="studio-photo">

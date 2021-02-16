@@ -328,7 +328,11 @@ const PerformerForm: React.FC<PerformerProps> = ({
   ];
 
   return (
-    <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
+    <Form
+      className="PerformerForm"
+      onSubmit={handleSubmit(onSubmit)}
+      onKeyDown={(e) => e.code === "Enter" && e.preventDefault()}
+    >
       <input
         type="hidden"
         name="id"
@@ -485,7 +489,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 className={cx({ "is-invalid": errors.height })}
                 type="number"
                 name="height"
-                defaultValue={performer?.height ?? ""}
+                defaultValue={performer?.height || ""}
                 ref={register}
               />
               <Form.Control.Feedback type="invalid">

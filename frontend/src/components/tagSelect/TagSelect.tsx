@@ -5,7 +5,7 @@ import { debounce } from "lodash";
 
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 
-import { useLazyTags } from "src/graphql";
+import { useLazyTags, SortDirectionEnum } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 
@@ -86,7 +86,12 @@ const TagSelect: React.FC<TagSelectProps> = ({
   ) => {
     if (term) {
       setCallback(() => callback);
-      search({ variables: { tagFilter: { name: term } } });
+      search({
+        variables: {
+          tagFilter: { name: term },
+          filter: { direction: SortDirectionEnum.ASC },
+        },
+      });
     } else callback([]);
   };
 

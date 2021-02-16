@@ -111,6 +111,15 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 		query.AddArg(thisArgs...)
 	}
 
+	if studioFilter.HasParent != nil {
+		query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
+		if *studioFilter.HasParent {
+			query.AddWhere("parent_studio.id IS NOT NULL")
+		} else {
+			query.AddWhere("parent_studio.id IS NULL")
+		}
+	}
+
 	query.SortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
 	var studios Studios
 	countResult, err := qb.dbi.Query(*query, &studios)
