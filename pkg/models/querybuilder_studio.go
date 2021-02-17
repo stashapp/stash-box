@@ -103,16 +103,23 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	}
 
 	query := database.NewQueryBuilder(studioDBTable)
+	query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
 
 	if q := studioFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
+	}
+
+	if q := studioFilter.Names; q != nil && *q != "" {
+		searchColumns := []string{"studios.name", "parent_studio.name"}
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
 	if studioFilter.HasParent != nil {
-		query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
 		if *studioFilter.HasParent {
 			query.AddWhere("parent_studio.id IS NOT NULL")
 		} else {

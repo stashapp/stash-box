@@ -305,10 +305,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           <div className="form-group row">
             <label htmlFor="studioId" className="studio-select col-6">
               <div>Studio</div>
-              <StudioSelect
-                initialStudio={scene.studio?.id}
-                control={control}
-              />
+              <StudioSelect initialStudio={scene.studio} control={control} />
               <div className="invalid-feedback">{errors?.studio?.message}</div>
             </label>
             <label htmlFor="studioURL" className="col-6">

@@ -180,3 +180,10 @@ label.is-invalid {
     top: 5px;
   }
 }
+
+.bullet-separator {
+  &::before {
+    content: "\2022";
+    margin: 0 0.5rem;
+  }
+}

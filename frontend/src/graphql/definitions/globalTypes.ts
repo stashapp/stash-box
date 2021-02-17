@@ -338,6 +338,7 @@ export interface SceneFilterType {
   url?: string | null;
   date?: DateCriterionInput | null;
   studios?: MultiIDCriterionInput | null;
+  parentStudio?: string | null;
   tags?: MultiIDCriterionInput | null;
   performers?: MultiIDCriterionInput | null;
   alias?: StringCriterionInput | null;
@@ -377,6 +378,7 @@ export interface StudioDestroyInput {
 
 export interface StudioFilterType {
   name?: string | null;
+  names?: string | null;
   url?: string | null;
   parent?: IDCriterionInput | null;
   has_parent?: boolean | null;

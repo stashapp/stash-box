@@ -31,9 +31,14 @@ type StudioFormData = yup.InferType<typeof schema>;
 interface StudioProps {
   studio: Studio;
   callback: (data: StudioCreateInput) => void;
+  showNetworkSelect?: boolean;
 }
 
-const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
+const StudioForm: React.FC<StudioProps> = ({
+  studio,
+  callback,
+  showNetworkSelect = true,
+}) => {
   const history = useHistory();
   const { register, control, handleSubmit, errors } = useForm<StudioFormData>({
     resolver: yupResolver(schema),
@@ -81,15 +86,17 @@ const StudioForm: React.FC<StudioProps> = ({ studio, callback }) => {
         </Form.Control.Feedback>
       </Form.Group>
 
-      <Form.Group controlId="network">
-        <Form.Label>Network</Form.Label>
-        <StudioSelect
-          excludeStudio={studio.id}
-          control={control}
-          initialStudio={studio.parent?.id}
-          networkSelect
-        />
-      </Form.Group>
+      {showNetworkSelect && (
+        <Form.Group controlId="network">
+          <Form.Label>Network</Form.Label>
+          <StudioSelect
+            excludeStudio={studio.id}
+            control={control}
+            initialStudio={studio.parent}
+            networkSelect
+          />
+        </Form.Group>
+      )}
 
       <Form.Group>
         <Form.Label>Images</Form.Label>

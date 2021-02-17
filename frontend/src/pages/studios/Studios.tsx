@@ -1,69 +1,64 @@
 import React, { useContext } from "react";
-import { Button, Card } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Button, Card, Form } from "react-bootstrap";
+import { Link, useHistory } from "react-router-dom";
 import { canEdit, studioHref, createHref } from "src/utils";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
+import { debounce } from "lodash";
 import AuthContext from "src/AuthContext";
+import querystring from "query-string";
 
-import { Studios_queryStudios_studios as Studio } from "src/graphql/definitions/Studios";
-import { useStudios } from "src/graphql";
-import { LoadingIndicator } from "src/components/fragments";
+import { useStudios, SortDirectionEnum } from "src/graphql";
+import { usePagination } from "src/hooks";
+import { List } from "src/components/list";
 
-interface ParentStudio {
-  studio: Studio;
-  subStudios: Studio[];
-}
+const PER_PAGE = 40;
 
 const StudiosComponent: React.FC = () => {
+  const history = useHistory();
   const auth = useContext(AuthContext);
-  const { loading: loadingData, data } = useStudios({
-    filter: { page: 0, per_page: 10000 },
+  const queries = querystring.parse(history.location.search);
+  const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
+  const { page, setPage } = usePagination();
+  const { loading, data } = useStudios({
+    filter: {
+      page,
+      per_page: PER_PAGE,
+      direction: SortDirectionEnum.ASC,
+    },
+    studioFilter: {
+      names: query,
+    },
   });
 
-  if (loadingData) return <LoadingIndicator message="Loading studios..." />;
-
-  const parentStudios = (data?.queryStudios?.studios ?? []).reduce<
-    Record<string, ParentStudio>
-  >((parents, studio) => {
-    const newStudios = { ...parents };
-    if (studio.parent)
-      newStudios[studio.parent.id] = {
-        ...newStudios[studio.parent.id],
-        subStudios: [
-          studio,
-          ...(newStudios?.[studio.parent.id]?.subStudios ?? []),
-        ],
-      };
-    else
-      newStudios[studio.id] = {
-        ...newStudios[studio.id],
-        studio,
-      };
-    return newStudios;
-  }, {});
-
-  const studios = Object.keys(parentStudios)
-    .map((id) => parentStudios[id])
-    .sort((a, b) => {
-      if (a.studio.name < b.studio.name) return -1;
-      if (a.studio.name > b.studio.name) return 1;
-      return 0;
-    });
-
-  const studioList = studios.map((parent) => (
-    <li key={parent.studio.id}>
-      <Link to={studioHref(parent.studio)}>{parent.studio.name}</Link>
-      {parent.subStudios && (
-        <ul>
-          {parent.subStudios.map((sub) => (
-            <li key={sub.id}>
-              <Link to={studioHref(sub)}>{sub.name}</Link>
-            </li>
-          ))}
-        </ul>
+  const studioList = data?.queryStudios.studios.map((s) => (
+    <li key={s.id} className={s.parent === null ? "font-weight-bold" : ""}>
+      <Link to={studioHref(s)}>{s.name}</Link>
+      {s.parent && (
+        <small className="bullet-separator text-muted">
+          <Link to={studioHref(s.parent)}>{s.parent.name}</Link>
+        </small>
       )}
     </li>
   ));
+
+  const handleQuery = (q: string) => {
+    const qs = querystring.stringify({
+      ...querystring.parse(history.location.search),
+      query: q || undefined,
+      page: undefined,
+    });
+    history.replace(`${history.location.pathname}?${qs}`);
+  };
+  const debouncedHandler = debounce(handleQuery, 200);
+
+  const filters = (
+    <Form.Control
+      id="tag-query"
+      onChange={(e) => debouncedHandler(e.currentTarget.value)}
+      placeholder="Filter studio name"
+      className="w-25"
+    />
+  );
 
   return (
     <>
@@ -75,11 +70,19 @@ const StudiosComponent: React.FC = () => {
           </Link>
         )}
       </div>
-      <Card>
-        <Card.Body>
-          <ul>{studioList}</ul>
-        </Card.Body>
-      </Card>
+      <List
+        entityName="studios"
+        page={page}
+        setPage={setPage}
+        perPage={PER_PAGE}
+        filters={filters}
+        loading={loading}
+        listCount={data?.queryStudios.count}
+      >
+        <Card>
+          <Card.Body>{studioList}</Card.Body>
+        </Card>
+      </List>
     </>
   );
 };

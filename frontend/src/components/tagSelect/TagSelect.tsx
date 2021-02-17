@@ -1,13 +1,20 @@
 import React, { useState } from "react";
 import Async from "react-select/async";
 import { ValueType, OptionTypeBase } from "react-select";
-import { debounce } from "lodash";
+import { useApolloClient } from "@apollo/client";
+import { loader } from "graphql.macro";
+import debounce from "p-debounce";
 
-import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-
-import { useLazyTags, SortDirectionEnum } from "src/graphql";
+import {
+  Tags_queryTags_tags as Tag,
+  Tags,
+  TagsVariables,
+} from "src/graphql/definitions/Tags";
+import { SortDirectionEnum } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
+
+const TagsQuery = loader("src/graphql/queries/Tags.gql");
 
 interface TagSelectProps {
   tags: Tag[];
@@ -33,26 +40,9 @@ const TagSelect: React.FC<TagSelectProps> = ({
   message = "Add tag:",
   excludeTags = [],
 }) => {
+  const client = useApolloClient();
   const [tags, setTags] = useState(initialTags);
-  const [searchCallback, setCallback] = useState<
-    (result: SearchResult[]) => void
-  >();
-  const [search] = useLazyTags({
-    fetchPolicy: "network-only",
-    onCompleted: (result) => {
-      if (searchCallback) {
-        searchCallback(
-          result.queryTags.tags
-            .filter((tag) => !excludeTags.includes(tag.id))
-            .map((tag) => ({
-              label: tag.name,
-              value: tag,
-              subLabel: tag.description ?? "",
-            }))
-        );
-      }
-    },
-  });
+  const excluded = [...excludeTags, ...tags.map((t) => t.id)];
 
   const handleChange = (result: ValueType<SearchResult, false>) => {
     if (result?.value) {
@@ -80,19 +70,22 @@ const TagSelect: React.FC<TagSelectProps> = ({
       />
     ));
 
-  const handleSearch = (
-    term: string,
-    callback: (options: Array<SearchResult>) => void
-  ) => {
-    if (term) {
-      setCallback(() => callback);
-      search({
-        variables: {
-          tagFilter: { name: term },
-          filter: { direction: SortDirectionEnum.ASC },
-        },
-      });
-    } else callback([]);
+  const handleSearch = async (term: string) => {
+    const { data } = await client.query<Tags, TagsVariables>({
+      query: TagsQuery,
+      variables: {
+        tagFilter: { name: term },
+        filter: { direction: SortDirectionEnum.ASC },
+      },
+    });
+
+    return data.queryTags.tags
+      .filter((tag) => !excluded.includes(tag.id))
+      .map((tag) => ({
+        label: tag.name,
+        value: tag,
+        subLabel: tag.description ?? "",
+      }));
   };
 
   const debouncedLoadOptions = debounce(handleSearch, 400);
@@ -107,6 +100,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
           className={`react-select ${CLASSNAME_SELECT}`}
           onChange={handleChange}
           loadOptions={debouncedLoadOptions}
+          placeholder="Search for tag"
           noOptionsMessage={({ inputValue }) =>
             inputValue === "" ? null : `No tags found for "${inputValue}"`
           }

@@ -41,7 +41,11 @@ const StudioEdit: React.FC = () => {
         <strong className="ml-2">{data.findStudio.name}</strong>
       </h2>
       <hr />
-      <StudioForm studio={data.findStudio} callback={doUpdate} />
+      <StudioForm
+        studio={data.findStudio}
+        callback={doUpdate}
+        showNetworkSelect={data.findStudio.child_studios.length === 0}
+      />
     </div>
   );
 };

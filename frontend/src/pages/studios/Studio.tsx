@@ -1,8 +1,9 @@
 import React, { useContext } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
+import { sortBy } from "lodash";
 
-import { useStudio, useDeleteStudio, CriterionModifier } from "src/graphql";
+import { useStudio, useDeleteStudio } from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
 import { SceneList } from "src/components/list";
@@ -48,6 +49,12 @@ const StudioComponent: React.FC = () => {
 
   const studioImage = getImage(studio.images, "landscape");
 
+  const subStudios = sortBy(studio.child_studios, (s) => s.name).map((s) => (
+    <li key={s.id}>
+      <Link to={studioHref(s)}>{s.name}</Link>
+    </li>
+  ));
+
   return (
     <>
       <div className="d-flex">
@@ -92,11 +99,16 @@ const StudioComponent: React.FC = () => {
           )}
         </div>
       </div>
-      <SceneList
-        filter={{
-          studios: { value: [id], modifier: CriterionModifier.INCLUDES },
-        }}
-      />
+      {subStudios.length > 0 && (
+        <>
+          <h6>Sub Studios</h6>
+          <ul style={{ columnCount: 3 }}>{subStudios}</ul>
+        </>
+      )}
+      <>
+        {subStudios.length > 0 && <h4>Scenes</h4>}
+        <SceneList filter={{ parentStudio: id }} />
+      </>
     </>
   );
 };

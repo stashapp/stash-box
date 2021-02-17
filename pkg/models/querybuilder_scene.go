@@ -194,6 +194,12 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 		}
 	}
 
+	if sceneFilter.ParentStudio != nil {
+		query.Body += "LEFT JOIN studios ON scenes.studio_id = studios.id"
+		query.AddWhere("(studios.parent_studio_id = ? OR studios.id = ?)")
+		query.AddArg(*sceneFilter.ParentStudio, *sceneFilter.ParentStudio)
+	}
+
 	if q := sceneFilter.Performers; q != nil && len(q.Value) > 0 {
 		query.AddJoin(scenePerformerTable.Table, scenePerformerTable.Name()+".scene_id = scenes.id")
 		whereClause, havingClause := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
