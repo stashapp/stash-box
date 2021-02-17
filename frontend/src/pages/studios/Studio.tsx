@@ -102,7 +102,9 @@ const StudioComponent: React.FC = () => {
       {subStudios.length > 0 && (
         <>
           <h6>Sub Studios</h6>
-          <ul style={{ columnCount: 3 }}>{subStudios}</ul>
+          <div className="sub-studio-list">
+            <ul>{subStudios}</ul>
+          </div>
         </>
       )}
       <>

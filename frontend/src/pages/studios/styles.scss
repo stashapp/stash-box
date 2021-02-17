@@ -9,3 +9,12 @@
     max-width: 20rem;
   }
 }
+
+.sub-studio-list {
+  max-height: 15rem;
+  overflow-y: auto;
+
+  ul {
+    column-count: 3;
+  }
+}
