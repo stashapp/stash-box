@@ -108,6 +108,7 @@ const schema = yup.object().shape({
   disambiguation: yup.string().trim().transform(nullCheck).nullable(),
   birthdate: yup
     .string()
+    .defined()
     .transform(nullCheck)
     .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
       excludeEmptyString: true,
@@ -186,15 +187,18 @@ const schema = yup.object().shape({
       })
     )
     .nullable(),
-  aliases: yup.array().of(yup.string().trim().transform(nullCheck)),
+  aliases: yup.array().of(
+    yup.string().trim().transform(nullCheck).required()
+  ).required(),
   images: yup
     .array()
-    .of(yup.string().trim().transform(nullCheck))
+    .of(yup.string().trim().transform(nullCheck).required())
     .transform((_, obj) => Object.keys(obj ?? [])),
   note: yup.string().transform(nullCheck).nullable(),
 });
 
-export type PerformerFormData = yup.InferType<typeof schema>;
+export type PerformerFormData = yup.Asserts<typeof schema>;
+export type CastedPerformerFormData = yup.TypeOf<typeof schema>;
 
 interface PerformerProps {
   performer: Performer;

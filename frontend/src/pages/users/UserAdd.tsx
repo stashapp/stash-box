@@ -14,8 +14,7 @@ const AddUserComponent: React.FC = () => {
     },
   });
 
-  const doInsert = (formData: UserData) => {
-    const { id, ...userData } = formData;
+  const doInsert = (userData: UserData) => {
     insertUser({ variables: { userData } })
       .then(() => history.push(ROUTE_USERS))
       .catch((res) => setQueryError(res.message));
@@ -27,7 +26,7 @@ const AddUserComponent: React.FC = () => {
     email: "",
     password: "",
     roles: [],
-  } as UserData;
+  };
 
   return (
     <div className="col-6">

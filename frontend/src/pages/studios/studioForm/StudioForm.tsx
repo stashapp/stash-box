@@ -21,7 +21,7 @@ const schema = yup.object().shape({
   url: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
   images: yup
     .array()
-    .of(yup.string().trim().transform(nullCheck))
+    .of(yup.string().trim().transform(nullCheck).required())
     .transform((_, obj) => Object.keys(obj ?? [])),
   studio: yup.string().nullable(),
 });

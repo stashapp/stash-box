@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
-import { Button, Col, Form, Row, Table } from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
@@ -13,12 +13,13 @@ import {
   SceneUpdateInput,
   FingerprintInput,
   FingerprintAlgorithm,
+  GenderEnum,
 } from "src/graphql";
 import { getUrlByType, createHref } from "src/utils";
 import { ROUTE_SCENES, ROUTE_SCENE } from "src/constants/route";
 
-import { GenderIcon, CloseButton, Icon } from "src/components/fragments";
-import SearchField, { SearchType } from "src/components/searchField";
+import { GenderIcon, Icon } from "src/components/fragments";
+import SearchField, { SearchType, PerformerResult } from "src/components/searchField";
 import TagSelect from "src/components/tagSelect";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
@@ -27,13 +28,13 @@ const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
 
 const schema = yup.object().shape({
-  id: yup.string(),
+  id: yup.string().defined(),
   title: yup.string().required("Title is required"),
   details: yup.string().trim(),
   date: yup
     .string()
     .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
+    .matches(/^\d{4}-\d{2}-\d{2}$/, {
       excludeEmptyString: true,
       message: "Invalid date",
     })
@@ -60,16 +61,24 @@ const schema = yup.object().shape({
           .required(),
         hash: yup.string().required(),
       })
+      .required()
     )
     .nullable(),
-  tags: yup.array().of(yup.string()).nullable(),
+  tags: yup.array().of(yup.string().required()).nullable(),
   images: yup
     .array()
-    .of(yup.string().trim().transform(nullCheck))
+    .of(yup.string().trim().transform(nullCheck).required())
     .transform((_, obj) => Object.keys(obj ?? [])),
 });
 
-type SceneFormData = yup.InferType<typeof schema>;
+interface SceneFormData extends yup.Asserts<typeof schema> {}
+
+interface Performer {
+  performerId: string;
+  name: string;
+  alias: string | null;
+  gender: GenderEnum | null;
+}
 
 interface SceneProps {
   scene: Scene;
@@ -90,18 +99,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   } = useForm<SceneFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      performers: scene.performers.map((p) => ({
-        id: p.performer.id,
-        name: p.performer.name,
-        alias: p.as ?? "",
-        gender: p.performer.gender,
-      })),
     },
   });
-  const { fields, append, remove } = useFieldArray({
+  const { fields: performerFields, append: appendPerformer, remove: removePerformer } = useFieldArray<Performer>({
     control,
     name: "performers",
-    keyName: "key",
   });
 
   const [fingerprints, setFingerprints] = useState<FingerprintInput[]>(
@@ -117,7 +119,12 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     register({ name: "fingerprints" });
     setValue("fingerprints", fingerprints);
     setValue("tags", scene.tags ? scene.tags.map((tag) => tag.id) : []);
-    if (scene?.studio?.id) setValue("studioId", scene.studio.id);
+    setValue("performers", scene.performers.map((p) => ({
+      performerId: p.performer.id,
+      name: p.performer.name,
+      alias: p.as ?? "",
+      gender: p.performer.gender,
+    })));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [register, setValue]);
 
@@ -139,7 +146,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         as: performance.alias,
       })),
       image_ids: data.images,
-      fingerprints: data.fingerprints as FingerprintInput[],
+      fingerprints: data.fingerprints,
       tag_ids: data.tags,
     };
     const urls = [];
@@ -149,39 +156,53 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     callback(sceneData);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const addPerformer = (result: any) => {
-    append({
+  const addPerformer = (result: PerformerResult) => {
+    appendPerformer({
       name: result.name,
-      id: result.id,
+      performerId: result.id,
       gender: result.gender,
       alias: "",
     });
   };
 
-  const performerList = fields.map((p, index) => (
-    <div className="performer-item" key={p.key}>
-      <CloseButton className="remove-item" handler={() => remove(index)} />
-      <GenderIcon gender={p.gender} />
-      <input
+  const performerList = performerFields.map((p, index) => (
+    <Form.Row className="performer-item d-flex" key={p.id}>
+      <Form.Control
         type="hidden"
-        defaultValue={p.id}
+        defaultValue={p.performerId}
         name={`performers[${index}].performerId`}
         ref={register()}
       />
-      <span className="performer-name">{p.name}</span>
-      <label htmlFor={`performers[${index}].alias`}>
-        <span>Alias used: </span>
-        <input
-          className="performer-alias"
-          type="text"
-          name={`performers[${index}].alias`}
-          defaultValue={p.alias?.[0] !== p.name ? p.alias[0] : ""}
-          placeholder={p.name}
-          ref={register()}
-        />
-      </label>
-    </div>
+
+      <Col xs={6}>
+        <InputGroup>
+          <InputGroup.Prepend>
+            <Button variant="danger" onClick={() => removePerformer(index)}>Remove</Button>
+          </InputGroup.Prepend>
+          <InputGroup.Append className="flex-grow-1">
+            <InputGroup.Text className="flex-grow-1">
+              <GenderIcon gender={p.gender} />
+              <span className="performer-name">{p.name}</span>
+            </InputGroup.Text>
+          </InputGroup.Append>
+        </InputGroup>
+      </Col>
+
+      <Col xs={{ span: 5, offset: 1 }}>
+        <InputGroup>
+          <InputGroup.Prepend>
+            <InputGroup.Text>Scene Alias</InputGroup.Text>
+          </InputGroup.Prepend>
+          <Form.Control
+            className="performer-alias"
+            name={`performers[${index}].alias`}
+            defaultValue={p.alias ?? ""}
+            placeholder={p.name}
+            ref={register()}
+          />
+        </InputGroup>
+      </Col>
+    </Form.Row>
   ));
 
   const addFingerprint = () => {
@@ -295,7 +316,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               <div className="add-performer">
                 <span>Add performer:</span>
                 <SearchField
-                  onClick={addPerformer}
+                  onClick={res => res.__typename === "Performer" && addPerformer(res)}
                   searchType={SearchType.Performer}
                 />
               </div>

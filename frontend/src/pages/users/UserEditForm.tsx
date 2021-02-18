@@ -12,11 +12,11 @@ import { isAdmin, userHref } from "src/utils";
 import AuthContext from "src/AuthContext";
 
 const schema = yup.object().shape({
-  id: yup.string(),
+  id: yup.string().required(),
   email: yup.string().email().required("Email is required"),
   roles: yup.array().of(yup.string()),
 });
-type UserFormData = yup.InferType<typeof schema>;
+type UserFormData = yup.Asserts<typeof schema>;
 
 export type UserEditData = {
   id: string;

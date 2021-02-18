@@ -132,7 +132,7 @@ const SceneComponent: React.FC = () => {
             </div>
             <hr />
             <div>
-              <strong className="mr-2">Studio: </strong>
+              <strong className="mr-2">Studio URL: </strong>
               <a
                 href={getUrlByType(scene.urls, "STUDIO")}
                 target="_blank"

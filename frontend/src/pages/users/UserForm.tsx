@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
-import Select, { ValueType, OptionTypeBase } from "react-select";
+import Select from "react-select";
 import * as yup from "yup";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
@@ -20,20 +20,20 @@ const schema = yup.object().shape({
       "uniqueness",
       "Password must have at least 5 unique characters",
       (value) =>
-        value
+        value !== undefined && (value
           .split("")
           .filter(
             (item: string, i: number, ar: string[]) => ar.indexOf(item) === i
           )
-          .join("").length >= 5
+          .join("").length >= 5)
     )
     .required("Password is required"),
   roles: yup.array().of(yup.string()),
 });
-type UserFormData = yup.InferType<typeof schema>;
+
+type UserFormData = yup.Asserts<typeof schema>;
 
 export type UserData = {
-  id: string;
   name: string;
   email: string;
   password: string;
@@ -43,12 +43,7 @@ export type UserData = {
 interface UserProps {
   user: UserUpdateInput;
   error?: string;
-  callback: (data: UserData) => void;
-}
-
-interface IOptionType extends OptionTypeBase {
-  value: string;
-  label: string;
+  callback: (data: UserData, id?: string) => void;
 }
 
 const roles = Object.keys(RoleEnum).map((role) => ({
@@ -58,40 +53,19 @@ const roles = Object.keys(RoleEnum).map((role) => ({
 
 const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
   const history = useHistory();
-  const [userRoles, setUserRoles] = useState(
-    (user?.roles ?? []).map((role: string) => ({
-      value: role,
-      label: role,
-    }))
-  );
-  const { register, handleSubmit, setValue, errors } = useForm<UserFormData>({
+  const { register, handleSubmit, errors, control } = useForm<UserFormData>({
     resolver: yupResolver(schema),
   });
-
-  useEffect(() => {
-    register({ name: "roles" });
-    setValue("roles", []);
-  }, [register, setValue]);
 
   const onSubmit = (formData: UserFormData) => {
     const userData = {
       ...formData,
-      id: formData.id,
       name: formData.name,
       email: formData.email,
       password: formData.password,
       roles: formData.roles as RoleEnum[],
     };
-    callback(userData);
-  };
-
-  const onRoleChange = (selectedRoles: ValueType<IOptionType, true>) => {
-    const val = selectedRoles ?? [];
-    setUserRoles([...val]);
-    setValue(
-      "roles",
-      val.map((role) => role.value)
-    );
+    callback(userData, formData.id);
   };
 
   return (
@@ -141,14 +115,21 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
       <Form.Row>
         <Form.Group className="col">
           <Form.Label>Roles</Form.Label>
-          <Select
-            classNamePrefix="react-select"
+          <Controller
             name="roles"
-            options={roles}
-            placeholder="User roles"
-            onChange={onRoleChange}
-            value={userRoles}
-            isMulti
+            control={control}
+            defaultValue={user.roles ?? []}
+            render={({ onChange, value }) => (
+              <Select
+                classNamePrefix="react-select"
+                name="roles"
+                options={roles}
+                placeholder="User roles"
+                onChange={vals => onChange(vals.map(v => v.value) ?? [])}
+                defaultValue={value}
+                isMulti
+              />
+            )}
           />
         </Form.Group>
       </Form.Row>

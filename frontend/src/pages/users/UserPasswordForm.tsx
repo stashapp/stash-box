@@ -16,7 +16,7 @@ const schema = yup.object().shape({
       "uniqueness",
       "Password must have at least 5 unique characters",
       (value) =>
-        value
+        value !== undefined && value
           .split("")
           .filter(
             (item: string, i: number, ar: string[]) => ar.indexOf(item) === i

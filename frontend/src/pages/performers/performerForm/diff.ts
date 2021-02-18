@@ -3,12 +3,12 @@ import { isEqual } from "lodash";
 import { BodyModificationInput } from "src/graphql";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { ChangeRowProps } from "src/components/changeRow/ChangeRow";
-import { PerformerFormData } from "./PerformerForm";
+import { CastedPerformerFormData } from "./PerformerForm";
 
 const diffArray = (
   name: string,
   original: (string | number)[] | null,
-  updated: (string | number)[] | null
+  updated: (string | number)[] | null | undefined
 ) => {
   const arrA = original ?? [];
   const arrB = updated ?? [];
@@ -26,10 +26,15 @@ const diffArray = (
   };
 };
 
+type BodyModFormData = {
+  location?: string;
+  description?: string | null;
+}
+
 const diffBodyMod = (
   name: string,
   original: BodyModificationInput[] | null,
-  updated: BodyModificationInput[] | null
+  updated: BodyModFormData[] | null | undefined
 ) => {
   const arrA = (original ?? []).map(
     (b) => `${b.location}${b.description ? ": " : ""}${b.description || ""}`
@@ -72,7 +77,7 @@ const diffValue = (
 
 const DiffPerformer = (
   original: Performer,
-  updated: PerformerFormData
+  updated: CastedPerformerFormData
 ): ChangeRowProps[] => {
   const changes = [];
 
