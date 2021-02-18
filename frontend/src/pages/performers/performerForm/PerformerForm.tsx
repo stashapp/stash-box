@@ -187,9 +187,10 @@ const schema = yup.object().shape({
       })
     )
     .nullable(),
-  aliases: yup.array().of(
-    yup.string().trim().transform(nullCheck).required()
-  ).required(),
+  aliases: yup
+    .array()
+    .of(yup.string().trim().transform(nullCheck).required())
+    .required(),
   images: yup
     .array()
     .of(yup.string().trim().transform(nullCheck).required())

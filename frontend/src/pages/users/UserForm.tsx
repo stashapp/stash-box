@@ -20,12 +20,13 @@ const schema = yup.object().shape({
       "uniqueness",
       "Password must have at least 5 unique characters",
       (value) =>
-        value !== undefined && (value
+        value !== undefined &&
+        value
           .split("")
           .filter(
             (item: string, i: number, ar: string[]) => ar.indexOf(item) === i
           )
-          .join("").length >= 5)
+          .join("").length >= 5
     )
     .required("Password is required"),
   roles: yup.array().of(yup.string()),
@@ -125,7 +126,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
                 name="roles"
                 options={roles}
                 placeholder="User roles"
-                onChange={vals => onChange(vals.map(v => v.value) ?? [])}
+                onChange={(vals) => onChange(vals.map((v) => v.value) ?? [])}
                 defaultValue={value}
                 isMulti
               />

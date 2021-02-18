@@ -19,7 +19,10 @@ import { getUrlByType, createHref } from "src/utils";
 import { ROUTE_SCENES, ROUTE_SCENE } from "src/constants/route";
 
 import { GenderIcon, Icon } from "src/components/fragments";
-import SearchField, { SearchType, PerformerResult } from "src/components/searchField";
+import SearchField, {
+  SearchType,
+  PerformerResult,
+} from "src/components/searchField";
 import TagSelect from "src/components/tagSelect";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
@@ -54,14 +57,16 @@ const schema = yup.object().shape({
   fingerprints: yup
     .array()
     .of(
-      yup.object().shape({
-        algorithm: yup
-          .string()
-          .oneOf(Object.keys(FingerprintAlgorithm))
-          .required(),
-        hash: yup.string().required(),
-      })
-      .required()
+      yup
+        .object()
+        .shape({
+          algorithm: yup
+            .string()
+            .oneOf(Object.keys(FingerprintAlgorithm))
+            .required(),
+          hash: yup.string().required(),
+        })
+        .required()
     )
     .nullable(),
   tags: yup.array().of(yup.string().required()).nullable(),
@@ -98,10 +103,13 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     errors,
   } = useForm<SceneFormData>({
     resolver: yupResolver(schema),
-    defaultValues: {
-    },
+    defaultValues: {},
   });
-  const { fields: performerFields, append: appendPerformer, remove: removePerformer } = useFieldArray<Performer>({
+  const {
+    fields: performerFields,
+    append: appendPerformer,
+    remove: removePerformer,
+  } = useFieldArray<Performer>({
     control,
     name: "performers",
   });
@@ -119,12 +127,15 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     register({ name: "fingerprints" });
     setValue("fingerprints", fingerprints);
     setValue("tags", scene.tags ? scene.tags.map((tag) => tag.id) : []);
-    setValue("performers", scene.performers.map((p) => ({
-      performerId: p.performer.id,
-      name: p.performer.name,
-      alias: p.as ?? "",
-      gender: p.performer.gender,
-    })));
+    setValue(
+      "performers",
+      scene.performers.map((p) => ({
+        performerId: p.performer.id,
+        name: p.performer.name,
+        alias: p.as ?? "",
+        gender: p.performer.gender,
+      }))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [register, setValue]);
 
@@ -177,7 +188,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       <Col xs={6}>
         <InputGroup>
           <InputGroup.Prepend>
-            <Button variant="danger" onClick={() => removePerformer(index)}>Remove</Button>
+            <Button variant="danger" onClick={() => removePerformer(index)}>
+              Remove
+            </Button>
           </InputGroup.Prepend>
           <InputGroup.Append className="flex-grow-1">
             <InputGroup.Text className="flex-grow-1">
@@ -316,7 +329,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               <div className="add-performer">
                 <span>Add performer:</span>
                 <SearchField
-                  onClick={res => res.__typename === "Performer" && addPerformer(res)}
+                  onClick={(res) =>
+                    res.__typename === "Performer" && addPerformer(res)
+                  }
                   searchType={SearchType.Performer}
                 />
               </div>

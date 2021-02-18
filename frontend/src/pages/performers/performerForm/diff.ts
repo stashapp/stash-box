@@ -29,7 +29,7 @@ const diffArray = (
 type BodyModFormData = {
   location?: string;
   description?: string | null;
-}
+};
 
 const diffBodyMod = (
   name: string,

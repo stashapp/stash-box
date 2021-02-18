@@ -31,7 +31,13 @@ interface TagProps {
 
 const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
   const history = useHistory();
-  const { register, handleSubmit, setValue, errors, control } = useForm<TagFormData>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    errors,
+    control,
+  } = useForm<TagFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -107,7 +113,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
               classNamePrefix="react-select"
               className={cx({ "is-invalid": errors.categoryId })}
               name="categoryId"
-              onChange={opt => opt && onChange(opt.value)}
+              onChange={(opt) => opt && onChange(opt.value)}
               options={[{ value: "", label: "None" }, ...categoryObj]}
               placeholder="Category"
               defaultValue={
