@@ -42,6 +42,18 @@ export enum EthnicityEnum {
   OTHER = "OTHER",
 }
 
+export enum EthnicityFilterEnum {
+  ASIAN = "ASIAN",
+  BLACK = "BLACK",
+  CAUCASIAN = "CAUCASIAN",
+  INDIAN = "INDIAN",
+  LATIN = "LATIN",
+  MIDDLE_EASTERN = "MIDDLE_EASTERN",
+  MIXED = "MIXED",
+  OTHER = "OTHER",
+  UNKNOWN = "UNKNOWN",
+}
+
 export enum EyeColorEnum {
   BLUE = "BLUE",
   BROWN = "BROWN",
@@ -62,6 +74,15 @@ export enum GenderEnum {
   MALE = "MALE",
   TRANSGENDER_FEMALE = "TRANSGENDER_FEMALE",
   TRANSGENDER_MALE = "TRANSGENDER_MALE",
+}
+
+export enum GenderFilterEnum {
+  FEMALE = "FEMALE",
+  INTERSEX = "INTERSEX",
+  MALE = "MALE",
+  TRANSGENDER_FEMALE = "TRANSGENDER_FEMALE",
+  TRANSGENDER_MALE = "TRANSGENDER_MALE",
+  UNKNOWN = "UNKNOWN",
 }
 
 export enum HairColorEnum {
@@ -173,11 +194,6 @@ export interface EditInput {
   comment?: string | null;
 }
 
-export interface EthnicityCriterionInput {
-  value?: EthnicityEnum | null;
-  modifier: CriterionModifier;
-}
-
 export interface EyeColorCriterionInput {
   value?: EyeColorEnum | null;
   modifier: CriterionModifier;
@@ -272,12 +288,12 @@ export interface PerformerFilterType {
   name?: string | null;
   alias?: string | null;
   disambiguation?: StringCriterionInput | null;
-  gender?: GenderEnum | null;
+  gender?: GenderFilterEnum | null;
   url?: string | null;
   birthdate?: DateCriterionInput | null;
   birth_year?: IntCriterionInput | null;
   age?: IntCriterionInput | null;
-  ethnicity?: EthnicityCriterionInput | null;
+  ethnicity?: EthnicityFilterEnum | null;
   country?: StringCriterionInput | null;
   eye_color?: EyeColorCriterionInput | null;
   hair_color?: HairColorCriterionInput | null;

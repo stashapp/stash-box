@@ -38,6 +38,7 @@ type OptionEnum = {
 };
 
 const GENDER: OptionEnum[] = [
+  { value: "null", label: "Unknown" },
   { value: "FEMALE", label: "Female" },
   { value: "MALE", label: "Male" },
   { value: "TRANSGENDER_FEMALE", label: "Transfemale" },
@@ -103,8 +104,9 @@ const schema = yup.object().shape({
   name: yup.string().required("Name is required"),
   gender: yup
     .string()
-    .oneOf(Object.keys(GenderEnum), "Invalid gender")
-    .required("Gender is required"),
+    .transform(nullCheck)
+    .nullable()
+    .oneOf([null, ...Object.keys(GenderEnum)], "Invalid gender"),
   disambiguation: yup.string().trim().transform(nullCheck).nullable(),
   birthdate: yup
     .string()
@@ -255,7 +257,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
     const performerData: PerformerEditDetailsInput = {
       name: data.name,
       disambiguation: data.disambiguation,
-      gender: GenderEnum[data.gender as keyof typeof GenderEnum],
+      gender: GenderEnum[data.gender as keyof typeof GenderEnum] || null,
       eye_color:
         EyeColorEnum[data.eye_color as keyof typeof EyeColorEnum] || null,
       hair_color:
@@ -269,15 +271,16 @@ const PerformerForm: React.FC<PerformerProps> = ({
       aliases: data.aliases ? data.aliases.map((p: string) => p.trim()) : null,
       piercings: data.piercings,
       tattoos: data.tattoos,
-      breast_type: BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum],
+      breast_type:
+        BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum] || null,
       image_ids: data.images,
     };
 
     performerData.measurements = {
-      cup_size: "",
-      band_size: 0,
-      waist: data.waistSize ?? 0,
-      hip: data.hipSize ?? 0,
+      cup_size: null,
+      band_size: null,
+      waist: data.waistSize ?? null,
+      hip: data.hipSize ?? null,
     };
     if (data.braSize != null) {
       const band = data.braSize.match(/^\d+/)?.[0];
@@ -291,6 +294,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
       performerData.measurements.cup_size = braSize;
       performerData.measurements.band_size = bandSize ?? 0;
     }
+
     if (
       data.gender === GenderEnum.MALE ||
       data.gender === GenderEnum.TRANSGENDER_MALE
@@ -503,9 +507,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Text>Height in centimeters</Form.Text>
             </Form.Group>
 
-            {(gender === "FEMALE" ||
-              gender === "TRANSGENDER_FEMALE" ||
-              gender === "INTERSEX") && (
+            {gender !== "MALE" && gender !== "TRANSGENDER_MALE" && (
               <Form.Group controlId="boobJob" className="col-6">
                 <Form.Label>Breast type</Form.Label>
                 <Form.Control

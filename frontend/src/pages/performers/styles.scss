@@ -20,3 +20,14 @@
   height: 25rem;
   margin-top: 5px;
 }
+
+.performer-filter {
+  width: 175px;
+}
+
+.performer-sort {
+  width: 200px;
+  select {
+    -webkit-appearance: none;
+  }
+}

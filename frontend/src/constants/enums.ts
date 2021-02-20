@@ -1,9 +1,11 @@
 import {
   BreastTypeEnum,
   EthnicityEnum,
+  EthnicityFilterEnum,
   EyeColorEnum,
   HairColorEnum,
   GenderEnum,
+  GenderFilterEnum,
   OperationEnum,
   TargetTypeEnum,
   VoteStatusEnum,
@@ -28,6 +30,14 @@ export const EthnicityTypes: EnumDictionary<EthnicityEnum, string> = {
   [EthnicityEnum.INDIAN]: "Indian",
   [EthnicityEnum.CAUCASIAN]: "Caucasian",
   [EthnicityEnum.MIDDLE_EASTERN]: "Middle Eastern",
+};
+
+export const EthnicityFilterTypes: EnumDictionary<
+  EthnicityFilterEnum,
+  string
+> = {
+  ...EthnicityTypes,
+  [EthnicityFilterEnum.UNKNOWN]: "Unknown Ethnicity",
 };
 
 export const EyeColorTypes: EnumDictionary<EyeColorEnum, string> = {
@@ -57,6 +67,10 @@ export const GenderTypes: EnumDictionary<GenderEnum, string> = {
   [GenderEnum.INTERSEX]: "Intersex",
   [GenderEnum.TRANSGENDER_MALE]: "Transmale",
   [GenderEnum.TRANSGENDER_FEMALE]: "Transfemale",
+};
+export const GenderFilterTypes: EnumDictionary<GenderFilterEnum, string> = {
+  ...GenderTypes,
+  [GenderFilterEnum.UNKNOWN]: "Unknown Gender",
 };
 
 export const EditOperationTypes: EnumDictionary<OperationEnum, string> = {

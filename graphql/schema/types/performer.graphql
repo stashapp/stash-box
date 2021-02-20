@@ -6,6 +6,15 @@ enum GenderEnum {
   INTERSEX
 }
 
+enum GenderFilterEnum {
+  UNKNOWN
+  MALE
+  FEMALE
+  TRANSGENDER_MALE
+  TRANSGENDER_FEMALE
+  INTERSEX
+}
+
 enum BreastTypeEnum {
   NATURAL
   FAKE
@@ -27,6 +36,17 @@ input MeasurementsInput {
 }
 
 enum EthnicityEnum {
+  CAUCASIAN
+  BLACK
+  ASIAN
+  INDIAN
+  LATIN
+  MIDDLE_EASTERN
+  MIXED
+  OTHER
+}
+enum EthnicityFilterEnum {
+  UNKNOWN
   CAUCASIAN
   BLACK
   ASIAN
@@ -205,11 +225,6 @@ type QueryPerformersResultType {
   performers: [Performer!]!
 }
 
-input EthnicityCriterionInput {
-  value: EthnicityEnum
-  modifier: CriterionModifier!
-}
-
 input BreastTypeCriterionInput {
   value: BreastTypeEnum
   modifier: CriterionModifier!
@@ -243,7 +258,7 @@ input PerformerFilterType {
 
   disambiguation: StringCriterionInput
 
-  gender: GenderEnum
+  gender: GenderFilterEnum
   
   """Filter to search urls - assumes like query unless quoted"""
   url: String
@@ -252,7 +267,7 @@ input PerformerFilterType {
   birth_year: IntCriterionInput
   age: IntCriterionInput
 
-  ethnicity: EthnicityCriterionInput
+  ethnicity: EthnicityFilterEnum
   country: StringCriterionInput
   eye_color: EyeColorCriterionInput
   hair_color: HairColorCriterionInput
