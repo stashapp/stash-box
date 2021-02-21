@@ -54,6 +54,7 @@ const PerformersComponent: React.FC = () => {
       direction,
     },
     performerFilter: {
+      name: query || undefined,
       gender: gender ? (gender as GenderFilterEnum) : undefined,
     },
   });
