@@ -228,14 +228,14 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 			JOIN (SELECT performer_id, MIN(date) as debut FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
-		direction := findFilter.GetDirection()
+		direction := findFilter.GetDirection() + database.GetDialect().NullsLast()
 		query.SortAndPagination = "ORDER BY debut " + direction + getPagination(findFilter)
 	} else if findFilter != nil && findFilter.GetSort("") == "scene_count" {
 		query.Body += `
 			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
-		direction := findFilter.GetDirection()
+		direction := findFilter.GetDirection() + database.GetDialect().NullsLast()
 		query.SortAndPagination = "ORDER BY scene_count " + direction + getPagination(findFilter)
 	} else {
 		query.SortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
