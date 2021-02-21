@@ -1,21 +1,19 @@
 import React, { useContext } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 
+import { GenderEnum } from "src/graphql";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 
-import { usePerformerEdit, OperationEnum, GenderEnum } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   canEdit,
-  isAdmin,
   formatFuzzyDate,
   getCountryByISO,
   formatBodyModifications,
   formatMeasurements,
   formatCareer,
   createHref,
-  editHref,
 } from "src/utils";
 import {
   EthnicityTypes,
@@ -27,30 +25,14 @@ import {
 import {
   ROUTE_PERFORMER_EDIT,
   ROUTE_PERFORMER_MERGE,
+  ROUTE_PERFORMER_DELETE,
 } from "src/constants/route";
 
 import { GenderIcon, PerformerName } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
-import DeleteButton from "src/components/deleteButton";
 
 const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
-  const history = useHistory();
   const auth = useContext(AuthContext);
-  const [deletePerformerEdit, { loading: deleting }] = usePerformerEdit({
-    onCompleted: (data) => {
-      if (data.performerEdit.id) history.push(editHref(data.performerEdit));
-    },
-  });
-
-  const handleDelete = (): void => {
-    deletePerformerEdit({
-      variables: {
-        performerData: {
-          edit: { operation: OperationEnum.DESTROY, id: performer.id },
-        },
-      },
-    });
-  };
 
   return (
     <Row>
@@ -61,27 +43,23 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
               <GenderIcon gender={performer?.gender} />
               <PerformerName performer={performer} />
             </h2>
-            {!performer.deleted && (
+            {canEdit(auth?.user) && !performer.deleted && (
               <div className="ml-auto">
-                {canEdit(auth?.user) && (
-                  <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
-                    <Button>Edit</Button>
-                  </Link>
-                )}
+                <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
+                  <Button>Edit</Button>
+                </Link>
                 <Link
                   to={createHref(ROUTE_PERFORMER_MERGE, performer)}
                   className="ml-2"
                 >
                   <Button>Merge into</Button>
                 </Link>
-                {isAdmin(auth.user) && !performer.deleted && (
-                  <DeleteButton
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    className="ml-2"
-                    message="Do you want to delete performer?"
-                  />
-                )}
+                <Link
+                  to={createHref(ROUTE_PERFORMER_DELETE, performer)}
+                  className="ml-2"
+                >
+                  <Button variant="danger">Delete</Button>
+                </Link>
               </div>
             )}
           </Card.Header>

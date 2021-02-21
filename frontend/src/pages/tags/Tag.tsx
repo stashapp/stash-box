@@ -1,28 +1,26 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 
 import {
   useScenes,
   useTag,
-  useTagEdit,
   SortDirectionEnum,
   CriterionModifier,
   TargetTypeEnum,
-  OperationEnum,
 } from "src/graphql";
 
+import AuthContext from "src/AuthContext";
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { EditList } from "src/components/list";
-import DeleteButton from "src/components/deleteButton";
-import { createHref, tagHref } from "src/utils/route";
+import { canEdit, createHref, tagHref } from "src/utils";
 import {
   ROUTE_TAG_EDIT,
   ROUTE_TAG_MERGE,
-  ROUTE_EDIT,
+  ROUTE_TAG_DELETE,
   ROUTE_CATEGORY,
 } from "src/constants/route";
 
@@ -30,6 +28,7 @@ const PER_PAGE = 20;
 const DEFAULT_TAB = "scenes";
 
 const TagComponent: React.FC = () => {
+  const auth = useContext(AuthContext);
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { page, setPage } = usePagination();
@@ -55,23 +54,6 @@ const TagComponent: React.FC = () => {
     !tag?.id
   );
 
-  const [deleteTagEdit, { loading: deleting }] = useTagEdit({
-    onCompleted: (result) => {
-      if (result.tagEdit.id)
-        history.push(createHref(ROUTE_EDIT, result.tagEdit));
-    },
-  });
-
-  const handleDelete = () => {
-    deleteTagEdit({
-      variables: {
-        tagData: {
-          edit: { operation: OperationEnum.DESTROY, id: tag?.id },
-        },
-      },
-    });
-  };
-
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
@@ -89,22 +71,22 @@ const TagComponent: React.FC = () => {
   return (
     <>
       <div className="row no-gutters">
-        <h3 className="col-4 mr-auto">
+        <h3>
           <span className="mr-2">Tag:</span>
           {tag.deleted ? <del>{tag.name}</del> : <em>{tag.name}</em>}
         </h3>
-        <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="mr-2">
-          <Button>Edit</Button>
-        </Link>
-        <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="mr-2">
-          <Button>Merge into</Button>
-        </Link>
-        {!tag.deleted && (
-          <DeleteButton
-            onClick={handleDelete}
-            disabled={deleting}
-            message="Do you want to delete tag?"
-          />
+        {canEdit(auth.user) && !tag.deleted && (
+          <div className="ml-auto">
+            <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="ml-2">
+              <Button>Edit</Button>
+            </Link>
+            <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="ml-2">
+              <Button>Merge into</Button>
+            </Link>
+            <Link to={createHref(ROUTE_TAG_DELETE, tag)} className="ml-2">
+              <Button variant="danger">Delete</Button>
+            </Link>
+          </div>
         )}
       </div>
       {tag.description && (

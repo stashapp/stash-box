@@ -7,6 +7,7 @@ import {
   ROUTE_PERFORMER_ADD,
   ROUTE_PERFORMER_EDIT,
   ROUTE_PERFORMER_MERGE,
+  ROUTE_PERFORMER_DELETE,
 } from "src/constants/route";
 
 import Performers from "./Performers";
@@ -14,6 +15,7 @@ import Performer from "./Performer";
 import PerformerAdd from "./PerformerAdd";
 import PerformerEdit from "./PerformerEdit";
 import PerformerMerge from "./PerformerMerge";
+import PerformerDelete from "./PerformerDelete";
 
 const PerformerRoutes: React.FC = () => (
   <Switch>
@@ -31,6 +33,9 @@ const PerformerRoutes: React.FC = () => (
     </Route>
     <Route exact path={ROUTE_PERFORMER_MERGE}>
       <PerformerMerge />
+    </Route>
+    <Route exact path={ROUTE_PERFORMER_DELETE}>
+      <PerformerDelete />
     </Route>
   </Switch>
 );

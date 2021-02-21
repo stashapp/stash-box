@@ -72,9 +72,13 @@ export const useEdits = (variables: EditsVariables) =>
 export const useMe = (options?: QueryHookOptions<Me>) =>
   useQuery<Me>(MeQuery, options);
 
-export const usePerformer = (variables: PerformerVariables) =>
+export const usePerformer = (
+  variables: PerformerVariables,
+  skip: boolean = false
+) =>
   useQuery<Performer, PerformerVariables>(PerformerQuery, {
     variables,
+    skip,
   });
 
 export const usePerformers = (variables: PerformersVariables) =>
@@ -130,9 +134,10 @@ export const useLazyStudios = (
   options?: LazyQueryHookOptions<Studios, StudiosVariables>
 ) => useLazyQuery(StudiosQuery, options);
 
-export const useTag = (variables: TagVariables) =>
+export const useTag = (variables: TagVariables, skip: boolean = false) =>
   useQuery<Tag, TagVariables>(TagQuery, {
     variables,
+    skip,
   });
 
 export const useTags = (variables: TagsVariables) =>
