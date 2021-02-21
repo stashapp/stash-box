@@ -53,7 +53,7 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
   };
 
   return (
-    <Row className="mb-4">
+    <Row>
       <Col xs={6}>
         <Card>
           <Card.Header className="d-flex">
