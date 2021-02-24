@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import { loader } from "graphql.macro";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import cx from "classnames";
 
+import { useAddImage } from "src/graphql";
 import { Image } from "src/utils/transforms";
-import {
-  AddImageMutation as AddImage,
-  AddImageMutationVariables,
-} from "src/definitions/AddImageMutation";
-import { useMutation } from "@apollo/client";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
-
-const AddImageMutation = loader("src/mutations/AddImage.gql");
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_DROP = `${CLASSNAME}-drop`;
@@ -24,17 +17,20 @@ interface EditImagesProps {
   initialImages: Image[];
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   control: any;
+  maxImages?: number;
 }
 
-const EditImages: React.FC<EditImagesProps> = ({ initialImages, control }) => {
+const EditImages: React.FC<EditImagesProps> = ({
+  initialImages,
+  control,
+  maxImages,
+}) => {
   const [images, setImages] = useState(initialImages);
   const [file, setFile] = useState<File | undefined>();
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
-  const [addImage] = useMutation<AddImage, AddImageMutationVariables>(
-    AddImageMutation
-  );
+  const [addImage] = useAddImage();
 
   const handleAddImage = () => {
     setUploading(true);
@@ -77,6 +73,8 @@ const EditImages: React.FC<EditImagesProps> = ({ initialImages, control }) => {
     }
   };
 
+  const isDisabled = maxImages !== undefined && images.length >= maxImages;
+
   return (
     <Form.Row className={CLASSNAME}>
       <Col xs={7} className="d-flex flex-wrap justify-content-between">
@@ -101,16 +99,18 @@ const EditImages: React.FC<EditImagesProps> = ({ initialImages, control }) => {
               <LoadingIndicator message="Uploading image..." />
             </div>
           ) : (
-            <div className={CLASSNAME_DROP}>
-              <Form.File
-                onChange={onFileChange}
-                accept=".png,.jpg,.webp,.svg"
-              />
-              <div className={CLASSNAME_PLACEHOLDER}>
-                <Icon icon="images" />
-                <span>Add image</span>
+            !isDisabled && (
+              <div className={CLASSNAME_DROP}>
+                <Form.File
+                  onChange={onFileChange}
+                  accept=".png,.jpg,.webp,.svg"
+                />
+                <div className={CLASSNAME_PLACEHOLDER}>
+                  <Icon icon="images" />
+                  <span>Add image</span>
+                </div>
               </div>
-            </div>
+            )
           )}
         </Row>
         <Row className="mt-1">

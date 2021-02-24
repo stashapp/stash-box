@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
+import cx from "classnames";
 
-import { Icon } from "src/components/fragments";
+import { Icon, LoadingIndicator } from "src/components/fragments";
 import { Image, sortImageURLs } from "src/utils";
 
 interface ImageCarouselProps {
@@ -15,66 +16,91 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
   orientation,
   onDeleteImage,
 }) => {
-  const [activeImage, setActiveImage] = useState(0);
+  const [imageIndex, setImageIndex] = useState(0);
+  const [imageState, setImageState] = useState<
+    "loading" | "error" | "loaded" | "empty"
+  >("empty");
+  const [loadDict, setLoadDict] = useState<Record<number, boolean>>({});
   const sortedImages = orientation
     ? sortImageURLs(images, orientation)
     : images;
 
   if (sortedImages.length === 0) return <div />;
 
+  const changeImage = (index: number) => {
+    setImageIndex(index);
+    if (!loadDict[index]) setImageState("loading");
+  };
   const setNext = () =>
-    setActiveImage(
-      activeImage === sortedImages.length - 1 ? 0 : activeImage + 1
-    );
+    changeImage(imageIndex === sortedImages.length - 1 ? 0 : imageIndex + 1);
   const setPrev = () =>
-    setActiveImage(
-      activeImage === 0 ? sortedImages.length - 1 : activeImage - 1
-    );
+    changeImage(imageIndex === 0 ? sortedImages.length - 1 : imageIndex - 1);
+
+  const handleLoad = (index: number) => {
+    setLoadDict({
+      ...loadDict,
+      [index]: true,
+    });
+    setImageState("loaded");
+  };
+  const handleError = () => setImageState("error");
 
   const handleDelete = () => {
-    const deletedImage = sortedImages[activeImage];
+    const deletedImage = sortedImages[imageIndex];
     if (onDeleteImage && deletedImage) {
       onDeleteImage(deletedImage);
-      setActiveImage(activeImage === 0 ? 0 : activeImage - 1);
+      setImageIndex(imageIndex === 0 ? 0 : imageIndex - 1);
     }
   };
 
   return (
     <div className="image-carousel">
       <div className="image-container">
-        <img
-          src={sortedImages[activeImage].url}
-          alt=""
-          className="image-carousel-img"
-        />
-        {onDeleteImage ? (
-          <div className="delete-image-overlay">
-            <Button variant="danger" size="sm" onClick={handleDelete}>
-              <Icon icon="times" />
-            </Button>
-          </div>
-        ) : undefined}
-      </div>
-
-      <div className="d-flex align-items-center">
         <Button
-          className="mr-auto"
+          className="prev-button minimal"
           onClick={setPrev}
           disabled={sortedImages.length === 1}
+          variant="link"
         >
-          <Icon icon="arrow-left" />
+          <Icon icon="chevron-left" />
         </Button>
-        <h5>
-          Image {activeImage + 1} of {sortedImages.length}
-        </h5>
+        <div className="image-carousel-img">
+          <img
+            src={sortedImages[imageIndex].url}
+            alt=""
+            className={cx({ "d-none": imageState !== "loaded" })}
+            onLoad={() => handleLoad(imageIndex)}
+            onError={handleError}
+          />
+          {imageState === "loading" && (
+            <LoadingIndicator message="Loading image..." />
+          )}
+          {imageState === "error" && (
+            <div className="h-100 d-flex justify-content-center align-items-center">
+              <b>Error loading image.</b>
+            </div>
+          )}
+          {onDeleteImage ? (
+            <div className="delete-image-overlay">
+              <Button variant="danger" size="sm" onClick={handleDelete}>
+                <Icon icon="times" />
+              </Button>
+            </div>
+          ) : undefined}
+        </div>
         <Button
-          className="ml-auto"
+          className="next-button minimal"
           onClick={setNext}
           disabled={sortedImages.length === 1}
+          variant="link"
         >
-          <Icon icon="arrow-right" />
+          <Icon icon="chevron-right" />
         </Button>
       </div>
+
+      <h5 className="text-center">
+        {imageIndex + 1} of {sortedImages.length}
+      </h5>
     </div>
   );
 };

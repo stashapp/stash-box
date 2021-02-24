@@ -6,9 +6,14 @@
 
     img {
       height: 100%;
+      image-rendering: smooth;
       object-fit: cover;
       object-position: top;
       width: 100%;
+
+      &[src=""] {
+        display: none;
+      }
     }
   }
 }

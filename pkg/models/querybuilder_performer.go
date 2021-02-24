@@ -180,7 +180,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 
 	if q := performerFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"performers.name"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
@@ -197,7 +197,22 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		query.AddArg(thisArgs...)
 	}
 
-	//handleStringCriterion("ethnicity", performerFilter.Ethnicity, &query)
+	if q := performerFilter.Gender; q != nil && *q != "" {
+		if *q == GenderFilterEnumUnknown {
+			query.AddWhere("performers.gender IS NULL")
+		} else {
+			query.Eq("performers.gender", q.String())
+		}
+	}
+
+	if q := performerFilter.Ethnicity; q != nil && *q != "" {
+		if *q == EthnicityFilterEnumUnknown {
+			query.AddWhere("performers.ethnicity IS NULL")
+		} else {
+			query.Eq("performers.ethnicity", q.String())
+		}
+	}
+
 	handleStringCriterion("country", performerFilter.Country, query)
 	//handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
 	//handleStringCriterion("height", performerFilter.Height, &query)
@@ -208,7 +223,24 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	//handleStringCriterion("piercings", performerFilter.Piercings, &query)
 	//handleStringCriterion("aliases", performerFilter.Aliases, &query)
 
-	query.SortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+	if findFilter != nil && findFilter.GetSort("") == "debut" {
+		query.Body += `
+			JOIN (SELECT performer_id, MIN(date) as debut FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
+			ON performers.id = D.performer_id
+		`
+		direction := findFilter.GetDirection() + database.GetDialect().NullsLast()
+		query.SortAndPagination = "ORDER BY debut " + direction + getPagination(findFilter)
+	} else if findFilter != nil && findFilter.GetSort("") == "scene_count" {
+		query.Body += `
+			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
+			ON performers.id = D.performer_id
+		`
+		direction := findFilter.GetDirection() + database.GetDialect().NullsLast()
+		query.SortAndPagination = "ORDER BY scene_count " + direction + getPagination(findFilter)
+	} else {
+		query.SortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+	}
+
 	var performers Performers
 	countResult, err := qb.dbi.Query(*query, &performers)
 
@@ -450,15 +482,15 @@ func (qb *PerformerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*BodyModi
 	return result, nil
 }
 
-func (qb *PerformerQueryBuilder) SearchPerformers(term string) (Performers, error) {
+func (qb *PerformerQueryBuilder) SearchPerformers(term string, limit int) (Performers, error) {
 	query := `
         SELECT * FROM performers
         WHERE name % $1
         AND similarity(name, $1) > 0.5
         AND deleted = FALSE
         ORDER BY similarity(name, $1) DESC
-        LIMIT 5`
-	args := []interface{}{term}
+        LIMIT $2`
+	args := []interface{}{term, limit}
 	return qb.queryPerformers(query, args)
 }
 

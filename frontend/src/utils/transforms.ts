@@ -1,4 +1,4 @@
-import { Performer_findPerformer_measurements as Measurements } from "src/definitions/Performer";
+import { Performer_findPerformer_measurements as Measurements } from "src/graphql/definitions/Performer";
 
 export const formatCareer = (
   start?: number | null,

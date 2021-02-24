@@ -1,10 +1,15 @@
 import {
   BreastTypeEnum,
   EthnicityEnum,
+  EthnicityFilterEnum,
   EyeColorEnum,
   HairColorEnum,
   GenderEnum,
-} from "src/definitions/globalTypes";
+  GenderFilterEnum,
+  OperationEnum,
+  TargetTypeEnum,
+  VoteStatusEnum,
+} from "src/graphql";
 
 type EnumDictionary<T extends string | symbol | number, U> = {
   [K in T]: U;
@@ -25,6 +30,14 @@ export const EthnicityTypes: EnumDictionary<EthnicityEnum, string> = {
   [EthnicityEnum.INDIAN]: "Indian",
   [EthnicityEnum.CAUCASIAN]: "Caucasian",
   [EthnicityEnum.MIDDLE_EASTERN]: "Middle Eastern",
+};
+
+export const EthnicityFilterTypes: EnumDictionary<
+  EthnicityFilterEnum,
+  string
+> = {
+  ...EthnicityTypes,
+  [EthnicityFilterEnum.UNKNOWN]: "Unknown Ethnicity",
 };
 
 export const EyeColorTypes: EnumDictionary<EyeColorEnum, string> = {
@@ -54,4 +67,30 @@ export const GenderTypes: EnumDictionary<GenderEnum, string> = {
   [GenderEnum.INTERSEX]: "Intersex",
   [GenderEnum.TRANSGENDER_MALE]: "Transmale",
   [GenderEnum.TRANSGENDER_FEMALE]: "Transfemale",
+};
+export const GenderFilterTypes: EnumDictionary<GenderFilterEnum, string> = {
+  ...GenderTypes,
+  [GenderFilterEnum.UNKNOWN]: "Unknown Gender",
+};
+
+export const EditOperationTypes: EnumDictionary<OperationEnum, string> = {
+  [OperationEnum.MERGE]: "Merge",
+  [OperationEnum.CREATE]: "Create",
+  [OperationEnum.MODIFY]: "Modify",
+  [OperationEnum.DESTROY]: "Destory",
+};
+
+export const EditTargetTypes: EnumDictionary<TargetTypeEnum, string> = {
+  [TargetTypeEnum.TAG]: "Tag",
+  [TargetTypeEnum.PERFORMER]: "Performer",
+  [TargetTypeEnum.SCENE]: "Scene",
+  [TargetTypeEnum.STUDIO]: "Studio",
+};
+
+export const EditStatusTypes: EnumDictionary<VoteStatusEnum, string> = {
+  [VoteStatusEnum.PENDING]: "Pending",
+  [VoteStatusEnum.IMMEDIATE_ACCEPTED]: "Approved",
+  [VoteStatusEnum.IMMEDIATE_REJECTED]: "Cancelled",
+  [VoteStatusEnum.ACCEPTED]: "Accepted",
+  [VoteStatusEnum.REJECTED]: "Rejected",
 };

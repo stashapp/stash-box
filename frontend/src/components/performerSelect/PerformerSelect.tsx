@@ -2,8 +2,9 @@ import React, { useState } from "react";
 
 import { TagLink } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
+import { performerHref } from "src/utils";
 
-import { SearchPerformers_searchPerformer as Performer } from "src/definitions/SearchPerformers";
+import { SearchPerformers_searchPerformer as Performer } from "src/graphql/definitions/SearchPerformers";
 
 interface PerformerSelectProps {
   performers: Performer[];
@@ -41,7 +42,7 @@ const PerformerSelect: React.FC<PerformerSelectProps> = ({
     .map((performer) => (
       <TagLink
         title={performer.name}
-        link={`/performers/${performer.id}`}
+        link={performerHref(performer)}
         onRemove={() => removePerformer(performer.id)}
         key={performer.id}
         disabled

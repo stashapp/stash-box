@@ -1,0 +1,6 @@
+#import "../queries/EditFragment.gql"
+mutation PerformerEdit($performerData: PerformerEditInput!) {
+  performerEdit(input: $performerData) {
+    ...EditFragment
+  }
+}

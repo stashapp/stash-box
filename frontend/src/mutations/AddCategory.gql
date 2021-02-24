@@ -1,8 +1,0 @@
-mutation AddTagCategoryMutation($categoryData: TagCategoryCreateInput!) {
-  tagCategoryCreate(input: $categoryData) {
-    id
-    name
-    description
-    group
-  }
-}

@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useLazyQuery } from "@apollo/client";
 import {
   components,
+  OptionsType,
   OptionTypeBase,
   OptionProps,
   ValueType,
@@ -15,15 +16,18 @@ import {
   SearchAll,
   SearchAll_searchScene as SceneAllResult,
   SearchAll_searchPerformer as PerformerAllResult,
-} from "src/definitions/SearchAll";
+} from "src/graphql/definitions/SearchAll";
 import {
   SearchPerformers,
   SearchPerformers_searchPerformer as PerformerOnlyResult,
-} from "src/definitions/SearchPerformers";
-import { formatFuzzyDate } from "src/utils";
+} from "src/graphql/definitions/SearchPerformers";
+import { formatFuzzyDate, createHref } from "src/utils";
+import { ROUTE_SEARCH } from "src/constants/route";
 
-const SearchAllQuery = loader("src/queries/SearchAll.gql");
-const SearchPerformersQuery = loader("src/queries/SearchPerformers.gql");
+const SearchAllQuery = loader("src/graphql/queries/SearchAll.gql");
+const SearchPerformersQuery = loader(
+  "src/graphql/queries/SearchPerformers.gql"
+);
 
 export enum SearchType {
   Performer = "performer",
@@ -37,6 +41,7 @@ interface SearchFieldProps {
   excludeIDs?: string[];
   navigate?: boolean;
   placeholder?: string;
+  showAllLink?: boolean;
 }
 
 export type PerformerResult = PerformerAllResult | PerformerOnlyResult;
@@ -48,12 +53,12 @@ interface SearchGroup {
 }
 interface SearchResult extends OptionTypeBase {
   type: string;
-  value: SceneResult | PerformerResult;
-  label: string;
-  subLabel: string;
+  value?: SceneResult | PerformerResult;
+  label?: string;
+  subLabel?: string;
 }
 
-const Option = (props: OptionProps<SearchResult>) => {
+const Option = (props: OptionProps<SearchResult, false>) => {
   const {
     data: { label, subLabel },
   } = props;
@@ -71,10 +76,15 @@ const resultIsSearchAll = (
   (arg as SearchAll).searchPerformer !== undefined &&
   (arg as SearchAll).searchScene !== undefined;
 
+const valueIsPerformer = (
+  arg?: SceneResult | PerformerResult
+): arg is PerformerResult => arg?.__typename === "Performer";
+
 function handleResult(
   result: SearchAll | SearchPerformers,
-  callback: (result: SearchGroup[]) => void,
-  excludeIDs: string[]
+  callback: (result: (SearchGroup | SearchResult)[]) => void,
+  excludeIDs: string[],
+  showAllLink: boolean
 ) {
   let performers: SearchResult[] = [];
   let scenes: SearchResult[] = [];
@@ -143,11 +153,13 @@ function handleResult(
       }));
   }
 
-  const options = [];
-  if (performers.length)
-    options.push({ label: "Performers", options: performers });
-  if (scenes.length) options.push({ label: "Scenes", options: scenes });
-  callback(options);
+  callback([
+    ...(showAllLink ? [{ type: "ALL", label: "Show all results" }] : []),
+    ...(performers.length
+      ? [{ label: "Performers", options: performers }]
+      : []),
+    ...(scenes.length ? [{ label: "Scenes", options: scenes }] : []),
+  ]);
 }
 
 const SearchField: React.FC<SearchFieldProps> = ({
@@ -157,12 +169,14 @@ const SearchField: React.FC<SearchFieldProps> = ({
   excludeIDs = [],
   navigate = false,
   placeholder,
+  showAllLink = false,
 }) => {
   const history = useHistory();
   const [selectedValue, setSelected] = useState(null);
   const [searchCallback, setCallback] = useState<
-    (result: SearchGroup[]) => void
+    (result: (SearchGroup | SearchResult)[]) => void
   >();
+  const searchTerm = useRef("");
   const [search] = useLazyQuery(
     searchType === SearchType.Performer
       ? SearchPerformersQuery
@@ -170,14 +184,15 @@ const SearchField: React.FC<SearchFieldProps> = ({
     {
       fetchPolicy: "network-only",
       onCompleted: (result) => {
-        if (searchCallback) handleResult(result, searchCallback, excludeIDs);
+        if (searchCallback)
+          handleResult(result, searchCallback, excludeIDs, showAllLink);
       },
     }
   );
 
   const handleSearch = (
     term: string,
-    callback: (options: Array<SearchGroup>) => void
+    callback: (options: OptionsType<SearchResult>) => void
   ) => {
     if (term) {
       setCallback(() => callback);
@@ -187,15 +202,33 @@ const SearchField: React.FC<SearchFieldProps> = ({
 
   const debouncedLoadOptions = debounce(handleSearch, 400);
 
-  const handleChange = (result: ValueType<SearchResult>) => {
-    if (result) {
-      const res = result as SearchResult;
-      if (res.value.__typename === "Performer") onClickPerformer?.(res.value);
-      onClick?.(res.value);
-      if (navigate) history.push(`/${res.type}s/${res.value.id}`);
+  const handleLoad = (
+    term: string,
+    callback: (options: OptionsType<SearchResult>) => void
+  ) => {
+    searchTerm.current = term;
+    debouncedLoadOptions(term, callback);
+  };
+
+  const handleChange = (result: ValueType<SearchResult, false>) => {
+    const option = Array.isArray(result) ? result[0] : result;
+    if (option) {
+      if (valueIsPerformer(option.value)) onClickPerformer?.(option.value);
+      if (option.type === "ALL")
+        return history.push(
+          createHref(ROUTE_SEARCH, { term: searchTerm.current })
+        );
+      onClick?.(option.value);
+      if (navigate) history.push(`/${option.type}s/${option.value.id}`);
     }
 
     setSelected(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" && searchTerm.current) {
+      history.push(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+    }
   };
 
   return (
@@ -205,9 +238,9 @@ const SearchField: React.FC<SearchFieldProps> = ({
         autoload={false}
         value={selectedValue}
         defaultOptions
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        loadOptions={debouncedLoadOptions as any}
+        loadOptions={handleLoad}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         placeholder={
           placeholder ??
           (searchType === SearchType.Performer

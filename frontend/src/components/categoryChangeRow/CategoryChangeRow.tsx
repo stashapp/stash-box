@@ -1,11 +1,7 @@
 import React from "react";
-import { useQuery } from "@apollo/client";
-import { loader } from "graphql.macro";
 
-import { Category, CategoryVariables } from "src/definitions/Category";
+import { useCategory } from "src/graphql";
 import ChangeRow from "src/components/changeRow";
-
-const CategoryQuery = loader("src/queries/Category.gql");
 
 interface CategoryChangeRowProps {
   newCategoryID?: string | null;
@@ -18,23 +14,13 @@ const CategoryChangeRow: React.FC<CategoryChangeRowProps> = ({
   oldCategoryID,
   showDiff = false,
 }) => {
-  const { data: newData } = useQuery<Category, CategoryVariables>(
-    CategoryQuery,
-    {
-      variables: {
-        id: newCategoryID ?? "",
-      },
-      skip: !newCategoryID,
-    }
+  const { data: newData } = useCategory(
+    { id: newCategoryID ?? "" },
+    !newCategoryID
   );
-  const { data: oldData } = useQuery<Category, CategoryVariables>(
-    CategoryQuery,
-    {
-      variables: {
-        id: oldCategoryID ?? "",
-      },
-      skip: !oldCategoryID,
-    }
+  const { data: oldData } = useCategory(
+    { id: oldCategoryID ?? "" },
+    !oldCategoryID
   );
 
   return (
