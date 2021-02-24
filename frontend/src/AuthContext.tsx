@@ -1,5 +1,6 @@
 import React from "react";
-import { RoleEnum } from "src/definitions/globalTypes";
+
+import { RoleEnum } from "src/graphql";
 
 export interface User {
   id: string;

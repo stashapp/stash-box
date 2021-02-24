@@ -2,10 +2,11 @@ import React from "react";
 import { Badge, BadgeProps, Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { Edits_queryEdits_edits as Edit } from "src/definitions/Edits";
-import { OperationEnum, VoteStatusEnum } from "src/definitions/globalTypes";
+import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
+import { OperationEnum, VoteStatusEnum } from "src/graphql";
 
-import { formatDateTime } from "src/utils";
+import { formatDateTime, editHref, userHref } from "src/utils";
+import { EditStatusTypes } from "src/constants/enums";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
@@ -49,12 +50,12 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
     <Card>
       <Card.Header className="row">
         <div className="flex-column col-4">
-          <Link to={`/edits/${edit?.id}`}>
+          <Link to={editHref(edit)}>
             <h5 className="text-capitalize">{title.toLowerCase()}</h5>
           </Link>
           <div>
             <b className="mr-2">Author:</b>
-            <Link to={`/users/${edit.user.name}`}>
+            <Link to={userHref(edit.user)}>
               <span>{edit.user.name}</span>
             </Link>
           </div>
@@ -66,7 +67,9 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
           </div>
           <div>
             <b className="mr-2">Status:</b>
-            <Badge variant={editVariant}>{edit.status}</Badge>
+            <Badge className="text-uppercase" variant={editVariant}>
+              {EditStatusTypes[edit.status]}
+            </Badge>
           </div>
         </div>
       </Card.Header>
@@ -77,7 +80,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         {creation}
         {modifications}
         {destruction}
-        <Row>
+        <Row className="mt-2">
           <Col md={{ offset: 4, span: 8 }}>{comments}</Col>
         </Row>
       </Card.Body>

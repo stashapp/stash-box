@@ -1,0 +1,8 @@
+mutation UpdateTagCategory($categoryData: TagCategoryUpdateInput!) {
+  tagCategoryUpdate(input: $categoryData) {
+    id
+    name
+    description
+    group
+  }
+}

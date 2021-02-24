@@ -19,12 +19,7 @@ const TagLink: React.FC<IProps> = ({
   disabled = false,
 }) => (
   <Badge className={`tag-item ${className}`} variant="secondary">
-    {/* encodeURI must be used twice since <Link> decodes it once */}
-    {link && !disabled ? (
-      <Link to={encodeURI(encodeURI(link))}>{title}</Link>
-    ) : (
-      title
-    )}
+    {link && !disabled ? <Link to={link}>{title}</Link> : title}
     {onRemove && (
       <Button onClick={onRemove}>
         <Icon icon="times" />

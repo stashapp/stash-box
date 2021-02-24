@@ -1,0 +1,10 @@
+mutation UpdateStudio($input: StudioUpdateInput!) {
+  studioUpdate(input: $input) {
+    id
+    name
+    urls {
+        url
+        type
+    }
+  }
+}

@@ -194,6 +194,12 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 		}
 	}
 
+	if sceneFilter.ParentStudio != nil {
+		query.Body += "LEFT JOIN studios ON scenes.studio_id = studios.id"
+		query.AddWhere("(studios.parent_studio_id = ? OR studios.id = ?)")
+		query.AddArg(*sceneFilter.ParentStudio, *sceneFilter.ParentStudio)
+	}
+
 	if q := sceneFilter.Performers; q != nil && len(q.Value) > 0 {
 		query.AddJoin(scenePerformerTable.Table, scenePerformerTable.Name()+".scene_id = scenes.id")
 		whereClause, havingClause := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
@@ -353,7 +359,7 @@ func (qb *SceneQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
 	return result, nil
 }
 
-func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {
+func (qb *SceneQueryBuilder) SearchScenes(term string, limit int) ([]*Scene, error) {
 	query := `
         SELECT S.* FROM scenes S
         LEFT JOIN scene_search SS ON SS.scene_id = S.id
@@ -363,8 +369,14 @@ func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {
 			to_tsvector('english', COALESCE(performer_names, '')) ||
 			to_tsvector('english', scene_title)
         ) @@ plainto_tsquery(?)
-        LIMIT 10`
+        LIMIT ?`
 	var args []interface{}
-	args = append(args, term)
+	args = append(args, term, limit)
 	return qb.queryScenes(query, args)
+}
+
+func (qb *SceneQueryBuilder) CountByPerformer(id uuid.UUID) (int, error) {
+	var args []interface{}
+	args = append(args, id)
+	return runCountQuery(buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
 }

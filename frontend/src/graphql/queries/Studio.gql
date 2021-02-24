@@ -1,0 +1,24 @@
+query Studio($id: ID!) {
+  findStudio(id : $id) {
+    id
+    name
+    child_studios {
+      id
+      name
+    }
+    parent {
+      id
+      name
+    }
+    urls {
+        url
+        type
+    }
+    images {
+        id
+        url
+        height
+        width
+    }
+  }
+}
