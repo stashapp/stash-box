@@ -25,7 +25,7 @@ func (s *searchTestRunner) testSearchPerformerByTerm() {
 		return
 	}
 
-	performers, err := s.resolver.Query().SearchPerformer(s.ctx, createdPerformer.Name)
+	performers, err := s.resolver.Query().SearchPerformer(s.ctx, createdPerformer.Name, nil)
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -49,7 +49,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 		return
 	}
 
-	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID.String())
+	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID.String(), nil)
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -86,7 +86,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 		return
 	}
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, createdScene.Title.String+" "+createdScene.Date.String)
+	scenes, err := s.resolver.Query().SearchScene(s.ctx, createdScene.Title.String+" "+createdScene.Date.String, nil)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -110,7 +110,7 @@ func (s *searchTestRunner) testSearchSceneByID() {
 		return
 	}
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID.String())
+	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID.String(), nil)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -129,12 +129,12 @@ func (s *searchTestRunner) testSearchSceneByID() {
 }
 func (s *searchTestRunner) testUnauthorisedSearch() {
 	// test each api interface - all require read so all should fail
-	_, err := s.resolver.Query().SearchPerformer(s.ctx, "")
+	_, err := s.resolver.Query().SearchPerformer(s.ctx, "", nil)
 	if err != api.ErrUnauthorized {
 		s.t.Errorf("SearchPerformer: got %v want %v", err, api.ErrUnauthorized)
 	}
 
-	_, err = s.resolver.Query().SearchScene(s.ctx, "")
+	_, err = s.resolver.Query().SearchScene(s.ctx, "", nil)
 	if err != api.ErrUnauthorized {
 		s.t.Errorf("SearchScene: got %v want %v", err, api.ErrUnauthorized)
 	}

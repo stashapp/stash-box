@@ -63,8 +63,11 @@ type QueryStudiosResultType {
 input StudioFilterType {
   """Filter to search name - assumes like query unless quoted"""
   name: String
+  """Filter to search studio and parent studio name - assumes like query unless quoted"""
+  names: String
   """Filter to search url - assumes like query unless quoted"""
   url: String
   
   parent: IDCriterionInput
+  has_parent: Boolean
 }

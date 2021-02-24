@@ -1,7 +1,7 @@
 import React from "react";
 import { Row } from "react-bootstrap";
 
-import { ImageFragment as Image } from "src/definitions/ImageFragment";
+import { ImageFragment as Image } from "src/graphql/definitions/ImageFragment";
 
 const CLASSNAME = "ImageChangeRow";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;

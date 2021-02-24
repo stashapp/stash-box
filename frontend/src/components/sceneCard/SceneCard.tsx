@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 
-import { Scenes_queryScenes_scenes as Performance } from "src/definitions/Scenes";
-import { getImage } from "src/utils";
+import { Scenes_queryScenes_scenes as Performance } from "src/graphql/definitions/Scenes";
+import { getImage, sceneHref, studioHref } from "src/utils";
 
 const CLASSNAME = "SceneCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
@@ -37,12 +37,12 @@ const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
   <div className={`col-3 ${CLASSNAME}`}>
     <Card>
       <Card.Body className={CLASSNAME_BODY}>
-        <Link to={`/scenes/${performance.id}`} className={CLASSNAME_IMAGE}>
+        <Link to={sceneHref(performance)} className={CLASSNAME_IMAGE}>
           <img alt="" src={getImage(performance.images, "landscape")} />
         </Link>
       </Card.Body>
       <Card.Footer>
-        <Link to={`/scenes/${performance.id}`} className="d-flex">
+        <Link to={sceneHref(performance)} className="d-flex">
           <h6 className={CLASSNAME_TITLE}>{performance.title}</h6>
           <span className="text-muted">
             {performance.duration ? formatDuration(performance.duration) : ""}
@@ -51,7 +51,7 @@ const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
         <div className="text-muted">
           {performance.studio && (
             <Link
-              to={`/studios/${performance.studio.id}`}
+              to={studioHref(performance.studio)}
               className="float-right text-truncate SceneCard-studio-name"
             >
               <Icon icon="video" className="mr-1" />

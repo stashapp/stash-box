@@ -143,6 +143,8 @@ input SceneFilterType {
   date: DateCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
+  """Filter to only include scenes with this studio as primary or parent"""
+  parentStudio: String
   """Filter to only include scenes with these tags"""
   tags: MultiIDCriterionInput
   """Filter to only include scenes with these performers"""

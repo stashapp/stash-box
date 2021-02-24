@@ -1,0 +1,17 @@
+.StudioSelect {
+  margin-top: 0.5rem;
+
+  &-list {
+    margin-bottom: 1rem;
+  }
+
+  &-container {
+    display: flex;
+  }
+
+  &-select {
+    display: inline-block;
+    margin-left: auto;
+    width: 25rem;
+  }
+}

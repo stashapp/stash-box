@@ -16,25 +16,24 @@ const CLASSNAME = "ImageInput";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_REMOVE = `${CLASSNAME}-remove`;
 
-const ImageInput: React.FC<ImageProps> = ({ image, control, onRemove }) => {
-  return (
-    <div className={CLASSNAME}>
-      <Controller
-        type="hidden"
-        name={`images[${image.id}]`}
-        control={control}
-        defaultValue={image.id}
-      />
-      <Button
-        variant="danger"
-        className={CLASSNAME_REMOVE}
-        onClick={() => onRemove(image.id)}
-      >
-        <Icon icon="times" />
-      </Button>
-      <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
-    </div>
-  );
-};
+const ImageInput: React.FC<ImageProps> = ({ image, control, onRemove }) => (
+  <div className={CLASSNAME}>
+    <Controller
+      type="hidden"
+      name={`images[${image.id}]`}
+      control={control}
+      defaultValue={image.id}
+      render={() => <></>}
+    />
+    <Button
+      variant="danger"
+      className={CLASSNAME_REMOVE}
+      onClick={() => onRemove(image.id)}
+    >
+      <Icon icon="times" />
+    </Button>
+    <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
+  </div>
+);
 
 export default ImageInput;

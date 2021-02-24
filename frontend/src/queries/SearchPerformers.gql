@@ -1,6 +1,0 @@
-#import "./SearchPerformerFragment.gql"
-query SearchPerformers($term: String!) {
-  searchPerformer(term: $term) {
-    ...SearchPerformerFragment
-  }
-}

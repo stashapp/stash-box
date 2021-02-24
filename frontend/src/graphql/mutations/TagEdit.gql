@@ -1,0 +1,6 @@
+#import "../queries/EditFragment.gql"
+mutation TagEdit($tagData: TagEditInput!) {
+  tagEdit(input: $tagData) {
+    ...EditFragment
+  }
+}

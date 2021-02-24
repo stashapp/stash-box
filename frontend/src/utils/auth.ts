@@ -1,5 +1,5 @@
 import { User } from "src/AuthContext";
-import { RoleEnum } from "src/definitions/globalTypes";
+import { RoleEnum } from "src/graphql";
 
 export const isAdmin = (user?: User) =>
   (user?.roles ?? []).includes(RoleEnum.ADMIN);

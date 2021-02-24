@@ -85,7 +85,7 @@
     "string-no-newline": true,
     "string-quotes": "double",
     "time-min-milliseconds": 100,
-    "unit-blacklist": ["em"],
+    "unit-disallowed-list": ["em"],
     "value-list-comma-space-after": "always-single-line",
     "value-list-comma-space-before": "never",
     "value-no-vendor-prefix": true

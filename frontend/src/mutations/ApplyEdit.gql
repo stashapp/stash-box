@@ -1,6 +1,0 @@
-#import "../queries/EditFragment.gql"
-mutation ApplyEditMutation($input: ApplyEditInput!) {
-  applyEdit(input: $input) {
-    ...EditFragment
-  }
-}

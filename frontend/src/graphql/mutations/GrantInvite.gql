@@ -1,0 +1,3 @@
+mutation GrantInvite($input: GrantInviteInput!) {
+    grantInvite(input: $input)
+}

@@ -5,7 +5,7 @@ import {
   Edits_queryEdits_edits_old_details_PerformerEdit as OldPerformerEdit,
   Edits_queryEdits_edits_target_Tag as Tag,
   Edits_queryEdits_edits_target_Performer as Performer,
-} from "src/definitions/Edits";
+} from "src/graphql/definitions/Edits";
 
 interface TypeName {
   __typename: string;

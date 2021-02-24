@@ -1,8 +1,0 @@
-mutation AddImageMutation($imageData: ImageCreateInput!) {
-  imageCreate(input: $imageData) {
-    id
-    url
-    width
-    height
-  }
-}

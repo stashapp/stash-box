@@ -1,0 +1,34 @@
+.PerformerMerge {
+  .TargetCard {
+    .PerformerCard-image {
+      border: 2px solid white;
+    }
+  }
+
+  .PerformerCard {
+    &-image {
+      height: 8rem;
+    }
+
+    .card-footer {
+      display: none;
+    }
+  }
+}
+
+.performer-photo {
+  height: 470px;
+  margin-top: 5px;
+}
+
+.performer-filter {
+  width: 175px;
+}
+
+.performer-sort {
+  width: 200px;
+
+  select {
+    -webkit-appearance: none;
+  }
+}

@@ -145,3 +145,8 @@ func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([
 	eqb := models.NewEditQueryBuilder(nil)
 	return eqb.FindByPerformerID(obj.ID)
 }
+
+func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (int, error) {
+	sqb := models.NewSceneQueryBuilder(nil)
+	return sqb.CountByPerformer(obj.ID)
+}

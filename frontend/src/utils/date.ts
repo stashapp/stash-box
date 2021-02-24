@@ -1,4 +1,4 @@
-import { FuzzyDateInput, DateAccuracyEnum } from "src/definitions/globalTypes";
+import { FuzzyDateInput, DateAccuracyEnum } from "src/graphql";
 
 export const formatFuzzyDate = (date: FuzzyDateInput) => {
   if (date === null) return "";

@@ -86,7 +86,10 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 		oldData.Disambiguation = &orig.Disambiguation.String
 	}
 
-	if e.Gender != nil && (!orig.Gender.Valid || e.Gender.String() != orig.Gender.String) {
+	if e.Gender == nil && orig.Gender.Valid {
+		newData.Gender = nil
+		oldData.Gender = &orig.Gender.String
+	} else if e.Gender != nil && (!orig.Gender.Valid || e.Gender.String() != orig.Gender.String) {
 		newGender := e.Gender.String()
 		newData.Gender = &newGender
 		oldData.Gender = &orig.Gender.String
