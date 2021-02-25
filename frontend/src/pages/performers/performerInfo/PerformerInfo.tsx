@@ -44,7 +44,7 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
               <PerformerName performer={performer} />
             </h2>
             {canEdit(auth?.user) && !performer.deleted && (
-              <div className="ml-auto">
+              <div className="ml-auto flex-shrink-0">
                 <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
                   <Button>Edit</Button>
                 </Link>
