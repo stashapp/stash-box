@@ -37,7 +37,7 @@ const PerformerMerge: React.FC = () => {
 
   const doUpdate = (
     insertData: PerformerEditDetailsInput,
-    editNote?: string
+    editNote: string
   ) => {
     insertPerformerEdit({
       variables: {

@@ -23,13 +23,14 @@ const PerformerModify: React.FC = () => {
     },
   });
 
-  const doUpdate = (updateData: PerformerEditDetailsInput) => {
+  const doUpdate = (updateData: PerformerEditDetailsInput, editNote: string) => {
     submitPerformerEdit({
       variables: {
         performerData: {
           edit: {
             id,
             operation: OperationEnum.MODIFY,
+            comment: editNote,
           },
           details: updateData,
         },

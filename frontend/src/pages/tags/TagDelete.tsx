@@ -4,9 +4,9 @@ import { Button, Col, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 
 import { useTagEdit, useTag, OperationEnum } from "src/graphql";
+import { EditNote } from 'src/components/form';
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 
@@ -62,20 +62,7 @@ const TagDelete: React.FC = () => {
         <Form.Control type="hidden" name="id" value={id} ref={register} />
         <Form.Row className="my-4">
           <Col md={6}>
-            <Form.Label>Edit Note</Form.Label>
-            <Form.Control
-              as="textarea"
-              name="note"
-              className={cx({ "is-invalid": errors.note })}
-              ref={register}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.note?.message}
-            </Form.Control.Feedback>
-            <Form.Text>
-              Please add any relevant sources or other supporting information
-              for your edit.
-            </Form.Text>
+            <EditNote register={register} error={errors.note} />
           </Col>
         </Form.Row>
         <Form.Row className="mt-2">

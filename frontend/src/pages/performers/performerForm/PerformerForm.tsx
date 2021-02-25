@@ -23,7 +23,7 @@ import { getBraSize, formatFuzzyDate } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { Image } from "src/utils/transforms";
 
-import { BodyModification } from "src/components/form";
+import { BodyModification, EditNote } from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
 import ChangeRow from "src/components/changeRow";
 import EditImages from "src/components/editImages";
@@ -197,7 +197,7 @@ const schema = yup.object().shape({
     .array()
     .of(yup.string().trim().transform(nullCheck).required())
     .transform((_, obj) => Object.keys(obj ?? [])),
-  note: yup.string().transform(nullCheck).nullable(),
+  note: yup.string().required("Edit note is required"),
 });
 
 export type PerformerFormData = yup.Asserts<typeof schema>;
@@ -207,7 +207,7 @@ interface PerformerProps {
   performer: Performer;
   callback: (
     data: PerformerEditDetailsInput,
-    note?: string,
+    note: string,
     id?: string
   ) => void;
   initialAliases?: string[];
@@ -317,7 +317,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
           accuracy: DateAccuracyEnum.YEAR,
         };
 
-    callback(performerData, data.note ?? undefined, data.id);
+    callback(performerData, data.note, data.id);
   };
 
   const countryObj = [
@@ -741,12 +741,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
           ))}
           <Form.Row className="my-4">
             <Col md={{ span: 6, offset: 6 }}>
-              <Form.Label>Edit Note</Form.Label>
-              <Form.Control as="textarea" name="note" ref={register} />
-              <Form.Text>
-                Please add any relevant sources or other supporting information
-                for your edit.
-              </Form.Text>
+              <EditNote register={register} error={errors.note} />
             </Col>
           </Form.Row>
           <Form.Row className="mt-2">
