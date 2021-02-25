@@ -56,7 +56,6 @@ const PerformerDelete: React.FC = () => {
       <Form
         className="PerformerDeleteForm"
         onSubmit={handleSubmit(handleDelete)}
-        onKeyDown={(e) => e.code === "Enter" && e.preventDefault()}
       >
         <Form.Row>
           <h4>
@@ -77,6 +76,12 @@ const PerformerDelete: React.FC = () => {
           >
             Cancel
           </Button>
+          <Button
+            type="submit"
+            disabled
+            className="d-none"
+            aria-hidden="true"
+          />
           <Button type="submit" disabled={deleting}>
             Submit Edit
           </Button>

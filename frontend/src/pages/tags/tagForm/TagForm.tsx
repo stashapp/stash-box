@@ -132,6 +132,12 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
       <EditNote register={register} error={errors.note} />
 
       <Form.Group className="d-flex">
+        <Button
+          type="submit"
+          disabled
+          className="d-none"
+          aria-hidden="true"
+        />
         <Button type="submit" className="col-2">
           Save
         </Button>
