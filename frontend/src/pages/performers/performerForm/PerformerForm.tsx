@@ -340,7 +340,6 @@ const PerformerForm: React.FC<PerformerProps> = ({
     <Form
       className="PerformerForm"
       onSubmit={handleSubmit(onSubmit)}
-      onKeyDown={(e) => e.code === "Enter" && e.preventDefault()}
     >
       <input
         type="hidden"
@@ -758,6 +757,12 @@ const PerformerForm: React.FC<PerformerProps> = ({
             >
               Cancel
             </Button>
+            <Button
+              type="submit"
+              disabled
+              className="d-none"
+              aria-hidden="true"
+            />
             <Button
               type="submit"
               disabled={changes.length === 0 && changeType !== "merge"}
