@@ -20,7 +20,7 @@ func createPerformerEditTestRunner(t *testing.T) *performerEditTestRunner {
 }
 
 func (s *performerEditTestRunner) testCreatePerformerEdit() {
-	performerEditDetailsInput := s.createPerformerEditDetailsInput(nil)
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil)
 	if err == nil {
 		s.verifyCreatedPerformerEdit(*performerEditDetailsInput, edit)
@@ -65,15 +65,21 @@ func (s *performerEditTestRunner) testFindEditById() {
 
 func (s *performerEditTestRunner) testModifyPerformerEdit() {
 	existingName := "performerName"
+
+	existingBirthdate := models.FuzzyDateInput{
+		Date:     "1990-01-02",
+		Accuracy: models.DateAccuracyEnumDay,
+	}
 	performerCreateInput := models.PerformerCreateInput{
-		Name: existingName,
+		Name:      existingName,
+		Birthdate: &existingBirthdate,
 	}
 	createdPerformer, err := s.createTestPerformer(&performerCreateInput)
 	if err != nil {
 		return
 	}
 
-	performerEditDetailsInput := s.createPerformerEditDetailsInput(nil)
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := createdPerformer.ID.String()
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
@@ -189,91 +195,170 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEditDetailsInput, performer *models.Performer) {
 	resolver := s.resolver.Performer()
 
-	if *input.Name != performer.Name {
+	if input.Name != nil && *input.Name != performer.Name {
 		s.fieldMismatch(input.Name, performer.Name, "Name")
 	}
 
-	if *input.Disambiguation != performer.Disambiguation.String {
-		s.fieldMismatch(input.Disambiguation, performer.Disambiguation.String, "Disambiguation")
+	if input.Disambiguation == nil {
+		if performer.Disambiguation.Valid {
+			s.fieldMismatch(input.Disambiguation, performer.Disambiguation.String, "Disambiguation")
+		}
+	} else if *input.Disambiguation != performer.Disambiguation.String {
+		s.fieldMismatch(*input.Disambiguation, performer.Disambiguation.String, "Disambiguation")
 	}
 
 	aliases, _ := resolver.Aliases(s.ctx, performer)
-	if !reflect.DeepEqual(input.Aliases, aliases) {
+	if (len(input.Aliases) > 0 || len(aliases) > 0) && !reflect.DeepEqual(input.Aliases, aliases) {
 		s.fieldMismatch(input.Aliases, aliases, "Aliases")
 	}
 
-	if !input.Gender.IsValid() || (input.Gender.String() != performer.Gender.String) {
-		s.fieldMismatch(input.Gender, performer.Gender.String, "Disambiguation")
+	if input.Gender == nil {
+		if performer.Gender.Valid {
+			s.fieldMismatch(input.Gender, performer.Gender.String, "Disambiguation")
+		}
+	} else if input.Gender.String() != performer.Gender.String {
+		s.fieldMismatch(*input.Gender, performer.Gender.String, "Disambiguation")
 	}
 
 	urls, _ := resolver.Urls(s.ctx, performer)
-	if !reflect.DeepEqual(input.Urls, urls) {
+	if (len(input.Urls) > 0 || len(urls) > 0) && !reflect.DeepEqual(input.Urls, urls) {
 		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
 
-	if !input.Birthdate.Accuracy.IsValid() || (input.Birthdate.Accuracy.String() != performer.BirthdateAccuracy.String) {
-		s.fieldMismatch(input.Birthdate.Accuracy, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
+	if input.Birthdate == nil {
+		if performer.BirthdateAccuracy.Valid {
+			s.fieldMismatch(input.Birthdate, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
+		}
+	} else if input.Birthdate.Accuracy.String() != performer.BirthdateAccuracy.String {
+		s.fieldMismatch(input.Birthdate.Accuracy.String(), performer.BirthdateAccuracy.String, "BirthdateAccuracy")
 	}
 
-	if input.Birthdate.Date != performer.Birthdate.String {
+	if input.Birthdate == nil {
+		if performer.Birthdate.Valid {
+			s.fieldMismatch(input.Birthdate, performer.Birthdate.String, "Birthdate")
+		}
+	} else if input.Birthdate.Date != performer.Birthdate.String {
 		s.fieldMismatch(input.Birthdate.Date, performer.Birthdate.String, "Birthdate")
 	}
 
-	if !input.Ethnicity.IsValid() || (input.Ethnicity.String() != performer.Ethnicity.String) {
-		s.fieldMismatch(input.Ethnicity, performer.Ethnicity.String, "Ethnicity")
+	if input.Ethnicity == nil {
+		if performer.Ethnicity.Valid {
+			s.fieldMismatch(input.Ethnicity, performer.Ethnicity.String, "Ethnicity")
+		}
+	} else if input.Ethnicity.String() != performer.Ethnicity.String {
+		s.fieldMismatch(input.Ethnicity.String(), performer.Ethnicity.String, "Ethnicity")
 	}
 
-	if input.Country == nil || (*input.Country != performer.Country.String) {
-		s.fieldMismatch(input.Country, performer.Country.String, "Country")
+	if input.Country == nil {
+		if performer.Country.Valid {
+			s.fieldMismatch(input.Country, performer.Country.String, "Country")
+		}
+	} else if *input.Country != performer.Country.String {
+		s.fieldMismatch(*input.Country, performer.Country.String, "Country")
 	}
 
-	if !input.EyeColor.IsValid() || (input.EyeColor.String() != performer.EyeColor.String) {
-		s.fieldMismatch(input.EyeColor, performer.EyeColor.String, "EyeColor")
+	if input.EyeColor == nil {
+		if performer.EyeColor.Valid {
+			s.fieldMismatch(input.EyeColor, performer.EyeColor.String, "EyeColor")
+		}
+	} else if input.EyeColor.String() != performer.EyeColor.String {
+		s.fieldMismatch(input.EyeColor.String(), performer.EyeColor.String, "EyeColor")
 	}
 
-	if !input.HairColor.IsValid() || (input.HairColor.String() != performer.HairColor.String) {
-		s.fieldMismatch(input.HairColor, performer.HairColor.String, "HairColor")
+	if input.HairColor == nil {
+		if performer.HairColor.Valid {
+			s.fieldMismatch(input.HairColor, performer.HairColor.String, "HairColor")
+		}
+	} else if input.HairColor.String() != performer.HairColor.String {
+		s.fieldMismatch(input.HairColor.String(), performer.HairColor.String, "HairColor")
 	}
 
-	if input.Height == nil || (int64(*input.Height) != performer.Height.Int64) {
-		s.fieldMismatch(input.Height, performer.Height.Int64, "Height")
+	if input.Height == nil {
+		if performer.Height.Valid {
+			s.fieldMismatch(input.Height, performer.Height.Int64, "Height")
+		}
+	} else if int64(*input.Height) != performer.Height.Int64 {
+		s.fieldMismatch(*input.Height, performer.Height.Int64, "Height")
 	}
 
-	if input.Measurements == nil || input.Measurements.BandSize == nil || (int64(*input.Measurements.BandSize) != performer.BandSize.Int64) {
-		s.fieldMismatch(*input.Measurements.BandSize, performer.BandSize.Int64, "BandSize")
+	if input.Measurements == nil {
+		if performer.BandSize.Valid {
+			s.fieldMismatch(nil, performer.BandSize.Int64, "BandSize")
+		}
+		if performer.CupSize.Valid {
+			s.fieldMismatch(nil, performer.CupSize.String, "BandSize")
+		}
+		if performer.WaistSize.Valid {
+			s.fieldMismatch(nil, performer.WaistSize.Int64, "BandSize")
+		}
+		if performer.HipSize.Valid {
+			s.fieldMismatch(nil, performer.HipSize.Int64, "BandSize")
+		}
+	} else {
+		if input.Measurements.BandSize == nil {
+			if performer.BandSize.Valid {
+				s.fieldMismatch(nil, performer.BandSize.Int64, "BandSize")
+			}
+		} else if int64(*input.Measurements.BandSize) != performer.BandSize.Int64 {
+			s.fieldMismatch(*input.Measurements.BandSize, performer.BandSize.Int64, "BandSize")
+		}
+
+		if input.Measurements.CupSize == nil {
+			if performer.CupSize.Valid {
+				s.fieldMismatch(nil, performer.CupSize.String, "CupSize")
+			}
+		} else if *input.Measurements.CupSize != performer.CupSize.String {
+			s.fieldMismatch(*input.Measurements.CupSize, performer.CupSize.String, "CupSize")
+		}
+
+		if input.Measurements.Waist == nil {
+			if performer.WaistSize.Valid {
+				s.fieldMismatch(nil, performer.WaistSize.Int64, "WaistSize")
+			}
+		} else if int64(*input.Measurements.Waist) != performer.WaistSize.Int64 {
+			s.fieldMismatch(*input.Measurements.Waist, performer.WaistSize.Int64, "WaistSize")
+		}
+
+		if input.Measurements.Hip == nil {
+			if performer.HipSize.Valid {
+				s.fieldMismatch(nil, performer.HipSize.Int64, "HipSize")
+			}
+		} else if int64(*input.Measurements.Hip) != performer.HipSize.Int64 {
+			s.fieldMismatch(*input.Measurements.Hip, performer.HipSize.Int64, "HipSize")
+		}
 	}
 
-	if input.Measurements == nil || input.Measurements.Waist == nil || (int64(*input.Measurements.Waist) != performer.WaistSize.Int64) {
-		s.fieldMismatch(*input.Measurements.Waist, performer.WaistSize.Int64, "WaistSize")
+	if input.BreastType == nil {
+		if performer.BreastType.Valid {
+			s.fieldMismatch(input.BreastType, performer.BreastType.String, "BreastType")
+		}
+	} else if input.BreastType.String() != performer.BreastType.String {
+		s.fieldMismatch(input.BreastType.String(), performer.BreastType.String, "BreastType")
 	}
 
-	if input.Measurements == nil || input.Measurements.Hip == nil || (int64(*input.Measurements.Hip) != performer.HipSize.Int64) {
-		s.fieldMismatch(*input.Measurements.Hip, performer.HipSize.Int64, "HipSize")
-	}
-
-	if input.Measurements == nil || input.Measurements.CupSize == nil || (*input.Measurements.CupSize != performer.CupSize.String) {
-		s.fieldMismatch(*input.Measurements.CupSize, performer.CupSize.String, "CupSize")
-	}
-
-	if !input.BreastType.IsValid() || (input.BreastType.String() != performer.BreastType.String) {
-		s.fieldMismatch(input.BreastType, performer.BreastType.String, "BreastType")
-	}
-
-	if input.CareerStartYear == nil || (int64(*input.CareerStartYear) != performer.CareerStartYear.Int64) {
+	if input.CareerEndYear == nil {
+		if performer.CareerStartYear.Valid {
+			s.fieldMismatch(input.CareerStartYear, performer.CareerStartYear.Int64, "CareerStartYear")
+		}
+	} else if int64(*input.CareerStartYear) != performer.CareerStartYear.Int64 {
 		s.fieldMismatch(*input.CareerStartYear, performer.CareerStartYear.Int64, "CareerStartYear")
 	}
 
-	if input.CareerEndYear == nil || (int64(*input.CareerEndYear) != performer.CareerEndYear.Int64) {
+	if input.CareerEndYear == nil {
+		if performer.CareerEndYear.Valid {
+			s.fieldMismatch(input.CareerEndYear, performer.CareerEndYear.Int64, "CareerEndYear")
+		}
+	} else if int64(*input.CareerEndYear) != performer.CareerEndYear.Int64 {
 		s.fieldMismatch(*input.CareerEndYear, performer.CareerEndYear.Int64, "CareerEndYear")
 	}
 
 	tattoos, _ := resolver.Tattoos(s.ctx, performer)
-	if !reflect.DeepEqual(input.Tattoos, tattoos) {
+	if (len(input.Tattoos) > 0 || len(tattoos) > 0) && !reflect.DeepEqual(input.Tattoos, tattoos) {
 		s.fieldMismatch(input.Tattoos, tattoos, "Tattoos")
 	}
 
 	piercings, _ := resolver.Piercings(s.ctx, performer)
-	if !reflect.DeepEqual(input.Piercings, piercings) {
+	if (len(input.Piercings) > 0 || len(piercings) > 0) && !reflect.DeepEqual(input.Piercings, piercings) {
 		s.fieldMismatch(input.Piercings, piercings, "Piercings")
 	}
 
@@ -332,7 +417,7 @@ func (s *performerEditTestRunner) testMergePerformerEdit() {
 
 	createdMergePerformer, err := s.createTestPerformer(nil)
 
-	performerEditDetailsInput := s.createPerformerEditDetailsInput(nil)
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := createdPrimaryPerformer.ID.String()
 	mergeSources := []string{createdMergePerformer.ID.String()}
 	editInput := models.EditInput{
@@ -366,7 +451,7 @@ func (s *performerEditTestRunner) verifyMergePerformerEdit(originalPerformer *mo
 }
 
 func (s *performerEditTestRunner) testApplyCreatePerformerEdit() {
-	performerEditDetailsInput := s.createPerformerEditDetailsInput(nil)
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil)
 	appliedEdit, err := s.applyEdit(edit.ID.String())
 	if err == nil {
@@ -418,7 +503,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	}
 
 	// Create edit that replaces all metadata for the performer
-	performerEditDetailsInput := s.createPerformerEditDetailsInput(nil)
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := createdPerformer.ID.String()
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
@@ -470,6 +555,38 @@ func (s *performerEditTestRunner) verifyApplyModifyPerformerEdit(input models.Pe
 	s.verifyEditApplication(true, edit)
 
 	s.verifyPerformerEdit(input, updatedPerformer)
+}
+
+func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		return
+	}
+	id := createdPerformer.ID.String()
+
+	performerUnsetInput := models.PerformerEditDetailsInput{
+		Aliases:   []string{},
+		Tattoos:   []*models.BodyModification{},
+		Piercings: []*models.BodyModification{},
+		Urls:      []*models.URL{},
+	}
+
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, &performerUnsetInput, &editInput)
+	if err != nil {
+		return
+	}
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
+	s.verifyApplyModifyPerformerEdit(performerUnsetInput, modifiedPerformer, appliedEdit)
 }
 
 func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
@@ -564,7 +681,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 		return
 	}
 
-	performerEditDetailsInput := s.createPerformerEditDetailsInput(nil)
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := mergeTarget.ID.String()
 	mergeSources := []string{mergeSource1.ID.String(), mergeSource2.ID.String()}
 	editInput := models.EditInput{
@@ -648,6 +765,11 @@ func TestApplyCreatePerformerEdit(t *testing.T) {
 func TestApplyModifyPerformerEdit(t *testing.T) {
 	pt := createPerformerEditTestRunner(t)
 	pt.testApplyModifyPerformerEdit()
+}
+
+func TestApplyModifyUnsetPerformerEdit(t *testing.T) {
+	pt := createPerformerEditTestRunner(t)
+	pt.testApplyModifyUnsetPerformerEdit()
 }
 
 func TestApplyDestroyPerformerEdit(t *testing.T) {

@@ -4,10 +4,10 @@ import { Button, Col, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 
 import { usePerformerEdit, usePerformer, OperationEnum } from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 
 const schema = yup.object().shape({
@@ -56,7 +56,6 @@ const PerformerDelete: React.FC = () => {
       <Form
         className="PerformerDeleteForm"
         onSubmit={handleSubmit(handleDelete)}
-        onKeyDown={(e) => e.code === "Enter" && e.preventDefault()}
       >
         <Form.Row>
           <h4>
@@ -66,20 +65,7 @@ const PerformerDelete: React.FC = () => {
         <Form.Control type="hidden" name="id" value={id} ref={register} />
         <Form.Row className="my-4">
           <Col md={6}>
-            <Form.Label>Edit Note</Form.Label>
-            <Form.Control
-              as="textarea"
-              name="note"
-              className={cx({ "is-invalid": errors.note })}
-              ref={register}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.note?.message}
-            </Form.Control.Feedback>
-            <Form.Text>
-              Please add any relevant sources or other supporting information
-              for your edit.
-            </Form.Text>
+            <EditNote register={register} error={errors.note} />
           </Col>
         </Form.Row>
         <Form.Row className="mt-2">
@@ -90,6 +76,12 @@ const PerformerDelete: React.FC = () => {
           >
             Cancel
           </Button>
+          <Button
+            type="submit"
+            disabled
+            className="d-none"
+            aria-hidden="true"
+          />
           <Button type="submit" disabled={deleting}>
             Submit Edit
           </Button>

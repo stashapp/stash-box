@@ -80,14 +80,15 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 		oldData.Name = &orig.Name
 	}
 
-	if e.Disambiguation != nil && (!orig.Disambiguation.Valid || *e.Disambiguation != orig.Disambiguation.String) {
+	if e.Disambiguation == nil && orig.Disambiguation.Valid {
+		oldData.Disambiguation = &orig.Disambiguation.String
+	} else if e.Disambiguation != nil && (!orig.Disambiguation.Valid || *e.Disambiguation != orig.Disambiguation.String) {
 		newDisambiguation := *e.Disambiguation
 		newData.Disambiguation = &newDisambiguation
 		oldData.Disambiguation = &orig.Disambiguation.String
 	}
 
 	if e.Gender == nil && orig.Gender.Valid {
-		newData.Gender = nil
 		oldData.Gender = &orig.Gender.String
 	} else if e.Gender != nil && (!orig.Gender.Valid || e.Gender.String() != orig.Gender.String) {
 		newGender := e.Gender.String()
@@ -95,7 +96,9 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 		oldData.Gender = &orig.Gender.String
 	}
 
-	if e.Birthdate != nil && (!orig.Birthdate.Valid || (e.Birthdate.Date != orig.Birthdate.String && e.Birthdate.Accuracy.String() != orig.BirthdateAccuracy.String)) {
+	if e.Birthdate == nil && orig.Birthdate.Valid {
+		oldData.Birthdate = &orig.Birthdate.String
+	} else if e.Birthdate != nil && (!orig.Birthdate.Valid || e.Birthdate.Date != orig.Birthdate.String || e.Birthdate.Accuracy.String() != orig.BirthdateAccuracy.String) {
 		newData.Birthdate = &e.Birthdate.Date
 		newAccuracy := e.Birthdate.Accuracy.String()
 		newData.BirthdateAccuracy = &newAccuracy
@@ -103,75 +106,99 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 		oldData.BirthdateAccuracy = &orig.BirthdateAccuracy.String
 	}
 
-	if e.Ethnicity != nil && (!orig.Ethnicity.Valid || e.Ethnicity.String() != orig.Ethnicity.String) {
+	if e.Ethnicity == nil && orig.Ethnicity.Valid {
+		oldData.Ethnicity = &orig.Ethnicity.String
+	} else if e.Ethnicity != nil && (!orig.Ethnicity.Valid || e.Ethnicity.String() != orig.Ethnicity.String) {
 		newEthnicity := e.Ethnicity.String()
 		newData.Ethnicity = &newEthnicity
 		oldData.Ethnicity = &orig.Ethnicity.String
 	}
 
-	if e.Country != nil && (!orig.Country.Valid || *e.Country != orig.Country.String) {
+	if e.Country == nil && orig.Country.Valid {
+		oldData.Country = &orig.Country.String
+	} else if e.Country != nil && (!orig.Country.Valid || *e.Country != orig.Country.String) {
 		newCountry := *e.Country
 		newData.Country = &newCountry
 		oldData.Country = &orig.Country.String
 	}
 
-	if e.EyeColor != nil && (!orig.EyeColor.Valid || e.EyeColor.String() != orig.EyeColor.String) {
+	if e.EyeColor == nil && orig.EyeColor.Valid {
+		oldData.EyeColor = &orig.EyeColor.String
+	} else if e.EyeColor != nil && (!orig.EyeColor.Valid || e.EyeColor.String() != orig.EyeColor.String) {
 		newEyeColor := e.EyeColor.String()
 		newData.EyeColor = &newEyeColor
 		oldData.EyeColor = &orig.EyeColor.String
 	}
 
-	if e.HairColor != nil && (!orig.HairColor.Valid || e.HairColor.String() != orig.HairColor.String) {
+	if e.HairColor == nil && orig.HairColor.Valid {
+		oldData.HairColor = &orig.HairColor.String
+	} else if e.HairColor != nil && (!orig.HairColor.Valid || e.HairColor.String() != orig.HairColor.String) {
 		newHairColor := e.HairColor.String()
 		newData.HairColor = &newHairColor
 		oldData.HairColor = &orig.HairColor.String
 	}
 
-	if e.Height != nil && (!orig.Height.Valid || int64(*e.Height) != orig.Height.Int64) {
+	if e.Height == nil && orig.Height.Valid {
+		oldData.Height = &orig.Height.Int64
+	} else if e.Height != nil && (!orig.Height.Valid || int64(*e.Height) != orig.Height.Int64) {
 		newHeight := int64(*e.Height)
 		newData.Height = &newHeight
 		oldData.Height = &orig.Height.Int64
 	}
 
 	if e.Measurements != nil {
-		if e.Measurements.CupSize != nil && (!orig.CupSize.Valid || *e.Measurements.CupSize != orig.CupSize.String) {
+		if e.Measurements.CupSize == nil && orig.CupSize.Valid {
+			oldData.CupSize = &orig.CupSize.String
+		} else if e.Measurements.CupSize != nil && (!orig.CupSize.Valid || *e.Measurements.CupSize != orig.CupSize.String) {
 			newCup := *e.Measurements.CupSize
 			newData.CupSize = &newCup
 			oldData.CupSize = &orig.CupSize.String
 		}
 
-		if e.Measurements.BandSize != nil && (!orig.BandSize.Valid || int64(*e.Measurements.BandSize) != orig.BandSize.Int64) {
+		if e.Measurements.BandSize == nil && orig.BandSize.Valid {
+			oldData.BandSize = &orig.BandSize.Int64
+		} else if e.Measurements.BandSize != nil && (!orig.BandSize.Valid || int64(*e.Measurements.BandSize) != orig.BandSize.Int64) {
 			newBand := int64(*e.Measurements.BandSize)
 			newData.BandSize = &newBand
 			oldData.BandSize = &orig.BandSize.Int64
 		}
 
-		if e.Measurements.Waist != nil && (!orig.WaistSize.Valid || int64(*e.Measurements.Waist) != orig.WaistSize.Int64) {
+		if e.Measurements.Waist == nil && orig.WaistSize.Valid {
+			oldData.WaistSize = &orig.WaistSize.Int64
+		} else if e.Measurements.Waist != nil && (!orig.WaistSize.Valid || int64(*e.Measurements.Waist) != orig.WaistSize.Int64) {
 			newWaist := int64(*e.Measurements.Waist)
 			newData.WaistSize = &newWaist
 			oldData.WaistSize = &orig.WaistSize.Int64
 		}
 
-		if e.Measurements.Hip != nil && (!orig.HipSize.Valid || int64(*e.Measurements.Hip) != orig.HipSize.Int64) {
+		if e.Measurements.Hip == nil && orig.HipSize.Valid {
+			oldData.HipSize = &orig.HipSize.Int64
+		} else if e.Measurements.Hip != nil && (!orig.HipSize.Valid || int64(*e.Measurements.Hip) != orig.HipSize.Int64) {
 			newHip := int64(*e.Measurements.Hip)
 			newData.HipSize = &newHip
 			oldData.HipSize = &orig.HipSize.Int64
 		}
 	}
 
-	if e.BreastType != nil && (!orig.BreastType.Valid || e.BreastType.String() != orig.BreastType.String) {
+	if e.BreastType == nil && orig.BreastType.Valid {
+		oldData.BreastType = &orig.BreastType.String
+	} else if e.BreastType != nil && (!orig.BreastType.Valid || e.BreastType.String() != orig.BreastType.String) {
 		newBreastType := e.BreastType.String()
 		newData.BreastType = &newBreastType
 		oldData.BreastType = &orig.BreastType.String
 	}
 
-	if e.CareerStartYear != nil && (!orig.CareerStartYear.Valid || int64(*e.CareerStartYear) != orig.CareerStartYear.Int64) {
+	if e.CareerStartYear == nil && orig.CareerStartYear.Valid {
+		oldData.CareerStartYear = &orig.CareerStartYear.Int64
+	} else if e.CareerStartYear != nil && (!orig.CareerStartYear.Valid || int64(*e.CareerStartYear) != orig.CareerStartYear.Int64) {
 		newCareerStartYear := int64(*e.CareerStartYear)
 		newData.CareerStartYear = &newCareerStartYear
 		oldData.CareerStartYear = &orig.CareerStartYear.Int64
 	}
 
-	if e.CareerEndYear != nil && (!orig.CareerEndYear.Valid || int64(*e.CareerEndYear) != orig.CareerEndYear.Int64) {
+	if e.CareerEndYear == nil && orig.CareerEndYear.Valid {
+		oldData.CareerEndYear = &orig.CareerEndYear.Int64
+	} else if e.CareerEndYear != nil && (!orig.CareerEndYear.Valid || int64(*e.CareerEndYear) != orig.CareerEndYear.Int64) {
 		newCareerStartEnd := int64(*e.CareerEndYear)
 		newData.CareerEndYear = &newCareerStartEnd
 		oldData.CareerEndYear = &orig.CareerEndYear.Int64

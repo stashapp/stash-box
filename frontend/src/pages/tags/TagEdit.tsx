@@ -26,13 +26,14 @@ const TagAddComponent: React.FC = () => {
   if (loadingTag) return <LoadingIndicator message="Loading tag..." />;
   if (!tag?.findTag?.id) return <div>Tag not found</div>;
 
-  const doUpdate = (insertData: TagEditDetailsInput) => {
+  const doUpdate = (insertData: TagEditDetailsInput, editNote: string) => {
     insertTagEdit({
       variables: {
         tagData: {
           edit: {
             id: tag.findTag?.id,
             operation: OperationEnum.MODIFY,
+            comment: editNote,
           },
           details: insertData,
         },
