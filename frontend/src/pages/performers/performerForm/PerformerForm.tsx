@@ -171,22 +171,18 @@ const schema = yup.object().shape({
     .transform(nullCheck)
     .nullable()
     .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
-  tattoos: yup
-    .array()
-    .of(
-      yup.object().shape({
-        location: yup.string().required("Location is required"),
-        description: yup.string().transform(nullCheck).nullable(),
-      })
-    ),
-  piercings: yup
-    .array()
-    .of(
-      yup.object({
-        location: yup.string().required("Location is required"),
-        description: yup.string().transform(nullCheck).nullable(),
-      })
-    ),
+  tattoos: yup.array().of(
+    yup.object().shape({
+      location: yup.string().required("Location is required"),
+      description: yup.string().transform(nullCheck).nullable(),
+    })
+  ),
+  piercings: yup.array().of(
+    yup.object({
+      location: yup.string().required("Location is required"),
+      description: yup.string().transform(nullCheck).nullable(),
+    })
+  ),
   aliases: yup
     .array()
     .of(yup.string().trim().transform(nullCheck).required())
@@ -335,10 +331,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
   ];
 
   return (
-    <Form
-      className="PerformerForm"
-      onSubmit={handleSubmit(onSubmit)}
-    >
+    <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input
         type="hidden"
         name="id"

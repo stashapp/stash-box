@@ -7,7 +7,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import { usePerformerEdit, usePerformer, OperationEnum } from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import { EditNote } from 'src/components/form';
+import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 
 const schema = yup.object().shape({

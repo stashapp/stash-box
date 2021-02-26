@@ -10,7 +10,7 @@ import Select from "react-select";
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 import { useCategories, TagEditDetailsInput } from "src/graphql";
 
-import { EditNote } from 'src/components/form';
+import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
 import { createHref, tagHref } from "src/utils";
@@ -132,12 +132,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
       <EditNote register={register} error={errors.note} />
 
       <Form.Group className="d-flex">
-        <Button
-          type="submit"
-          disabled
-          className="d-none"
-          aria-hidden="true"
-        />
+        <Button type="submit" disabled className="d-none" aria-hidden="true" />
         <Button type="submit" className="col-2">
           Save
         </Button>

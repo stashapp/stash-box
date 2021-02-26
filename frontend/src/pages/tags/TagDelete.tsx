@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import { useTagEdit, useTag, OperationEnum } from "src/graphql";
-import { EditNote } from 'src/components/form';
+import { EditNote } from "src/components/form";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 
@@ -49,10 +49,7 @@ const TagDelete: React.FC = () => {
 
   return (
     <>
-      <Form
-        className="TagDeleteForm"
-        onSubmit={handleSubmit(handleDelete)}
-      >
+      <Form className="TagDeleteForm" onSubmit={handleSubmit(handleDelete)}>
         <Form.Row>
           <h4>
             Delete tag <em>{tag.findTag?.name}</em>
