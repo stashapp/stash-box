@@ -23,7 +23,7 @@ import { getBraSize, formatFuzzyDate } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { Image } from "src/utils/transforms";
 
-import { BodyModification } from "src/components/form";
+import { BodyModification, EditNote } from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
 import ChangeRow from "src/components/changeRow";
 import EditImages from "src/components/editImages";
@@ -171,24 +171,18 @@ const schema = yup.object().shape({
     .transform(nullCheck)
     .nullable()
     .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
-  tattoos: yup
-    .array()
-    .of(
-      yup.object().shape({
-        location: yup.string().required("Location is required"),
-        description: yup.string().transform(nullCheck).nullable(),
-      })
-    )
-    .nullable(),
-  piercings: yup
-    .array()
-    .of(
-      yup.object({
-        location: yup.string().required("Location is required"),
-        description: yup.string().transform(nullCheck).nullable(),
-      })
-    )
-    .nullable(),
+  tattoos: yup.array().of(
+    yup.object().shape({
+      location: yup.string().required("Location is required"),
+      description: yup.string().transform(nullCheck).nullable(),
+    })
+  ),
+  piercings: yup.array().of(
+    yup.object({
+      location: yup.string().required("Location is required"),
+      description: yup.string().transform(nullCheck).nullable(),
+    })
+  ),
   aliases: yup
     .array()
     .of(yup.string().trim().transform(nullCheck).required())
@@ -197,7 +191,7 @@ const schema = yup.object().shape({
     .array()
     .of(yup.string().trim().transform(nullCheck).required())
     .transform((_, obj) => Object.keys(obj ?? [])),
-  note: yup.string().transform(nullCheck).nullable(),
+  note: yup.string().required("Edit note is required"),
 });
 
 export type PerformerFormData = yup.Asserts<typeof schema>;
@@ -207,7 +201,7 @@ interface PerformerProps {
   performer: Performer;
   callback: (
     data: PerformerEditDetailsInput,
-    note?: string,
+    note: string,
     id?: string
   ) => void;
   initialAliases?: string[];
@@ -268,9 +262,9 @@ const PerformerForm: React.FC<PerformerProps> = ({
       ethnicity:
         EthnicityEnum[data.ethnicity as keyof typeof EthnicityEnum] || null,
       country: data.country,
-      aliases: data.aliases ? data.aliases.map((p: string) => p.trim()) : null,
-      piercings: data.piercings,
-      tattoos: data.tattoos,
+      aliases: data.aliases.map((p: string) => p.trim()),
+      piercings: data.piercings ?? [],
+      tattoos: data.tattoos ?? [],
       breast_type:
         BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum] || null,
       image_ids: data.images,
@@ -317,7 +311,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
           accuracy: DateAccuracyEnum.YEAR,
         };
 
-    callback(performerData, data.note ?? undefined, data.id);
+    callback(performerData, data.note, data.id);
   };
 
   const countryObj = [
@@ -337,11 +331,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
   ];
 
   return (
-    <Form
-      className="PerformerForm"
-      onSubmit={handleSubmit(onSubmit)}
-      onKeyDown={(e) => e.code === "Enter" && e.preventDefault()}
-    >
+    <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input
         type="hidden"
         name="id"
@@ -742,12 +732,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
           ))}
           <Form.Row className="my-4">
             <Col md={{ span: 6, offset: 6 }}>
-              <Form.Label>Edit Note</Form.Label>
-              <Form.Control as="textarea" name="note" ref={register} />
-              <Form.Text>
-                Please add any relevant sources or other supporting information
-                for your edit.
-              </Form.Text>
+              <EditNote register={register} error={errors.note} />
             </Col>
           </Form.Row>
           <Form.Row className="mt-2">
@@ -758,6 +743,12 @@ const PerformerForm: React.FC<PerformerProps> = ({
             >
               Cancel
             </Button>
+            <Button
+              type="submit"
+              disabled
+              className="d-none"
+              aria-hidden="true"
+            />
             <Button
               type="submit"
               disabled={changes.length === 0 && changeType !== "merge"}

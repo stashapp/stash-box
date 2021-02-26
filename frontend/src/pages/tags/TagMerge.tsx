@@ -27,7 +27,7 @@ const TagMerge: React.FC = () => {
   if (loadingTag) return <LoadingIndicator message="Loading tag..." />;
   if (!tag?.findTag?.id) return <div>Tag not found</div>;
 
-  const doUpdate = (insertData: TagEditDetailsInput) => {
+  const doUpdate = (insertData: TagEditDetailsInput, editNote: string) => {
     insertTagEdit({
       variables: {
         tagData: {
@@ -35,6 +35,7 @@ const TagMerge: React.FC = () => {
             id: tag.findTag?.id,
             operation: OperationEnum.MERGE,
             merge_source_ids: mergeSources,
+            comment: editNote,
           },
           details: insertData,
         },

@@ -15,12 +15,13 @@ const TagAddComponent: React.FC = () => {
     },
   });
 
-  const doInsert = (insertData: TagEditDetailsInput) => {
+  const doInsert = (insertData: TagEditDetailsInput, editNote: string) => {
     insertTagEdit({
       variables: {
         tagData: {
           edit: {
             operation: OperationEnum.CREATE,
+            comment: editNote,
           },
           details: insertData,
         },

@@ -425,51 +425,79 @@ func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformersI
 	return imageJoins
 }
 
-func (p *Performer) CopyFromPerformerEdit(input PerformerEdit) {
+func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit) {
 	if input.Name != nil {
 		p.Name = *input.Name
 	}
 	if input.Disambiguation != nil {
 		p.Disambiguation = sql.NullString{String: *input.Disambiguation, Valid: true}
+	} else if old.Disambiguation != nil {
+		p.Disambiguation = sql.NullString{String: "", Valid: false}
 	}
 	if input.Gender != nil {
 		p.Gender = sql.NullString{String: *input.Gender, Valid: true}
+	} else if old.Gender != nil {
+		p.Gender = sql.NullString{String: "", Valid: false}
 	}
 	if input.Ethnicity != nil {
 		p.Ethnicity = sql.NullString{String: *input.Ethnicity, Valid: true}
+	} else if old.Ethnicity != nil {
+		p.Ethnicity = sql.NullString{String: "", Valid: false}
 	}
 	if input.Country != nil {
 		p.Country = sql.NullString{String: *input.Country, Valid: true}
+	} else if old.Country != nil {
+		p.Country = sql.NullString{String: "", Valid: false}
 	}
 	if input.EyeColor != nil {
 		p.EyeColor = sql.NullString{String: *input.EyeColor, Valid: true}
+	} else if old.EyeColor != nil {
+		p.EyeColor = sql.NullString{String: "", Valid: false}
 	}
 	if input.HairColor != nil {
 		p.HairColor = sql.NullString{String: *input.HairColor, Valid: true}
+	} else if old.HairColor != nil {
+		p.HairColor = sql.NullString{String: "", Valid: false}
 	}
 	if input.Height != nil {
 		p.Height = sql.NullInt64{Int64: *input.Height, Valid: true}
+	} else if old.Height != nil {
+		p.Height = sql.NullInt64{Int64: 0, Valid: false}
 	}
 	if input.BreastType != nil {
 		p.BreastType = sql.NullString{String: *input.BreastType, Valid: true}
+	} else if old.BreastType != nil {
+		p.BreastType = sql.NullString{String: "", Valid: false}
 	}
 	if input.CareerStartYear != nil {
 		p.CareerStartYear = sql.NullInt64{Int64: *input.CareerStartYear, Valid: true}
+	} else if old.CareerStartYear != nil {
+		p.CareerStartYear = sql.NullInt64{Int64: 0, Valid: false}
 	}
 	if input.CareerEndYear != nil {
 		p.CareerEndYear = sql.NullInt64{Int64: *input.CareerEndYear, Valid: true}
+	} else if old.CareerEndYear != nil {
+		p.CareerEndYear = sql.NullInt64{Int64: 0, Valid: false}
 	}
 	if input.CupSize != nil {
 		p.CupSize = sql.NullString{String: *input.CupSize, Valid: *input.CupSize != ""}
+	} else if old.CupSize != nil {
+		p.CupSize = sql.NullString{String: "", Valid: false}
 	}
 	if input.BandSize != nil {
 		p.BandSize = sql.NullInt64{Int64: *input.BandSize, Valid: *input.BandSize != 0}
+	} else if old.BandSize != nil {
+		p.BandSize = sql.NullInt64{Int64: 0, Valid: false}
 	}
 	if input.HipSize != nil {
 		p.HipSize = sql.NullInt64{Int64: *input.HipSize, Valid: *input.HipSize != 0}
+	} else if old.HipSize != nil {
+		p.HipSize = sql.NullInt64{Int64: 0, Valid: false}
 	}
 	if input.WaistSize != nil {
 		p.WaistSize = sql.NullInt64{Int64: *input.WaistSize, Valid: *input.WaistSize != 0}
+	} else if old.WaistSize != nil {
+		p.WaistSize = sql.NullInt64{Int64: 0, Valid: false}
 	}
 
 	if input.Birthdate != nil {
@@ -478,6 +506,9 @@ func (p *Performer) CopyFromPerformerEdit(input PerformerEdit) {
 		if input.BirthdateAccuracy != nil {
 			p.BirthdateAccuracy = sql.NullString{String: *input.BirthdateAccuracy, Valid: *input.BirthdateAccuracy != ""}
 		}
+	} else if old.Birthdate != nil {
+		p.Birthdate = SQLiteDate{String: "", Valid: false}
+		p.BirthdateAccuracy = sql.NullString{String: "", Valid: false}
 	}
 
 	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}

@@ -10,6 +10,7 @@ import Select from "react-select";
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 import { useCategories, TagEditDetailsInput } from "src/graphql";
 
+import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
 import { createHref, tagHref } from "src/utils";
@@ -20,13 +21,14 @@ const schema = yup.object().shape({
   description: yup.string(),
   aliases: yup.array().of(yup.string().required()),
   categoryId: yup.string().nullable(),
+  note: yup.string().required("Edit note is required"),
 });
 
 type TagFormData = yup.Asserts<typeof schema>;
 
 interface TagProps {
   tag: Tag;
-  callback: (data: TagEditDetailsInput) => void;
+  callback: (data: TagEditDetailsInput, editNote: string) => void;
 }
 
 const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
@@ -59,7 +61,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
       aliases: data.aliases ?? [],
       category_id: data.categoryId,
     };
-    callback(callbackData);
+    callback(callbackData, data.note);
   };
 
   const handleAliasChange = (newAliases: string[]) =>
@@ -107,7 +109,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
         <Controller
           name="categoryId"
           control={control}
-          defaultValue={tag.category?.id}
+          defaultValue={tag.category?.id ?? null}
           render={({ onChange }) => (
             <Select
               classNamePrefix="react-select"
@@ -127,7 +129,10 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
         <div className="invalid-feedback">{errors?.categoryId?.message}</div>
       </Form.Group>
 
+      <EditNote register={register} error={errors.note} />
+
       <Form.Group className="d-flex">
+        <Button type="submit" disabled className="d-none" aria-hidden="true" />
         <Button type="submit" className="col-2">
           Save
         </Button>
