@@ -686,7 +686,7 @@ func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *Per
 	}
 
 	performer.CopyFromPerformerEdit(*data.New, *data.Old)
-	updatedPerformer, err := qb.UpdatePartial(*performer)
+	updatedPerformer, err := qb.Update(*performer)
 
 	currentAliases, err := qb.GetAliases(updatedPerformer.ID)
 	if err != nil {

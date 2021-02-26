@@ -218,6 +218,67 @@ func (s *testRunner) createTestPerformer(input *models.PerformerCreateInput) (*m
 	return createdPerformer, nil
 }
 
+func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInput {
+	name := s.generatePerformerName()
+	disambiguation := "Dis Ambiguation"
+	gender := models.GenderEnumFemale
+	ethnicity := models.EthnicityEnumCaucasian
+	eyecolor := models.EyeColorEnumBlue
+	haircolor := models.HairColorEnumAuburn
+	country := "Some Country"
+	height := 160
+	hip := 23
+	waist := 24
+	band := 25
+	cup := "DD"
+	breasttype := models.BreastTypeEnumNatural
+	careerstart := 2019
+	careerend := 2020
+	tattoodesc := "Tatto Desc"
+
+	return &models.PerformerCreateInput{
+		Name:           name,
+		Disambiguation: &disambiguation,
+		Aliases:        []string{"Alias1"},
+		Gender:         &gender,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Birthdate: &models.FuzzyDateInput{
+			Date:     "2000-02-03",
+			Accuracy: models.DateAccuracyEnumDay,
+		},
+		Ethnicity: &ethnicity,
+		Country:   &country,
+		EyeColor:  &eyecolor,
+		HairColor: &haircolor,
+		Height:    &height,
+		Measurements: &models.MeasurementsInput{
+			Hip:      &hip,
+			Waist:    &waist,
+			BandSize: &band,
+			CupSize:  &cup,
+		},
+		BreastType:      &breasttype,
+		CareerStartYear: &careerstart,
+		CareerEndYear:   &careerend,
+		Tattoos: []*models.BodyModification{
+			{
+				Location:    "Wrist",
+				Description: &tattoodesc,
+			},
+		},
+		Piercings: []*models.BodyModification{
+			{
+				Location: "Ears",
+			},
+		},
+	}
+}
+
 func (s *testRunner) generateStudioName() string {
 	studioSuffix += 1
 	return "studio-" + strconv.Itoa(studioSuffix)
