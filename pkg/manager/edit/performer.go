@@ -29,7 +29,7 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 	performerEdit := input.Details.PerformerEditFromDiff(*performer)
 
 	// determine unspecified aliases vs no aliases
-	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
+	if len(input.Details.Aliases) != 0 || inputSpecified("performerData.details.aliases") {
 		aliases, err := pqb.GetAliases(performerID)
 
 		if err != nil {
@@ -39,7 +39,7 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 		performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases.ToAliases())
 	}
 
-	if len(input.Details.Tattoos) != 0 || inputSpecified("tattoos") {
+	if len(input.Details.Tattoos) != 0 || inputSpecified("performerData.details.tattoos") {
 		tattoos, err := pqb.GetTattoos(performerID)
 
 		if err != nil {
@@ -49,7 +49,7 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 		performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = BodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
 	}
 
-	if len(input.Details.Piercings) != 0 || inputSpecified("piercings") {
+	if len(input.Details.Piercings) != 0 || inputSpecified("performerData.details.piercings") {
 		piercings, err := pqb.GetPiercings(performerID)
 
 		if err != nil {

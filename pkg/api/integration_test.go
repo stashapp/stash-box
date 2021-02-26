@@ -517,7 +517,7 @@ func (s *testRunner) getEditPerformerTarget(input *models.Edit) *models.Performe
 	return performerTarget
 }
 
-func (s *testRunner) createPerformerEditDetailsInput(input *models.Edit) *models.PerformerEditDetailsInput {
+func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDetailsInput {
 	name := s.generatePerformerName()
 	disambiguation := "Dis Ambiguation"
 	gender := models.GenderEnumFemale
@@ -548,7 +548,7 @@ func (s *testRunner) createPerformerEditDetailsInput(input *models.Edit) *models
 		},
 		Birthdate: &models.FuzzyDateInput{
 			Date:     "2000-02-03",
-			Accuracy: models.DateAccuracyEnumYear,
+			Accuracy: models.DateAccuracyEnumDay,
 		},
 		Ethnicity: &ethnicity,
 		Country:   &country,

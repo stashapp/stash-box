@@ -178,8 +178,7 @@ const schema = yup.object().shape({
         location: yup.string().required("Location is required"),
         description: yup.string().transform(nullCheck).nullable(),
       })
-    )
-    .nullable(),
+    ),
   piercings: yup
     .array()
     .of(
@@ -187,8 +186,7 @@ const schema = yup.object().shape({
         location: yup.string().required("Location is required"),
         description: yup.string().transform(nullCheck).nullable(),
       })
-    )
-    .nullable(),
+    ),
   aliases: yup
     .array()
     .of(yup.string().trim().transform(nullCheck).required())
@@ -268,9 +266,9 @@ const PerformerForm: React.FC<PerformerProps> = ({
       ethnicity:
         EthnicityEnum[data.ethnicity as keyof typeof EthnicityEnum] || null,
       country: data.country,
-      aliases: data.aliases ? data.aliases.map((p: string) => p.trim()) : null,
-      piercings: data.piercings,
-      tattoos: data.tattoos,
+      aliases: data.aliases.map((p: string) => p.trim()),
+      piercings: data.piercings ?? [],
+      tattoos: data.tattoos ?? [],
       breast_type:
         BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum] || null,
       image_ids: data.images,
