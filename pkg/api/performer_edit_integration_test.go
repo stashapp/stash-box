@@ -286,13 +286,13 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 			s.fieldMismatch(nil, performer.BandSize.Int64, "BandSize")
 		}
 		if performer.CupSize.Valid {
-			s.fieldMismatch(nil, performer.CupSize.String, "BandSize")
+			s.fieldMismatch(nil, performer.CupSize.String, "CupSize")
 		}
 		if performer.WaistSize.Valid {
-			s.fieldMismatch(nil, performer.WaistSize.Int64, "BandSize")
+			s.fieldMismatch(nil, performer.WaistSize.Int64, "WaistSize")
 		}
 		if performer.HipSize.Valid {
-			s.fieldMismatch(nil, performer.HipSize.Int64, "BandSize")
+			s.fieldMismatch(nil, performer.HipSize.Int64, "HipSize")
 		}
 	} else {
 		if input.Measurements.BandSize == nil {
@@ -521,31 +521,6 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 
 	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
 	s.verifyApplyModifyPerformerEdit(*performerEditDetailsInput, modifiedPerformer, appliedEdit)
-
-	// Create edit that only replaces a single field for the performer
-	updatedName := "updated performer name"
-	performerReEditInput := models.PerformerEditDetailsInput{
-		Name: &updatedName,
-	}
-	id = createdPerformer.ID.String()
-	editInput = models.EditInput{
-		Operation: models.OperationEnumModify,
-		ID:        &id,
-	}
-
-	createdUpdateEdit, err = s.createTestPerformerEdit(models.OperationEnumModify, &performerReEditInput, &editInput)
-	if err != nil {
-		return
-	}
-	appliedEdit, err = s.applyEdit(createdUpdateEdit.ID.String())
-	if err != nil {
-		return
-	}
-
-	performerEditDetailsInput.Name = &updatedName
-	modifiedPerformer, _ = s.resolver.Query().FindPerformer(s.ctx, id)
-	s.verifyApplyModifyPerformerEdit(*performerEditDetailsInput, modifiedPerformer, appliedEdit)
-
 }
 
 func (s *performerEditTestRunner) verifyApplyModifyPerformerEdit(input models.PerformerEditDetailsInput, updatedPerformer *models.Performer, edit *models.Edit) {
@@ -558,17 +533,20 @@ func (s *performerEditTestRunner) verifyApplyModifyPerformerEdit(input models.Pe
 }
 
 func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
-	createdPerformer, err := s.createTestPerformer(nil)
+	performerData := s.createFullPerformerCreateInput()
+	createdPerformer, err := s.createTestPerformer(performerData)
 	if err != nil {
 		return
 	}
 	id := createdPerformer.ID.String()
 
+	measurements := models.MeasurementsInput{}
 	performerUnsetInput := models.PerformerEditDetailsInput{
-		Aliases:   []string{},
-		Tattoos:   []*models.BodyModification{},
-		Piercings: []*models.BodyModification{},
-		Urls:      []*models.URL{},
+		Aliases:      []string{},
+		Tattoos:      []*models.BodyModification{},
+		Piercings:    []*models.BodyModification{},
+		Urls:         []*models.URL{},
+		Measurements: &measurements,
 	}
 
 	editInput := models.EditInput{
