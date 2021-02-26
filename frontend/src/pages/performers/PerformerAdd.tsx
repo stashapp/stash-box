@@ -19,12 +19,16 @@ const PerformerAdd: React.FC = () => {
     },
   });
 
-  const doInsert = (updateData: PerformerEditDetailsInput) => {
+  const doInsert = (
+    updateData: PerformerEditDetailsInput,
+    editNote: string
+  ) => {
     submitPerformerEdit({
       variables: {
         performerData: {
           edit: {
             operation: OperationEnum.CREATE,
+            comment: editNote,
           },
           details: updateData,
         },

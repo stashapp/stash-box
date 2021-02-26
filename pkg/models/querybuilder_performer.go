@@ -605,7 +605,8 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 		if data.New.Name == nil {
 			return nil, errors.New("Missing performer name")
 		}
-		newPerformer.CopyFromPerformerEdit(*data.New)
+
+		newPerformer.CopyFromPerformerEdit(*data.New, PerformerEdit{})
 
 		performer, err = qb.Create(newPerformer)
 		if err != nil {
@@ -684,7 +685,7 @@ func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *Per
 		return nil, err
 	}
 
-	performer.CopyFromPerformerEdit(*data.New)
+	performer.CopyFromPerformerEdit(*data.New, *data.Old)
 	updatedPerformer, err := qb.UpdatePartial(*performer)
 
 	currentAliases, err := qb.GetAliases(updatedPerformer.ID)
