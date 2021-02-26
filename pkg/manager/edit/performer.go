@@ -28,62 +28,41 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 	// perform a diff against the input and the current object
 	performerEdit := input.Details.PerformerEditFromDiff(*performer)
 
-	// determine unspecified aliases vs no aliases
-	if len(input.Details.Aliases) != 0 || inputSpecified("performerData.details.aliases") {
-		aliases, err := pqb.GetAliases(performerID)
+	aliases, err := pqb.GetAliases(performerID)
+	if err != nil {
+		return err
+	}
+	performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases.ToAliases())
 
-		if err != nil {
-			return err
-		}
+	tattoos, err := pqb.GetTattoos(performerID)
+	if err != nil {
+		return err
+	}
+	performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = BodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
 
-		performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases.ToAliases())
+	piercings, err := pqb.GetPiercings(performerID)
+	if err != nil {
+		return err
+	}
+	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = BodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
+
+	urls, err := pqb.GetUrls(performerID)
+	if err != nil {
+		return err
+	}
+	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = URLCompare(input.Details.Urls, urls)
+
+	iqb := models.NewImageQueryBuilder(tx)
+	images, err := iqb.FindByPerformerID(performerID)
+	if err != nil {
+		return err
 	}
 
-	if len(input.Details.Tattoos) != 0 || inputSpecified("performerData.details.tattoos") {
-		tattoos, err := pqb.GetTattoos(performerID)
-
-		if err != nil {
-			return err
-		}
-
-		performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = BodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
+	existingImages := []string{}
+	for _, image := range images {
+		existingImages = append(existingImages, image.ID.String())
 	}
-
-	if len(input.Details.Piercings) != 0 || inputSpecified("performerData.details.piercings") {
-		piercings, err := pqb.GetPiercings(performerID)
-
-		if err != nil {
-			return err
-		}
-
-		performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = BodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
-	}
-
-	if len(input.Details.Urls) != 0 || inputSpecified("urls") {
-		urls, err := pqb.GetUrls(performerID)
-
-		if err != nil {
-			return err
-		}
-
-		performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = URLCompare(input.Details.Urls, urls)
-	}
-
-	if len(input.Details.ImageIds) != 0 || inputSpecified("image_ids") {
-		iqb := models.NewImageQueryBuilder(tx)
-		images, err := iqb.FindByPerformerID(performerID)
-
-		if err != nil {
-			return err
-		}
-
-		existingImages := []string{}
-		for _, image := range images {
-			existingImages = append(existingImages, image.ID.String())
-		}
-
-		performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
-	}
+	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
 
 	edit.SetData(performerEdit)
 	return nil
@@ -131,62 +110,41 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 	// perform a diff against the input and the current object
 	performerEdit := input.Details.PerformerEditFromMerge(*performer, mergeSources)
 
-	// determine unspecified aliases vs no aliases
-	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
-		aliases, err := pqb.GetAliases(performerID)
+	aliases, err := pqb.GetAliases(performerID)
+	if err != nil {
+		return err
+	}
+	performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases.ToAliases())
 
-		if err != nil {
-			return err
-		}
+	tattoos, err := pqb.GetTattoos(performerID)
+	if err != nil {
+		return err
+	}
+	performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = BodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
 
-		performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases.ToAliases())
+	piercings, err := pqb.GetPiercings(performerID)
+	if err != nil {
+		return err
+	}
+	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = BodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
+
+	urls, err := pqb.GetUrls(performerID)
+	if err != nil {
+		return err
+	}
+	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = URLCompare(input.Details.Urls, urls)
+
+	iqb := models.NewImageQueryBuilder(tx)
+	images, err := iqb.FindByPerformerID(performerID)
+	if err != nil {
+		return err
 	}
 
-	if len(input.Details.Tattoos) != 0 || inputSpecified("tattoos") {
-		tattoos, err := pqb.GetTattoos(performerID)
-
-		if err != nil {
-			return err
-		}
-
-		performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = BodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
+	existingImages := []string{}
+	for _, image := range images {
+		existingImages = append(existingImages, image.ID.String())
 	}
-
-	if len(input.Details.Piercings) != 0 || inputSpecified("piercings") {
-		piercings, err := pqb.GetPiercings(performerID)
-
-		if err != nil {
-			return err
-		}
-
-		performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = BodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
-	}
-
-	if len(input.Details.Urls) != 0 || inputSpecified("urls") {
-		urls, err := pqb.GetUrls(performerID)
-
-		if err != nil {
-			return err
-		}
-
-		performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = URLCompare(input.Details.Urls, urls)
-	}
-
-	if len(input.Details.ImageIds) != 0 || inputSpecified("image_ids") {
-		iqb := models.NewImageQueryBuilder(tx)
-		images, err := iqb.FindByPerformerID(performerID)
-
-		if err != nil {
-			return err
-		}
-
-		existingImages := []string{}
-		for _, image := range images {
-			existingImages = append(existingImages, image.ID.String())
-		}
-
-		performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
-	}
+	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
 
 	edit.SetData(performerEdit)
 	return nil
