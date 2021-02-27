@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"sort"
 
 	"github.com/gofrs/uuid"
 
@@ -49,6 +50,19 @@ func (p Images) ToURLSlice() []string {
 		urls[i] = v.RemoteURL.String
 	}
 	return urls
+}
+
+func (p Images) OrderLandscape() {
+	sort.Slice(p, func(a, b int) bool {
+		aspectA := p[a].Width / p[a].Height
+		aspectB := p[b].Width / p[b].Height
+		if aspectA > aspectB {
+			return true
+		} else if aspectA < aspectB {
+			return false
+		}
+		return p[a].Width > p[b].Width
+	})
 }
 
 func (p *Images) Add(o interface{}) {
