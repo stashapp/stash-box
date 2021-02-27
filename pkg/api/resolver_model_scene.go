@@ -73,6 +73,8 @@ func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*model
 			return nil, err
 		}
 	}
+
+	models.Images(images).OrderLandscape()
 	return images, nil
 }
 
