@@ -110,7 +110,7 @@ const AddUserComponent: React.FC = () => {
     <Row className="justify-content-center">
       <Col lg={10}>
         <div className="d-flex">
-          <h2>{name}</h2>
+          <h3>{name}</h3>
           {deleteModal}
           {rescindCodeModal}
           <div className="ml-auto">

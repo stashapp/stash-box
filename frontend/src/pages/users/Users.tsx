@@ -50,7 +50,7 @@ const UsersComponent: React.FC = () => {
   return (
     <>
       <div className="d-flex">
-        <h2>Users</h2>
+        <h3>Users</h3>
         <Link to={ROUTE_USER_ADD} className="ml-auto">
           <Button>Add User</Button>
         </Link>

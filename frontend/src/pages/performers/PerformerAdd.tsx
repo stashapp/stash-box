@@ -69,7 +69,7 @@ const PerformerAdd: React.FC = () => {
 
   return (
     <div>
-      <h2>Add new performer</h2>
+      <h3>Add new performer</h3>
       <hr />
       <PerformerForm
         performer={emptyPerformer}

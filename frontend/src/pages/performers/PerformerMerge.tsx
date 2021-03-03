@@ -56,9 +56,9 @@ const PerformerMerge: React.FC = () => {
 
   return (
     <div className={CLASSNAME}>
-      <h2>
+      <h3>
         Merge performers into <em>{performer.findPerformer.name}</em>
-      </h2>
+      </h3>
       <hr />
       <div className="row no-gutters">
         <div className="col-6">

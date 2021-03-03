@@ -94,7 +94,7 @@ const SceneComponent: React.FC = () => {
               />
             )}
           </div>
-          <h2>{scene.title}</h2>
+          <h3>{scene.title}</h3>
           <h6>
             {scene.studio && (
               <>

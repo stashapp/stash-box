@@ -63,7 +63,7 @@ const StudiosComponent: React.FC = () => {
   return (
     <>
       <div className="d-flex">
-        <h2 className="mr-4">Studios</h2>
+        <h3 className="mr-4">Studios</h3>
         {canEdit(auth.user) && (
           <Link to={createHref(ROUTE_STUDIO_ADD)} className="ml-auto">
             <Button className="mr-auto">Create</Button>
