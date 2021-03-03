@@ -205,7 +205,11 @@ const AddUserComponent: React.FC = () => {
             ))}
             <div>
               {isUser() && (
-                <Button variant="link" onClick={() => handleGenerateCode()}>
+                <Button
+                  variant="link"
+                  onClick={() => handleGenerateCode()}
+                  disabled={user.invite_tokens === 0}
+                >
                   <Icon icon="plus" className="mr-2" />
                   Generate Key
                 </Button>
