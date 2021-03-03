@@ -5,7 +5,6 @@ import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import { useScene, useDeleteScene } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
-  canEdit,
   isAdmin,
   getImage,
   getUrlByType,
@@ -80,18 +79,18 @@ const SceneComponent: React.FC = () => {
       <Card className="scene-info">
         <Card.Header>
           <div className="float-right">
-            {canEdit(auth.user) && (
-              <Link to={createHref(ROUTE_SCENE_EDIT, { id })}>
-                <Button>Edit</Button>
-              </Link>
-            )}
             {isAdmin(auth.user) && (
-              <DeleteButton
-                onClick={handleDelete}
-                className="ml-2"
-                disabled={deleting}
-                message="Do you want to delete scene? This cannot be undone."
-              />
+              <>
+                <Link to={createHref(ROUTE_SCENE_EDIT, { id })}>
+                  <Button>Edit</Button>
+                </Link>
+                <DeleteButton
+                  onClick={handleDelete}
+                  className="ml-2"
+                  disabled={deleting}
+                  message="Do you want to delete scene? This cannot be undone."
+                />
+              </>
             )}
           </div>
           <h3>{scene.title}</h3>
