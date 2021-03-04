@@ -204,7 +204,35 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 	panic("not implemented")
 }
 func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCommentInput) (*models.Edit, error) {
-	panic("not implemented")
+	if err := validateEdit(ctx); err != nil {
+		return nil, err
+	}
+
+	currentUser := getCurrentUser(ctx)
+	tx := database.DB.MustBeginTx(ctx, nil)
+	eqb := models.NewEditQueryBuilder(tx)
+
+	editID, err := uuid.FromString(input.ID)
+	if err != nil {
+		return nil, err
+	}
+	edit, err := eqb.Find(editID)
+	if err != nil {
+		return nil, err
+	}
+
+	commentID, _ := uuid.NewV4()
+	comment := models.NewEditComment(commentID, currentUser, edit, input.Comment)
+	if err := eqb.CreateComment(*comment); err != nil {
+		return nil, err
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return edit, nil
 }
 
 func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {

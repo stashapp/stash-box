@@ -12,6 +12,7 @@ import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
 import EditComment from "./EditComment";
 import EditHeader from "./EditHeader";
+import AddComment from "./AddComment";
 
 interface EditsProps {
   edit: Edit;
@@ -81,7 +82,10 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         {modifications}
         {destruction}
         <Row className="mt-2">
-          <Col md={{ offset: 4, span: 8 }}>{comments}</Col>
+          <Col md={{ offset: 4, span: 8 }}>
+            {comments}
+            <AddComment editID={edit.id} />
+          </Col>
         </Row>
       </Card.Body>
     </Card>

@@ -81,8 +81,10 @@ interface SceneFormData extends yup.Asserts<typeof schema> {}
 interface Performer {
   performerId: string;
   name: string;
+  disambiguation: string;
   alias: string | null;
   gender: GenderEnum | null;
+  deleted: boolean;
 }
 
 interface SceneProps {
@@ -134,6 +136,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         name: p.performer.name,
         alias: p.as ?? "",
         gender: p.performer.gender,
+        disambiguation: p.performer.disambiguation,
+        deleted: p.performer.deleted,
       }))
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -173,6 +177,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       performerId: result.id,
       gender: result.gender,
       alias: "",
+      disambiguation: result.disambiguation ?? undefined,
+      deleted: result.deleted,
     });
   };
 
@@ -196,6 +202,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             <InputGroup.Text className="flex-grow-1">
               <GenderIcon gender={p.gender} />
               <span className="performer-name">{p.name}</span>
+              {p.disambiguation && (
+                <small className="ml-1">({p.disambiguation})</small>
+              )}
             </InputGroup.Text>
           </InputGroup.Append>
         </InputGroup>

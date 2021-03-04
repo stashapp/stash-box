@@ -176,6 +176,11 @@ export interface DateCriterionInput {
   modifier: CriterionModifier;
 }
 
+export interface EditCommentInput {
+  id: string;
+  comment: string;
+}
+
 export interface EditFilterType {
   user_id?: string | null;
   status?: VoteStatusEnum | null;

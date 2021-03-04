@@ -46,12 +46,12 @@ const PerformerModify: React.FC = () => {
 
   return (
     <>
-      <h2>
+      <h3>
         Edit performer{" "}
         <i>
           <b>{data.findPerformer.name}</b>
         </i>
-      </h2>
+      </h3>
       <hr />
       <PerformerForm
         performer={data.findPerformer}

@@ -9,7 +9,6 @@ import DeleteButton from "src/components/deleteButton";
 import { SceneList } from "src/components/list";
 
 import {
-  canEdit,
   isAdmin,
   getImage,
   getUrlByType,
@@ -84,18 +83,18 @@ const StudioComponent: React.FC = () => {
           </div>
         )}
         <div>
-          {canEdit(auth.user) && (
-            <Link to={createHref(ROUTE_STUDIO_EDIT, { id })} className="ml-2">
-              <Button>Edit</Button>
-            </Link>
-          )}
           {isAdmin(auth.user) && (
-            <DeleteButton
-              onClick={handleDelete}
-              disabled={deleting}
-              className="ml-2"
-              message="Do you want to delete studio? This cannot be undone."
-            />
+            <>
+              <Link to={createHref(ROUTE_STUDIO_EDIT, { id })} className="ml-2">
+                <Button>Edit</Button>
+              </Link>
+              <DeleteButton
+                onClick={handleDelete}
+                disabled={deleting}
+                className="ml-2"
+                message="Do you want to delete studio? This cannot be undone."
+              />
+            </>
           )}
         </div>
       </div>

@@ -24,7 +24,7 @@ const AddCategory: React.FC = () => {
 
   return (
     <div>
-      <h2>Add new tag category</h2>
+      <h3>Add new tag category</h3>
       <hr />
       <CategoryForm callback={doInsert} />
     </div>

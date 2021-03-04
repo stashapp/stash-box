@@ -41,7 +41,7 @@ const TagAddComponent: React.FC = () => {
 
   return (
     <div>
-      <h2>Add new tag</h2>
+      <h3>Add new tag</h3>
       <hr />
       <TagForm tag={emptyTag} callback={doInsert} />
     </div>
