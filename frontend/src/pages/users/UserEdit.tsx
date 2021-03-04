@@ -32,7 +32,7 @@ const EditUserComponent: React.FC = () => {
 
   return (
     <div>
-      <h2>Edit &lsquo;{user.name}&rsquo;</h2>
+      <h3>Edit &lsquo;{user.name}&rsquo;</h3>
       <hr />
       <UserEditForm
         user={userData}

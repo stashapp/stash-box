@@ -36,10 +36,10 @@ const StudioEdit: React.FC = () => {
 
   return (
     <div>
-      <h2>
+      <h3>
         Edit
         <strong className="ml-2">{data.findStudio.name}</strong>
-      </h2>
+      </h3>
       <hr />
       <StudioForm
         studio={data.findStudio}

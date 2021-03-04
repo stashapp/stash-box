@@ -59,6 +59,10 @@ import {
   RevokeInvite,
   RevokeInviteVariables,
 } from "../definitions/RevokeInvite";
+import {
+  EditComment,
+  EditCommentVariables,
+} from "../definitions/EditComment";
 
 const ActivateUserMutation = loader("./ActivateNewUser.gql");
 const AddUserMutation = loader("./AddUser.gql");
@@ -85,6 +89,7 @@ const GenerateInviteCodeMutation = loader("./GenerateInviteCode.gql");
 const GrantInviteMutation = loader("./GrantInvite.gql");
 const RescindInviteCodeMutation = loader("./RescindInviteCode.gql");
 const RevokeInviteMutation = loader("./RevokeInvite.gql");
+const EditCommentMutation = loader("./EditComment.gql");
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -185,3 +190,7 @@ export const useRescindInviteCode = (
 export const useRevokeInvite = (
   options?: MutationHookOptions<RevokeInvite, RevokeInviteVariables>
 ) => useMutation(RevokeInviteMutation, options);
+
+export const useEditComment = (
+  options?: MutationHookOptions<EditComment, EditCommentVariables>
+) => useMutation(EditCommentMutation, options);

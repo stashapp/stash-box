@@ -1,4 +1,4 @@
-#import "../queries/EditFragment.gql"
+#import "../fragments/EditFragment.gql"
 mutation TagEdit($tagData: TagEditInput!) {
   tagEdit(input: $tagData) {
     ...EditFragment

@@ -30,7 +30,7 @@ const AddUserComponent: React.FC = () => {
 
   return (
     <div className="col-6">
-      <h2>Add user</h2>
+      <h3>Add user</h3>
       <hr />
       <UserForm user={emptyUser} error={queryError} callback={doInsert} />
     </div>

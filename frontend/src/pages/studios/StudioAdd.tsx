@@ -31,7 +31,7 @@ const StudioAdd: React.FC = () => {
 
   return (
     <div>
-      <h2>Add new studio</h2>
+      <h3>Add new studio</h3>
       <hr />
       <StudioForm studio={emptyStudio} callback={doInsert} />
     </div>

@@ -45,9 +45,9 @@ const TagMerge: React.FC = () => {
 
   return (
     <div>
-      <h2>
+      <h3>
         Merge tags into <em>{tag.findTag.name}</em>
-      </h2>
+      </h3>
       <hr />
       <div className="row no-gutters">
         <div className="col-6">

@@ -43,7 +43,7 @@ const TagAddComponent: React.FC = () => {
 
   return (
     <div>
-      <h2>Edit tag</h2>
+      <h3>Edit tag</h3>
       <hr />
       <TagForm tag={tag.findTag} callback={doUpdate} />
     </div>

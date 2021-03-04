@@ -24,7 +24,7 @@ const ChangePasswordComponent: React.FC = () => {
 
   return (
     <div className="col-6">
-      <h2>Change Password</h2>
+      <h3>Change Password</h3>
       <hr />
       <UserPassword error={queryError} callback={doUpdate} />
     </div>

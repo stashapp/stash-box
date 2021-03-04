@@ -1,4 +1,4 @@
-#import "./SceneFragment.gql"
+#import "../fragments/SceneFragment.gql"
 query Scene($id: ID!) {
   findScene(id: $id) {
     ...SceneFragment

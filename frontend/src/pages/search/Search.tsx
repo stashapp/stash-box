@@ -122,7 +122,9 @@ const Search: React.FC = () => {
     () =>
       debounce(
         (searchTerm: string) =>
-          history.replace(createHref(ROUTE_SEARCH, { term: searchTerm })),
+          history.replace(
+            createHref(ROUTE_SEARCH, { term: searchTerm || undefined })
+          ),
         200
       ),
     [history]
