@@ -1,4 +1,4 @@
-#import "./ImageFragment.gql"
+#import "../fragments/ImageFragment.gql"
 fragment PerformerFragment on Performer {
   id
   name

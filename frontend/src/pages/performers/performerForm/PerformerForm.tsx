@@ -8,7 +8,7 @@ import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
-import { sortBy } from "lodash";
+import { sortBy, uniq } from "lodash";
 
 import {
   GenderEnum,
@@ -227,7 +227,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
     mode: "onBlur",
   });
   const [gender, setGender] = useState(performer.gender || "FEMALE");
-  const aliases = [...performer.aliases, ...initialAliases];
+  const aliases = uniq([...performer.aliases, ...initialAliases]);
   const [activeTab, setActiveTab] = useState("personal");
   const fieldData = watch();
   const changes = useMemo(

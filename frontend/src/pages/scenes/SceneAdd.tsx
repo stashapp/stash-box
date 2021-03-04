@@ -41,7 +41,7 @@ const SceneAdd: React.FC = () => {
 
   return (
     <div>
-      <h2>Add new scene</h2>
+      <h3>Add new scene</h3>
       <hr />
       <SceneForm scene={emptyScene} callback={doInsert} />
     </div>

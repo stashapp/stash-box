@@ -16,7 +16,7 @@ import {
   ROUTE_USER_PASSWORD,
   ROUTE_USERS,
 } from "src/constants/route";
-import { canEdit, isAdmin, createHref } from "src/utils";
+import { isAdmin, createHref } from "src/utils";
 import Modal from "src/components/modal";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
@@ -110,29 +110,29 @@ const AddUserComponent: React.FC = () => {
     <Row className="justify-content-center">
       <Col lg={10}>
         <div className="d-flex">
-          <h2>{name}</h2>
+          <h3>{name}</h3>
           {deleteModal}
           {rescindCodeModal}
           <div className="ml-auto">
-            {canEdit(Auth.user) && (
-              <Link to={createHref(ROUTE_USER_EDIT, user)} className="ml-2">
-                <Button>Edit User</Button>
-              </Link>
-            )}
             {isUser() && (
               <Link to={ROUTE_USER_PASSWORD} className="ml-2">
                 <Button>Change Password</Button>
               </Link>
             )}
             {isAdmin(Auth.user) && (
-              <Button
-                className="ml-2"
-                variant="danger"
-                disabled={showDelete || deleting}
-                onClick={toggleModal}
-              >
-                Delete User
-              </Button>
+              <>
+                <Link to={createHref(ROUTE_USER_EDIT, user)} className="ml-2">
+                  <Button>Edit User</Button>
+                </Link>
+                <Button
+                  className="ml-2"
+                  variant="danger"
+                  disabled={showDelete || deleting}
+                  onClick={toggleModal}
+                >
+                  Delete User
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -205,7 +205,11 @@ const AddUserComponent: React.FC = () => {
             ))}
             <div>
               {isUser() && (
-                <Button variant="link" onClick={() => handleGenerateCode()}>
+                <Button
+                  variant="link"
+                  onClick={() => handleGenerateCode()}
+                  disabled={user.invite_tokens === 0}
+                >
                   <Icon icon="plus" className="mr-2" />
                   Generate Key
                 </Button>

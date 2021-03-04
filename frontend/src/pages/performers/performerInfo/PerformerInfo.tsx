@@ -39,10 +39,10 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
       <Col xs={6}>
         <Card>
           <Card.Header className="d-flex">
-            <h2>
+            <h3>
               <GenderIcon gender={performer?.gender} />
               <PerformerName performer={performer} />
-            </h2>
+            </h3>
             {canEdit(auth?.user) && !performer.deleted && (
               <div className="ml-auto flex-shrink-0">
                 <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>

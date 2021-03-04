@@ -39,9 +39,9 @@ const UpdateCategory: React.FC = () => {
 
   return (
     <div>
-      <h2>
+      <h3>
         Update <em>{category.name}</em>
-      </h2>
+      </h3>
       <hr />
       <CategoryForm callback={doUpdate} category={category} id={id} />
     </div>

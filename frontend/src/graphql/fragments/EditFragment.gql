@@ -1,5 +1,6 @@
-#import "./PerformerFragment.gql"
-#import "./ImageFragment.gql"
+#import "../fragments/PerformerFragment.gql"
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/CommentFragment.gql"
 fragment EditFragment on Edit {
   id
   target_type
@@ -8,12 +9,7 @@ fragment EditFragment on Edit {
   applied
   created
   comments {
-    user {
-      id
-      name
-    }
-    date
-    comment
+    ...CommentFragment
   }
   user {
     id

@@ -1,9 +1,9 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import Select, { ValueType, OptionTypeBase } from "react-select";
+import Select from "react-select";
 import * as yup from "yup";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
@@ -31,11 +31,6 @@ interface UserProps {
   callback: (data: UserEditData) => void;
 }
 
-interface IOptionType extends OptionTypeBase {
-  value: string;
-  label: string;
-}
-
 const roles = Object.keys(RoleEnum).map((role) => ({
   label: role,
   value: role,
@@ -43,20 +38,9 @@ const roles = Object.keys(RoleEnum).map((role) => ({
 
 const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
   const Auth = useContext(AuthContext);
-  const [userRoles, setUserRoles] = useState(
-    (user?.roles ?? []).map((role: string) => ({
-      value: role,
-      label: role,
-    }))
-  );
-  const { register, handleSubmit, setValue, errors } = useForm<UserFormData>({
+  const { register, control, handleSubmit, errors } = useForm<UserFormData>({
     resolver: yupResolver(schema),
   });
-
-  useEffect(() => {
-    register({ name: "roles" });
-    setValue("roles", []);
-  }, [register, setValue]);
 
   const onSubmit = (formData: UserFormData) => {
     const userData = {
@@ -66,15 +50,6 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
       roles: formData.roles as RoleEnum[],
     };
     callback(userData);
-  };
-
-  const onRoleChange = (selectedRoles: ValueType<IOptionType, true>) => {
-    const val = selectedRoles ?? [];
-    setUserRoles([...val]);
-    setValue(
-      "roles",
-      val.map((role) => role.value)
-    );
   };
 
   return (
@@ -98,14 +73,23 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
         <Form.Row>
           <Form.Group className="col-6">
             <Form.Label>Roles</Form.Label>
-            <Select
-              classNamePrefix="react-select"
+            <Controller
               name="roles"
-              options={roles}
-              placeholder="User roles"
-              onChange={onRoleChange}
-              value={userRoles}
-              isMulti
+              control={control}
+              defaultValue={user.roles ?? []}
+              render={({ onChange }) => (
+                <Select
+                  classNamePrefix="react-select"
+                  name="roles"
+                  options={roles}
+                  placeholder="User roles"
+                  onChange={(vals) => onChange(vals.map((v) => v.value) ?? [])}
+                  defaultValue={roles.filter((r) =>
+                    (user.roles ?? []).includes(r.value as RoleEnum)
+                  )}
+                  isMulti
+                />
+              )}
             />
           </Form.Group>
         </Form.Row>

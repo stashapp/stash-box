@@ -1,5 +1,5 @@
-#import "./ImageFragment.gql"
-#import "./ScenePerformerFragment.gql"
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/ScenePerformerFragment.gql"
 query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
   queryScenes(filter: $filter, scene_filter: $sceneFilter) {
     count
