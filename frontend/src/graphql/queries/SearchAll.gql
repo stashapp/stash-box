@@ -1,5 +1,5 @@
-#import "./ImageFragment.gql"
-#import "./SearchPerformerFragment.gql"
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/SearchPerformerFragment.gql"
 query SearchAll($term: String!, $limit: Int = 5) {
     searchPerformer(term: $term, limit: $limit) {
       ...SearchPerformerFragment
