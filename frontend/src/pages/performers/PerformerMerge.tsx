@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import { Button, Col, Row } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { flatMap } from "lodash";
 
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
@@ -24,6 +24,7 @@ const PerformerMerge: React.FC = () => {
   const history = useHistory();
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
+  const [aliasUpdating, setAliasUpdating] = useState(true);
   const { data: performer, loading: loadingPerformer } = usePerformer({ id });
   const [insertPerformerEdit] = usePerformerEdit({
     onCompleted: (data) => {
@@ -37,7 +38,8 @@ const PerformerMerge: React.FC = () => {
 
   const doUpdate = (
     insertData: PerformerEditDetailsInput,
-    editNote: string
+    editNote: string,
+    setModifyAliases: boolean
   ) => {
     insertPerformerEdit({
       variables: {
@@ -49,6 +51,10 @@ const PerformerMerge: React.FC = () => {
             comment: editNote,
           },
           details: insertData,
+          options: {
+            set_merge_aliases: aliasUpdating,
+            set_modify_aliases: setModifyAliases,
+          },
         },
       },
     });
@@ -119,6 +125,12 @@ const PerformerMerge: React.FC = () => {
       </div>
       {mergeActive && (
         <>
+          <Form.Check
+            id="merge-alias-updating"
+            checked={aliasUpdating}
+            onChange={() => setAliasUpdating(!aliasUpdating)}
+            label="Update scene performance aliases on merged performers to old performer name."
+          />
           <h5 className="mt-4">
             Update performer metadata for{" "}
             <em>{performer.findPerformer.name}</em>

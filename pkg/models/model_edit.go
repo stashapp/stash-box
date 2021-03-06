@@ -263,9 +263,11 @@ type PerformerEdit struct {
 }
 
 type PerformerEditData struct {
-	New          *PerformerEdit `json:"new_data,omitempty"`
-	Old          *PerformerEdit `json:"old_data,omitempty"`
-	MergeSources []string       `json:"merge_sources,omitempty"`
+	New              *PerformerEdit `json:"new_data,omitempty"`
+	Old              *PerformerEdit `json:"old_data,omitempty"`
+	MergeSources     []string       `json:"merge_sources,omitempty"`
+	SetModifyAliases bool           `json:"modify_aliases,omitempty"`
+	SetMergeAliases  bool           `json:"merge_aliases,omitempty"`
 }
 
 type EditData struct {

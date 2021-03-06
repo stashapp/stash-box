@@ -198,3 +198,19 @@ func (r *editResolver) Status(ctx context.Context, obj *models.Edit) (models.Vot
 
 	return ret, nil
 }
+
+func (r *editResolver) Options(ctx context.Context, obj *models.Edit) (*models.PerformerEditOptions, error) {
+	if obj.TargetType == "PERFORMER" {
+		data, err := obj.GetPerformerData()
+		if err != nil {
+			return nil, err
+		}
+
+		options := models.PerformerEditOptions{
+			SetMergeAliases:  data.SetMergeAliases,
+			SetModifyAliases: data.SetModifyAliases,
+		}
+		return &options, nil
+	}
+	return nil, nil
+}

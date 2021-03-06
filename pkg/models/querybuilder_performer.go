@@ -531,25 +531,21 @@ func (qb *PerformerQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTarge
 	return qb.dbi.RawQuery(performerRedirectTable.Table, query, args, nil)
 }
 
-func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldPerformer *Performer, newTargetID uuid.UUID) error {
+func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldPerformer *Performer, newTargetID uuid.UUID, setAliases bool) error {
 	// Set old name as scene performance alias where one isn't already set
-	query := `UPDATE scene_performers
-						SET "as" = ?
-						WHERE performer_id = ?
-						AND "as" IS NULL`
-	args := []interface{}{oldPerformer.Name, oldPerformer.ID}
-	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
-	if err != nil {
-		return err
+	if setAliases {
+		if err := qb.UpdateScenePerformerAlias(oldPerformer.ID, oldPerformer.Name); err != nil {
+			return err
+		}
 	}
 
 	// Reassign scene performances to new id where it isn't already assigned
-	query = `UPDATE scene_performers
+	query := `UPDATE scene_performers
 					 SET performer_id = ?
 					 WHERE performer_id = ?
 					 AND scene_id NOT IN (SELECT scene_id from scene_performers WHERE performer_id = ?)`
-	args = []interface{}{newTargetID, oldPerformer.ID, newTargetID}
-	err = qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
+	args := []interface{}{newTargetID, oldPerformer.ID, newTargetID}
+	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
 	if err != nil {
 		return err
 	}
@@ -560,7 +556,20 @@ func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldPerformer *Performer, 
 	return qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
 }
 
-func (qb *PerformerQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
+func (qb *PerformerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID, name string) error {
+	query := `UPDATE scene_performers
+						SET "as" = ?
+						WHERE performer_id = ?
+						AND "as" IS NULL`
+	args := []interface{}{name, performerID}
+	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (qb *PerformerQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID, setAliases bool) error {
 	performer, err := qb.Find(sourceID)
 	if err != nil {
 		return err
@@ -578,7 +587,7 @@ func (qb *PerformerQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUI
 	if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
 		return err
 	}
-	if err := qb.UpdateScenePerformers(performer, targetID); err != nil {
+	if err := qb.UpdateScenePerformers(performer, targetID, setAliases); err != nil {
 		return err
 	}
 	redirect := PerformerRedirect{SourceID: sourceID, TargetID: targetID}
@@ -669,7 +678,7 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 
 		for _, v := range data.MergeSources {
 			sourceUUID, _ := uuid.FromString(v)
-			if err := qb.MergeInto(sourceUUID, performer.ID); err != nil {
+			if err := qb.MergeInto(sourceUUID, performer.ID, data.SetMergeAliases); err != nil {
 				return nil, err
 			}
 		}
@@ -758,6 +767,10 @@ func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *Per
 
 	if err := qb.UpdateImages(updatedPerformer.ID, currentImages); err != nil {
 		return nil, err
+	}
+
+	if data.New.Name != nil && data.SetModifyAliases {
+		qb.UpdateScenePerformerAlias(updatedPerformer.ID, *data.Old.Name)
 	}
 
 	return updatedPerformer, err

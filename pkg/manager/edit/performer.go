@@ -64,6 +64,10 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 	}
 	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
 
+	if input.Options != nil && input.Options.SetModifyAliases != nil {
+		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
+	}
+
 	edit.SetData(performerEdit)
 	return nil
 }
@@ -145,6 +149,13 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 		existingImages = append(existingImages, image.ID.String())
 	}
 	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
+
+	if input.Options != nil && input.Options.SetMergeAliases != nil {
+		performerEdit.SetMergeAliases = *input.Options.SetMergeAliases
+	}
+	if input.Options != nil && input.Options.SetModifyAliases != nil {
+		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
+	}
 
 	edit.SetData(performerEdit)
 	return nil

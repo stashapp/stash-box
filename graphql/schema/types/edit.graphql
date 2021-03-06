@@ -59,6 +59,8 @@ type Edit {
     details: EditDetails
     """Previous state of fields being modified - null if operation is create or delete."""
     old_details: EditDetails
+    """Entity specific options"""
+    options: PerformerEditOptions
     comments: [EditComment!]!
     votes: [VoteComment!]!
     """ = Accepted - Rejected"""
