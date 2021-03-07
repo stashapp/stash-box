@@ -558,9 +558,9 @@ func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldPerformer *Performer, 
 
 func (qb *PerformerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID, name string) error {
 	query := `UPDATE scene_performers
-						SET "as" = ?
-						WHERE performer_id = ?
-						AND "as" IS NULL`
+            SET "as" = ?
+            WHERE performer_id = ?
+            AND "as" IS NULL`
 	args := []interface{}{name, performerID}
 	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
 	if err != nil {
