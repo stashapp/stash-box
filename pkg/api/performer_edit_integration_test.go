@@ -532,6 +532,111 @@ func (s *performerEditTestRunner) verifyApplyModifyPerformerEdit(input models.Pe
 	s.verifyPerformerEdit(input, updatedPerformer)
 }
 
+func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		return
+	}
+
+	sceneAppearance := models.PerformerAppearanceInput{
+		PerformerID: createdPerformer.ID.String(),
+	}
+
+	sceneInput := models.SceneCreateInput{
+		Performers: []*models.PerformerAppearanceInput{
+			&sceneAppearance,
+		},
+	}
+	scene, err := s.createTestScene(&sceneInput)
+	if err != nil {
+		return
+	}
+
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
+	id := createdPerformer.ID.String()
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
+	if err != nil {
+		return
+	}
+	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	s.verifyPerformanceAlias(scene, nil)
+
+	performerEditDetailsInput = s.createPerformerEditDetailsInput()
+	editInput = models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	aliasVal := true
+	options := models.PerformerEditOptionsInput{
+		SetModifyAliases: &aliasVal,
+	}
+
+	createdUpdateEdit, err = s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, &options)
+	if err != nil {
+		return
+	}
+	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	s.verifyPerformanceAlias(scene, nil)
+}
+
+func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		return
+	}
+
+	sceneAppearance := models.PerformerAppearanceInput{
+		PerformerID: createdPerformer.ID.String(),
+	}
+
+	sceneInput := models.SceneCreateInput{
+		Performers: []*models.PerformerAppearanceInput{
+			&sceneAppearance,
+		},
+	}
+	scene, err := s.createTestScene(&sceneInput)
+	if err != nil {
+		return
+	}
+
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
+	id := createdPerformer.ID.String()
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	aliasVal := true
+	options := models.PerformerEditOptionsInput{
+		SetModifyAliases: &aliasVal,
+	}
+
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, &options)
+	if err != nil {
+		return
+	}
+	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	s.verifyPerformanceAlias(scene, &createdPerformer.Name)
+}
+
 func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 	performerData := s.createFullPerformerCreateInput()
 	createdPerformer, err := s.createTestPerformer(performerData)
@@ -815,7 +920,13 @@ func TestApplyModifyPerformerEdit(t *testing.T) {
 	pt.testApplyModifyPerformerEdit()
 }
 
-func TestApplyModifyPerformerEditWithoutAlias(t *testing.T) {
+func TestApplyModifyPerformerEditOptions(t *testing.T) {
+	pt := createPerformerEditTestRunner(t)
+	pt.testApplyModifyPerformerWithAliases()
+	pt.testApplyModifyPerformerWithoutAliases()
+}
+
+func TestApplyMergePerformerEditWithoutAlias(t *testing.T) {
 	pt := createPerformerEditTestRunner(t)
 	pt.testApplyMergePerformerEditWithoutAlias()
 }
