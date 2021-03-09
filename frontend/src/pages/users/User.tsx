@@ -38,8 +38,8 @@ const AddUserComponent: React.FC = () => {
   if (name === "" || !data?.findUser) return <div>No user found!</div>;
 
   const user = data.findUser;
-
-  const isUser = () => Auth.user?.name === name;
+  const isUser = () => Auth.user?.name === user.name;
+  const showPrivate = isUser() || isAdmin(Auth.user);
 
   const toggleModal = () => setShowDelete(true);
   const handleDelete = (status: boolean): void => {
@@ -137,86 +137,92 @@ const AddUserComponent: React.FC = () => {
           </div>
         </div>
         <hr />
-        <Row>
-          <span className="col-2">Email</span>
-          <span className="col">{user?.email}</span>
-        </Row>
+        {showPrivate && (
+          <Row>
+            <span className="col-2">Email</span>
+            <span className="col">{user?.email}</span>
+          </Row>
+        )}
         <Row>
           <span className="col-2">Roles</span>
           <span className="col">{(user?.roles ?? []).join(", ")}</span>
         </Row>
-        <Row className="my-3">
-          <span className="col-2">API key</span>
-          <InputGroup className="col-10">
-            <Form.Control value={user.api_key ?? ""} disabled />
-            <InputGroup.Append>
-              <Button
-                onClick={() =>
-                  navigator.clipboard?.writeText(user.api_key ?? "")
-                }
-              >
-                Copy to Clipboard
-              </Button>
-            </InputGroup.Append>
-          </InputGroup>
-        </Row>
-        <Row>
-          <span className="col-2">Invite Tokens</span>
-          <InputGroup className="col">
-            {isAdmin(Auth.user) && (
-              <InputGroup.Prepend>
-                <Button onClick={() => handleRevokeInvite()}>
-                  <Icon icon="minus" />
-                </Button>
-              </InputGroup.Prepend>
-            )}
-            <InputGroup.Text>{user?.invite_tokens ?? 0}</InputGroup.Text>
-            {isAdmin(Auth.user) && (
-              <InputGroup.Append>
-                <Button onClick={() => handleGrantInvite()}>
-                  <Icon icon="plus" />
-                </Button>
-              </InputGroup.Append>
-            )}
-          </InputGroup>
-        </Row>
-        <Row className="my-2">
-          <span className="col-2">Invite Keys</span>
-          <div className="col">
-            {user.active_invite_codes?.map((c) => (
-              <InputGroup className="mb-2">
-                <InputGroup.Text>
-                  <code>{c}</code>
-                </InputGroup.Text>
-                <InputGroup.Append>
-                  <Button onClick={() => navigator.clipboard?.writeText(c)}>
-                    Copy
-                  </Button>
-                </InputGroup.Append>
+        {showPrivate && (
+          <>
+            <Row className="my-3">
+              <span className="col-2">API key</span>
+              <InputGroup className="col-10">
+                <Form.Control value={user.api_key ?? ""} disabled />
                 <InputGroup.Append>
                   <Button
-                    variant="danger"
-                    onClick={() => setShowRescindCode(c)}
+                    onClick={() =>
+                      navigator.clipboard?.writeText(user.api_key ?? "")
+                    }
                   >
-                    <Icon icon="trash" />
+                    Copy to Clipboard
                   </Button>
                 </InputGroup.Append>
               </InputGroup>
-            ))}
-            <div>
-              {isUser() && (
-                <Button
-                  variant="link"
-                  onClick={() => handleGenerateCode()}
-                  disabled={user.invite_tokens === 0}
-                >
-                  <Icon icon="plus" className="mr-2" />
-                  Generate Key
-                </Button>
-              )}
-            </div>
-          </div>
-        </Row>
+            </Row>
+            <Row>
+              <span className="col-2">Invite Tokens</span>
+              <InputGroup className="col">
+                {isAdmin(Auth.user) && (
+                  <InputGroup.Prepend>
+                    <Button onClick={() => handleRevokeInvite()}>
+                      <Icon icon="minus" />
+                    </Button>
+                  </InputGroup.Prepend>
+                )}
+                <InputGroup.Text>{user?.invite_tokens ?? 0}</InputGroup.Text>
+                {isAdmin(Auth.user) && (
+                  <InputGroup.Append>
+                    <Button onClick={() => handleGrantInvite()}>
+                      <Icon icon="plus" />
+                    </Button>
+                  </InputGroup.Append>
+                )}
+              </InputGroup>
+            </Row>
+            <Row className="my-2">
+              <span className="col-2">Invite Keys</span>
+              <div className="col">
+                {user.active_invite_codes?.map((c) => (
+                  <InputGroup className="mb-2">
+                    <InputGroup.Text>
+                      <code>{c}</code>
+                    </InputGroup.Text>
+                    <InputGroup.Append>
+                      <Button onClick={() => navigator.clipboard?.writeText(c)}>
+                        Copy
+                      </Button>
+                    </InputGroup.Append>
+                    <InputGroup.Append>
+                      <Button
+                        variant="danger"
+                        onClick={() => setShowRescindCode(c)}
+                      >
+                        <Icon icon="trash" />
+                      </Button>
+                    </InputGroup.Append>
+                  </InputGroup>
+                ))}
+                <div>
+                  {isUser() && (
+                    <Button
+                      variant="link"
+                      onClick={() => handleGenerateCode()}
+                      disabled={user.invite_tokens === 0}
+                    >
+                      <Icon icon="plus" className="mr-2" />
+                      Generate Key
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Row>
+          </>
+        )}
       </Col>
     </Row>
   );
