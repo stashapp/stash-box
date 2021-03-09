@@ -38,7 +38,7 @@ func (r *queryResolver) FindUser(ctx context.Context, id *string, username *stri
 }
 
 func (r *queryResolver) QueryUsers(ctx context.Context, userFilter *models.UserFilterType, filter *models.QuerySpec) (*models.QueryUsersResultType, error) {
-	if err := validateRead(ctx); err != nil {
+	if err := validateAdmin(ctx); err != nil {
 		return nil, err
 	}
 
@@ -66,8 +66,6 @@ func removeSensitiveUserDetails(ctx context.Context, users models.Users) {
 	if validateAdmin(ctx) == nil {
 		return
 	}
-
-	// TODO - remove invite related stuff
 
 	// remove sensitive details for users that are not the current user
 	userID := ""

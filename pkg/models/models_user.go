@@ -50,6 +50,8 @@ func (p *User) RemoveSensitiveFields() {
 	p.PasswordHash = ""
 	p.Email = ""
 	p.APIKey = ""
+	p.APICalls = -1
+	p.InviteTokens = -1
 }
 
 type Users []*User
