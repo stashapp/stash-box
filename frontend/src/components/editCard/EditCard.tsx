@@ -33,12 +33,22 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
   )
     editVariant = "success";
 
-  const merges = <MergeEdit merges={edit.merge_sources} target={edit.target} />;
+  const merges = edit.operation === OperationEnum.MERGE && (
+    <MergeEdit
+      merges={edit.merge_sources}
+      target={edit.target}
+      options={edit.options ?? undefined}
+    />
+  );
   const creation = edit.operation === OperationEnum.CREATE && (
     <ModifyEdit details={edit.details} />
   );
   const modifications = edit.operation !== OperationEnum.CREATE && (
-    <ModifyEdit details={edit.details} oldDetails={edit.old_details} />
+    <ModifyEdit
+      details={edit.details}
+      oldDetails={edit.old_details}
+      options={edit.options ?? undefined}
+    />
   );
   const destruction = edit.operation === OperationEnum.DESTROY && (
     <DestroyEdit target={edit.target} />

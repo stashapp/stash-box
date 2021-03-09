@@ -527,7 +527,7 @@ func (s *testRunner) verifyEditTargetType(targetType string, edit *models.Edit) 
 	}
 }
 
-func (s *testRunner) createTestPerformerEdit(operation models.OperationEnum, detailsInput *models.PerformerEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+func (s *testRunner) createTestPerformerEdit(operation models.OperationEnum, detailsInput *models.PerformerEditDetailsInput, editInput *models.EditInput, options *models.PerformerEditOptionsInput) (*models.Edit, error) {
 	s.t.Helper()
 
 	if editInput == nil {
@@ -548,6 +548,7 @@ func (s *testRunner) createTestPerformerEdit(operation models.OperationEnum, det
 	performerEditInput := models.PerformerEditInput{
 		Edit:    editInput,
 		Details: detailsInput,
+		Options: options,
 	}
 
 	createdEdit, err := s.resolver.Mutation().PerformerEdit(s.ctx, performerEditInput)

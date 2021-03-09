@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { GraphQLError } from "graphql";
 import { useEditComment } from "src/graphql";
-import cx from 'classnames';
+import cx from "classnames";
 
 interface IProps {
   editID: string;
@@ -17,7 +17,15 @@ const AddComment: React.FC<IProps> = ({ editID }) => {
   if (!showInput)
     return (
       <div className="d-flex">
-        { !showInput && <Button className="ml-auto minimal" variant="link" onClick={() => setShowInput(true)}>Add Comment</Button> }
+        {!showInput && (
+          <Button
+            className="ml-auto minimal"
+            variant="link"
+            onClick={() => setShowInput(true)}
+          >
+            Add Comment
+          </Button>
+        )}
       </div>
     );
 
@@ -25,7 +33,9 @@ const AddComment: React.FC<IProps> = ({ editID }) => {
     if (textRef.current) {
       const text = textRef?.current.value.trim();
       if (text) {
-        const res = await saveComment({ variables: { input: { id: editID, comment: text } } });
+        const res = await saveComment({
+          variables: { input: { id: editID, comment: text } },
+        });
         if (res.errors) {
           setErrors(res.errors);
         } else {
@@ -33,7 +43,7 @@ const AddComment: React.FC<IProps> = ({ editID }) => {
         }
       }
     }
-  }
+  };
 
   return (
     <Form.Group>
@@ -47,11 +57,24 @@ const AddComment: React.FC<IProps> = ({ editID }) => {
         {errors?.[0]?.message}
       </Form.Control.Feedback>
       <div className="d-flex mt-2">
-        <Button variant="secondary" className="ml-auto" onClick={() => setShowInput(false)}>Cancel</Button>
-        <Button variant="primary" className="ml-2" disabled={saving} onClick={handleSaveComment}>Save</Button>
+        <Button
+          variant="secondary"
+          className="ml-auto"
+          onClick={() => setShowInput(false)}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          className="ml-2"
+          disabled={saving}
+          onClick={handleSaveComment}
+        >
+          Save
+        </Button>
       </div>
     </Form.Group>
   );
-}
+};
 
 export default AddComment;

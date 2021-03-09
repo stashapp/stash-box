@@ -59,10 +59,7 @@ import {
   RevokeInvite,
   RevokeInviteVariables,
 } from "../definitions/RevokeInvite";
-import {
-  EditComment,
-  EditCommentVariables,
-} from "../definitions/EditComment";
+import { EditComment, EditCommentVariables } from "../definitions/EditComment";
 
 const ActivateUserMutation = loader("./ActivateNewUser.gql");
 const AddUserMutation = loader("./AddUser.gql");

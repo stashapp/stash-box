@@ -21,7 +21,7 @@ func createPerformerEditTestRunner(t *testing.T) *performerEditTestRunner {
 
 func (s *performerEditTestRunner) testCreatePerformerEdit() {
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil)
+	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
 	if err == nil {
 		s.verifyCreatedPerformerEdit(*performerEditDetailsInput, edit)
 	}
@@ -44,7 +44,7 @@ func (s *performerEditTestRunner) verifyCreatedPerformerEdit(input models.Perfor
 }
 
 func (s *performerEditTestRunner) testFindEditById() {
-	createdEdit, err := s.createTestPerformerEdit(models.OperationEnumCreate, nil, nil)
+	createdEdit, err := s.createTestPerformerEdit(models.OperationEnumCreate, nil, nil, nil)
 	if err != nil {
 		return
 	}
@@ -86,7 +86,7 @@ func (s *performerEditTestRunner) testModifyPerformerEdit() {
 		ID:        &id,
 	}
 
-	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput)
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
 
 	s.verifyUpdatedPerformerEdit(createdPerformer, *performerEditDetailsInput, createdUpdateEdit)
 }
@@ -385,7 +385,7 @@ func (s *performerEditTestRunner) testDestroyPerformerEdit() {
 		Operation: models.OperationEnumDestroy,
 		ID:        &performerID,
 	}
-	destroyEdit, err := s.createTestPerformerEdit(models.OperationEnumDestroy, &performerEditDetailsInput, &editInput)
+	destroyEdit, err := s.createTestPerformerEdit(models.OperationEnumDestroy, &performerEditDetailsInput, &editInput, nil)
 
 	s.verifyDestroyPerformerEdit(performerID, destroyEdit)
 }
@@ -426,7 +426,7 @@ func (s *performerEditTestRunner) testMergePerformerEdit() {
 		MergeSourceIds: mergeSources,
 	}
 
-	createdMergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput)
+	createdMergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput, nil)
 
 	s.verifyMergePerformerEdit(createdPrimaryPerformer, *performerEditDetailsInput, createdMergeEdit, mergeSources)
 }
@@ -452,7 +452,7 @@ func (s *performerEditTestRunner) verifyMergePerformerEdit(originalPerformer *mo
 
 func (s *performerEditTestRunner) testApplyCreatePerformerEdit() {
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil)
+	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
 	appliedEdit, err := s.applyEdit(edit.ID.String())
 	if err == nil {
 		s.verifyAppliedPerformerCreateEdit(*performerEditDetailsInput, appliedEdit)
@@ -510,7 +510,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 		ID:        &id,
 	}
 
-	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput)
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
 	if err != nil {
 		return
 	}
@@ -530,6 +530,111 @@ func (s *performerEditTestRunner) verifyApplyModifyPerformerEdit(input models.Pe
 	s.verifyEditApplication(true, edit)
 
 	s.verifyPerformerEdit(input, updatedPerformer)
+}
+
+func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		return
+	}
+
+	sceneAppearance := models.PerformerAppearanceInput{
+		PerformerID: createdPerformer.ID.String(),
+	}
+
+	sceneInput := models.SceneCreateInput{
+		Performers: []*models.PerformerAppearanceInput{
+			&sceneAppearance,
+		},
+	}
+	scene, err := s.createTestScene(&sceneInput)
+	if err != nil {
+		return
+	}
+
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
+	id := createdPerformer.ID.String()
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
+	if err != nil {
+		return
+	}
+	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	s.verifyPerformanceAlias(scene, nil)
+
+	performerEditDetailsInput = s.createPerformerEditDetailsInput()
+	editInput = models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	aliasVal := true
+	options := models.PerformerEditOptionsInput{
+		SetModifyAliases: &aliasVal,
+	}
+
+	createdUpdateEdit, err = s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, &options)
+	if err != nil {
+		return
+	}
+	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	s.verifyPerformanceAlias(scene, nil)
+}
+
+func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		return
+	}
+
+	sceneAppearance := models.PerformerAppearanceInput{
+		PerformerID: createdPerformer.ID.String(),
+	}
+
+	sceneInput := models.SceneCreateInput{
+		Performers: []*models.PerformerAppearanceInput{
+			&sceneAppearance,
+		},
+	}
+	scene, err := s.createTestScene(&sceneInput)
+	if err != nil {
+		return
+	}
+
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
+	id := createdPerformer.ID.String()
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	aliasVal := true
+	options := models.PerformerEditOptionsInput{
+		SetModifyAliases: &aliasVal,
+	}
+
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, &options)
+	if err != nil {
+		return
+	}
+	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	s.verifyPerformanceAlias(scene, &createdPerformer.Name)
 }
 
 func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
@@ -554,7 +659,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		ID:        &id,
 	}
 
-	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, &performerUnsetInput, &editInput)
+	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, &performerUnsetInput, &editInput, nil)
 	if err != nil {
 		return
 	}
@@ -587,7 +692,7 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 		Operation: models.OperationEnumDestroy,
 		ID:        &performerID,
 	}
-	destroyEdit, err := s.createTestPerformerEdit(models.OperationEnumDestroy, &performerEditDetailsInput, &editInput)
+	destroyEdit, err := s.createTestPerformerEdit(models.OperationEnumDestroy, &performerEditDetailsInput, &editInput, nil)
 	if err != nil {
 		return
 	}
@@ -662,13 +767,18 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := mergeTarget.ID.String()
 	mergeSources := []string{mergeSource1.ID.String(), mergeSource2.ID.String()}
+	setMergeAliases := true
+	options := models.PerformerEditOptionsInput{
+		SetMergeAliases: &setMergeAliases,
+	}
+
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
 		MergeSourceIds: mergeSources,
 	}
 
-	mergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput)
+	mergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput, &options)
 	if err != nil {
 		return
 	}
@@ -679,6 +789,9 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	}
 
 	s.verifyAppliedMergePerformerEdit(*performerEditDetailsInput, appliedMerge, scene1, scene2)
+	// Target already attached, so should not get alias
+	s.verifyPerformanceAlias(scene1, nil)
+	s.verifyPerformanceAlias(scene2, &mergeSource1.Name)
 }
 
 func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.PerformerEditDetailsInput, edit *models.Edit, scene1 *models.Scene, scene2 *models.Scene) {
@@ -715,6 +828,68 @@ func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.P
 	}
 }
 
+func (s *performerEditTestRunner) verifyPerformanceAlias(scene *models.Scene, alias *string) {
+	scenePerformers, _ := s.resolver.Scene().Performers(s.ctx, scene)
+	if len(scenePerformers) > 1 {
+		s.fieldMismatch(len(scenePerformers), 1, "Scene performer count")
+	}
+	if alias == nil {
+		if scenePerformers[0].As != nil {
+			s.fieldMismatch(scenePerformers[0].As, *alias, "Scene appearance alias")
+		}
+	} else if scenePerformers[0].As == nil {
+		s.fieldMismatch(scenePerformers[0].As, *alias, "Scene appearance alias")
+	} else if *alias != *scenePerformers[0].As {
+		s.fieldMismatch(*scenePerformers[0].As, *alias, "Scene appearance alias")
+	}
+}
+
+func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
+	mergeSource, err := s.createTestPerformer(nil)
+	if err != nil {
+		return
+	}
+	mergeTarget, err := s.createTestPerformer(nil)
+	if err != nil {
+		return
+	}
+
+	mergeSourceAppearance := models.PerformerAppearanceInput{
+		PerformerID: mergeSource.ID.String(),
+	}
+
+	sceneInput := models.SceneCreateInput{
+		Performers: []*models.PerformerAppearanceInput{
+			&mergeSourceAppearance,
+		},
+	}
+	scene, err := s.createTestScene(&sceneInput)
+	if err != nil {
+		return
+	}
+
+	performerEditDetailsInput := s.createPerformerEditDetailsInput()
+	id := mergeTarget.ID.String()
+	mergeSources := []string{mergeSource.ID.String()}
+	editInput := models.EditInput{
+		Operation:      models.OperationEnumMerge,
+		ID:             &id,
+		MergeSourceIds: mergeSources,
+	}
+
+	mergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput, nil)
+	if err != nil {
+		return
+	}
+
+	_, err = s.applyEdit(mergeEdit.ID.String())
+	if err != nil {
+		return
+	}
+
+	s.verifyPerformanceAlias(scene, nil)
+}
+
 func TestCreatePerformerEdit(t *testing.T) {
 	pt := createPerformerEditTestRunner(t)
 	pt.testCreatePerformerEdit()
@@ -743,6 +918,17 @@ func TestApplyCreatePerformerEdit(t *testing.T) {
 func TestApplyModifyPerformerEdit(t *testing.T) {
 	pt := createPerformerEditTestRunner(t)
 	pt.testApplyModifyPerformerEdit()
+}
+
+func TestApplyModifyPerformerEditOptions(t *testing.T) {
+	pt := createPerformerEditTestRunner(t)
+	pt.testApplyModifyPerformerWithAliases()
+	pt.testApplyModifyPerformerWithoutAliases()
+}
+
+func TestApplyMergePerformerEditWithoutAlias(t *testing.T) {
+	pt := createPerformerEditTestRunner(t)
+	pt.testApplyMergePerformerEditWithoutAlias()
 }
 
 func TestApplyModifyUnsetPerformerEdit(t *testing.T) {

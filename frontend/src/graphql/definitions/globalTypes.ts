@@ -286,6 +286,12 @@ export interface PerformerEditDetailsInput {
 export interface PerformerEditInput {
   edit: EditInput;
   details?: PerformerEditDetailsInput | null;
+  options?: PerformerEditOptionsInput | null;
+}
+
+export interface PerformerEditOptionsInput {
+  set_modify_aliases?: boolean | null;
+  set_merge_aliases?: boolean | null;
 }
 
 export interface PerformerFilterType {
