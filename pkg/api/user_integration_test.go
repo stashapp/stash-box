@@ -325,7 +325,7 @@ func (s *userTestRunner) testUnauthorisedUserFind() {
 	s.ensureDetailsRemoved(user)
 }
 
-func (s *userTestRunner) testUnauthorisedUserQuery() {
+func (s *userTestRunner) testUserQuery() {
 	userName := userDB.admin.Name
 
 	userFilter := models.UserFilterType{
@@ -348,8 +348,25 @@ func (s *userTestRunner) testUnauthorisedUserQuery() {
 		s.t.Error("QueryUsers: admin user not found")
 		return
 	}
+}
 
-	s.ensureDetailsRemoved(users.Users[0])
+func (s *userTestRunner) testUnauthorisedUserQuery() {
+	userName := userDB.admin.Name
+
+	userFilter := models.UserFilterType{
+		Name: &userName,
+	}
+	page := 1
+	perPage := 1
+	filter := models.QuerySpec{
+		Page:    &page,
+		PerPage: &perPage,
+	}
+
+	_, err := s.resolver.Query().QueryUsers(s.ctx, &userFilter, &filter)
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("UserUpdate: got %v want %v", err, api.ErrUnauthorized)
+	}
 }
 
 func (s *userTestRunner) testChangePassword() {
@@ -499,6 +516,11 @@ func TestUnauthorisedUserFind(t *testing.T) {
 		testRunner: *asModify(t),
 	}
 	pt.testUnauthorisedUserFind()
+}
+
+func TestUserQuery(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testUserQuery()
 }
 
 func TestUnauthorisedUserQuery(t *testing.T) {
