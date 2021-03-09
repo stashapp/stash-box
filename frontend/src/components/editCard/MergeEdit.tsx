@@ -1,15 +1,24 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Form, Row } from "react-bootstrap";
 
-import { Edits_queryEdits_edits_target as Target } from "src/graphql/definitions/Edits";
+import {
+  Edits_queryEdits_edits_target as Target,
+  Edits_queryEdits_edits_options as Options,
+} from "src/graphql/definitions/Edits";
 import { isTag, isPerformer, tagHref, performerHref } from "src/utils";
 
 interface MergeEditProps {
   merges?: (Target | null)[] | null;
   target: Target | null;
+  options?: Options;
 }
 
-const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
+const MergeEdit: React.FC<MergeEditProps> = ({
+  merges = [],
+  target,
+  options,
+}) => {
   if (!merges || merges.length === 0) return null;
 
   return (
@@ -51,6 +60,17 @@ const MergeEdit: React.FC<MergeEditProps> = ({ merges = [], target }) => {
           )}
         </div>
       </div>
+      {isPerformer(target) && (
+        <Row>
+          <div className="offset-2">
+            <Form.Check
+              disabled
+              checked={options?.set_merge_aliases ?? false}
+              label="Set performance aliases to old name"
+            />
+          </div>
+        </Row>
+      )}
     </div>
   );
 };

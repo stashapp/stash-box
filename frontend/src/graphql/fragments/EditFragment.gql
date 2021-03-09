@@ -131,4 +131,8 @@ fragment EditFragment on Edit {
       ...PerformerFragment
     }
   }
+  options {
+    set_modify_aliases
+    set_merge_aliases
+  }
 }

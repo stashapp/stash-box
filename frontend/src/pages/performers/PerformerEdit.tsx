@@ -25,7 +25,8 @@ const PerformerModify: React.FC = () => {
 
   const doUpdate = (
     updateData: PerformerEditDetailsInput,
-    editNote: string
+    editNote: string,
+    setModifyAliases: boolean
   ) => {
     submitPerformerEdit({
       variables: {
@@ -36,6 +37,9 @@ const PerformerModify: React.FC = () => {
             comment: editNote,
           },
           details: updateData,
+          options: {
+            set_modify_aliases: setModifyAliases,
+          },
         },
       },
     });

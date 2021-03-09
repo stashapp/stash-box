@@ -1,8 +1,10 @@
 import React from "react";
+import { Form } from "react-bootstrap";
 
 import {
   Edits_queryEdits_edits_details as Details,
   Edits_queryEdits_edits_old_details as OldDetails,
+  Edits_queryEdits_edits_options as Options,
 } from "src/graphql/definitions/Edits";
 import {
   getCountryByISO,
@@ -18,9 +20,14 @@ import CategoryChangeRow from "src/components/categoryChangeRow";
 interface ModifyEditProps {
   details: Details | null;
   oldDetails?: OldDetails | null;
+  options?: Options;
 }
 
-const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
+const ModifyEdit: React.FC<ModifyEditProps> = ({
+  details,
+  oldDetails,
+  options,
+}) => {
   if (!details) return null;
 
   const showDiff = !!oldDetails;
@@ -77,6 +84,16 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({ details, oldDetails }) => {
             oldValue={oldDetails?.name}
             showDiff={showDiff}
           />
+        )}
+        {details.name !== oldDetails?.name && (
+          <div className="d-flex mb-2">
+            <Form.Check
+              disabled
+              checked={options?.set_modify_aliases ?? false}
+              label="Set performance aliases to old name"
+              className="ml-auto"
+            />
+          </div>
         )}
         <ChangeRow
           name="Disambiguation"
