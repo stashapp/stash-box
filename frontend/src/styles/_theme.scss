@@ -139,10 +139,6 @@ hr {
   }
 }
 
-.popover {
-  max-width: inherit;
-}
-
 .card {
   border: none;
   margin: 5px;
@@ -170,10 +166,11 @@ hr {
 }
 
 .popover {
+  max-width: inherit;
+
   &-body {
-    .btn {
-      color: $text-color;
-    }
+    color: $text-color;
+    white-space: pre-wrap;
   }
 }
 

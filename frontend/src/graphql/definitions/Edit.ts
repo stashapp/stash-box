@@ -344,6 +344,18 @@ export interface Edit_findEdit_merge_sources_Performer {
 
 export type Edit_findEdit_merge_sources = Edit_findEdit_merge_sources_Scene | Edit_findEdit_merge_sources_Tag | Edit_findEdit_merge_sources_Performer;
 
+export interface Edit_findEdit_options {
+  __typename: "PerformerEditOptions";
+  /**
+   *  Set performer alias on scenes without alias to old name if name is changed 
+   */
+  set_modify_aliases: boolean;
+  /**
+   *  Set performer alias on scenes attached to merge sources to old name 
+   */
+  set_merge_aliases: boolean;
+}
+
 export interface Edit_findEdit {
   __typename: "Edit";
   id: string;
@@ -367,6 +379,10 @@ export interface Edit_findEdit {
    * Objects to merge with the target. Only applicable to merges
    */
   merge_sources: Edit_findEdit_merge_sources[];
+  /**
+   * Entity specific options
+   */
+  options: Edit_findEdit_options | null;
 }
 
 export interface Edit {

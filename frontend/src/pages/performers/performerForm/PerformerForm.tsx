@@ -23,6 +23,7 @@ import { getBraSize, formatFuzzyDate } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { Image } from "src/utils/transforms";
 
+import { Help } from "src/components/fragments";
 import { BodyModification, EditNote } from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
 import ChangeRow from "src/components/changeRow";
@@ -87,6 +88,10 @@ const ETHNICITY: OptionEnum[] = [
   { value: "MIXED", label: "Mixed" },
   { value: "OTHER", label: "Other" },
 ];
+
+const UPDATE_ALIAS_MESSAGE = `When changing from alias A to B, it may be desirable to enable this so all unset performances will continue to have the old name.
+If however a typo in the name is corrected, this should not be used.
+`;
 
 const getEnumValue = (enumArray: OptionEnum[], val: string) => {
   if (val === null) return enumArray[0].value;
@@ -202,6 +207,7 @@ interface PerformerProps {
   callback: (
     data: PerformerEditDetailsInput,
     note: string,
+    updateAliases: boolean,
     id?: string
   ) => void;
   initialAliases?: string[];
@@ -229,6 +235,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
   const [gender, setGender] = useState(performer.gender || "FEMALE");
   const aliases = uniq([...performer.aliases, ...initialAliases]);
   const [activeTab, setActiveTab] = useState("personal");
+  const [updateAliases, setUpdateAliases] = useState(false);
+
   const fieldData = watch();
   const changes = useMemo(
     () => DiffPerformer(performer, schema.cast(fieldData)),
@@ -311,7 +319,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
           accuracy: DateAccuracyEnum.YEAR,
         };
 
-    callback(performerData, data.note, data.id);
+    callback(performerData, data.note, updateAliases, data.id);
   };
 
   const countryObj = [
@@ -376,6 +384,23 @@ const PerformerForm: React.FC<PerformerProps> = ({
               </Form.Control.Feedback>
             </Form.Group>
           </Form.Row>
+
+          {performer.id &&
+            fieldData.name !== undefined &&
+            performer.name !== fieldData.name && (
+              <Form.Row>
+                <Form.Group className="col">
+                  <Form.Check
+                    id="update-modify-aliases"
+                    checked={updateAliases}
+                    onChange={() => setUpdateAliases(!updateAliases)}
+                    label="Set unset performance aliases to old name"
+                    className="d-inline-block"
+                  />
+                  <Help message={UPDATE_ALIAS_MESSAGE} />
+                </Form.Group>
+              </Form.Row>
+            )}
 
           <Form.Row>
             <Form.Group controlId="aliases" className="col">
