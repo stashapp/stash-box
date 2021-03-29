@@ -412,8 +412,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               className="col-2 mr-1"
               ref={fingerprintAlgorithm}
             >
-              <option value="OSHASH">OSHASH</option>
-              <option value="MD5">MD5</option>
+              { Object.keys(FingerprintAlgorithm).map(f => (
+                <option value={f}>{f}</option>
+              ))}
             </Form.Control>
             <Form.Control
               id="hash"
