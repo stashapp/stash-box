@@ -66,6 +66,7 @@ export enum EyeColorEnum {
 export enum FingerprintAlgorithm {
   MD5 = "MD5",
   OSHASH = "OSHASH",
+  PHASH = "PHASH",
 }
 
 export enum GenderEnum {
