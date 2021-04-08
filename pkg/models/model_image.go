@@ -65,6 +65,19 @@ func (p Images) OrderLandscape() {
 	})
 }
 
+func (p Images) OrderPortrait() {
+	sort.Slice(p, func(a, b int) bool {
+		aspectA := p[a].Height / p[a].Width
+		aspectB := p[b].Height / p[b].Width
+		if aspectA > aspectB {
+			return true
+		} else if aspectA < aspectB {
+			return false
+		}
+		return p[a].Height > p[b].Height
+	})
+}
+
 func (p *Images) Add(o interface{}) {
 	*p = append(*p, o.(*Image))
 }
