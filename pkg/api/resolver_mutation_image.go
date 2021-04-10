@@ -9,7 +9,7 @@ import (
 )
 
 func (r *mutationResolver) ImageCreate(ctx context.Context, input models.ImageCreateInput) (*models.Image, error) {
-	if err := validateModify(ctx); err != nil {
+	if err := validateEdit(ctx); err != nil {
 		return nil, err
 	}
 
