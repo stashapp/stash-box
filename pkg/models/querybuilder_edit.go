@@ -132,7 +132,7 @@ func (qb *EditQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 	query := database.NewQueryBuilder(editDBTable)
 
 	if q := editFilter.UserID; q != nil && *q != "" {
-		query.Eq("scenes.user_id", *q)
+		query.Eq(editDBTable.Name() + ".user_id", *q)
 	}
 
 	if q := editFilter.TargetID; q != nil && *q != "" {
