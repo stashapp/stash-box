@@ -77,7 +77,7 @@ export const EditOperationTypes: EnumDictionary<OperationEnum, string> = {
   [OperationEnum.MERGE]: "Merge",
   [OperationEnum.CREATE]: "Create",
   [OperationEnum.MODIFY]: "Modify",
-  [OperationEnum.DESTROY]: "Destory",
+  [OperationEnum.DESTROY]: "Destroy",
 };
 
 export const EditTargetTypes: EnumDictionary<TargetTypeEnum, string> = {
