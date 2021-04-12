@@ -35,8 +35,6 @@ const PerformerComponent: React.FC = () => {
   });
   const pendingEditCount = editData?.queryEdits.count;
 
-  if (!loading && !data) return <ErrorMessage error="Failed to load edits." />;
-
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
