@@ -13,6 +13,7 @@ import {
   isTagOldDetails,
   isPerformerOldDetails,
   formatBodyModification,
+  formatFuzzyDateComponents,
 } from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
@@ -116,8 +117,14 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
         />
         <ChangeRow
           name="Birthdate"
-          newValue={details.birthdate}
-          oldValue={oldDetails?.birthdate}
+          newValue={formatFuzzyDateComponents(
+            details.birthdate,
+            details.birthdate_accuracy
+          )}
+          oldValue={formatFuzzyDateComponents(
+            oldDetails?.birthdate,
+            oldDetails?.birthdate_accuracy
+          )}
           showDiff={showDiff}
         />
         <ChangeRow
