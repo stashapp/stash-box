@@ -12,6 +12,7 @@ import {
   isPerformerDetails,
   isTagOldDetails,
   isPerformerOldDetails,
+  formatBodyModification,
 } from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
@@ -190,20 +191,20 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
         <ChangeRow
           name="Tattoos"
           newValue={(details?.added_tattoos ?? [])
-            .map((tatt) => `${tatt.location}: ${tatt.description}`)
+            .map(formatBodyModification)
             .join("\n")}
           oldValue={(details?.removed_tattoos ?? [])
-            .map((tatt) => `${tatt.location}: ${tatt.description}`)
+            .map(formatBodyModification)
             .join("\n")}
           showDiff={showDiff}
         />
         <ChangeRow
           name="Piercings"
           newValue={(details?.added_piercings ?? [])
-            .map((piercing) => `${piercing.location}: ${piercing.description}`)
+            .map(formatBodyModification)
             .join("\n")}
           oldValue={(details?.removed_piercings ?? [])
-            .map((piercing) => `${piercing.location}: ${piercing.description}`)
+            .map(formatBodyModification)
             .join("\n")}
           showDiff={showDiff}
         />
