@@ -37,7 +37,7 @@ const MergeEdit: React.FC<MergeEditProps> = ({
             if (isPerformer(source)) {
               return (
                 <div key={source.id}>
-                  <Link to={performerHref(source)}>{source.name}</Link>
+                  <Link to={performerHref(source)}>{source.name}{source.disambiguation && <small className="text-muted ml-1">({source.disambiguation})</small>}</Link>
                 </div>
               );
             }
@@ -55,7 +55,7 @@ const MergeEdit: React.FC<MergeEditProps> = ({
           )}
           {isPerformer(target) && (
             <div>
-              <Link to={performerHref(target)}>{target.name}</Link>
+              <Link to={performerHref(target)}>{target.name}{target.disambiguation && <small className="text-muted ml-1">({target.disambiguation})</small>}</Link>
             </div>
           )}
         </div>
