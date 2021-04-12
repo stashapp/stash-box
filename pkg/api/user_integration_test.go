@@ -469,6 +469,25 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 	}
 }
 
+func (s *userTestRunner) testUserEditQuery() {
+	createdUser, err := s.createTestUser(nil)
+	if err != nil {
+		return
+	}
+
+	userID := createdUser.ID.String()
+	filter := models.EditFilterType{
+		UserID: &userID,
+	}
+	_, err = s.resolver.Query().QueryEdits(s.ctx, &filter, nil)
+	if err != nil {
+		s.t.Errorf("Error finding user edits: %s", err.Error())
+		return
+	}
+
+	// TODO: Test edits are returned
+}
+
 func TestCreateUser(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testCreateUser()
@@ -538,4 +557,9 @@ func TestChangePassword(t *testing.T) {
 func TestRegenerateAPIKey(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testRegenerateAPIKey()
+}
+
+func TestUserEditQuery(t *testing.T) {
+	pt := createUserTestRunner(t)
+	pt.testUserEditQuery()
 }
