@@ -64,11 +64,17 @@ export const getImage = (
 export const getUrlByType = (urls: (URL | null)[], type: string) =>
   (urls && (urls.find((url) => url?.type === type) || {}).url) || "";
 
+export const formatBodyModification = (
+  bodyMod?: { location: string; description?: string | null } | null
+) =>
+  bodyMod
+    ? bodyMod.location +
+      (bodyMod.description ? ` (${bodyMod.description})` : "")
+    : null;
+
 export const formatBodyModifications = (
   bodyMod?: { location: string; description?: string | null }[] | null
-) =>
-  (bodyMod ?? [])
-    .map(
-      (mod) => mod.location + (mod.description ? ` (${mod.description})` : "")
-    )
-    .join(", ");
+) => (bodyMod ?? []).map(formatBodyModification).join(", ");
+
+export const formatPendingEdits = (count?: number) =>
+  count ? ` (${count} Pending)` : "";

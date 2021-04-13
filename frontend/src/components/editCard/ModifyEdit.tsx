@@ -12,6 +12,8 @@ import {
   isPerformerDetails,
   isTagOldDetails,
   isPerformerOldDetails,
+  formatBodyModification,
+  formatFuzzyDateComponents,
 } from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
@@ -115,8 +117,14 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
         />
         <ChangeRow
           name="Birthdate"
-          newValue={details.birthdate}
-          oldValue={oldDetails?.birthdate}
+          newValue={formatFuzzyDateComponents(
+            details.birthdate,
+            details.birthdate_accuracy
+          )}
+          oldValue={formatFuzzyDateComponents(
+            oldDetails?.birthdate,
+            oldDetails?.birthdate_accuracy
+          )}
           showDiff={showDiff}
         />
         <ChangeRow
@@ -190,20 +198,20 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
         <ChangeRow
           name="Tattoos"
           newValue={(details?.added_tattoos ?? [])
-            .map((tatt) => `${tatt.location}: ${tatt.description}`)
+            .map(formatBodyModification)
             .join("\n")}
           oldValue={(details?.removed_tattoos ?? [])
-            .map((tatt) => `${tatt.location}: ${tatt.description}`)
+            .map(formatBodyModification)
             .join("\n")}
           showDiff={showDiff}
         />
         <ChangeRow
           name="Piercings"
           newValue={(details?.added_piercings ?? [])
-            .map((piercing) => `${piercing.location}: ${piercing.description}`)
+            .map(formatBodyModification)
             .join("\n")}
           oldValue={(details?.removed_piercings ?? [])
-            .map((piercing) => `${piercing.location}: ${piercing.description}`)
+            .map(formatBodyModification)
             .join("\n")}
           showDiff={showDiff}
         />
