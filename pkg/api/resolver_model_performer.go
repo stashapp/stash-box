@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
@@ -20,7 +21,14 @@ func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Perf
 }
 
 func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) ([]string, error) {
-	return dataloader.For(ctx).PerformerAliasesById.Load(obj.ID)
+	aliases, err := dataloader.For(ctx).PerformerAliasesById.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Strings(aliases)
+
+	return aliases, nil
 }
 
 func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*models.GenderEnum, error) {

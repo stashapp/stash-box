@@ -1,14 +1,18 @@
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { GraphQLError } from "graphql";
 import { useEditComment } from "src/graphql";
 import cx from "classnames";
+
+import AuthContext from "src/AuthContext";
+import { canEdit } from "src/utils";
 
 interface IProps {
   editID: string;
 }
 
 const AddComment: React.FC<IProps> = ({ editID }) => {
+  const auth = useContext(AuthContext);
   const [showInput, setShowInput] = useState(false);
   const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
   const textRef = useRef<HTMLTextAreaElement>(null);
@@ -17,7 +21,7 @@ const AddComment: React.FC<IProps> = ({ editID }) => {
   if (!showInput)
     return (
       <div className="d-flex">
-        {!showInput && (
+        {!showInput && canEdit(auth.user) && (
           <Button
             className="ml-auto minimal"
             variant="link"

@@ -5,9 +5,11 @@ import { Button, Tab, Tabs } from "react-bootstrap";
 import {
   useScenes,
   useTag,
+  useEdits,
   SortDirectionEnum,
   CriterionModifier,
   TargetTypeEnum,
+  VoteStatusEnum,
 } from "src/graphql";
 
 import AuthContext from "src/AuthContext";
@@ -16,7 +18,7 @@ import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { EditList } from "src/components/list";
-import { canEdit, createHref, tagHref } from "src/utils";
+import { canEdit, createHref, tagHref, formatPendingEdits } from "src/utils";
 import {
   ROUTE_TAG_EDIT,
   ROUTE_TAG_MERGE,
@@ -53,6 +55,18 @@ const TagComponent: React.FC = () => {
     },
     !tag?.id
   );
+
+  const { data: editData } = useEdits({
+    filter: {
+      per_page: 1,
+    },
+    editFilter: {
+      target_type: TargetTypeEnum.TAG,
+      target_id: id,
+      status: VoteStatusEnum.PENDING,
+    },
+  });
+  const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
@@ -131,7 +145,11 @@ const TagComponent: React.FC = () => {
             />
           </div>
         </Tab>
-        <Tab eventKey="edits" title="Edits">
+        <Tab
+          eventKey="edits"
+          title={`Edits${formatPendingEdits(pendingEditCount)}`}
+          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
+        >
           <EditList type={TargetTypeEnum.TAG} id={tag.id} />
         </Tab>
       </Tabs>

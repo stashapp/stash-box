@@ -16,3 +16,13 @@ export const formatDateTime = (dateTime: Date | string) => {
     timeZone: "UTC",
   })} ${date.toLocaleTimeString(navigator.languages[0], { timeZone: "UTC" })}`;
 };
+
+export const formatFuzzyDateComponents = (
+  date?: string | null,
+  accuracy?: string | null
+) => {
+  if (!date || !accuracy) return "";
+  if (accuracy === DateAccuracyEnum.DAY) return date;
+  if (accuracy === DateAccuracyEnum.MONTH) return date.slice(0, 7);
+  return date.slice(0, 4);
+};
