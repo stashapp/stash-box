@@ -6,6 +6,7 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
+import { groupBy, sortBy } from "lodash";
 
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 import { useCategories, TagEditDetailsInput } from "src/graphql";
@@ -43,7 +44,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
     resolver: yupResolver(schema),
   });
 
-  const { loading: loadingCategories, data: categories } = useCategories();
+  const { loading: loadingCategories, data: categoryData } = useCategories();
 
   useEffect(() => {
     register({ name: "aliases" });
@@ -67,11 +68,17 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
   const handleAliasChange = (newAliases: string[]) =>
     setValue("aliases", newAliases);
 
-  const categoryObj = (
-    categories?.queryTagCategories?.tag_categories ?? []
-  ).map((category) => ({
-    value: category.id,
-    label: category.name,
+  const categories = (
+    categoryData?.queryTagCategories.tag_categories ?? []
+  ).map((cat) => ({
+    label: cat.name,
+    value: cat.id,
+    group: cat.group,
+  }));
+  const grouped = groupBy(categories, (cat) => cat.group);
+  const categoryObj = sortBy(Object.keys(grouped)).map((groupName) => ({
+    label: groupName,
+    options: sortBy(grouped[groupName], (cat) => cat.label),
   }));
 
   return (
@@ -115,13 +122,14 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
               classNamePrefix="react-select"
               className={cx({ "is-invalid": errors.categoryId })}
               name="categoryId"
-              onChange={(opt) => opt && onChange(opt.value)}
-              options={[{ value: "", label: "None" }, ...categoryObj]}
+              onChange={(opt) => onChange(opt?.value)}
+              options={categoryObj}
+              isClearable
               placeholder="Category"
               defaultValue={
                 tag?.category?.id
-                  ? categoryObj.find((s) => s.value === tag.category?.id)
-                  : { label: "None", value: "" }
+                  ? categories.find((s) => s.value === tag.category?.id)
+                  : null
               }
             />
           )}

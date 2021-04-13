@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"sort"
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -22,6 +23,8 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, e
 	if err != nil {
 		return nil, err
 	}
+
+	sort.Strings(aliases)
 
 	return aliases, nil
 }

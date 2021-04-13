@@ -412,7 +412,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               className="col-2 mr-1"
               ref={fingerprintAlgorithm}
             >
-              { Object.keys(FingerprintAlgorithm).map(f => (
+              {Object.keys(FingerprintAlgorithm).map((f) => (
                 <option value={f}>{f}</option>
               ))}
             </Form.Control>

@@ -59,7 +59,7 @@ const Pages: React.FC = () => (
     <Route path={ROUTE_EDITS}>
       <Edits />
     </Route>
-    <Route exact path={ROUTE_CATEGORIES}>
+    <Route path={ROUTE_CATEGORIES}>
       <Categories />
     </Route>
     <Route exact path={ROUTE_REGISTER}>

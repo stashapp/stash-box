@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import cx from "classnames";
+import { uniqBy } from "lodash";
 
 import { useAddImage } from "src/graphql";
 import { Image } from "src/utils/transforms";
@@ -41,7 +42,7 @@ const EditImages: React.FC<EditImagesProps> = ({
     })
       .then((i) => {
         if (i.data?.imageCreate?.id) {
-          setImages([...images, i.data.imageCreate]);
+          setImages(uniqBy([...images, i.data.imageCreate], (img) => img.id));
           setFile(undefined);
           setImageData("");
         }
