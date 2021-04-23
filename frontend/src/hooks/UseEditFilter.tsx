@@ -1,14 +1,20 @@
 import React from "react";
-import { Form } from "react-bootstrap";
+import { Button, Form, InputGroup } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import queryString from "query-string";
 
-import { OperationEnum, TargetTypeEnum, VoteStatusEnum } from "src/graphql";
+import {
+  OperationEnum,
+  SortDirectionEnum,
+  TargetTypeEnum,
+  VoteStatusEnum,
+} from "src/graphql";
 import {
   EditOperationTypes,
   EditTargetTypes,
   EditStatusTypes,
 } from "src/constants/enums";
+import { Icon } from "src/components/fragments";
 
 function resolveParam<T>(
   type: T,
@@ -19,22 +25,39 @@ function resolveParam<T>(
   return type[strval.toUpperCase() as keyof T];
 }
 
+const sortOptions = [
+  { value: "", label: "Date created" },
+  { value: "updated_at", label: "Date updated" },
+  // { value: "comment_count", label: "Comment count" },
+  // { value: "vote_count", label: "Vote count" },
+];
+const defaultSort = "created_at";
+
 interface EditFilterProps {
+  sort?: string;
+  direction?: SortDirectionEnum;
   type?: TargetTypeEnum;
   status?: VoteStatusEnum;
   operation?: OperationEnum;
 }
 
 const useEditFilter = ({
+  sort: fixedSort,
+  direction: fixedDirection,
   type: fixedType,
   status: fixedStatus,
   operation: fixedOperation,
 }: EditFilterProps) => {
   const history = useHistory();
   const query = queryString.parse(history.location.search);
+  const sort = Array.isArray(query.sort) ? query.sort[0] : query.sort;
+  const direction =
+    resolveParam(SortDirectionEnum, query.dir) ?? SortDirectionEnum.DESC;
   const operation = resolveParam(OperationEnum, query.operation);
   const status = resolveParam(VoteStatusEnum, query.status);
   const type = resolveParam(TargetTypeEnum, query.type);
+  const selectedSort = fixedSort ?? sort;
+  const selectedDirection = fixedDirection ?? direction;
   const selectedStatus = fixedStatus ?? status;
   const selectedType = fixedType ?? type;
   const selectedOperation = fixedOperation ?? operation;
@@ -44,6 +67,8 @@ const useEditFilter = ({
   ) =>
     queryString
       .stringify({
+        sort: !sort ? undefined : sort,
+        dir: !direction ? undefined : direction,
         type: !type ? undefined : type,
         status: !status ? undefined : status,
         operation: !operation ? undefined : operation,
@@ -51,11 +76,11 @@ const useEditFilter = ({
       })
       .toLowerCase();
 
-  const handleChange = (key: string, e: React.ChangeEvent<HTMLSelectElement>) =>
+  const handleChange = (key: string, value?: string) =>
     history.replace({
       ...history.location,
       search: createQueryString({
-        [key]: !e.currentTarget.value ? undefined : e.currentTarget.value,
+        [key]: !value ? undefined : value,
       }),
     });
 
@@ -69,11 +94,46 @@ const useEditFilter = ({
   const editFilter = (
     <Form className="d-flex align-items-center font-weight-bold mx-0">
       <Form.Group className="d-flex align-items-center">
-        <Form.Label className="mr-4 mb-0">Type</Form.Label>
+        <Form.Label className="mr-4 mb-0">Order</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            handleChange("type", e)
+            handleChange("sort", e.currentTarget.value)
+          }
+          defaultValue={selectedSort ?? defaultSort}
+        >
+          {sortOptions.map((s) => (
+            <option value={s.value}>{s.label}</option>
+          ))}
+        </Form.Control>
+        <InputGroup.Append>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              handleChange(
+                "dir",
+                selectedDirection === SortDirectionEnum.DESC
+                  ? SortDirectionEnum.ASC
+                  : undefined
+              )
+            }
+          >
+            <Icon
+              icon={
+                selectedDirection === SortDirectionEnum.ASC
+                  ? "sort-amount-up"
+                  : "sort-amount-down"
+              }
+            />
+          </Button>
+        </InputGroup.Append>
+      </Form.Group>
+      <Form.Group className="d-flex align-items-center">
+        <Form.Label className="mx-4 mb-0">Type</Form.Label>
+        <Form.Control
+          as="select"
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            handleChange("type", e.currentTarget.value)
           }
           value={selectedType}
           disabled={!!fixedType}
@@ -89,7 +149,7 @@ const useEditFilter = ({
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            handleChange("status", e)
+            handleChange("status", e.currentTarget.value)
           }
           value={selectedStatus}
           disabled={!!fixedStatus}
@@ -105,7 +165,7 @@ const useEditFilter = ({
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            handleChange("operation", e)
+            handleChange("operation", e.currentTarget.value)
           }
           value={selectedOperation}
           disabled={!!fixedOperation}
@@ -119,7 +179,14 @@ const useEditFilter = ({
     </Form>
   );
 
-  return { editFilter, selectedType, selectedStatus, selectedOperation };
+  return {
+    editFilter,
+    selectedSort,
+    selectedDirection,
+    selectedType,
+    selectedStatus,
+    selectedOperation,
+  };
 };
 
 export default useEditFilter;
