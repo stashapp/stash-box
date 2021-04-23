@@ -364,6 +364,7 @@ export interface TagEdit_tagEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  updated: any;
   comments: TagEdit_tagEdit_comments[];
   user: TagEdit_tagEdit_user;
   /**

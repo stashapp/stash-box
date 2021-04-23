@@ -364,6 +364,7 @@ export interface PerformerEdit_performerEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  updated: any;
   comments: PerformerEdit_performerEdit_comments[];
   user: PerformerEdit_performerEdit_user;
   /**

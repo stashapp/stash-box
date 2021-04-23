@@ -364,6 +364,7 @@ export interface Edit_findEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  updated: any;
   comments: Edit_findEdit_comments[];
   user: Edit_findEdit_user;
   /**
