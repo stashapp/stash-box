@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -150,4 +151,24 @@ func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.U
 		}
 	}
 	return
+}
+
+func IsVotingThresholdMet(fac models.Repo, edit *models.Edit) (bool, error) {
+	threshold := config.GetVoteApplicationThreshold()
+	if threshold != 0 && edit.VoteCount >= threshold {
+		votes, err := fac.Edit().GetVotes(edit.ID)
+		if err != nil {
+			return false, err
+		}
+
+		for _, vote := range votes {
+			if vote.Vote == models.VoteTypeEnumReject.String() {
+				return false, nil
+			}
+		}
+
+		return true, nil
+	}
+
+	return false, nil
 }

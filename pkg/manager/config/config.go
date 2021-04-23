@@ -39,6 +39,13 @@ type config struct {
 	EmailCooldown     int      `mapstructure:"email_cooldown"`
 	DefaultUserRoles  []string `mapstructure:"default_user_roles"`
 
+	// Number of approved edits before user automatically gets VOTE role
+	VotePromotionThreshold int `mapstructure:"vote_promotion_threshold"`
+	// Number of positive votes required for immediate approval
+	VoteApplicationThreshold int `mapstructure:"vote_application_threshold"`
+	// Duration, in seconds, of the voting period
+	VotingPeriod int `mapstructure:"voting_period"`
+
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
 	EmailPort int    `mapstructure:"email_port"`
@@ -77,13 +84,14 @@ const (
 
 var defaultUserRoles = []string{"READ", "VOTE", "EDIT"}
 var C = &config{
-	RequireInvite:     true,
-	RequireActivation: true,
-	ActivationExpiry:  2 * 60 * 60,
-	EmailCooldown:     5 * 60,
-	EmailPort:         25,
-	ImageBackend:      string(FileBackend),
-	PHashDistance:     0,
+	RequireInvite:            true,
+	RequireActivation:        true,
+	ActivationExpiry:         2 * 60 * 60,
+	EmailCooldown:            5 * 60,
+	EmailPort:                25,
+	ImageBackend:             string(FileBackend),
+	PHashDistance:            0,
+	VoteApplicationThreshold: 3,
 }
 
 func GetDatabasePath() string {
@@ -288,4 +296,15 @@ func GetMissingEmailSettings() []string {
 	}
 
 	return missing
+}
+
+func GetVotePromotionThreshold() *int {
+	if C.VotePromotionThreshold == 0 {
+		return nil
+	}
+	return &C.VotePromotionThreshold
+}
+
+func GetVoteApplicationThreshold() int {
+	return C.VoteApplicationThreshold
 }

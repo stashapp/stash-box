@@ -184,9 +184,52 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	return newEdit, nil
 }
 
-func (r *mutationResolver) EditVote(_ context.Context, _ models.EditVoteInput) (*models.Edit, error) {
-	panic("not implemented")
+func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
+	if err := validateEdit(ctx); err != nil {
+		return nil, err
+	}
+
+	fac := r.getRepoFactory(ctx)
+	currentUser := getCurrentUser(ctx)
+	var voteEdit *models.Edit
+	err := fac.WithTxn(func() error {
+		eqb := fac.Edit()
+
+		editID, err := uuid.FromString(input.ID)
+		if err != nil {
+			return err
+		}
+		voteEdit, err = eqb.Find(editID)
+		if err != nil {
+			return err
+		}
+
+		vote := models.NewEditVote(currentUser, voteEdit, input.Vote)
+		if err := eqb.CreateVote(*vote); err != nil {
+			return err
+		}
+
+		voteEdit, err = eqb.Find(editID)
+		if err != nil {
+			return err
+		}
+
+		thresholdMet, err := edit.IsVotingThresholdMet(fac, voteEdit)
+		if thresholdMet {
+			voteEdit, err = edit.ApplyEdit(fac, editID)
+			return err
+		}
+
+		return err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return voteEdit, nil
 }
+
 func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCommentInput) (*models.Edit, error) {
 	if err := validateEdit(ctx); err != nil {
 		return nil, err

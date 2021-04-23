@@ -67,6 +67,8 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `activation_expiry` | `7200` (2 hours) | The time - in seconds - after which an activation key (emailed to the user for email verification or password reset purposes) expires. |
 | `email_cooldown` | `300` (5 minutes) | The time - in seconds - that a user must wait before submitting an activation or reset password request for a specific email address. |
 | `default_user_roles` | `READ`, `VOTE`, `EDIT` | The roles assigned to new users when registering. This field must be expressed as a yaml array. |
+| `vote_promotion_threshold` | (none) | Number of approved edits before a user automatically has the `VOTE` role assigned. Leave empty to disable. |
+| `vote_application_threshold` | `3` | Number of positive votes required for immediate application of an edit. Set to zero to disable automatic application. |
 | `email_host` | (none) | Address of the SMTP server. Required to send emails for activation and recovery purposes. |
 | `email_port` | `25` | Port of the SMTP server. |
 | `email_user` | (none) | Username for the SMTP server. Optional. |

@@ -82,3 +82,7 @@ func validateOwner(ctx context.Context, userID uuid.UUID) error {
 
 	return ErrUnauthorized
 }
+
+func validateVote(ctx context.Context) error {
+	return validateRole(ctx, models.RoleEnumVote)
+}

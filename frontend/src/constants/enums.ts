@@ -9,6 +9,7 @@ import {
   OperationEnum,
   TargetTypeEnum,
   VoteStatusEnum,
+  VoteTypeEnum,
 } from "src/graphql";
 
 type EnumDictionary<T extends string | symbol | number, U> = {
@@ -91,4 +92,12 @@ export const EditStatusTypes: EnumDictionary<VoteStatusEnum, string> = {
   [VoteStatusEnum.IMMEDIATE_REJECTED]: "Cancelled",
   [VoteStatusEnum.ACCEPTED]: "Accepted",
   [VoteStatusEnum.REJECTED]: "Rejected",
+};
+
+export const VoteTypes: EnumDictionary<VoteTypeEnum, string> = {
+  [VoteTypeEnum.ACCEPT]: "Yes",
+  [VoteTypeEnum.IMMEDIATE_ACCEPT]: "Approve",
+  [VoteTypeEnum.IMMEDIATE_REJECT]: "Cancel",
+  [VoteTypeEnum.ABSTAIN]: "Abstain",
+  [VoteTypeEnum.REJECT]: "No",
 };

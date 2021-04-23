@@ -10,10 +10,14 @@ import (
 )
 
 const (
-	editTable   = "edits"
-	editJoinKey = "edit_id"
-
-	//voteTable = "votes"
+	editTable          = "edits"
+	editJoinKey        = "edit_id"
+	performerEditTable = "performer_edits"
+	tagEditTable       = "tag_edits"
+	studioEditTable    = "studio_edits"
+	sceneEditTable     = "scene_edits"
+	commentTable       = "edit_comments"
+	voteTable          = "edit_votes"
 )
 
 var (
@@ -21,29 +25,29 @@ var (
 		return &models.Edit{}
 	})
 
-	editTagTable = newTableJoin(editTable, "tag_edits", editJoinKey, func() interface{} {
+	editTagTable = newTableJoin(editTable, tagEditTable, editJoinKey, func() interface{} {
 		return &models.EditTag{}
 	})
 
-	editPerformerTable = newTableJoin(editTable, "performer_edits", editJoinKey, func() interface{} {
+	editPerformerTable = newTableJoin(editTable, performerEditTable, editJoinKey, func() interface{} {
 		return &models.EditPerformer{}
 	})
 
-	editStudioTable = newTableJoin(editTable, "studio_edits", editJoinKey, func() interface{} {
+	editStudioTable = newTableJoin(editTable, studioEditTable, editJoinKey, func() interface{} {
 		return &models.EditStudio{}
 	})
 
-	editSceneTable = newTableJoin(editTable, "scene_edits", editJoinKey, func() interface{} {
+	editSceneTable = newTableJoin(editTable, sceneEditTable, editJoinKey, func() interface{} {
 		return &models.EditScene{}
 	})
 
-	editCommentTable = newTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
+	editCommentTable = newTableJoin(editTable, commentTable, editJoinKey, func() interface{} {
 		return &models.EditComment{}
 	})
 
-	// voteDBTable = database.NewTable(editTable, func() interface{} {
-	// 	return &Edit{}
-	// })
+	editVoteTable = newTableJoin(editTable, voteTable, editJoinKey, func() interface{} {
+		return &models.EditVote{}
+	})
 )
 
 type editQueryBuilder struct {
@@ -284,6 +288,21 @@ func (qb *editQueryBuilder) CreateComment(newJoin models.EditComment) error {
 func (qb *editQueryBuilder) GetComments(id uuid.UUID) (models.EditComments, error) {
 	joins := models.EditComments{}
 	err := qb.dbi.FindJoins(editCommentTable, id, &joins)
+
+	return joins, err
+}
+
+func (qb *editQueryBuilder) CreateVote(newJoin models.EditVote) error {
+	conflictHandling := `
+		ON CONFLICT(edit_id, user_id)
+		DO UPDATE SET (vote, created_at) = (:vote, NOW())
+	`
+	return qb.dbi.InsertJoin(editVoteTable, newJoin, &conflictHandling)
+}
+
+func (qb *editQueryBuilder) GetVotes(id uuid.UUID) (models.EditVotes, error) {
+	joins := models.EditVotes{}
+	err := qb.dbi.FindJoins(editVoteTable, id, &joins)
 
 	return joins, err
 }

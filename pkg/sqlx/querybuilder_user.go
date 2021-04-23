@@ -150,3 +150,20 @@ func (qb *userQueryBuilder) GetRoles(id uuid.UUID) (models.UserRoles, error) {
 
 	return joins, err
 }
+func (qb *userQueryBuilder) CountSuccessfulEdits(id uuid.UUID) (int, error) {
+	var args []interface{}
+	args = append(args, id)
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edits.id FROM edits WHERE applied = true AND user_id = ?"), args)
+}
+
+func (qb *userQueryBuilder) CountFailedEdits(id uuid.UUID) (int, error) {
+	var args []interface{}
+	args = append(args, models.VoteStatusEnumRejected, models.VoteStatusEnumImmediateRejected, id)
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edits.id FROM edits WHERE (status = ? OR status = ?) AND user_id = ?"), args)
+}
+
+func (qb *userQueryBuilder) CountVotesByType(id uuid.UUID, vote models.VoteTypeEnum) (int, error) {
+	var args []interface{}
+	args = append(args, vote.String(), id)
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edit_id FROM edit_votes WHERE vote = ? AND user_id = ?"), args)
+}

@@ -13,12 +13,18 @@ import MergeEdit from "./MergeEdit";
 import EditComment from "./EditComment";
 import EditHeader from "./EditHeader";
 import AddComment from "./AddComment";
+import VoteBar from "./VoteBar";
+import Votes from "./Votes";
 
 interface EditsProps {
   edit: Edit;
+  showVotes?: boolean;
 }
 
-const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
+const EditCardComponent: React.FC<EditsProps> = ({
+  edit,
+  showVotes = false,
+}) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
   const created = new Date(edit.created);
   const updated = new Date(edit.updated);
@@ -75,8 +81,6 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
               <span>Deleted User</span>
             )}
           </div>
-        </div>
-        <div className="flex-column col-4 ml-auto text-right">
           <div>
             <b className="mr-2">Created:</b>
             <span>{formatDateTime(created)}</span>
@@ -85,11 +89,14 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
             <b className="mr-2">Updated:</b>
             <span>{formatDateTime(updated)}</span>
           </div>
+        </div>
+        <div className="flex-column col-4 ml-auto text-right">
           <div>
             <b className="mr-2">Status:</b>
             <Badge className="text-uppercase" variant={editVariant}>
               {EditStatusTypes[edit.status]}
             </Badge>
+            <VoteBar edit={edit} />
           </div>
         </div>
       </Card.Header>
@@ -102,6 +109,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         {destruction}
         <Row className="mt-2">
           <Col md={{ offset: 4, span: 8 }}>
+            {showVotes && <Votes edit={edit} />}
             {comments}
             <AddComment editID={edit.id} />
           </Col>

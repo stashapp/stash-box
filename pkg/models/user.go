@@ -17,6 +17,9 @@ type UserRepo interface {
 	Count() (int, error)
 	Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int)
 	GetRoles(id uuid.UUID) (UserRoles, error)
+	CountSuccessfulEdits(id uuid.UUID) (int, error)
+	CountFailedEdits(id uuid.UUID) (int, error)
+	CountVotesByType(id uuid.UUID, vote VoteTypeEnum) (int, error)
 }
 
 // UserFinder is an interface to find and update User objects.

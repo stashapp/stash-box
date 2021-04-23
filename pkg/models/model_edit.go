@@ -30,6 +30,13 @@ type EditComment struct {
 	Text      string          `db:"text" json:"text"`
 }
 
+type EditVote struct {
+	EditID    uuid.UUID       `db:"edit_id" json:"edit_id"`
+	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
+	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
+	Vote      string          `db:"vote" json:"vote"`
+}
+
 func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
 	currentTime := time.Now()
 
@@ -62,6 +69,19 @@ func NewEditComment(UUID uuid.UUID, user *User, edit *Edit, text string) *EditCo
 
 func (e Edit) GetID() uuid.UUID {
 	return e.ID
+}
+
+func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
+	currentTime := time.Now()
+
+	ret := &EditVote{
+		EditID:    edit.ID,
+		UserID:    user.ID,
+		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		Vote:      vote.String(),
+	}
+
+	return ret
 }
 
 func (e *Edit) ImmediateAccept() {
@@ -217,31 +237,6 @@ func (p *EditScenes) Add(o interface{}) {
 	*p = append(*p, o.(*EditScene))
 }
 
-// type VoteComment struct {
-// 	ID      uuid.UUID      `db:"id" json:"id"`
-// 	EditID  uuid.UUID      `db:"edit_id" json:"edit_id"`
-// 	UserID  uuid.UUID      `db:"user_id" json:"user_id"`
-// 	Date    SQLiteDate     `db:"date" json:"date"`
-// 	Comment sql.NullString `db:"comment" json:"comment"`
-// 	Type    string         `db:"type" json:"type"`
-// }
-
-// func (p *Scene) CopyFromCreateInput(input SceneCreateInput) {
-// 	CopyFull(p, input)
-
-// 	if input.Date != nil {
-// 		p.setDate(*input.Date)
-// 	}
-// }
-
-// func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) {
-// 	CopyFull(p, input)
-
-// 	if input.Date != nil {
-// 		p.setDate(*input.Date)
-// 	}
-// }
-
 type TagEdit struct {
 	Name           *string  `json:"name,omitempty"`
 	Description    *string  `json:"description,omitempty"`
@@ -360,4 +355,16 @@ func (p EditComments) Each(fn func(interface{})) {
 
 func (p *EditComments) Add(o interface{}) {
 	*p = append(*p, o.(*EditComment))
+}
+
+type EditVotes []*EditVote
+
+func (p EditVotes) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditVotes) Add(o interface{}) {
+	*p = append(*p, o.(*EditVote))
 }

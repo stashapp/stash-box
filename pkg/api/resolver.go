@@ -28,6 +28,9 @@ func (r *Resolver) Edit() models.EditResolver {
 func (r *Resolver) EditComment() models.EditCommentResolver {
 	return &editCommentResolver{r}
 }
+func (r *Resolver) EditVote() models.EditVoteResolver {
+	return &editVoteResolver{r}
+}
 func (r *Resolver) Performer() models.PerformerResolver {
 	return &performerResolver{r}
 }
