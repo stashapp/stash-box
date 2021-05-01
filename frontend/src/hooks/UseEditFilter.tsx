@@ -94,7 +94,6 @@ const useEditFilter = ({
   const editFilter = (
     <Form className="d-flex align-items-center font-weight-bold mx-0">
       <Form.Group className="d-flex align-items-center">
-        <Form.Label className="mr-4 mb-0">Order</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
