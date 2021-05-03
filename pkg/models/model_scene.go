@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 
@@ -140,12 +141,14 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput
 	var ret SceneFingerprints
 
 	for _, fingerprint := range fingerprints {
-		ret = append(ret, &SceneFingerprint{
-			SceneID:   sceneID,
-			Hash:      fingerprint.Hash,
-			Algorithm: fingerprint.Algorithm.String(),
-			Duration:  fingerprint.Duration,
-		})
+		if fingerprint.Duration > 0 {
+			ret = append(ret, &SceneFingerprint{
+				SceneID:   sceneID,
+				Hash:      fingerprint.Hash,
+				Algorithm: fingerprint.Algorithm.String(),
+				Duration:  fingerprint.Duration,
+			})
+		}
 	}
 
 	return ret
