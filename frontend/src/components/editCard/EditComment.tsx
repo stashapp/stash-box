@@ -17,7 +17,7 @@ const EditComment: React.FC<Props> = ({ comment }) => (
     <Card.Footer className="text-right">
       <Link to={userHref(comment.user)}>{comment.user.name}</Link>
       <span className="mx-1">&bull;</span>
-      <span>{formatDateTime(comment.date)}</span>
+      <span>{formatDateTime(comment.date, false)}</span>
     </Card.Footer>
   </Card>
 );
