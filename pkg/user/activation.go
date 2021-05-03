@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"math/rand"
+	"net/url"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -152,7 +153,7 @@ func ClearExpiredActivations(tx *sqlx.Tx) error {
 func sendNewUserEmail(em *email.Manager, email, activationKey string) error {
 	subject := "Subject: Activate stash-box account"
 
-	link := config.GetHostURL() + "/activate?email=" + email + "&key=" + activationKey
+	link := config.GetHostURL() + "/activate?email=" + url.QueryEscape(email) + "&key=" + activationKey
 	body := "Please click the following link to activate your account: " + link
 
 	return em.Send(email, subject, body)
