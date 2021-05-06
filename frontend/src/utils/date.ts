@@ -1,6 +1,6 @@
 import { FuzzyDateInput, DateAccuracyEnum } from "src/graphql";
 
-export const formatFuzzyDate = (date: FuzzyDateInput) => {
+export const formatFuzzyDate = (date: FuzzyDateInput | null) => {
   if (date === null) return "";
   if (date.accuracy === DateAccuracyEnum.DAY) return date.date;
   if (date.accuracy === DateAccuracyEnum.MONTH) return date.date.slice(0, 7);

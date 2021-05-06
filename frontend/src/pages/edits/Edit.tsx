@@ -68,8 +68,8 @@ const EditComponent: React.FC = () => {
 
   const mutating = cancelling || applying;
 
-  const buttons =
-    (isAdmin(auth.user) || auth.user?.id === edit.user.id) && edit.status === VoteStatusEnum.PENDING && (
+  const buttons = (isAdmin(auth.user) || auth.user?.id === edit.user.id) &&
+    edit.status === VoteStatusEnum.PENDING && (
       <div className="d-flex justify-content-end">
         <Button
           variant="danger"
@@ -79,7 +79,7 @@ const EditComponent: React.FC = () => {
         >
           Cancel Edit
         </Button>
-        { isAdmin(auth.user) && (
+        {isAdmin(auth.user) && (
           <Button
             variant="danger"
             disabled={showApply || mutating}
