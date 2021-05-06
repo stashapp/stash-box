@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Form, Row } from "react-bootstrap";
+import { Row } from "react-bootstrap";
 
 import {
   Edits_queryEdits_edits_target as Target,
   Edits_queryEdits_edits_options as Options,
 } from "src/graphql/definitions/Edits";
 import { isTag, isPerformer, tagHref, performerHref } from "src/utils";
+import { Icon } from "src/components/fragments";
 
 interface MergeEditProps {
   merges?: (Target | null)[] | null;
@@ -76,12 +77,12 @@ const MergeEdit: React.FC<MergeEditProps> = ({
       </div>
       {isPerformer(target) && (
         <Row>
-          <div className="offset-2">
-            <Form.Check
-              disabled
-              checked={options?.set_merge_aliases ?? false}
-              label="Set performance aliases to old name"
+          <div className="offset-2 d-flex align-items-center">
+            <Icon
+              icon={options?.set_merge_aliases ? "check" : "times"}
+              color={options?.set_merge_aliases ? "green" : "red"}
             />
+            <span className="ml-2">Set performance aliases to old name</span>
           </div>
         </Row>
       )}

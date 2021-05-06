@@ -1,5 +1,4 @@
 import React from "react";
-import { Form } from "react-bootstrap";
 
 import {
   Edits_queryEdits_edits_details as Details,
@@ -18,6 +17,7 @@ import {
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
 import CategoryChangeRow from "src/components/categoryChangeRow";
+import { Icon } from "src/components/fragments";
 
 interface ModifyEditProps {
   details: Details | null;
@@ -88,13 +88,13 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
           />
         )}
         {details.name !== oldDetails?.name && (
-          <div className="d-flex mb-2">
-            <Form.Check
-              disabled
-              checked={options?.set_modify_aliases ?? false}
-              label="Set performance aliases to old name"
+          <div className="d-flex mb-2 align-items-center">
+            <Icon
+              icon={options?.set_modify_aliases ? "check" : "times"}
+              color={options?.set_modify_aliases ? "green" : "red"}
               className="ml-auto"
             />
+            <span className="ml-2">Set performance aliases to old name</span>
           </div>
         )}
         <ChangeRow
