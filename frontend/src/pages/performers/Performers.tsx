@@ -28,7 +28,8 @@ const sortOptions = [
   { value: "", label: "Name" },
   { value: "birthdate", label: "Birthdate" },
   { value: "scene_count", label: "Scene Count" },
-  { value: "debut", label: "Debut date" },
+  { value: "career_start_year", label: "Career Start" },
+  { value: "debut", label: "Scene Debut" },
   { value: "created_at", label: "Created At" },
 ];
 
