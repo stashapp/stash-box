@@ -12,6 +12,7 @@ import {
   performerHref,
   studioHref,
   createHref,
+  formatDuration,
 } from "src/utils";
 import { ROUTE_SCENE_EDIT, ROUTE_SCENES } from "src/constants/route";
 import {
@@ -112,9 +113,14 @@ const SceneComponent: React.FC = () => {
           />
         </Card.Body>
         <Card.Footer className="row mx-1">
-          <div className="scene-performers">{performers}</div>
+          <div className="scene-performers mr-auto">{performers}</div>
+          {scene.duration && (
+            <div>
+              Duration: <b>{formatDuration(scene.duration)}</b>
+            </div>
+          )}
           {scene.director && (
-            <div className="ml-auto">
+            <div className="ml-3">
               Director: <strong>{scene.director}</strong>
             </div>
           )}

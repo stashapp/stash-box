@@ -69,6 +69,7 @@ export interface Scene_findScene {
   title: string | null;
   details: string | null;
   director: string | null;
+  duration: number | null;
   urls: Scene_findScene_urls[];
   images: Scene_findScene_images[];
   studio: Scene_findScene_studio | null;
