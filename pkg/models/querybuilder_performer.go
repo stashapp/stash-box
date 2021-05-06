@@ -236,7 +236,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + database.GetDialect().NullsLast()
-		query.SortAndPagination = "ORDER BY scene_count " + direction + ", name " + direction + getPagination(findFilter)
+		query.SortAndPagination = " ORDER BY scene_count " + direction + ", name " + direction + getPagination(findFilter)
 	} else {
 		query.SortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	}
