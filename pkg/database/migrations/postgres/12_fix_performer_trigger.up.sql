@@ -46,5 +46,4 @@ SELECT PS.scene_id as scene_id, ARRAY_TO_STRING(ARRAY_CAT(ARRAY_AGG(P.name), ARR
 WHERE scene_search.scene_id = COALESCE(NEW.scene_id, OLD.scene_id);
 RETURN NULL;
 END;
-$$ LANGUAGE plpgsql; --The trigger used to update a table.
-
+$$ LANGUAGE plpgsql;
