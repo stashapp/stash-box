@@ -95,38 +95,40 @@ const useEditFilter = ({
     <Form className="d-flex align-items-center font-weight-bold mx-0">
       <Form.Group className="mr-2 d-flex flex-column align-items-left">
         <Form.Label>Order</Form.Label>
-        <Form.Control
-          as="select"
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            handleChange("sort", e.currentTarget.value)
-          }
-          defaultValue={selectedSort ?? defaultSort}
-        >
-          {sortOptions.map((s) => (
-            <option value={s.value}>{s.label}</option>
-          ))}
-        </Form.Control>
-        <InputGroup.Append>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              handleChange(
-                "dir",
-                selectedDirection === SortDirectionEnum.DESC
-                  ? SortDirectionEnum.ASC
-                  : undefined
-              )
+        <div className="d-flex">
+          <Form.Control
+            as="select"
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              handleChange("sort", e.currentTarget.value)
             }
+            defaultValue={selectedSort ?? defaultSort}
           >
-            <Icon
-              icon={
-                selectedDirection === SortDirectionEnum.ASC
-                  ? "sort-amount-up"
-                  : "sort-amount-down"
+            {sortOptions.map((s) => (
+              <option value={s.value}>{s.label}</option>
+            ))}
+          </Form.Control>
+          <InputGroup.Append>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleChange(
+                  "dir",
+                  selectedDirection === SortDirectionEnum.DESC
+                    ? SortDirectionEnum.ASC
+                    : undefined
+                )
               }
-            />
-          </Button>
-        </InputGroup.Append>
+            >
+              <Icon
+                icon={
+                  selectedDirection === SortDirectionEnum.ASC
+                    ? "sort-amount-up"
+                    : "sort-amount-down"
+                }
+              />
+            </Button>
+          </InputGroup.Append>
+        </div>
       </Form.Group>
       <Form.Group className="mx-2 d-flex flex-column align-items-left">
         <Form.Label>Type</Form.Label>
