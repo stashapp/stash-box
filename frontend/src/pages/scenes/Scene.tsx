@@ -59,7 +59,13 @@ const SceneComponent: React.FC = () => {
   const fingerprints = scene.fingerprints.map((fingerprint) => (
     <tr key={fingerprint.hash}>
       <td>{fingerprint.algorithm}</td>
-      <td>{fingerprint.hash}</td>
+      <td>
+        <Link
+          to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
+        >
+          {fingerprint.hash}
+        </Link>
+      </td>
       <td>{fingerprint.duration}</td>
     </tr>
   ));
@@ -154,12 +160,18 @@ const SceneComponent: React.FC = () => {
             {fingerprints.length === 0 ? (
               <h6>No fingerprints found for this scene.</h6>
             ) : (
-              <Table striped bordered hover size="sm">
+              <Table striped bordered size="sm">
                 <thead>
                   <tr>
-                    <td>Algorithm</td>
-                    <td>Hash</td>
-                    <td>Duration</td>
+                    <td>
+                      <b>Algorithm</b>
+                    </td>
+                    <td>
+                      <b>Hash</b>
+                    </td>
+                    <td>
+                      <b>Duration</b>
+                    </td>
                   </tr>
                 </thead>
                 <tbody>{fingerprints}</tbody>
