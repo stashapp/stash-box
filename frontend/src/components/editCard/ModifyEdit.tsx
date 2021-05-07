@@ -87,7 +87,7 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
             showDiff={showDiff}
           />
         )}
-        {details.name !== oldDetails?.name && (
+        {oldDetails && details.name !== oldDetails.name && (
           <div className="d-flex mb-2">
             <Form.Check
               disabled
