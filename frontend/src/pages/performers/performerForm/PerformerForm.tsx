@@ -758,7 +758,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
             <ChangeRow {...c} />
           ))}
           <Form.Row className="my-4">
-            <Col md={{ span: 6, offset: 6 }}>
+            <Col md={{ span: 8, offset: 4 }}>
               <EditNote register={register} error={errors.note} />
             </Col>
           </Form.Row>
