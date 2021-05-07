@@ -2,11 +2,13 @@
 
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
 
-**stash-box is Stash App's own OpenSource video indexing and Perceptual Hashing MetaData API for porn.**
+**stash-box is Stash App's own OpenSource video indexing and Perceptual Hashing MetaData API server for porn.**
 
-The intent of stash-box is to provide a collaborative, crowd-sourced database of porn metadata, in the same way as [MusicBrainz](https://musicbrainz.org/) does for music. The submission and editing of metadata is expected to follow the same principle as that of the MusicBrainz database. [See here](https://musicbrainz.org/doc/Editing_FAQ) for how MusicBrainz does it.
+The intent of stash-box is to provide a collaborative, crowd-sourced database of porn metadata, in the same way as [MusicBrainz](https://musicbrainz.org/) does for music. The submission and editing of metadata is expected to follow the same principle as that of the MusicBrainz database. [See here](https://musicbrainz.org/doc/Editing_FAQ) for how MusicBrainz does it.  Installing this software will create a blank stash-box database that you can populate yourself.
 
 The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
+
+**Note: If you are a [Stash](https://github.com/stashapp/stash) user, you do not need to install stash-box.  The Stash community has a server with many titles from you can pull data. You can get the login information from the #stash-box-qa2 channel on our Discord.**
 
 # Docker install
 
