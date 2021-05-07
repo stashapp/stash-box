@@ -93,7 +93,8 @@ const useEditFilter = ({
 
   const editFilter = (
     <Form className="d-flex align-items-center font-weight-bold mx-0">
-      <Form.Group className="d-flex align-items-center">
+      <Form.Group className="mr-2 d-flex flex-column align-items-left">
+        <Form.Label>Order</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -127,8 +128,8 @@ const useEditFilter = ({
           </Button>
         </InputGroup.Append>
       </Form.Group>
-      <Form.Group className="d-flex align-items-center">
-        <Form.Label className="mx-4 mb-0">Type</Form.Label>
+      <Form.Group className="mx-2 d-flex flex-column align-items-left">
+        <Form.Label>Type</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -143,8 +144,8 @@ const useEditFilter = ({
           {enumToOptions(EditTargetTypes)}
         </Form.Control>
       </Form.Group>
-      <Form.Group className="d-flex align-items-center">
-        <Form.Label className="mx-4 mb-0">Status</Form.Label>
+      <Form.Group className="mx-2 d-flex flex-column align-items-left">
+        <Form.Label>Status</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -159,8 +160,8 @@ const useEditFilter = ({
           {enumToOptions(EditStatusTypes)}
         </Form.Control>
       </Form.Group>
-      <Form.Group className="d-flex align-items-center">
-        <Form.Label className="mx-4 mb-0">Operation</Form.Label>
+      <Form.Group className="mx-2 d-flex flex-column align-items-left">
+        <Form.Label>Operation</Form.Label>
         <Form.Control
           as="select"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
