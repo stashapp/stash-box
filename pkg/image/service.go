@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -18,6 +19,14 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
+	}
+
+	// Generate uuid that does not start with AD to prevent adblock issues
+	for strings.HasPrefix(UUID.String(), "ad") {
+		UUID, err = uuid.NewV4()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Populate a new performer from the input
