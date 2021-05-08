@@ -17,14 +17,14 @@
   }
 
   .performer-name {
+    flex-grow: 1;
     font-weight: bold;
     width: 0;
-    flex-grow: 1;
   }
 
   .performer-disambiguation {
-    width: 0;
     flex-grow: 1;
+    width: 0;
   }
 
   .remove-item {
@@ -50,9 +50,9 @@
   }
 
   .SearchField {
+    flex-grow: 1;
     max-width: 400px;
     width: auto;
-    flex-grow: 1;
   }
 
   .description {
