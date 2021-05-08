@@ -8,14 +8,15 @@ export const formatFuzzyDate = (date: FuzzyDateInput | null) => {
 };
 
 export const formatDateTime = (dateTime: Date | string, utc = false) => {
+  const timeZone = utc ? "UTC" : undefined;
   const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
   return `${date.toLocaleString("en-us", {
     month: "short",
     year: "numeric",
     day: "numeric",
-    timeZone: "UTC",
+    timeZone,
   })} ${date.toLocaleTimeString(navigator.languages[0], {
-    timeZone: utc ? "UTC" : undefined,
+    timeZone,
   })}`;
 };
 
