@@ -1,6 +1,10 @@
 .EditComment {
   background-color: $textfield-bg;
   margin-top: 1rem;
+
+  .card-body a {
+    color: $link-color;
+  }
 }
 
 .EditDiff {

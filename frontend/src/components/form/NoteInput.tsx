@@ -1,7 +1,5 @@
 import React, { useContext, useState } from "react";
 import { Form, Tabs, Tab } from "react-bootstrap";
-import Marked from "marked";
-import DOMPurify from "dompurify";
 import cx from "classnames";
 
 import AuthContext from "src/AuthContext";
@@ -44,7 +42,7 @@ const NoteInput: React.FC<IProps> = ({
         </Tab>
         <Tab eventKey="preview" title="Preview" unmountOnExit mountOnEnter>
           <EditComment
-            comment={comment ? DOMPurify.sanitize(Marked(comment)) : ""}
+            comment={comment}
             date={new Date().toString()}
             user={auth.user}
           />
