@@ -1,6 +1,6 @@
 import { isEqual } from "lodash";
 
-import { BodyModificationInput } from "src/graphql";
+import { BodyModificationInput, BreastTypeEnum } from "src/graphql";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { ChangeRowProps } from "src/components/changeRow/ChangeRow";
 import { formatFuzzyDate } from "src/utils";
@@ -106,7 +106,13 @@ const DiffPerformer = (
     diffValue("Hair Color", original.hair_color, updated.hair_color)
   );
   changes.push(diffValue("Height", original.height, updated.height));
-  changes.push(diffValue("Breast Type", original.breast_type, updated.boobJob));
+  changes.push(
+    diffValue(
+      "Breast Type",
+      original.breast_type,
+      !updated.boobJob ? BreastTypeEnum.NA : updated.boobJob
+    )
+  );
   changes.push(
     diffValue(
       "Bra Size",
