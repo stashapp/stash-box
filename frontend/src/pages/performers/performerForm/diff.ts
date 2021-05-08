@@ -109,7 +109,7 @@ const DiffPerformer = (
   changes.push(
     diffValue(
       "Breast Type",
-      original.breast_type,
+      !original.breast_type ? BreastTypeEnum.NA : original.breast_type,
       !updated.boobJob ? BreastTypeEnum.NA : updated.boobJob
     )
   );
