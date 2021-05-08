@@ -339,7 +339,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         ref={register({ required: true })}
       />
       <Row>
-        <Col xs={8}>
+        <Col xs={10}>
           <div className="form-group row">
             <label htmlFor="title" className="col-8">
               <div>Title</div>

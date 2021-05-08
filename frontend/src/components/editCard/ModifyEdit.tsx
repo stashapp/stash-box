@@ -147,8 +147,8 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
         />
         <ChangeRow
           name="Breast Type"
-          newValue={details.breast_type}
-          oldValue={oldDetails?.breast_type}
+          newValue={details.breast_type ?? "Unknown"}
+          oldValue={oldDetails?.breast_type ?? "Unknown"}
           showDiff={showDiff}
         />
         <ChangeRow
