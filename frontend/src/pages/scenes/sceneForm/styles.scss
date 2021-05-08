@@ -18,6 +18,13 @@
 
   .performer-name {
     font-weight: bold;
+    width: 0;
+    flex-grow: 1;
+  }
+
+  .performer-disambiguation {
+    width: 0;
+    flex-grow: 1;
   }
 
   .remove-item {
@@ -40,6 +47,12 @@
       margin-left: auto;
       padding-top: 0.5rem;
     }
+  }
+
+  .SearchField {
+    max-width: 400px;
+    width: auto;
+    flex-grow: 1;
   }
 
   .description {
