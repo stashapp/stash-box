@@ -31,6 +31,10 @@ func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Tim
 	return &obj.CreatedAt.Timestamp, nil
 }
 
+func (r *editResolver) Updated(ctx context.Context, obj *models.Edit) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
+}
+
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {
 	var operation models.OperationEnum
 	var status models.VoteStatusEnum

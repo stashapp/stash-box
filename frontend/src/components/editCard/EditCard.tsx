@@ -20,7 +20,8 @@ interface EditsProps {
 
 const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
-  const date = new Date(edit.created);
+  const created = new Date(edit.created);
+  const updated = new Date(edit.updated);
   let editVariant: BadgeProps["variant"] = "warning";
   if (
     edit.status === VoteStatusEnum.REJECTED ||
@@ -74,7 +75,11 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
         <div className="flex-column col-4 ml-auto text-right">
           <div>
             <b className="mr-2">Created:</b>
-            <span>{formatDateTime(date)}</span>
+            <span>{formatDateTime(created)}</span>
+          </div>
+          <div>
+            <b className="mr-2">Updated:</b>
+            <span>{formatDateTime(updated)}</span>
           </div>
           <div>
             <b className="mr-2">Status:</b>
