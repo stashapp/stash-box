@@ -30,9 +30,10 @@ type TagFormData = yup.Asserts<typeof schema>;
 interface TagProps {
   tag: Tag;
   callback: (data: TagEditDetailsInput, editNote: string) => void;
+  saving: boolean;
 }
 
-const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
+const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
   const history = useHistory();
   const {
     register,
@@ -141,7 +142,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback }) => {
 
       <Form.Group className="d-flex">
         <Button type="submit" disabled className="d-none" aria-hidden="true" />
-        <Button type="submit" className="col-2">
+        <Button type="submit" className="col-2" disabled={saving}>
           Save
         </Button>
         <Button type="reset" className="ml-auto mr-2">

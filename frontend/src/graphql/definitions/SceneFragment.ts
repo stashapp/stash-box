@@ -69,6 +69,7 @@ export interface SceneFragment {
   title: string | null;
   details: string | null;
   director: string | null;
+  duration: number | null;
   urls: SceneFragment_urls[];
   images: SceneFragment_images[];
   studio: SceneFragment_studio | null;

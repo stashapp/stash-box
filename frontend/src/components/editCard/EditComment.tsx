@@ -2,22 +2,26 @@ import React from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { Edit_findEdit_comments as Comment } from "src/graphql/definitions/Edit";
-import { formatDateTime, userHref } from "src/utils";
+import { Edit_findEdit_comments_user as User } from "src/graphql/definitions/Edit";
+import { formatDateTime, userHref, Markdown } from "src/utils";
 
 const CLASSNAME = "EditComment";
 
 interface Props {
-  comment: Comment;
+  comment: string;
+  date: string;
+  user?: Pick<User, "name">;
 }
 
-const EditComment: React.FC<Props> = ({ comment }) => (
+const EditComment: React.FC<Props> = ({ comment, date, user }) => (
   <Card className={CLASSNAME}>
-    <Card.Body className="pb-0">{comment.comment}</Card.Body>
+    <Card.Body className="pb-0">
+      <Markdown text={comment} />
+    </Card.Body>
     <Card.Footer className="text-right">
-      <Link to={userHref(comment.user)}>{comment.user.name}</Link>
+      {user && <Link to={userHref(user)}>{user.name}</Link>}
       <span className="mx-1">&bull;</span>
-      <span>{formatDateTime(comment.date)}</span>
+      <span>{formatDateTime(date, false)}</span>
     </Card.Footer>
   </Card>
 );

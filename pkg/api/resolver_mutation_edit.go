@@ -236,7 +236,7 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 }
 
 func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {
-	if err := validateAdmin(ctx); err != nil {
+	if err := validateEdit(ctx); err != nil {
 		return nil, err
 	}
 
@@ -250,6 +250,10 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 	}
 	if edit == nil {
 		return nil, errors.New("Edit not found")
+	}
+
+	if err = validateOwner(ctx, edit.UserID); err != nil {
+		return nil, err
 	}
 
 	var status models.VoteStatusEnum

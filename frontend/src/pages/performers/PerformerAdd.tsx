@@ -13,7 +13,7 @@ import PerformerForm from "./performerForm";
 
 const PerformerAdd: React.FC = () => {
   const history = useHistory();
-  const [submitPerformerEdit] = usePerformerEdit({
+  const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
@@ -75,6 +75,7 @@ const PerformerAdd: React.FC = () => {
         performer={emptyPerformer}
         callback={doInsert}
         changeType="create"
+        saving={saving}
       />
     </div>
   );

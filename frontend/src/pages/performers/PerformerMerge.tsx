@@ -26,7 +26,7 @@ const PerformerMerge: React.FC = () => {
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
   const [aliasUpdating, setAliasUpdating] = useState(true);
   const { data: performer, loading: loadingPerformer } = usePerformer({ id });
-  const [insertPerformerEdit] = usePerformerEdit({
+  const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
@@ -144,6 +144,7 @@ const PerformerMerge: React.FC = () => {
             initialImages={flatMap(mergeSources, (i) => i.images)}
             callback={doUpdate}
             changeType="merge"
+            saving={saving}
           />
         </>
       )}

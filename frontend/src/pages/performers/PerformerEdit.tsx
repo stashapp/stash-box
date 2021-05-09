@@ -16,7 +16,7 @@ const PerformerModify: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { loading, data } = usePerformer({ id });
-  const [submitPerformerEdit] = usePerformerEdit({
+  const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (editData) => {
       if (editData.performerEdit.id)
         history.push(editHref(editData.performerEdit));
@@ -61,6 +61,7 @@ const PerformerModify: React.FC = () => {
         performer={data.findPerformer}
         callback={doUpdate}
         changeType="modify"
+        saving={saving}
       />
     </>
   );

@@ -222,6 +222,17 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 		}
 	}
 
+	if q := sceneFilter.Fingerprints; q != nil && len(q.Value) > 0 {
+		query.AddJoin(sceneFingerprintTable.Table, sceneFingerprintTable.Name()+".scene_id = scenes.id")
+		whereClause, havingClause := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
+		query.AddWhere(whereClause)
+		query.AddHaving(havingClause)
+
+		for _, fingerprint := range q.Value {
+			query.AddArg(fingerprint)
+		}
+	}
+
 	// TODO - other filters
 
 	query.SortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
