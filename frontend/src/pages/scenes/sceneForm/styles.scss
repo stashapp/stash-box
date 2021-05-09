@@ -17,7 +17,8 @@
   }
 
   .performer-name {
-    font-weight: bold;
+    flex-grow: 1;
+    width: 0;
   }
 
   .remove-item {
@@ -40,6 +41,12 @@
       margin-left: auto;
       padding-top: 0.5rem;
     }
+  }
+
+  .SearchField {
+    flex-grow: 1;
+    max-width: 400px;
+    width: auto;
   }
 
   .description {

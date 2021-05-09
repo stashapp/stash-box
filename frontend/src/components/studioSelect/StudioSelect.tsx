@@ -17,6 +17,7 @@ interface StudioSelectProps {
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   control: any;
   networkSelect?: boolean;
+  isClearable?: boolean;
 }
 
 const CLASSNAME = "StudioSelect";
@@ -27,6 +28,7 @@ const StudioSelect: React.FC<StudioSelectProps> = ({
   excludeStudio,
   control,
   networkSelect = false,
+  isClearable = false,
 }) => {
   const client = useApolloClient();
 
@@ -69,13 +71,14 @@ const StudioSelect: React.FC<StudioSelectProps> = ({
           <Async
             classNamePrefix="react-select"
             className={`react-select ${CLASSNAME_SELECT}`}
-            onChange={(s) => s && onChange(s.value)}
+            onChange={(s) => onChange(s?.value ?? null)}
             defaultValue={defaultValue}
             loadOptions={debouncedLoad}
             placeholder="Search for studio"
             noOptionsMessage={({ inputValue }) =>
               inputValue === "" ? null : `No studios found for "${inputValue}`
             }
+            isClearable={isClearable}
           />
         )}
       />

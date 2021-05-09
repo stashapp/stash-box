@@ -112,6 +112,8 @@ func (p *Studio) CopyFromUpdateInput(input StudioUpdateInput) {
 		if err == nil {
 			p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
 		}
+	} else {
+		p.ParentStudioID = uuid.NullUUID{}
 	}
 }
 

@@ -31,6 +31,21 @@ func (r *queryResolver) QueryTags(ctx context.Context, tagFilter *models.TagFilt
 
 	qb := models.NewTagQueryBuilder(nil)
 
+	if tagFilter.Name != nil {
+		tagID, err := uuid.FromString(*tagFilter.Name)
+		if err == nil {
+			var tags []*models.Tag
+			tag, _ := qb.Find(tagID)
+			if tag != nil {
+				tags = append(tags, tag)
+			}
+			return &models.QueryTagsResultType{
+				Tags:  tags,
+				Count: 1,
+			}, nil
+		}
+	}
+
 	tags, count, err := qb.Query(tagFilter, filter)
 	if err != nil {
 		return nil, err

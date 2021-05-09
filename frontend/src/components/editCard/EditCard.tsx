@@ -54,7 +54,7 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
     <DestroyEdit target={edit.target} />
   );
   const comments = (edit.comments ?? []).map((comment) => (
-    <EditComment comment={comment} />
+    <EditComment {...comment} />
   ));
 
   return (

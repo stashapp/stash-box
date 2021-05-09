@@ -27,8 +27,10 @@ const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
 const sortOptions = [
   { value: "", label: "Name" },
   { value: "birthdate", label: "Birthdate" },
-  { value: "debut", label: "Debut date" },
   { value: "scene_count", label: "Scene Count" },
+  { value: "career_start_year", label: "Career Start" },
+  { value: "debut", label: "Scene Debut" },
+  { value: "created_at", label: "Created At" },
 ];
 
 const PerformersComponent: React.FC = () => {

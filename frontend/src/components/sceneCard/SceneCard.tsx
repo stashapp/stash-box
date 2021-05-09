@@ -4,34 +4,12 @@ import { Card } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 
 import { Scenes_queryScenes_scenes as Performance } from "src/graphql/definitions/Scenes";
-import { getImage, sceneHref, studioHref } from "src/utils";
+import { getImage, sceneHref, studioHref, formatDuration } from "src/utils";
 
 const CLASSNAME = "SceneCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_TITLE = `${CLASSNAME}-title`;
 const CLASSNAME_BODY = `${CLASSNAME}-body`;
-
-const formatDuration = (dur?: number) => {
-  if (!dur) return "";
-  let value = dur;
-  let hour = 0;
-  let minute = 0;
-  let seconds = 0;
-  if (value >= 3600) {
-    hour = Math.floor(value / 3600);
-    value -= hour * 3600;
-  }
-  minute = Math.floor(value / 60);
-  value -= minute * 60;
-  seconds = value;
-
-  const res = [
-    minute.toString().padStart(2, "0"),
-    seconds.toString().padStart(2, "0"),
-  ];
-  if (hour) res.unshift(hour.toString());
-  return res.join(":");
-};
 
 const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
   <div className={`col-3 ${CLASSNAME}`}>

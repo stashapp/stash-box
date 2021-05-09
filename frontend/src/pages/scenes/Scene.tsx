@@ -12,6 +12,7 @@ import {
   performerHref,
   studioHref,
   createHref,
+  formatDuration,
 } from "src/utils";
 import { ROUTE_SCENE_EDIT, ROUTE_SCENES } from "src/constants/route";
 import {
@@ -58,7 +59,13 @@ const SceneComponent: React.FC = () => {
   const fingerprints = scene.fingerprints.map((fingerprint) => (
     <tr key={fingerprint.hash}>
       <td>{fingerprint.algorithm}</td>
-      <td>{fingerprint.hash}</td>
+      <td>
+        <Link
+          to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
+        >
+          {fingerprint.hash}
+        </Link>
+      </td>
       <td>{fingerprint.duration}</td>
     </tr>
   ));
@@ -112,9 +119,14 @@ const SceneComponent: React.FC = () => {
           />
         </Card.Body>
         <Card.Footer className="row mx-1">
-          <div className="scene-performers">{performers}</div>
+          <div className="scene-performers mr-auto">{performers}</div>
+          {scene.duration && (
+            <div>
+              Duration: <b>{formatDuration(scene.duration)}</b>
+            </div>
+          )}
           {scene.director && (
-            <div className="ml-auto">
+            <div className="ml-3">
               Director: <strong>{scene.director}</strong>
             </div>
           )}
@@ -148,12 +160,18 @@ const SceneComponent: React.FC = () => {
             {fingerprints.length === 0 ? (
               <h6>No fingerprints found for this scene.</h6>
             ) : (
-              <Table striped bordered hover size="sm">
+              <Table striped bordered size="sm">
                 <thead>
                   <tr>
-                    <td>Algorithm</td>
-                    <td>Hash</td>
-                    <td>Duration</td>
+                    <td>
+                      <b>Algorithm</b>
+                    </td>
+                    <td>
+                      <b>Hash</b>
+                    </td>
+                    <td>
+                      <b>Duration</b>
+                    </td>
                   </tr>
                 </thead>
                 <tbody>{fingerprints}</tbody>

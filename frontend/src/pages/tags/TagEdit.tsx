@@ -17,7 +17,7 @@ const TagAddComponent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { data: tag, loading: loadingTag } = useTag({ id });
-  const [insertTagEdit] = useTagEdit({
+  const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (data.tagEdit.id) history.push(createHref(ROUTE_EDIT, data.tagEdit));
     },
@@ -45,7 +45,7 @@ const TagAddComponent: React.FC = () => {
     <div>
       <h3>Edit tag</h3>
       <hr />
-      <TagForm tag={tag.findTag} callback={doUpdate} />
+      <TagForm tag={tag.findTag} callback={doUpdate} saving={saving} />
     </div>
   );
 };

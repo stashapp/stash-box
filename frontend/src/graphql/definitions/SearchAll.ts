@@ -90,6 +90,7 @@ export interface SearchAll_searchScene {
   id: string;
   date: any | null;
   title: string | null;
+  duration: number | null;
   urls: SearchAll_searchScene_urls[];
   images: SearchAll_searchScene_images[];
   studio: SearchAll_searchScene_studio | null;

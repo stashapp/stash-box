@@ -124,6 +124,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     }))
   );
 
+  const [isChanging, setChange] = useState<number | undefined>();
+
   useEffect(() => {
     register({ name: "tags" });
     register({ name: "fingerprints" });
@@ -182,6 +184,18 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     });
   };
 
+  const handleChange = (result: PerformerResult, index: number) => {
+    setChange(undefined);
+    performerFields[index] = {
+      name: result.name,
+      performerId: result.id,
+      gender: result.gender,
+      alias: performerFields[index].alias || performerFields[index].name,
+      disambiguation: result.disambiguation ?? undefined,
+      deleted: result.deleted,
+    };
+  };
+
   const performerList = performerFields.map((p, index) => (
     <Form.Row className="performer-item d-flex" key={p.id}>
       <Form.Control
@@ -192,20 +206,42 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       />
 
       <Col xs={6}>
-        <InputGroup>
+        <InputGroup className="flex-nowrap">
           <InputGroup.Prepend>
             <Button variant="danger" onClick={() => removePerformer(index)}>
               Remove
             </Button>
           </InputGroup.Prepend>
+          <InputGroup.Prepend>
+            {isChanging === index ? (
+              <Button variant="primary" onClick={() => setChange(undefined)}>
+                Cancel
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={() => setChange(index)}>
+                Change
+              </Button>
+            )}
+          </InputGroup.Prepend>
           <InputGroup.Append className="flex-grow-1">
-            <InputGroup.Text className="flex-grow-1">
-              <GenderIcon gender={p.gender} />
-              <span className="performer-name">{p.name}</span>
-              {p.disambiguation && (
-                <small className="ml-1">({p.disambiguation})</small>
-              )}
-            </InputGroup.Text>
+            {isChanging === index ? (
+              <SearchField
+                onClick={(res) =>
+                  res.__typename === "Performer" && handleChange(res, index)
+                }
+                searchType={SearchType.Performer}
+              />
+            ) : (
+              <InputGroup.Text className="flex-grow-1 text-left text-truncate">
+                <GenderIcon gender={p.gender} />
+                <span className="performer-name text-truncate">
+                  <b>{p.name}</b>
+                  {p.disambiguation && (
+                    <small className="ml-1">({p.disambiguation})</small>
+                  )}
+                </span>
+              </InputGroup.Text>
+            )}
           </InputGroup.Append>
         </InputGroup>
       </Col>
@@ -303,7 +339,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         ref={register({ required: true })}
       />
       <Row>
-        <Col xs={8}>
+        <Col xs={10}>
           <div className="form-group row">
             <label htmlFor="title" className="col-8">
               <div>Title</div>

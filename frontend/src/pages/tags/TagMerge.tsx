@@ -18,7 +18,7 @@ const TagMerge: React.FC = () => {
   const history = useHistory();
   const [mergeSources, setMergeSources] = useState<string[]>([]);
   const { data: tag, loading: loadingTag } = useTag({ id });
-  const [insertTagEdit] = useTagEdit({
+  const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (data.tagEdit.id) history.push(editHref(data.tagEdit));
     },
@@ -64,7 +64,7 @@ const TagMerge: React.FC = () => {
         Modify <em>{tag.findTag.name}</em>
       </h5>
       <div className="row no-gutters">
-        <TagForm tag={tag.findTag} callback={doUpdate} />
+        <TagForm tag={tag.findTag} callback={doUpdate} saving={saving} />
       </div>
     </div>
   );
