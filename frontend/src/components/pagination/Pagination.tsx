@@ -47,7 +47,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div className="ml-auto d-flex">
+    <div className="ml-auto mt-auto d-flex">
       {showCount && count > 0 && (
         <b className="mr-4 mt-2">
           {new Intl.NumberFormat().format(count)} results
