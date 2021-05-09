@@ -234,12 +234,12 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             ) : (
               <InputGroup.Text className="flex-grow-1 text-left text-truncate">
                 <GenderIcon gender={p.gender} />
-                <span className="performer-name text-truncate">{p.name}</span>
-                {p.disambiguation && (
-                  <small className="performer-disambiguation ml-1 text-truncate">
-                    ({p.disambiguation})
-                  </small>
-                )}
+                <span className="performer-name text-truncate">
+                  <b>{p.name}</b>
+                  {p.disambiguation && (
+                    <small className="ml-1">({p.disambiguation})</small>
+                  )}
+                </span>
               </InputGroup.Text>
             )}
           </InputGroup.Append>
