@@ -13,8 +13,10 @@ import EditCard from "src/components/editCard";
 import List from "./List";
 
 interface EditsProps {
-  type?: TargetTypeEnum;
   id?: string;
+  sort?: string;
+  direction?: SortDirectionEnum;
+  type?: TargetTypeEnum;
   status?: VoteStatusEnum;
   operation?: OperationEnum;
 }
@@ -23,6 +25,8 @@ const PER_PAGE = 20;
 
 const EditListComponent: React.FC<EditsProps> = ({
   id,
+  sort,
+  direction,
   type,
   status,
   operation,
@@ -30,10 +34,14 @@ const EditListComponent: React.FC<EditsProps> = ({
   const { page, setPage } = usePagination();
   const {
     editFilter,
+    selectedSort,
+    selectedDirection,
     selectedType,
     selectedOperation,
     selectedStatus,
   } = useEditFilter({
+    sort,
+    direction,
     type,
     status,
     operation,
@@ -42,8 +50,8 @@ const EditListComponent: React.FC<EditsProps> = ({
     filter: {
       page,
       per_page: PER_PAGE,
-      sort: "created_at",
-      direction: SortDirectionEnum.DESC,
+      sort: selectedSort || "created_at",
+      direction: selectedDirection,
     },
     editFilter: {
       target_type: selectedType,

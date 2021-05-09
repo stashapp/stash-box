@@ -364,6 +364,7 @@ export interface ApplyEdit_applyEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  updated: any;
   comments: ApplyEdit_applyEdit_comments[];
   user: ApplyEdit_applyEdit_user;
   /**

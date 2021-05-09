@@ -364,6 +364,7 @@ export interface EditFragment {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  updated: any;
   comments: EditFragment_comments[];
   user: EditFragment_user;
   /**

@@ -68,6 +68,7 @@ type Edit {
     status: VoteStatusEnum!
     applied: Boolean!
     created: Time!
+    updated: Time!
 }
 
 input EditInput {
