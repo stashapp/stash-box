@@ -93,6 +93,7 @@ const StudioForm: React.FC<StudioProps> = ({
             excludeStudio={studio.id}
             control={control}
             initialStudio={studio.parent}
+            isClearable
             networkSelect
           />
         </Form.Group>

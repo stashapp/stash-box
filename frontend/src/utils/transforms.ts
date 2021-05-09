@@ -78,3 +78,25 @@ export const formatBodyModifications = (
 
 export const formatPendingEdits = (count?: number) =>
   count ? ` (${count} Pending)` : "";
+
+export const formatDuration = (dur?: number | null) => {
+  if (!dur) return "";
+  let value = dur;
+  let hour = 0;
+  let minute = 0;
+  let seconds = 0;
+  if (value >= 3600) {
+    hour = Math.floor(value / 3600);
+    value -= hour * 3600;
+  }
+  minute = Math.floor(value / 60);
+  value -= minute * 60;
+  seconds = value;
+
+  const res = [
+    minute.toString().padStart(2, "0"),
+    seconds.toString().padStart(2, "0"),
+  ];
+  if (hour) res.unshift(hour.toString());
+  return res.join(":");
+};

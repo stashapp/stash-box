@@ -1,7 +1,9 @@
 import React, { useContext } from "react";
 import { Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
+import querystring from "query-string";
 
+import { CriterionModifier } from "src/graphql";
 import { isAdmin, createHref } from "src/utils";
 import AuthContext from "src/AuthContext";
 import { SceneList } from "src/components/list";
@@ -9,6 +11,19 @@ import { ROUTE_SCENE_ADD } from "src/constants/route";
 
 const Scenes: React.FC = () => {
   const auth = useContext(AuthContext);
+  const history = useHistory();
+  const queries = querystring.parse(history.location.search);
+  const fingerprint = Array.isArray(queries.fingerprint)
+    ? queries.fingerprint[0]
+    : queries.fingerprint;
+  const filter = fingerprint
+    ? {
+        fingerprints: {
+          modifier: CriterionModifier.INCLUDES,
+          value: [fingerprint],
+        },
+      }
+    : undefined;
 
   return (
     <>
@@ -20,7 +35,7 @@ const Scenes: React.FC = () => {
           </Link>
         )}
       </div>
-      <SceneList />
+      <SceneList filter={filter} />
     </>
   );
 };

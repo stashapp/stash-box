@@ -32,6 +32,7 @@ const SceneAdd: React.FC = () => {
     urls: [],
     studio: null,
     director: null,
+    duration: null,
     images: [],
     tags: [],
     fingerprints: [],

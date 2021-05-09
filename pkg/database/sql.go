@@ -237,8 +237,7 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 			reflectValue := reflect.ValueOf(t)
 			isNil := reflectValue.IsNil()
 			if !isNil {
-				fields = append(fields, key)
-				values = append(values, ":"+key)
+				addPlaceholder(key)
 			}
 		}
 	}
@@ -249,7 +248,7 @@ func sqlGenKeys(i interface{}, partial bool) string {
 	var query []string
 
 	addKey := func(key string) {
-		query = append(query, fmt.Sprintf("%s=:%s", key, key))
+		query = append(query, fmt.Sprintf("%s=:%s", dialect.FieldQuote(key), key))
 	}
 
 	v := reflect.ValueOf(i)

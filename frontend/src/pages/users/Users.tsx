@@ -2,7 +2,7 @@ import React from "react";
 import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { useUsers } from "src/graphql";
+import { useUsers, SortDirectionEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
@@ -21,6 +21,8 @@ const UsersComponent: React.FC = () => {
     filter: {
       page,
       per_page: PER_PAGE,
+      sort: "name",
+      direction: SortDirectionEnum.ASC,
     },
   });
 

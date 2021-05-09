@@ -3,6 +3,8 @@ import { Form } from "react-bootstrap";
 import cx from "classnames";
 import { FieldError } from "react-hook-form";
 
+import NoteInput from "./NoteInput";
+
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register: any;
@@ -12,11 +14,10 @@ interface Props {
 const EditNote: React.FC<Props> = ({ register, error }) => (
   <Form.Group>
     <Form.Label>Edit Note</Form.Label>
-    <Form.Control
-      as="textarea"
-      name="note"
+    <NoteInput
       className={cx({ "is-invalid": error })}
-      ref={register}
+      register={register}
+      hasError={!!error?.message}
     />
     <Form.Text>
       Please add any relevant sources or other supporting information for your

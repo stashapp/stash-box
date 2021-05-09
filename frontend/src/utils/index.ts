@@ -4,3 +4,4 @@ export * from "./date";
 export * from "./edit";
 export * from "./transforms";
 export * from "./route";
+export * from "./markdown";
