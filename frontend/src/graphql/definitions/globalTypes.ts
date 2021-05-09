@@ -370,6 +370,7 @@ export interface SceneFilterType {
   tags?: MultiIDCriterionInput | null;
   performers?: MultiIDCriterionInput | null;
   alias?: StringCriterionInput | null;
+  fingerprints?: MultiIDCriterionInput | null;
 }
 
 export interface SceneUpdateInput {

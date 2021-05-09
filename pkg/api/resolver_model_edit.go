@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"sort"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -181,6 +182,10 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*model
 	for _, comment := range comments {
 		ret = append(ret, comment)
 	}
+
+	sort.Slice(comments, func(i, j int) bool {
+		return comments[i].CreatedAt.Timestamp.Before(comments[j].CreatedAt.Timestamp)
+	})
 
 	return ret, nil
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/gofrs/uuid"
+
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -65,4 +67,18 @@ func validateManageInvites(ctx context.Context) error {
 
 func validateAdmin(ctx context.Context) error {
 	return validateRole(ctx, models.RoleEnumAdmin)
+}
+
+func validateOwner(ctx context.Context, userID uuid.UUID) error {
+	err := validateAdmin(ctx)
+	if err == nil {
+		return nil
+	}
+
+	user := getCurrentUser(ctx)
+	if user != nil && user.ID == userID {
+		return nil
+	}
+
+	return ErrUnauthorized
 }

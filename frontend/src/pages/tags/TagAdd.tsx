@@ -9,7 +9,7 @@ import TagForm from "./tagForm";
 
 const TagAddComponent: React.FC = () => {
   const history = useHistory();
-  const [insertTagEdit] = useTagEdit({
+  const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (data.tagEdit.id) history.push(editHref(data.tagEdit));
     },
@@ -43,7 +43,7 @@ const TagAddComponent: React.FC = () => {
     <div>
       <h3>Add new tag</h3>
       <hr />
-      <TagForm tag={emptyTag} callback={doInsert} />
+      <TagForm tag={emptyTag} callback={doInsert} saving={saving} />
     </div>
   );
 };

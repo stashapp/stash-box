@@ -31,7 +31,7 @@ func (qb *StudioQueryBuilder) Create(newStudio Studio) (*Studio, error) {
 }
 
 func (qb *StudioQueryBuilder) Update(updatedStudio Studio) (*Studio, error) {
-	ret, err := qb.dbi.Update(updatedStudio, false)
+	ret, err := qb.dbi.Update(updatedStudio, true)
 	return qb.toModel(ret), err
 }
 

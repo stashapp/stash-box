@@ -6,6 +6,7 @@ fragment SceneFragment on Scene {
   title,
   details,
   director,
+  duration
   urls {
     url,
     type

@@ -73,6 +73,23 @@ func (p *userPopulator) PopulateDB() error {
 		return err
 	}
 
+	// create edit user
+	createInput = models.UserCreateInput{
+		Name: "edit",
+		Roles: []models.RoleEnum{
+			models.RoleEnumEdit,
+		},
+		Email: "edit",
+	}
+
+	p.edit, err = user.Create(tx, createInput)
+	p.editRoles = createInput.Roles
+
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
 	// create read user
 	createInput = models.UserCreateInput{
 		Name: "read",

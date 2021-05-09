@@ -21,6 +21,7 @@ import {
   sceneHref,
   performerHref,
   createHref,
+  formatDuration,
 } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
 
@@ -80,8 +81,13 @@ const SceneCard: React.FC<{ scene: Scene }> = ({ scene }) => (
         className={CLASSNAME_SCENE_IMAGE}
         alt=""
       />
-      <div className="ml-3">
-        <h5>{scene.title}</h5>
+      <div className="ml-3 w-100">
+        <h5>
+          {scene.title}
+          <small className="text-muted ml-2">
+            {formatDuration(scene.duration)}
+          </small>
+        </h5>
         <div>
           <div>
             <Icon icon="calendar" />
