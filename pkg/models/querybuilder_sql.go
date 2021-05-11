@@ -144,7 +144,7 @@ func getPagination(findFilter *QuerySpec) string {
 	return " LIMIT " + strconv.Itoa(perPage) + " OFFSET " + strconv.Itoa(page) + " "
 }
 
-func getSort(sort string, direction string, tableName string) string {
+func getSort(sort string, direction string, tableName string, secondarySort *string) string {
 	if direction != "ASC" && direction != "DESC" {
 		direction = "ASC"
 	}
@@ -167,6 +167,8 @@ func getSort(sort string, direction string, tableName string) string {
 		var additional string
 		if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
+		} else if secondarySort != nil {
+			additional = ", " + getColumn(tableName, *secondarySort) + " " + direction
 		}
 
 		return " ORDER BY " + colName + " " + direction + database.GetDialect().NullsLast() + additional

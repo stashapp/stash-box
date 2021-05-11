@@ -272,6 +272,7 @@ func getMultiCriterionClause(joinTable database.TableJoin, joinTableField string
 func (qb *SceneQueryBuilder) getSceneSort(findFilter *QuerySpec) string {
 	var sort string
 	var direction string
+	var secondary *string
 	if findFilter == nil {
 		sort = "date"
 		direction = "DESC"
@@ -279,7 +280,11 @@ func (qb *SceneQueryBuilder) getSceneSort(findFilter *QuerySpec) string {
 		sort = findFilter.GetSort("date")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "scenes")
+	if sort != "title" {
+		title := "title"
+		secondary = &title
+	}
+	return getSort(sort, direction, "scenes", secondary)
 }
 
 func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}) (Scenes, error) {
