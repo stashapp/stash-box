@@ -189,7 +189,7 @@ func (qb *EditQueryBuilder) getEditSort(findFilter *QuerySpec) string {
 		sort = findFilter.GetSort("updated_at")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "edits")
+	return getSort(sort, direction, "edits", nil)
 }
 
 func (qb *EditQueryBuilder) queryEdits(query string, args []interface{}) (Edits, error) {

@@ -149,7 +149,7 @@ func (qb *StudioQueryBuilder) getStudioSort(findFilter *QuerySpec) string {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "studios")
+	return getSort(sort, direction, "studios", nil)
 }
 
 func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}) (Studios, error) {
