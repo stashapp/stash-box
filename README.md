@@ -8,7 +8,7 @@ The intent of stash-box is to provide a collaborative, crowd-sourced database of
 
 The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
 
-**Note: If you are a [Stash](https://github.com/stashapp/stash) user, you do not need to install stash-box.  The Stash community has a server with many titles from you can pull data. You can get the login information from the #stash-box-qa2 channel on our Discord.**
+**Note: If you are a [Stash](https://github.com/stashapp/stash) user, you do not need to install stash-box.  The Stash community has a server with many titles from which you can pull data. You can get the login information from the #stash-box-qa2 channel on our Discord server.**
 
 # Docker install
 
