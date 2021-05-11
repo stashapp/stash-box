@@ -132,7 +132,7 @@ func (qb *UserQueryBuilder) getUserSort(findFilter *QuerySpec) string {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "users")
+	return getSort(sort, direction, "users", nil)
 }
 
 func (qb *UserQueryBuilder) queryUsers(query string, args []interface{}) (Users, error) {
