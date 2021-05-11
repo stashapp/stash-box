@@ -229,7 +229,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + database.GetDialect().NullsLast()
-		query.SortAndPagination = "ORDER BY debut " + direction + getPagination(findFilter)
+		query.SortAndPagination = "ORDER BY debut " + direction + ", name " + direction + getPagination(findFilter)
 	} else if findFilter != nil && findFilter.GetSort("") == "scene_count" {
 		query.Body += `
 			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
@@ -326,6 +326,7 @@ func getAgeFilterClause(criterionModifier CriterionModifier, value int) ([]strin
 func (qb *PerformerQueryBuilder) getPerformerSort(findFilter *QuerySpec) string {
 	var sort string
 	var direction string
+	var secondary *string
 	if findFilter == nil {
 		sort = "name"
 		direction = "ASC"
@@ -333,7 +334,11 @@ func (qb *PerformerQueryBuilder) getPerformerSort(findFilter *QuerySpec) string 
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "performers")
+	if sort != "name" {
+		name := "name"
+		secondary = &name
+	}
+	return getSort(sort, direction, "performers", secondary)
 }
 
 func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{}) (Performers, error) {

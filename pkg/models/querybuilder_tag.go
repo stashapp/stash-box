@@ -259,7 +259,7 @@ func (qb *TagQueryBuilder) getTagSort(findFilter *QuerySpec) string {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, tagTable)
+	return getSort(sort, direction, tagTable, nil)
 }
 
 func (qb *TagQueryBuilder) queryTags(query string, args []interface{}) (Tags, error) {

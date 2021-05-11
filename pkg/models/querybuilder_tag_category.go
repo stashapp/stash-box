@@ -103,5 +103,5 @@ func (qb *TagCategoryQueryBuilder) getTagCategorySort(findFilter *QuerySpec) str
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, tagCategoryTable)
+	return getSort(sort, direction, tagCategoryTable, nil)
 }
