@@ -24,15 +24,11 @@ cp apollo.config.js.shadow apollo.config.js
 ```
 Change the server url in your new apollo.config.js file if the stash-box instance runs on another server.
 
-Then install apollo
-```shell
-yarn global add apollo
-```
-
 If any queries/mutations or the schema on the server is updated, the types can be updated with: 
 ```shell
 yarn generate
 ```
+**Note:** In order to generate, the server that its url was set in `apollo.config.js` must be running.
 
 ## Running
 
@@ -44,7 +40,7 @@ The API key can be set in the environment configuration. To do so, you will need
 cp .env.development.local.shadow .env.development.local
 ```
 
-Fill in the `REACT_APP_APIKEY` variable in `.env` with the API key for the user.
+Fill in the `REACT_APP_APIKEY` variable in `.env.development.local` with the API key for the user.
 
 Run the local development server:
 
@@ -58,6 +54,12 @@ Run the linter:
 
 ```shell
 yarn lint
+```
+
+Run the code formatter:
+
+```shell
+yarn format
 ```
 
 Build the release bundle:
