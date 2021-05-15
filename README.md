@@ -94,7 +94,9 @@ Once you have a certificate and key file name them `stash-box.crt` and `stash-bo
 
 To run the frontend in development mode, run `yarn start` from the frontend directory.
 
-When developing the API key can be set in `frontend/.env` to avoid having to log in. When `is_production` is enabled on the server this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env`. See `frontend/.env.development.local.shadow` for examples. 
+When developing the API key can be set in `frontend/.env.development.local` to avoid having to log in.  
+When `is_production` is enabled on the server this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  
+See `frontend/.env.development.local.shadow` for examples. 
 
 # FAQ
 
