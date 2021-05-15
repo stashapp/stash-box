@@ -63,7 +63,7 @@ func (qb *TagQueryBuilder) SoftDelete(tag Tag) (*Tag, error) {
 }
 
 func (qb *TagQueryBuilder) CreateRedirect(newJoin TagRedirect) error {
-	return qb.dbi.InsertJoin(tagRedirectTable, newJoin, false)
+	return qb.dbi.InsertJoin(tagRedirectTable, newJoin, nil)
 }
 
 func (qb *TagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {

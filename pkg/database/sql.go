@@ -123,19 +123,19 @@ func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error 
 	return tx.Get(object, query, id)
 }
 
-func insertObject(tx *sqlx.Tx, table string, object interface{}, ignoreConflicts bool) error {
+func insertObject(tx *sqlx.Tx, table string, object interface{}, conflictHandling *string) error {
 	ensureTx(tx)
 	fields, values := sqlGenKeysCreate(object)
 
-	conflictHandling := ""
-	if ignoreConflicts {
-		conflictHandling = "ON CONFLICT DO NOTHING"
+	conflictClause := ""
+	if conflictHandling != nil {
+		conflictClause = *conflictHandling
 	}
 
 	_, err := tx.NamedExec(
 		`INSERT INTO `+table+` (`+fields+`)
 				VALUES (`+values+`)
-                `+conflictHandling+`
+                `+conflictClause+`
 		`,
 		object,
 	)

@@ -53,6 +53,9 @@ export interface SceneFragment_fingerprints {
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
 }
 
 export interface SceneFragment_tags {

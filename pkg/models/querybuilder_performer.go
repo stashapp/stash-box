@@ -527,7 +527,7 @@ func (qb *PerformerQueryBuilder) SoftDelete(performer Performer) (*Performer, er
 }
 
 func (qb *PerformerQueryBuilder) CreateRedirect(newJoin PerformerRedirect) error {
-	return qb.dbi.InsertJoin(performerRedirectTable, newJoin, false)
+	return qb.dbi.InsertJoin(performerRedirectTable, newJoin, nil)
 }
 
 func (qb *PerformerQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {

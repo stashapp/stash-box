@@ -20,12 +20,24 @@ type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
+  submissions: Int!
+  created: Time!
+  updated: Time!
 }
 
 input FingerprintInput {
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
+}
+
+input FingerprintEditInput {
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
+  submissions: Int!
+  created: Time!
+  updated: Time!
 }
 
 input FingerprintQueryInput {
@@ -63,7 +75,7 @@ input SceneCreateInput {
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
   image_ids: [ID!]
-  fingerprints: [FingerprintInput!]!
+  fingerprints: [FingerprintEditInput!]!
   duration: Int
   director: String
 }
@@ -78,7 +90,7 @@ input SceneUpdateInput {
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
   image_ids: [ID!]
-  fingerprints: [FingerprintInput!]
+  fingerprints: [FingerprintEditInput!]
   duration: Int
   director: String
 }
@@ -96,7 +108,7 @@ input SceneEditDetailsInput {
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
   image_ids: [ID!]
-  fingerprints: [FingerprintInput!]
+  fingerprints: [FingerprintEditInput!]
   duration: Int
   director: String
 }
