@@ -14,6 +14,10 @@
     "generate": "apollo client:codegen --target typescript --outputFlat src/graphql/definitions",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss}\""
   },
+  "engines": {
+    "node": ">=8.10.0",
+    "yarn": ">=1.15.2"
+  },
   "devDependencies": {
     "@types/classnames": "^2.2.11",
     "@types/lodash": "^4.14.168",
