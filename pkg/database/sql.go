@@ -47,7 +47,7 @@ func NewDeleteQueryBuilder(table Table) *QueryBuilder {
 }
 
 func (qb *QueryBuilder) AddJoin(joinTable Table, on string) {
-	qb.Body += "JOIN " + joinTable.Name() + " ON " + on
+	qb.Body += " JOIN " + joinTable.Name() + " ON " + on
 	qb.Distinct = true
 }
 
