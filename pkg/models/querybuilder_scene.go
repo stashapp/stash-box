@@ -195,8 +195,8 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 	}
 
 	if sceneFilter.ParentStudio != nil {
-		query.AddJoin(studioDBTable, "scenes."+studioJoinKey+" = "+studioTable+".id")
-		query.AddWhere("("+studioTable+".parent_studio_id = ? OR "+studioTable+".id = ?)")
+		query.Body += "LEFT JOIN studios ON scenes.studio_id = studios.id"
+		query.AddWhere("(studios.parent_studio_id = ? OR studios.id = ?)")
 		query.AddArg(*sceneFilter.ParentStudio, *sceneFilter.ParentStudio)
 	}
 
