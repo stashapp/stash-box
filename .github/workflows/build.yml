@@ -77,12 +77,6 @@ jobs:
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-validate
 
-    - name: Initialize test database
-      run: |
-        sudo apt update
-        sudo apt install --yes --no-install-recommends postgresql-client
-        psql "postgresql://postgres:postgres@localhost/postgres" -c 'CREATE EXTENSION pg_trgm'
-
     - name: Generate
       run: make generate
 

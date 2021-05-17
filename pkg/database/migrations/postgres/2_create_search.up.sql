@@ -1,3 +1,10 @@
+DO $$
+BEGIN
+  IF current_setting('is_superuser') = 'on' THEN
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;
+  END IF;
+END$$;
+
 CREATE TABLE scene_search AS 
 SELECT
 	S.id as scene_id,
