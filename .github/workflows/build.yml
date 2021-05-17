@@ -1,0 +1,173 @@
+name: Build
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: [ develop ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    services:
+      postgres:
+        image: postgres:13.2
+        env:
+          POSTGRES_DB: postgres        
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16.x
+
+    - name: Install Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Checkout
+      run: git fetch --prune --unshallow --tags
+
+    - name: Cache node modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node_modules
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock') }}
+
+    - name: Cache UI build
+      uses: actions/cache@v2
+      id: cache-ui
+      env:
+        cache-name: cache-ui
+      with:
+        path: ui/v2.5/build
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock', 'frontend/public/**', 'frontend/src/**', 'graphql/**/*.graphql') }}
+
+    - name: Cache go build
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-go-cache
+      with:
+        path: .go-cache
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+
+    - name: Pre-install
+      run: make pre-ui
+
+    - name: Validate UI
+      # skip UI validation for pull requests if UI is unchanged
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: make ui-validate
+
+    - name: Generate
+      run: make generate
+
+    - name: Run tests
+      run: POSTGRES_DB=postgres:postgres@localhost/postgres?sslmode=disable make vet it
+
+    - name: Build UI
+      # skip UI build for pull requests if UI is unchanged (UI was cached)
+      # this means that the build version/time may be incorrect if the UI is
+      # not changed in a pull request
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: make ui-only
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1 
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Crosscompile binaries
+      run: make cross-compile
+
+    - name: Generate checksums
+      run: |
+        git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
+        sha1sum dist/*/stash-box-* | sed 's/dist\/.*\///g' | tee -a CHECKSUMS_SHA1
+        echo "STASH_BOX_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
+        echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
+
+    - name: Upload Windows binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-box-win.exe
+        path: dist/stash-box_windows_amd64/stash-box-windows.exe
+    - name: Upload OSX binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-box-darwin
+        path: dist/stash-box_darwin_amd64/stash-box-darwin
+    - name: Upload Linux binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-box-linux
+        path: dist/stash-box_linux_amd64/stash-box-linux
+        
+    - name: Update latest_develop tag
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      run : git tag -f latest_develop; git push -f --tags
+    - name: Development Release
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
+      uses: meeDamian/github-release@2.0
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: true
+        allow_override: true
+        tag: latest_develop
+        name: "${{ env.STASH_BOX_VERSION }}: Latest development build"
+        body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
+        files: |
+          dist/stash-box_windows_amd64/stash-box-windows.exe
+          dist/stash-box_linux_amd64/stash-box-linux
+          dist/stash-box_darwin_amd64/stash-box-darwin
+          CHECKSUMS_SHA1
+        gzip: false
+    - name: Master release
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      uses: meeDamian/github-release@2.0
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        allow_override: true
+        files: |
+          dist/stash-box_windows_amd64/stash-box-windows.exe
+          dist/stash-box_linux_amd64/stash-box-linux
+          dist/stash-box_darwin_amd64/stash-box-darwin
+          CHECKSUMS_SHA1
+        gzip: false
+    
+    - name: Development Docker
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      run: |
+        docker build -t stashapp/stash-box:development -f ./docker/ci/x86_64/Dockerfile ./dist
+        docker push stashapp/stash-box:development
+
+    - name: Release Docker
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      run: |
+        docker build -t stashapp/stash-box:latest -f ./docker/ci/x86_64/Dockerfile ./dist
+        docker push stashapp/stash-box:latest
