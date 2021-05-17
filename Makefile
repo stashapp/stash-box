@@ -1,30 +1,7 @@
-IS_WIN =
-ifeq (${SHELL}, sh.exe)
-  IS_WIN = true
-endif
-ifeq (${SHELL}, cmd)
-  IS_WIN = true
-endif
-
-ifdef IS_WIN
-  SEPARATOR := &&
-  SET := set
-else 
-  SEPARATOR := ;
-  SET := export
-endif
-
-# set LDFLAGS environment variable to any extra ldflags required
-# set OUTPUT to generate a specific binary name
-
 LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
 endif
-
-.PHONY: release pre-build install clean 
-
-release: generate ui build-release
 
 pre-build:
 ifndef BUILD_DATE
@@ -40,16 +17,7 @@ ifndef STASH_BOX_VERSION
 endif
 
 build: pre-build
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)')
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -v -tags "osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
-
-# strips debug symbols from the release build
-# consider -trimpath in go build if we move to go 1.13+
-build-release: EXTRA_LDFLAGS := -s -w
-build-release: build
-
-build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
-build-release-static: build
+	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)'"
 
 install:
 	packr2 install
@@ -119,3 +87,16 @@ ui: ui-only
 .PHONY: packr
 packr:
 	packr2
+
+# runs tests and checks on the UI and builds it
+.PHONY: ui-validate
+ui-validate:
+	cd frontend && yarn run validate
+
+.PHONY: cross-compile
+cross-compile:
+	docker run --rm --privileged \
+				-v $(PWD):/go/src/github.com/stashapp/stash-box \
+				-v /var/run/docker.sock:/var/run/docker.sock \
+				-w /go/src/github.com/stashapp/stash-box \
+				goreng/golang-cross:latest --snapshot --rm-dist

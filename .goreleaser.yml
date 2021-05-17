@@ -1,0 +1,15 @@
+project_name: stash-box
+builds:
+- id: stash-box
+  binary: stash-box-{{.Os}}
+  goos:
+    - windows
+    - linux
+    - darwin
+  goarch:
+    - amd64
+  ldflags:
+    - -X github.com/stashapp/stash-box/pkg/api.version={{.Version}} -X github.com/stashapp/stash-box/pkg/api.buildstamp={{.Date}} -X github.com/stashapp/stash-box/pkg/api.githash={{.ShortCommit}}
+
+archives:
+- format: binary
