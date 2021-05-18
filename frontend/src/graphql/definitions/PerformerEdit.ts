@@ -17,7 +17,7 @@ export interface PerformerEdit_performerEdit_comments_user {
 
 export interface PerformerEdit_performerEdit_comments {
   __typename: "EditComment";
-  user: PerformerEdit_performerEdit_comments_user;
+  user: PerformerEdit_performerEdit_comments_user | null;
   date: any;
   comment: string;
 }
@@ -366,7 +366,7 @@ export interface PerformerEdit_performerEdit {
   created: any;
   updated: any;
   comments: PerformerEdit_performerEdit_comments[];
-  user: PerformerEdit_performerEdit_user;
+  user: PerformerEdit_performerEdit_user | null;
   /**
    * Object being edited - null if creating a new object
    */
