@@ -58,7 +58,7 @@ jobs:
       env:
         cache-name: cache-ui
       with:
-        path: ui/v2.5/build
+        path: frontend/build
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock', 'frontend/public/**', 'frontend/src/**', 'graphql/**/*.graphql') }}
 
     - name: Cache go build
@@ -89,12 +89,6 @@ jobs:
       # not changed in a pull request
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-only
-
-    - name: Login to DockerHub
-      uses: docker/login-action@v1 
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Crosscompile binaries
       run: make cross-compile
@@ -160,6 +154,13 @@ jobs:
           CHECKSUMS_SHA1
         gzip: false
     
+    - name: Login to DockerHub
+      if: ${{ github.event_name !== 'pull_request' }}
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
     - name: Development Docker
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       run: |
