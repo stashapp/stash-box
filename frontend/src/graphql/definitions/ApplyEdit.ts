@@ -17,7 +17,7 @@ export interface ApplyEdit_applyEdit_comments_user {
 
 export interface ApplyEdit_applyEdit_comments {
   __typename: "EditComment";
-  user: ApplyEdit_applyEdit_comments_user;
+  user: ApplyEdit_applyEdit_comments_user | null;
   date: any;
   comment: string;
 }
@@ -366,7 +366,7 @@ export interface ApplyEdit_applyEdit {
   created: any;
   updated: any;
   comments: ApplyEdit_applyEdit_comments[];
-  user: ApplyEdit_applyEdit_user;
+  user: ApplyEdit_applyEdit_user | null;
   /**
    * Object being edited - null if creating a new object
    */
