@@ -90,6 +90,11 @@ jobs:
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-only
 
+    - name: Bundle static assets
+      run: |
+        go get -u github.com/gobuffalo/packr/v2/packr2@v2.0.2
+        make packr
+
     - name: Crosscompile binaries
       run: make cross-compile
 
@@ -120,7 +125,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: stash-box-linux
-        path: dist/stash-box_linux_amd64/stash-box-linux
+        path: dist/stash-box_static_linux_amd64/stash-box-linux
         
     - name: Update latest_develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
@@ -137,7 +142,7 @@ jobs:
         body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
           dist/stash-box_windows_amd64/stash-box-windows.exe
-          dist/stash-box_linux_amd64/stash-box-linux
+          dist/stash-box_static_linux_amd64/stash-box-linux
           dist/stash-box_darwin_amd64/stash-box-darwin
           CHECKSUMS_SHA1
         gzip: false
@@ -149,7 +154,7 @@ jobs:
         allow_override: true
         files: |
           dist/stash-box_windows_amd64/stash-box-windows.exe
-          dist/stash-box_linux_amd64/stash-box-linux
+          dist/stash-box_static_linux_amd64/stash-box-linux
           dist/stash-box_darwin_amd64/stash-box-darwin
           CHECKSUMS_SHA1
         gzip: false
