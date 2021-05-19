@@ -68,7 +68,7 @@ const EditComponent: React.FC = () => {
 
   const mutating = cancelling || applying;
 
-  const buttons = (isAdmin(auth.user) || auth.user?.id === edit.user.id) &&
+  const buttons = (isAdmin(auth.user) || auth.user?.id === edit?.user?.id) &&
     edit.status === VoteStatusEnum.PENDING && (
       <div className="d-flex justify-content-end">
         <Button

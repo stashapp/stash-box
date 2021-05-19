@@ -17,7 +17,7 @@ export interface TagEdit_tagEdit_comments_user {
 
 export interface TagEdit_tagEdit_comments {
   __typename: "EditComment";
-  user: TagEdit_tagEdit_comments_user;
+  user: TagEdit_tagEdit_comments_user | null;
   date: any;
   comment: string;
 }
@@ -366,7 +366,7 @@ export interface TagEdit_tagEdit {
   created: any;
   updated: any;
   comments: TagEdit_tagEdit_comments[];
-  user: TagEdit_tagEdit_user;
+  user: TagEdit_tagEdit_user | null;
   /**
    * Object being edited - null if creating a new object
    */

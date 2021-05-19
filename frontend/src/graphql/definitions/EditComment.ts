@@ -17,7 +17,7 @@ export interface EditComment_editComment_comments_user {
 
 export interface EditComment_editComment_comments {
   __typename: "EditComment";
-  user: EditComment_editComment_comments_user;
+  user: EditComment_editComment_comments_user | null;
   date: any;
   comment: string;
 }
