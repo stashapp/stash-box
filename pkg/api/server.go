@@ -129,6 +129,7 @@ func Start() {
 		corsConfig = cors.New(cors.Options{
 			AllowOriginFunc:  func(origin string) bool { return true },
 			AllowCredentials: true,
+			AllowedHeaders:   []string{"*"},
 		})
 	}
 
