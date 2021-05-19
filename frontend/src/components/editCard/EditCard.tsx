@@ -67,9 +67,13 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
           </Link>
           <div>
             <b className="mr-2">Author:</b>
-            <Link to={userHref(edit.user)}>
-              <span>{edit.user.name}</span>
-            </Link>
+            {edit.user ? (
+              <Link to={userHref(edit.user)}>
+                <span>{edit.user.name}</span>
+              </Link>
+            ) : (
+              <span>Deleted User</span>
+            )}
           </div>
         </div>
         <div className="flex-column col-4 ml-auto text-right">

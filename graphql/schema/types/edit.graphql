@@ -24,14 +24,14 @@ enum VoteStatusEnum {
 }
 
 type VoteComment {
-    user: User!
+    user: User
     date: DateTime
     comment: String
     type: VoteTypeEnum
 }
 
 type EditComment {
-    user: User!
+    user: User
     date: Time!
     comment: String!
 }
@@ -49,7 +49,7 @@ union EditTarget = Performer | Scene | Studio | Tag
 
 type Edit {
     id: ID!
-    user: User!
+    user: User
     """Object being edited - null if creating a new object"""
     target: EditTarget
     target_type: TargetTypeEnum!

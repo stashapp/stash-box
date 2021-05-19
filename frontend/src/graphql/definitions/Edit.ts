@@ -17,7 +17,7 @@ export interface Edit_findEdit_comments_user {
 
 export interface Edit_findEdit_comments {
   __typename: "EditComment";
-  user: Edit_findEdit_comments_user;
+  user: Edit_findEdit_comments_user | null;
   date: any;
   comment: string;
 }
@@ -366,7 +366,7 @@ export interface Edit_findEdit {
   created: any;
   updated: any;
   comments: Edit_findEdit_comments[];
-  user: Edit_findEdit_user;
+  user: Edit_findEdit_user | null;
   /**
    * Object being edited - null if creating a new object
    */

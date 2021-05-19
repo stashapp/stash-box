@@ -64,7 +64,7 @@ export interface CancelEdit_cancelEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
-  user: CancelEdit_cancelEdit_user;
+  user: CancelEdit_cancelEdit_user | null;
   /**
    * Object being edited - null if creating a new object
    */

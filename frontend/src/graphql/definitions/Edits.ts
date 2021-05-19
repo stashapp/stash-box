@@ -17,7 +17,7 @@ export interface Edits_queryEdits_edits_comments_user {
 
 export interface Edits_queryEdits_edits_comments {
   __typename: "EditComment";
-  user: Edits_queryEdits_edits_comments_user;
+  user: Edits_queryEdits_edits_comments_user | null;
   date: any;
   comment: string;
 }
@@ -366,7 +366,7 @@ export interface Edits_queryEdits_edits {
   created: any;
   updated: any;
   comments: Edits_queryEdits_edits_comments[];
-  user: Edits_queryEdits_edits_user;
+  user: Edits_queryEdits_edits_user | null;
   /**
    * Object being edited - null if creating a new object
    */

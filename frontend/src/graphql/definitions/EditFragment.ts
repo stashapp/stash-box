@@ -17,7 +17,7 @@ export interface EditFragment_comments_user {
 
 export interface EditFragment_comments {
   __typename: "EditComment";
-  user: EditFragment_comments_user;
+  user: EditFragment_comments_user | null;
   date: any;
   comment: string;
 }
@@ -366,7 +366,7 @@ export interface EditFragment {
   created: any;
   updated: any;
   comments: EditFragment_comments[];
-  user: EditFragment_user;
+  user: EditFragment_user | null;
   /**
    * Object being edited - null if creating a new object
    */
