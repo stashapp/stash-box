@@ -205,10 +205,13 @@ export interface EyeColorCriterionInput {
   modifier: CriterionModifier;
 }
 
-export interface FingerprintInput {
+export interface FingerprintEditInput {
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
 }
 
 export interface FuzzyDateInput {
@@ -351,7 +354,7 @@ export interface SceneCreateInput {
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
   image_ids?: string[] | null;
-  fingerprints: FingerprintInput[];
+  fingerprints: FingerprintEditInput[];
   duration?: number | null;
   director?: string | null;
 }
@@ -383,7 +386,7 @@ export interface SceneUpdateInput {
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
   image_ids?: string[] | null;
-  fingerprints?: FingerprintInput[] | null;
+  fingerprints?: FingerprintEditInput[] | null;
   duration?: number | null;
   director?: string | null;
 }

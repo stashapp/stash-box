@@ -11,7 +11,7 @@ import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 import {
   SceneUpdateInput,
-  FingerprintInput,
+  FingerprintEditInput,
   FingerprintAlgorithm,
   GenderEnum,
 } from "src/graphql";
@@ -116,11 +116,14 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     name: "performers",
   });
 
-  const [fingerprints, setFingerprints] = useState<FingerprintInput[]>(
+  const [fingerprints, setFingerprints] = useState<FingerprintEditInput[]>(
     scene.fingerprints.map((f) => ({
       hash: f.hash,
       algorithm: f.algorithm,
       duration: f.duration,
+      submissions: f.submissions,
+      updated: f.updated,
+      created: f.created,
     }))
   );
 
@@ -283,7 +286,17 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       hash === ""
     )
       return;
-    const newFingerprints = [...fingerprints, { hash, algorithm, duration }];
+    const newFingerprints = [
+      ...fingerprints,
+      {
+        hash,
+        algorithm,
+        duration,
+        submissions: 1,
+        created: new Date().toISOString(),
+        updated: new Date().toISOString(),
+      },
+    ];
     setFingerprints(newFingerprints);
     setValue("fingerprints", newFingerprints);
     fingerprintHash.current.value = "";
@@ -310,6 +323,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         <td>{f.algorithm}</td>
         <td>{f.hash}</td>
         <td>{f.duration}</td>
+        <td>{f.submissions}</td>
+        <td>{f.created.slice(0, 10)}</td>
+        <td>{f.updated.slice(0, 10)}</td>
       </tr>
     ));
 
@@ -321,6 +337,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             <th>Algorithm</th>
             <th>Hash</th>
             <th>Duration</th>
+            <th>Submissions</th>
+            <th>First Submitted</th>
+            <th>Last Submitted</th>
           </tr>
         </thead>
         <tbody>{fingerprintList}</tbody>
