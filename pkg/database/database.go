@@ -6,7 +6,7 @@ import (
 
 var DB *sqlx.DB
 
-var appSchemaVersion uint = 13
+var appSchemaVersion uint = 14
 var databaseProviders map[string]databaseProvider
 var dialect sqlDialect
 

@@ -79,6 +79,7 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `s3.access_key` | (none) | Access key used for authentication. |
 | `s3.secret ` | (none) | Secret Access key used for authentication. |
 | `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original.
+| `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a phash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
 
 ## SSL (HTTPS)
 
@@ -89,6 +90,11 @@ Stash-box supports HTTPS with some additional work.  First you must generate a S
 This command would need customizing for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
 
 Once you have a certificate and key file name them `stash-box.crt` and `stash-box.key` and place them in the directory where stash-box is run from. Stash-box detects these and starts up using HTTPS rather than HTTP.
+
+## PHash Distance Matching
+Enabling distance matching for phashes requires installation of the [pg-spgist_hamming](https://github.com/fake-name/pg-spgist_hamming) postgres extension. The recommended method is using the [docker image](docker/production/postgres/Dockerfile). Alternatively it can be installed manually by following the build instructions in the pg-spgist_hamming repo.
+
+If the extension is installed after the migrations have been run, migration #14 will have to be run manually to install the extension and add the index. Alternatively the database can be wiped so the migrations will run the next time stash-box is started.
 
 ## Frontend development
 

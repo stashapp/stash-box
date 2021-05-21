@@ -64,6 +64,8 @@ const UserLogFile = "userLogFile"
 const LogOut = "logOut"
 const LogLevel = "logLevel"
 
+const PHashDistance = "phash_distance"
+
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
 }
@@ -295,6 +297,10 @@ func IsValid() bool {
 
 	// TODO: check valid paths
 	return setPaths
+}
+
+func GetPHashDistance() int {
+	return viper.GetInt(PHashDistance)
 }
 
 // SetInitialConfig fills in missing required config fields
