@@ -13,6 +13,7 @@ import {
   studioHref,
   createHref,
   formatDuration,
+  formatDateTime,
 } from "src/utils";
 import { ROUTE_SCENE_EDIT, ROUTE_SCENES } from "src/constants/route";
 import {
@@ -67,6 +68,9 @@ const SceneComponent: React.FC = () => {
         </Link>
       </td>
       <td>{fingerprint.duration}</td>
+      <td>{fingerprint.submissions}</td>
+      <td>{formatDateTime(fingerprint.created)}</td>
+      <td>{formatDateTime(fingerprint.updated)}</td>
     </tr>
   ));
   const tags = [...scene.tags]
@@ -171,6 +175,15 @@ const SceneComponent: React.FC = () => {
                     </td>
                     <td>
                       <b>Duration</b>
+                    </td>
+                    <td>
+                      <b>Submissions</b>
+                    </td>
+                    <td>
+                      <b>First Added</b>
+                    </td>
+                    <td>
+                      <b>Last Added</b>
                     </td>
                   </tr>
                 </thead>

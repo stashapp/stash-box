@@ -47,11 +47,11 @@ func (qb *EditQueryBuilder) Find(id uuid.UUID) (*Edit, error) {
 }
 
 func (qb *EditQueryBuilder) CreateEditTag(newJoin EditTag) error {
-	return qb.dbi.InsertJoin(editTagTable, newJoin, false)
+	return qb.dbi.InsertJoin(editTagTable, newJoin, nil)
 }
 
 func (qb *EditQueryBuilder) CreateEditPerformer(newJoin EditPerformer) error {
-	return qb.dbi.InsertJoin(editPerformerTable, newJoin, false)
+	return qb.dbi.InsertJoin(editPerformerTable, newJoin, nil)
 }
 
 func (qb *EditQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
@@ -199,7 +199,7 @@ func (qb *EditQueryBuilder) queryEdits(query string, args []interface{}) (Edits,
 }
 
 func (qb *EditQueryBuilder) CreateComment(newJoin EditComment) error {
-	return qb.dbi.InsertJoin(editCommentTable, newJoin, false)
+	return qb.dbi.InsertJoin(editCommentTable, newJoin, nil)
 }
 
 func (qb *EditQueryBuilder) GetComments(id uuid.UUID) (EditComments, error) {

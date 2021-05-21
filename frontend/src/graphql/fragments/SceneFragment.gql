@@ -28,6 +28,9 @@ fragment SceneFragment on Scene {
     hash
     algorithm
     duration
+    submissions
+    created
+    updated
   }
   tags {
     id

@@ -39,7 +39,7 @@ func (s *sceneTestRunner) testCreateScene() {
 		Title:   &title,
 		Details: &details,
 		Date:    &date,
-		Fingerprints: []*models.FingerprintInput{
+		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(),
 			s.generateSceneFingerprint(),
 		},
@@ -111,7 +111,7 @@ func compareTags(tagIDs []string, tags []*models.Tag) bool {
 	return true
 }
 
-func compareFingerprints(input []*models.FingerprintInput, fingerprints []*models.Fingerprint) bool {
+func compareFingerprints(input []*models.FingerprintEditInput, fingerprints []*models.Fingerprint) bool {
 	if len(input) != len(fingerprints) {
 		return false
 	}
@@ -233,7 +233,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 	scene1Title := "asdasd"
 	scene1Input := models.SceneCreateInput{
 		Title: &scene1Title,
-		Fingerprints: []*models.FingerprintInput{
+		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(),
 			s.generateSceneFingerprint(),
 		},
@@ -293,7 +293,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Title:   &title,
 		Details: &details,
 		Date:    &date,
-		Fingerprints: []*models.FingerprintInput{
+		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(),
 			s.generateSceneFingerprint(),
 		},
@@ -341,7 +341,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Title:   &newTitle,
 		Details: &newDetails,
 		Date:    &newDate,
-		Fingerprints: []*models.FingerprintInput{
+		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(),
 		},
 		Performers: []*models.PerformerAppearanceInput{

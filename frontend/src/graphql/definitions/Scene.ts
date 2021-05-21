@@ -53,6 +53,9 @@ export interface Scene_findScene_fingerprints {
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
 }
 
 export interface Scene_findScene_tags {

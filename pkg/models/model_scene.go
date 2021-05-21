@@ -61,10 +61,13 @@ func (p *Scenes) Add(o interface{}) {
 }
 
 type SceneFingerprint struct {
-	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
-	Hash      string    `db:"hash" json:"hash"`
-	Algorithm string    `db:"algorithm" json:"algorithm"`
-	Duration  int       `db:"duration" json:"duration"`
+	SceneID     uuid.UUID       `db:"scene_id" json:"scene_id"`
+	Hash        string          `db:"hash" json:"hash"`
+	Algorithm   string          `db:"algorithm" json:"algorithm"`
+	Duration    int             `db:"duration" json:"duration"`
+	Submissions int             `db:"submissions" json:"submissions"`
+	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
+	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
 type SceneUrl struct {
@@ -109,9 +112,12 @@ func CreateSceneUrls(sceneId uuid.UUID, urls []*URLInput) SceneUrls {
 
 func (p SceneFingerprint) ToFingerprint() *Fingerprint {
 	return &Fingerprint{
-		Algorithm: FingerprintAlgorithm(p.Algorithm),
-		Hash:      p.Hash,
-		Duration:  p.Duration,
+		Algorithm:   FingerprintAlgorithm(p.Algorithm),
+		Hash:        p.Hash,
+		Duration:    p.Duration,
+		Submissions: p.Submissions,
+		Created:     p.CreatedAt.Timestamp,
+		Updated:     p.UpdatedAt.Timestamp,
 	}
 }
 
@@ -136,7 +142,27 @@ func (p SceneFingerprints) ToFingerprints() []*Fingerprint {
 	return ret
 }
 
-func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput) SceneFingerprints {
+func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditInput) SceneFingerprints {
+	var ret SceneFingerprints
+
+	for _, fingerprint := range fingerprints {
+		if fingerprint.Duration > 0 {
+			ret = append(ret, &SceneFingerprint{
+				SceneID:     sceneID,
+				Hash:        fingerprint.Hash,
+				Algorithm:   fingerprint.Algorithm.String(),
+				Duration:    fingerprint.Duration,
+				Submissions: fingerprint.Submissions,
+				CreatedAt:   SQLiteTimestamp{Timestamp: fingerprint.Created},
+				UpdatedAt:   SQLiteTimestamp{Timestamp: fingerprint.Updated},
+			})
+		}
+	}
+
+	return ret
+}
+
+func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput) SceneFingerprints {
 	var ret SceneFingerprints
 
 	for _, fingerprint := range fingerprints {

@@ -6,6 +6,7 @@ import (
 	"context"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/database"
@@ -348,7 +349,7 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Sc
 		title := "title"
 		input = &models.SceneCreateInput{
 			Title: &title,
-			Fingerprints: []*models.FingerprintInput{
+			Fingerprints: []*models.FingerprintEditInput{
 				s.generateSceneFingerprint(),
 			},
 		}
@@ -364,12 +365,15 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Sc
 	return createdScene, nil
 }
 
-func (s *testRunner) generateSceneFingerprint() *models.FingerprintInput {
+func (s *testRunner) generateSceneFingerprint() *models.FingerprintEditInput {
 	sceneChecksumSuffix += 1
-	return &models.FingerprintInput{
-		Algorithm: "MD5",
-		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
-		Duration:  1234,
+	return &models.FingerprintEditInput{
+		Algorithm:   "MD5",
+		Hash:        "scene-" + strconv.Itoa(sceneChecksumSuffix),
+		Duration:    1234,
+		Submissions: 1,
+		Created:     time.Now(),
+		Updated:     time.Now(),
 	}
 }
 
