@@ -41,6 +41,7 @@ type Query {
   findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]!
   """Finds scenes that match a list of hashes"""
   findScenesByFingerprints(fingerprints: [String!]!): [Scene!]!
+  findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]!
 
   queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType!
 
