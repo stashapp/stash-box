@@ -2,6 +2,7 @@ package models
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -82,6 +83,64 @@ func (qb *SceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*Scene
 			GROUP BY id
 		)`
 	query, args, err := sqlx.In(query, fingerprints)
+	if err != nil {
+		return nil, err
+	}
+	return qb.queryScenes(query, args)
+}
+
+func (qb *SceneQueryBuilder) FindByFullFingerprints(fingerprints []*FingerprintQueryInput) ([]*Scene, error) {
+	hashClause := `
+		SELECT scene_id id FROM scene_fingerprints
+		WHERE hash IN (:hashes)
+		GROUP BY id
+	`
+	phashClause := `
+		SELECT scene_id as id
+		FROM UNNEST(ARRAY[:phashes]) phash
+		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, 8)
+		AND algorithm = 'PHASH'
+	`
+
+	var phashes []int64
+	var hashes []string
+	for _, fp := range fingerprints {
+		if fp.Algorithm == FingerprintAlgorithmPhash {
+			// Postgres only supports signed integers, so we parse
+			// as uint64 and cast to int64 to ensure values are the same.
+			value, err := strconv.ParseUint(fp.Hash, 16, 64)
+			if err == nil {
+				phashes = append(phashes, int64(value))
+			}
+		} else {
+			hashes = append(hashes, fp.Hash)
+		}
+	}
+
+	var clauses []string
+	if len(phashes) > 0 {
+		clauses = append(clauses, phashClause)
+	}
+	if len(hashes) > 0 {
+		clauses = append(clauses, hashClause)
+	}
+	if len(clauses) == 0 {
+		return nil, nil
+	}
+
+	arg := map[string]interface{}{
+		"phashes": phashes,
+		"hashes":  hashes,
+	}
+
+	query := `
+		SELECT scenes.* FROM scenes
+		WHERE id IN (` + strings.Join(clauses, " UNION ") + ")"
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, err
+	}
+	query, args, err = sqlx.In(query, args...)
 	if err != nil {
 		return nil, err
 	}
