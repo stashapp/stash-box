@@ -45,7 +45,7 @@ const schema = yup.object().shape({
     })
     .nullable(),
   duration: yup.number().positive().transform(zeroCheck).nullable(),
-  director: yup.string().trim().nullable(),
+  director: yup.string().trim().transform(nullCheck).nullable(),
   studio: yup
     .string()
     .typeError("Studio is required")
