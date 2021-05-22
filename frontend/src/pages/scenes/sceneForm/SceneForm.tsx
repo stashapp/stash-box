@@ -65,6 +65,7 @@ const schema = yup.object().shape({
             .oneOf(Object.keys(FingerprintAlgorithm))
             .required(),
           hash: yup.string().required(),
+          duration: yup.number().min(1).required(),
         })
         .required()
     )
