@@ -29,6 +29,8 @@ import EditImages from "src/components/editImages";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
+const zeroCheck = (input: number | null) =>
+  input === 0 || Number.isNaN(input) ? null : input;
 
 const schema = yup.object().shape({
   id: yup.string().defined(),
@@ -42,6 +44,8 @@ const schema = yup.object().shape({
       message: "Invalid date",
     })
     .nullable(),
+  duration: yup.number().positive().transform(zeroCheck).nullable(),
+  director: yup.string().trim().nullable(),
   studio: yup
     .string()
     .typeError("Studio is required")
@@ -161,6 +165,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       id: data.id,
       title: data.title,
       date: data.date,
+      duration: data.duration,
+      director: data.director,
       details: data.details,
       studio_id: data.studio,
       performers: (data.performers ?? []).map((performance) => ({
@@ -378,7 +384,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="date" className="col-4">
+            <Form.Group controlId="date" className="col-2">
               <Form.Label>Date</Form.Label>
               <Form.Control
                 as="input"
@@ -391,6 +397,22 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.date?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group controlId="duration" className="col-2">
+              <Form.Label>Duration</Form.Label>
+              <Form.Control
+                as="input"
+                className={cx({ "is-invalid": errors.duration })}
+                type="number"
+                placeholder="Duration"
+                name="duration"
+                defaultValue={scene?.duration ?? ""}
+                ref={register}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors?.duration?.message}
               </Form.Control.Feedback>
             </Form.Group>
           </Form.Row>
@@ -448,6 +470,26 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 ref={register}
               />
             </Form.Group>
+          </Form.Row>
+
+          <Form.Row>
+            <Form.Group controlId="director" className="col-4">
+              <Form.Label>Director</Form.Label>
+              <Form.Control
+                as="input"
+                className={cx({ "is-invalid": errors.director })}
+                type="text"
+                placeholder="Director"
+                name="director"
+                defaultValue={scene?.director ?? ""}
+                ref={register}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors?.director?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="col-8" />
           </Form.Row>
 
           <Form.Group>
