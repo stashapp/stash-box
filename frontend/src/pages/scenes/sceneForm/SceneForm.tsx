@@ -106,6 +106,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   } = useForm<SceneFormData>({
     resolver: yupResolver(schema),
     defaultValues: {},
+    mode: "onBlur",
   });
   const {
     fields: performerFields,
@@ -359,36 +360,43 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       />
       <Row>
         <Col xs={10}>
-          <div className="form-group row">
-            <label htmlFor="title" className="col-8">
-              <div>Title</div>
-              <input
-                className={cx("form-control", { "is-invalid": errors.title })}
+          <Form.Row>
+            <Form.Group controlId="title" className="col-8">
+              <Form.Label>Title</Form.Label>
+              <Form.Control
+                as="input"
+                className={cx({ "is-invalid": errors.title })}
                 type="text"
                 placeholder="Title"
                 name="title"
                 defaultValue={scene?.title ?? ""}
                 ref={register({ required: true })}
               />
-              <div className="invalid-feedback">{errors?.title?.message}</div>
-            </label>
-            <label htmlFor="date" className="col-4">
-              <div>Date</div>
-              <input
-                className={cx("form-control", { "is-invalid": errors.date })}
+              <Form.Control.Feedback type="invalid">
+                {errors?.title?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group controlId="date" className="col-4">
+              <Form.Label>Date</Form.Label>
+              <Form.Control
+                as="input"
+                className={cx({ "is-invalid": errors.date })}
                 type="text"
                 placeholder="YYYY-MM-DD"
                 name="date"
                 defaultValue={scene.date}
                 ref={register}
               />
-              <div className="invalid-feedback">{errors?.date?.message}</div>
-            </label>
-          </div>
+              <Form.Control.Feedback type="invalid">
+                {errors?.date?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Form.Row>
 
-          <div className="form-group row">
-            <div className="col">
-              <div className="label">Performers</div>
+          <Form.Row>
+            <Form.Group className="col">
+              <Form.Label>Performers</Form.Label>
               {performerList}
               <div className="add-performer">
                 <span>Add performer:</span>
@@ -399,44 +407,47 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                   searchType={SearchType.Performer}
                 />
               </div>
-            </div>
-          </div>
+            </Form.Group>
+          </Form.Row>
 
-          <div className="form-group row">
-            <label htmlFor="studioId" className="studio-select col-6">
-              <div>Studio</div>
+          <Form.Row>
+            <Form.Group controlId="studioId" className="studio-select col-6">
+              <Form.Label>Studio</Form.Label>
               <StudioSelect initialStudio={scene.studio} control={control} />
-              <div className="invalid-feedback">{errors?.studio?.message}</div>
-            </label>
-            <label htmlFor="studioURL" className="col-6">
-              <div>Studio URL</div>
-              <input
+              <Form.Control.Feedback type="invalid">
+                {errors?.studio?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group controlId="studioURL" className="col-6">
+              <Form.Label>Studio URL</Form.Label>
+              <Form.Control
+                as="input"
+                className={cx({ "is-invalid": errors.studioURL })}
                 type="url"
-                className={cx("form-control", {
-                  "is-invalid": errors.studioURL,
-                })}
                 name="studioURL"
                 defaultValue={getUrlByType(scene.urls, "STUDIO")}
                 ref={register}
               />
-              <div className="invalid-feedback">
+              <Form.Control.Feedback type="invalid">
                 {errors?.studioURL?.message}
-              </div>
-            </label>
-          </div>
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Form.Row>
 
-          <div className="form-group row">
-            <label htmlFor="details" className="col">
-              <div>Details</div>
-              <textarea
-                className="form-control description"
+          <Form.Row>
+            <Form.Group controlId="details" className="col">
+              <Form.Label>Details</Form.Label>
+              <Form.Control
+                as="textarea"
+                className="description"
                 placeholder="Details"
                 name="details"
                 defaultValue={scene?.details ?? ""}
                 ref={register}
               />
-            </label>
-          </div>
+            </Form.Group>
+          </Form.Row>
 
           <Form.Group>
             <Form.Label>Tags</Form.Label>
