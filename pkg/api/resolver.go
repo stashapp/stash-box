@@ -53,7 +53,13 @@ type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
 func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
-	panic("not implemented")
+	version, githash, buildstamp := GetVersion()
+
+	return &models.Version{
+		Version:   version,
+		Hash:      githash,
+		BuildTime: buildstamp,
+	}, nil
 }
 
 // wasFieldIncluded returns true if the given field was included in the request.
