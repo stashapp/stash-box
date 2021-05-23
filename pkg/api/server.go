@@ -26,6 +26,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
+var version string = "0.0.0"
 var buildstamp string = ""
 var githash string = ""
 
@@ -230,8 +231,8 @@ func printVersion() {
 	fmt.Printf("stash-box version: %s (%s)\n", githash, buildstamp)
 }
 
-func GetVersion() (string, string) {
-	return githash, buildstamp
+func GetVersion() (string, string, string) {
+	return version, githash, buildstamp
 }
 
 func makeTLSConfig() *tls.Config {
