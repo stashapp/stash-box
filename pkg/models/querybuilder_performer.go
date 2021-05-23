@@ -527,13 +527,13 @@ func (qb *PerformerQueryBuilder) SoftDelete(performer Performer) (*Performer, er
 }
 
 func (qb *PerformerQueryBuilder) CreateRedirect(newJoin PerformerRedirect) error {
-	return qb.dbi.InsertJoin(performerRedirectTable, newJoin, nil)
+	return qb.dbi.InsertJoin(performerSourceRedirectTable, newJoin, nil)
 }
 
 func (qb *PerformerQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	query := "UPDATE " + performerRedirectTable.Table.Name() + " SET target_id = ? WHERE target_id = ?"
+	query := "UPDATE " + performerSourceRedirectTable.Table.Name() + " SET target_id = ? WHERE target_id = ?"
 	args := []interface{}{newTargetID, oldTargetID}
-	return qb.dbi.RawQuery(performerRedirectTable.Table, query, args, nil)
+	return qb.dbi.RawQuery(performerSourceRedirectTable.Table, query, args, nil)
 }
 
 func (qb *PerformerQueryBuilder) UpdateScenePerformers(oldPerformer *Performer, newTargetID uuid.UUID, setAliases bool) error {
@@ -779,4 +779,24 @@ func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *Per
 	}
 
 	return updatedPerformer, err
+}
+
+func (qb *PerformerQueryBuilder) FindMergeIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	redirects := PerformerRedirects{}
+	err := qb.dbi.FindAllJoins(performerTargetRedirectTable, ids, &redirects)
+
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, redirect := range redirects {
+		m[redirect.TargetID] = append(m[redirect.TargetID], redirect.SourceID)
+	}
+
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
