@@ -1,3 +1,8 @@
+LINTERS := \
+	github.com/mgechev/revive \
+	github.com/kisielk/errcheck \
+	honnef.co/go/tools/cmd/staticcheck@latest
+
 LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
@@ -68,9 +73,24 @@ fmt:
 vet:
 	go vet ./...
 
-.PHONY: lint
-lint:
+.PHONY: linterdeps
+linterdeps:
+	go get -v $(LINTERS)
+
+.PHONY: revive
+revive: linterdeps
 	revive -config revive.toml -exclude ./vendor/...  ./...
+
+.PHONY: errcheck
+errcheck: linterdeps
+	errcheck ./...
+
+.PHONY: staticcheck
+staticcheck: linterdeps
+	staticcheck ./...
+
+.PHONY: lint
+lint: revive
 
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile
