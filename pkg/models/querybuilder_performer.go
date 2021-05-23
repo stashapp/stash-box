@@ -57,8 +57,8 @@ func (qb *PerformerQueryBuilder) UpdateAliases(performerID uuid.UUID, updatedJoi
 	return qb.dbi.ReplaceJoins(performerAliasTable, performerID, &updatedJoins)
 }
 
-func (qb *PerformerQueryBuilder) CreateUrls(newJoins PerformerUrls) error {
-	return qb.dbi.InsertJoins(performerUrlTable, &newJoins)
+func (qb *PerformerQueryBuilder) CreateUrls(newJoins PerformerURLs) error {
+	return qb.dbi.InsertJoins(performerURLTable, &newJoins)
 }
 
 func (qb *PerformerQueryBuilder) CreateImages(newJoins PerformersImages) error {
@@ -69,8 +69,8 @@ func (qb *PerformerQueryBuilder) UpdateImages(performerID uuid.UUID, updatedJoin
 	return qb.dbi.ReplaceJoins(performerImageTable, performerID, &updatedJoins)
 }
 
-func (qb *PerformerQueryBuilder) UpdateUrls(performerID uuid.UUID, updatedJoins PerformerUrls) error {
-	return qb.dbi.ReplaceJoins(performerUrlTable, performerID, &updatedJoins)
+func (qb *PerformerQueryBuilder) UpdateUrls(performerID uuid.UUID, updatedJoins PerformerURLs) error {
+	return qb.dbi.ReplaceJoins(performerURLTable, performerID, &updatedJoins)
 }
 
 func (qb *PerformerQueryBuilder) CreateTattoos(newJoins PerformerBodyMods) error {
@@ -380,9 +380,9 @@ func (qb *PerformerQueryBuilder) GetAllAliases(ids []uuid.UUID) ([][]string, []e
 	return result, nil
 }
 
-func (qb *PerformerQueryBuilder) GetUrls(id uuid.UUID) ([]*URL, error) {
-	joins := PerformerUrls{}
-	err := qb.dbi.FindJoins(performerUrlTable, id, &joins)
+func (qb *PerformerQueryBuilder) GetURLs(id uuid.UUID) ([]*URL, error) {
+	joins := PerformerURLs{}
+	err := qb.dbi.FindJoins(performerURLTable, id, &joins)
 
 	urls := make([]*URL, len(joins))
 	for i, u := range joins {
@@ -396,9 +396,9 @@ func (qb *PerformerQueryBuilder) GetUrls(id uuid.UUID) ([]*URL, error) {
 	return urls, err
 }
 
-func (qb *PerformerQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
-	joins := PerformerUrls{}
-	err := qb.dbi.FindAllJoins(performerUrlTable, ids, &joins)
+func (qb *PerformerQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*URL, []error) {
+	joins := PerformerURLs{}
+	err := qb.dbi.FindAllJoins(performerURLTable, ids, &joins)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}
@@ -515,7 +515,7 @@ func (qb *PerformerQueryBuilder) SoftDelete(performer Performer) (*Performer, er
 	if err := qb.dbi.DeleteJoins(performerTattooTable, performer.ID); err != nil {
 		return nil, err
 	}
-	if err := qb.dbi.DeleteJoins(performerUrlTable, performer.ID); err != nil {
+	if err := qb.dbi.DeleteJoins(performerURLTable, performer.ID); err != nil {
 		return nil, err
 	}
 	if err := qb.dbi.DeleteJoins(performerImageTable, performer.ID); err != nil {
@@ -649,7 +649,7 @@ func (qb *PerformerQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, p
 		}
 
 		if len(data.New.AddedUrls) > 0 {
-			urls := CreatePerformerUrls(UUID, data.New.AddedUrls)
+			urls := CreatePerformerURLs(UUID, data.New.AddedUrls)
 			if err := qb.CreateUrls(urls); err != nil {
 				return nil, err
 			}
@@ -743,13 +743,13 @@ func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *Per
 		return nil, err
 	}
 
-	urls, err := qb.GetUrls(updatedPerformer.ID)
-	currentUrls := CreatePerformerUrls(updatedPerformer.ID, urls)
+	urls, err := qb.GetURLs(updatedPerformer.ID)
+	currentUrls := CreatePerformerURLs(updatedPerformer.ID, urls)
 	if err != nil {
 		return nil, err
 	}
-	newUrls := CreatePerformerUrls(updatedPerformer.ID, data.New.AddedUrls)
-	oldUrls := CreatePerformerUrls(updatedPerformer.ID, data.New.RemovedUrls)
+	newUrls := CreatePerformerURLs(updatedPerformer.ID, data.New.AddedUrls)
+	oldUrls := CreatePerformerURLs(updatedPerformer.ID, data.New.RemovedUrls)
 
 	if err := ProcessSlice(&currentUrls, &newUrls, &oldUrls); err != nil {
 		return nil, err
@@ -781,7 +781,7 @@ func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *Per
 	return updatedPerformer, err
 }
 
-func (qb *PerformerQueryBuilder) FindMergeIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+func (qb *PerformerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	redirects := PerformerRedirects{}
 	err := qb.dbi.FindAllJoins(performerTargetRedirectTable, ids, &redirects)
 

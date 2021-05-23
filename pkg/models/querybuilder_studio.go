@@ -39,12 +39,12 @@ func (qb *StudioQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, studioDBTable)
 }
 
-func (qb *StudioQueryBuilder) CreateUrls(newJoins StudioUrls) error {
-	return qb.dbi.InsertJoins(studioUrlTable, &newJoins)
+func (qb *StudioQueryBuilder) CreateURLs(newJoins StudioURLs) error {
+	return qb.dbi.InsertJoins(studioURLTable, &newJoins)
 }
 
-func (qb *StudioQueryBuilder) UpdateUrls(studioID uuid.UUID, updatedJoins StudioUrls) error {
-	return qb.dbi.ReplaceJoins(studioUrlTable, studioID, &updatedJoins)
+func (qb *StudioQueryBuilder) UpdateURLs(studioID uuid.UUID, updatedJoins StudioURLs) error {
+	return qb.dbi.ReplaceJoins(studioURLTable, studioID, &updatedJoins)
 }
 
 func (qb *StudioQueryBuilder) Find(id uuid.UUID) (*Studio, error) {
@@ -158,16 +158,16 @@ func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}) (St
 	return output, err
 }
 
-func (qb *StudioQueryBuilder) GetUrls(id uuid.UUID) (StudioUrls, error) {
-	joins := StudioUrls{}
-	err := qb.dbi.FindJoins(studioUrlTable, id, &joins)
+func (qb *StudioQueryBuilder) GetURLs(id uuid.UUID) (StudioURLs, error) {
+	joins := StudioURLs{}
+	err := qb.dbi.FindJoins(studioURLTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *StudioQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
-	joins := StudioUrls{}
-	err := qb.dbi.FindAllJoins(studioUrlTable, ids, &joins)
+func (qb *StudioQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*URL, []error) {
+	joins := StudioURLs{}
+	err := qb.dbi.FindAllJoins(studioURLTable, ids, &joins)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}

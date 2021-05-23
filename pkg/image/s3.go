@@ -39,8 +39,8 @@ func (s *S3Backend) WriteFile(file *bytes.Reader, image *models.Image) error {
 		}
 
 		hash := md5.Sum([]byte(image.ID.String() + "-resized"))
-		resizedId := hex.EncodeToString(hash[:])
-		if err := uploadS3File(*minioClient, resized, s3config.Bucket, resizedId); err != nil {
+		resizedID := hex.EncodeToString(hash[:])
+		if err := uploadS3File(*minioClient, resized, s3config.Bucket, resizedID); err != nil {
 			return err
 		}
 	}
@@ -67,8 +67,8 @@ func (s *S3Backend) DestroyFile(image *models.Image) error {
 	}
 
 	hash := md5.Sum([]byte(id + "-resized"))
-	resizedId := hex.EncodeToString(hash[:])
-	path = resizedId[0:2] + "/" + resizedId[2:4] + "/" + resizedId
+	resizedID := hex.EncodeToString(hash[:])
+	path = resizedID[0:2] + "/" + resizedID[2:4] + "/" + resizedID
 	// Resized versions may or may not exist, so we attempt to delete and ignore the results
 	minioClient.RemoveObject(context.TODO(), s3config.Bucket, path, minio.RemoveObjectOptions{})
 

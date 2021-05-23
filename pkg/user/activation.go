@@ -271,11 +271,7 @@ func ResetPassword(tx *sqlx.Tx, em *email.Manager, email string) error {
 		return err
 	}
 
-	if err := sendResetPasswordEmail(em, email, key); err != nil {
-		return err
-	}
-
-	return nil
+	return sendResetPasswordEmail(em, email, key)
 }
 
 func generateResetPasswordActivationKey(aqb models.PendingActivationCreator, email string) (string, error) {
@@ -357,9 +353,5 @@ func ActivateResetPassword(tx *sqlx.Tx, activationKey string, newPassword string
 	}
 
 	// delete the activation
-	if err := aqb.Destroy(id); err != nil {
-		return err
-	}
-
-	return nil
+	return aqb.Destroy(id)
 }

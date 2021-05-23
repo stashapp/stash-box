@@ -21,7 +21,7 @@ func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Perf
 }
 
 func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) ([]string, error) {
-	aliases, err := dataloader.For(ctx).PerformerAliasesById.Load(obj.ID)
+	aliases, err := dataloader.For(ctx).PerformerAliasesByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]*models.URL, error) {
-	return dataloader.For(ctx).PerformerUrlsById.Load(obj.ID)
+	return dataloader.For(ctx).PerformerUrlsByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
@@ -128,19 +128,19 @@ func (r *performerResolver) CareerEndYear(ctx context.Context, obj *models.Perfo
 }
 
 func (r *performerResolver) Tattoos(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
-	return dataloader.For(ctx).PerformerTattoosById.Load(obj.ID)
+	return dataloader.For(ctx).PerformerTattoosByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
-	return dataloader.For(ctx).PerformerPiercingsById.Load(obj.ID)
+	return dataloader.For(ctx).PerformerPiercingsByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]*models.Image, error) {
-	imageIDs, err := dataloader.For(ctx).PerformerImageIDsById.Load(obj.ID)
+	imageIDs, err := dataloader.For(ctx).PerformerImageIDsByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
-	images, errors := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	images, errors := dataloader.For(ctx).ImageByID.LoadAll(imageIDs)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err
@@ -161,7 +161,7 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 }
 
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]string, error) {
-	mergedIDs, err := dataloader.For(ctx).PerformerMergeIDsById.Load(obj.ID)
+	mergedIDs, err := dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
 
 	var ids []string
 	for _, id := range mergedIDs {

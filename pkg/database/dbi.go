@@ -171,10 +171,10 @@ func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 	if q.tx != nil {
 		query = q.tx.Rebind(query)
 		return q.tx.Queryx(query, args...)
-	} else {
-		query = DB.Rebind(query)
-		return DB.Queryx(query, args...)
 	}
+
+	query = DB.Rebind(query)
+	return DB.Queryx(query, args...)
 }
 
 // Find returns the row object with the provided id, or returns nil if not
@@ -308,11 +308,7 @@ func (q dbi) RawQuery(table Table, query string, args []interface{}, output Mode
 		output.Add(o)
 	}
 
-	if err := rows.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return rows.Err()
 }
 
 func (q dbi) Count(query QueryBuilder) (int, error) {

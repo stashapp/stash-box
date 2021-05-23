@@ -55,8 +55,8 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		}
 
 		// Save the URLs
-		sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
-		if err := qb.CreateUrls(sceneUrls); err != nil {
+		sceneUrls := models.CreateSceneURLs(scene.ID, input.Urls)
+		if err := qb.CreateURLs(sceneUrls); err != nil {
 			return err
 		}
 
@@ -70,11 +70,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		// Save the images
 		sceneImages := models.CreateSceneImages(scene.ID, input.ImageIds)
 
-		if err := jqb.CreateScenesImages(sceneImages); err != nil {
-			return err
-		}
-
-		return nil
+		return jqb.CreateScenesImages(sceneImages)
 	})
 
 	if err != nil {
@@ -131,8 +127,8 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		}
 
 		// Save the URLs
-		sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
-		if err := qb.UpdateUrls(scene.ID, sceneUrls); err != nil {
+		sceneUrls := models.CreateSceneURLs(scene.ID, input.Urls)
+		if err := qb.UpdateURLs(scene.ID, sceneUrls); err != nil {
 			return err
 		}
 

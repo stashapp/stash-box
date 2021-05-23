@@ -42,12 +42,12 @@ func (qb *SceneQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, sceneDBTable)
 }
 
-func (qb *SceneQueryBuilder) CreateUrls(newJoins SceneUrls) error {
-	return qb.dbi.InsertJoins(sceneUrlTable, &newJoins)
+func (qb *SceneQueryBuilder) CreateURLs(newJoins SceneURLs) error {
+	return qb.dbi.InsertJoins(sceneURLTable, &newJoins)
 }
 
-func (qb *SceneQueryBuilder) UpdateUrls(scene uuid.UUID, updatedJoins SceneUrls) error {
-	return qb.dbi.ReplaceJoins(sceneUrlTable, scene, &updatedJoins)
+func (qb *SceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins SceneURLs) error {
+	return qb.dbi.ReplaceJoins(sceneURLTable, scene, &updatedJoins)
 }
 
 func (qb *SceneQueryBuilder) CreateFingerprints(newJoins SceneFingerprints) error {
@@ -408,16 +408,16 @@ func (qb *SceneQueryBuilder) GetAllAppearances(ids []uuid.UUID) ([]PerformersSce
 	return result, nil
 }
 
-func (qb *SceneQueryBuilder) GetUrls(id uuid.UUID) (SceneUrls, error) {
-	joins := SceneUrls{}
-	err := qb.dbi.FindJoins(sceneUrlTable, id, &joins)
+func (qb *SceneQueryBuilder) GetURLs(id uuid.UUID) (SceneURLs, error) {
+	joins := SceneURLs{}
+	err := qb.dbi.FindJoins(sceneURLTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *SceneQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
-	joins := SceneUrls{}
-	err := qb.dbi.FindAllJoins(sceneUrlTable, ids, &joins)
+func (qb *SceneQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*URL, []error) {
+	joins := SceneURLs{}
+	err := qb.dbi.FindAllJoins(sceneURLTable, ids, &joins)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}

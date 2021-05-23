@@ -67,8 +67,8 @@ func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inp
 	}
 
 	mergeSources := []string{}
-	for _, mergeSourceId := range input.Edit.MergeSourceIds {
-		sourceID, _ := uuid.FromString(mergeSourceId)
+	for _, mergeSourceID := range input.Edit.MergeSourceIds {
+		sourceID, _ := uuid.FromString(mergeSourceID)
 		sourceTag, err := tqb.Find(sourceID)
 		if err != nil {
 			return err
@@ -80,7 +80,7 @@ func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inp
 		if tagID == sourceID {
 			return errors.New("merge target cannot be used as source")
 		}
-		mergeSources = append(mergeSources, mergeSourceId)
+		mergeSources = append(mergeSources, mergeSourceID)
 	}
 
 	if len(mergeSources) < 1 {

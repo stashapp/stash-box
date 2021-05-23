@@ -311,7 +311,7 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 	switch targetType {
 	case models.TargetTypeEnumTag:
 		tqb := models.NewTagQueryBuilder(tx)
-		var tag *models.Tag = nil
+		var tag *models.Tag
 		if operation != models.OperationEnumCreate {
 			tagID, err := eqb.FindTagID(edit.ID)
 			if err != nil {
@@ -345,7 +345,7 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 		}
 	case models.TargetTypeEnumPerformer:
 		pqb := models.NewPerformerQueryBuilder(tx)
-		var performer *models.Performer = nil
+		var performer *models.Performer
 		if operation != models.OperationEnumCreate {
 			performerID, err := eqb.FindPerformerID(edit.ID)
 			if err != nil {

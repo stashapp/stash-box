@@ -51,19 +51,15 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		// TODO - save child studios
 
 		// Save the URLs
-		studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
-		if err := qb.CreateUrls(studioUrls); err != nil {
+		studioUrls := models.CreateStudioURLs(studio.ID, input.Urls)
+		if err := qb.CreateURLs(studioUrls); err != nil {
 			return err
 		}
 
 		// Save the images
 		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
 
-		if err := jqb.CreateStudiosImages(studioImages); err != nil {
-			return err
-		}
-
-		return nil
+		return jqb.CreateStudiosImages(studioImages)
 	})
 
 	if err != nil {
@@ -104,9 +100,9 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 		// Save the URLs
 		// TODO - only do this if provided
-		studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
+		studioUrls := models.CreateStudioURLs(studio.ID, input.Urls)
 
-		if err := qb.UpdateUrls(studio.ID, studioUrls); err != nil {
+		if err := qb.UpdateURLs(studio.ID, studioUrls); err != nil {
 			return err
 		}
 

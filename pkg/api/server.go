@@ -28,12 +28,12 @@ import (
 )
 
 var version string = "0.0.0"
-var buildstamp string = ""
-var githash string = ""
+var buildstamp string
+var githash string
 
 var uiBox *packr.Box
 
-const ApiKeyHeader = "ApiKey"
+const APIKeyHeader = "ApiKey"
 
 func getUserAndRoles(userID string) (*models.User, []models.RoleEnum, error) {
 	u, err := user.Get(userID)
@@ -56,7 +56,7 @@ func getRequestUserID(w http.ResponseWriter, r *http.Request) (string, bool, err
 	var err error
 
 	// translate api key into current user, if present
-	apiKey := r.Header.Get(ApiKeyHeader)
+	apiKey := r.Header.Get(APIKeyHeader)
 	if apiKey != "" {
 		isAPIKey = true
 		userID, err = user.GetUserIDFromAPIKey(apiKey)
@@ -75,7 +75,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			// translate api key into current user, if present
 			userID := ""
-			apiKey := r.Header.Get(ApiKeyHeader)
+			apiKey := r.Header.Get(APIKeyHeader)
 			var err error
 			if apiKey != "" {
 				userID, err = user.GetUserIDFromAPIKey(apiKey)
