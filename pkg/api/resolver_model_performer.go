@@ -159,3 +159,13 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 	sqb := models.NewSceneQueryBuilder(nil)
 	return sqb.CountByPerformer(obj.ID)
 }
+
+func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]string, error) {
+	mergedIDs, err := dataloader.For(ctx).PerformerMergeIDsById.Load(obj.ID)
+
+	var ids []string
+	for _, id := range mergedIDs {
+		ids = append(ids, id.String())
+	}
+	return ids, err
+}

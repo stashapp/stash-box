@@ -35,7 +35,10 @@ var (
 		return &PerformerBodyMod{}
 	})
 
-	performerRedirectTable = database.NewTableJoin(tagTable, "performer_redirects", "source_id", func() interface{} {
+	performerSourceRedirectTable = database.NewTableJoin(performerTable, "performer_redirects", "source_id", func() interface{} {
+		return &PerformerRedirect{}
+	})
+	performerTargetRedirectTable = database.NewTableJoin(performerTable, "performer_redirects", "target_id", func() interface{} {
 		return &PerformerRedirect{}
 	})
 )
@@ -87,6 +90,18 @@ func (p *Performers) Add(o interface{}) {
 type PerformerRedirect struct {
 	SourceID uuid.UUID `db:"source_id" json:"source_id"`
 	TargetID uuid.UUID `db:"target_id" json:"target_id"`
+}
+
+type PerformerRedirects []*PerformerRedirect
+
+func (p *PerformerRedirects) Add(o interface{}) {
+	*p = append(*p, o.(*PerformerRedirect))
+}
+
+func (p PerformerRedirects) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
 }
 
 type PerformerAlias struct {
