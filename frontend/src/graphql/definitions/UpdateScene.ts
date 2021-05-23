@@ -52,6 +52,9 @@ export interface UpdateScene_sceneUpdate {
   __typename: "Scene";
   id: string;
   date: any | null;
+  details: string | null;
+  director: string | null;
+  duration: number | null;
   title: string | null;
   urls: UpdateScene_sceneUpdate_urls[];
   studio: UpdateScene_sceneUpdate_studio | null;
