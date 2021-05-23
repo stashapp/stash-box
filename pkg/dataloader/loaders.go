@@ -17,6 +17,7 @@ type Loaders struct {
 	PerformerById          PerformerLoader
 	PerformerAliasesById   StringsLoader
 	PerformerImageIDsById  UUIDsLoader
+	PerformerMergeIDsById  UUIDsLoader
 	PerformerPiercingsById BodyModificationsLoader
 	PerformerTattoosById   BodyModificationsLoader
 	PerformerUrlsById      URLLoader
@@ -77,6 +78,14 @@ func GetLoaders() *Loaders {
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 				qb := models.NewImageQueryBuilder(nil)
 				return qb.FindIdsByPerformerIds(ids)
+			},
+		},
+		PerformerMergeIDsById: UUIDsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+				qb := models.NewPerformerQueryBuilder(nil)
+				return qb.FindMergeIdsByPerformerIds(ids)
 			},
 		},
 		PerformerAliasesById: StringsLoader{
