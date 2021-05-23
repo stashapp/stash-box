@@ -160,6 +160,7 @@ func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) 
 	ctx = context.WithValue(ctx, api.ContextUser, user)
 	ctx = context.WithValue(ctx, api.ContextRoles, roles)
 	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders())
+	ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
 	return &testRunner{
 		t:        t,
@@ -207,10 +208,10 @@ func (t *testRunner) updateContext(fields []string) context.Context {
 		variables[v] = true
 	}
 
-	rctx := &graphql.RequestContext{
+	rctx := &graphql.OperationContext{
 		Variables: variables,
 	}
-	return graphql.WithRequestContext(t.ctx, rctx)
+	return graphql.WithOperationContext(t.ctx, rctx)
 }
 
 func (s *testRunner) generatePerformerName() string {
