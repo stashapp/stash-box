@@ -66,7 +66,7 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 // Slices are unmarshalled to empty slices even if the field was omitted. This
 // method determines if it was omitted altogether.
 func wasFieldIncluded(ctx context.Context, qualifiedField string) bool {
-	rctx := graphql.GetRequestContext(ctx)
+	rctx := graphql.GetOperationContext(ctx)
 
 	if rctx != nil {
 		_, ret := utils.FindField(rctx.Variables, qualifiedField)
