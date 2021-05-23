@@ -12,11 +12,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/99designs/gqlgen/handler"
+	gqlHandler "github.com/99designs/gqlgen/graphql/handler"
+	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
+	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gobuffalo/packr/v2"
-	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/logger"
@@ -85,7 +86,10 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
+				_, err = w.Write([]byte(err.Error()))
+				if err != nil {
+					logger.Error(err)
+				}
 				return
 			}
 
@@ -142,28 +146,25 @@ func Start() {
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
 
-	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
+	recoverFunc := func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
 		debug.PrintStack()
 
 		message := fmt.Sprintf("Internal system error. Error <%v>", err)
 		return errors.New(message)
-	})
-	requestMiddleware := handler.RequestMiddleware(func(ctx context.Context, next func(ctx context.Context) []byte) []byte {
-		//api.GetRequestContext(ctx).Variables[]
-		return next(ctx)
-	})
-	websocketUpgrader := handler.WebsocketUpgrader(websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	})
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, requestMiddleware, websocketUpgrader)
+	}
 
-	r.Handle("/graphql", dataloader.Middleware(gqlHandler))
+	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}))
+	gqlSrv.SetRecoverFunc(recoverFunc)
+	gqlSrv.AddTransport(gqlTransport.Options{})
+	gqlSrv.AddTransport(gqlTransport.GET{})
+	gqlSrv.AddTransport(gqlTransport.POST{})
+	gqlSrv.AddTransport(gqlTransport.MultipartForm{})
+
+	r.Handle("/graphql", dataloader.Middleware(gqlSrv))
 
 	if !config.GetIsProduction() {
-		r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 	}
 
 	// session handlers
