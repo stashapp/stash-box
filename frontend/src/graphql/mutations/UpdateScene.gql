@@ -2,9 +2,12 @@ mutation UpdateScene($updateData: SceneUpdateInput!) {
   sceneUpdate(input: $updateData) {
       id
       date
-      title,
+      details
+      director
+      duration
+      title
       urls {
-        url,
+        url
         type
       }
       studio {
