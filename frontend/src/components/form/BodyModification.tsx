@@ -32,6 +32,10 @@ const BodyModification: React.FC<BodyModificationProps> = ({
   const [modifications, setModifications] = useState(defaultValues || []);
   const selectRef = useRef(null);
 
+  const isNewLocationValid = (inputValue: string): boolean =>
+    !!inputValue &&
+    !modifications.find(({ location }) => inputValue === location);
+
   const handleChange = (newValue: ValueType<IOptionType, false>) => {
     if (newValue?.value)
       setModifications([...modifications, { location: newValue.value }]);
@@ -85,6 +89,7 @@ const BodyModification: React.FC<BodyModificationProps> = ({
             ref={selectRef}
             name={name}
             placeholder={locationPlaceholder}
+            isValidNewOption={isNewLocationValid}
             onChange={handleChange}
             formatCreateLabel={formatLabel}
             components={{
