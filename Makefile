@@ -90,7 +90,7 @@ staticcheck: linterdeps
 	staticcheck ./...
 
 .PHONY: lint
-lint: revive
+lint: vet revive
 
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile

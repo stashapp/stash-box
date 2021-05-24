@@ -27,7 +27,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-var version string = "0.0.0"
+var version = "0.0.0"
 var buildstamp string
 var githash string
 

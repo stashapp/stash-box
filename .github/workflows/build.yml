@@ -81,7 +81,7 @@ jobs:
       run: make generate
 
     - name: Run tests
-      run: POSTGRES_DB=postgres:postgres@localhost/postgres?sslmode=disable make vet it
+      run: POSTGRES_DB=postgres:postgres@localhost/postgres?sslmode=disable make lint it
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
