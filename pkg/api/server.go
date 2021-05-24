@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	gqlHandler "github.com/99designs/gqlgen/graphql/handler"
+	gqlExtension "github.com/99designs/gqlgen/graphql/handler/extension"
 	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
@@ -160,6 +161,7 @@ func Start() {
 	gqlSrv.AddTransport(gqlTransport.GET{})
 	gqlSrv.AddTransport(gqlTransport.POST{})
 	gqlSrv.AddTransport(gqlTransport.MultipartForm{})
+	gqlSrv.Use(gqlExtension.Introspection{})
 
 	r.Handle("/graphql", dataloader.Middleware(gqlSrv))
 
