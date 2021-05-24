@@ -355,6 +355,9 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 
 		tag.CopyFromTagEdit(*data.New, data.Old)
 		updatedTag, err := qb.Update(*tag)
+		if err != nil {
+			return nil, err
+		}
 
 		currentAliases, err := qb.GetRawAliases(updatedTag.ID)
 		if err != nil {
@@ -379,6 +382,9 @@ func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 
 		tag.CopyFromTagEdit(*data.New, data.Old)
 		updatedTag, err := qb.Update(*tag)
+		if err != nil {
+			return nil, err
+		}
 
 		for _, v := range data.MergeSources {
 			sourceUUID, _ := uuid.FromString(v)

@@ -4,16 +4,6 @@ import (
 	"path/filepath"
 )
 
-type Paths struct {
-	JSON *jsonPaths
-}
-
-func NewPaths() *Paths {
-	p := Paths{}
-	p.JSON = newJSONPaths()
-	return &p
-}
-
 func GetConfigDirectory() string {
 	return "."
 }

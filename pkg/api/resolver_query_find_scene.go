@@ -36,7 +36,7 @@ func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprin
 	}
 
 	if len(fingerprints) > 100 {
-		return nil, errors.New("Too many fingerprints.")
+		return nil, errors.New("Too many fingerprints")
 	}
 
 	qb := models.NewSceneQueryBuilder(nil)
@@ -50,7 +50,7 @@ func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, finger
 	}
 
 	if len(fingerprints) > 100 {
-		return nil, errors.New("Too many fingerprints.")
+		return nil, errors.New("Too many fingerprints")
 	}
 
 	qb := models.NewSceneQueryBuilder(nil)

@@ -45,53 +45,55 @@ func (s *Packr2Source) Close() error {
 }
 
 func (s *Packr2Source) First() (version uint, err error) {
-	if v, ok := s.Migrations.First(); !ok {
+	v, ok := s.Migrations.First()
+	if !ok {
 		return 0, os.ErrNotExist
-	} else {
-		return v, nil
 	}
+	return v, nil
 }
 
 func (s *Packr2Source) Prev(version uint) (prevVersion uint, err error) {
-	if v, ok := s.Migrations.Prev(version); !ok {
+	v, ok := s.Migrations.Prev(version)
+	if !ok {
 		return 0, os.ErrNotExist
-	} else {
-		return v, nil
 	}
+	return v, nil
 }
 
 func (s *Packr2Source) Next(version uint) (nextVersion uint, err error) {
-	if v, ok := s.Migrations.Next(version); !ok {
+	v, ok := s.Migrations.Next(version)
+	if !ok {
 		return 0, os.ErrNotExist
-	} else {
-		return v, nil
 	}
+	return v, nil
 }
 
 func (s *Packr2Source) ReadUp(version uint) (r io.ReadCloser, identifier string, err error) {
-	if migration, ok := s.Migrations.Up(version); !ok {
+	migration, ok := s.Migrations.Up(version)
+	if !ok {
 		return nil, "", os.ErrNotExist
-	} else {
-		b, err := s.Box.Find(migration.Raw)
-		if err != nil {
-			return nil, "", err
-		}
-		return ioutil.NopCloser(bytes.NewBuffer(b)),
-			migration.Identifier,
-			nil
 	}
+
+	b, err := s.Box.Find(migration.Raw)
+	if err != nil {
+		return nil, "", err
+	}
+	return ioutil.NopCloser(bytes.NewBuffer(b)),
+		migration.Identifier,
+		nil
 }
 
 func (s *Packr2Source) ReadDown(version uint) (r io.ReadCloser, identifier string, err error) {
-	if migration, ok := s.Migrations.Down(version); !ok {
+	migration, ok := s.Migrations.Down(version)
+	if !ok {
 		return nil, "", migrate.ErrNilVersion
-	} else {
-		b, err := s.Box.Find(migration.Raw)
-		if err != nil {
-			return nil, "", err
-		}
-		return ioutil.NopCloser(bytes.NewBuffer(b)),
-			migration.Identifier,
-			nil
 	}
+
+	b, err := s.Box.Find(migration.Raw)
+	if err != nil {
+		return nil, "", err
+	}
+	return ioutil.NopCloser(bytes.NewBuffer(b)),
+		migration.Identifier,
+		nil
 }

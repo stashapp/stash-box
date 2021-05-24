@@ -95,19 +95,19 @@ func (Edit) GetTable() database.Table {
 	return editDBTable
 }
 
-func (p Edit) GetID() uuid.UUID {
-	return p.ID
+func (e Edit) GetID() uuid.UUID {
+	return e.ID
 }
 
-func (p *Edit) ImmediateAccept() {
-	p.Status = VoteStatusEnumImmediateAccepted.String()
-	p.Applied = true
-	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+func (e *Edit) ImmediateAccept() {
+	e.Status = VoteStatusEnumImmediateAccepted.String()
+	e.Applied = true
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
-func (p *Edit) ImmediateReject() {
-	p.Status = VoteStatusEnumImmediateRejected.String()
-	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+func (e *Edit) ImmediateReject() {
+	e.Status = VoteStatusEnumImmediateRejected.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (e *Edit) SetData(data interface{}) error {

@@ -16,8 +16,8 @@ var (
 		return &Studio{}
 	})
 
-	studioUrlTable = database.NewTableJoin(studioTable, "studio_urls", studioJoinKey, func() interface{} {
-		return &StudioUrl{}
+	studioURLTable = database.NewTableJoin(studioTable, "studio_urls", studioJoinKey, func() interface{} {
+		return &StudioURL{}
 	})
 )
 
@@ -50,13 +50,13 @@ func (p *Studios) Add(o interface{}) {
 	*p = append(*p, o.(*Studio))
 }
 
-type StudioUrl struct {
+type StudioURL struct {
 	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
 	URL      string    `db:"url" json:"url"`
 	Type     string    `db:"type" json:"type"`
 }
 
-func (p *StudioUrl) ToURL() URL {
+func (p *StudioURL) ToURL() URL {
 	url := URL{
 		URL:  p.URL,
 		Type: p.Type,
@@ -64,24 +64,24 @@ func (p *StudioUrl) ToURL() URL {
 	return url
 }
 
-type StudioUrls []*StudioUrl
+type StudioURLs []*StudioURL
 
-func (p StudioUrls) Each(fn func(interface{})) {
+func (p StudioURLs) Each(fn func(interface{})) {
 	for _, v := range p {
 		fn(*v)
 	}
 }
 
-func (p *StudioUrls) Add(o interface{}) {
-	*p = append(*p, (o.(*StudioUrl)))
+func (p *StudioURLs) Add(o interface{}) {
+	*p = append(*p, (o.(*StudioURL)))
 }
 
-func CreateStudioUrls(studioId uuid.UUID, urls []*URLInput) StudioUrls {
-	var ret StudioUrls
+func CreateStudioURLs(studioID uuid.UUID, urls []*URLInput) StudioURLs {
+	var ret StudioURLs
 
 	for _, urlInput := range urls {
-		ret = append(ret, &StudioUrl{
-			StudioID: studioId,
+		ret = append(ret, &StudioURL{
+			StudioID: studioID,
 			URL:      urlInput.URL,
 			Type:     urlInput.Type,
 		})

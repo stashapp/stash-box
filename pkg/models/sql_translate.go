@@ -2,20 +2,22 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"reflect"
+
+	"github.com/stashapp/stash-box/pkg/logger"
 
 	"github.com/gofrs/uuid"
 )
 
-func CopyFull(target interface{}, source interface{}) error {
+func CopyFull(target interface{}, source interface{}) {
 	// copy all fields from source onto target
 	// nil values are set, where possible
 
 	// target must be pointer
 	if reflect.TypeOf(target).Kind() != reflect.Ptr {
-		return errors.New("target must be pointer")
+		logger.Errorf("Target must be pointer")
+		return
 	}
 
 	targetValue := reflect.ValueOf(target)
@@ -23,7 +25,8 @@ func CopyFull(target interface{}, source interface{}) error {
 
 	// source must be value
 	if reflect.TypeOf(source).Kind() == reflect.Ptr {
-		return errors.New("source must be value")
+		logger.Errorf("source must be value")
+		return
 	}
 
 	sourceValue := reflect.ValueOf(source)
@@ -58,8 +61,6 @@ func CopyFull(target interface{}, source interface{}) error {
 			translateField(targetFieldValue, sourceFieldValue)
 		}
 	}
-
-	return nil
 }
 
 func translateField(targetFieldValue reflect.Value, sourceFieldValue reflect.Value) {

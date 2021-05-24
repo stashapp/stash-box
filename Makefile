@@ -1,3 +1,7 @@
+LINTERS := \
+	github.com/kisielk/errcheck \
+	honnef.co/go/tools/cmd/staticcheck@latest
+
 LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
@@ -68,9 +72,20 @@ fmt:
 vet:
 	go vet ./...
 
+.PHONY: linterdeps
+linterdeps:
+	go get -v $(LINTERS)
+
+.PHONY: errcheck
+errcheck: linterdeps
+	errcheck -ignore 'fmt:[FS]?[Pp]rint*' ./...
+
+.PHONY: staticcheck
+staticcheck: linterdeps
+	staticcheck ./...
+
 .PHONY: lint
-lint:
-	revive -config revive.toml -exclude ./vendor/...  ./...
+lint: vet staticcheck errcheck
 
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile

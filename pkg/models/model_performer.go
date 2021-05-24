@@ -23,8 +23,8 @@ var (
 		return &PerformerAlias{}
 	})
 
-	performerUrlTable = database.NewTableJoin(performerTable, "performer_urls", performerJoinKey, func() interface{} {
-		return &PerformerUrl{}
+	performerURLTable = database.NewTableJoin(performerTable, "performer_urls", performerJoinKey, func() interface{} {
+		return &PerformerURL{}
 	})
 
 	performerTattooTable = database.NewTableJoin(performerTable, "performer_tattoos", performerJoinKey, func() interface{} {
@@ -182,23 +182,23 @@ func (p *PerformerAliases) RemoveAliases(oldAliases []string) error {
 	return nil
 }
 
-func CreatePerformerAliases(performerId uuid.UUID, aliases []string) PerformerAliases {
+func CreatePerformerAliases(performerID uuid.UUID, aliases []string) PerformerAliases {
 	var ret PerformerAliases
 
 	for _, alias := range aliases {
-		ret = append(ret, &PerformerAlias{PerformerID: performerId, Alias: alias})
+		ret = append(ret, &PerformerAlias{PerformerID: performerID, Alias: alias})
 	}
 
 	return ret
 }
 
-type PerformerUrl struct {
+type PerformerURL struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	URL         string    `db:"url" json:"url"`
 	Type        string    `db:"type" json:"type"`
 }
 
-func (p *PerformerUrl) ToURL() URL {
+func (p *PerformerURL) ToURL() URL {
 	url := URL{
 		URL:  p.URL,
 		Type: p.Type,
@@ -206,29 +206,29 @@ func (p *PerformerUrl) ToURL() URL {
 	return url
 }
 
-func (p PerformerUrl) ID() string {
+func (p PerformerURL) ID() string {
 	return p.URL + p.Type
 }
 
-type PerformerUrls []*PerformerUrl
+type PerformerURLs []*PerformerURL
 
-func (p PerformerUrls) Each(fn func(interface{})) {
+func (p PerformerURLs) Each(fn func(interface{})) {
 	for _, v := range p {
 		fn(*v)
 	}
 }
 
-func (p PerformerUrls) EachPtr(fn func(interface{})) {
+func (p PerformerURLs) EachPtr(fn func(interface{})) {
 	for _, v := range p {
 		fn(v)
 	}
 }
 
-func (p *PerformerUrls) Add(o interface{}) {
-	*p = append(*p, o.(*PerformerUrl))
+func (p *PerformerURLs) Add(o interface{}) {
+	*p = append(*p, o.(*PerformerURL))
 }
 
-func (p *PerformerUrls) Remove(id string) {
+func (p *PerformerURLs) Remove(id string) {
 	for i, v := range *p {
 		if (*v).ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
@@ -238,12 +238,12 @@ func (p *PerformerUrls) Remove(id string) {
 	}
 }
 
-func CreatePerformerUrls(performerId uuid.UUID, urls []*URL) PerformerUrls {
-	var ret PerformerUrls
+func CreatePerformerURLs(performerID uuid.UUID, urls []*URL) PerformerURLs {
+	var ret PerformerURLs
 
 	for _, urlInput := range urls {
-		ret = append(ret, &PerformerUrl{
-			PerformerID: performerId,
+		ret = append(ret, &PerformerURL{
+			PerformerID: performerID,
 			URL:         urlInput.URL,
 			Type:        urlInput.Type,
 		})
@@ -317,7 +317,7 @@ func (p PerformerBodyMods) ToBodyModifications() []*BodyModification {
 	return mods
 }
 
-func CreatePerformerBodyMods(performerId uuid.UUID, urls []*BodyModification) PerformerBodyMods {
+func CreatePerformerBodyMods(performerID uuid.UUID, urls []*BodyModification) PerformerBodyMods {
 	var ret PerformerBodyMods
 
 	for _, bmInput := range urls {
@@ -328,7 +328,7 @@ func CreatePerformerBodyMods(performerId uuid.UUID, urls []*BodyModification) Pe
 			description.Valid = true
 		}
 		ret = append(ret, &PerformerBodyMod{
-			PerformerID: performerId,
+			PerformerID: performerID,
 			Location:    bmInput.Location,
 			Description: description,
 		})

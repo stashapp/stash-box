@@ -71,12 +71,16 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 		// set the checksum in the new image
 		newImage.Checksum = checksum
 
-		fileReader.Seek(0, 0)
+		if _, err = fileReader.Seek(0, 0); err != nil {
+			return nil, err
+		}
 		if err := populateImageDimensions(fileReader, &newImage); err != nil {
 			return nil, err
 		}
 
-		fileReader.Seek(0, 0)
+		if _, err = fileReader.Seek(0, 0); err != nil {
+			return nil, err
+		}
 		if err := s.Backend.WriteFile(fileReader, &newImage); err != nil {
 			return nil, err
 		}
@@ -110,7 +114,7 @@ func (s *Service) Destroy(input models.ImageDestroyInput) error {
 	}
 
 	// delete the file. Suppress any error
-	s.Backend.DestroyFile(image)
+	_ = s.Backend.DestroyFile(image)
 
 	return nil
 }

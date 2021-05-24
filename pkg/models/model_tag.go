@@ -130,11 +130,11 @@ func (p TagAliases) ToAliases() []string {
 	return ret
 }
 
-func CreateTagAliases(tagId uuid.UUID, aliases []string) []*TagAlias {
+func CreateTagAliases(tagID uuid.UUID, aliases []string) []*TagAlias {
 	var ret []*TagAlias
 
 	for _, alias := range aliases {
-		ret = append(ret, &TagAlias{TagID: tagId, Alias: alias})
+		ret = append(ret, &TagAlias{TagID: tagID, Alias: alias})
 	}
 
 	return ret

@@ -24,28 +24,33 @@ func MD5FromFilePath(filePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
 
 	h := md5.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return "", err
 	}
 	checksum := h.Sum(nil)
+
+	_ = f.Close()
 	return fmt.Sprintf("%x", checksum), nil
 }
 
-func GenerateRandomPassword(l int) string {
+func GenerateRandomPassword(l int) (string, error) {
 	b := make([]byte, l)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
 
 	output := make([]byte, ascii85.MaxEncodedLen(l))
 	n := ascii85.Encode(output, b)
 	output = output[0:n]
-	return string(output)
+	return string(output), nil
 }
 
-func GenerateRandomKey(l int) string {
+func GenerateRandomKey(l int) (string, error) {
 	b := make([]byte, l)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", b), nil
 }

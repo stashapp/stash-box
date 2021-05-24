@@ -23,12 +23,14 @@ func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
 	}
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(file)
+	if _, err := buf.ReadFrom(file); err != nil {
+		return err
+	}
 
 	// write the file
 	path := GetImagePath(fileDir, image.Checksum)
 	if err := ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0644)); err != nil {
-		os.Remove(path)
+		_ = os.Remove(path)
 		return err
 	}
 
