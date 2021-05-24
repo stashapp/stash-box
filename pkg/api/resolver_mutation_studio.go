@@ -111,6 +111,9 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		// Save the images
 		// get the existing images
 		existingImages, err := iqb.FindByStudioID(studio.ID)
+		if err != nil {
+			return err
+		}
 
 		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
 		if err := jqb.UpdateStudiosImages(studio.ID, studioImages); err != nil {
@@ -151,6 +154,9 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		iqb := models.NewImageQueryBuilder(txn.GetTx())
 
 		existingImages, err := iqb.FindByStudioID(studioID)
+		if err != nil {
+			return err
+		}
 
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly

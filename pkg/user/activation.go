@@ -347,7 +347,7 @@ func ActivateResetPassword(tx *sqlx.Tx, activationKey string, newPassword string
 	}
 	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-	user, err = uqb.Update(*user)
+	_, err = uqb.Update(*user)
 	if err != nil {
 		return err
 	}

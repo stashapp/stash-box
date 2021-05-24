@@ -144,6 +144,9 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		// Save the images
 		// get the existing images
 		existingImages, err := iqb.FindByPerformerID(performer.ID)
+		if err != nil {
+			return err
+		}
 
 		performerImages := models.CreatePerformerImages(performer.ID, input.ImageIds)
 		if err := jqb.UpdatePerformersImages(performer.ID, performerImages); err != nil {
@@ -188,6 +191,9 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 		// to remove them explicitly
 
 		existingImages, err := iqb.FindByPerformerID(performerID)
+		if err != nil {
+			return err
+		}
 
 		if err = qb.Destroy(performerID); err != nil {
 			return err

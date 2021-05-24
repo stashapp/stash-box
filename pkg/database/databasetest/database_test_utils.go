@@ -18,19 +18,6 @@ type DatabasePopulater interface {
 	PopulateDB() error
 }
 
-func testTeardown(databaseFile string) {
-	err := database.DB.Close()
-
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.Remove(databaseFile)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func pgDropAll(conn *sqlx.DB) {
 	// we want to drop all tables so that the migration initialises
 	// the schema

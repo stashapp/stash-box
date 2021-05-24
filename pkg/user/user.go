@@ -304,7 +304,7 @@ func Destroy(tx *sqlx.Tx, input models.UserDestroyInput) (bool, error) {
 	return true, nil
 }
 
-// CreateRootUser creates the initial root user if no users are present
+// CreateRoot creates the initial root user if no users are present
 func CreateRoot() {
 	// if there are no users present, then create a root user with a
 	// generated password and api key, outputting them
@@ -442,7 +442,7 @@ func ChangePassword(tx *sqlx.Tx, userID string, currentPassword string, newPassw
 	}
 	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-	user, err = qb.Update(*user)
+	_, err = qb.Update(*user)
 	return err
 }
 

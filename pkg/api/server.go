@@ -49,25 +49,6 @@ func getUserAndRoles(userID string) (*models.User, []models.RoleEnum, error) {
 	return u, roles, nil
 }
 
-// returns the userID, a boolean set to true if api key was used, and an error
-func getRequestUserID(w http.ResponseWriter, r *http.Request) (string, bool, error) {
-	userID := ""
-	isAPIKey := false
-	var err error
-
-	// translate api key into current user, if present
-	apiKey := r.Header.Get(APIKeyHeader)
-	if apiKey != "" {
-		isAPIKey = true
-		userID, err = user.GetUserIDFromAPIKey(apiKey)
-	} else {
-		// handle session
-		userID, err = getSessionUserID(w, r)
-	}
-
-	return userID, isAPIKey, err
-}
-
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -176,7 +157,6 @@ func Start() {
 		}
 
 		handleLogin(w, r)
-		return
 	})
 	r.HandleFunc("/logout", handleLogout)
 

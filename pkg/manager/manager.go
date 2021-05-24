@@ -18,10 +18,6 @@ import (
 )
 
 type singleton struct {
-	Status JobStatus
-	JSON   *jsonUtils
-	Paths  *paths.Paths
-
 	EmailManager *email.Manager
 }
 
@@ -42,10 +38,6 @@ func Initialize() *singleton {
 		initLog()
 		initEnvs()
 		instance = &singleton{
-			Status: Idle,
-			Paths:  paths.NewPaths(),
-			JSON:   &jsonUtils{},
-
 			EmailManager: email.NewManager(),
 		}
 	})

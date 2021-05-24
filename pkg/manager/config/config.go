@@ -11,7 +11,6 @@ import (
 )
 
 const Stash = "stash"
-const Metadata = "metadata"
 
 const Database = "database"
 
@@ -72,10 +71,6 @@ func Set(key string, value interface{}) {
 
 func Write() error {
 	return viper.WriteConfig()
-}
-
-func GetMetadataPath() string {
-	return viper.GetString(Metadata)
 }
 
 func GetDatabasePath() string {
@@ -293,7 +288,7 @@ func GetLogLevel() string {
 }
 
 func IsValid() bool {
-	setPaths := viper.IsSet(Stash) && viper.IsSet(Metadata)
+	setPaths := viper.IsSet(Stash)
 
 	// TODO: check valid paths
 	return setPaths
