@@ -1,13 +1,8 @@
 import React, { useState, useRef } from "react";
 import Creatable from "react-select/creatable";
-import { ValueType, OptionTypeBase, components } from "react-select";
+import { components } from "react-select";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Controller } from "react-hook-form";
-
-interface IOptionType extends OptionTypeBase {
-  value?: string;
-  label?: string;
-}
 
 interface BodyModificationProps {
   name: string;
@@ -32,9 +27,12 @@ const BodyModification: React.FC<BodyModificationProps> = ({
   const [modifications, setModifications] = useState(defaultValues || []);
   const selectRef = useRef(null);
 
-  const handleChange = (newValue: ValueType<IOptionType, false>) => {
-    if (newValue?.value)
-      setModifications([...modifications, { location: newValue.value }]);
+  const isNewLocationValid = (inputValue: string): boolean =>
+    !!inputValue &&
+    !modifications.find(({ location }) => inputValue === location);
+
+  const handleNewLocation = (inputValue: string) => {
+    setModifications([...modifications, { location: inputValue }]);
   };
 
   const removeMod = (index: number) =>
@@ -85,7 +83,8 @@ const BodyModification: React.FC<BodyModificationProps> = ({
             ref={selectRef}
             name={name}
             placeholder={locationPlaceholder}
-            onChange={handleChange}
+            isValidNewOption={isNewLocationValid}
+            onCreateOption={handleNewLocation}
             formatCreateLabel={formatLabel}
             components={{
               DropdownIndicator: () => null,
