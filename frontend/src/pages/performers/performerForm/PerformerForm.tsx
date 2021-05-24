@@ -178,14 +178,14 @@ const schema = yup.object().shape({
     .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
   tattoos: yup.array().of(
     yup.object().shape({
-      location: yup.string().required("Location is required"),
-      description: yup.string().transform(nullCheck).nullable(),
+      location: yup.string().trim().required("Location is required"),
+      description: yup.string().trim().transform(nullCheck).nullable(),
     })
   ),
   piercings: yup.array().of(
     yup.object({
-      location: yup.string().required("Location is required"),
-      description: yup.string().transform(nullCheck).nullable(),
+      location: yup.string().trim().required("Location is required"),
+      description: yup.string().trim().transform(nullCheck).nullable(),
     })
   ),
   aliases: yup
@@ -703,6 +703,16 @@ const PerformerForm: React.FC<PerformerProps> = ({
             formatLabel={(text) => `Add tattoo for location "${text}"`}
             defaultValues={performer?.tattoos ?? []}
           />
+          <Form.Control.Feedback
+            className={cx({ "d-block": errors.tattoos })}
+            type="invalid"
+          >
+            {errors?.tattoos?.map((mod, idx) => (
+              <div>
+                Tattoo {idx + 1}: {mod?.location?.message}
+              </div>
+            ))}
+          </Form.Control.Feedback>
 
           <BodyModification
             control={control}
@@ -712,6 +722,16 @@ const PerformerForm: React.FC<PerformerProps> = ({
             formatLabel={(text) => `Add piercing for location "${text}"`}
             defaultValues={performer?.piercings ?? []}
           />
+          <Form.Control.Feedback
+            className={cx({ "d-block": errors.piercings })}
+            type="invalid"
+          >
+            {errors?.piercings?.map((mod, idx) => (
+              <div>
+                Piercing {idx + 1}: {mod?.location?.message}
+              </div>
+            ))}
+          </Form.Control.Feedback>
 
           <Form.Row className="mt-3">
             <Button
