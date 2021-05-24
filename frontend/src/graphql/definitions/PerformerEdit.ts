@@ -347,11 +347,11 @@ export type PerformerEdit_performerEdit_merge_sources = PerformerEdit_performerE
 export interface PerformerEdit_performerEdit_options {
   __typename: "PerformerEditOptions";
   /**
-   *  Set performer alias on scenes without alias to old name if name is changed 
+   * Set performer alias on scenes without alias to old name if name is changed
    */
   set_modify_aliases: boolean;
   /**
-   *  Set performer alias on scenes attached to merge sources to old name 
+   * Set performer alias on scenes attached to merge sources to old name
    */
   set_merge_aliases: boolean;
 }
