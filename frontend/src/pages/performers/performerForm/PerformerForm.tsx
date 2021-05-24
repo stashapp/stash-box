@@ -178,14 +178,14 @@ const schema = yup.object().shape({
     .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
   tattoos: yup.array().of(
     yup.object().shape({
-      location: yup.string().required("Location is required"),
-      description: yup.string().transform(nullCheck).nullable(),
+      location: yup.string().trim().required("Location is required"),
+      description: yup.string().trim().transform(nullCheck).nullable(),
     })
   ),
   piercings: yup.array().of(
     yup.object({
-      location: yup.string().required("Location is required"),
-      description: yup.string().transform(nullCheck).nullable(),
+      location: yup.string().trim().required("Location is required"),
+      description: yup.string().trim().transform(nullCheck).nullable(),
     })
   ),
   aliases: yup
