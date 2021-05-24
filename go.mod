@@ -22,6 +22,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/karrick/godirwalk v1.16.1 // indirect
+	github.com/kisielk/errcheck v1.6.0 // indirect
 	github.com/lib/pq v1.3.0
 	github.com/markbates/oncer v1.0.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.7
@@ -40,4 +41,5 @@ require (
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect
 	golang.org/x/tools v0.1.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	honnef.co/go/tools v0.1.4 // indirect
 )

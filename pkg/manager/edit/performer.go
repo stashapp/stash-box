@@ -68,8 +68,7 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
 	}
 
-	edit.SetData(performerEdit)
-	return nil
+	return edit.SetData(performerEdit)
 }
 
 func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -157,8 +156,7 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
 	}
 
-	edit.SetData(performerEdit)
-	return nil
+	return edit.SetData(performerEdit)
 }
 
 func CreatePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -184,8 +182,7 @@ func CreatePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 		performerEdit.New.AddedImages = input.Details.ImageIds
 	}
 
-	edit.SetData(performerEdit)
-	return nil
+	return edit.SetData(performerEdit)
 }
 
 func DestroyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {

@@ -778,7 +778,9 @@ func (qb *PerformerQueryBuilder) ApplyModifyEdit(performer *Performer, data *Per
 	}
 
 	if data.New.Name != nil && data.SetModifyAliases {
-		qb.UpdateScenePerformerAlias(updatedPerformer.ID, *data.Old.Name)
+		if err = qb.UpdateScenePerformerAlias(updatedPerformer.ID, *data.Old.Name); err != nil {
+			return nil, err
+		}
 	}
 
 	return updatedPerformer, err

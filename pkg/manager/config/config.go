@@ -304,12 +304,18 @@ func SetInitialConfig() error {
 	const apiKeyLength = 32
 
 	if string(GetJWTSignKey()) == "" {
-		signKey := utils.GenerateRandomKey(apiKeyLength)
+		signKey, err := utils.GenerateRandomKey(apiKeyLength)
+		if err != nil {
+			return err
+		}
 		Set(JWTSignKey, signKey)
 	}
 
 	if string(GetSessionStoreKey()) == "" {
-		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
+		sessionStoreKey, err := utils.GenerateRandomKey(apiKeyLength)
+		if err != nil {
+			return err
+		}
 		Set(SessionStoreKey, sessionStoreKey)
 	}
 

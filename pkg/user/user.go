@@ -319,7 +319,10 @@ func CreateRoot() {
 
 	if count == 0 {
 		const passwordLength = 16
-		password := utils.GenerateRandomPassword(passwordLength)
+		password, err := utils.GenerateRandomPassword(passwordLength)
+		if err != nil {
+			panic(fmt.Errorf("Error creating root user: %s", err.Error()))
+		}
 		newUser := models.UserCreateInput{
 			Name:     "root",
 			Password: password,
@@ -334,7 +337,7 @@ func CreateRoot() {
 		}
 
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			panic(fmt.Errorf("Error creating root user: %s", err.Error()))
 		}
 

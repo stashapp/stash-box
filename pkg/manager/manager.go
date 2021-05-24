@@ -119,9 +119,9 @@ func initFlags() {
 
 func initEnvs() {
 	viper.SetEnvPrefix("stash_box") // will be uppercased automatically
-	viper.BindEnv("host")           // STASH_BOX_HOST
-	viper.BindEnv("port")           // STASH_BOX_PORT
-	viper.BindEnv("database")       // STASH_BOX_DATABASE
+	_ = viper.BindEnv("host")       // STASH_BOX_HOST
+	_ = viper.BindEnv("port")       // STASH_BOX_PORT
+	_ = viper.BindEnv("database")   // STASH_BOX_DATABASE
 }
 
 func initLog() {

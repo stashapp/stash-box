@@ -44,8 +44,7 @@ func ModifyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
-	edit.SetData(tagEdit)
-	return nil
+	return edit.SetData(tagEdit)
 }
 
 func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -101,8 +100,7 @@ func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inp
 		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
-	edit.SetData(tagEdit)
-	return nil
+	return edit.SetData(tagEdit)
 }
 
 func CreateTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -113,8 +111,7 @@ func CreateTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 		tagEdit.New.AddedAliases = input.Details.Aliases
 	}
 
-	edit.SetData(tagEdit)
-	return nil
+	return edit.SetData(tagEdit)
 }
 
 func DestroyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {

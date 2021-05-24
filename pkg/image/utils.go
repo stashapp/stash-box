@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
-	_ "golang.org/x/image/webp"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
@@ -12,8 +11,10 @@ import (
 	"io"
 	"path/filepath"
 
+	_ "golang.org/x/image/webp"
+
 	"github.com/disintegration/imaging"
-	"github.com/h2non/go-is-svg"
+	issvg "github.com/h2non/go-is-svg"
 
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -22,9 +23,13 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 	img, _, err := image.Decode(imgReader)
 	if err != nil {
 		// SVG is not an image so we have to manually check if the image is SVG
-		imgReader.Seek(0, 0)
+		if _, err = imgReader.Seek(0, 0); err != nil {
+			return err
+		}
 		buf := new(bytes.Buffer)
-		buf.ReadFrom(imgReader)
+		if _, err := buf.ReadFrom(imgReader); err != nil {
+			return err
+		}
 		if issvg.IsSVG(buf.Bytes()) {
 			dest.Width = -1
 			dest.Height = -1

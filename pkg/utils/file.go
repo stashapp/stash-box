@@ -24,7 +24,7 @@ func Touch(path string) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		return file.Close()
 	}
 	return nil
 }

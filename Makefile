@@ -78,14 +78,14 @@ linterdeps:
 
 .PHONY: errcheck
 errcheck: linterdeps
-	errcheck ./...
+	errcheck -ignore 'fmt:[FS]?[Pp]rint*' ./...
 
 .PHONY: staticcheck
 staticcheck: linterdeps
 	staticcheck ./...
 
 .PHONY: lint
-lint: vet staticcheck
+lint: vet staticcheck errcheck
 
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile

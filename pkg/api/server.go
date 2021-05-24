@@ -79,7 +79,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			// ensure api key of the user matches the passed one
 			if apiKey != "" && user != nil && user.APIKey != apiKey {
 				w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte(err.Error()))
+				_, _ = w.Write([]byte(err.Error()))
 				return
 			}
 
@@ -186,7 +186,9 @@ func Start() {
 		}
 
 		if config.GetHTTPUpgrade() {
-			go http.ListenAndServe(config.GetHost()+":80", http.HandlerFunc(redirect))
+			go func() {
+				logger.Fatal(http.ListenAndServe(config.GetHost()+":80", http.HandlerFunc(redirect)))
+			}()
 		}
 
 		go func() {

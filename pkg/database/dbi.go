@@ -190,7 +190,9 @@ func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	output := table.NewObject()
 	if rows.Next() {
@@ -297,7 +299,9 @@ func (q dbi) RawQuery(table Table, query string, args []interface{}, output Mode
 		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
 		return err
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	for rows.Next() {
 		o := table.NewObject()
