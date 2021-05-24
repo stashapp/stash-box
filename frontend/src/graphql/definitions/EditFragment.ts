@@ -347,11 +347,11 @@ export type EditFragment_merge_sources = EditFragment_merge_sources_Scene | Edit
 export interface EditFragment_options {
   __typename: "PerformerEditOptions";
   /**
-   *  Set performer alias on scenes without alias to old name if name is changed 
+   * Set performer alias on scenes without alias to old name if name is changed
    */
   set_modify_aliases: boolean;
   /**
-   *  Set performer alias on scenes attached to merge sources to old name 
+   * Set performer alias on scenes attached to merge sources to old name
    */
   set_merge_aliases: boolean;
 }

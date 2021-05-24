@@ -185,9 +185,9 @@ input PerformerEditDetailsInput {
 }
 
 input PerformerEditOptionsInput {
-  """ Set performer alias on scenes without alias to old name if name is changed """
+  """Set performer alias on scenes without alias to old name if name is changed"""
   set_modify_aliases: Boolean = false
-  """ Set performer alias on scenes attached to merge sources to old name """
+  """Set performer alias on scenes attached to merge sources to old name"""
   set_merge_aliases: Boolean = true
 }
 
@@ -231,9 +231,9 @@ type PerformerEdit {
 }
 
 type PerformerEditOptions {
-  """ Set performer alias on scenes without alias to old name if name is changed """
+  """Set performer alias on scenes without alias to old name if name is changed"""
   set_modify_aliases: Boolean!
-  """ Set performer alias on scenes attached to merge sources to old name """
+  """Set performer alias on scenes attached to merge sources to old name"""
   set_merge_aliases: Boolean!
 }
 
