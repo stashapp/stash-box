@@ -77,11 +77,11 @@ func WithTransaction(ctx context.Context, fn TxFunc) error {
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			txn.Rollback()
+			_ = txn.Rollback()
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			txn.Rollback()
+			_ = txn.Rollback()
 		} else {
 			// all good, commit
 			err = txn.Commit()

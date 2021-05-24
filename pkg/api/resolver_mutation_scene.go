@@ -55,8 +55,8 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		}
 
 		// Save the URLs
-		sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
-		if err := qb.CreateUrls(sceneUrls); err != nil {
+		sceneUrls := models.CreateSceneURLs(scene.ID, input.Urls)
+		if err := qb.CreateURLs(sceneUrls); err != nil {
 			return err
 		}
 
@@ -70,11 +70,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		// Save the images
 		sceneImages := models.CreateSceneImages(scene.ID, input.ImageIds)
 
-		if err := jqb.CreateScenesImages(sceneImages); err != nil {
-			return err
-		}
-
-		return nil
+		return jqb.CreateScenesImages(sceneImages)
 	})
 
 	if err != nil {
@@ -131,14 +127,17 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		}
 
 		// Save the URLs
-		sceneUrls := models.CreateSceneUrls(scene.ID, input.Urls)
-		if err := qb.UpdateUrls(scene.ID, sceneUrls); err != nil {
+		sceneUrls := models.CreateSceneURLs(scene.ID, input.Urls)
+		if err := qb.UpdateURLs(scene.ID, sceneUrls); err != nil {
 			return err
 		}
 
 		// Save the images
 		// get the existing images
 		existingImages, err := iqb.FindBySceneID(scene.ID)
+		if err != nil {
+			return err
+		}
 
 		sceneImages := models.CreateSceneImages(scene.ID, input.ImageIds)
 		if err := jqb.UpdateScenesImages(scene.ID, sceneImages); err != nil {
@@ -179,6 +178,9 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		iqb := models.NewImageQueryBuilder(txn.GetTx())
 
 		existingImages, err := iqb.FindBySceneID(sceneID)
+		if err != nil {
+			return err
+		}
 
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly

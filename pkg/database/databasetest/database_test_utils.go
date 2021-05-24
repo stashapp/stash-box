@@ -18,19 +18,6 @@ type DatabasePopulater interface {
 	PopulateDB() error
 }
 
-func testTeardown(databaseFile string) {
-	err := database.DB.Close()
-
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.Remove(databaseFile)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func pgDropAll(conn *sqlx.DB) {
 	// we want to drop all tables so that the migration initialises
 	// the schema
@@ -39,7 +26,9 @@ func pgDropAll(conn *sqlx.DB) {
 	if err != nil && err != sql.ErrNoRows {
 		panic("Error dropping tables: " + err.Error())
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	for rows.Next() {
 		var stmt string
@@ -47,7 +36,7 @@ func pgDropAll(conn *sqlx.DB) {
 			panic("Error dropping tables: " + err.Error())
 		}
 
-		conn.Exec(stmt)
+		_, _ = conn.Exec(stmt)
 	}
 }
 
@@ -71,7 +60,7 @@ func teardownPostgres() {
 	if noDrop == "" {
 		pgDropAll(database.DB)
 	}
-	database.DB.Close()
+	_ = database.DB.Close()
 }
 
 func runTests(m *testing.M, populater DatabasePopulater) int {
@@ -110,13 +99,13 @@ func WithTransientTransaction(ctx context.Context, fn database.TxFunc) {
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			txn.Rollback()
+			_ = txn.Rollback()
 			panic(p)
 		} else {
 			// something went wrong, rollback
-			txn.Rollback()
+			_ = txn.Rollback()
 		}
 	}()
 
-	fn(txn)
+	_ = fn(txn)
 }

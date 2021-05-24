@@ -25,8 +25,8 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := r.FormValue("username")
-	password := r.FormValue("password")
+	username := r.FormValue(usernameFormKey)
+	password := r.FormValue(passwordFormKey)
 
 	// authenticate the user
 	userID, err := user.Authenticate(username, password)

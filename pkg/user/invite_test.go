@@ -46,7 +46,7 @@ type grantInviteTokensTest struct {
 var errUpdate = errors.New("update error")
 var errFind = errors.New("find error")
 
-var grantInviteScenarios []grantInviteTokensTest = []grantInviteTokensTest{
+var grantInviteScenarios = []grantInviteTokensTest{
 	{0, 1, nil, nil, 1, nil},
 	{0, 10, nil, nil, 10, nil},
 	{0, 11, nil, nil, 10, nil},
@@ -98,7 +98,7 @@ func TestGrantInviteTokensNotFound(t *testing.T) {
 	}
 }
 
-var repealInviteScenarios []grantInviteTokensTest = []grantInviteTokensTest{
+var repealInviteScenarios = []grantInviteTokensTest{
 	{1, 1, nil, nil, 0, nil},
 	{11, 10, nil, nil, 1, nil},
 	{100, 11, nil, nil, 89, nil},

@@ -18,10 +18,6 @@ import (
 )
 
 type singleton struct {
-	Status JobStatus
-	JSON   *jsonUtils
-	Paths  *paths.Paths
-
 	EmailManager *email.Manager
 }
 
@@ -42,10 +38,6 @@ func Initialize() *singleton {
 		initLog()
 		initEnvs()
 		instance = &singleton{
-			Status: Idle,
-			Paths:  paths.NewPaths(),
-			JSON:   &jsonUtils{},
-
 			EmailManager: email.NewManager(),
 		}
 	})
@@ -127,9 +119,9 @@ func initFlags() {
 
 func initEnvs() {
 	viper.SetEnvPrefix("stash_box") // will be uppercased automatically
-	viper.BindEnv("host")           // STASH_BOX_HOST
-	viper.BindEnv("port")           // STASH_BOX_PORT
-	viper.BindEnv("database")       // STASH_BOX_DATABASE
+	_ = viper.BindEnv("host")       // STASH_BOX_HOST
+	_ = viper.BindEnv("port")       // STASH_BOX_PORT
+	_ = viper.BindEnv("database")   // STASH_BOX_DATABASE
 }
 
 func initLog() {

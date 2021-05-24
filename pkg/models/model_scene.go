@@ -22,8 +22,8 @@ var (
 		return &SceneFingerprint{}
 	})
 
-	sceneUrlTable = database.NewTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
-		return &SceneUrl{}
+	sceneURLTable = database.NewTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
+		return &SceneURL{}
 	})
 )
 
@@ -70,13 +70,13 @@ type SceneFingerprint struct {
 	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
-type SceneUrl struct {
+type SceneURL struct {
 	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
 	URL     string    `db:"url" json:"url"`
 	Type    string    `db:"type" json:"type"`
 }
 
-func (p *SceneUrl) ToURL() URL {
+func (p *SceneURL) ToURL() URL {
 	url := URL{
 		URL:  p.URL,
 		Type: p.Type,
@@ -84,24 +84,24 @@ func (p *SceneUrl) ToURL() URL {
 	return url
 }
 
-type SceneUrls []*SceneUrl
+type SceneURLs []*SceneURL
 
-func (p SceneUrls) Each(fn func(interface{})) {
+func (p SceneURLs) Each(fn func(interface{})) {
 	for _, v := range p {
 		fn(*v)
 	}
 }
 
-func (p *SceneUrls) Add(o interface{}) {
-	*p = append(*p, o.(*SceneUrl))
+func (p *SceneURLs) Add(o interface{}) {
+	*p = append(*p, o.(*SceneURL))
 }
 
-func CreateSceneUrls(sceneId uuid.UUID, urls []*URLInput) SceneUrls {
-	var ret SceneUrls
+func CreateSceneURLs(sceneID uuid.UUID, urls []*URLInput) SceneURLs {
+	var ret SceneURLs
 
 	for _, urlInput := range urls {
-		ret = append(ret, &SceneUrl{
-			SceneID: sceneId,
+		ret = append(ret, &SceneURL{
+			SceneID: sceneID,
 			URL:     urlInput.URL,
 			Type:    urlInput.Type,
 		})

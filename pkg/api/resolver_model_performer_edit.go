@@ -66,7 +66,7 @@ func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.Per
 		imageID, _ := uuid.FromString(id)
 		uuids = append(uuids, imageID)
 	}
-	images, errors := dataloader.For(ctx).ImageById.LoadAll(uuids)
+	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err
@@ -85,7 +85,7 @@ func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.P
 		imageID, _ := uuid.FromString(id)
 		uuids = append(uuids, imageID)
 	}
-	images, errors := dataloader.For(ctx).ImageById.LoadAll(uuids)
+	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err

@@ -46,7 +46,7 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 	}
 	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = BodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
 
-	urls, err := pqb.GetUrls(performerID)
+	urls, err := pqb.GetURLs(performerID)
 	if err != nil {
 		return err
 	}
@@ -68,8 +68,7 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
 	}
 
-	edit.SetData(performerEdit)
-	return nil
+	return edit.SetData(performerEdit)
 }
 
 func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -91,8 +90,8 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 	}
 
 	mergeSources := []string{}
-	for _, mergeSourceId := range input.Edit.MergeSourceIds {
-		sourceID, _ := uuid.FromString(mergeSourceId)
+	for _, mergeSourceID := range input.Edit.MergeSourceIds {
+		sourceID, _ := uuid.FromString(mergeSourceID)
 		sourcePerformer, err := pqb.Find(sourceID)
 		if err != nil {
 			return err
@@ -104,7 +103,7 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 		if performerID == sourceID {
 			return errors.New("merge target cannot be used as source")
 		}
-		mergeSources = append(mergeSources, mergeSourceId)
+		mergeSources = append(mergeSources, mergeSourceID)
 	}
 
 	if len(mergeSources) < 1 {
@@ -132,7 +131,7 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 	}
 	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = BodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
 
-	urls, err := pqb.GetUrls(performerID)
+	urls, err := pqb.GetURLs(performerID)
 	if err != nil {
 		return err
 	}
@@ -157,8 +156,7 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
 	}
 
-	edit.SetData(performerEdit)
-	return nil
+	return edit.SetData(performerEdit)
 }
 
 func CreatePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -184,8 +182,7 @@ func CreatePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 		performerEdit.New.AddedImages = input.Details.ImageIds
 	}
 
-	edit.SetData(performerEdit)
-	return nil
+	return edit.SetData(performerEdit)
 }
 
 func DestroyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {

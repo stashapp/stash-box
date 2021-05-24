@@ -94,14 +94,14 @@ func TestValidateUserEmailCreate(t *testing.T) {
 }
 
 func TestValidatePasswordCreate(t *testing.T) {
-	for _, v := range userEmailScenarios {
+	for _, v := range userPasswordScenarios {
 		input := makeValidUserCreateInput()
-		input.Email = v.email
+		input.Password = v.password
 
 		err := ValidateCreate(input)
 
 		if err != v.err {
-			t.Errorf("password: %s - got %v; want %v", v.email, err, v.err)
+			t.Errorf("password: %s - got %v; want %v", v.password, err, v.err)
 		}
 	}
 }

@@ -51,7 +51,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		}
 
 		// Save the URLs
-		performerUrls := models.CreatePerformerUrls(performer.ID, input.Urls)
+		performerUrls := models.CreatePerformerURLs(performer.ID, input.Urls)
 		if err := qb.CreateUrls(performerUrls); err != nil {
 			return err
 		}
@@ -71,11 +71,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		// Save the images
 		performerImages := models.CreatePerformerImages(performer.ID, input.ImageIds)
 
-		if err := jqb.CreatePerformersImages(performerImages); err != nil {
-			return err
-		}
-
-		return nil
+		return jqb.CreatePerformersImages(performerImages)
 	})
 
 	// Commit
@@ -128,7 +124,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		}
 
 		// Save the URLs
-		performerUrls := models.CreatePerformerUrls(performer.ID, input.Urls)
+		performerUrls := models.CreatePerformerURLs(performer.ID, input.Urls)
 		if err := qb.UpdateUrls(performer.ID, performerUrls); err != nil {
 			return err
 		}
@@ -148,6 +144,9 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		// Save the images
 		// get the existing images
 		existingImages, err := iqb.FindByPerformerID(performer.ID)
+		if err != nil {
+			return err
+		}
 
 		performerImages := models.CreatePerformerImages(performer.ID, input.ImageIds)
 		if err := jqb.UpdatePerformersImages(performer.ID, performerImages); err != nil {
@@ -192,6 +191,9 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 		// to remove them explicitly
 
 		existingImages, err := iqb.FindByPerformerID(performerID)
+		if err != nil {
+			return err
+		}
 
 		if err = qb.Destroy(performerID); err != nil {
 			return err

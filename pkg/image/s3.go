@@ -26,21 +26,25 @@ func (s *S3Backend) WriteFile(file *bytes.Reader, image *models.Image) error {
 	}
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(file)
+	if _, err = buf.ReadFrom(file); err != nil {
+		return err
+	}
 	if err := uploadS3File(*minioClient, buf.Bytes(), s3config.Bucket, image.ID.String()); err != nil {
 		return err
 	}
 
 	if s3config.MaxDimension != 0 && (image.Width > s3config.MaxDimension || image.Height > s3config.MaxDimension) {
-		file.Seek(0, 0)
+		if _, err = file.Seek(0, 0); err != nil {
+			return err
+		}
 		resized, err := resizeImage(file, s3config.MaxDimension)
 		if err != nil {
 			return err
 		}
 
 		hash := md5.Sum([]byte(image.ID.String() + "-resized"))
-		resizedId := hex.EncodeToString(hash[:])
-		if err := uploadS3File(*minioClient, resized, s3config.Bucket, resizedId); err != nil {
+		resizedID := hex.EncodeToString(hash[:])
+		if err := uploadS3File(*minioClient, resized, s3config.Bucket, resizedID); err != nil {
 			return err
 		}
 	}
@@ -67,10 +71,10 @@ func (s *S3Backend) DestroyFile(image *models.Image) error {
 	}
 
 	hash := md5.Sum([]byte(id + "-resized"))
-	resizedId := hex.EncodeToString(hash[:])
-	path = resizedId[0:2] + "/" + resizedId[2:4] + "/" + resizedId
+	resizedID := hex.EncodeToString(hash[:])
+	path = resizedID[0:2] + "/" + resizedID[2:4] + "/" + resizedID
 	// Resized versions may or may not exist, so we attempt to delete and ignore the results
-	minioClient.RemoveObject(context.TODO(), s3config.Bucket, path, minio.RemoveObjectOptions{})
+	_ = minioClient.RemoveObject(context.TODO(), s3config.Bucket, path, minio.RemoveObjectOptions{})
 
 	return nil
 }

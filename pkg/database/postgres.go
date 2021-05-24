@@ -63,7 +63,7 @@ func (p *PostgresProvider) runMigrations(databasePath string) {
 		}
 	}
 
-	m.Close()
+	_, _ = m.Close()
 }
 
 type postgresDialect struct{}

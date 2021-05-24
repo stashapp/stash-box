@@ -44,8 +44,7 @@ func ModifyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
-	edit.SetData(tagEdit)
-	return nil
+	return edit.SetData(tagEdit)
 }
 
 func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -67,8 +66,8 @@ func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inp
 	}
 
 	mergeSources := []string{}
-	for _, mergeSourceId := range input.Edit.MergeSourceIds {
-		sourceID, _ := uuid.FromString(mergeSourceId)
+	for _, mergeSourceID := range input.Edit.MergeSourceIds {
+		sourceID, _ := uuid.FromString(mergeSourceID)
 		sourceTag, err := tqb.Find(sourceID)
 		if err != nil {
 			return err
@@ -80,7 +79,7 @@ func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inp
 		if tagID == sourceID {
 			return errors.New("merge target cannot be used as source")
 		}
-		mergeSources = append(mergeSources, mergeSourceId)
+		mergeSources = append(mergeSources, mergeSourceID)
 	}
 
 	if len(mergeSources) < 1 {
@@ -101,8 +100,7 @@ func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inp
 		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
-	edit.SetData(tagEdit)
-	return nil
+	return edit.SetData(tagEdit)
 }
 
 func CreateTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -113,8 +111,7 @@ func CreateTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 		tagEdit.New.AddedAliases = input.Details.Aliases
 	}
 
-	edit.SetData(tagEdit)
-	return nil
+	return edit.SetData(tagEdit)
 }
 
 func DestroyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
