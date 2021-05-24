@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -10,9 +9,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/database"
-	"github.com/stashapp/stash-box/pkg/logger"
 )
 
 var randomSortFloat = rand.Float64()
@@ -38,82 +35,12 @@ func handleStringCriterion(column string, value *StringCriterionInput, query *da
 	}
 }
 
-func insertObject(tx *sqlx.Tx, table string, object interface{}, ignoreConflicts bool) error {
-	ensureTx(tx)
-	fields, values := SQLGenKeysCreate(object)
-
-	conflictHandling := ""
-	if ignoreConflicts {
-		conflictHandling = "ON CONFLICT DO NOTHING"
-	}
-
-	_, err := tx.NamedExec(
-		`INSERT INTO `+table+` (`+fields+`)
-				VALUES (`+values+`)
-                `+conflictHandling+`
-		`,
-		object,
-	)
-
-	return err
-}
-
-func insertObjects(tx *sqlx.Tx, table string, objects interface{}) error {
-	// ensure objects is an array
-	if reflect.TypeOf(objects).Kind() != reflect.Slice {
-		return errors.New("Non-slice passed to insertObjects")
-	}
-
-	slice := reflect.ValueOf(objects)
-	for i := 0; i < slice.Len(); i++ {
-		err := insertObject(tx, table, slice.Index(i).Interface(), false)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func updateObjectByID(tx *sqlx.Tx, table string, object interface{}) error {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE `+table+` SET `+SQLGenKeys(object)+` WHERE `+table+`.id = :id`,
-		object,
-	)
-
-	return err
-}
-
-func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value interface{}) error {
-	ensureTx(tx)
-	query := tx.Rebind(`DELETE FROM ` + table + ` WHERE ` + column + ` = ?`)
-	_, err := tx.Exec(query, value)
-	return err
-}
-
-func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
-	query := tx.Rebind(`SELECT * FROM ` + table + ` WHERE id = ? LIMIT 1`)
-	return tx.Get(object, query, id)
-}
-
-func selectAll(tableName string) string {
-	idColumn := getColumn(tableName, "*")
-	return "SELECT " + idColumn + " FROM " + tableName + " "
-}
-
-func selectDistinctIDs(tableName string) string {
-	idColumn := getColumn(tableName, "id")
-	return "SELECT DISTINCT " + idColumn + " FROM " + tableName + " "
+func getColumn(tableName string, columnName string) string {
+	return tableName + "." + columnName
 }
 
 func buildCountQuery(query string) string {
 	return "SELECT COUNT(*) as count FROM (" + query + ") as temp"
-}
-
-func getColumn(tableName string, columnName string) string {
-	return tableName + "." + columnName
 }
 
 func getPagination(findFilter *QuerySpec) string {
@@ -175,28 +102,6 @@ func getSort(sort string, direction string, tableName string, secondarySort *str
 	}
 }
 
-func getSearch(columns []string, q string) string {
-	var likeClauses []string
-	queryWords := strings.Split(q, " ")
-	trimmedQuery := strings.Trim(q, "\"")
-	if trimmedQuery == q {
-		// Search for any word
-		for _, word := range queryWords {
-			for _, column := range columns {
-				likeClauses = append(likeClauses, column+" LIKE '%"+word+"%'")
-			}
-		}
-	} else {
-		// Search the exact query
-		for _, column := range columns {
-			likeClauses = append(likeClauses, column+" LIKE '%"+trimmedQuery+"%'")
-		}
-	}
-	likes := strings.Join(likeClauses, " OR ")
-
-	return "(" + likes + ")"
-}
-
 func getSearchBinding(columns []string, q string, not bool, caseInsensitive bool) (string, []interface{}) {
 	var likeClauses []string
 	var args []interface{}
@@ -241,22 +146,6 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func runIdsQuery(query string, args []interface{}) ([]uuid.UUID, error) {
-	var result []struct {
-		ID uuid.UUID `db:"id"`
-	}
-	query = database.DB.Rebind(query)
-	if err := database.DB.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
-		return []uuid.UUID{}, err
-	}
-
-	vsm := make([]uuid.UUID, len(result))
-	for i, v := range result {
-		vsm[i] = v.ID
-	}
-	return vsm, nil
-}
-
 func runCountQuery(query string, args []interface{}) (int, error) {
 	// Perform query and fetch result
 	result := struct {
@@ -269,49 +158,6 @@ func runCountQuery(query string, args []interface{}) (int, error) {
 	}
 
 	return result.Count, nil
-}
-
-func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]uuid.UUID, int) {
-	if len(whereClauses) > 0 {
-		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
-	}
-	body = body + " GROUP BY " + tableName + ".id "
-	if len(havingClauses) > 0 {
-		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
-	}
-
-	countQuery := buildCountQuery(body)
-	countResult, countErr := runCountQuery(countQuery, args)
-
-	idsQuery := body + sortAndPagination
-	idsResult, idsErr := runIdsQuery(idsQuery, args)
-
-	if countErr != nil {
-		logger.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
-		panic(countErr)
-	}
-	if idsErr != nil {
-		logger.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
-		panic(idsErr)
-	}
-
-	return idsResult, countResult
-}
-
-func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
-	if tx == nil {
-		panic("must use a transaction")
-	}
-	idColumnName := getColumn(tableName, "id")
-	query := tx.Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
-	_, err := tx.Exec(query, id)
-	return err
-}
-
-func ensureTx(tx *sqlx.Tx) {
-	if tx == nil {
-		panic("must use a transaction")
-	}
 }
 
 // https://github.com/jmoiron/sqlx/issues/410

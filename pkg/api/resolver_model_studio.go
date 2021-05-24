@@ -14,7 +14,7 @@ func (r *studioResolver) ID(ctx context.Context, obj *models.Studio) (string, er
 }
 
 func (r *studioResolver) Urls(ctx context.Context, obj *models.Studio) ([]*models.URL, error) {
-	return dataloader.For(ctx).StudioUrlsById.Load(obj.ID)
+	return dataloader.For(ctx).StudioUrlsByID.Load(obj.ID)
 }
 
 func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*models.Studio, error) {
@@ -43,11 +43,11 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 	return children, nil
 }
 func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]*models.Image, error) {
-	imageIDs, err := dataloader.For(ctx).StudioImageIDsById.Load(obj.ID)
+	imageIDs, err := dataloader.For(ctx).StudioImageIDsByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
-	images, errors := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	images, errors := dataloader.For(ctx).ImageByID.LoadAll(imageIDs)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err

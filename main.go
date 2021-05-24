@@ -22,5 +22,6 @@ func main() {
 }
 
 func blockForever() {
-	select {}
+	c := make(chan struct{})
+	<-c
 }

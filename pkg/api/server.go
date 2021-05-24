@@ -28,13 +28,13 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-var version string = "0.0.0"
-var buildstamp string = ""
-var githash string = ""
+var version = "0.0.0"
+var buildstamp string
+var githash string
 
 var uiBox *packr.Box
 
-const ApiKeyHeader = "ApiKey"
+const APIKeyHeader = "ApiKey"
 
 func getUserAndRoles(userID string) (*models.User, []models.RoleEnum, error) {
 	u, err := user.Get(userID)
@@ -50,25 +50,6 @@ func getUserAndRoles(userID string) (*models.User, []models.RoleEnum, error) {
 	return u, roles, nil
 }
 
-// returns the userID, a boolean set to true if api key was used, and an error
-func getRequestUserID(w http.ResponseWriter, r *http.Request) (string, bool, error) {
-	userID := ""
-	isAPIKey := false
-	var err error
-
-	// translate api key into current user, if present
-	apiKey := r.Header.Get(ApiKeyHeader)
-	if apiKey != "" {
-		isAPIKey = true
-		userID, err = user.GetUserIDFromAPIKey(apiKey)
-	} else {
-		// handle session
-		userID, err = getSessionUserID(w, r)
-	}
-
-	return userID, isAPIKey, err
-}
-
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +57,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			// translate api key into current user, if present
 			userID := ""
-			apiKey := r.Header.Get(ApiKeyHeader)
+			apiKey := r.Header.Get(APIKeyHeader)
 			var err error
 			if apiKey != "" {
 				userID, err = user.GetUserIDFromAPIKey(apiKey)
@@ -99,7 +80,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			// ensure api key of the user matches the passed one
 			if apiKey != "" && user != nil && user.APIKey != apiKey {
 				w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte(err.Error()))
+				_, _ = w.Write([]byte(err.Error()))
 				return
 			}
 
@@ -178,7 +159,6 @@ func Start() {
 		}
 
 		handleLogin(w, r)
-		return
 	})
 	r.HandleFunc("/logout", handleLogout)
 
@@ -208,7 +188,9 @@ func Start() {
 		}
 
 		if config.GetHTTPUpgrade() {
-			go http.ListenAndServe(config.GetHost()+":80", http.HandlerFunc(redirect))
+			go func() {
+				logger.Fatal(http.ListenAndServe(config.GetHost()+":80", http.HandlerFunc(redirect)))
+			}()
 		}
 
 		go func() {

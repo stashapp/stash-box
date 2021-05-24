@@ -25,8 +25,8 @@ func (b S3ImageURLBuilder) GetImageURL() string {
 		hash := md5.Sum([]byte(b.Image.ID.String() + "-resized"))
 		id := hex.EncodeToString(hash[:])
 		return config.BaseURL + "/" + id[0:2] + "/" + id[2:4] + "/" + id
-	} else {
-		id := b.Image.ID.String()
-		return config.BaseURL + "/" + id[0:2] + "/" + id[2:4] + "/" + id
 	}
+
+	id := b.Image.ID.String()
+	return config.BaseURL + "/" + id[0:2] + "/" + id[2:4] + "/" + id
 }

@@ -92,12 +92,12 @@ func (p UserRoles) ToRoles() []RoleEnum {
 	return ret
 }
 
-func CreateUserRoles(userId uuid.UUID, roles []RoleEnum) UserRoles {
+func CreateUserRoles(userID uuid.UUID, roles []RoleEnum) UserRoles {
 	var ret UserRoles
 
 	for _, role := range roles {
 		ret = append(ret, &UserRole{
-			UserID: userId,
+			UserID: userID,
 			Role:   role.String(),
 		})
 	}

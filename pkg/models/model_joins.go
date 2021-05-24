@@ -29,19 +29,13 @@ var (
 		return &SceneImage{}
 	})
 
-	imageSceneTable = sceneImageTable.Inverse(imageJoinKey)
-
 	performerImageTable = database.NewTableJoin(performerTable, "performer_images", performerJoinKey, func() interface{} {
 		return &PerformerImage{}
 	})
 
-	imagePerformerTable = performerImageTable.Inverse(imageJoinKey)
-
 	studioImageTable = database.NewTableJoin(studioTable, "studio_images", studioJoinKey, func() interface{} {
 		return &StudioImage{}
 	})
-
-	imageStudioTable = studioImageTable.Inverse(imageJoinKey)
 )
 
 type PerformerScene struct {

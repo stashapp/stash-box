@@ -6,7 +6,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/database"
 )
 
-// UserFinderUpdater is an interface to find and update User objects.
+// UserFinder is an interface to find and update User objects.
 type UserFinder interface {
 	Find(id uuid.UUID) (*User, error)
 	FindByEmail(email string) (*User, error)
