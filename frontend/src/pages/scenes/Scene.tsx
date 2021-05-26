@@ -67,7 +67,11 @@ const SceneComponent: React.FC = () => {
           {fingerprint.hash}
         </Link>
       </td>
-      <td>{fingerprint.duration}</td>
+      <td>
+        <span title={formatDuration(fingerprint.duration)}>
+          {fingerprint.duration}
+        </span>
+      </td>
       <td>{fingerprint.submissions}</td>
       <td>{formatDateTime(fingerprint.created)}</td>
       <td>{formatDateTime(fingerprint.updated)}</td>
@@ -125,7 +129,7 @@ const SceneComponent: React.FC = () => {
         <Card.Footer className="row mx-1">
           <div className="scene-performers mr-auto">{performers}</div>
           {scene.duration && (
-            <div>
+            <div title={`${scene.duration} seconds`}>
               Duration: <b>{formatDuration(scene.duration)}</b>
             </div>
           )}
