@@ -114,6 +114,12 @@ type Performer {
   edits: [Edit!]!
   scene_count: Int!
   merged_ids: [ID!]!
+  studios: [PerformerStudio!]!
+}
+
+type PerformerStudio {
+  studio: Studio!
+  scene_count: Int!
 }
 
 input PerformerCreateInput {
