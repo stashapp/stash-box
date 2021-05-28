@@ -12,6 +12,10 @@ import { Edit, EditVariables } from "../definitions/Edit";
 import { Edits, EditsVariables } from "../definitions/Edits";
 import { Me } from "../definitions/Me";
 import { Performer, PerformerVariables } from "../definitions/Performer";
+import {
+  FullPerformer,
+  FullPerformerVariables,
+} from "../definitions/FullPerformer";
 import { Performers, PerformersVariables } from "../definitions/Performers";
 import { Scene, SceneVariables } from "../definitions/Scene";
 import { Scenes, ScenesVariables } from "../definitions/Scenes";
@@ -33,6 +37,7 @@ const EditQuery = loader("./Edit.gql");
 const EditsQuery = loader("./Edits.gql");
 const MeQuery = loader("./Me.gql");
 const PerformerQuery = loader("./Performer.gql");
+const FullPerformerQuery = loader("./FullPerformer.gql");
 const PerformersQuery = loader("./Performers.gql");
 const SceneQuery = loader("./Scene.gql");
 const ScenesQuery = loader("./Scenes.gql");
@@ -77,6 +82,15 @@ export const usePerformer = (
   skip: boolean = false
 ) =>
   useQuery<Performer, PerformerVariables>(PerformerQuery, {
+    variables,
+    skip,
+  });
+
+export const useFullPerformer = (
+  variables: PerformerVariables,
+  skip: boolean = false
+) =>
+  useQuery<FullPerformer, FullPerformerVariables>(FullPerformerQuery, {
     variables,
     skip,
   });
