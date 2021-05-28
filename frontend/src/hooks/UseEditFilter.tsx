@@ -68,7 +68,10 @@ const useEditFilter = ({
     queryString
       .stringify({
         sort: !sort ? undefined : sort,
-        dir: !direction ? undefined : direction,
+        dir:
+          !direction || direction === SortDirectionEnum.DESC
+            ? undefined
+            : direction,
         type: !type ? undefined : type,
         status: !status ? undefined : status,
         operation: !operation ? undefined : operation,

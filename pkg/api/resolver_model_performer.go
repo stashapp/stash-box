@@ -169,3 +169,8 @@ func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer
 	}
 	return ids, err
 }
+
+func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {
+	sqb := models.NewStudioQueryBuilder(nil)
+	return sqb.CountByPerformer(obj.ID)
+}

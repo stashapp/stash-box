@@ -1,6 +1,8 @@
 package models
 
 import (
+	"database/sql"
+
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/database"
@@ -186,4 +188,29 @@ func (qb *StudioQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*URL, []error) {
 		result[i] = m[id]
 	}
 	return result, nil
+}
+
+type PerformerStudio struct {
+	SceneCount int `db:"count" json:"scene_count"`
+	Studio
+}
+
+func (qb *StudioQueryBuilder) CountByPerformer(performerID uuid.UUID) ([]*PerformerStudio, error) {
+	var results []*PerformerStudio
+
+	query := `
+		SELECT S.*, C.count
+		FROM studios S JOIN (
+			SELECT studio_id, COUNT(*)
+			FROM scene_performers SP
+			JOIN scenes S ON SP.scene_id = S.id
+			WHERE performer_id = ?
+			GROUP BY studio_id
+		) C ON S.id = C.studio_id`
+	query = database.DB.Rebind(query)
+	if err := database.DB.Select(&results, query, performerID); err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	return results, nil
 }
