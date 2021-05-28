@@ -52,7 +52,7 @@ const CheckboxSelect: React.FC<MultiSelectProps> = ({
       );
     return `${
       unselected.length === 0 ? "All" : unselected.length
-    } studios selected`;
+    } ${plural} selected`;
   };
 
   return (
