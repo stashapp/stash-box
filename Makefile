@@ -114,4 +114,4 @@ cross-compile:
 				-v $(PWD):/go/src/github.com/stashapp/stash-box \
 				-v /var/run/docker.sock:/var/run/docker.sock \
 				-w /go/src/github.com/stashapp/stash-box \
-				goreng/golang-cross:latest --snapshot --rm-dist
+				docker.pkg.github.com/gythialy/golang-cross/xcgo:latest --snapshot --rm-dist
