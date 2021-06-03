@@ -19,6 +19,7 @@ interface EditsProps {
   type?: TargetTypeEnum;
   status?: VoteStatusEnum;
   operation?: OperationEnum;
+  userId?: string;
 }
 
 const PER_PAGE = 20;
@@ -30,6 +31,7 @@ const EditListComponent: React.FC<EditsProps> = ({
   type,
   status,
   operation,
+  userId,
 }) => {
   const { page, setPage } = usePagination();
   const {
@@ -58,6 +60,7 @@ const EditListComponent: React.FC<EditsProps> = ({
       target_id: id,
       status: selectedStatus,
       operation: selectedOperation,
+      user_id: userId,
     },
   });
 

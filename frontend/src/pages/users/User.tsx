@@ -15,6 +15,7 @@ import {
   ROUTE_USER_EDIT,
   ROUTE_USER_PASSWORD,
   ROUTE_USERS,
+  ROUTE_USER_EDITS,
 } from "src/constants/route";
 import { isAdmin, createHref } from "src/utils";
 import Modal from "src/components/modal";
@@ -114,6 +115,9 @@ const AddUserComponent: React.FC = () => {
           {deleteModal}
           {rescindCodeModal}
           <div className="ml-auto">
+            <Link to={createHref(ROUTE_USER_EDITS, user)} className="ml-2">
+              <Button variant="secondary">User Edits</Button>
+            </Link>
             {isUser() && (
               <Link to={ROUTE_USER_PASSWORD} className="ml-2">
                 <Button>Change Password</Button>
