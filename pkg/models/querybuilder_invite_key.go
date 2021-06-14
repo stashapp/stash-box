@@ -4,17 +4,17 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type inviteKeyQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newInviteCodeQueryBuilder(tx *sqlx.Tx) InviteKeyRepo {
+func newInviteCodeQueryBuilder(txn *sqlx.TxnMgr) InviteKeyRepo {
 	return &inviteKeyQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

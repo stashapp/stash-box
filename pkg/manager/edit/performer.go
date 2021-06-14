@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -159,7 +158,7 @@ func MergePerformerEdit(fac models.RepoFactory, edit *models.Edit, input models.
 	return edit.SetData(performerEdit)
 }
 
-func CreatePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+func CreatePerformerEdit(fac models.RepoFactory, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	performerEdit := input.Details.PerformerEditFromCreate()
 
 	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {

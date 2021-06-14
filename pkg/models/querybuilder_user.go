@@ -2,17 +2,17 @@ package models
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type userQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newUserQueryBuilder(tx *sqlx.Tx) UserRepo {
+func newUserQueryBuilder(txn *sqlx.TxnMgr) UserRepo {
 	return &userQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

@@ -20,7 +20,7 @@ type databaseProvider interface {
 	GetDialect() sqlDialect
 }
 
-func Initialize(provider string, databasePath string) {
+func Initialize(provider string, databasePath string) *sqlx.DB {
 	p := databaseProviders[provider]
 
 	if p == nil {
@@ -29,6 +29,7 @@ func Initialize(provider string, databasePath string) {
 
 	DB = p.Open(databasePath)
 	dialect = p.GetDialect()
+	return DB
 }
 
 func GetDialect() sqlDialect {

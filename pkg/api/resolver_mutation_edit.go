@@ -34,27 +34,29 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumTag, input.Edit)
 
+	fac := r.getRepoFactory(ctx)
+
 	err = fac.WithTxn(func() error {
 		if input.Edit.Operation == models.OperationEnumModify {
-			err = edit.ModifyTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+			err = edit.ModifyTagEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
 
 			if err != nil {
 				return err
 			}
 		} else if input.Edit.Operation == models.OperationEnumMerge {
-			err = edit.MergeTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+			err = edit.MergeTagEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
 
 			if err != nil {
 				return err
 			}
 		} else if input.Edit.Operation == models.OperationEnumDestroy {
-			err = edit.DestroyTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+			err = edit.DestroyTagEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
 
 			if err != nil {
 				return err
 			}
 		} else if input.Edit.Operation == models.OperationEnumCreate {
-			err = edit.CreateTagEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+			err = edit.CreateTagEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
 
 			if err != nil {
 				return err
@@ -119,28 +121,28 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	currentUser := getCurrentUser(ctx)
 
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumPerformer, input.Edit)
-
+	fac := r.getRepoFactory(ctx)
 	err = fac.WithTxn(func() error {
 		if input.Edit.Operation == models.OperationEnumModify {
-			err = edit.ModifyPerformerEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+			err = edit.ModifyPerformerEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
 
 			if err != nil {
 				return err
 			}
 		} else if input.Edit.Operation == models.OperationEnumMerge {
-			err = edit.MergePerformerEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+			err = edit.MergePerformerEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
 
 			if err != nil {
 				return err
 			}
 		} else if input.Edit.Operation == models.OperationEnumDestroy {
-			err = edit.DestroyPerformerEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+			err = edit.DestroyPerformerEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
 
 			if err != nil {
 				return err
 			}
 		} else if input.Edit.Operation == models.OperationEnumCreate {
-			err = edit.CreatePerformerEdit(tx, newEdit, input, wasFieldIncludedFunc(ctx))
+			err = edit.CreatePerformerEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
 
 			if err != nil {
 				return err
@@ -182,7 +184,6 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 		return nil
 	})
 
-	// Commit
 	if err != nil {
 		return nil, err
 	}
@@ -197,8 +198,9 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 	if err := validateEdit(ctx); err != nil {
 		return nil, err
 	}
-
+	fac := r.getRepoFactory(ctx)
 	currentUser := getCurrentUser(ctx)
+	var edit *models.Edit
 	err := fac.WithTxn(func() error {
 		eqb := r.getRepoFactory(ctx).Edit()
 
@@ -206,7 +208,7 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 		if err != nil {
 			return err
 		}
-		edit, err := eqb.Find(editID)
+		edit, err = eqb.Find(editID)
 		if err != nil {
 			return err
 		}
@@ -220,7 +222,6 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 		return nil
 	})
 
-	// Commit
 	if err != nil {
 		return nil, err
 	}
@@ -234,8 +235,8 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 	}
 
 	var updatedEdit *models.Edit
-
-	fac.WithTxn(func() error {
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
 		editID, _ := uuid.FromString(input.ID)
 		eqb := r.getRepoFactory(ctx).Edit()
 		edit, err := eqb.Find(editID)
@@ -279,7 +280,7 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 	}
 
 	var updatedEdit *models.Edit
-
+	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		editID, _ := uuid.FromString(input.ID)
 		eqb := r.getRepoFactory(ctx).Edit()

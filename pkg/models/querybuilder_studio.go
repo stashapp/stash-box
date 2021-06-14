@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -13,9 +13,9 @@ type studioQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newStudioQueryBuilder(tx *sqlx.Tx) StudioRepo {
+func newStudioQueryBuilder(txn *sqlx.TxnMgr) StudioRepo {
 	return &studioQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

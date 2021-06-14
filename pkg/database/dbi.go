@@ -8,6 +8,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+
+	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 // The DBI interface is used to interface with the database.
@@ -72,27 +74,25 @@ type DBI interface {
 }
 
 type dbi struct {
-	tx *sqlx.Tx
+	txn *sqlxx.TxnMgr
 }
 
-// DBIWithTxn returns a DBI interface that is to operate within a transaction.
-func DBIWithTxn(tx *sqlx.Tx) DBI {
+// DBI returns a DBI interface.
+func NewDBI(txn *sqlxx.TxnMgr) DBI {
 	return &dbi{
-		tx: tx,
+		txn: txn,
 	}
 }
 
-// DBINoTxn returns a DBI interface that is to operate outside of a transaction.
-// This DBI will not be able to mutate the database.
-func DBINoTxn() DBI {
-	return &dbi{}
+func (q dbi) db() sqlxx.DB {
+	return q.txn.DB()
 }
 
 // Insert inserts the provided object as a row into the database.
 // It returns the new object.
 func (q dbi) Insert(model Model) (interface{}, error) {
 	tableName := model.GetTable().Name()
-	err := insertObject(q.tx, tableName, model, nil)
+	err := insertObject(q.txn, tableName, model, nil)
 
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(model).Name()))
@@ -100,7 +100,7 @@ func (q dbi) Insert(model Model) (interface{}, error) {
 
 	// don't want to modify the existing object
 	newModel := model.GetTable().NewObject()
-	if err := getByID(q.tx, tableName, model.GetID(), newModel); err != nil {
+	if err := getByID(q.txn, tableName, model.GetID(), newModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after create", reflect.TypeOf(model).Name()))
 	}
 
@@ -112,7 +112,7 @@ func (q dbi) Insert(model Model) (interface{}, error) {
 // the object with id does not exist in the database table.
 func (q dbi) Update(model Model, updateEmptyValues bool) (interface{}, error) {
 	tableName := model.GetTable().Name()
-	err := updateObjectByID(q.tx, tableName, model, updateEmptyValues)
+	err := updateObjectByID(q.txn, tableName, model, updateEmptyValues)
 
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error updating %s", reflect.TypeOf(model).Name()))
@@ -120,7 +120,7 @@ func (q dbi) Update(model Model, updateEmptyValues bool) (interface{}, error) {
 
 	// don't want to modify the existing object
 	updatedModel := model.GetTable().NewObject()
-	if err := getByID(q.tx, tableName, model.GetID(), updatedModel); err != nil {
+	if err := getByID(q.txn, tableName, model.GetID(), updatedModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after update", reflect.TypeOf(model).Name()))
 	}
 
@@ -140,7 +140,7 @@ func (q dbi) Delete(id uuid.UUID, table Table) error {
 		return fmt.Errorf("Row with id %d not found in %s", id, table.Name())
 	}
 
-	return executeDeleteQuery(table.Name(), id, q.tx)
+	return executeDeleteQuery(table.Name(), id, q.txn)
 }
 
 // Soft delete row by setting value of deleted column to TRUE
@@ -148,14 +148,14 @@ func (q dbi) SoftDelete(model Model) (interface{}, error) {
 	tableName := model.GetTable().Name()
 	id := model.GetID()
 
-	err := softDeleteObjectByID(q.tx, tableName, id)
+	err := softDeleteObjectByID(q.txn, tableName, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// don't want to modify the existing object
 	updatedModel := model.GetTable().NewObject()
-	if err := getByID(q.tx, tableName, id, updatedModel); err != nil {
+	if err := getByID(q.txn, tableName, id, updatedModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after soft delete", reflect.TypeOf(model).Name()))
 	}
 
@@ -168,13 +168,8 @@ func selectStatement(table Table) string {
 }
 
 func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
-	if q.tx != nil {
-		query = q.tx.Rebind(query)
-		return q.tx.Queryx(query, args...)
-	}
-
-	query = DB.Rebind(query)
-	return DB.Queryx(query, args...)
+	query = q.db().Rebind(query)
+	return q.db().Queryx(query, args...)
 }
 
 // Find returns the row object with the provided id, or returns nil if not
@@ -213,7 +208,7 @@ func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
 
 // InsertJoin inserts a join object into the provided join table.
 func (q dbi) InsertJoin(tableJoin TableJoin, object interface{}, conflictHandling *string) error {
-	err := insertObject(q.tx, tableJoin.Name(), object, conflictHandling)
+	err := insertObject(q.txn, tableJoin.Name(), object, conflictHandling)
 
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(object).Name()))
@@ -265,7 +260,7 @@ func (q dbi) ReplaceJoins(tableJoin TableJoin, id uuid.UUID, joins Joins) error 
 // DeleteJoins deletes all join objects with the provided primary table
 // id value.
 func (q dbi) DeleteJoins(tableJoin TableJoin, id uuid.UUID) error {
-	return deleteObjectsByColumn(q.tx, tableJoin.Name(), tableJoin.joinColumn, id)
+	return deleteObjectsByColumn(q.txn, tableJoin.Name(), tableJoin.joinColumn, id)
 }
 
 // FindJoins returns join objects where the foreign key id is equal to the
@@ -324,13 +319,8 @@ func (q dbi) Count(query QueryBuilder) (int, error) {
 
 	rawQuery := query.buildCountQuery()
 
-	if q.tx != nil {
-		rawQuery = q.tx.Rebind(rawQuery)
-		err = q.tx.Get(&result, rawQuery, query.args...)
-	} else {
-		rawQuery = DB.Rebind(rawQuery)
-		err = DB.Get(&result, rawQuery, query.args...)
-	}
+	rawQuery = q.db().Rebind(rawQuery)
+	err = q.db().Get(&result, rawQuery, query.args...)
 
 	if err != nil && err != sql.ErrNoRows {
 		// TODO - log error instead of returning SQL
@@ -357,8 +347,8 @@ func (q dbi) Query(query QueryBuilder, output Models) (int, error) {
 }
 
 func (q dbi) DeleteQuery(query QueryBuilder) error {
-	ensureTx(q.tx)
-	queryStr := q.tx.Rebind(query.buildQuery())
-	_, err := q.tx.Exec(queryStr, query.args...)
+	ensureTx(q.txn)
+	queryStr := q.db().Rebind(query.buildQuery())
+	_, err := q.db().Exec(queryStr, query.args...)
 	return err
 }

@@ -7,7 +7,8 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
+
+	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type QueryBuilder struct {
@@ -112,19 +113,19 @@ type optionalValue interface {
 	IsValid() bool
 }
 
-func ensureTx(tx *sqlx.Tx) {
-	if tx == nil {
+func ensureTx(txn *sqlxx.TxnMgr) {
+	if !txn.InTxn() {
 		panic("must use a transaction")
 	}
 }
 
-func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
-	query := tx.Rebind(`SELECT * FROM ` + table + ` WHERE id = ? LIMIT 1`)
-	return tx.Get(object, query, id)
+func getByID(txn *sqlxx.TxnMgr, table string, id uuid.UUID, object interface{}) error {
+	query := txn.DB().Rebind(`SELECT * FROM ` + table + ` WHERE id = ? LIMIT 1`)
+	return txn.DB().Get(object, query, id)
 }
 
-func insertObject(tx *sqlx.Tx, table string, object interface{}, conflictHandling *string) error {
-	ensureTx(tx)
+func insertObject(txn *sqlxx.TxnMgr, table string, object interface{}, conflictHandling *string) error {
+	ensureTx(txn)
 	fields, values := sqlGenKeysCreate(object)
 
 	conflictClause := ""
@@ -132,7 +133,7 @@ func insertObject(tx *sqlx.Tx, table string, object interface{}, conflictHandlin
 		conflictClause = *conflictHandling
 	}
 
-	_, err := tx.NamedExec(
+	_, err := txn.DB().NamedExec(
 		`INSERT INTO `+table+` (`+fields+`)
 				VALUES (`+values+`)
                 `+conflictClause+`
@@ -143,9 +144,9 @@ func insertObject(tx *sqlx.Tx, table string, object interface{}, conflictHandlin
 	return err
 }
 
-func updateObjectByID(tx *sqlx.Tx, table string, object interface{}, updateEmptyValues bool) error {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
+func updateObjectByID(txn *sqlxx.TxnMgr, table string, object interface{}, updateEmptyValues bool) error {
+	ensureTx(txn)
+	_, err := txn.DB().NamedExec(
 		`UPDATE `+table+` SET `+sqlGenKeys(object, updateEmptyValues)+` WHERE `+table+`.id = :id`,
 		object,
 	)
@@ -153,26 +154,26 @@ func updateObjectByID(tx *sqlx.Tx, table string, object interface{}, updateEmpty
 	return err
 }
 
-func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
-	ensureTx(tx)
+func executeDeleteQuery(tableName string, id uuid.UUID, txn *sqlxx.TxnMgr) error {
+	ensureTx(txn)
 	idColumnName := getColumn(tableName, "id")
-	query := tx.Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
-	_, err := tx.Exec(query, id)
+	query := txn.DB().Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
+	_, err := txn.DB().Exec(query, id)
 	return err
 }
 
-func softDeleteObjectByID(tx *sqlx.Tx, table string, id uuid.UUID) error {
-	ensureTx(tx)
+func softDeleteObjectByID(txn *sqlxx.TxnMgr, table string, id uuid.UUID) error {
+	ensureTx(txn)
 	idColumnName := getColumn(table, "id")
-	query := tx.Rebind(`UPDATE ` + table + ` SET deleted=TRUE WHERE ` + idColumnName + ` = ?`)
-	_, err := tx.Exec(query, id)
+	query := txn.DB().Rebind(`UPDATE ` + table + ` SET deleted=TRUE WHERE ` + idColumnName + ` = ?`)
+	_, err := txn.DB().Exec(query, id)
 	return err
 }
 
-func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value interface{}) error {
-	ensureTx(tx)
-	query := tx.Rebind(`DELETE FROM ` + table + ` WHERE ` + column + ` = ?`)
-	_, err := tx.Exec(query, value)
+func deleteObjectsByColumn(txn *sqlxx.TxnMgr, table string, column string, value interface{}) error {
+	ensureTx(txn)
+	query := txn.DB().Rebind(`DELETE FROM ` + table + ` WHERE ` + column + ` = ?`)
+	_, err := txn.DB().Exec(query, value)
 	return err
 }
 

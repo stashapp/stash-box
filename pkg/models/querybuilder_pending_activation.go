@@ -4,17 +4,17 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type pendingActivationQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newPendingActivationQueryBuilder(tx *sqlx.Tx) PendingActivationRepo {
+func newPendingActivationQueryBuilder(txn *sqlx.TxnMgr) PendingActivationRepo {
 	return &pendingActivationQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

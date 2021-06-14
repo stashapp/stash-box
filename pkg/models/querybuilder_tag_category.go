@@ -1,10 +1,9 @@
 package models
 
 import (
-	"github.com/jmoiron/sqlx"
-
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -12,9 +11,9 @@ type tagCategoryQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newTagCategoryQueryBuilder(tx *sqlx.Tx) TagCategoryRepo {
+func newTagCategoryQueryBuilder(txn *sqlx.TxnMgr) TagCategoryRepo {
 	return &tagCategoryQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

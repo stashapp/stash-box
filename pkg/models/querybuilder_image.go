@@ -1,10 +1,9 @@
 package models
 
 import (
-	"github.com/jmoiron/sqlx"
-
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -12,9 +11,9 @@ type imageQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newImageQueryBuilder(tx *sqlx.Tx) ImageRepo {
+func newImageQueryBuilder(txn *sqlx.TxnMgr) ImageRepo {
 	return &imageQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

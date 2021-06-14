@@ -4,10 +4,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -15,9 +14,9 @@ type tagQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newTagQueryBuilder(tx *sqlx.Tx) TagRepo {
+func newTagQueryBuilder(txn *sqlx.TxnMgr) TagRepo {
 	return &tagQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

@@ -6,19 +6,19 @@ import (
 	"time"
 
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/utils"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 )
 
 type performerQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newPerformerQueryBuilder(tx *sqlx.Tx) PerformerRepo {
+func newPerformerQueryBuilder(txn *sqlx.TxnMgr) PerformerRepo {
 	return &performerQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

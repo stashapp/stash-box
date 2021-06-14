@@ -1,19 +1,18 @@
 package models
 
 import (
-	"github.com/jmoiron/sqlx"
-
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type joinsQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newJoinsQueryBuilder(tx *sqlx.Tx) JoinsRepo {
+func newJoinsQueryBuilder(txn *sqlx.TxnMgr) JoinsRepo {
 	return &joinsQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 

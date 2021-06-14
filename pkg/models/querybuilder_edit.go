@@ -5,17 +5,17 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type editQueryBuilder struct {
 	dbi database.DBI
 }
 
-func newEditQueryBuilder(tx *sqlx.Tx) EditRepo {
+func newEditQueryBuilder(txn *sqlx.TxnMgr) EditRepo {
 	return &editQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+		dbi: database.NewDBI(txn),
 	}
 }
 
