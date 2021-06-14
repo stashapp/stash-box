@@ -31,7 +31,7 @@ func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) (*string, 
 		return nil, err
 	}
 
-	if err := validateExistingEmail(&uqb, &aqb, email); err != nil {
+	if err := validateExistingEmail(uqb, aqb, email); err != nil {
 		return nil, err
 	}
 
@@ -47,13 +47,13 @@ func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) (*string, 
 		}
 	}
 
-	inviteID, err := validateInviteKey(&iqb, &aqb, inviteKey)
+	inviteID, err := validateInviteKey(iqb, aqb, inviteKey)
 	if err != nil {
 		return nil, err
 	}
 
 	// generate an activation key and email
-	key, err := generateActivationKey(&aqb, email, inviteID)
+	key, err := generateActivationKey(aqb, email, inviteID)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +266,7 @@ func ResetPassword(tx *sqlx.Tx, em *email.Manager, email string) error {
 	}
 
 	// generate an activation key and email
-	key, err := generateResetPasswordActivationKey(&aqb, email)
+	key, err := generateResetPasswordActivationKey(aqb, email)
 	if err != nil {
 		return err
 	}

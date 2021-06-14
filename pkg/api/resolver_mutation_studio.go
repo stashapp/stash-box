@@ -121,7 +121,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		}
 
 		// remove images that are no longer used
-		imageService := image.GetService(&iqb)
+		imageService := image.GetService(iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
@@ -165,7 +165,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		}
 
 		// remove images that are no longer used
-		imageService := image.GetService(&iqb)
+		imageService := image.GetService(iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {

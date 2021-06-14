@@ -256,7 +256,7 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (string, erro
 		ikqb := models.NewInviteCodeQueryBuilder(txn.GetTx())
 
 		var txnErr error
-		ret, txnErr = user.GenerateInviteKey(&uqb, &ikqb, currentUser.ID, requireToken)
+		ret, txnErr = user.GenerateInviteKey(uqb, ikqb, currentUser.ID, requireToken)
 		if txnErr != nil {
 			return txnErr
 		}
@@ -305,7 +305,7 @@ func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (
 			userID = inviteKey.GeneratedBy
 		}
 
-		txnErr := user.RescindInviteKey(&uqb, &ikqb, inviteKeyID, userID, requireToken)
+		txnErr := user.RescindInviteKey(uqb, ikqb, inviteKeyID, userID, requireToken)
 		if txnErr != nil {
 			return txnErr
 		}
@@ -335,7 +335,7 @@ func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantIn
 		userID, _ := uuid.FromString(input.UserID)
 
 		var txnErr error
-		ret, txnErr = user.GrantInviteTokens(&qb, userID, input.Amount)
+		ret, txnErr = user.GrantInviteTokens(qb, userID, input.Amount)
 		if txnErr != nil {
 			return txnErr
 		}
@@ -365,7 +365,7 @@ func (r *mutationResolver) RevokeInvite(ctx context.Context, input models.Revoke
 		userID, _ := uuid.FromString(input.UserID)
 
 		var txnErr error
-		ret, txnErr = user.RepealInviteTokens(&qb, userID, input.Amount)
+		ret, txnErr = user.RepealInviteTokens(qb, userID, input.Amount)
 		if txnErr != nil {
 			return txnErr
 		}

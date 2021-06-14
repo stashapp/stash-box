@@ -8,17 +8,17 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-type TagCategoryQueryBuilder struct {
+type tagCategoryQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewTagCategoryQueryBuilder(tx *sqlx.Tx) TagCategoryQueryBuilder {
-	return TagCategoryQueryBuilder{
+func NewTagCategoryQueryBuilder(tx *sqlx.Tx) TagCategoryRepo {
+	return &tagCategoryQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}
 }
 
-func (qb *TagCategoryQueryBuilder) toModel(ro interface{}) *TagCategory {
+func (qb *tagCategoryQueryBuilder) toModel(ro interface{}) *TagCategory {
 	if ro != nil {
 		return ro.(*TagCategory)
 	}
@@ -26,32 +26,32 @@ func (qb *TagCategoryQueryBuilder) toModel(ro interface{}) *TagCategory {
 	return nil
 }
 
-func (qb *TagCategoryQueryBuilder) Create(newCategory TagCategory) (*TagCategory, error) {
+func (qb *tagCategoryQueryBuilder) Create(newCategory TagCategory) (*TagCategory, error) {
 	ret, err := qb.dbi.Insert(newCategory)
 	return qb.toModel(ret), err
 }
 
-func (qb *TagCategoryQueryBuilder) Update(updatedCategory TagCategory) (*TagCategory, error) {
+func (qb *tagCategoryQueryBuilder) Update(updatedCategory TagCategory) (*TagCategory, error) {
 	ret, err := qb.dbi.Update(updatedCategory, false)
 	return qb.toModel(ret), err
 }
 
-func (qb *TagCategoryQueryBuilder) Destroy(id uuid.UUID) error {
+func (qb *tagCategoryQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, tagCategoryDBTable)
 }
 
-func (qb *TagCategoryQueryBuilder) Find(id uuid.UUID) (*TagCategory, error) {
+func (qb *tagCategoryQueryBuilder) Find(id uuid.UUID) (*TagCategory, error) {
 	ret, err := qb.dbi.Find(id, tagCategoryDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *TagCategoryQueryBuilder) queryTagCategories(query string, args []interface{}) (TagCategories, error) {
+func (qb *tagCategoryQueryBuilder) queryTagCategories(query string, args []interface{}) (TagCategories, error) {
 	var output TagCategories
 	err := qb.dbi.RawQuery(tagCategoryDBTable, query, args, &output)
 	return output, err
 }
 
-func (qb *TagCategoryQueryBuilder) FindByIds(ids []uuid.UUID) ([]*TagCategory, []error) {
+func (qb *tagCategoryQueryBuilder) FindByIds(ids []uuid.UUID) ([]*TagCategory, []error) {
 	query := `
 		SELECT tag_categories.* FROM tag_categories
 		WHERE id IN (?)
@@ -74,7 +74,7 @@ func (qb *TagCategoryQueryBuilder) FindByIds(ids []uuid.UUID) ([]*TagCategory, [
 	return result, nil
 }
 
-func (qb *TagCategoryQueryBuilder) Query(findFilter *QuerySpec) ([]*TagCategory, int, error) {
+func (qb *tagCategoryQueryBuilder) Query(findFilter *QuerySpec) ([]*TagCategory, int, error) {
 	if findFilter == nil {
 		findFilter = &QuerySpec{}
 	}
@@ -93,7 +93,7 @@ func (qb *TagCategoryQueryBuilder) Query(findFilter *QuerySpec) ([]*TagCategory,
 	return categories, countResult, nil
 }
 
-func (qb *TagCategoryQueryBuilder) getTagCategorySort(findFilter *QuerySpec) string {
+func (qb *tagCategoryQueryBuilder) getTagCategorySort(findFilter *QuerySpec) string {
 	var sort string
 	var direction string
 	if findFilter == nil {

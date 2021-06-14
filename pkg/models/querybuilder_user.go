@@ -6,28 +6,17 @@ import (
 	"github.com/stashapp/stash-box/pkg/database"
 )
 
-// UserFinder is an interface to find and update User objects.
-type UserFinder interface {
-	Find(id uuid.UUID) (*User, error)
-	FindByEmail(email string) (*User, error)
-}
-
-type UserFinderUpdater interface {
-	UserFinder
-	UpdateFull(updatedUser User) (*User, error)
-}
-
-type UserQueryBuilder struct {
+type userQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewUserQueryBuilder(tx *sqlx.Tx) UserQueryBuilder {
-	return UserQueryBuilder{
+func NewUserQueryBuilder(tx *sqlx.Tx) UserRepo {
+	return &userQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}
 }
 
-func (qb *UserQueryBuilder) toModel(ro interface{}) *User {
+func (qb *userQueryBuilder) toModel(ro interface{}) *User {
 	if ro != nil {
 		return ro.(*User)
 	}
@@ -35,39 +24,39 @@ func (qb *UserQueryBuilder) toModel(ro interface{}) *User {
 	return nil
 }
 
-func (qb *UserQueryBuilder) Create(newUser User) (*User, error) {
+func (qb *userQueryBuilder) Create(newUser User) (*User, error) {
 	ret, err := qb.dbi.Insert(newUser)
 	return qb.toModel(ret), err
 }
 
-func (qb *UserQueryBuilder) Update(updatedUser User) (*User, error) {
+func (qb *userQueryBuilder) Update(updatedUser User) (*User, error) {
 	ret, err := qb.dbi.Update(updatedUser, false)
 	return qb.toModel(ret), err
 }
 
-func (qb *UserQueryBuilder) UpdateFull(updatedUser User) (*User, error) {
+func (qb *userQueryBuilder) UpdateFull(updatedUser User) (*User, error) {
 	ret, err := qb.dbi.Update(updatedUser, true)
 	return qb.toModel(ret), err
 }
 
-func (qb *UserQueryBuilder) Destroy(id uuid.UUID) error {
+func (qb *userQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, userDBTable)
 }
 
-func (qb *UserQueryBuilder) CreateRoles(newJoins UserRoles) error {
+func (qb *userQueryBuilder) CreateRoles(newJoins UserRoles) error {
 	return qb.dbi.InsertJoins(userRolesTable, &newJoins)
 }
 
-func (qb *UserQueryBuilder) UpdateRoles(studioID uuid.UUID, updatedJoins UserRoles) error {
+func (qb *userQueryBuilder) UpdateRoles(studioID uuid.UUID, updatedJoins UserRoles) error {
 	return qb.dbi.ReplaceJoins(userRolesTable, studioID, &updatedJoins)
 }
 
-func (qb *UserQueryBuilder) Find(id uuid.UUID) (*User, error) {
+func (qb *userQueryBuilder) Find(id uuid.UUID) (*User, error) {
 	ret, err := qb.dbi.Find(id, userDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *UserQueryBuilder) FindByName(name string) (*User, error) {
+func (qb *userQueryBuilder) FindByName(name string) (*User, error) {
 	query := "SELECT * FROM users WHERE upper(name) = upper(?)"
 	var args []interface{}
 	args = append(args, name)
@@ -78,7 +67,7 @@ func (qb *UserQueryBuilder) FindByName(name string) (*User, error) {
 	return results[0], nil
 }
 
-func (qb *UserQueryBuilder) FindByEmail(email string) (*User, error) {
+func (qb *userQueryBuilder) FindByEmail(email string) (*User, error) {
 	query := "SELECT * FROM users WHERE upper(email) = upper(?)"
 	var args []interface{}
 	args = append(args, email)
@@ -89,11 +78,11 @@ func (qb *UserQueryBuilder) FindByEmail(email string) (*User, error) {
 	return results[0], nil
 }
 
-func (qb *UserQueryBuilder) Count() (int, error) {
+func (qb *userQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT users.id FROM users"), nil)
 }
 
-func (qb *UserQueryBuilder) Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int) {
+func (qb *userQueryBuilder) Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int) {
 	if userFilter == nil {
 		userFilter = &UserFilterType{}
 	}
@@ -122,7 +111,7 @@ func (qb *UserQueryBuilder) Query(userFilter *UserFilterType, findFilter *QueryS
 	return studios, countResult
 }
 
-func (qb *UserQueryBuilder) getUserSort(findFilter *QuerySpec) string {
+func (qb *userQueryBuilder) getUserSort(findFilter *QuerySpec) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -135,13 +124,13 @@ func (qb *UserQueryBuilder) getUserSort(findFilter *QuerySpec) string {
 	return getSort(sort, direction, "users", nil)
 }
 
-func (qb *UserQueryBuilder) queryUsers(query string, args []interface{}) (Users, error) {
+func (qb *userQueryBuilder) queryUsers(query string, args []interface{}) (Users, error) {
 	var output Users
 	err := qb.dbi.RawQuery(userDBTable, query, args, &output)
 	return output, err
 }
 
-func (qb *UserQueryBuilder) GetRoles(id uuid.UUID) (UserRoles, error) {
+func (qb *userQueryBuilder) GetRoles(id uuid.UUID) (UserRoles, error) {
 	joins := UserRoles{}
 	err := qb.dbi.FindJoins(userRolesTable, id, &joins)
 

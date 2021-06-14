@@ -16,7 +16,7 @@ func (r *mutationResolver) ImageCreate(ctx context.Context, input models.ImageCr
 	var ret *models.Image
 	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
 		qb := models.NewImageQueryBuilder(txn.GetTx())
-		imageService := image.GetService(&qb)
+		imageService := image.GetService(qb)
 		var txnErr error
 		ret, txnErr = imageService.Create(input)
 
@@ -37,7 +37,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 
 	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
 		qb := models.NewImageQueryBuilder(txn.GetTx())
-		imageService := image.GetService(&qb)
+		imageService := image.GetService(qb)
 		return imageService.Destroy(input)
 	})
 

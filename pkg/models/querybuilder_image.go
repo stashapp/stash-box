@@ -8,38 +8,17 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-type ImageRepo interface {
-	ImageCreator
-	ImageDestroyer
-	ImageFinder
-}
-
-type ImageCreator interface {
-	Create(newImage Image) (*Image, error)
-}
-
-type ImageFinder interface {
-	Find(id uuid.UUID) (*Image, error)
-	FindByChecksum(checksum string) (*Image, error)
-	FindUnused() ([]*Image, error)
-	IsUnused(imageID uuid.UUID) (bool, error)
-}
-
-type ImageDestroyer interface {
-	Destroy(id uuid.UUID) error
-}
-
-type ImageQueryBuilder struct {
+type imageQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewImageQueryBuilder(tx *sqlx.Tx) ImageQueryBuilder {
-	return ImageQueryBuilder{
+func NewImageQueryBuilder(tx *sqlx.Tx) ImageRepo {
+	return &imageQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}
 }
 
-func (qb *ImageQueryBuilder) toModel(ro interface{}) *Image {
+func (qb *imageQueryBuilder) toModel(ro interface{}) *Image {
 	if ro != nil {
 		return ro.(*Image)
 	}
@@ -47,26 +26,26 @@ func (qb *ImageQueryBuilder) toModel(ro interface{}) *Image {
 	return nil
 }
 
-func (qb *ImageQueryBuilder) Create(newImage Image) (*Image, error) {
+func (qb *imageQueryBuilder) Create(newImage Image) (*Image, error) {
 	ret, err := qb.dbi.Insert(newImage)
 	return qb.toModel(ret), err
 }
 
-func (qb *ImageQueryBuilder) Update(updatedImage Image) (*Image, error) {
+func (qb *imageQueryBuilder) Update(updatedImage Image) (*Image, error) {
 	ret, err := qb.dbi.Update(updatedImage, false)
 	return qb.toModel(ret), err
 }
 
-func (qb *ImageQueryBuilder) Destroy(id uuid.UUID) error {
+func (qb *imageQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, imageDBTable)
 }
 
-func (qb *ImageQueryBuilder) Find(id uuid.UUID) (*Image, error) {
+func (qb *imageQueryBuilder) Find(id uuid.UUID) (*Image, error) {
 	ret, err := qb.dbi.Find(id, imageDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *ImageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Image, error) {
+func (qb *imageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Image, error) {
 	query := `
 		SELECT images.* FROM images
 		LEFT JOIN scene_images as scenes_join on scenes_join.image_id = images.id
@@ -77,7 +56,7 @@ func (qb *ImageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Image, error) 
 	return qb.queryImages(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
+func (qb *imageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
 	query := `
 		SELECT images.* FROM images
 		WHERE images.checksum = ?
@@ -95,7 +74,7 @@ func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
 	return nil, nil
 }
 
-func (qb *ImageQueryBuilder) FindUnused() ([]*Image, error) {
+func (qb *imageQueryBuilder) FindUnused() ([]*Image, error) {
 	query := `
 		SELECT images.* from images
 		LEFT JOIN scene_images ON scene_images.image_id = images.id
@@ -117,7 +96,7 @@ func (qb *ImageQueryBuilder) FindUnused() ([]*Image, error) {
 	return qb.queryImages(query, args)
 }
 
-func (qb *ImageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
+func (qb *imageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
 	query := database.NewQueryBuilder(imageDBTable)
 	query.Body = `
 		SELECT images.id from images
@@ -146,7 +125,7 @@ func (qb *ImageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
 	return count == 1, nil
 }
 
-func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
+func (qb *imageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
 
 	query := `
 		SELECT images.* FROM images
@@ -170,7 +149,7 @@ func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+func (qb *imageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	images := ScenesImages{}
 	err := qb.dbi.FindAllJoins(sceneImageTable, ids, &images)
 	if err != nil {
@@ -189,7 +168,7 @@ func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, 
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+func (qb *imageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	images := PerformersImages{}
 	err := qb.dbi.FindAllJoins(performerImageTable, ids, &images)
 	if err != nil {
@@ -208,7 +187,7 @@ func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UU
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) FindByPerformerID(performerID uuid.UUID) (Images, error) {
+func (qb *imageQueryBuilder) FindByPerformerID(performerID uuid.UUID) (Images, error) {
 	query := `
 		SELECT images.* FROM images
 		LEFT JOIN performer_images as performers_join on performers_join.image_id = images.id
@@ -219,7 +198,7 @@ func (qb *ImageQueryBuilder) FindByPerformerID(performerID uuid.UUID) (Images, e
 	return qb.queryImages(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*Image, error) {
+func (qb *imageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*Image, error) {
 	query := `
 		SELECT images.* FROM images
 		LEFT JOIN studio_images as studios_join on studios_join.image_id = images.id
@@ -229,7 +208,7 @@ func (qb *ImageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*Image, error
 	return qb.queryImages(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+func (qb *imageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	images := StudiosImages{}
 	err := qb.dbi.FindAllJoins(studioImageTable, ids, &images)
 	if err != nil {
@@ -248,7 +227,7 @@ func (qb *ImageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID,
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}) (Images, error) {
+func (qb *imageQueryBuilder) queryImages(query string, args []interface{}) (Images, error) {
 	output := Images{}
 	err := qb.dbi.RawQuery(imageDBTable, query, args, &output)
 	return output, err

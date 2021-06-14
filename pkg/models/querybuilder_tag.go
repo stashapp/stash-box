@@ -11,17 +11,17 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-type TagQueryBuilder struct {
+type tagQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewTagQueryBuilder(tx *sqlx.Tx) TagQueryBuilder {
-	return TagQueryBuilder{
+func NewTagQueryBuilder(tx *sqlx.Tx) TagRepo {
+	return &tagQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}
 }
 
-func (qb *TagQueryBuilder) toModel(ro interface{}) *Tag {
+func (qb *tagQueryBuilder) toModel(ro interface{}) *Tag {
 	if ro != nil {
 		return ro.(*Tag)
 	}
@@ -29,31 +29,31 @@ func (qb *TagQueryBuilder) toModel(ro interface{}) *Tag {
 	return nil
 }
 
-func (qb *TagQueryBuilder) Create(newTag Tag) (*Tag, error) {
+func (qb *tagQueryBuilder) Create(newTag Tag) (*Tag, error) {
 	ret, err := qb.dbi.Insert(newTag)
 	return qb.toModel(ret), err
 }
 
-func (qb *TagQueryBuilder) Update(updatedTag Tag) (*Tag, error) {
+func (qb *tagQueryBuilder) Update(updatedTag Tag) (*Tag, error) {
 	ret, err := qb.dbi.Update(updatedTag, true)
 	return qb.toModel(ret), err
 }
 
-func (qb *TagQueryBuilder) UpdatePartial(updatedTag Tag) (*Tag, error) {
+func (qb *tagQueryBuilder) UpdatePartial(updatedTag Tag) (*Tag, error) {
 	ret, err := qb.dbi.Update(updatedTag, false)
 	return qb.toModel(ret), err
 }
 
-func (qb *TagQueryBuilder) Destroy(id uuid.UUID) error {
+func (qb *tagQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, tagDBTable)
 }
 
-func (qb *TagQueryBuilder) DeleteSceneTags(id uuid.UUID) error {
+func (qb *tagQueryBuilder) DeleteSceneTags(id uuid.UUID) error {
 	// Delete scene_tags joins
 	return qb.dbi.DeleteJoins(tagSceneTable, id)
 }
 
-func (qb *TagQueryBuilder) SoftDelete(tag Tag) (*Tag, error) {
+func (qb *tagQueryBuilder) SoftDelete(tag Tag) (*Tag, error) {
 	// Delete tag aliases
 	if err := qb.dbi.DeleteJoins(tagAliasTable, tag.ID); err != nil {
 		return nil, err
@@ -62,17 +62,17 @@ func (qb *TagQueryBuilder) SoftDelete(tag Tag) (*Tag, error) {
 	return qb.toModel(ret), err
 }
 
-func (qb *TagQueryBuilder) CreateRedirect(newJoin TagRedirect) error {
+func (qb *tagQueryBuilder) CreateRedirect(newJoin TagRedirect) error {
 	return qb.dbi.InsertJoin(tagRedirectTable, newJoin, nil)
 }
 
-func (qb *TagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+func (qb *tagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
 	query := "UPDATE " + tagRedirectTable.Table.Name() + " SET target_id = ? WHERE target_id = ?"
 	args := []interface{}{newTargetID, oldTargetID}
 	return qb.dbi.RawQuery(tagRedirectTable.Table, query, args, nil)
 }
 
-func (qb *TagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+func (qb *tagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
 	// Insert new tags for any scenes that have the old tag
 	query := `INSERT INTO scene_tags (scene_id, tag_id)
             SELECT scene_id, ? 
@@ -90,20 +90,20 @@ func (qb *TagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uu
 	return qb.dbi.RawQuery(sceneTagTable.Table, query, args, nil)
 }
 
-func (qb *TagQueryBuilder) CreateAliases(newJoins TagAliases) error {
+func (qb *tagQueryBuilder) CreateAliases(newJoins TagAliases) error {
 	return qb.dbi.InsertJoins(tagAliasTable, &newJoins)
 }
 
-func (qb *TagQueryBuilder) UpdateAliases(tagID uuid.UUID, updatedJoins TagAliases) error {
+func (qb *tagQueryBuilder) UpdateAliases(tagID uuid.UUID, updatedJoins TagAliases) error {
 	return qb.dbi.ReplaceJoins(tagAliasTable, tagID, &updatedJoins)
 }
 
-func (qb *TagQueryBuilder) Find(id uuid.UUID) (*Tag, error) {
+func (qb *tagQueryBuilder) Find(id uuid.UUID) (*Tag, error) {
 	ret, err := qb.dbi.Find(id, tagDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *TagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
+func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tags.id = tag_aliases.tag_id
 		WHERE tag_aliases.alias = ? OR tags.name = ?`
@@ -116,7 +116,7 @@ func (qb *TagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
 	return results[0], nil
 }
 
-func (qb *TagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Tag, error) {
+func (qb *tagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_tags as scenes_join on scenes_join.tag_id = tags.id
@@ -127,7 +127,7 @@ func (qb *TagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+func (qb *tagQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	tags := ScenesTags{}
 	err := qb.dbi.FindAllJoins(sceneTagTable, ids, &tags)
 	if err != nil {
@@ -146,7 +146,7 @@ func (qb *TagQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []
 	return result, nil
 }
 
-func (qb *TagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Tag, []error) {
+func (qb *tagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Tag, []error) {
 	query := `
 		SELECT tags.* FROM tags
 		WHERE id IN (?)
@@ -169,7 +169,7 @@ func (qb *TagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Tag, []error) {
 	return result, nil
 }
 
-func (qb *TagQueryBuilder) FindByNames(names []string) ([]*Tag, error) {
+func (qb *tagQueryBuilder) FindByNames(names []string) ([]*Tag, error) {
 	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
@@ -178,7 +178,7 @@ func (qb *TagQueryBuilder) FindByNames(names []string) ([]*Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByAliases(names []string) ([]*Tag, error) {
+func (qb *tagQueryBuilder) FindByAliases(names []string) ([]*Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tags.id = tag_aliases.tag_id
 		WHERE tag_aliases.alias IN ` + getInBinding(len(names))
@@ -190,7 +190,7 @@ func (qb *TagQueryBuilder) FindByAliases(names []string) ([]*Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByName(name string) (*Tag, error) {
+func (qb *tagQueryBuilder) FindByName(name string) (*Tag, error) {
 	query := "SELECT * FROM tags WHERE upper(name) = upper(?)"
 
 	args := []interface{}{name}
@@ -201,7 +201,7 @@ func (qb *TagQueryBuilder) FindByName(name string) (*Tag, error) {
 	return results[0], nil
 }
 
-func (qb *TagQueryBuilder) FindByAlias(name string) ([]*Tag, error) {
+func (qb *tagQueryBuilder) FindByAlias(name string) ([]*Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tag.id = tag_aliases.tag_id
 		WHERE upper(tag_aliases.alias) = UPPER(?)`
@@ -211,11 +211,11 @@ func (qb *TagQueryBuilder) FindByAlias(name string) ([]*Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) Count() (int, error) {
+func (qb *tagQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
-func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec) ([]*Tag, int, error) {
+func (qb *tagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec) ([]*Tag, int, error) {
 	if tagFilter == nil {
 		tagFilter = &TagFilterType{}
 	}
@@ -249,7 +249,7 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 	return tags, countResult, nil
 }
 
-func (qb *TagQueryBuilder) getTagSort(findFilter *QuerySpec) string {
+func (qb *tagQueryBuilder) getTagSort(findFilter *QuerySpec) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -262,25 +262,25 @@ func (qb *TagQueryBuilder) getTagSort(findFilter *QuerySpec) string {
 	return getSort(sort, direction, tagTable, nil)
 }
 
-func (qb *TagQueryBuilder) queryTags(query string, args []interface{}) (Tags, error) {
+func (qb *tagQueryBuilder) queryTags(query string, args []interface{}) (Tags, error) {
 	var output Tags
 	err := qb.dbi.RawQuery(tagDBTable, query, args, &output)
 	return output, err
 }
 
-func (qb *TagQueryBuilder) GetRawAliases(id uuid.UUID) (TagAliases, error) {
+func (qb *tagQueryBuilder) GetRawAliases(id uuid.UUID) (TagAliases, error) {
 	joins := TagAliases{}
 	err := qb.dbi.FindJoins(tagAliasTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *TagQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
+func (qb *tagQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
 	joins, err := qb.GetRawAliases(id)
 	return joins.ToAliases(), err
 }
 
-func (qb *TagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
+func (qb *tagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
 	tag, err := qb.Find(sourceID)
 	if err != nil {
 		return err
@@ -305,7 +305,7 @@ func (qb *TagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
 	return qb.CreateRedirect(redirect)
 }
 
-func (qb *TagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Tag) (*Tag, error) {
+func (qb *tagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Tag) (*Tag, error) {
 	data, err := edit.GetTagData()
 	if err != nil {
 		return nil, err

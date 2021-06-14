@@ -8,30 +8,17 @@ import (
 	"github.com/stashapp/stash-box/pkg/database"
 )
 
-type InviteKeyCreator interface {
-	Create(newKey InviteKey) (*InviteKey, error)
-}
-
-type InviteKeyFinder interface {
-	Find(id uuid.UUID) (*InviteKey, error)
-}
-
-type InviteKeyDestroyer interface {
-	InviteKeyFinder
-	Destroy(id uuid.UUID) error
-}
-
-type InviteKeyQueryBuilder struct {
+type inviteKeyQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewInviteCodeQueryBuilder(tx *sqlx.Tx) InviteKeyQueryBuilder {
-	return InviteKeyQueryBuilder{
+func NewInviteCodeQueryBuilder(tx *sqlx.Tx) InviteKeyRepo {
+	return &inviteKeyQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}
 }
 
-func (qb *InviteKeyQueryBuilder) toModel(ro interface{}) *InviteKey {
+func (qb *inviteKeyQueryBuilder) toModel(ro interface{}) *InviteKey {
 	if ro != nil {
 		return ro.(*InviteKey)
 	}
@@ -39,21 +26,21 @@ func (qb *InviteKeyQueryBuilder) toModel(ro interface{}) *InviteKey {
 	return nil
 }
 
-func (qb *InviteKeyQueryBuilder) Create(newKey InviteKey) (*InviteKey, error) {
+func (qb *inviteKeyQueryBuilder) Create(newKey InviteKey) (*InviteKey, error) {
 	ret, err := qb.dbi.Insert(newKey)
 	return qb.toModel(ret), err
 }
 
-func (qb *InviteKeyQueryBuilder) Destroy(id uuid.UUID) error {
+func (qb *inviteKeyQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, inviteKeyDBTable)
 }
 
-func (qb *InviteKeyQueryBuilder) Find(id uuid.UUID) (*InviteKey, error) {
+func (qb *inviteKeyQueryBuilder) Find(id uuid.UUID) (*InviteKey, error) {
 	ret, err := qb.dbi.Find(id, inviteKeyDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *InviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireTime time.Time) (InviteKeys, error) {
+func (qb *inviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireTime time.Time) (InviteKeys, error) {
 	query := `SELECT i.* FROM ` + inviteKeyTable + ` i 
 	 LEFT JOIN ` + pendingActivationTable + ` a ON a.invite_key = i.id AND a.time > ?
 	 WHERE i.generated_by = ? AND a.id IS NULL`
@@ -70,6 +57,6 @@ func (qb *InviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireT
 	return output, nil
 }
 
-func (qb *InviteKeyQueryBuilder) Count() (int, error) {
+func (qb *inviteKeyQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT invite_keys.id FROM invite_keys"), nil)
 }
