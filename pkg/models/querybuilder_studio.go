@@ -13,7 +13,7 @@ type studioQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewStudioQueryBuilder(tx *sqlx.Tx) StudioRepo {
+func newStudioQueryBuilder(tx *sqlx.Tx) StudioRepo {
 	return &studioQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

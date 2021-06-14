@@ -12,7 +12,7 @@ type pendingActivationQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewPendingActivationQueryBuilder(tx *sqlx.Tx) PendingActivationRepo {
+func newPendingActivationQueryBuilder(tx *sqlx.Tx) PendingActivationRepo {
 	return &pendingActivationQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

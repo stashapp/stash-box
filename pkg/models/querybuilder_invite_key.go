@@ -12,7 +12,7 @@ type inviteKeyQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewInviteCodeQueryBuilder(tx *sqlx.Tx) InviteKeyRepo {
+func newInviteCodeQueryBuilder(tx *sqlx.Tx) InviteKeyRepo {
 	return &inviteKeyQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

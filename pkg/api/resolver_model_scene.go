@@ -38,7 +38,7 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 		return nil, nil
 	}
 
-	qb := models.NewStudioQueryBuilder(nil)
+	qb := r.getRepoFactory(ctx).Studio()
 	parent, err := qb.Find(obj.StudioID.UUID)
 
 	if err != nil {

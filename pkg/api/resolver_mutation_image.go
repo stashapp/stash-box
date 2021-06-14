@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -13,9 +12,11 @@ func (r *mutationResolver) ImageCreate(ctx context.Context, input models.ImageCr
 		return nil, err
 	}
 
+	fac := r.getRepoFactory(ctx)
+
 	var ret *models.Image
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewImageQueryBuilder(txn.GetTx())
+	err := fac.WithTxn(func() error {
+		qb := fac.Image()
 		imageService := image.GetService(qb)
 		var txnErr error
 		ret, txnErr = imageService.Create(input)
@@ -35,8 +36,10 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 		return false, err
 	}
 
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewImageQueryBuilder(txn.GetTx())
+	fac := r.getRepoFactory(ctx)
+
+	err := fac.WithTxn(func() error {
+		qb := fac.Image()
 		imageService := image.GetService(qb)
 		return imageService.Destroy(input)
 	})

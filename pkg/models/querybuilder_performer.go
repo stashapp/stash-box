@@ -16,7 +16,7 @@ type performerQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewPerformerQueryBuilder(tx *sqlx.Tx) PerformerRepo {
+func newPerformerQueryBuilder(tx *sqlx.Tx) PerformerRepo {
 	return &performerQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

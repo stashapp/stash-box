@@ -11,7 +11,7 @@ type joinsQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewJoinsQueryBuilder(tx *sqlx.Tx) JoinsRepo {
+func newJoinsQueryBuilder(tx *sqlx.Tx) JoinsRepo {
 	return &joinsQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

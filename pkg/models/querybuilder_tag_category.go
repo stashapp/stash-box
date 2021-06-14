@@ -12,7 +12,7 @@ type tagCategoryQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewTagCategoryQueryBuilder(tx *sqlx.Tx) TagCategoryRepo {
+func newTagCategoryQueryBuilder(tx *sqlx.Tx) TagCategoryRepo {
 	return &tagCategoryQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

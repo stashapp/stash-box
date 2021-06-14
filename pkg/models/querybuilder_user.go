@@ -10,7 +10,7 @@ type userQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewUserQueryBuilder(tx *sqlx.Tx) UserRepo {
+func newUserQueryBuilder(tx *sqlx.Tx) UserRepo {
 	return &userQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

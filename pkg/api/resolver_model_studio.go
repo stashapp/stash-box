@@ -22,7 +22,7 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 		return nil, nil
 	}
 
-	qb := models.NewStudioQueryBuilder(nil)
+	qb := r.getRepoFactory(ctx).Studio()
 	parent, err := qb.Find(obj.ParentStudioID.UUID)
 
 	if err != nil {
@@ -33,7 +33,7 @@ func (r *studioResolver) Parent(ctx context.Context, obj *models.Studio) (*model
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder(nil)
+	qb := r.getRepoFactory(ctx).Studio()
 	children, err := qb.FindByParentID(obj.ID)
 
 	if err != nil {

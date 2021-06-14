@@ -13,7 +13,8 @@ func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit 
 		return nil, err
 	}
 
-	qb := models.NewPerformerQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Performer()
 
 	trimmedQuery := strings.TrimSpace(term)
 	performerID, err := uuid.FromString(trimmedQuery)
@@ -39,7 +40,8 @@ func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int
 		return nil, err
 	}
 
-	qb := models.NewSceneQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
 
 	trimmedQuery := strings.TrimSpace(term)
 	sceneID, err := uuid.FromString(trimmedQuery)

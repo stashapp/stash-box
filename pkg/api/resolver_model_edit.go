@@ -17,7 +17,8 @@ func (r *editResolver) ID(ctx context.Context, obj *models.Edit) (string, error)
 }
 
 func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User, error) {
-	qb := models.NewUserQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.User()
 	user, err := qb.Find(obj.UserID)
 
 	if err != nil {
@@ -44,16 +45,18 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		return nil, nil
 	}
 
+	fac := r.getRepoFactory(ctx)
+	eqb := fac.Edit()
+
 	var targetType models.TargetTypeEnum
 	resolveEnumString(obj.TargetType, &targetType)
 	if targetType == "TAG" {
-		eqb := models.NewEditQueryBuilder(nil)
 		tagID, err := eqb.FindTagID(obj.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		tqb := models.NewTagQueryBuilder(nil)
+		tqb := fac.Tag()
 		target, err := tqb.Find(*tagID)
 		if err != nil {
 			return nil, err
@@ -61,13 +64,12 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 
 		return target, nil
 	} else if targetType == "PERFORMER" {
-		eqb := models.NewEditQueryBuilder(nil)
 		performerID, err := eqb.FindPerformerID(obj.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		pqb := models.NewPerformerQueryBuilder(nil)
+		pqb := fac.Performer()
 		target, err := pqb.Find(*performerID)
 		if err != nil {
 			return nil, err
@@ -96,10 +98,11 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 	}
 
 	if len(editData.MergeSources) > 0 {
+		fac := r.getRepoFactory(ctx)
 		var ret models.TargetTypeEnum
 		resolveEnumString(obj.TargetType, &ret)
 		if ret == "TAG" {
-			tqb := models.NewTagQueryBuilder(nil)
+			tqb := fac.Tag()
 			for _, tagStringID := range editData.MergeSources {
 				tagID, _ := uuid.FromString(tagStringID)
 				tag, err := tqb.Find(tagID)
@@ -108,7 +111,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 				}
 			}
 		} else if ret == "PERFORMER" {
-			pqb := models.NewPerformerQueryBuilder(nil)
+			pqb := fac.Performer()
 			for _, performerStringID := range editData.MergeSources {
 				performerID, _ := uuid.FromString(performerStringID)
 				performer, err := pqb.Find(performerID)
@@ -175,7 +178,8 @@ func (r *editResolver) OldDetails(ctx context.Context, obj *models.Edit) (models
 }
 
 func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*models.EditComment, error) {
-	qb := models.NewEditQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
 	comments, err := qb.GetComments(obj.ID)
 
 	if err != nil {

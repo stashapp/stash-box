@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
@@ -12,7 +13,8 @@ func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (
 		return nil, err
 	}
 
-	qb := models.NewTagQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Tag()
 
 	if id != nil {
 		idUUID, _ := uuid.FromString(*id)
@@ -29,7 +31,8 @@ func (r *queryResolver) QueryTags(ctx context.Context, tagFilter *models.TagFilt
 		return nil, err
 	}
 
-	qb := models.NewTagQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Tag()
 
 	if tagFilter.Name != nil {
 		tagID, err := uuid.FromString(*tagFilter.Name)

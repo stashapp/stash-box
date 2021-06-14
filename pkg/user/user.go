@@ -1,7 +1,6 @@
 package user
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -9,9 +8,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 
-	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -207,7 +204,7 @@ func validateUserPassword(username string, email string, password string) error 
 	return nil
 }
 
-func Create(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error) {
+func Create(fac models.RepoFactory, input models.UserCreateInput) (*models.User, error) {
 	var err error
 
 	UUID, err := uuid.NewV4()
@@ -238,7 +235,7 @@ func Create(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error) {
 	newUser.APIKey = apiKey
 
 	// Start the transaction and save the user
-	qb := models.NewUserQueryBuilder(tx)
+	qb := fac.User()
 	user, err := qb.Create(newUser)
 	if err != nil {
 		return nil, err
@@ -253,8 +250,8 @@ func Create(tx *sqlx.Tx, input models.UserCreateInput) (*models.User, error) {
 	return user, nil
 }
 
-func Update(tx *sqlx.Tx, input models.UserUpdateInput) (*models.User, error) {
-	qb := models.NewUserQueryBuilder(tx)
+func Update(fac models.RepoFactory, input models.UserUpdateInput) (*models.User, error) {
+	qb := fac.User()
 
 	// get the existing user and modify it
 	userID, _ := uuid.FromString(input.ID)
@@ -287,8 +284,8 @@ func Update(tx *sqlx.Tx, input models.UserUpdateInput) (*models.User, error) {
 	return user, nil
 }
 
-func Destroy(tx *sqlx.Tx, input models.UserDestroyInput) (bool, error) {
-	qb := models.NewUserQueryBuilder(tx)
+func Destroy(fac models.RepoFactory, input models.UserDestroyInput) (bool, error) {
+	qb := fac.User()
 
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
@@ -305,56 +302,58 @@ func Destroy(tx *sqlx.Tx, input models.UserDestroyInput) (bool, error) {
 }
 
 // CreateRoot creates the initial root user if no users are present
-func CreateRoot() {
+func CreateRoot(fac models.RepoFactory) {
 	// if there are no users present, then create a root user with a
 	// generated password and api key, outputting them
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewUserQueryBuilder(tx)
+	var password string
+	var createdUser *models.User
 
-	count, err := qb.Count()
+	err := fac.WithTxn(func() error {
+		qb := fac.User()
+
+		count, err := qb.Count()
+		if err != nil {
+			panic(fmt.Errorf("Error getting user count: %s", err.Error()))
+		}
+
+		if count == 0 {
+			const passwordLength = 16
+			password, err = utils.GenerateRandomPassword(passwordLength)
+			if err != nil {
+				panic(fmt.Errorf("Error creating root user: %s", err.Error()))
+			}
+			newUser := models.UserCreateInput{
+				Name:     "root",
+				Password: password,
+				Email:    unsetEmail,
+				Roles:    rootUserRoles,
+			}
+
+			createdUser, err = Create(fac, newUser)
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		panic(fmt.Errorf("Error getting user count: %s", err.Error()))
+		panic(fmt.Errorf("Error creating root user: %s", err.Error()))
 	}
 
-	if count == 0 {
-		const passwordLength = 16
-		password, err := utils.GenerateRandomPassword(passwordLength)
-		if err != nil {
-			panic(fmt.Errorf("Error creating root user: %s", err.Error()))
-		}
-		newUser := models.UserCreateInput{
-			Name:     "root",
-			Password: password,
-			Email:    unsetEmail,
-			Roles:    rootUserRoles,
-		}
-
-		createdUser, err := Create(tx, newUser)
-
-		if err == nil {
-			err = tx.Commit()
-		}
-
-		if err != nil {
-			_ = tx.Rollback()
-			panic(fmt.Errorf("Error creating root user: %s", err.Error()))
-		}
-
+	if createdUser != nil {
 		// print (not log) the details of the created user
 		fmt.Printf("root user has been created.\nUser: root\nPassword: %s\nAPI Key: %s\n", password, createdUser.APIKey)
 		fmt.Print("These credentials have not been logged. The email should be set and the password should be changed after logging in.\n")
 	}
 }
 
-func Get(id string) (*models.User, error) {
-	qb := models.NewUserQueryBuilder(nil)
+func Get(fac models.RepoFactory, id string) (*models.User, error) {
+	qb := fac.User()
 	userID, _ := uuid.FromString(id)
 	return qb.Find(userID)
 }
 
-func GetRoles(id string) ([]models.RoleEnum, error) {
-	qb := models.NewUserQueryBuilder(nil)
+func GetRoles(fac models.RepoFactory, id string) ([]models.RoleEnum, error) {
+	qb := fac.User()
 
 	userID, _ := uuid.FromString(id)
 	roles, err := qb.GetRoles(userID)
@@ -368,8 +367,8 @@ func GetRoles(id string) ([]models.RoleEnum, error) {
 
 // Authenticate validates the provided username and password. If correct, it
 // returns the id of the user.
-func Authenticate(username string, password string) (string, error) {
-	qb := models.NewUserQueryBuilder(nil)
+func Authenticate(fac models.RepoFactory, username string, password string) (string, error) {
+	qb := fac.User()
 
 	user, err := qb.FindByName(username)
 	if err != nil {
@@ -387,10 +386,10 @@ func Authenticate(username string, password string) (string, error) {
 	return user.ID.String(), nil
 }
 
-func RegenerateAPIKey(tx *sqlx.Tx, userID string) (string, error) {
+func RegenerateAPIKey(fac models.RepoFactory, userID string) (string, error) {
 	var err error
 
-	qb := models.NewUserQueryBuilder(tx)
+	qb := fac.User()
 	userUUID, _ := uuid.FromString(userID)
 	user, err := qb.Find(userUUID)
 
@@ -416,8 +415,8 @@ func RegenerateAPIKey(tx *sqlx.Tx, userID string) (string, error) {
 	return user.APIKey, nil
 }
 
-func ChangePassword(tx *sqlx.Tx, userID string, currentPassword string, newPassword string) error {
-	qb := models.NewUserQueryBuilder(tx)
+func ChangePassword(fac models.RepoFactory, userID string, currentPassword string, newPassword string) error {
+	qb := fac.User()
 
 	userUUID, _ := uuid.FromString(userID)
 	user, err := qb.Find(userUUID)

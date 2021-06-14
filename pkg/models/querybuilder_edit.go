@@ -13,7 +13,7 @@ type editQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewEditQueryBuilder(tx *sqlx.Tx) EditRepo {
+func newEditQueryBuilder(tx *sqlx.Tx) EditRepo {
 	return &editQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

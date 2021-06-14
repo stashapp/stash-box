@@ -14,7 +14,7 @@ type sceneQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewSceneQueryBuilder(tx *sqlx.Tx) SceneRepo {
+func newSceneQueryBuilder(tx *sqlx.Tx) SceneRepo {
 	return &sceneQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

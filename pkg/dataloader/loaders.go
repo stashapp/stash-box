@@ -35,12 +35,14 @@ type Loaders struct {
 	TagCategoryByID        TagCategoryLoader
 }
 
-func Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), loadersKey, GetLoaders())
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
-	})
+func Middleware(fac models.RepoFactory) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), loadersKey, GetLoaders(fac))
+			r = r.WithContext(ctx)
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func For(ctx context.Context) *Loaders {
@@ -50,13 +52,13 @@ func For(ctx context.Context) *Loaders {
 func GetLoadersKey() contextKey {
 	return loadersKey
 }
-func GetLoaders() *Loaders {
+func GetLoaders(fac models.RepoFactory) *Loaders {
 	return &Loaders{
 		SceneFingerprintsByID: FingerprintsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
-				qb := models.NewSceneQueryBuilder(nil)
+				qb := fac.Scene()
 				return qb.GetAllFingerprints(ids)
 			},
 		},
@@ -64,7 +66,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Performer, []error) {
-				qb := models.NewPerformerQueryBuilder(nil)
+				qb := fac.Performer()
 				return qb.FindByIds(ids)
 			},
 		},
@@ -72,7 +74,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := models.NewImageQueryBuilder(nil)
+				qb := fac.Image()
 				return qb.FindIdsBySceneIds(ids)
 			},
 		},
@@ -80,7 +82,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := models.NewImageQueryBuilder(nil)
+				qb := fac.Image()
 				return qb.FindIdsByPerformerIds(ids)
 			},
 		},
@@ -88,7 +90,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := models.NewPerformerQueryBuilder(nil)
+				qb := fac.Performer()
 				return qb.FindMergeIDsByPerformerIDs(ids)
 			},
 		},
@@ -96,7 +98,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]string, []error) {
-				qb := models.NewPerformerQueryBuilder(nil)
+				qb := fac.Performer()
 				return qb.GetAllAliases(ids)
 			},
 		},
@@ -104,7 +106,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.BodyModification, []error) {
-				qb := models.NewPerformerQueryBuilder(nil)
+				qb := fac.Performer()
 				return qb.GetAllTattoos(ids)
 			},
 		},
@@ -112,7 +114,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.BodyModification, []error) {
-				qb := models.NewPerformerQueryBuilder(nil)
+				qb := fac.Performer()
 				return qb.GetAllPiercings(ids)
 			},
 		},
@@ -120,7 +122,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]models.PerformersScenes, []error) {
-				qb := models.NewSceneQueryBuilder(nil)
+				qb := fac.Scene()
 				return qb.GetAllAppearances(ids)
 			},
 		},
@@ -128,7 +130,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
-				qb := models.NewSceneQueryBuilder(nil)
+				qb := fac.Scene()
 				return qb.GetAllURLs(ids)
 			},
 		},
@@ -136,7 +138,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
-				qb := models.NewPerformerQueryBuilder(nil)
+				qb := fac.Performer()
 				return qb.GetAllURLs(ids)
 			},
 		},
@@ -144,7 +146,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
-				qb := models.NewStudioQueryBuilder(nil)
+				qb := fac.Studio()
 				return qb.GetAllURLs(ids)
 			},
 		},
@@ -152,7 +154,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Image, []error) {
-				qb := models.NewImageQueryBuilder(nil)
+				qb := fac.Image()
 				return qb.FindByIds(ids)
 			},
 		},
@@ -160,7 +162,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := models.NewImageQueryBuilder(nil)
+				qb := fac.Image()
 				return qb.FindIdsByStudioIds(ids)
 			},
 		},
@@ -168,7 +170,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-				qb := models.NewTagQueryBuilder(nil)
+				qb := fac.Tag()
 				return qb.FindIdsBySceneIds(ids)
 			},
 		},
@@ -176,7 +178,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Tag, []error) {
-				qb := models.NewTagQueryBuilder(nil)
+				qb := fac.Tag()
 				return qb.FindByIds(ids)
 			},
 		},
@@ -184,7 +186,7 @@ func GetLoaders() *Loaders {
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.TagCategory, []error) {
-				qb := models.NewTagCategoryQueryBuilder(nil)
+				qb := fac.TagCategory()
 				return qb.FindByIds(ids)
 			},
 		},

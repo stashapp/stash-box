@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -29,10 +28,12 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
+	fac := r.getRepoFactory(ctx)
+
 	var performer *models.Performer
-	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewPerformerQueryBuilder(txn.GetTx())
-		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
+	err = fac.WithTxn(func() error {
+		qb := fac.Performer()
+		jqb := fac.Joins()
 
 		err = newPerformer.CopyFromCreateInput(input)
 		if err != nil {
@@ -87,11 +88,13 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
+	fac := r.getRepoFactory(ctx)
+
 	var performer *models.Performer
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewPerformerQueryBuilder(txn.GetTx())
-		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
-		iqb := models.NewImageQueryBuilder(txn.GetTx())
+	err := fac.WithTxn(func() error {
+		qb := fac.Performer()
+		jqb := fac.Joins()
+		iqb := fac.Image()
 
 		// get the existing performer and modify it
 		performerID, _ := uuid.FromString(input.ID)
@@ -183,9 +186,11 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 		return false, err
 	}
 
-	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewPerformerQueryBuilder(txn.GetTx())
-		iqb := models.NewImageQueryBuilder(txn.GetTx())
+	fac := r.getRepoFactory(ctx)
+
+	err = fac.WithTxn(func() error {
+		qb := fac.Performer()
+		iqb := fac.Image()
 
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly

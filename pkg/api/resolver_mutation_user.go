@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -23,17 +22,20 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 		return nil, err
 	}
 
-	tx := database.DB.MustBeginTx(ctx, nil)
+	var u *models.User
+	var err error
+	fac := r.getRepoFactory(ctx)
+	err = fac.WithTxn(func() error {
+		u, err = user.Create(fac, input)
 
-	u, err := user.Create(tx, input)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
@@ -45,37 +47,38 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 		return nil, err
 	}
 
-	tx := database.DB.MustBeginTx(ctx, nil)
+	var u *models.User
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		qb := fac.User()
+		userID, _ := uuid.FromString(input.ID)
+		current, err := qb.Find(userID)
 
-	qb := models.NewUserQueryBuilder(tx)
-	userID, _ := uuid.FromString(input.ID)
-	current, err := qb.Find(userID)
+		if err != nil {
+			return fmt.Errorf("error finding user: %s", err.Error())
+		}
+
+		if current == nil {
+			return fmt.Errorf("user not found for id %s", input.ID)
+		}
+
+		if err := user.ValidateUpdate(input, *current); err != nil {
+			return err
+		}
+
+		u, err = user.Update(fac, input)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error finding user: %s", err.Error())
-	}
-
-	if current == nil {
-		return nil, fmt.Errorf("user not found for id %s", input.ID)
-	}
-
-	if err := user.ValidateUpdate(input, *current); err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
-	user, err := user.Update(tx, input)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return u, nil
 }
 
 func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDestroyInput) (bool, error) {
@@ -83,33 +86,35 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 		return false, err
 	}
 
-	tx := database.DB.MustBeginTx(ctx, nil)
+	fac := r.getRepoFactory(ctx)
+	var ret bool
+	err := fac.WithTxn(func() error {
+		qb := fac.User()
+		userID, _ := uuid.FromString(input.ID)
+		u, err := qb.Find(userID)
 
-	qb := models.NewUserQueryBuilder(tx)
-	userID, _ := uuid.FromString(input.ID)
-	u, err := qb.Find(userID)
+		if err != nil {
+			return fmt.Errorf("error finding user: %s", err.Error())
+		}
+
+		if u == nil {
+			return fmt.Errorf("user not found for id %s", input.ID)
+		}
+
+		if err = user.ValidateDestroy(u); err != nil {
+			return err
+		}
+
+		ret, err = user.Destroy(fac, input)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	if err != nil {
-		return false, fmt.Errorf("error finding user: %s", err.Error())
-	}
-
-	if u == nil {
-		return false, fmt.Errorf("user not found for id %s", input.ID)
-	}
-
-	if err = user.ValidateDestroy(u); err != nil {
-		_ = tx.Rollback()
-		return false, err
-	}
-
-	ret, err := user.Destroy(tx, input)
-
-	if err != nil {
-		_ = tx.Rollback()
-		return false, err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return false, err
 	}
 
@@ -136,16 +141,20 @@ func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string)
 		userID = &userIDStr
 	}
 
-	tx := database.DB.MustBeginTx(ctx, nil)
+	fac := r.getRepoFactory(ctx)
+	var ret string
+	err := fac.WithTxn(func() error {
+		var err error
+		ret, err = user.RegenerateAPIKey(fac, *userID)
 
-	ret, err := user.RegenerateAPIKey(tx, *userID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	if err != nil {
-		_ = tx.Rollback()
-		return "", err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return "", err
 	}
 
@@ -153,8 +162,9 @@ func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string)
 }
 
 func (r *mutationResolver) ResetPassword(ctx context.Context, input models.ResetPasswordInput) (bool, error) {
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		return user.ResetPassword(txn.GetTx(), manager.GetInstance().EmailManager, input.Email)
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		return user.ResetPassword(fac, manager.GetInstance().EmailManager, input.Email)
 	})
 
 	if err != nil {
@@ -166,10 +176,11 @@ func (r *mutationResolver) ResetPassword(ctx context.Context, input models.Reset
 
 func (r *mutationResolver) ChangePassword(ctx context.Context, input models.UserChangePasswordInput) (bool, error) {
 	currentUser := getCurrentUser(ctx)
+	fac := r.getRepoFactory(ctx)
 
 	if input.ResetKey != nil {
-		err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-			return user.ActivateResetPassword(txn.GetTx(), *input.ResetKey, input.NewPassword)
+		err := fac.WithTxn(func() error {
+			return user.ActivateResetPassword(fac, *input.ResetKey, input.NewPassword)
 		})
 
 		if err != nil {
@@ -192,15 +203,16 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 	userIDStr := currentUser.ID.String()
 	userID := userIDStr
 
-	tx := database.DB.MustBeginTx(ctx, nil)
+	err := fac.WithTxn(func() error {
+		err := user.ChangePassword(fac, userID, *input.ExistingPassword, input.NewPassword)
+		if err != nil {
+			return err
+		}
 
-	err := user.ChangePassword(tx, userID, *input.ExistingPassword, input.NewPassword)
+		return nil
+	})
+
 	if err != nil {
-		_ = tx.Rollback()
-		return false, err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return false, err
 	}
 
@@ -213,10 +225,11 @@ func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInpu
 		inviteKey = *input.InviteKey
 	}
 
+	fac := r.getRepoFactory(ctx)
 	var ret *string
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+	err := fac.WithTxn(func() error {
 		var txnErr error
-		ret, txnErr = user.NewUser(txn.GetTx(), manager.GetInstance().EmailManager, input.Email, inviteKey)
+		ret, txnErr = user.NewUser(fac, manager.GetInstance().EmailManager, input.Email, inviteKey)
 		return txnErr
 	})
 
@@ -229,9 +242,10 @@ func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInpu
 
 func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.ActivateNewUserInput) (*models.User, error) {
 	var ret *models.User
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
 		var txnErr error
-		ret, txnErr = user.ActivateNewUser(txn.GetTx(), input.Name, input.Email, input.ActivationKey, input.Password)
+		ret, txnErr = user.ActivateNewUser(fac, input.Name, input.Email, input.ActivationKey, input.Password)
 		return txnErr
 	})
 
@@ -251,9 +265,10 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (string, erro
 
 	currentUser := getCurrentUser(ctx)
 	var ret string
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		uqb := models.NewUserQueryBuilder(txn.GetTx())
-		ikqb := models.NewInviteCodeQueryBuilder(txn.GetTx())
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		uqb := fac.User()
+		ikqb := fac.Invite()
 
 		var txnErr error
 		ret, txnErr = user.GenerateInviteKey(uqb, ikqb, currentUser.ID, requireToken)
@@ -284,9 +299,10 @@ func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (
 	tokenManagerErr := validateManageInvites(ctx)
 
 	currentUser := getCurrentUser(ctx)
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		uqb := models.NewUserQueryBuilder(txn.GetTx())
-		ikqb := models.NewInviteCodeQueryBuilder(txn.GetTx())
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		uqb := fac.User()
+		ikqb := fac.Invite()
 
 		inviteKeyID, _ := uuid.FromString(code)
 		userID := currentUser.ID
@@ -330,8 +346,9 @@ func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantIn
 
 	currentUser := getCurrentUser(ctx)
 	var ret int
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewUserQueryBuilder(txn.GetTx())
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		qb := fac.User()
 		userID, _ := uuid.FromString(input.UserID)
 
 		var txnErr error
@@ -360,8 +377,9 @@ func (r *mutationResolver) RevokeInvite(ctx context.Context, input models.Revoke
 
 	currentUser := getCurrentUser(ctx)
 	var ret int
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewUserQueryBuilder(txn.GetTx())
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		qb := fac.User()
 		userID, _ := uuid.FromString(input.UserID)
 
 		var txnErr error

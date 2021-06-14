@@ -37,7 +37,7 @@ var userDB *userPopulator
 
 func (p *userPopulator) PopulateDB() error {
 	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	fac.WithTxn(func() error {
 
 	// create admin user
 	createInput := models.UserCreateInput{

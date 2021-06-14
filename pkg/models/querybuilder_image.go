@@ -12,7 +12,7 @@ type imageQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewImageQueryBuilder(tx *sqlx.Tx) ImageRepo {
+func newImageQueryBuilder(tx *sqlx.Tx) ImageRepo {
 	return &imageQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

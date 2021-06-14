@@ -15,7 +15,7 @@ type tagQueryBuilder struct {
 	dbi database.DBI
 }
 
-func NewTagQueryBuilder(tx *sqlx.Tx) TagRepo {
+func newTagQueryBuilder(tx *sqlx.Tx) TagRepo {
 	return &tagQueryBuilder{
 		dbi: database.DBIWithTxn(tx),
 	}

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/email"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -17,15 +16,15 @@ var ErrInvalidActivationKey = errors.New("invalid activation key")
 
 // NewUser registers a new user. It returns the activation key only if
 // email verification is not required, otherwise it returns nil.
-func NewUser(tx *sqlx.Tx, em *email.Manager, email, inviteKey string) (*string, error) {
-	if err := ClearExpiredActivations(tx); err != nil {
+func NewUser(fac models.RepoFactory, em *email.Manager, email, inviteKey string) (*string, error) {
+	if err := ClearExpiredActivations(fac); err != nil {
 		return nil, err
 	}
 
 	// ensure user or pending activation with email does not already exist
-	uqb := models.NewUserQueryBuilder(tx)
-	aqb := models.NewPendingActivationQueryBuilder(tx)
-	iqb := models.NewInviteCodeQueryBuilder(tx)
+	uqb := fac.User()
+	aqb := fac.PendingActivation()
+	iqb := fac.Invite()
 
 	if err := validateUserEmail(email); err != nil {
 		return nil, err
@@ -143,10 +142,10 @@ func generateActivationKey(aqb models.PendingActivationCreator, email string, in
 	return obj.ID.String(), nil
 }
 
-func ClearExpiredActivations(tx *sqlx.Tx) error {
+func ClearExpiredActivations(fac models.RepoFactory) error {
 	expireTime := config.GetActivationExpireTime()
 
-	aqb := models.NewPendingActivationQueryBuilder(tx)
+	aqb := fac.PendingActivation()
 	return aqb.DestroyExpired(expireTime)
 }
 
@@ -159,16 +158,16 @@ func sendNewUserEmail(em *email.Manager, email, activationKey string) error {
 	return em.Send(email, subject, body)
 }
 
-func ActivateNewUser(tx *sqlx.Tx, name, email, activationKey, password string) (*models.User, error) {
-	if err := ClearExpiredActivations(tx); err != nil {
+func ActivateNewUser(fac models.RepoFactory, name, email, activationKey, password string) (*models.User, error) {
+	if err := ClearExpiredActivations(fac); err != nil {
 		return nil, err
 	}
 
 	id, _ := uuid.FromString(activationKey)
 
-	uqb := models.NewUserQueryBuilder(tx)
-	aqb := models.NewPendingActivationQueryBuilder(tx)
-	iqb := models.NewInviteCodeQueryBuilder(tx)
+	uqb := fac.User()
+	aqb := fac.PendingActivation()
+	iqb := fac.Invite()
 
 	a, err := aqb.Find(id)
 	if err != nil {
@@ -214,7 +213,7 @@ func ActivateNewUser(tx *sqlx.Tx, name, email, activationKey, password string) (
 		return nil, errors.New("username already used")
 	}
 
-	ret, err := Create(tx, createInput)
+	ret, err := Create(fac, createInput)
 	if err != nil {
 		return nil, err
 	}
@@ -233,9 +232,9 @@ func ActivateNewUser(tx *sqlx.Tx, name, email, activationKey, password string) (
 }
 
 // ResetPassword generates an email to reset a users password.
-func ResetPassword(tx *sqlx.Tx, em *email.Manager, email string) error {
-	uqb := models.NewUserQueryBuilder(tx)
-	aqb := models.NewPendingActivationQueryBuilder(tx)
+func ResetPassword(fac models.RepoFactory, em *email.Manager, email string) error {
+	uqb := fac.User()
+	aqb := fac.PendingActivation()
 
 	// ensure user exists
 	u, err := uqb.FindByEmail(email)
@@ -308,15 +307,15 @@ func sendResetPasswordEmail(em *email.Manager, email, activationKey string) erro
 	return em.Send(email, subject, body)
 }
 
-func ActivateResetPassword(tx *sqlx.Tx, activationKey string, newPassword string) error {
-	if err := ClearExpiredActivations(tx); err != nil {
+func ActivateResetPassword(fac models.RepoFactory, activationKey string, newPassword string) error {
+	if err := ClearExpiredActivations(fac); err != nil {
 		return err
 	}
 
 	id, _ := uuid.FromString(activationKey)
 
-	uqb := models.NewUserQueryBuilder(tx)
-	aqb := models.NewPendingActivationQueryBuilder(tx)
+	uqb := fac.User()
+	aqb := fac.PendingActivation()
 
 	a, err := aqb.Find(id)
 	if err != nil {
