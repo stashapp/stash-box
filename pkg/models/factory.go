@@ -3,7 +3,7 @@ package models
 import "github.com/stashapp/stash-box/pkg/txn"
 
 type RepoFactory interface {
-	txn.Mgr
+	txn.State
 
 	Image() ImageRepo
 
