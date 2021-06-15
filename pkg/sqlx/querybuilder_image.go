@@ -1,72 +1,61 @@
-package models
+package sqlx
 
 import (
-	"github.com/jmoiron/sqlx"
-
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-type ImageRepo interface {
-	ImageCreator
-	ImageDestroyer
-	ImageFinder
+const (
+	imageTable   = "images"
+	imageJoinKey = "image_id"
+)
+
+var (
+	imageDBTable = newTable(imageTable, func() interface{} {
+		return &models.Image{}
+	})
+)
+
+type imageQueryBuilder struct {
+	dbi *dbi
 }
 
-type ImageCreator interface {
-	Create(newImage Image) (*Image, error)
-}
-
-type ImageFinder interface {
-	Find(id uuid.UUID) (*Image, error)
-	FindByChecksum(checksum string) (*Image, error)
-	FindUnused() ([]*Image, error)
-	IsUnused(imageID uuid.UUID) (bool, error)
-}
-
-type ImageDestroyer interface {
-	Destroy(id uuid.UUID) error
-}
-
-type ImageQueryBuilder struct {
-	dbi database.DBI
-}
-
-func NewImageQueryBuilder(tx *sqlx.Tx) ImageQueryBuilder {
-	return ImageQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+func newImageQueryBuilder(txn *txnState) models.ImageRepo {
+	return &imageQueryBuilder{
+		dbi: newDBI(txn),
 	}
 }
 
-func (qb *ImageQueryBuilder) toModel(ro interface{}) *Image {
+func (qb *imageQueryBuilder) toModel(ro interface{}) *models.Image {
 	if ro != nil {
-		return ro.(*Image)
+		return ro.(*models.Image)
 	}
 
 	return nil
 }
 
-func (qb *ImageQueryBuilder) Create(newImage Image) (*Image, error) {
-	ret, err := qb.dbi.Insert(newImage)
+func (qb *imageQueryBuilder) Create(newImage models.Image) (*models.Image, error) {
+	ret, err := qb.dbi.Insert(imageDBTable, newImage)
 	return qb.toModel(ret), err
 }
 
-func (qb *ImageQueryBuilder) Update(updatedImage Image) (*Image, error) {
-	ret, err := qb.dbi.Update(updatedImage, false)
+func (qb *imageQueryBuilder) Update(updatedImage models.Image) (*models.Image, error) {
+	ret, err := qb.dbi.Update(imageDBTable, updatedImage, false)
 	return qb.toModel(ret), err
 }
 
-func (qb *ImageQueryBuilder) Destroy(id uuid.UUID) error {
+func (qb *imageQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, imageDBTable)
 }
 
-func (qb *ImageQueryBuilder) Find(id uuid.UUID) (*Image, error) {
+func (qb *imageQueryBuilder) Find(id uuid.UUID) (*models.Image, error) {
 	ret, err := qb.dbi.Find(id, imageDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *ImageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Image, error) {
+func (qb *imageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*models.Image, error) {
 	query := `
 		SELECT images.* FROM images
 		LEFT JOIN scene_images as scenes_join on scenes_join.image_id = images.id
@@ -77,7 +66,7 @@ func (qb *ImageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Image, error) 
 	return qb.queryImages(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
+func (qb *imageQueryBuilder) FindByChecksum(checksum string) (*models.Image, error) {
 	query := `
 		SELECT images.* FROM images
 		WHERE images.checksum = ?
@@ -95,7 +84,7 @@ func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
 	return nil, nil
 }
 
-func (qb *ImageQueryBuilder) FindUnused() ([]*Image, error) {
+func (qb *imageQueryBuilder) FindUnused() ([]*models.Image, error) {
 	query := `
 		SELECT images.* from images
 		LEFT JOIN scene_images ON scene_images.image_id = images.id
@@ -117,8 +106,8 @@ func (qb *ImageQueryBuilder) FindUnused() ([]*Image, error) {
 	return qb.queryImages(query, args)
 }
 
-func (qb *ImageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
-	query := database.NewQueryBuilder(imageDBTable)
+func (qb *imageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
+	query := newQueryBuilder(imageDBTable)
 	query.Body = `
 		SELECT images.id from images
 		LEFT JOIN scene_images ON scene_images.image_id = images.id
@@ -146,7 +135,7 @@ func (qb *ImageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
 	return count == 1, nil
 }
 
-func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
+func (qb *imageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Image, []error) {
 
 	query := `
 		SELECT images.* FROM images
@@ -158,20 +147,20 @@ func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
 		return nil, utils.DuplicateError(err, len(ids))
 	}
 
-	m := make(map[uuid.UUID]*Image)
+	m := make(map[uuid.UUID]*models.Image)
 	for _, image := range images {
 		m[image.ID] = image
 	}
 
-	result := make([]*Image, len(ids))
+	result := make([]*models.Image, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := ScenesImages{}
+func (qb *imageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	images := models.ScenesImages{}
 	err := qb.dbi.FindAllJoins(sceneImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -189,8 +178,8 @@ func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, 
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := PerformersImages{}
+func (qb *imageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	images := models.PerformersImages{}
 	err := qb.dbi.FindAllJoins(performerImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -208,7 +197,7 @@ func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UU
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) FindByPerformerID(performerID uuid.UUID) (Images, error) {
+func (qb *imageQueryBuilder) FindByPerformerID(performerID uuid.UUID) (models.Images, error) {
 	query := `
 		SELECT images.* FROM images
 		LEFT JOIN performer_images as performers_join on performers_join.image_id = images.id
@@ -219,7 +208,7 @@ func (qb *ImageQueryBuilder) FindByPerformerID(performerID uuid.UUID) (Images, e
 	return qb.queryImages(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*Image, error) {
+func (qb *imageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*models.Image, error) {
 	query := `
 		SELECT images.* FROM images
 		LEFT JOIN studio_images as studios_join on studios_join.image_id = images.id
@@ -229,8 +218,8 @@ func (qb *ImageQueryBuilder) FindByStudioID(studioID uuid.UUID) ([]*Image, error
 	return qb.queryImages(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	images := StudiosImages{}
+func (qb *imageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	images := models.StudiosImages{}
 	err := qb.dbi.FindAllJoins(studioImageTable, ids, &images)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -248,8 +237,8 @@ func (qb *ImageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID,
 	return result, nil
 }
 
-func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}) (Images, error) {
-	output := Images{}
+func (qb *imageQueryBuilder) queryImages(query string, args []interface{}) (models.Images, error) {
+	output := models.Images{}
 	err := qb.dbi.RawQuery(imageDBTable, query, args, &output)
 	return output, err
 }

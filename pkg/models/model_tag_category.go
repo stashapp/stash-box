@@ -2,20 +2,8 @@ package models
 
 import (
 	"database/sql"
+
 	"github.com/gofrs/uuid"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	tagCategoryTable   = "tag_categories"
-	tagCategoryJoinKey = "category_id"
-)
-
-var (
-	tagCategoryDBTable = database.NewTable(tagCategoryTable, func() interface{} {
-		return &TagCategory{}
-	})
 )
 
 type TagCategory struct {
@@ -25,10 +13,6 @@ type TagCategory struct {
 	Description sql.NullString  `db:"description" json:"description"`
 	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-}
-
-func (TagCategory) GetTable() database.Table {
-	return tagCategoryDBTable
 }
 
 func (p TagCategory) GetID() uuid.UUID {

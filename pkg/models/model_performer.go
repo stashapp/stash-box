@@ -3,44 +3,9 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"github.com/gofrs/uuid"
 	"time"
 
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	performerTable   = "performers"
-	performerJoinKey = "performer_id"
-)
-
-var (
-	performerDBTable = database.NewTable(performerTable, func() interface{} {
-		return &Performer{}
-	})
-
-	performerAliasTable = database.NewTableJoin(performerTable, "performer_aliases", performerJoinKey, func() interface{} {
-		return &PerformerAlias{}
-	})
-
-	performerURLTable = database.NewTableJoin(performerTable, "performer_urls", performerJoinKey, func() interface{} {
-		return &PerformerURL{}
-	})
-
-	performerTattooTable = database.NewTableJoin(performerTable, "performer_tattoos", performerJoinKey, func() interface{} {
-		return &PerformerBodyMod{}
-	})
-
-	performerPiercingTable = database.NewTableJoin(performerTable, "performer_piercings", performerJoinKey, func() interface{} {
-		return &PerformerBodyMod{}
-	})
-
-	performerSourceRedirectTable = database.NewTableJoin(performerTable, "performer_redirects", "source_id", func() interface{} {
-		return &PerformerRedirect{}
-	})
-	performerTargetRedirectTable = database.NewTableJoin(performerTable, "performer_redirects", "target_id", func() interface{} {
-		return &PerformerRedirect{}
-	})
+	"github.com/gofrs/uuid"
 )
 
 type Performer struct {
@@ -65,10 +30,6 @@ type Performer struct {
 	CreatedAt         SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt         SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Deleted           bool            `db:"deleted" json:"deleted"`
-}
-
-func (Performer) GetTable() database.Table {
-	return performerDBTable
 }
 
 func (p Performer) GetID() uuid.UUID {

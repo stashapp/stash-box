@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -36,11 +35,12 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	}
 
 	newStudio.CopyFromCreateInput(input)
+	fac := r.getRepoFactory(ctx)
 
 	var studio *models.Studio
-	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewStudioQueryBuilder(txn.GetTx())
-		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
+	err = fac.WithTxn(func() error {
+		qb := fac.Studio()
+		jqb := fac.Joins()
 
 		var err error
 		studio, err = qb.Create(newStudio)
@@ -74,11 +74,13 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
+	fac := r.getRepoFactory(ctx)
+
 	var studio *models.Studio
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewStudioQueryBuilder(txn.GetTx())
-		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
-		iqb := models.NewImageQueryBuilder(txn.GetTx())
+	err := fac.WithTxn(func() error {
+		qb := fac.Studio()
+		jqb := fac.Joins()
+		iqb := fac.Image()
 
 		// get the existing studio and modify it
 		studioID, _ := uuid.FromString(input.ID)
@@ -121,7 +123,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		}
 
 		// remove images that are no longer used
-		imageService := image.GetService(&iqb)
+		imageService := image.GetService(iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
@@ -149,9 +151,11 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		return false, err
 	}
 
-	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewStudioQueryBuilder(txn.GetTx())
-		iqb := models.NewImageQueryBuilder(txn.GetTx())
+	fac := r.getRepoFactory(ctx)
+
+	err = fac.WithTxn(func() error {
+		qb := fac.Studio()
+		iqb := fac.Image()
 
 		existingImages, err := iqb.FindByStudioID(studioID)
 		if err != nil {
@@ -165,7 +169,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		}
 
 		// remove images that are no longer used
-		imageService := image.GetService(&iqb)
+		imageService := image.GetService(iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash-box/pkg/api"
-	"github.com/stashapp/stash-box/pkg/database"
 	dbtest "github.com/stashapp/stash-box/pkg/database/databasetest"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -35,98 +34,94 @@ type userPopulator struct {
 
 var userDB *userPopulator
 
-func (p *userPopulator) PopulateDB() error {
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+func (p *userPopulator) PopulateDB(repo models.Repo) error {
 
-	// create admin user
-	createInput := models.UserCreateInput{
-		Name: "admin",
-		Roles: []models.RoleEnum{
-			models.RoleEnumAdmin,
-		},
-		Email: "admin",
-	}
+	err := repo.WithTxn(func() error {
+		// create admin user
+		createInput := models.UserCreateInput{
+			Name: "admin",
+			Roles: []models.RoleEnum{
+				models.RoleEnumAdmin,
+			},
+			Email: "admin",
+		}
 
-	var err error
-	p.admin, err = user.Create(tx, createInput)
-	p.adminRoles = createInput.Roles
+		var err error
+		p.admin, err = user.Create(repo, createInput)
+		p.adminRoles = createInput.Roles
+
+		if err != nil {
+			return err
+		}
+
+		// create modify user
+		createInput = models.UserCreateInput{
+			Name: "modify",
+			Roles: []models.RoleEnum{
+				models.RoleEnumModify,
+			},
+			Email: "modify",
+		}
+
+		p.modify, err = user.Create(repo, createInput)
+		p.modifyRoles = createInput.Roles
+
+		if err != nil {
+			return err
+		}
+
+		// create edit user
+		createInput = models.UserCreateInput{
+			Name: "edit",
+			Roles: []models.RoleEnum{
+				models.RoleEnumEdit,
+			},
+			Email: "edit",
+		}
+
+		p.edit, err = user.Create(repo, createInput)
+		p.editRoles = createInput.Roles
+
+		if err != nil {
+			return err
+		}
+
+		// create read user
+		createInput = models.UserCreateInput{
+			Name: "read",
+			Roles: []models.RoleEnum{
+				models.RoleEnumRead,
+			},
+			Email: "read",
+		}
+
+		p.read, err = user.Create(repo, createInput)
+		p.readRoles = createInput.Roles
+
+		if err != nil {
+			return err
+		}
+
+		// create none user
+		createInput = models.UserCreateInput{
+			Name: "none",
+			Roles: []models.RoleEnum{
+				models.RoleEnumRead,
+			},
+			Email: "none",
+		}
+
+		p.none, err = user.Create(repo, createInput)
+
+		if err != nil {
+			return err
+		}
+
+		// create other users as needed
+		return nil
+	})
 
 	if err != nil {
-		_ = tx.Rollback()
-		return err
-	}
-
-	// create modify user
-	createInput = models.UserCreateInput{
-		Name: "modify",
-		Roles: []models.RoleEnum{
-			models.RoleEnumModify,
-		},
-		Email: "modify",
-	}
-
-	p.modify, err = user.Create(tx, createInput)
-	p.modifyRoles = createInput.Roles
-
-	if err != nil {
-		_ = tx.Rollback()
-		return err
-	}
-
-	// create edit user
-	createInput = models.UserCreateInput{
-		Name: "edit",
-		Roles: []models.RoleEnum{
-			models.RoleEnumEdit,
-		},
-		Email: "edit",
-	}
-
-	p.edit, err = user.Create(tx, createInput)
-	p.editRoles = createInput.Roles
-
-	if err != nil {
-		_ = tx.Rollback()
-		return err
-	}
-
-	// create read user
-	createInput = models.UserCreateInput{
-		Name: "read",
-		Roles: []models.RoleEnum{
-			models.RoleEnumRead,
-		},
-		Email: "read",
-	}
-
-	p.read, err = user.Create(tx, createInput)
-	p.readRoles = createInput.Roles
-
-	if err != nil {
-		_ = tx.Rollback()
-		return err
-	}
-
-	// create none user
-	createInput = models.UserCreateInput{
-		Name: "none",
-		Roles: []models.RoleEnum{
-			models.RoleEnumRead,
-		},
-		Email: "none",
-	}
-
-	p.none, err = user.Create(tx, createInput)
-
-	if err != nil {
-		_ = tx.Rollback()
-		return err
-	}
-
-	// create other users as needed
-
-	if err := tx.Commit(); err != nil {
 		return err
 	}
 
@@ -153,18 +148,22 @@ var userSuffix int
 var categorySuffix int
 
 func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) *testRunner {
-	resolver := api.Resolver{}
+	repoFn := func(context.Context) models.Repo {
+		return dbtest.Repo()
+	}
+
+	resolver := api.NewResolver(repoFn)
 
 	// replicate what the server.go code does
 	ctx := context.TODO()
 	ctx = context.WithValue(ctx, api.ContextUser, user)
 	ctx = context.WithValue(ctx, api.ContextRoles, roles)
-	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders())
+	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(dbtest.Repo()))
 	ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
 	return &testRunner{
 		t:        t,
-		resolver: resolver,
+		resolver: *resolver,
 		ctx:      ctx,
 	}
 }

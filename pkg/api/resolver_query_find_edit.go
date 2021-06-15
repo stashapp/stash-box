@@ -12,7 +12,8 @@ func (r *queryResolver) FindEdit(ctx context.Context, id *string) (*models.Edit,
 		return nil, err
 	}
 
-	qb := models.NewEditQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
 
 	idUUID, _ := uuid.FromString(*id)
 	return qb.Find(idUUID)
@@ -22,7 +23,8 @@ func (r *queryResolver) QueryEdits(ctx context.Context, editFilter *models.EditF
 		return nil, err
 	}
 
-	qb := models.NewEditQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
 
 	edits, count := qb.Query(editFilter, filter)
 	return &models.QueryEditsResultType{

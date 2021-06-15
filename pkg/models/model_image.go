@@ -5,19 +5,6 @@ import (
 	"sort"
 
 	"github.com/gofrs/uuid"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	imageTable   = "images"
-	imageJoinKey = "image_id"
-)
-
-var (
-	imageDBTable = database.NewTable(imageTable, func() interface{} {
-		return &Image{}
-	})
 )
 
 type Image struct {
@@ -26,10 +13,6 @@ type Image struct {
 	Checksum  string         `db:"checksum" json:"checksum"`
 	Width     int64          `db:"width" json:"width"`
 	Height    int64          `db:"height" json:"height"`
-}
-
-func (Image) GetTable() database.Table {
-	return imageDBTable
 }
 
 func (p Image) GetID() uuid.UUID {

@@ -1,60 +1,74 @@
-package models
+package sqlx
 
 import (
 	"database/sql"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-type StudioQueryBuilder struct {
-	dbi database.DBI
+const (
+	studioTable   = "studios"
+	studioJoinKey = "studio_id"
+)
+
+var (
+	studioDBTable = newTable(studioTable, func() interface{} {
+		return &models.Studio{}
+	})
+
+	studioURLTable = newTableJoin(studioTable, "studio_urls", studioJoinKey, func() interface{} {
+		return &models.StudioURL{}
+	})
+)
+
+type studioQueryBuilder struct {
+	dbi *dbi
 }
 
-func NewStudioQueryBuilder(tx *sqlx.Tx) StudioQueryBuilder {
-	return StudioQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+func newStudioQueryBuilder(txn *txnState) models.StudioRepo {
+	return &studioQueryBuilder{
+		dbi: newDBI(txn),
 	}
 }
 
-func (qb *StudioQueryBuilder) toModel(ro interface{}) *Studio {
+func (qb *studioQueryBuilder) toModel(ro interface{}) *models.Studio {
 	if ro != nil {
-		return ro.(*Studio)
+		return ro.(*models.Studio)
 	}
 
 	return nil
 }
 
-func (qb *StudioQueryBuilder) Create(newStudio Studio) (*Studio, error) {
-	ret, err := qb.dbi.Insert(newStudio)
+func (qb *studioQueryBuilder) Create(newStudio models.Studio) (*models.Studio, error) {
+	ret, err := qb.dbi.Insert(studioDBTable, newStudio)
 	return qb.toModel(ret), err
 }
 
-func (qb *StudioQueryBuilder) Update(updatedStudio Studio) (*Studio, error) {
-	ret, err := qb.dbi.Update(updatedStudio, true)
+func (qb *studioQueryBuilder) Update(updatedStudio models.Studio) (*models.Studio, error) {
+	ret, err := qb.dbi.Update(studioDBTable, updatedStudio, true)
 	return qb.toModel(ret), err
 }
 
-func (qb *StudioQueryBuilder) Destroy(id uuid.UUID) error {
+func (qb *studioQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, studioDBTable)
 }
 
-func (qb *StudioQueryBuilder) CreateURLs(newJoins StudioURLs) error {
+func (qb *studioQueryBuilder) CreateURLs(newJoins models.StudioURLs) error {
 	return qb.dbi.InsertJoins(studioURLTable, &newJoins)
 }
 
-func (qb *StudioQueryBuilder) UpdateURLs(studioID uuid.UUID, updatedJoins StudioURLs) error {
+func (qb *studioQueryBuilder) UpdateURLs(studioID uuid.UUID, updatedJoins models.StudioURLs) error {
 	return qb.dbi.ReplaceJoins(studioURLTable, studioID, &updatedJoins)
 }
 
-func (qb *StudioQueryBuilder) Find(id uuid.UUID) (*Studio, error) {
+func (qb *studioQueryBuilder) Find(id uuid.UUID) (*models.Studio, error) {
 	ret, err := qb.dbi.Find(id, studioDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (Studios, error) {
+func (qb *studioQueryBuilder) FindBySceneID(sceneID int) (models.Studios, error) {
 	query := `
 		SELECT studios.* FROM studios
 		LEFT JOIN scenes on scenes.studio_id = studios.id
@@ -65,7 +79,7 @@ func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (Studios, error) {
 	return qb.queryStudios(query, args)
 }
 
-func (qb *StudioQueryBuilder) FindByNames(names []string) (Studios, error) {
+func (qb *studioQueryBuilder) FindByNames(names []string) (models.Studios, error) {
 	query := "SELECT * FROM studios WHERE name IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
@@ -74,7 +88,7 @@ func (qb *StudioQueryBuilder) FindByNames(names []string) (Studios, error) {
 	return qb.queryStudios(query, args)
 }
 
-func (qb *StudioQueryBuilder) FindByName(name string) (*Studio, error) {
+func (qb *studioQueryBuilder) FindByName(name string) (*models.Studio, error) {
 	query := "SELECT * FROM studios WHERE upper(name) = upper(?)"
 	var args []interface{}
 	args = append(args, name)
@@ -85,26 +99,26 @@ func (qb *StudioQueryBuilder) FindByName(name string) (*Studio, error) {
 	return results[0], nil
 }
 
-func (qb *StudioQueryBuilder) FindByParentID(id uuid.UUID) (Studios, error) {
+func (qb *studioQueryBuilder) FindByParentID(id uuid.UUID) (models.Studios, error) {
 	query := "SELECT * FROM studios WHERE parent_studio_id = ?"
 	var args []interface{}
 	args = append(args, id)
 	return qb.queryStudios(query, args)
 }
 
-func (qb *StudioQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT studios.id FROM studios"), nil)
+func (qb *studioQueryBuilder) Count() (int, error) {
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *QuerySpec) (Studios, int) {
+func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.QuerySpec) (models.Studios, int) {
 	if studioFilter == nil {
-		studioFilter = &StudioFilterType{}
+		studioFilter = &models.StudioFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &QuerySpec{}
+		findFilter = &models.QuerySpec{}
 	}
 
-	query := database.NewQueryBuilder(studioDBTable)
+	query := newQueryBuilder(studioDBTable)
 	query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
 
 	if q := studioFilter.Name; q != nil && *q != "" {
@@ -130,7 +144,7 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	}
 
 	query.SortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
-	var studios Studios
+	var studios models.Studios
 	countResult, err := qb.dbi.Query(*query, &studios)
 
 	if err != nil {
@@ -141,7 +155,7 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	return studios, countResult
 }
 
-func (qb *StudioQueryBuilder) getStudioSort(findFilter *QuerySpec) string {
+func (qb *studioQueryBuilder) getStudioSort(findFilter *models.QuerySpec) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -151,52 +165,47 @@ func (qb *StudioQueryBuilder) getStudioSort(findFilter *QuerySpec) string {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "studios", nil)
+	return getSort(qb.dbi.txn.dialect, sort, direction, "studios", nil)
 }
 
-func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}) (Studios, error) {
-	var output Studios
+func (qb *studioQueryBuilder) queryStudios(query string, args []interface{}) (models.Studios, error) {
+	var output models.Studios
 	err := qb.dbi.RawQuery(studioDBTable, query, args, &output)
 	return output, err
 }
 
-func (qb *StudioQueryBuilder) GetURLs(id uuid.UUID) (StudioURLs, error) {
-	joins := StudioURLs{}
+func (qb *studioQueryBuilder) GetURLs(id uuid.UUID) (models.StudioURLs, error) {
+	joins := models.StudioURLs{}
 	err := qb.dbi.FindJoins(studioURLTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *StudioQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*URL, []error) {
-	joins := StudioURLs{}
+func (qb *studioQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*models.URL, []error) {
+	joins := models.StudioURLs{}
 	err := qb.dbi.FindAllJoins(studioURLTable, ids, &joins)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}
 
-	m := make(map[uuid.UUID][]*URL)
+	m := make(map[uuid.UUID][]*models.URL)
 	for _, join := range joins {
-		url := URL{
+		url := models.URL{
 			URL:  join.URL,
 			Type: join.Type,
 		}
 		m[join.StudioID] = append(m[join.StudioID], &url)
 	}
 
-	result := make([][]*URL, len(ids))
+	result := make([][]*models.URL, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
 	return result, nil
 }
 
-type PerformerStudio struct {
-	SceneCount int `db:"count" json:"scene_count"`
-	Studio
-}
-
-func (qb *StudioQueryBuilder) CountByPerformer(performerID uuid.UUID) ([]*PerformerStudio, error) {
-	var results []*PerformerStudio
+func (qb *studioQueryBuilder) CountByPerformer(performerID uuid.UUID) ([]*models.PerformerStudio, error) {
+	var results []*models.PerformerStudio
 
 	query := `
 		SELECT S.*, C.count
@@ -207,8 +216,8 @@ func (qb *StudioQueryBuilder) CountByPerformer(performerID uuid.UUID) ([]*Perfor
 			WHERE performer_id = ?
 			GROUP BY studio_id
 		) C ON S.id = C.studio_id`
-	query = database.DB.Rebind(query)
-	if err := database.DB.Select(&results, query, performerID); err != nil && err != sql.ErrNoRows {
+	query = qb.dbi.db().Rebind(query)
+	if err := qb.dbi.db().Select(&results, query, performerID); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 

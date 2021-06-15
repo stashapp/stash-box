@@ -4,35 +4,22 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var DB *sqlx.DB
-
 var appSchemaVersion uint = 16
 var databaseProviders map[string]databaseProvider
-var dialect sqlDialect
-
-type sqlDialect interface {
-	FieldQuote(field string) string
-	NullsLast() string
-}
 
 type databaseProvider interface {
 	Open(path string) *sqlx.DB
-	GetDialect() sqlDialect
 }
 
-func Initialize(provider string, databasePath string) {
+func Initialize(provider string, databasePath string) *sqlx.DB {
 	p := databaseProviders[provider]
 
 	if p == nil {
 		panic("No database provider found for " + provider)
 	}
 
-	DB = p.Open(databasePath)
-	dialect = p.GetDialect()
-}
-
-func GetDialect() sqlDialect {
-	return dialect
+	db := p.Open(databasePath)
+	return db
 }
 
 func registerProvider(name string, provider databaseProvider) {

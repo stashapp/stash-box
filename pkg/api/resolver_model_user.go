@@ -14,7 +14,7 @@ func (r *userResolver) ID(ctx context.Context, obj *models.User) (string, error)
 }
 
 func (r *userResolver) Roles(ctx context.Context, obj *models.User) ([]models.RoleEnum, error) {
-	qb := models.NewUserQueryBuilder(nil)
+	qb := r.getRepoFactory(ctx).User()
 	roles, err := qb.GetRoles(obj.ID)
 
 	if err != nil {
@@ -47,7 +47,7 @@ func (r *userResolver) UnsuccessfulVotes(ctx context.Context, obj *models.User) 
 func (r *userResolver) InvitedBy(ctx context.Context, obj *models.User) (*models.User, error) {
 	invitedBy := obj.InvitedByID
 	if invitedBy.Valid {
-		qb := models.NewUserQueryBuilder(nil)
+		qb := r.getRepoFactory(ctx).User()
 		return qb.Find(invitedBy.UUID)
 	}
 
@@ -64,7 +64,7 @@ func (r *userResolver) ActiveInviteCodes(ctx context.Context, obj *models.User) 
 		}
 	}
 
-	qb := models.NewInviteCodeQueryBuilder(nil)
+	qb := r.getRepoFactory(ctx).Invite()
 	ik, err := qb.FindActiveKeysForUser(obj.ID, config.GetActivationExpireTime())
 	if err != nil {
 		return nil, err

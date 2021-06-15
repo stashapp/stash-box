@@ -4,27 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/gofrs/uuid"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	sceneTable   = "scenes"
-	sceneJoinKey = "scene_id"
-)
-
-var (
-	sceneDBTable = database.NewTable(sceneTable, func() interface{} {
-		return &Scene{}
-	})
-
-	sceneFingerprintTable = database.NewTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
-		return &SceneFingerprint{}
-	})
-
-	sceneURLTable = database.NewTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
-		return &SceneURL{}
-	})
 )
 
 type Scene struct {
@@ -38,10 +17,6 @@ type Scene struct {
 	Duration  sql.NullInt64   `db:"duration" json:"duration"`
 	Director  sql.NullString  `db:"director" json:"director"`
 	Deleted   bool            `db:"deleted" json:"deleted"`
-}
-
-func (Scene) GetTable() database.Table {
-	return sceneDBTable
 }
 
 func (p Scene) GetID() uuid.UUID {

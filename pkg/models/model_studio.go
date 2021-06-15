@@ -2,23 +2,6 @@ package models
 
 import (
 	"github.com/gofrs/uuid"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	studioTable   = "studios"
-	studioJoinKey = "studio_id"
-)
-
-var (
-	studioDBTable = database.NewTable(studioTable, func() interface{} {
-		return &Studio{}
-	})
-
-	studioURLTable = database.NewTableJoin(studioTable, "studio_urls", studioJoinKey, func() interface{} {
-		return &StudioURL{}
-	})
 )
 
 type Studio struct {
@@ -28,10 +11,6 @@ type Studio struct {
 	CreatedAt      SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt      SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Deleted        bool            `db:"deleted" json:"deleted"`
-}
-
-func (Studio) GetTable() database.Table {
-	return studioDBTable
 }
 
 func (p Studio) GetID() uuid.UUID {
@@ -62,6 +41,11 @@ func (p *StudioURL) ToURL() URL {
 		Type: p.Type,
 	}
 	return url
+}
+
+type PerformerStudio struct {
+	SceneCount int `db:"count" json:"scene_count"`
+	Studio
 }
 
 type StudioURLs []*StudioURL
