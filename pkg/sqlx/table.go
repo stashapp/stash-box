@@ -4,38 +4,38 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// NewObjectFunc is a function that returns an instance of an object stored in
+// newObjectFunc is a function that returns an instance of an object stored in
 // a database table.
-type NewObjectFunc func() interface{}
+type newObjectFunc func() interface{}
 
-// Table represents a database table.
-type Table struct {
+// table represents a database table.
+type table struct {
 	name        string
-	newObjectFn NewObjectFunc
+	newObjectFn newObjectFunc
 }
 
 // Name returns the name of the database table.
-func (t Table) Name() string {
+func (t table) Name() string {
 	return t.name
 }
 
 // NewObject returns a new object model of the type that this table stores.
-func (t Table) NewObject() interface{} {
+func (t table) NewObject() interface{} {
 	return t.newObjectFn()
 }
 
-// NewTable creates a new Table object with the provided table name and new
+// newTable creates a new Table object with the provided table name and new
 // object function.
-func NewTable(name string, newObjectFn NewObjectFunc) Table {
-	return Table{
+func newTable(name string, newObjectFn newObjectFunc) table {
+	return table{
 		name:        name,
 		newObjectFn: newObjectFn,
 	}
 }
 
-// TableJoin represents a database Table that joins two other tables.
-type TableJoin struct {
-	Table
+// tableJoin represents a database Table that joins two other tables.
+type tableJoin struct {
+	table
 
 	// the primary table that will be joined to this table
 	primaryTable string
@@ -47,9 +47,9 @@ type TableJoin struct {
 // Creates a new TableJoin instance. The primaryTable is the table that will join
 // to the join table. The joinColumn is the name in the join table that stores
 // the foreign key in the primary table.
-func NewTableJoin(primaryTable string, name string, joinColumn string, newObjectFn func() interface{}) TableJoin {
-	return TableJoin{
-		Table: Table{
+func newTableJoin(primaryTable string, name string, joinColumn string, newObjectFn func() interface{}) tableJoin {
+	return tableJoin{
+		table: table{
 			name:        name,
 			newObjectFn: newObjectFn,
 		},
@@ -60,9 +60,9 @@ func NewTableJoin(primaryTable string, name string, joinColumn string, newObject
 
 // Inverse creates a TableJoin object that is the inverse of this table join.
 // The returns TableJoin object will have this table as the primary table.
-func (t TableJoin) Inverse(joinColumn string) TableJoin {
-	return TableJoin{
-		Table: Table{
+func (t tableJoin) Inverse(joinColumn string) tableJoin {
+	return tableJoin{
+		table: table{
 			name:        t.primaryTable,
 			newObjectFn: t.newObjectFn,
 		},

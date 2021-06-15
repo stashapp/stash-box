@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	pendingActivationDBTable = NewTable(pendingActivationTable, func() interface{} {
+	pendingActivationDBTable = newTable(pendingActivationTable, func() interface{} {
 		return &models.PendingActivation{}
 	})
 )
@@ -23,7 +23,7 @@ type pendingActivationQueryBuilder struct {
 
 func newPendingActivationQueryBuilder(txn *txnState) models.PendingActivationRepo {
 	return &pendingActivationQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -45,7 +45,7 @@ func (qb *pendingActivationQueryBuilder) Destroy(id uuid.UUID) error {
 }
 
 func (qb *pendingActivationQueryBuilder) DestroyExpired(expireTime time.Time) error {
-	q := NewDeleteQueryBuilder(pendingActivationDBTable)
+	q := newDeleteQueryBuilder(pendingActivationDBTable)
 	q.AddWhere("time <= ?")
 	q.AddArg(models.SQLiteTimestamp{
 		Timestamp: expireTime,

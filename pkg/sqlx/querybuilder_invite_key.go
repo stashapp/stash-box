@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	inviteKeyDBTable = NewTable(inviteKeyTable, func() interface{} {
+	inviteKeyDBTable = newTable(inviteKeyTable, func() interface{} {
 		return &models.InviteKey{}
 	})
 )
@@ -23,7 +23,7 @@ type inviteKeyQueryBuilder struct {
 
 func newInviteCodeQueryBuilder(txn *txnState) models.InviteKeyRepo {
 	return &inviteKeyQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 

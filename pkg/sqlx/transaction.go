@@ -8,9 +8,9 @@ import (
 	"github.com/stashapp/stash-box/pkg/txn"
 )
 
-// DB is intended as an interface to both sqlx.DB and sqlx.Tx, dependent
+// db is intended as an interface to both sqlx.db and sqlx.Tx, dependent
 // on transaction state. Add sqlx.* methods as needed.
-type DB interface {
+type db interface {
 	NamedExec(query string, arg interface{}) (sql.Result, error)
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Rebind(query string) string
@@ -18,8 +18,6 @@ type DB interface {
 	Select(dest interface{}, query string, args ...interface{}) error
 	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
 }
-
-type Rows struct{ sqlx.Rows }
 
 type txnState struct {
 	rootDB  *sqlx.DB
@@ -56,22 +54,14 @@ func (m *txnState) InTxn() bool {
 	return m.tx != nil
 }
 
-func (m *txnState) DB() DB {
+func (m *txnState) DB() db {
 	if !m.InTxn() {
 		return m.rootDB
 	}
 	return m.tx
 }
 
-// TODO - temporary workaround
-func In(query string, args ...interface{}) (string, []interface{}, error) {
-	return sqlx.In(query, args...)
-}
-
-func Named(query string, arg interface{}) (string, []interface{}, error) {
-	return sqlx.Named(query, arg)
-}
-
+// TxnMgr manages transaction boundaries and provides access to Repo objects.
 type TxnMgr struct {
 	db      *sqlx.DB
 	dialect Dialect
@@ -92,6 +82,7 @@ func (m *TxnMgr) Repo() models.Repo {
 	}
 }
 
+// NewTxnMgr returns a new instance of TxnMgr.
 func NewTxnMgr(db *sqlx.DB, dialect Dialect) *TxnMgr {
 	return &TxnMgr{
 		db:      db,

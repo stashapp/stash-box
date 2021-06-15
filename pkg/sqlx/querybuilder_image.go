@@ -13,18 +13,18 @@ const (
 )
 
 var (
-	imageDBTable = NewTable(imageTable, func() interface{} {
+	imageDBTable = newTable(imageTable, func() interface{} {
 		return &models.Image{}
 	})
 )
 
 type imageQueryBuilder struct {
-	dbi DBI
+	dbi *dbi
 }
 
 func newImageQueryBuilder(txn *txnState) models.ImageRepo {
 	return &imageQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -107,7 +107,7 @@ func (qb *imageQueryBuilder) FindUnused() ([]*models.Image, error) {
 }
 
 func (qb *imageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
-	query := NewQueryBuilder(imageDBTable)
+	query := newQueryBuilder(imageDBTable)
 	query.Body = `
 		SELECT images.id from images
 		LEFT JOIN scene_images ON scene_images.image_id = images.id

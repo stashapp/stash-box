@@ -14,11 +14,11 @@ const (
 )
 
 var (
-	studioDBTable = NewTable(studioTable, func() interface{} {
+	studioDBTable = newTable(studioTable, func() interface{} {
 		return &models.Studio{}
 	})
 
-	studioURLTable = NewTableJoin(studioTable, "studio_urls", studioJoinKey, func() interface{} {
+	studioURLTable = newTableJoin(studioTable, "studio_urls", studioJoinKey, func() interface{} {
 		return &models.StudioURL{}
 	})
 )
@@ -29,7 +29,7 @@ type studioQueryBuilder struct {
 
 func newStudioQueryBuilder(txn *txnState) models.StudioRepo {
 	return &studioQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -118,7 +118,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		findFilter = &models.QuerySpec{}
 	}
 
-	query := NewQueryBuilder(studioDBTable)
+	query := newQueryBuilder(studioDBTable)
 	query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
 
 	if q := studioFilter.Name; q != nil && *q != "" {

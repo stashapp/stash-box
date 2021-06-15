@@ -11,11 +11,11 @@ const (
 )
 
 var (
-	userDBTable = NewTable(userTable, func() interface{} {
+	userDBTable = newTable(userTable, func() interface{} {
 		return &models.User{}
 	})
 
-	userRolesTable = NewTableJoin(userTable, "user_roles", userJoinKey, func() interface{} {
+	userRolesTable = newTableJoin(userTable, "user_roles", userJoinKey, func() interface{} {
 		return &models.UserRole{}
 	})
 )
@@ -26,7 +26,7 @@ type userQueryBuilder struct {
 
 func newUserQueryBuilder(txn *txnState) models.UserRepo {
 	return &userQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -104,7 +104,7 @@ func (qb *userQueryBuilder) Query(userFilter *models.UserFilterType, findFilter 
 		findFilter = &models.QuerySpec{}
 	}
 
-	query := NewQueryBuilder(userDBTable)
+	query := newQueryBuilder(userDBTable)
 
 	if q := userFilter.Name; q != nil && *q != "" {
 		searchColumns := []string{"users.name", "users.email"}

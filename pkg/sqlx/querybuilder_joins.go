@@ -6,42 +6,42 @@ import (
 )
 
 var (
-	scenePerformerTable = NewTableJoin(sceneTable, "scene_performers", sceneJoinKey, func() interface{} {
+	scenePerformerTable = newTableJoin(sceneTable, "scene_performers", sceneJoinKey, func() interface{} {
 		return &models.PerformerScene{}
 	})
 
-	performerSceneTable = NewTableJoin(sceneTable, "scene_performers", performerJoinKey, func() interface{} {
+	performerSceneTable = newTableJoin(sceneTable, "scene_performers", performerJoinKey, func() interface{} {
 		return &models.PerformerScene{}
 	})
 
-	sceneTagTable = NewTableJoin(sceneTable, "scene_tags", sceneJoinKey, func() interface{} {
+	sceneTagTable = newTableJoin(sceneTable, "scene_tags", sceneJoinKey, func() interface{} {
 		return &models.SceneTag{}
 	})
 
-	tagSceneTable = NewTableJoin(tagTable, "scene_tags", tagJoinKey, func() interface{} {
+	tagSceneTable = newTableJoin(tagTable, "scene_tags", tagJoinKey, func() interface{} {
 		return &models.SceneTag{}
 	})
 
-	sceneImageTable = NewTableJoin(sceneTable, "scene_images", sceneJoinKey, func() interface{} {
+	sceneImageTable = newTableJoin(sceneTable, "scene_images", sceneJoinKey, func() interface{} {
 		return &models.SceneImage{}
 	})
 
-	performerImageTable = NewTableJoin(performerTable, "performer_images", performerJoinKey, func() interface{} {
+	performerImageTable = newTableJoin(performerTable, "performer_images", performerJoinKey, func() interface{} {
 		return &models.PerformerImage{}
 	})
 
-	studioImageTable = NewTableJoin(studioTable, "studio_images", studioJoinKey, func() interface{} {
+	studioImageTable = newTableJoin(studioTable, "studio_images", studioJoinKey, func() interface{} {
 		return &models.StudioImage{}
 	})
 )
 
 type joinsQueryBuilder struct {
-	dbi DBI
+	dbi *dbi
 }
 
 func newJoinsQueryBuilder(txn *txnState) models.JoinsRepo {
 	return &joinsQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 

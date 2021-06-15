@@ -16,19 +16,19 @@ const (
 )
 
 var (
-	editDBTable = NewTable(editTable, func() interface{} {
+	editDBTable = newTable(editTable, func() interface{} {
 		return &models.Edit{}
 	})
 
-	editTagTable = NewTableJoin(editTable, "tag_edits", editJoinKey, func() interface{} {
+	editTagTable = newTableJoin(editTable, "tag_edits", editJoinKey, func() interface{} {
 		return &models.EditTag{}
 	})
 
-	editPerformerTable = NewTableJoin(editTable, "performer_edits", editJoinKey, func() interface{} {
+	editPerformerTable = newTableJoin(editTable, "performer_edits", editJoinKey, func() interface{} {
 		return &models.EditPerformer{}
 	})
 
-	editCommentTable = NewTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
+	editCommentTable = newTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
 		return &models.EditComment{}
 	})
 
@@ -43,7 +43,7 @@ type editQueryBuilder struct {
 
 func newEditQueryBuilder(txn *txnState) models.EditRepo {
 	return &editQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -157,7 +157,7 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 		findFilter = &models.QuerySpec{}
 	}
 
-	query := NewQueryBuilder(editDBTable)
+	query := newQueryBuilder(editDBTable)
 
 	if q := editFilter.UserID; q != nil && *q != "" {
 		query.Eq(editDBTable.Name()+".user_id", *q)
@@ -168,12 +168,12 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 			panic("TargetType is required when TargetID filter is used")
 		}
 		if *editFilter.TargetType == "TAG" {
-			query.AddJoin(editTagTable.Table, editTagTable.Name()+".edit_id = edits.id")
+			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
 		} else if *editFilter.TargetType == "PERFORMER" {
-			query.AddJoin(editPerformerTable.Table, editPerformerTable.Name()+".edit_id = edits.id")
+			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)

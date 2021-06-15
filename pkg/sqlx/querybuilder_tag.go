@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -15,15 +16,15 @@ const (
 )
 
 var (
-	tagDBTable = NewTable(tagTable, func() interface{} {
+	tagDBTable = newTable(tagTable, func() interface{} {
 		return &models.Tag{}
 	})
 
-	tagAliasTable = NewTableJoin(tagTable, "tag_aliases", tagJoinKey, func() interface{} {
+	tagAliasTable = newTableJoin(tagTable, "tag_aliases", tagJoinKey, func() interface{} {
 		return &models.TagAlias{}
 	})
 
-	tagRedirectTable = NewTableJoin(tagTable, "tag_redirects", "source_id", func() interface{} {
+	tagRedirectTable = newTableJoin(tagTable, "tag_redirects", "source_id", func() interface{} {
 		return &models.TagRedirect{}
 	})
 )
@@ -34,7 +35,7 @@ type tagQueryBuilder struct {
 
 func newTagQueryBuilder(txn *txnState) models.TagRepo {
 	return &tagQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -84,9 +85,9 @@ func (qb *tagQueryBuilder) CreateRedirect(newJoin models.TagRedirect) error {
 }
 
 func (qb *tagQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	query := "UPDATE " + tagRedirectTable.Table.Name() + " SET target_id = ? WHERE target_id = ?"
+	query := "UPDATE " + tagRedirectTable.table.Name() + " SET target_id = ? WHERE target_id = ?"
 	args := []interface{}{newTargetID, oldTargetID}
-	return qb.dbi.RawQuery(tagRedirectTable.Table, query, args, nil)
+	return qb.dbi.RawQuery(tagRedirectTable.table, query, args, nil)
 }
 
 func (qb *tagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
@@ -96,7 +97,7 @@ func (qb *tagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uu
             FROM scene_tags WHERE tag_id = ?
             ON CONFLICT DO NOTHING`
 	args := []interface{}{newTargetID, oldTargetID}
-	err := qb.dbi.RawQuery(sceneTagTable.Table, query, args, nil)
+	err := qb.dbi.RawQuery(sceneTagTable.table, query, args, nil)
 	if err != nil {
 		return err
 	}
@@ -104,7 +105,7 @@ func (qb *tagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uu
 	// Delete any joins with the old tag
 	query = `DELETE FROM scene_tags WHERE tag_id = ?`
 	args = []interface{}{oldTargetID}
-	return qb.dbi.RawQuery(sceneTagTable.Table, query, args, nil)
+	return qb.dbi.RawQuery(sceneTagTable.table, query, args, nil)
 }
 
 func (qb *tagQueryBuilder) CreateAliases(newJoins models.TagAliases) error {
@@ -168,7 +169,7 @@ func (qb *tagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Tag, []error) {
 		SELECT tags.* FROM tags
 		WHERE id IN (?)
 	`
-	query, args, _ := In(query, ids)
+	query, args, _ := sqlx.In(query, ids)
 	tags, err := qb.queryTags(query, args)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -240,7 +241,7 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 		findFilter = &models.QuerySpec{}
 	}
 
-	query := NewQueryBuilder(tagDBTable)
+	query := newQueryBuilder(tagDBTable)
 	query.Eq("deleted", false)
 
 	if q := tagFilter.Name; q != nil && *q != "" {

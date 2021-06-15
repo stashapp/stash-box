@@ -2,6 +2,7 @@ package sqlx
 
 import (
 	"github.com/gofrs/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -12,7 +13,7 @@ const (
 )
 
 var (
-	tagCategoryDBTable = NewTable(tagCategoryTable, func() interface{} {
+	tagCategoryDBTable = newTable(tagCategoryTable, func() interface{} {
 		return &models.TagCategory{}
 	})
 )
@@ -23,7 +24,7 @@ type tagCategoryQueryBuilder struct {
 
 func newTagCategoryQueryBuilder(txn *txnState) models.TagCategoryRepo {
 	return &tagCategoryQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -65,7 +66,7 @@ func (qb *tagCategoryQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.TagCate
 		SELECT tag_categories.* FROM tag_categories
 		WHERE id IN (?)
 	`
-	query, args, _ := In(query, ids)
+	query, args, _ := sqlx.In(query, ids)
 	categories, err := qb.queryTagCategories(query, args)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -88,7 +89,7 @@ func (qb *tagCategoryQueryBuilder) Query(findFilter *models.QuerySpec) ([]*model
 		findFilter = &models.QuerySpec{}
 	}
 
-	query := NewQueryBuilder(tagCategoryDBTable)
+	query := newQueryBuilder(tagCategoryDBTable)
 
 	query.SortAndPagination = qb.getTagCategorySort(findFilter) + getPagination(findFilter)
 	var categories models.TagCategories

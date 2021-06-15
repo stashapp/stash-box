@@ -11,7 +11,7 @@ import (
 
 var randomSortFloat = rand.Float64()
 
-func handleStringCriterion(column string, value *models.StringCriterionInput, query *QueryBuilder) {
+func handleStringCriterion(column string, value *models.StringCriterionInput, query *queryBuilder) {
 	if value != nil {
 		if modifier := value.Modifier.String(); value.Modifier.IsValid() {
 			switch modifier {
@@ -139,7 +139,7 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func runCountQuery(db DB, query string, args []interface{}) (int, error) {
+func runCountQuery(db db, query string, args []interface{}) (int, error) {
 	// Perform query and fetch result
 	result := struct {
 		Count int `db:"count"`

@@ -10,7 +10,7 @@ type Mgr interface {
 
 // State represents the transaction state for a single request.
 // A State object instance should exist only within a single goroutine.
-// It must not be shared between goroutines.
+// It MUST NOT be shared between goroutines.
 type State interface {
 	WithTxn(fn func() error) error
 	InTxn() bool

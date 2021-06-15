@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 
@@ -17,30 +18,30 @@ const (
 )
 
 var (
-	performerDBTable = NewTable(performerTable, func() interface{} {
+	performerDBTable = newTable(performerTable, func() interface{} {
 		return &models.Performer{}
 	})
 
-	performerAliasTable = NewTableJoin(performerTable, "performer_aliases", performerJoinKey, func() interface{} {
+	performerAliasTable = newTableJoin(performerTable, "performer_aliases", performerJoinKey, func() interface{} {
 		return &models.PerformerAlias{}
 	})
 
-	performerURLTable = NewTableJoin(performerTable, "performer_urls", performerJoinKey, func() interface{} {
+	performerURLTable = newTableJoin(performerTable, "performer_urls", performerJoinKey, func() interface{} {
 		return &models.PerformerURL{}
 	})
 
-	performerTattooTable = NewTableJoin(performerTable, "performer_tattoos", performerJoinKey, func() interface{} {
+	performerTattooTable = newTableJoin(performerTable, "performer_tattoos", performerJoinKey, func() interface{} {
 		return &models.PerformerBodyMod{}
 	})
 
-	performerPiercingTable = NewTableJoin(performerTable, "performer_piercings", performerJoinKey, func() interface{} {
+	performerPiercingTable = newTableJoin(performerTable, "performer_piercings", performerJoinKey, func() interface{} {
 		return &models.PerformerBodyMod{}
 	})
 
-	performerSourceRedirectTable = NewTableJoin(performerTable, "performer_redirects", "source_id", func() interface{} {
+	performerSourceRedirectTable = newTableJoin(performerTable, "performer_redirects", "source_id", func() interface{} {
 		return &models.PerformerRedirect{}
 	})
-	performerTargetRedirectTable = NewTableJoin(performerTable, "performer_redirects", "target_id", func() interface{} {
+	performerTargetRedirectTable = newTableJoin(performerTable, "performer_redirects", "target_id", func() interface{} {
 		return &models.PerformerRedirect{}
 	})
 )
@@ -51,7 +52,7 @@ type performerQueryBuilder struct {
 
 func newPerformerQueryBuilder(txn *txnState) models.PerformerRepo {
 	return &performerQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -129,7 +130,7 @@ func (qb *performerQueryBuilder) Find(id uuid.UUID) (*models.Performer, error) {
 
 func (qb *performerQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Performer, []error) {
 	query := "SELECT performers.* FROM performers WHERE id IN (?)"
-	query, args, _ := In(query, ids)
+	query, args, _ := sqlx.In(query, ids)
 	performers, err := qb.queryPerformers(query, args)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -208,7 +209,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 		findFilter = &models.QuerySpec{}
 	}
 
-	query := NewQueryBuilder(performerDBTable)
+	query := newQueryBuilder(performerDBTable)
 	query.Eq("deleted", false)
 
 	if q := performerFilter.Name; q != nil && *q != "" {
@@ -564,9 +565,9 @@ func (qb *performerQueryBuilder) CreateRedirect(newJoin models.PerformerRedirect
 }
 
 func (qb *performerQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
-	query := "UPDATE " + performerSourceRedirectTable.Table.Name() + " SET target_id = ? WHERE target_id = ?"
+	query := "UPDATE " + performerSourceRedirectTable.table.Name() + " SET target_id = ? WHERE target_id = ?"
 	args := []interface{}{newTargetID, oldTargetID}
-	return qb.dbi.RawQuery(performerSourceRedirectTable.Table, query, args, nil)
+	return qb.dbi.RawQuery(performerSourceRedirectTable.table, query, args, nil)
 }
 
 func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Performer, newTargetID uuid.UUID, setAliases bool) error {
@@ -583,7 +584,7 @@ func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Perf
 					 WHERE performer_id = ?
 					 AND scene_id NOT IN (SELECT scene_id from scene_performers WHERE performer_id = ?)`
 	args := []interface{}{newTargetID, oldPerformer.ID, newTargetID}
-	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
+	err := qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 	if err != nil {
 		return err
 	}
@@ -591,7 +592,7 @@ func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Perf
 	// Delete any remaining joins with the old performer
 	query = `DELETE FROM scene_performers WHERE performer_id = ?`
 	args = []interface{}{oldPerformer.ID}
-	return qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
+	return qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 }
 
 func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID, name string) error {
@@ -600,7 +601,7 @@ func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID
             WHERE performer_id = ?
             AND "as" IS NULL`
 	args := []interface{}{name, performerID}
-	err := qb.dbi.RawQuery(scenePerformerTable.Table, query, args, nil)
+	err := qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 	if err != nil {
 		return err
 	}

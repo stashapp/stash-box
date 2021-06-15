@@ -10,86 +10,25 @@ import (
 	"github.com/pkg/errors"
 )
 
-// The DBI interface is used to interface with the database.
-type DBI interface {
-	// Insert inserts the provided object as a row into the database.
-	// It returns the new object.
-	Insert(table Table, model Model) (interface{}, error)
-
-	// InsertJoin inserts a join object into the provided join table.
-	InsertJoin(tableJoin TableJoin, object interface{}, conflictHandling *string) error
-
-	// InsertJoins inserts multiple join objects into the provided join table.
-	InsertJoins(tableJoin TableJoin, joins Joins) error
-
-	// InsertJoinsWithConflictHandling inserts multiple join objects and adds a conflict clause
-	InsertJoinsWithConflictHandling(tableJoin TableJoin, joins Joins, conflictHandling string) error
-
-	// Update updates a database row based on the id and values of the provided
-	// object. It returns the updated object. Update will return an error if
-	// the object with id does not exist in the database table.
-	Update(table Table, model Model, updateEmptyValues bool) (interface{}, error)
-
-	// ReplaceJoins replaces table join objects with the provided primary table
-	// id value with the provided join objects.
-	ReplaceJoins(tableJoin TableJoin, id uuid.UUID, objects Joins) error
-
-	// Delete deletes the table row with the provided id. Delete returns an
-	// error if the id does not exist in the database table.
-	Delete(id uuid.UUID, table Table) error
-
-	// DeleteJoins deletes all join objects with the provided primary table
-	// id value.
-	DeleteJoins(tableJoin TableJoin, id uuid.UUID) error
-
-	// Soft delete row by setting value of deleted column to TRUE
-	SoftDelete(table Table, model Model) (interface{}, error)
-
-	// DeleteQuery deletes table rows that match the query provided.
-	DeleteQuery(query QueryBuilder) error
-
-	// Find returns the row object with the provided id, or returns nil if not
-	// found.
-	Find(id uuid.UUID, table Table) (interface{}, error)
-
-	// FindJoins returns join objects where the foreign key id is equal to the
-	// provided id. The join objects are output to the provided output slice.
-	FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error
-
-	// FindAllJoins returns join objects where the foreign key id is equal to the
-	// provided ids. The join objects are output to the provided output slice.
-	FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error
-
-	// RawQuery performs a query on the provided table using the query string
-	// and argument slice. It outputs the results to the output slice.
-	RawQuery(table Table, query string, args []interface{}, output Models) error
-
-	// Count performs a count query using the provided query builder
-	Count(query QueryBuilder) (int, error)
-
-	// Query performs a query using the provided query builder.
-	Query(query QueryBuilder, output Models) (int, error)
-}
-
 type dbi struct {
 	txn *txnState
 }
 
 // DBI returns a DBI interface.
-func NewDBI(txn *txnState) *dbi {
+func newDBI(txn *txnState) *dbi {
 	return &dbi{
 		txn: txn,
 	}
 }
 
-func (q dbi) db() DB {
+func (q dbi) db() db {
 	return q.txn.DB()
 }
 
 // Insert inserts the provided object as a row into the database.
 // It returns the new object.
-func (q dbi) Insert(table Table, model Model) (interface{}, error) {
-	tableName := table.Name()
+func (q dbi) Insert(t table, model Model) (interface{}, error) {
+	tableName := t.Name()
 	err := insertObject(q.txn, tableName, model, nil)
 
 	if err != nil {
@@ -97,7 +36,7 @@ func (q dbi) Insert(table Table, model Model) (interface{}, error) {
 	}
 
 	// don't want to modify the existing object
-	newModel := table.NewObject()
+	newModel := t.NewObject()
 	if err := getByID(q.txn, tableName, model.GetID(), newModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after create", reflect.TypeOf(model).Name()))
 	}
@@ -108,8 +47,8 @@ func (q dbi) Insert(table Table, model Model) (interface{}, error) {
 // Update updates a database row based on the id and values of the provided
 // object. It returns the updated object. Update will return an error if
 // the object with id does not exist in the database table.
-func (q dbi) Update(table Table, model Model, updateEmptyValues bool) (interface{}, error) {
-	tableName := table.Name()
+func (q dbi) Update(t table, model Model, updateEmptyValues bool) (interface{}, error) {
+	tableName := t.Name()
 	err := updateObjectByID(q.txn, tableName, model, updateEmptyValues)
 
 	if err != nil {
@@ -117,7 +56,7 @@ func (q dbi) Update(table Table, model Model, updateEmptyValues bool) (interface
 	}
 
 	// don't want to modify the existing object
-	updatedModel := table.NewObject()
+	updatedModel := t.NewObject()
 	if err := getByID(q.txn, tableName, model.GetID(), updatedModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after update", reflect.TypeOf(model).Name()))
 	}
@@ -127,23 +66,23 @@ func (q dbi) Update(table Table, model Model, updateEmptyValues bool) (interface
 
 // Delete deletes the table row with the provided id. Delete returns an
 // error if the id does not exist in the database table.
-func (q dbi) Delete(id uuid.UUID, table Table) error {
-	o, err := q.Find(id, table)
+func (q dbi) Delete(id uuid.UUID, t table) error {
+	o, err := q.Find(id, t)
 
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("Error deleting from %s", table.Name()))
+		return errors.Wrap(err, fmt.Sprintf("Error deleting from %s", t.Name()))
 	}
 
 	if o == nil {
-		return fmt.Errorf("Row with id %d not found in %s", id, table.Name())
+		return fmt.Errorf("Row with id %d not found in %s", id, t.Name())
 	}
 
-	return executeDeleteQuery(table.Name(), id, q.txn)
+	return executeDeleteQuery(t.Name(), id, q.txn)
 }
 
 // Soft delete row by setting value of deleted column to TRUE
-func (q dbi) SoftDelete(table Table, model Model) (interface{}, error) {
-	tableName := table.Name()
+func (q dbi) SoftDelete(t table, model Model) (interface{}, error) {
+	tableName := t.Name()
 	id := model.GetID()
 
 	err := softDeleteObjectByID(q.txn, tableName, id)
@@ -152,7 +91,7 @@ func (q dbi) SoftDelete(table Table, model Model) (interface{}, error) {
 	}
 
 	// don't want to modify the existing object
-	updatedModel := table.NewObject()
+	updatedModel := t.NewObject()
 	if err := getByID(q.txn, tableName, id, updatedModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after soft delete", reflect.TypeOf(model).Name()))
 	}
@@ -160,8 +99,8 @@ func (q dbi) SoftDelete(table Table, model Model) (interface{}, error) {
 	return updatedModel, nil
 }
 
-func selectStatement(table Table) string {
-	tableName := table.Name()
+func selectStatement(t table) string {
+	tableName := t.Name()
 	return fmt.Sprintf("SELECT %s.* FROM %s", tableName, tableName)
 }
 
@@ -172,8 +111,8 @@ func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 
 // Find returns the row object with the provided id, or returns nil if not
 // found.
-func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
-	query := selectStatement(table) + " WHERE id = ? LIMIT 1"
+func (q dbi) Find(id uuid.UUID, t table) (interface{}, error) {
+	query := selectStatement(t) + " WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 
 	var rows *sqlx.Rows
@@ -187,7 +126,7 @@ func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
 		_ = rows.Close()
 	}()
 
-	output := table.NewObject()
+	output := t.NewObject()
 	if rows.Next() {
 		if err := rows.StructScan(output); err != nil {
 			return nil, err
@@ -205,8 +144,8 @@ func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
 }
 
 // InsertJoin inserts a join object into the provided join table.
-func (q dbi) InsertJoin(tableJoin TableJoin, object interface{}, conflictHandling *string) error {
-	err := insertObject(q.txn, tableJoin.Name(), object, conflictHandling)
+func (q dbi) InsertJoin(tj tableJoin, object interface{}, conflictHandling *string) error {
+	err := insertObject(q.txn, tj.Name(), object, conflictHandling)
 
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(object).Name()))
@@ -216,28 +155,28 @@ func (q dbi) InsertJoin(tableJoin TableJoin, object interface{}, conflictHandlin
 }
 
 // InsertJoins inserts multiple join objects into the provided join table.
-func (q dbi) InsertJoins(tableJoin TableJoin, joins Joins) error {
+func (q dbi) InsertJoins(tj tableJoin, joins Joins) error {
 	var err error
 	joins.Each(func(ro interface{}) {
 		if err != nil {
 			return
 		}
 
-		err = q.InsertJoin(tableJoin, ro, nil)
+		err = q.InsertJoin(tj, ro, nil)
 	})
 
 	return err
 }
 
 // InsertJoinsWithoutConflict inserts multiple join objects and doesn't fail on id conflicts
-func (q dbi) InsertJoinsWithConflictHandling(tableJoin TableJoin, joins Joins, conflictHandling string) error {
+func (q dbi) InsertJoinsWithConflictHandling(tj tableJoin, joins Joins, conflictHandling string) error {
 	var err error
 	joins.Each(func(ro interface{}) {
 		if err != nil {
 			return
 		}
 
-		err = q.InsertJoin(tableJoin, ro, &conflictHandling)
+		err = q.InsertJoin(tj, ro, &conflictHandling)
 	})
 
 	return err
@@ -245,43 +184,43 @@ func (q dbi) InsertJoinsWithConflictHandling(tableJoin TableJoin, joins Joins, c
 
 // ReplaceJoins replaces table join objects with the provided primary table
 // id value with the provided join objects.
-func (q dbi) ReplaceJoins(tableJoin TableJoin, id uuid.UUID, joins Joins) error {
-	err := q.DeleteJoins(tableJoin, id)
+func (q dbi) ReplaceJoins(tj tableJoin, id uuid.UUID, joins Joins) error {
+	err := q.DeleteJoins(tj, id)
 
 	if err != nil {
 		return err
 	}
 
-	return q.InsertJoins(tableJoin, joins)
+	return q.InsertJoins(tj, joins)
 }
 
 // DeleteJoins deletes all join objects with the provided primary table
 // id value.
-func (q dbi) DeleteJoins(tableJoin TableJoin, id uuid.UUID) error {
-	return deleteObjectsByColumn(q.txn, tableJoin.Name(), tableJoin.joinColumn, id)
+func (q dbi) DeleteJoins(tj tableJoin, id uuid.UUID) error {
+	return deleteObjectsByColumn(q.txn, tj.Name(), tj.joinColumn, id)
 }
 
 // FindJoins returns join objects where the foreign key id is equal to the
 // provided id. The join objects are output to the provided output slice.
-func (q dbi) FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error {
-	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " = ?"
+func (q dbi) FindJoins(tj tableJoin, id uuid.UUID, output Joins) error {
+	query := selectStatement(tj.table) + " WHERE " + tj.joinColumn + " = ?"
 	args := []interface{}{id}
 
-	return q.RawQuery(tableJoin.Table, query, args, output)
+	return q.RawQuery(tj.table, query, args, output)
 }
 
 // FindAllJoins returns join objects where the foreign key id is equal to one of the
 // provided ids. The join objects are output to the provided output slice.
-func (q dbi) FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error {
-	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " IN (?)"
+func (q dbi) FindAllJoins(tj tableJoin, ids []uuid.UUID, output Joins) error {
+	query := selectStatement(tj.table) + " WHERE " + tj.joinColumn + " IN (?)"
 	query, args, _ := sqlx.In(query, ids)
 
-	return q.RawQuery(tableJoin.Table, query, args, output)
+	return q.RawQuery(tj.table, query, args, output)
 }
 
 // RawQuery performs a query on the provided table using the query string
 // and argument slice. It outputs the results to the output slice.
-func (q dbi) RawQuery(table Table, query string, args []interface{}, output Models) error {
+func (q dbi) RawQuery(t table, query string, args []interface{}, output Models) error {
 	var rows *sqlx.Rows
 	var err error
 
@@ -297,7 +236,7 @@ func (q dbi) RawQuery(table Table, query string, args []interface{}, output Mode
 	}()
 
 	for rows.Next() {
-		o := table.NewObject()
+		o := t.NewObject()
 		if err := rows.StructScan(o); err != nil {
 			return err
 		}
@@ -308,7 +247,8 @@ func (q dbi) RawQuery(table Table, query string, args []interface{}, output Mode
 	return rows.Err()
 }
 
-func (q dbi) Count(query QueryBuilder) (int, error) {
+// Count performs a count query using the provided query builder
+func (q dbi) Count(query queryBuilder) (int, error) {
 	var err error
 
 	result := struct {
@@ -331,7 +271,7 @@ func (q dbi) Count(query QueryBuilder) (int, error) {
 
 // RawQuery performs a query on the provided table using the query string
 // and argument slice. It outputs the results to the output slice.
-func (q dbi) Query(query QueryBuilder, output Models) (int, error) {
+func (q dbi) Query(query queryBuilder, output Models) (int, error) {
 
 	count, err := q.Count(query)
 
@@ -344,7 +284,8 @@ func (q dbi) Query(query QueryBuilder, output Models) (int, error) {
 	return count, err
 }
 
-func (q dbi) DeleteQuery(query QueryBuilder) error {
+// DeleteQuery deletes table rows that match the query provided.
+func (q dbi) DeleteQuery(query queryBuilder) error {
 	ensureTx(q.txn)
 	queryStr := q.db().Rebind(query.buildQuery())
 	_, err := q.db().Exec(queryStr, query.args...)

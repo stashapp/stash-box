@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -15,15 +16,15 @@ const (
 )
 
 var (
-	sceneDBTable = NewTable(sceneTable, func() interface{} {
+	sceneDBTable = newTable(sceneTable, func() interface{} {
 		return &models.Scene{}
 	})
 
-	sceneFingerprintTable = NewTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
+	sceneFingerprintTable = newTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
 		return &models.SceneFingerprint{}
 	})
 
-	sceneURLTable = NewTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
+	sceneURLTable = newTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
 		return &models.SceneURL{}
 	})
 )
@@ -34,7 +35,7 @@ type sceneQueryBuilder struct {
 
 func newSceneQueryBuilder(txn *txnState) models.SceneRepo {
 	return &sceneQueryBuilder{
-		dbi: NewDBI(txn),
+		dbi: newDBI(txn),
 	}
 }
 
@@ -104,7 +105,7 @@ func (qb *sceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*model
 			WHERE hash IN (?)
 			GROUP BY id
 		)`
-	query, args, err := In(query, fingerprints)
+	query, args, err := sqlx.In(query, fingerprints)
 	if err != nil {
 		return nil, err
 	}
@@ -158,11 +159,11 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 	query := `
 		SELECT scenes.* FROM scenes
 		WHERE id IN (` + strings.Join(clauses, " UNION ") + ")"
-	query, args, err := Named(query, arg)
+	query, args, err := sqlx.Named(query, arg)
 	if err != nil {
 		return nil, err
 	}
-	query, args, err = In(query, args...)
+	query, args, err = sqlx.In(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +228,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 		findFilter = &models.QuerySpec{}
 	}
 
-	query := NewQueryBuilder(sceneDBTable)
+	query := newQueryBuilder(sceneDBTable)
 
 	if q := sceneFilter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
@@ -282,7 +283,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	if q := sceneFilter.Performers; q != nil && len(q.Value) > 0 {
-		query.AddJoin(scenePerformerTable.Table, scenePerformerTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(scenePerformerTable.table, scenePerformerTable.Name()+".scene_id = scenes.id")
 		whereClause, havingClause := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -293,7 +294,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	if q := sceneFilter.Tags; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneTagTable.Table, sceneTagTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(sceneTagTable.table, sceneTagTable.Name()+".scene_id = scenes.id")
 		whereClause, havingClause := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -304,7 +305,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	if q := sceneFilter.Fingerprints; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneFingerprintTable.Table, sceneFingerprintTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id")
 		whereClause, havingClause := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -329,7 +330,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	return scenes, countResult
 }
 
-func getMultiCriterionClause(joinTable TableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string) {
+func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string) {
 	joinTableName := joinTable.Name()
 	whereClause := ""
 	havingClause := ""
