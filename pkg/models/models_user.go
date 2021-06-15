@@ -5,23 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	userTable   = "users"
-	userJoinKey = "user_id"
-)
-
-var (
-	userDBTable = database.NewTable(userTable, func() interface{} {
-		return &User{}
-	})
-
-	userRolesTable = database.NewTableJoin(userTable, "user_roles", userJoinKey, func() interface{} {
-		return &UserRole{}
-	})
 )
 
 type User struct {
@@ -36,10 +19,6 @@ type User struct {
 	LastAPICall  SQLiteTimestamp `db:"last_api_call" json:"last_api_call"`
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-}
-
-func (User) GetTable() database.Table {
-	return userDBTable
 }
 
 func (p User) GetID() uuid.UUID {

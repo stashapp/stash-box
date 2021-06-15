@@ -1,4 +1,4 @@
-package database
+package sqlx
 
 import (
 	"database/sql"
@@ -8,15 +8,13 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-
-	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 // The DBI interface is used to interface with the database.
 type DBI interface {
 	// Insert inserts the provided object as a row into the database.
 	// It returns the new object.
-	Insert(model Model) (interface{}, error)
+	Insert(table Table, model Model) (interface{}, error)
 
 	// InsertJoin inserts a join object into the provided join table.
 	InsertJoin(tableJoin TableJoin, object interface{}, conflictHandling *string) error
@@ -30,7 +28,7 @@ type DBI interface {
 	// Update updates a database row based on the id and values of the provided
 	// object. It returns the updated object. Update will return an error if
 	// the object with id does not exist in the database table.
-	Update(model Model, updateEmptyValues bool) (interface{}, error)
+	Update(table Table, model Model, updateEmptyValues bool) (interface{}, error)
 
 	// ReplaceJoins replaces table join objects with the provided primary table
 	// id value with the provided join objects.
@@ -45,7 +43,7 @@ type DBI interface {
 	DeleteJoins(tableJoin TableJoin, id uuid.UUID) error
 
 	// Soft delete row by setting value of deleted column to TRUE
-	SoftDelete(model Model) (interface{}, error)
+	SoftDelete(table Table, model Model) (interface{}, error)
 
 	// DeleteQuery deletes table rows that match the query provided.
 	DeleteQuery(query QueryBuilder) error
@@ -74,24 +72,24 @@ type DBI interface {
 }
 
 type dbi struct {
-	txn *sqlxx.TxnMgr
+	txn *txnState
 }
 
 // DBI returns a DBI interface.
-func NewDBI(txn *sqlxx.TxnMgr) DBI {
+func NewDBI(txn *txnState) *dbi {
 	return &dbi{
 		txn: txn,
 	}
 }
 
-func (q dbi) db() sqlxx.DB {
+func (q dbi) db() DB {
 	return q.txn.DB()
 }
 
 // Insert inserts the provided object as a row into the database.
 // It returns the new object.
-func (q dbi) Insert(model Model) (interface{}, error) {
-	tableName := model.GetTable().Name()
+func (q dbi) Insert(table Table, model Model) (interface{}, error) {
+	tableName := table.Name()
 	err := insertObject(q.txn, tableName, model, nil)
 
 	if err != nil {
@@ -99,7 +97,7 @@ func (q dbi) Insert(model Model) (interface{}, error) {
 	}
 
 	// don't want to modify the existing object
-	newModel := model.GetTable().NewObject()
+	newModel := table.NewObject()
 	if err := getByID(q.txn, tableName, model.GetID(), newModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after create", reflect.TypeOf(model).Name()))
 	}
@@ -110,8 +108,8 @@ func (q dbi) Insert(model Model) (interface{}, error) {
 // Update updates a database row based on the id and values of the provided
 // object. It returns the updated object. Update will return an error if
 // the object with id does not exist in the database table.
-func (q dbi) Update(model Model, updateEmptyValues bool) (interface{}, error) {
-	tableName := model.GetTable().Name()
+func (q dbi) Update(table Table, model Model, updateEmptyValues bool) (interface{}, error) {
+	tableName := table.Name()
 	err := updateObjectByID(q.txn, tableName, model, updateEmptyValues)
 
 	if err != nil {
@@ -119,7 +117,7 @@ func (q dbi) Update(model Model, updateEmptyValues bool) (interface{}, error) {
 	}
 
 	// don't want to modify the existing object
-	updatedModel := model.GetTable().NewObject()
+	updatedModel := table.NewObject()
 	if err := getByID(q.txn, tableName, model.GetID(), updatedModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after update", reflect.TypeOf(model).Name()))
 	}
@@ -144,8 +142,8 @@ func (q dbi) Delete(id uuid.UUID, table Table) error {
 }
 
 // Soft delete row by setting value of deleted column to TRUE
-func (q dbi) SoftDelete(model Model) (interface{}, error) {
-	tableName := model.GetTable().Name()
+func (q dbi) SoftDelete(table Table, model Model) (interface{}, error) {
+	tableName := table.Name()
 	id := model.GetID()
 
 	err := softDeleteObjectByID(q.txn, tableName, id)
@@ -154,7 +152,7 @@ func (q dbi) SoftDelete(model Model) (interface{}, error) {
 	}
 
 	// don't want to modify the existing object
-	updatedModel := model.GetTable().NewObject()
+	updatedModel := table.NewObject()
 	if err := getByID(q.txn, tableName, id, updatedModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after soft delete", reflect.TypeOf(model).Name()))
 	}

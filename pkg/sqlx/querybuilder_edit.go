@@ -1,39 +1,67 @@
-package models
+package sqlx
 
 import (
 	"encoding/json"
 	"errors"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/pkg/database"
-	"github.com/stashapp/stash-box/pkg/sqlx"
+	"github.com/stashapp/stash-box/pkg/models"
+)
+
+const (
+	editTable   = "edits"
+	editJoinKey = "edit_id"
+
+	//voteTable = "votes"
+)
+
+var (
+	editDBTable = NewTable(editTable, func() interface{} {
+		return &models.Edit{}
+	})
+
+	editTagTable = NewTableJoin(editTable, "tag_edits", editJoinKey, func() interface{} {
+		return &models.EditTag{}
+	})
+
+	editPerformerTable = NewTableJoin(editTable, "performer_edits", editJoinKey, func() interface{} {
+		return &models.EditPerformer{}
+	})
+
+	editCommentTable = NewTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
+		return &models.EditComment{}
+	})
+
+	// voteDBTable = database.NewTable(editTable, func() interface{} {
+	// 	return &Edit{}
+	// })
 )
 
 type editQueryBuilder struct {
-	dbi database.DBI
+	dbi *dbi
 }
 
-func newEditQueryBuilder(txn *sqlx.TxnMgr) EditRepo {
+func newEditQueryBuilder(txn *txnState) models.EditRepo {
 	return &editQueryBuilder{
-		dbi: database.NewDBI(txn),
+		dbi: NewDBI(txn),
 	}
 }
 
-func (qb *editQueryBuilder) toModel(ro interface{}) *Edit {
+func (qb *editQueryBuilder) toModel(ro interface{}) *models.Edit {
 	if ro != nil {
-		return ro.(*Edit)
+		return ro.(*models.Edit)
 	}
 
 	return nil
 }
 
-func (qb *editQueryBuilder) Create(newEdit Edit) (*Edit, error) {
-	ret, err := qb.dbi.Insert(newEdit)
+func (qb *editQueryBuilder) Create(newEdit models.Edit) (*models.Edit, error) {
+	ret, err := qb.dbi.Insert(editDBTable, newEdit)
 	return qb.toModel(ret), err
 }
 
-func (qb *editQueryBuilder) Update(updatedEdit Edit) (*Edit, error) {
-	ret, err := qb.dbi.Update(updatedEdit, false)
+func (qb *editQueryBuilder) Update(updatedEdit models.Edit) (*models.Edit, error) {
+	ret, err := qb.dbi.Update(editDBTable, updatedEdit, false)
 	return qb.toModel(ret), err
 }
 
@@ -41,21 +69,21 @@ func (qb *editQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, editDBTable)
 }
 
-func (qb *editQueryBuilder) Find(id uuid.UUID) (*Edit, error) {
+func (qb *editQueryBuilder) Find(id uuid.UUID) (*models.Edit, error) {
 	ret, err := qb.dbi.Find(id, editDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *editQueryBuilder) CreateEditTag(newJoin EditTag) error {
+func (qb *editQueryBuilder) CreateEditTag(newJoin models.EditTag) error {
 	return qb.dbi.InsertJoin(editTagTable, newJoin, nil)
 }
 
-func (qb *editQueryBuilder) CreateEditPerformer(newJoin EditPerformer) error {
+func (qb *editQueryBuilder) CreateEditPerformer(newJoin models.EditPerformer) error {
 	return qb.dbi.InsertJoin(editPerformerTable, newJoin, nil)
 }
 
 func (qb *editQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
-	joins := EditTags{}
+	joins := models.EditTags{}
 	err := qb.dbi.FindJoins(editTagTable, id, &joins)
 	if err != nil {
 		return nil, err
@@ -67,7 +95,7 @@ func (qb *editQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
 }
 
 func (qb *editQueryBuilder) FindPerformerID(id uuid.UUID) (*uuid.UUID, error) {
-	joins := EditPerformers{}
+	joins := models.EditPerformers{}
 	err := qb.dbi.FindJoins(editPerformerTable, id, &joins)
 	if err != nil {
 		return nil, err
@@ -118,18 +146,18 @@ func (qb *editQueryBuilder) FindPerformerID(id uuid.UUID) (*uuid.UUID, error) {
 // }
 
 func (qb *editQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT edits.id FROM edits"), nil)
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edits.id FROM edits"), nil)
 }
 
-func (qb *editQueryBuilder) Query(editFilter *EditFilterType, findFilter *QuerySpec) ([]*Edit, int) {
+func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter *models.QuerySpec) ([]*models.Edit, int) {
 	if editFilter == nil {
-		editFilter = &EditFilterType{}
+		editFilter = &models.EditFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &QuerySpec{}
+		findFilter = &models.QuerySpec{}
 	}
 
-	query := database.NewQueryBuilder(editDBTable)
+	query := NewQueryBuilder(editDBTable)
 
 	if q := editFilter.UserID; q != nil && *q != "" {
 		query.Eq(editDBTable.Name()+".user_id", *q)
@@ -168,7 +196,7 @@ func (qb *editQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 
 	query.SortAndPagination = qb.getEditSort(findFilter) + getPagination(findFilter)
 
-	var edits Edits
+	var edits models.Edits
 	countResult, err := qb.dbi.Query(*query, &edits)
 
 	if err != nil {
@@ -179,7 +207,7 @@ func (qb *editQueryBuilder) Query(editFilter *EditFilterType, findFilter *QueryS
 	return edits, countResult
 }
 
-func (qb *editQueryBuilder) getEditSort(findFilter *QuerySpec) string {
+func (qb *editQueryBuilder) getEditSort(findFilter *models.QuerySpec) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -189,27 +217,27 @@ func (qb *editQueryBuilder) getEditSort(findFilter *QuerySpec) string {
 		sort = findFilter.GetSort("updated_at")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "edits", nil)
+	return getSort(qb.dbi.txn.dialect, sort, direction, "edits", nil)
 }
 
-func (qb *editQueryBuilder) queryEdits(query string, args []interface{}) (Edits, error) {
-	output := Edits{}
+func (qb *editQueryBuilder) queryEdits(query string, args []interface{}) (models.Edits, error) {
+	output := models.Edits{}
 	err := qb.dbi.RawQuery(editDBTable, query, args, &output)
 	return output, err
 }
 
-func (qb *editQueryBuilder) CreateComment(newJoin EditComment) error {
+func (qb *editQueryBuilder) CreateComment(newJoin models.EditComment) error {
 	return qb.dbi.InsertJoin(editCommentTable, newJoin, nil)
 }
 
-func (qb *editQueryBuilder) GetComments(id uuid.UUID) (EditComments, error) {
-	joins := EditComments{}
+func (qb *editQueryBuilder) GetComments(id uuid.UUID) (models.EditComments, error) {
+	joins := models.EditComments{}
 	err := qb.dbi.FindJoins(editCommentTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *editQueryBuilder) FindByTagID(id uuid.UUID) ([]*Edit, error) {
+func (qb *editQueryBuilder) FindByTagID(id uuid.UUID) ([]*models.Edit, error) {
 	query := `
         SELECT edits.* FROM edits
         JOIN tag_edits
@@ -219,7 +247,7 @@ func (qb *editQueryBuilder) FindByTagID(id uuid.UUID) ([]*Edit, error) {
 	return qb.queryEdits(query, args)
 }
 
-func (qb *editQueryBuilder) FindByPerformerID(id uuid.UUID) ([]*Edit, error) {
+func (qb *editQueryBuilder) FindByPerformerID(id uuid.UUID) ([]*models.Edit, error) {
 	query := `
         SELECT edits.* FROM edits
         JOIN performer_edits

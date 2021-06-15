@@ -1,4 +1,4 @@
-package database
+package sqlx
 
 import (
 	"github.com/gofrs/uuid"
@@ -74,9 +74,6 @@ func (t TableJoin) Inverse(joinColumn string) TableJoin {
 // Model is the interface implemented by objects that exist in the database
 // that have an `id` column.
 type Model interface {
-	// GetTable returns the table that stores objects of this type.
-	GetTable() Table
-
 	// GetID returns the ID of the object.
 	GetID() uuid.UUID
 }

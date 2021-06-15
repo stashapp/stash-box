@@ -16,7 +16,7 @@ var ErrInvalidActivationKey = errors.New("invalid activation key")
 
 // NewUser registers a new user. It returns the activation key only if
 // email verification is not required, otherwise it returns nil.
-func NewUser(fac models.RepoFactory, em *email.Manager, email, inviteKey string) (*string, error) {
+func NewUser(fac models.Repo, em *email.Manager, email, inviteKey string) (*string, error) {
 	if err := ClearExpiredActivations(fac); err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func generateActivationKey(aqb models.PendingActivationCreator, email string, in
 	return obj.ID.String(), nil
 }
 
-func ClearExpiredActivations(fac models.RepoFactory) error {
+func ClearExpiredActivations(fac models.Repo) error {
 	expireTime := config.GetActivationExpireTime()
 
 	aqb := fac.PendingActivation()
@@ -158,7 +158,7 @@ func sendNewUserEmail(em *email.Manager, email, activationKey string) error {
 	return em.Send(email, subject, body)
 }
 
-func ActivateNewUser(fac models.RepoFactory, name, email, activationKey, password string) (*models.User, error) {
+func ActivateNewUser(fac models.Repo, name, email, activationKey, password string) (*models.User, error) {
 	if err := ClearExpiredActivations(fac); err != nil {
 		return nil, err
 	}
@@ -232,7 +232,7 @@ func ActivateNewUser(fac models.RepoFactory, name, email, activationKey, passwor
 }
 
 // ResetPassword generates an email to reset a users password.
-func ResetPassword(fac models.RepoFactory, em *email.Manager, email string) error {
+func ResetPassword(fac models.Repo, em *email.Manager, email string) error {
 	uqb := fac.User()
 	aqb := fac.PendingActivation()
 
@@ -307,7 +307,7 @@ func sendResetPasswordEmail(em *email.Manager, email, activationKey string) erro
 	return em.Send(email, subject, body)
 }
 
-func ActivateResetPassword(fac models.RepoFactory, activationKey string, newPassword string) error {
+func ActivateResetPassword(fac models.Repo, activationKey string, newPassword string) error {
 	if err := ClearExpiredActivations(fac); err != nil {
 		return err
 	}

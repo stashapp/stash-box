@@ -4,38 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/gofrs/uuid"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-var (
-	scenePerformerTable = database.NewTableJoin(sceneTable, "scene_performers", sceneJoinKey, func() interface{} {
-		return &PerformerScene{}
-	})
-
-	performerSceneTable = database.NewTableJoin(sceneTable, "scene_performers", performerJoinKey, func() interface{} {
-		return &PerformerScene{}
-	})
-
-	sceneTagTable = database.NewTableJoin(sceneTable, "scene_tags", sceneJoinKey, func() interface{} {
-		return &SceneTag{}
-	})
-
-	tagSceneTable = database.NewTableJoin(tagTable, "scene_tags", tagJoinKey, func() interface{} {
-		return &SceneTag{}
-	})
-
-	sceneImageTable = database.NewTableJoin(sceneTable, "scene_images", sceneJoinKey, func() interface{} {
-		return &SceneImage{}
-	})
-
-	performerImageTable = database.NewTableJoin(performerTable, "performer_images", performerJoinKey, func() interface{} {
-		return &PerformerImage{}
-	})
-
-	studioImageTable = database.NewTableJoin(studioTable, "studio_images", studioJoinKey, func() interface{} {
-		return &StudioImage{}
-	})
 )
 
 type PerformerScene struct {

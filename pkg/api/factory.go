@@ -7,20 +7,23 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-type RepoFactoryProvider interface {
-	RepoFactory() models.RepoFactory
+type RepoProvider interface {
+	// IMPORTANT: the returned Repo object MUST NOT be shared between goroutines.
+	// that is: call Repo for each new request/goroutine
+	Repo() models.Repo
 }
 
-func repoFactoryMiddleware(provider RepoFactoryProvider) func(http.Handler) http.Handler {
+// creates a new Repo (with its own transaction boundary) for each incoming request
+func repoMiddleware(provider RepoProvider) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(context.WithValue(r.Context(), contextRepoFactory, provider.RepoFactory()))
+			r = r.WithContext(context.WithValue(r.Context(), ContextRepo, provider.Repo()))
 
 			next.ServeHTTP(w, r)
 		})
 	}
 }
 
-func getRepoFactory(ctx context.Context) models.RepoFactory {
-	return ctx.Value(contextRepoFactory).(models.RepoFactory)
+func getRepo(ctx context.Context) models.Repo {
+	return ctx.Value(ContextRepo).(models.Repo)
 }

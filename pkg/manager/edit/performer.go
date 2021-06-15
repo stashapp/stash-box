@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-func ModifyPerformerEdit(fac models.RepoFactory, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+func ModifyPerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	pqb := fac.Performer()
 
 	// get the existing performer
@@ -70,7 +70,7 @@ func ModifyPerformerEdit(fac models.RepoFactory, edit *models.Edit, input models
 	return edit.SetData(performerEdit)
 }
 
-func MergePerformerEdit(fac models.RepoFactory, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+func MergePerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	pqb := fac.Performer()
 
 	// get the existing performer
@@ -158,7 +158,7 @@ func MergePerformerEdit(fac models.RepoFactory, edit *models.Edit, input models.
 	return edit.SetData(performerEdit)
 }
 
-func CreatePerformerEdit(fac models.RepoFactory, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+func CreatePerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	performerEdit := input.Details.PerformerEditFromCreate()
 
 	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
@@ -184,7 +184,7 @@ func CreatePerformerEdit(fac models.RepoFactory, edit *models.Edit, input models
 	return edit.SetData(performerEdit)
 }
 
-func DestroyPerformerEdit(fac models.RepoFactory, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+func DestroyPerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	pqb := fac.Performer()
 
 	// get the existing performer

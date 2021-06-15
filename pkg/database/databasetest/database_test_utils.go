@@ -3,6 +3,7 @@ package databasetest
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -10,12 +11,20 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/models"
+	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
+)
+
+var (
+	db      *sqlx.DB
+	dialect sqlxx.Dialect
+	repo    models.Repo
 )
 
 const defaultTestDB = "postgres@localhost/stash-box-test?sslmode=disable"
 
 type DatabasePopulater interface {
-	PopulateDB() error
+	PopulateDB(repo models.Repo) error
 }
 
 func pgDropAll(conn *sqlx.DB) {
@@ -50,7 +59,9 @@ func initPostgres(connString string) func() {
 
 	pgDropAll(conn)
 
-	database.Initialize(databaseType, connString)
+	db, dialect = database.Initialize(databaseType, connString)
+	txnMgr := sqlxx.NewTxnMgr(db, dialect)
+	repo = txnMgr.Repo()
 
 	return teardownPostgres
 }
@@ -60,7 +71,7 @@ func teardownPostgres() {
 	if noDrop == "" {
 		pgDropAll(database.DB)
 	}
-	_ = database.DB.Close()
+	db.Close()
 }
 
 func runTests(m *testing.M, populater DatabasePopulater) int {
@@ -77,7 +88,7 @@ func runTests(m *testing.M, populater DatabasePopulater) int {
 	}
 
 	if populater != nil {
-		err := populater.PopulateDB()
+		err := populater.PopulateDB(repo)
 		if err != nil {
 			panic(fmt.Sprintf("Could not populate database: %s", err.Error()))
 		}
@@ -92,20 +103,17 @@ func TestWithDatabase(m *testing.M, populater DatabasePopulater) {
 	os.Exit(ret)
 }
 
-func WithTransientTransaction(ctx context.Context, fn database.TxFunc) {
-	txn := database.NewTransaction(ctx)
-	txn.Begin(ctx)
-
-	defer func() {
-		if p := recover(); p != nil {
-			// a panic occurred, rollback and repanic
-			_ = txn.Rollback()
-			panic(p)
-		} else {
-			// something went wrong, rollback
-			_ = txn.Rollback()
+func WithTransientTransaction(ctx context.Context, fn func() error) {
+	rollbackErr := errors.New("expected rollback")
+	repo.WithTxn(func() error {
+		if err := fn(); err != nil {
+			return err
 		}
-	}()
 
-	_ = fn(txn)
+		return rollbackErr
+	})
+}
+
+func Repo() models.Repo {
+	return repo
 }

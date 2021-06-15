@@ -1,33 +1,42 @@
-package models
+package sqlx
 
 import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/pkg/database"
-	"github.com/stashapp/stash-box/pkg/sqlx"
+	"github.com/stashapp/stash-box/pkg/models"
+)
+
+const (
+	pendingActivationTable = "pending_activations"
+)
+
+var (
+	pendingActivationDBTable = NewTable(pendingActivationTable, func() interface{} {
+		return &models.PendingActivation{}
+	})
 )
 
 type pendingActivationQueryBuilder struct {
-	dbi database.DBI
+	dbi *dbi
 }
 
-func newPendingActivationQueryBuilder(txn *sqlx.TxnMgr) PendingActivationRepo {
+func newPendingActivationQueryBuilder(txn *txnState) models.PendingActivationRepo {
 	return &pendingActivationQueryBuilder{
-		dbi: database.NewDBI(txn),
+		dbi: NewDBI(txn),
 	}
 }
 
-func (qb *pendingActivationQueryBuilder) toModel(ro interface{}) *PendingActivation {
+func (qb *pendingActivationQueryBuilder) toModel(ro interface{}) *models.PendingActivation {
 	if ro != nil {
-		return ro.(*PendingActivation)
+		return ro.(*models.PendingActivation)
 	}
 
 	return nil
 }
 
-func (qb *pendingActivationQueryBuilder) Create(newActivation PendingActivation) (*PendingActivation, error) {
-	ret, err := qb.dbi.Insert(newActivation)
+func (qb *pendingActivationQueryBuilder) Create(newActivation models.PendingActivation) (*models.PendingActivation, error) {
+	ret, err := qb.dbi.Insert(pendingActivationDBTable, newActivation)
 	return qb.toModel(ret), err
 }
 
@@ -36,25 +45,25 @@ func (qb *pendingActivationQueryBuilder) Destroy(id uuid.UUID) error {
 }
 
 func (qb *pendingActivationQueryBuilder) DestroyExpired(expireTime time.Time) error {
-	q := database.NewDeleteQueryBuilder(pendingActivationDBTable)
+	q := NewDeleteQueryBuilder(pendingActivationDBTable)
 	q.AddWhere("time <= ?")
-	q.AddArg(SQLiteTimestamp{
+	q.AddArg(models.SQLiteTimestamp{
 		Timestamp: expireTime,
 	})
 	return qb.dbi.DeleteQuery(*q)
 }
 
-func (qb *pendingActivationQueryBuilder) Find(id uuid.UUID) (*PendingActivation, error) {
+func (qb *pendingActivationQueryBuilder) Find(id uuid.UUID) (*models.PendingActivation, error) {
 	ret, err := qb.dbi.Find(id, pendingActivationDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *pendingActivationQueryBuilder) FindByEmail(email string, activationType string) (*PendingActivation, error) {
+func (qb *pendingActivationQueryBuilder) FindByEmail(email string, activationType string) (*models.PendingActivation, error) {
 	query := `SELECT * FROM ` + pendingActivationTable + ` WHERE email = ? AND type = ?`
 	var args []interface{}
 	args = append(args, email)
 	args = append(args, activationType)
-	output := PendingActivations{}
+	output := models.PendingActivations{}
 	err := qb.dbi.RawQuery(pendingActivationDBTable, query, args, &output)
 	if err != nil {
 		return nil, err
@@ -66,12 +75,12 @@ func (qb *pendingActivationQueryBuilder) FindByEmail(email string, activationTyp
 	return nil, nil
 }
 
-func (qb *pendingActivationQueryBuilder) FindByInviteKey(key string, activationType string) (*PendingActivation, error) {
+func (qb *pendingActivationQueryBuilder) FindByInviteKey(key string, activationType string) (*models.PendingActivation, error) {
 	query := `SELECT * FROM ` + pendingActivationTable + ` WHERE invite_key = ? AND type = ?`
 	var args []interface{}
 	args = append(args, key)
 	args = append(args, activationType)
-	output := PendingActivations{}
+	output := models.PendingActivations{}
 	err := qb.dbi.RawQuery(pendingActivationDBTable, query, args, &output)
 	if err != nil {
 		return nil, err
@@ -84,5 +93,5 @@ func (qb *pendingActivationQueryBuilder) FindByInviteKey(key string, activationT
 }
 
 func (qb *pendingActivationQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT "+pendingActivationTable+".id FROM "+pendingActivationTable), nil)
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT "+pendingActivationTable+".id FROM "+pendingActivationTable), nil)
 }

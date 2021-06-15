@@ -2,18 +2,6 @@ package models
 
 import (
 	"github.com/gofrs/uuid"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	pendingActivationTable = "pending_activations"
-)
-
-var (
-	pendingActivationDBTable = database.NewTable(pendingActivationTable, func() interface{} {
-		return &PendingActivation{}
-	})
 )
 
 const (
@@ -27,10 +15,6 @@ type PendingActivation struct {
 	InviteKey uuid.NullUUID   `db:"invite_key" json:"invite_key"`
 	Type      string          `db:"type" json:"type"`
 	Time      SQLiteTimestamp `db:"time" json:"time"`
-}
-
-func (PendingActivation) GetTable() database.Table {
-	return pendingActivationDBTable
 }
 
 func (p PendingActivation) GetID() uuid.UUID {

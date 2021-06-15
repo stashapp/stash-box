@@ -1,4 +1,4 @@
-package database
+package sqlx
 
 import (
 	"database/sql"
@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-
-	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type QueryBuilder struct {
@@ -113,20 +111,20 @@ type optionalValue interface {
 	IsValid() bool
 }
 
-func ensureTx(txn *sqlxx.TxnMgr) {
+func ensureTx(txn *txnState) {
 	if !txn.InTxn() {
 		panic("must use a transaction")
 	}
 }
 
-func getByID(txn *sqlxx.TxnMgr, table string, id uuid.UUID, object interface{}) error {
+func getByID(txn *txnState, table string, id uuid.UUID, object interface{}) error {
 	query := txn.DB().Rebind(`SELECT * FROM ` + table + ` WHERE id = ? LIMIT 1`)
 	return txn.DB().Get(object, query, id)
 }
 
-func insertObject(txn *sqlxx.TxnMgr, table string, object interface{}, conflictHandling *string) error {
+func insertObject(txn *txnState, table string, object interface{}, conflictHandling *string) error {
 	ensureTx(txn)
-	fields, values := sqlGenKeysCreate(object)
+	fields, values := sqlGenKeysCreate(txn.dialect, object)
 
 	conflictClause := ""
 	if conflictHandling != nil {
@@ -144,17 +142,17 @@ func insertObject(txn *sqlxx.TxnMgr, table string, object interface{}, conflictH
 	return err
 }
 
-func updateObjectByID(txn *sqlxx.TxnMgr, table string, object interface{}, updateEmptyValues bool) error {
+func updateObjectByID(txn *txnState, table string, object interface{}, updateEmptyValues bool) error {
 	ensureTx(txn)
 	_, err := txn.DB().NamedExec(
-		`UPDATE `+table+` SET `+sqlGenKeys(object, updateEmptyValues)+` WHERE `+table+`.id = :id`,
+		`UPDATE `+table+` SET `+sqlGenKeys(txn.dialect, object, updateEmptyValues)+` WHERE `+table+`.id = :id`,
 		object,
 	)
 
 	return err
 }
 
-func executeDeleteQuery(tableName string, id uuid.UUID, txn *sqlxx.TxnMgr) error {
+func executeDeleteQuery(tableName string, id uuid.UUID, txn *txnState) error {
 	ensureTx(txn)
 	idColumnName := getColumn(tableName, "id")
 	query := txn.DB().Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
@@ -162,7 +160,7 @@ func executeDeleteQuery(tableName string, id uuid.UUID, txn *sqlxx.TxnMgr) error
 	return err
 }
 
-func softDeleteObjectByID(txn *sqlxx.TxnMgr, table string, id uuid.UUID) error {
+func softDeleteObjectByID(txn *txnState, table string, id uuid.UUID) error {
 	ensureTx(txn)
 	idColumnName := getColumn(table, "id")
 	query := txn.DB().Rebind(`UPDATE ` + table + ` SET deleted=TRUE WHERE ` + idColumnName + ` = ?`)
@@ -170,7 +168,7 @@ func softDeleteObjectByID(txn *sqlxx.TxnMgr, table string, id uuid.UUID) error {
 	return err
 }
 
-func deleteObjectsByColumn(txn *sqlxx.TxnMgr, table string, column string, value interface{}) error {
+func deleteObjectsByColumn(txn *txnState, table string, column string, value interface{}) error {
 	ensureTx(txn)
 	query := txn.DB().Rebind(`DELETE FROM ` + table + ` WHERE ` + column + ` = ?`)
 	_, err := txn.DB().Exec(query, value)
@@ -181,7 +179,7 @@ func getColumn(tableName string, columnName string) string {
 	return tableName + "." + columnName
 }
 
-func sqlGenKeysCreate(i interface{}) (string, string) {
+func sqlGenKeysCreate(dialect Dialect, i interface{}) (string, string) {
 	var fields []string
 	var values []string
 
@@ -245,7 +243,7 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 	return strings.Join(fields, ", "), strings.Join(values, ", ")
 }
 
-func sqlGenKeys(i interface{}, partial bool) string {
+func sqlGenKeys(dialect Dialect, i interface{}, partial bool) string {
 	var query []string
 
 	addKey := func(key string) {

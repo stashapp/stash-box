@@ -10,7 +10,13 @@ import (
 )
 
 type Resolver struct {
-	getRepoFactory func(ctx context.Context) models.RepoFactory
+	getRepoFactory func(ctx context.Context) models.Repo
+}
+
+func NewResolver(repoFunc func(ctx context.Context) models.Repo) *Resolver {
+	return &Resolver{
+		getRepoFactory: repoFunc,
+	}
 }
 
 func (r *Resolver) Mutation() models.MutationResolver {

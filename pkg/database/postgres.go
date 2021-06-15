@@ -8,6 +8,8 @@ import (
 	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/logger"
+	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
+	"github.com/stashapp/stash-box/pkg/sqlx/postgres"
 	"github.com/stashapp/stash-box/pkg/utils"
 
 	// Driver used here only
@@ -66,16 +68,6 @@ func (p *PostgresProvider) runMigrations(databasePath string) {
 	_, _ = m.Close()
 }
 
-type postgresDialect struct{}
-
-func (p *PostgresProvider) GetDialect() sqlDialect {
-	return &postgresDialect{}
-}
-
-func (*postgresDialect) FieldQuote(field string) string {
-	return `"` + field + `"`
-}
-
-func (*postgresDialect) NullsLast() string {
-	return " NULLS LAST "
+func (p *PostgresProvider) GetDialect() sqlxx.Dialect {
+	return &postgres.Dialect{}
 }

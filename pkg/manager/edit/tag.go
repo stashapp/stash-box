@@ -14,7 +14,7 @@ import (
 // unspecified fields
 type InputSpecifiedFunc func(qualifiedField string) bool
 
-func ModifyTagEdit(fac models.RepoFactory, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func ModifyTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tqb := fac.Tag()
 
 	// get the existing tag
@@ -46,7 +46,7 @@ func ModifyTagEdit(fac models.RepoFactory, edit *models.Edit, input models.TagEd
 	return edit.SetData(tagEdit)
 }
 
-func MergeTagEdit(fac models.RepoFactory, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func MergeTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tqb := fac.Tag()
 
 	// get the existing tag
@@ -102,7 +102,7 @@ func MergeTagEdit(fac models.RepoFactory, edit *models.Edit, input models.TagEdi
 	return edit.SetData(tagEdit)
 }
 
-func CreateTagEdit(fac models.RepoFactory, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func CreateTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tagEdit := input.Details.TagEditFromCreate()
 
 	// determine unspecified aliases vs no aliases
@@ -113,7 +113,7 @@ func CreateTagEdit(fac models.RepoFactory, edit *models.Edit, input models.TagEd
 	return edit.SetData(tagEdit)
 }
 
-func DestroyTagEdit(fac models.RepoFactory, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func DestroyTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tqb := fac.Tag()
 
 	// get the existing tag

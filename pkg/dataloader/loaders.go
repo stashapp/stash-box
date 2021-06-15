@@ -35,7 +35,7 @@ type Loaders struct {
 	TagCategoryByID        TagCategoryLoader
 }
 
-func Middleware(fac models.RepoFactory) func(next http.Handler) http.Handler {
+func Middleware(fac models.Repo) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), loadersKey, GetLoaders(fac))
@@ -52,7 +52,7 @@ func For(ctx context.Context) *Loaders {
 func GetLoadersKey() contextKey {
 	return loadersKey
 }
-func GetLoaders(fac models.RepoFactory) *Loaders {
+func GetLoaders(fac models.Repo) *Loaders {
 	return &Loaders{
 		SceneFingerprintsByID: FingerprintsLoader{
 			maxBatch: 100,

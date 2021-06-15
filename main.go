@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/manager/config"
-	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/user"
 
@@ -17,13 +16,10 @@ func main() {
 	manager.Initialize()
 
 	const databaseProvider = "postgres"
-	db := database.Initialize(databaseProvider, config.GetDatabasePath())
-	txnMgr := sqlx.NewMgr(db)
-	fp := &models.RepoFactoryProvider{
-		TxnMgr: txnMgr,
-	}
-	user.CreateRoot(fp.RepoFactory())
-	api.Start(fp)
+	db, dialect := database.Initialize(databaseProvider, config.GetDatabasePath())
+	txnMgr := sqlx.NewTxnMgr(db, dialect)
+	user.CreateRoot(txnMgr.Repo())
+	api.Start(txnMgr)
 	blockForever()
 }
 

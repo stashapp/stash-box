@@ -204,7 +204,7 @@ func validateUserPassword(username string, email string, password string) error 
 	return nil
 }
 
-func Create(fac models.RepoFactory, input models.UserCreateInput) (*models.User, error) {
+func Create(fac models.Repo, input models.UserCreateInput) (*models.User, error) {
 	var err error
 
 	UUID, err := uuid.NewV4()
@@ -250,7 +250,7 @@ func Create(fac models.RepoFactory, input models.UserCreateInput) (*models.User,
 	return user, nil
 }
 
-func Update(fac models.RepoFactory, input models.UserUpdateInput) (*models.User, error) {
+func Update(fac models.Repo, input models.UserUpdateInput) (*models.User, error) {
 	qb := fac.User()
 
 	// get the existing user and modify it
@@ -284,7 +284,7 @@ func Update(fac models.RepoFactory, input models.UserUpdateInput) (*models.User,
 	return user, nil
 }
 
-func Destroy(fac models.RepoFactory, input models.UserDestroyInput) (bool, error) {
+func Destroy(fac models.Repo, input models.UserDestroyInput) (bool, error) {
 	qb := fac.User()
 
 	// references have on delete cascade, so shouldn't be necessary
@@ -302,7 +302,7 @@ func Destroy(fac models.RepoFactory, input models.UserDestroyInput) (bool, error
 }
 
 // CreateRoot creates the initial root user if no users are present
-func CreateRoot(fac models.RepoFactory) {
+func CreateRoot(fac models.Repo) {
 	// if there are no users present, then create a root user with a
 	// generated password and api key, outputting them
 	var password string
@@ -346,13 +346,13 @@ func CreateRoot(fac models.RepoFactory) {
 	}
 }
 
-func Get(fac models.RepoFactory, id string) (*models.User, error) {
+func Get(fac models.Repo, id string) (*models.User, error) {
 	qb := fac.User()
 	userID, _ := uuid.FromString(id)
 	return qb.Find(userID)
 }
 
-func GetRoles(fac models.RepoFactory, id string) ([]models.RoleEnum, error) {
+func GetRoles(fac models.Repo, id string) ([]models.RoleEnum, error) {
 	qb := fac.User()
 
 	userID, _ := uuid.FromString(id)
@@ -367,7 +367,7 @@ func GetRoles(fac models.RepoFactory, id string) ([]models.RoleEnum, error) {
 
 // Authenticate validates the provided username and password. If correct, it
 // returns the id of the user.
-func Authenticate(fac models.RepoFactory, username string, password string) (string, error) {
+func Authenticate(fac models.Repo, username string, password string) (string, error) {
 	qb := fac.User()
 
 	user, err := qb.FindByName(username)
@@ -386,7 +386,7 @@ func Authenticate(fac models.RepoFactory, username string, password string) (str
 	return user.ID.String(), nil
 }
 
-func RegenerateAPIKey(fac models.RepoFactory, userID string) (string, error) {
+func RegenerateAPIKey(fac models.Repo, userID string) (string, error) {
 	var err error
 
 	qb := fac.User()
@@ -415,7 +415,7 @@ func RegenerateAPIKey(fac models.RepoFactory, userID string) (string, error) {
 	return user.APIKey, nil
 }
 
-func ChangePassword(fac models.RepoFactory, userID string, currentPassword string, newPassword string) error {
+func ChangePassword(fac models.Repo, userID string, currentPassword string, newPassword string) error {
 	qb := fac.User()
 
 	userUUID, _ := uuid.FromString(userID)

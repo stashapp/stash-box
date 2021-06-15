@@ -7,37 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx/types"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	editTable   = "edits"
-	editJoinKey = "edit_id"
-
-	//voteTable = "votes"
-)
-
-var (
-	editDBTable = database.NewTable(editTable, func() interface{} {
-		return &Edit{}
-	})
-
-	editTagTable = database.NewTableJoin(editTable, "tag_edits", editJoinKey, func() interface{} {
-		return &EditTag{}
-	})
-
-	editPerformerTable = database.NewTableJoin(editTable, "performer_edits", editJoinKey, func() interface{} {
-		return &EditPerformer{}
-	})
-
-	editCommentTable = database.NewTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
-		return &EditComment{}
-	})
-
-	// voteDBTable = database.NewTable(editTable, func() interface{} {
-	// 	return &Edit{}
-	// })
 )
 
 type Edit struct {
@@ -89,10 +58,6 @@ func NewEditComment(UUID uuid.UUID, user *User, edit *Edit, text string) *EditCo
 	}
 
 	return ret
-}
-
-func (Edit) GetTable() database.Table {
-	return editDBTable
 }
 
 func (e Edit) GetID() uuid.UUID {

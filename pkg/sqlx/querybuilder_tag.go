@@ -1,45 +1,63 @@
-package models
+package sqlx
 
 import (
 	"errors"
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash-box/pkg/database"
-	"github.com/stashapp/stash-box/pkg/sqlx"
+	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
+const (
+	tagTable   = "tags"
+	tagJoinKey = "tag_id"
+)
+
+var (
+	tagDBTable = NewTable(tagTable, func() interface{} {
+		return &models.Tag{}
+	})
+
+	tagAliasTable = NewTableJoin(tagTable, "tag_aliases", tagJoinKey, func() interface{} {
+		return &models.TagAlias{}
+	})
+
+	tagRedirectTable = NewTableJoin(tagTable, "tag_redirects", "source_id", func() interface{} {
+		return &models.TagRedirect{}
+	})
+)
+
 type tagQueryBuilder struct {
-	dbi database.DBI
+	dbi *dbi
 }
 
-func newTagQueryBuilder(txn *sqlx.TxnMgr) TagRepo {
+func newTagQueryBuilder(txn *txnState) models.TagRepo {
 	return &tagQueryBuilder{
-		dbi: database.NewDBI(txn),
+		dbi: NewDBI(txn),
 	}
 }
 
-func (qb *tagQueryBuilder) toModel(ro interface{}) *Tag {
+func (qb *tagQueryBuilder) toModel(ro interface{}) *models.Tag {
 	if ro != nil {
-		return ro.(*Tag)
+		return ro.(*models.Tag)
 	}
 
 	return nil
 }
 
-func (qb *tagQueryBuilder) Create(newTag Tag) (*Tag, error) {
-	ret, err := qb.dbi.Insert(newTag)
+func (qb *tagQueryBuilder) Create(newTag models.Tag) (*models.Tag, error) {
+	ret, err := qb.dbi.Insert(tagDBTable, newTag)
 	return qb.toModel(ret), err
 }
 
-func (qb *tagQueryBuilder) Update(updatedTag Tag) (*Tag, error) {
-	ret, err := qb.dbi.Update(updatedTag, true)
+func (qb *tagQueryBuilder) Update(updatedTag models.Tag) (*models.Tag, error) {
+	ret, err := qb.dbi.Update(tagDBTable, updatedTag, true)
 	return qb.toModel(ret), err
 }
 
-func (qb *tagQueryBuilder) UpdatePartial(updatedTag Tag) (*Tag, error) {
-	ret, err := qb.dbi.Update(updatedTag, false)
+func (qb *tagQueryBuilder) UpdatePartial(updatedTag models.Tag) (*models.Tag, error) {
+	ret, err := qb.dbi.Update(tagDBTable, updatedTag, false)
 	return qb.toModel(ret), err
 }
 
@@ -52,16 +70,16 @@ func (qb *tagQueryBuilder) DeleteSceneTags(id uuid.UUID) error {
 	return qb.dbi.DeleteJoins(tagSceneTable, id)
 }
 
-func (qb *tagQueryBuilder) SoftDelete(tag Tag) (*Tag, error) {
+func (qb *tagQueryBuilder) SoftDelete(tag models.Tag) (*models.Tag, error) {
 	// Delete tag aliases
 	if err := qb.dbi.DeleteJoins(tagAliasTable, tag.ID); err != nil {
 		return nil, err
 	}
-	ret, err := qb.dbi.SoftDelete(tag)
+	ret, err := qb.dbi.SoftDelete(tagDBTable, tag)
 	return qb.toModel(ret), err
 }
 
-func (qb *tagQueryBuilder) CreateRedirect(newJoin TagRedirect) error {
+func (qb *tagQueryBuilder) CreateRedirect(newJoin models.TagRedirect) error {
 	return qb.dbi.InsertJoin(tagRedirectTable, newJoin, nil)
 }
 
@@ -89,20 +107,20 @@ func (qb *tagQueryBuilder) UpdateSceneTags(oldTargetID uuid.UUID, newTargetID uu
 	return qb.dbi.RawQuery(sceneTagTable.Table, query, args, nil)
 }
 
-func (qb *tagQueryBuilder) CreateAliases(newJoins TagAliases) error {
+func (qb *tagQueryBuilder) CreateAliases(newJoins models.TagAliases) error {
 	return qb.dbi.InsertJoins(tagAliasTable, &newJoins)
 }
 
-func (qb *tagQueryBuilder) UpdateAliases(tagID uuid.UUID, updatedJoins TagAliases) error {
+func (qb *tagQueryBuilder) UpdateAliases(tagID uuid.UUID, updatedJoins models.TagAliases) error {
 	return qb.dbi.ReplaceJoins(tagAliasTable, tagID, &updatedJoins)
 }
 
-func (qb *tagQueryBuilder) Find(id uuid.UUID) (*Tag, error) {
+func (qb *tagQueryBuilder) Find(id uuid.UUID) (*models.Tag, error) {
 	ret, err := qb.dbi.Find(id, tagDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
+func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*models.Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tags.id = tag_aliases.tag_id
 		WHERE tag_aliases.alias = ? OR tags.name = ?`
@@ -115,7 +133,7 @@ func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*Tag, error) {
 	return results[0], nil
 }
 
-func (qb *tagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Tag, error) {
+func (qb *tagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_tags as scenes_join on scenes_join.tag_id = tags.id
@@ -127,7 +145,7 @@ func (qb *tagQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Tag, error) {
 }
 
 func (qb *tagQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	tags := ScenesTags{}
+	tags := models.ScenesTags{}
 	err := qb.dbi.FindAllJoins(sceneTagTable, ids, &tags)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -145,30 +163,30 @@ func (qb *tagQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []
 	return result, nil
 }
 
-func (qb *tagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Tag, []error) {
+func (qb *tagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Tag, []error) {
 	query := `
 		SELECT tags.* FROM tags
 		WHERE id IN (?)
 	`
-	query, args, _ := sqlx.In(query, ids)
+	query, args, _ := In(query, ids)
 	tags, err := qb.queryTags(query, args)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}
 
-	m := make(map[uuid.UUID]*Tag)
+	m := make(map[uuid.UUID]*models.Tag)
 	for _, tag := range tags {
 		m[tag.ID] = tag
 	}
 
-	result := make([]*Tag, len(ids))
+	result := make([]*models.Tag, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
 	return result, nil
 }
 
-func (qb *tagQueryBuilder) FindByNames(names []string) ([]*Tag, error) {
+func (qb *tagQueryBuilder) FindByNames(names []string) ([]*models.Tag, error) {
 	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
@@ -177,7 +195,7 @@ func (qb *tagQueryBuilder) FindByNames(names []string) ([]*Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *tagQueryBuilder) FindByAliases(names []string) ([]*Tag, error) {
+func (qb *tagQueryBuilder) FindByAliases(names []string) ([]*models.Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tags.id = tag_aliases.tag_id
 		WHERE tag_aliases.alias IN ` + getInBinding(len(names))
@@ -189,7 +207,7 @@ func (qb *tagQueryBuilder) FindByAliases(names []string) ([]*Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *tagQueryBuilder) FindByName(name string) (*Tag, error) {
+func (qb *tagQueryBuilder) FindByName(name string) (*models.Tag, error) {
 	query := "SELECT * FROM tags WHERE upper(name) = upper(?)"
 
 	args := []interface{}{name}
@@ -200,7 +218,7 @@ func (qb *tagQueryBuilder) FindByName(name string) (*Tag, error) {
 	return results[0], nil
 }
 
-func (qb *tagQueryBuilder) FindByAlias(name string) ([]*Tag, error) {
+func (qb *tagQueryBuilder) FindByAlias(name string) ([]*models.Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tag.id = tag_aliases.tag_id
 		WHERE upper(tag_aliases.alias) = UPPER(?)`
@@ -211,18 +229,18 @@ func (qb *tagQueryBuilder) FindByAlias(name string) ([]*Tag, error) {
 }
 
 func (qb *tagQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT tags.id FROM tags"), nil)
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
-func (qb *tagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec) ([]*Tag, int, error) {
+func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *models.QuerySpec) ([]*models.Tag, int, error) {
 	if tagFilter == nil {
-		tagFilter = &TagFilterType{}
+		tagFilter = &models.TagFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &QuerySpec{}
+		findFilter = &models.QuerySpec{}
 	}
 
-	query := database.NewQueryBuilder(tagDBTable)
+	query := NewQueryBuilder(tagDBTable)
 	query.Eq("deleted", false)
 
 	if q := tagFilter.Name; q != nil && *q != "" {
@@ -237,7 +255,7 @@ func (qb *tagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 	}
 
 	query.SortAndPagination = qb.getTagSort(findFilter) + getPagination(findFilter)
-	var tags Tags
+	var tags models.Tags
 
 	countResult, err := qb.dbi.Query(*query, &tags)
 
@@ -248,7 +266,7 @@ func (qb *tagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *QuerySpec
 	return tags, countResult, nil
 }
 
-func (qb *tagQueryBuilder) getTagSort(findFilter *QuerySpec) string {
+func (qb *tagQueryBuilder) getTagSort(findFilter *models.QuerySpec) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -258,17 +276,17 @@ func (qb *tagQueryBuilder) getTagSort(findFilter *QuerySpec) string {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, tagTable, nil)
+	return getSort(qb.dbi.txn.dialect, sort, direction, tagTable, nil)
 }
 
-func (qb *tagQueryBuilder) queryTags(query string, args []interface{}) (Tags, error) {
-	var output Tags
+func (qb *tagQueryBuilder) queryTags(query string, args []interface{}) (models.Tags, error) {
+	var output models.Tags
 	err := qb.dbi.RawQuery(tagDBTable, query, args, &output)
 	return output, err
 }
 
-func (qb *tagQueryBuilder) GetRawAliases(id uuid.UUID) (TagAliases, error) {
-	joins := TagAliases{}
+func (qb *tagQueryBuilder) GetRawAliases(id uuid.UUID) (models.TagAliases, error) {
+	joins := models.TagAliases{}
 	err := qb.dbi.FindJoins(tagAliasTable, id, &joins)
 
 	return joins, err
@@ -300,27 +318,27 @@ func (qb *tagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
 	if err := qb.UpdateSceneTags(sourceID, targetID); err != nil {
 		return err
 	}
-	redirect := TagRedirect{SourceID: sourceID, TargetID: targetID}
+	redirect := models.TagRedirect{SourceID: sourceID, TargetID: targetID}
 	return qb.CreateRedirect(redirect)
 }
 
-func (qb *tagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Tag) (*Tag, error) {
+func (qb *tagQueryBuilder) ApplyEdit(edit models.Edit, operation models.OperationEnum, tag *models.Tag) (*models.Tag, error) {
 	data, err := edit.GetTagData()
 	if err != nil {
 		return nil, err
 	}
 
 	switch operation {
-	case OperationEnumCreate:
+	case models.OperationEnumCreate:
 		now := time.Now()
 		UUID, err := uuid.NewV4()
 		if err != nil {
 			return nil, err
 		}
-		newTag := Tag{
+		newTag := models.Tag{
 			ID:        UUID,
-			CreatedAt: SQLiteTimestamp{Timestamp: now},
-			UpdatedAt: SQLiteTimestamp{Timestamp: now},
+			CreatedAt: models.SQLiteTimestamp{Timestamp: now},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
 		}
 		if data.New.Name == nil {
 			return nil, errors.New("Missing tag name")
@@ -333,21 +351,21 @@ func (qb *tagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 		}
 
 		if len(data.New.AddedAliases) > 0 {
-			aliases := CreateTagAliases(UUID, data.New.AddedAliases)
+			aliases := models.CreateTagAliases(UUID, data.New.AddedAliases)
 			if err := qb.CreateAliases(aliases); err != nil {
 				return nil, err
 			}
 		}
 
 		return tag, nil
-	case OperationEnumDestroy:
+	case models.OperationEnumDestroy:
 		updatedTag, err := qb.SoftDelete(*tag)
 		if err != nil {
 			return nil, err
 		}
 		err = qb.DeleteSceneTags(tag.ID)
 		return updatedTag, err
-	case OperationEnumModify:
+	case models.OperationEnumModify:
 		if err := tag.ValidateModifyEdit(*data); err != nil {
 			return nil, err
 		}
@@ -362,7 +380,7 @@ func (qb *tagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 		if err != nil {
 			return nil, err
 		}
-		newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
+		newAliases := models.CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
 		if err := currentAliases.AddAliases(newAliases); err != nil {
 			return nil, err
 		}
@@ -374,7 +392,7 @@ func (qb *tagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 		}
 
 		return updatedTag, err
-	case OperationEnumMerge:
+	case models.OperationEnumMerge:
 		if err := tag.ValidateModifyEdit(*data); err != nil {
 			return nil, err
 		}
@@ -396,7 +414,7 @@ func (qb *tagQueryBuilder) ApplyEdit(edit Edit, operation OperationEnum, tag *Ta
 		if err != nil {
 			return nil, err
 		}
-		newAliases := CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
+		newAliases := models.CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
 		if err := currentAliases.AddAliases(newAliases); err != nil {
 			return nil, err
 		}

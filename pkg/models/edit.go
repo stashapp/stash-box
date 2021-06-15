@@ -13,8 +13,6 @@ type EditRepo interface {
 	FindPerformerID(id uuid.UUID) (*uuid.UUID, error)
 	Count() (int, error)
 	Query(editFilter *EditFilterType, findFilter *QuerySpec) ([]*Edit, int)
-	getEditSort(findFilter *QuerySpec) string
-	queryEdits(query string, args []interface{}) (Edits, error)
 	CreateComment(newJoin EditComment) error
 	GetComments(id uuid.UUID) (EditComments, error)
 	FindByTagID(id uuid.UUID) ([]*Edit, error)

@@ -36,7 +36,7 @@ var uiBox *packr.Box
 
 const APIKeyHeader = "ApiKey"
 
-func getUserAndRoles(fac models.RepoFactory, userID string) (*models.User, []models.RoleEnum, error) {
+func getUserAndRoles(fac models.Repo, userID string) (*models.User, []models.RoleEnum, error) {
 	u, err := user.Get(fac, userID)
 	if err != nil {
 		return nil, nil, err
@@ -75,7 +75,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			user, roles, err := getUserAndRoles(getRepoFactory(ctx), userID)
+			user, roles, err := getUserAndRoles(getRepo(ctx), userID)
 
 			// ensure api key of the user matches the passed one
 			if apiKey != "" && user != nil && user.APIKey != apiKey {
@@ -104,7 +104,7 @@ func redirect(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, target, http.StatusPermanentRedirect)
 }
 
-func Start(rfp RepoFactoryProvider) {
+func Start(rfp RepoProvider) {
 	uiBox = packr.New("Setup UI Box", "../../frontend/build")
 
 	r := chi.NewRouter()
@@ -121,7 +121,7 @@ func Start(rfp RepoFactoryProvider) {
 	}
 
 	r.Use(corsConfig.Handler)
-	r.Use(repoFactoryMiddleware(rfp))
+	r.Use(repoMiddleware(rfp))
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 
@@ -137,7 +137,7 @@ func Start(rfp RepoFactoryProvider) {
 		return errors.New(message)
 	}
 
-	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{getRepoFactory: getRepoFactory}}))
+	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: NewResolver(getRepo)}))
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Options{})
 	gqlSrv.AddTransport(gqlTransport.GET{})
@@ -145,7 +145,7 @@ func Start(rfp RepoFactoryProvider) {
 	gqlSrv.AddTransport(gqlTransport.MultipartForm{})
 	gqlSrv.Use(gqlExtension.Introspection{})
 
-	r.Handle("/graphql", dataloader.Middleware(rfp.RepoFactory())(gqlSrv))
+	r.Handle("/graphql", dataloader.Middleware(rfp.Repo())(gqlSrv))
 
 	if !config.GetIsProduction() {
 		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))

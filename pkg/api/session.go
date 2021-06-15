@@ -28,7 +28,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue(usernameFormKey)
 	password := r.FormValue(passwordFormKey)
 
-	fac := getRepoFactory(r.Context())
+	fac := getRepo(r.Context())
 
 	// authenticate the user
 	userID, err := user.Authenticate(fac, username, password)

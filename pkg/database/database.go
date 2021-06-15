@@ -2,13 +2,14 @@ package database
 
 import (
 	"github.com/jmoiron/sqlx"
+	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 var DB *sqlx.DB
 
 var appSchemaVersion uint = 15
 var databaseProviders map[string]databaseProvider
-var dialect sqlDialect
+var dialect sqlxx.Dialect
 
 type sqlDialect interface {
 	FieldQuote(field string) string
@@ -17,10 +18,10 @@ type sqlDialect interface {
 
 type databaseProvider interface {
 	Open(path string) *sqlx.DB
-	GetDialect() sqlDialect
+	GetDialect() sqlxx.Dialect
 }
 
-func Initialize(provider string, databasePath string) *sqlx.DB {
+func Initialize(provider string, databasePath string) (*sqlx.DB, sqlxx.Dialect) {
 	p := databaseProviders[provider]
 
 	if p == nil {
@@ -29,10 +30,10 @@ func Initialize(provider string, databasePath string) *sqlx.DB {
 
 	DB = p.Open(databasePath)
 	dialect = p.GetDialect()
-	return DB
+	return DB, dialect
 }
 
-func GetDialect() sqlDialect {
+func GetDialect() sqlxx.Dialect {
 	return dialect
 }
 
