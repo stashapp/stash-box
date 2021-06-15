@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
@@ -12,7 +13,8 @@ func (r *queryResolver) FindTagCategory(ctx context.Context, id string) (*models
 		return nil, err
 	}
 
-	qb := models.NewTagCategoryQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.TagCategory()
 
 	UUID, _ := uuid.FromString(id)
 	return qb.Find(UUID)
@@ -23,7 +25,8 @@ func (r *queryResolver) QueryTagCategories(ctx context.Context, filter *models.Q
 		return nil, err
 	}
 
-	qb := models.NewTagCategoryQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.TagCategory()
 
 	categories, count, err := qb.Query(filter)
 	if err != nil {

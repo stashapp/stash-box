@@ -9,7 +9,15 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-type Resolver struct{}
+type Resolver struct {
+	getRepoFactory func(ctx context.Context) models.Repo
+}
+
+func NewResolver(repoFunc func(ctx context.Context) models.Repo) *Resolver {
+	return &Resolver{
+		getRepoFactory: repoFunc,
+	}
+}
 
 func (r *Resolver) Mutation() models.MutationResolver {
 	return &mutationResolver{r}

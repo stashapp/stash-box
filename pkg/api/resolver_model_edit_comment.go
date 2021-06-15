@@ -22,7 +22,8 @@ func (r *editCommentResolver) Date(ctx context.Context, obj *models.EditComment)
 }
 
 func (r *editCommentResolver) User(ctx context.Context, obj *models.EditComment) (*models.User, error) {
-	qb := models.NewUserQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.User()
 	user, err := qb.Find(obj.UserID)
 
 	if err != nil {

@@ -4,14 +4,13 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
-	pqb := models.NewPerformerQueryBuilder(tx)
+func ModifyPerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+	pqb := fac.Performer()
 
 	// get the existing performer
 	performerID, _ := uuid.FromString(*input.Edit.ID)
@@ -52,7 +51,7 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 	}
 	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = URLCompare(input.Details.Urls, urls)
 
-	iqb := models.NewImageQueryBuilder(tx)
+	iqb := fac.Image()
 	images, err := iqb.FindByPerformerID(performerID)
 	if err != nil {
 		return err
@@ -71,8 +70,8 @@ func ModifyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 	return edit.SetData(performerEdit)
 }
 
-func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
-	pqb := models.NewPerformerQueryBuilder(tx)
+func MergePerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+	pqb := fac.Performer()
 
 	// get the existing performer
 	if input.Edit.ID == nil {
@@ -137,7 +136,7 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 	}
 	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = URLCompare(input.Details.Urls, urls)
 
-	iqb := models.NewImageQueryBuilder(tx)
+	iqb := fac.Image()
 	images, err := iqb.FindByPerformerID(performerID)
 	if err != nil {
 		return err
@@ -159,7 +158,7 @@ func MergePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEd
 	return edit.SetData(performerEdit)
 }
 
-func CreatePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+func CreatePerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	performerEdit := input.Details.PerformerEditFromCreate()
 
 	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
@@ -185,8 +184,8 @@ func CreatePerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerE
 	return edit.SetData(performerEdit)
 }
 
-func DestroyPerformerEdit(tx *sqlx.Tx, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
-	pqb := models.NewPerformerQueryBuilder(tx)
+func DestroyPerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+	pqb := fac.Performer()
 
 	// get the existing performer
 	performerID, _ := uuid.FromString(*input.Edit.ID)

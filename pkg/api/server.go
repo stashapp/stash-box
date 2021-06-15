@@ -36,13 +36,13 @@ var uiBox *packr.Box
 
 const APIKeyHeader = "ApiKey"
 
-func getUserAndRoles(userID string) (*models.User, []models.RoleEnum, error) {
-	u, err := user.Get(userID)
+func getUserAndRoles(fac models.Repo, userID string) (*models.User, []models.RoleEnum, error) {
+	u, err := user.Get(fac, userID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	roles, err := user.GetRoles(userID)
+	roles, err := user.GetRoles(fac, userID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,7 +75,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			user, roles, err := getUserAndRoles(userID)
+			user, roles, err := getUserAndRoles(getRepo(ctx), userID)
 
 			// ensure api key of the user matches the passed one
 			if apiKey != "" && user != nil && user.APIKey != apiKey {
@@ -104,7 +104,7 @@ func redirect(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, target, http.StatusPermanentRedirect)
 }
 
-func Start() {
+func Start(rfp RepoProvider) {
 	uiBox = packr.New("Setup UI Box", "../../frontend/build")
 
 	r := chi.NewRouter()
@@ -121,6 +121,7 @@ func Start() {
 	}
 
 	r.Use(corsConfig.Handler)
+	r.Use(repoMiddleware(rfp))
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 
@@ -136,7 +137,7 @@ func Start() {
 		return errors.New(message)
 	}
 
-	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}))
+	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: NewResolver(getRepo)}))
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Options{})
 	gqlSrv.AddTransport(gqlTransport.GET{})
@@ -144,7 +145,7 @@ func Start() {
 	gqlSrv.AddTransport(gqlTransport.MultipartForm{})
 	gqlSrv.Use(gqlExtension.Introspection{})
 
-	r.Handle("/graphql", dataloader.Middleware(gqlSrv))
+	r.Handle("/graphql", dataloader.Middleware(rfp.Repo())(gqlSrv))
 
 	if !config.GetIsProduction() {
 		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))

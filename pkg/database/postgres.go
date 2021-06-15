@@ -65,17 +65,3 @@ func (p *PostgresProvider) runMigrations(databasePath string) {
 
 	_, _ = m.Close()
 }
-
-type postgresDialect struct{}
-
-func (p *PostgresProvider) GetDialect() sqlDialect {
-	return &postgresDialect{}
-}
-
-func (*postgresDialect) FieldQuote(field string) string {
-	return `"` + field + `"`
-}
-
-func (*postgresDialect) NullsLast() string {
-	return " NULLS LAST "
-}

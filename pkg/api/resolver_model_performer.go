@@ -151,12 +151,12 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) Edits(ctx context.Context, obj *models.Performer) ([]*models.Edit, error) {
-	eqb := models.NewEditQueryBuilder(nil)
+	eqb := r.getRepoFactory(ctx).Edit()
 	return eqb.FindByPerformerID(obj.ID)
 }
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (int, error) {
-	sqb := models.NewSceneQueryBuilder(nil)
+	sqb := r.getRepoFactory(ctx).Scene()
 	return sqb.CountByPerformer(obj.ID)
 }
 
@@ -171,6 +171,6 @@ func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {
-	sqb := models.NewStudioQueryBuilder(nil)
+	sqb := r.getRepoFactory(ctx).Studio()
 	return sqb.CountByPerformer(obj.ID)
 }

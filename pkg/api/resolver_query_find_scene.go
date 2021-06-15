@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
@@ -14,7 +15,8 @@ func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene
 		return nil, err
 	}
 
-	qb := models.NewSceneQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
 
 	idUUID, _ := uuid.FromString(id)
 	return qb.Find(idUUID)
@@ -25,7 +27,8 @@ func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint 
 		return nil, err
 	}
 
-	qb := models.NewSceneQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
 
 	return qb.FindByFingerprint(fingerprint.Algorithm, fingerprint.Hash)
 }
@@ -39,7 +42,8 @@ func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprin
 		return nil, errors.New("Too many fingerprints")
 	}
 
-	qb := models.NewSceneQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
 
 	return qb.FindByFingerprints(fingerprints)
 }
@@ -53,7 +57,8 @@ func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, finger
 		return nil, errors.New("Too many fingerprints")
 	}
 
-	qb := models.NewSceneQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
 
 	if config.GetPHashDistance() == 0 {
 		var hashes []string
@@ -71,7 +76,8 @@ func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.Sce
 		return nil, err
 	}
 
-	qb := models.NewSceneQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
 
 	scenes, count := qb.Query(sceneFilter, filter)
 	return &models.QueryScenesResultType{

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
@@ -12,7 +13,8 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (*models.P
 		return nil, err
 	}
 
-	qb := models.NewPerformerQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Performer()
 
 	idUUID, _ := uuid.FromString(id)
 	return qb.Find(idUUID)
@@ -22,7 +24,8 @@ func (r *queryResolver) QueryPerformers(ctx context.Context, performerFilter *mo
 		return nil, err
 	}
 
-	qb := models.NewPerformerQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Performer()
 
 	performers, count := qb.Query(performerFilter, filter)
 	return &models.QueryPerformersResultType{

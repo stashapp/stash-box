@@ -4,28 +4,8 @@ import (
 	"errors"
 
 	"database/sql"
+
 	"github.com/gofrs/uuid"
-
-	"github.com/stashapp/stash-box/pkg/database"
-)
-
-const (
-	tagTable   = "tags"
-	tagJoinKey = "tag_id"
-)
-
-var (
-	tagDBTable = database.NewTable(tagTable, func() interface{} {
-		return &Tag{}
-	})
-
-	tagAliasTable = database.NewTableJoin(tagTable, "tag_aliases", tagJoinKey, func() interface{} {
-		return &TagAlias{}
-	})
-
-	tagRedirectTable = database.NewTableJoin(tagTable, "tag_redirects", "source_id", func() interface{} {
-		return &TagRedirect{}
-	})
 )
 
 type Tag struct {
@@ -36,10 +16,6 @@ type Tag struct {
 	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Deleted     bool            `db:"deleted" json:"deleted"`
-}
-
-func (Tag) GetTable() database.Table {
-	return tagDBTable
 }
 
 func (p Tag) GetID() uuid.UUID {
