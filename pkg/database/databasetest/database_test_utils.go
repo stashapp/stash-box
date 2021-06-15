@@ -13,12 +13,12 @@ import (
 	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/models"
 	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
+	"github.com/stashapp/stash-box/pkg/sqlx/postgres"
 )
 
 var (
-	db      *sqlx.DB
-	dialect sqlxx.Dialect
-	repo    models.Repo
+	db   *sqlx.DB
+	repo models.Repo
 )
 
 const defaultTestDB = "postgres@localhost/stash-box-test?sslmode=disable"
@@ -59,8 +59,8 @@ func initPostgres(connString string) func() {
 
 	pgDropAll(conn)
 
-	db, dialect = database.Initialize(databaseType, connString)
-	txnMgr := sqlxx.NewTxnMgr(db, dialect)
+	db = database.Initialize(databaseType, connString)
+	txnMgr := sqlxx.NewTxnMgr(db, &postgres.Dialect{})
 	repo = txnMgr.Repo()
 
 	return teardownPostgres
@@ -71,7 +71,7 @@ func teardownPostgres() {
 	if noDrop == "" {
 		pgDropAll(db)
 	}
-	db.Close()
+	_ = db.Close()
 }
 
 func runTests(m *testing.M, populater DatabasePopulater) int {
@@ -103,15 +103,21 @@ func TestWithDatabase(m *testing.M, populater DatabasePopulater) {
 	os.Exit(ret)
 }
 
-func WithTransientTransaction(ctx context.Context, fn func() error) {
+func WithTransientTransaction(ctx context.Context, fn func() error) error {
 	rollbackErr := errors.New("expected rollback")
-	repo.WithTxn(func() error {
+	err := repo.WithTxn(func() error {
 		if err := fn(); err != nil {
 			return err
 		}
 
 		return rollbackErr
 	})
+
+	if err != rollbackErr {
+		return err
+	}
+
+	return nil
 }
 
 func Repo() models.Repo {

@@ -330,6 +330,9 @@ func CreateRoot(fac models.Repo) {
 			}
 
 			createdUser, err = Create(fac, newUser)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil

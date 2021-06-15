@@ -38,7 +38,8 @@ func (m *txnState) WithTxn(fn func() error) (txErr error) {
 		defer func() {
 			m.tx = nil
 			if txErr != nil {
-				tx.Rollback()
+				// ignore rollback errors
+				_ = tx.Rollback()
 			} else {
 				txErr = tx.Commit()
 			}
