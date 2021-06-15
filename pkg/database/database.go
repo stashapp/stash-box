@@ -4,7 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var appSchemaVersion uint = 15
+var appSchemaVersion uint = 16
 var databaseProviders map[string]databaseProvider
 
 type databaseProvider interface {
