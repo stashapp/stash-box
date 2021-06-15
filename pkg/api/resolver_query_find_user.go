@@ -13,7 +13,8 @@ func (r *queryResolver) FindUser(ctx context.Context, id *string, username *stri
 		return nil, err
 	}
 
-	qb := models.NewUserQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.User()
 
 	var ret *models.User
 	var err error
@@ -42,7 +43,8 @@ func (r *queryResolver) QueryUsers(ctx context.Context, userFilter *models.UserF
 		return nil, err
 	}
 
-	qb := models.NewUserQueryBuilder(nil)
+	fac := r.getRepoFactory(ctx)
+	qb := fac.User()
 
 	users, count := qb.Query(userFilter, filter)
 	removeSensitiveUserDetails(ctx, users)

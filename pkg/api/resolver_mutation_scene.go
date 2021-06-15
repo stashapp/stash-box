@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -30,11 +29,12 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	}
 
 	newScene.CopyFromCreateInput(input)
+	fac := r.getRepoFactory(ctx)
 
 	var scene *models.Scene
-	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewSceneQueryBuilder(txn.GetTx())
-		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
+	err = fac.WithTxn(func() error {
+		qb := fac.Scene()
+		jqb := fac.Joins()
 
 		var err error
 		scene, err = qb.Create(newScene)
@@ -85,11 +85,13 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
+	fac := r.getRepoFactory(ctx)
+
 	var scene *models.Scene
-	err := database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewSceneQueryBuilder(txn.GetTx())
-		jqb := models.NewJoinsQueryBuilder(txn.GetTx())
-		iqb := models.NewImageQueryBuilder(txn.GetTx())
+	err := fac.WithTxn(func() error {
+		qb := fac.Scene()
+		jqb := fac.Joins()
+		iqb := fac.Image()
 
 		// get the existing scene and modify it
 		sceneID, _ := uuid.FromString(input.ID)
@@ -145,7 +147,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		}
 
 		// remove images that are no longer used
-		imageService := image.GetService(&iqb)
+		imageService := image.GetService(iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
@@ -173,9 +175,11 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		return false, err
 	}
 
-	err = database.WithTransaction(ctx, func(txn database.Transaction) error {
-		qb := models.NewSceneQueryBuilder(txn.GetTx())
-		iqb := models.NewImageQueryBuilder(txn.GetTx())
+	fac := r.getRepoFactory(ctx)
+
+	err = fac.WithTxn(func() error {
+		qb := fac.Scene()
+		iqb := fac.Image()
 
 		existingImages, err := iqb.FindBySceneID(sceneID)
 		if err != nil {
@@ -189,7 +193,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		}
 
 		// remove images that are no longer used
-		imageService := image.GetService(&iqb)
+		imageService := image.GetService(iqb)
 
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
@@ -207,24 +211,27 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 }
 
 func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.FingerprintSubmission) (bool, error) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder(tx)
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		qb := fac.Scene()
 
-	// find the scene
-	sceneID, _ := uuid.FromString(input.SceneID)
-	scene, err := qb.Find(sceneID)
+		// find the scene
+		sceneID, _ := uuid.FromString(input.SceneID)
+		scene, err := qb.Find(sceneID)
+
+		if err != nil {
+			return err
+		}
+
+		sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
+		if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	if err != nil {
-		return false, err
-	}
-
-	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
-	if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
-		_ = tx.Rollback()
-		return false, err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return false, err
 	}
 

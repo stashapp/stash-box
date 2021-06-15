@@ -1,4 +1,4 @@
-package database
+package sqlx
 
 import (
 	"database/sql"
@@ -7,11 +7,10 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 )
 
-type QueryBuilder struct {
-	Table    Table
+type queryBuilder struct {
+	Table    table
 	Body     string
 	Distinct bool
 
@@ -22,69 +21,69 @@ type QueryBuilder struct {
 	SortAndPagination string
 }
 
-func NewQueryBuilder(table Table) *QueryBuilder {
-	ret := &QueryBuilder{
-		Table:    table,
+func newQueryBuilder(t table) *queryBuilder {
+	ret := &queryBuilder{
+		Table:    t,
 		Distinct: false,
 	}
 
-	tableName := table.Name()
+	tableName := t.Name()
 	ret.Body = "SELECT " + tableName + ".* FROM " + tableName + " "
 
 	return ret
 }
 
-func NewDeleteQueryBuilder(table Table) *QueryBuilder {
-	ret := &QueryBuilder{
-		Table:    table,
+func newDeleteQueryBuilder(t table) *queryBuilder {
+	ret := &queryBuilder{
+		Table:    t,
 		Distinct: false,
 	}
 
-	tableName := table.Name()
+	tableName := t.Name()
 	ret.Body = "DELETE FROM " + tableName + " "
 
 	return ret
 }
 
-func (qb *QueryBuilder) AddJoin(joinTable Table, on string) {
-	qb.Body += " JOIN " + joinTable.Name() + " ON " + on
+func (qb *queryBuilder) AddJoin(jt table, on string) {
+	qb.Body += " JOIN " + jt.Name() + " ON " + on
 	qb.Distinct = true
 }
 
-func (qb *QueryBuilder) AddWhere(clauses ...string) {
+func (qb *queryBuilder) AddWhere(clauses ...string) {
 	qb.whereClauses = append(qb.whereClauses, clauses...)
 }
 
-func (qb *QueryBuilder) Eq(column string, arg interface{}) {
+func (qb *queryBuilder) Eq(column string, arg interface{}) {
 	qb.AddWhere(column + " = ?")
 	qb.AddArg(arg)
 }
 
-func (qb *QueryBuilder) NotEq(column string, arg interface{}) {
+func (qb *queryBuilder) NotEq(column string, arg interface{}) {
 	qb.AddWhere(column + " != ?")
 	qb.AddArg(arg)
 }
 
-func (qb *QueryBuilder) IsNull(column string) {
+func (qb *queryBuilder) IsNull(column string) {
 	qb.AddWhere(column + " is NULL")
 }
 
-func (qb *QueryBuilder) IsNotNull(column string) {
+func (qb *queryBuilder) IsNotNull(column string) {
 	qb.AddWhere(column + " is not NULL")
 }
 
-func (qb *QueryBuilder) AddHaving(clauses ...string) {
+func (qb *queryBuilder) AddHaving(clauses ...string) {
 	if len(clauses) == 1 && clauses[0] == "" {
 		return
 	}
 	qb.havingClauses = append(qb.havingClauses, clauses...)
 }
 
-func (qb *QueryBuilder) AddArg(args ...interface{}) {
+func (qb *queryBuilder) AddArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
 }
 
-func (qb QueryBuilder) buildBody() string {
+func (qb queryBuilder) buildBody() string {
 	body := qb.Body
 
 	if len(qb.whereClauses) > 0 {
@@ -100,11 +99,11 @@ func (qb QueryBuilder) buildBody() string {
 	return body
 }
 
-func (qb QueryBuilder) buildCountQuery() string {
+func (qb queryBuilder) buildCountQuery() string {
 	return "SELECT COUNT(*) as count FROM (" + qb.buildBody() + ") as temp"
 }
 
-func (qb QueryBuilder) buildQuery() string {
+func (qb queryBuilder) buildQuery() string {
 	return qb.buildBody() + qb.SortAndPagination
 }
 
@@ -112,28 +111,28 @@ type optionalValue interface {
 	IsValid() bool
 }
 
-func ensureTx(tx *sqlx.Tx) {
-	if tx == nil {
+func ensureTx(txn *txnState) {
+	if !txn.InTxn() {
 		panic("must use a transaction")
 	}
 }
 
-func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
-	query := tx.Rebind(`SELECT * FROM ` + table + ` WHERE id = ? LIMIT 1`)
-	return tx.Get(object, query, id)
+func getByID(txn *txnState, t string, id uuid.UUID, object interface{}) error {
+	query := txn.DB().Rebind(`SELECT * FROM ` + t + ` WHERE id = ? LIMIT 1`)
+	return txn.DB().Get(object, query, id)
 }
 
-func insertObject(tx *sqlx.Tx, table string, object interface{}, conflictHandling *string) error {
-	ensureTx(tx)
-	fields, values := sqlGenKeysCreate(object)
+func insertObject(txn *txnState, t string, object interface{}, conflictHandling *string) error {
+	ensureTx(txn)
+	fields, values := sqlGenKeysCreate(txn.dialect, object)
 
 	conflictClause := ""
 	if conflictHandling != nil {
 		conflictClause = *conflictHandling
 	}
 
-	_, err := tx.NamedExec(
-		`INSERT INTO `+table+` (`+fields+`)
+	_, err := txn.DB().NamedExec(
+		`INSERT INTO `+t+` (`+fields+`)
 				VALUES (`+values+`)
                 `+conflictClause+`
 		`,
@@ -143,36 +142,36 @@ func insertObject(tx *sqlx.Tx, table string, object interface{}, conflictHandlin
 	return err
 }
 
-func updateObjectByID(tx *sqlx.Tx, table string, object interface{}, updateEmptyValues bool) error {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE `+table+` SET `+sqlGenKeys(object, updateEmptyValues)+` WHERE `+table+`.id = :id`,
+func updateObjectByID(txn *txnState, t string, object interface{}, updateEmptyValues bool) error {
+	ensureTx(txn)
+	_, err := txn.DB().NamedExec(
+		`UPDATE `+t+` SET `+sqlGenKeys(txn.dialect, object, updateEmptyValues)+` WHERE `+t+`.id = :id`,
 		object,
 	)
 
 	return err
 }
 
-func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
-	ensureTx(tx)
+func executeDeleteQuery(tableName string, id uuid.UUID, txn *txnState) error {
+	ensureTx(txn)
 	idColumnName := getColumn(tableName, "id")
-	query := tx.Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
-	_, err := tx.Exec(query, id)
+	query := txn.DB().Rebind(`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`)
+	_, err := txn.DB().Exec(query, id)
 	return err
 }
 
-func softDeleteObjectByID(tx *sqlx.Tx, table string, id uuid.UUID) error {
-	ensureTx(tx)
-	idColumnName := getColumn(table, "id")
-	query := tx.Rebind(`UPDATE ` + table + ` SET deleted=TRUE WHERE ` + idColumnName + ` = ?`)
-	_, err := tx.Exec(query, id)
+func softDeleteObjectByID(txn *txnState, t string, id uuid.UUID) error {
+	ensureTx(txn)
+	idColumnName := getColumn(t, "id")
+	query := txn.DB().Rebind(`UPDATE ` + t + ` SET deleted=TRUE WHERE ` + idColumnName + ` = ?`)
+	_, err := txn.DB().Exec(query, id)
 	return err
 }
 
-func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value interface{}) error {
-	ensureTx(tx)
-	query := tx.Rebind(`DELETE FROM ` + table + ` WHERE ` + column + ` = ?`)
-	_, err := tx.Exec(query, value)
+func deleteObjectsByColumn(txn *txnState, t string, column string, value interface{}) error {
+	ensureTx(txn)
+	query := txn.DB().Rebind(`DELETE FROM ` + t + ` WHERE ` + column + ` = ?`)
+	_, err := txn.DB().Exec(query, value)
 	return err
 }
 
@@ -180,7 +179,7 @@ func getColumn(tableName string, columnName string) string {
 	return tableName + "." + columnName
 }
 
-func sqlGenKeysCreate(i interface{}) (string, string) {
+func sqlGenKeysCreate(dialect Dialect, i interface{}) (string, string) {
 	var fields []string
 	var values []string
 
@@ -244,7 +243,7 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 	return strings.Join(fields, ", "), strings.Join(values, ", ")
 }
 
-func sqlGenKeys(i interface{}, partial bool) string {
+func sqlGenKeys(dialect Dialect, i interface{}, partial bool) string {
 	var query []string
 
 	addKey := func(key string) {

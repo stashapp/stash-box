@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -15,8 +14,8 @@ import (
 // unspecified fields
 type InputSpecifiedFunc func(qualifiedField string) bool
 
-func ModifyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
-	tqb := models.NewTagQueryBuilder(tx)
+func ModifyTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tqb := fac.Tag()
 
 	// get the existing tag
 	tagID, _ := uuid.FromString(*input.Edit.ID)
@@ -47,8 +46,8 @@ func ModifyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 	return edit.SetData(tagEdit)
 }
 
-func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
-	tqb := models.NewTagQueryBuilder(tx)
+func MergeTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tqb := fac.Tag()
 
 	// get the existing tag
 	if input.Edit.ID == nil {
@@ -103,7 +102,7 @@ func MergeTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inp
 	return edit.SetData(tagEdit)
 }
 
-func CreateTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func CreateTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tagEdit := input.Details.TagEditFromCreate()
 
 	// determine unspecified aliases vs no aliases
@@ -114,8 +113,8 @@ func CreateTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 	return edit.SetData(tagEdit)
 }
 
-func DestroyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
-	tqb := models.NewTagQueryBuilder(tx)
+func DestroyTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tqb := fac.Tag()
 
 	// get the existing tag
 	tagID, _ := uuid.FromString(*input.Edit.ID)

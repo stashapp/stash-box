@@ -1,4 +1,4 @@
-package models
+package sqlx
 
 import (
 	"strconv"
@@ -6,51 +6,70 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-type SceneQueryBuilder struct {
-	dbi database.DBI
+const (
+	sceneTable   = "scenes"
+	sceneJoinKey = "scene_id"
+)
+
+var (
+	sceneDBTable = newTable(sceneTable, func() interface{} {
+		return &models.Scene{}
+	})
+
+	sceneFingerprintTable = newTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
+		return &models.SceneFingerprint{}
+	})
+
+	sceneURLTable = newTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
+		return &models.SceneURL{}
+	})
+)
+
+type sceneQueryBuilder struct {
+	dbi *dbi
 }
 
-func NewSceneQueryBuilder(tx *sqlx.Tx) SceneQueryBuilder {
-	return SceneQueryBuilder{
-		dbi: database.DBIWithTxn(tx),
+func newSceneQueryBuilder(txn *txnState) models.SceneRepo {
+	return &sceneQueryBuilder{
+		dbi: newDBI(txn),
 	}
 }
 
-func (qb *SceneQueryBuilder) toModel(ro interface{}) *Scene {
+func (qb *sceneQueryBuilder) toModel(ro interface{}) *models.Scene {
 	if ro != nil {
-		return ro.(*Scene)
+		return ro.(*models.Scene)
 	}
 
 	return nil
 }
 
-func (qb *SceneQueryBuilder) Create(newScene Scene) (*Scene, error) {
-	ret, err := qb.dbi.Insert(newScene)
+func (qb *sceneQueryBuilder) Create(newScene models.Scene) (*models.Scene, error) {
+	ret, err := qb.dbi.Insert(sceneDBTable, newScene)
 	return qb.toModel(ret), err
 }
 
-func (qb *SceneQueryBuilder) Update(updatedScene Scene) (*Scene, error) {
-	ret, err := qb.dbi.Update(updatedScene, true)
+func (qb *sceneQueryBuilder) Update(updatedScene models.Scene) (*models.Scene, error) {
+	ret, err := qb.dbi.Update(sceneDBTable, updatedScene, true)
 	return qb.toModel(ret), err
 }
 
-func (qb *SceneQueryBuilder) Destroy(id uuid.UUID) error {
+func (qb *sceneQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, sceneDBTable)
 }
 
-func (qb *SceneQueryBuilder) CreateURLs(newJoins SceneURLs) error {
+func (qb *sceneQueryBuilder) CreateURLs(newJoins models.SceneURLs) error {
 	return qb.dbi.InsertJoins(sceneURLTable, &newJoins)
 }
 
-func (qb *SceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins SceneURLs) error {
+func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.SceneURLs) error {
 	return qb.dbi.ReplaceJoins(sceneURLTable, scene, &updatedJoins)
 }
 
-func (qb *SceneQueryBuilder) CreateFingerprints(newJoins SceneFingerprints) error {
+func (qb *sceneQueryBuilder) CreateFingerprints(newJoins models.SceneFingerprints) error {
 	conflictHandling := `
 		ON CONFLICT ON CONSTRAINT scene_hash_unique
 		DO UPDATE SET submissions = (scene_fingerprints.submissions+1), updated_at = NOW()
@@ -58,16 +77,16 @@ func (qb *SceneQueryBuilder) CreateFingerprints(newJoins SceneFingerprints) erro
 	return qb.dbi.InsertJoinsWithConflictHandling(sceneFingerprintTable, &newJoins, conflictHandling)
 }
 
-func (qb *SceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins SceneFingerprints) error {
+func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins models.SceneFingerprints) error {
 	return qb.dbi.ReplaceJoins(sceneFingerprintTable, sceneID, &updatedJoins)
 }
 
-func (qb *SceneQueryBuilder) Find(id uuid.UUID) (*Scene, error) {
+func (qb *sceneQueryBuilder) Find(id uuid.UUID) (*models.Scene, error) {
 	ret, err := qb.dbi.Find(id, sceneDBTable)
 	return qb.toModel(ret), err
 }
 
-func (qb *SceneQueryBuilder) FindByFingerprint(algorithm FingerprintAlgorithm, hash string) ([]*Scene, error) {
+func (qb *sceneQueryBuilder) FindByFingerprint(algorithm models.FingerprintAlgorithm, hash string) ([]*models.Scene, error) {
 	query := `
 		SELECT scenes.* FROM scenes
 		LEFT JOIN scene_fingerprints as scenes_join on scenes_join.scene_id = scenes.id
@@ -78,7 +97,7 @@ func (qb *SceneQueryBuilder) FindByFingerprint(algorithm FingerprintAlgorithm, h
 	return qb.queryScenes(query, args)
 }
 
-func (qb *SceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*Scene, error) {
+func (qb *sceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*models.Scene, error) {
 	query := `
 		SELECT scenes.* FROM scenes
 		WHERE id IN (
@@ -93,7 +112,7 @@ func (qb *SceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*Scene
 	return qb.queryScenes(query, args)
 }
 
-func (qb *SceneQueryBuilder) FindByFullFingerprints(fingerprints []*FingerprintQueryInput) ([]*Scene, error) {
+func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.FingerprintQueryInput) ([]*models.Scene, error) {
 	hashClause := `
 		SELECT scene_id id FROM scene_fingerprints
 		WHERE hash IN (:hashes)
@@ -109,7 +128,7 @@ func (qb *SceneQueryBuilder) FindByFullFingerprints(fingerprints []*FingerprintQ
 	var phashes []int64
 	var hashes []string
 	for _, fp := range fingerprints {
-		if fp.Algorithm == FingerprintAlgorithmPhash {
+		if fp.Algorithm == models.FingerprintAlgorithmPhash {
 			// Postgres only supports signed integers, so we parse
 			// as uint64 and cast to int64 to ensure values are the same.
 			value, err := strconv.ParseUint(fp.Hash, 16, 64)
@@ -151,7 +170,7 @@ func (qb *SceneQueryBuilder) FindByFullFingerprints(fingerprints []*FingerprintQ
 	return qb.queryScenes(query, args)
 }
 
-// func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
+// func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*models.Scene, error) {
 // 	query := `
 // 		SELECT scenes.* FROM scenes
 // 		LEFT JOIN scenes_scenes as scenes_join on scenes_join.scene_id = scenes.id
@@ -163,7 +182,7 @@ func (qb *SceneQueryBuilder) FindByFullFingerprints(fingerprints []*FingerprintQ
 // 	return qb.queryScenes(query, args)
 // }
 
-// func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
+// func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*models.Scene, error) {
 // 	query := `SELECT scenes.* FROM scenes
 // 		left join scene_checksums on scenes.id = scene_checksums.scene_id
 // 		WHERE scene_checksums.checksum = ?`
@@ -178,7 +197,7 @@ func (qb *SceneQueryBuilder) FindByFullFingerprints(fingerprints []*FingerprintQ
 // 	return results[0], nil
 // }
 
-// func (qb *SceneQueryBuilder) FindByChecksums(checksums []string) ([]*Scene, error) {
+// func (qb *SceneQueryBuilder) FindByChecksums(checksums []string) ([]*models.Scene, error) {
 // 	query := `SELECT scenes.* FROM scenes
 // 		left join scene_checksums on scenes.id = scene_checksums.scene_id
 // 		WHERE scene_checksums.checksum IN ` + getInBinding(len(checksums))
@@ -190,26 +209,26 @@ func (qb *SceneQueryBuilder) FindByFullFingerprints(fingerprints []*FingerprintQ
 // 	return qb.queryScenes(query, args)
 // }
 
-func (qb *SceneQueryBuilder) FindByTitle(name string) ([]*Scene, error) {
+func (qb *sceneQueryBuilder) FindByTitle(name string) ([]*models.Scene, error) {
 	query := "SELECT * FROM scenes WHERE upper(title) = upper(?)"
 	var args []interface{}
 	args = append(args, name)
 	return qb.queryScenes(query, args)
 }
 
-func (qb *SceneQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
+func (qb *sceneQueryBuilder) Count() (int, error) {
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *QuerySpec) ([]*Scene, int) {
+func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, int) {
 	if sceneFilter == nil {
-		sceneFilter = &SceneFilterType{}
+		sceneFilter = &models.SceneFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &QuerySpec{}
+		findFilter = &models.QuerySpec{}
 	}
 
-	query := database.NewQueryBuilder(sceneDBTable)
+	query := newQueryBuilder(sceneDBTable)
 
 	if q := sceneFilter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
@@ -234,20 +253,20 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 
 	if q := sceneFilter.Studios; q != nil && len(q.Value) > 0 {
 		column := "scenes.studio_id"
-		if q.Modifier == CriterionModifierEquals {
+		if q.Modifier == models.CriterionModifierEquals {
 			query.Eq(column, q.Value[0])
-		} else if q.Modifier == CriterionModifierNotEquals {
+		} else if q.Modifier == models.CriterionModifierNotEquals {
 			query.NotEq(column, q.Value[0])
-		} else if q.Modifier == CriterionModifierIsNull {
+		} else if q.Modifier == models.CriterionModifierIsNull {
 			query.IsNull(column)
-		} else if q.Modifier == CriterionModifierNotNull {
+		} else if q.Modifier == models.CriterionModifierNotNull {
 			query.IsNotNull(column)
-		} else if q.Modifier == CriterionModifierIncludes {
+		} else if q.Modifier == models.CriterionModifierIncludes {
 			query.AddWhere(column + " IN " + getInBinding(len(q.Value)))
 			for _, studioID := range q.Value {
 				query.AddArg(studioID)
 			}
-		} else if q.Modifier == CriterionModifierExcludes {
+		} else if q.Modifier == models.CriterionModifierExcludes {
 			query.AddWhere(column + " NOT IN " + getInBinding(len(q.Value)))
 			for _, studioID := range q.Value {
 				query.AddArg(studioID)
@@ -264,7 +283,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 	}
 
 	if q := sceneFilter.Performers; q != nil && len(q.Value) > 0 {
-		query.AddJoin(scenePerformerTable.Table, scenePerformerTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(scenePerformerTable.table, scenePerformerTable.Name()+".scene_id = scenes.id")
 		whereClause, havingClause := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -275,7 +294,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 	}
 
 	if q := sceneFilter.Tags; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneTagTable.Table, sceneTagTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(sceneTagTable.table, sceneTagTable.Name()+".scene_id = scenes.id")
 		whereClause, havingClause := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -286,7 +305,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 	}
 
 	if q := sceneFilter.Fingerprints; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneFingerprintTable.Table, sceneFingerprintTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id")
 		whereClause, havingClause := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -300,7 +319,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 
 	query.SortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
 
-	var scenes Scenes
+	var scenes models.Scenes
 	countResult, err := qb.dbi.Query(*query, &scenes)
 
 	if err != nil {
@@ -311,18 +330,18 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Que
 	return scenes, countResult
 }
 
-func getMultiCriterionClause(joinTable database.TableJoin, joinTableField string, criterion *MultiIDCriterionInput) (string, string) {
+func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string) {
 	joinTableName := joinTable.Name()
 	whereClause := ""
 	havingClause := ""
-	if criterion.Modifier == CriterionModifierIncludes {
+	if criterion.Modifier == models.CriterionModifierIncludes {
 		// includes any of the provided ids
 		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
-	} else if criterion.Modifier == CriterionModifierIncludesAll {
+	} else if criterion.Modifier == models.CriterionModifierIncludesAll {
 		// includes all of the provided ids
 		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
 		havingClause = "count(distinct " + joinTableName + "." + joinTableField + ") = " + strconv.Itoa(len(criterion.Value))
-	} else if criterion.Modifier == CriterionModifierExcludes {
+	} else if criterion.Modifier == models.CriterionModifierExcludes {
 		// excludes all of the provided ids
 		whereClause = "not exists (select " + joinTableName + ".scene_id from " + joinTableName + " where " + joinTableName + ".scene_id = scenes.id and " + joinTableName + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
 	} else {
@@ -332,7 +351,7 @@ func getMultiCriterionClause(joinTable database.TableJoin, joinTableField string
 	return whereClause, havingClause
 }
 
-func (qb *SceneQueryBuilder) getSceneSort(findFilter *QuerySpec) string {
+func (qb *sceneQueryBuilder) getSceneSort(findFilter *models.QuerySpec) string {
 	var sort string
 	var direction string
 	var secondary *string
@@ -347,98 +366,98 @@ func (qb *SceneQueryBuilder) getSceneSort(findFilter *QuerySpec) string {
 		title := "title"
 		secondary = &title
 	}
-	return getSort(sort, direction, "scenes", secondary)
+	return getSort(qb.dbi.txn.dialect, sort, direction, "scenes", secondary)
 }
 
-func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}) (Scenes, error) {
-	output := Scenes{}
+func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}) (models.Scenes, error) {
+	output := models.Scenes{}
 	err := qb.dbi.RawQuery(sceneDBTable, query, args, &output)
 	return output, err
 }
 
-func (qb *SceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*Fingerprint, error) {
-	joins := SceneFingerprints{}
+func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*models.Fingerprint, error) {
+	joins := models.SceneFingerprints{}
 	err := qb.dbi.FindJoins(sceneFingerprintTable, id, &joins)
 
 	return joins.ToFingerprints(), err
 }
 
-func (qb *SceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*Fingerprint, []error) {
-	joins := SceneFingerprints{}
+func (qb *sceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
+	joins := models.SceneFingerprints{}
 	err := qb.dbi.FindAllJoins(sceneFingerprintTable, ids, &joins)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}
 
-	m := make(map[uuid.UUID][]*Fingerprint)
+	m := make(map[uuid.UUID][]*models.Fingerprint)
 	for _, join := range joins {
 		m[join.SceneID] = append(m[join.SceneID], join.ToFingerprint())
 	}
 
-	result := make([][]*Fingerprint, len(ids))
+	result := make([][]*models.Fingerprint, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
 	return result, nil
 }
 
-func (qb *SceneQueryBuilder) GetPerformers(id uuid.UUID) (PerformersScenes, error) {
-	joins := PerformersScenes{}
+func (qb *sceneQueryBuilder) GetPerformers(id uuid.UUID) (models.PerformersScenes, error) {
+	joins := models.PerformersScenes{}
 	err := qb.dbi.FindJoins(scenePerformerTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *SceneQueryBuilder) GetAllAppearances(ids []uuid.UUID) ([]PerformersScenes, []error) {
-	joins := PerformersScenes{}
+func (qb *sceneQueryBuilder) GetAllAppearances(ids []uuid.UUID) ([]models.PerformersScenes, []error) {
+	joins := models.PerformersScenes{}
 	err := qb.dbi.FindAllJoins(scenePerformerTable, ids, &joins)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}
 
-	m := make(map[uuid.UUID]PerformersScenes)
+	m := make(map[uuid.UUID]models.PerformersScenes)
 	for _, join := range joins {
 		m[join.SceneID] = append(m[join.SceneID], join)
 	}
 
-	result := make([]PerformersScenes, len(ids))
+	result := make([]models.PerformersScenes, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
 	return result, nil
 }
 
-func (qb *SceneQueryBuilder) GetURLs(id uuid.UUID) (SceneURLs, error) {
-	joins := SceneURLs{}
+func (qb *sceneQueryBuilder) GetURLs(id uuid.UUID) (models.SceneURLs, error) {
+	joins := models.SceneURLs{}
 	err := qb.dbi.FindJoins(sceneURLTable, id, &joins)
 
 	return joins, err
 }
 
-func (qb *SceneQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*URL, []error) {
-	joins := SceneURLs{}
+func (qb *sceneQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*models.URL, []error) {
+	joins := models.SceneURLs{}
 	err := qb.dbi.FindAllJoins(sceneURLTable, ids, &joins)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
 	}
 
-	m := make(map[uuid.UUID][]*URL)
+	m := make(map[uuid.UUID][]*models.URL)
 	for _, join := range joins {
-		url := URL{
+		url := models.URL{
 			URL:  join.URL,
 			Type: join.Type,
 		}
 		m[join.SceneID] = append(m[join.SceneID], &url)
 	}
 
-	result := make([][]*URL, len(ids))
+	result := make([][]*models.URL, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
 	return result, nil
 }
 
-func (qb *SceneQueryBuilder) SearchScenes(term string, limit int) ([]*Scene, error) {
+func (qb *sceneQueryBuilder) SearchScenes(term string, limit int) ([]*models.Scene, error) {
 	query := `
         SELECT S.* FROM scenes S
         LEFT JOIN scene_search SS ON SS.scene_id = S.id
@@ -454,8 +473,8 @@ func (qb *SceneQueryBuilder) SearchScenes(term string, limit int) ([]*Scene, err
 	return qb.queryScenes(query, args)
 }
 
-func (qb *SceneQueryBuilder) CountByPerformer(id uuid.UUID) (int, error) {
+func (qb *sceneQueryBuilder) CountByPerformer(id uuid.UUID) (int, error) {
 	var args []interface{}
 	args = append(args, id)
-	return runCountQuery(buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
 }

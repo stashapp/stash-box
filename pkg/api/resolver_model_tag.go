@@ -17,7 +17,7 @@ func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string
 	return resolveNullString(obj.Description), nil
 }
 func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, error) {
-	qb := models.NewTagQueryBuilder(nil)
+	qb := r.getRepoFactory(ctx).Tag()
 	aliases, err := qb.GetAliases(obj.ID)
 
 	if err != nil {
@@ -30,7 +30,7 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, e
 }
 
 func (r *tagResolver) Edits(ctx context.Context, obj *models.Tag) ([]*models.Edit, error) {
-	eqb := models.NewEditQueryBuilder(nil)
+	eqb := r.getRepoFactory(ctx).Edit()
 	return eqb.FindByTagID(obj.ID)
 }
 

@@ -7,4 +7,5 @@ type key int
 const (
 	ContextUser key = iota
 	ContextRoles
+	ContextRepo
 )
