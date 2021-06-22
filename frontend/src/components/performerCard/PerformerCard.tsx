@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Performers_queryPerformers_performers as Performer } from "src/graphql/definitions/Performers";
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 
-import { PerformerName } from "src/components/fragments";
+import { GenderIcon, PerformerName } from "src/components/fragments";
 import { getImage, performerHref } from "src/utils";
 
 interface PerformerCardProps {
@@ -28,6 +28,7 @@ const PerformerCard: React.FC<PerformerCardProps> = ({ performer }) => (
       </div>
       <Card.Footer>
         <h5>
+          <GenderIcon gender={performer.gender} />
           <PerformerName performer={performer} />
         </h5>
       </Card.Footer>
