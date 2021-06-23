@@ -83,7 +83,11 @@ func initConfig() {
 	}
 
 	initEnvs()
-	err = viper.ReadInConfig() // Reread the config
+
+	// Reread the config;
+	if err = viper.ReadInConfig(); err != nil {
+		panic(err)
+	}
 
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		logger.Infof("failed to bind flags: %s", err.Error())
