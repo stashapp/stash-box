@@ -75,12 +75,12 @@ const (
 	S3Backend   ImageBackendType = "s3"
 )
 
+var defaultUserRoles = []string{"READ", "VOTE", "EDIT"}
 var C = &config{
 	RequireInvite:     true,
 	RequireActivation: true,
 	ActivationExpiry:  2 * 60 * 60,
 	EmailCooldown:     5 * 60,
-	DefaultUserRoles:  []string{"READ", "VOTE", "EDIT"},
 	EmailPort:         25,
 	ImageBackend:      string(FileBackend),
 	PHashDistance:     0,
@@ -149,6 +149,9 @@ func GetEmailCooldown() time.Duration {
 // GetDefaultUserRoles returns the default roles assigned to a new user
 // when created via registration.
 func GetDefaultUserRoles() []string {
+	if len(C.DefaultUserRoles) == 0 {
+		return defaultUserRoles
+	}
 	return C.DefaultUserRoles
 }
 
