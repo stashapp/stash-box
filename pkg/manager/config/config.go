@@ -78,26 +78,13 @@ const (
 var C = &config{
 	RequireInvite:     true,
 	RequireActivation: true,
-	ActivationExpiry:  7200,
-	EmailCooldown:     300,
-	//DefaultUserRoles: ["READ"],
-	EmailPort:     25,
-	ImageBackend:  string(FileBackend),
-	PHashDistance: 0,
+	ActivationExpiry:  2 * 60 * 60,
+	EmailCooldown:     5 * 60,
+	DefaultUserRoles:  []string{"READ", "VOTE", "EDIT"},
+	EmailPort:         25,
+	ImageBackend:      string(FileBackend),
+	PHashDistance:     0,
 }
-
-//defaultConfig := &config{
-//RequireInvite: true,
-//RequireActivation: true,
-//const DefaultUserRoles = "default_user_roles"
-//var defaultUserRolesDefault = []string{"READ", "VOTE", "EDIT"}
-// 2 hours
-//const activationExpiryDefault = 2 * 60 * 60
-
-// 5 minutes
-//const emailCooldownDefault = 5 * 60
-
-//}
 
 func GetDatabasePath() string {
 	return C.Database
