@@ -33,10 +33,8 @@ func GetInstance() *singleton {
 func Initialize() *singleton {
 	once.Do(func() {
 		initFlags()
-
 		initConfig()
 		initLog()
-		initEnvs()
 		instance = &singleton{
 			EmailManager: email.NewManager(),
 		}
@@ -80,18 +78,19 @@ func initConfig() {
 		}
 	}
 
-	if err = config.SetInitialConfig(); err != nil {
+	if err = config.InitializeDefaults(); err != nil {
 		panic(err)
 	}
 
-	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
-
-	if err := config.Write(); err != nil {
-		panic(err)
-	}
+	initEnvs()
+	err = viper.ReadInConfig() // Reread the config
 
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		logger.Infof("failed to bind flags: %s", err.Error())
+	}
+
+	if err = config.Initialize(); err != nil {
+		panic(err)
 	}
 
 	if newConfig {
@@ -105,7 +104,7 @@ Please ensure this database is created and available, or change the connection s
 
 	missingEmail := config.GetMissingEmailSettings()
 	if len(missingEmail) > 0 {
-		fmt.Printf("%s is set to true, but the following required settings are missing: %s\n", config.RequireActivation, strings.Join(missingEmail, ", "))
+		fmt.Printf("RequireActivation is set to true, but the following required settings are missing: %s\n", strings.Join(missingEmail, ", "))
 	}
 }
 
@@ -119,9 +118,10 @@ func initFlags() {
 
 func initEnvs() {
 	viper.SetEnvPrefix("stash_box") // will be uppercased automatically
-	_ = viper.BindEnv("host")       // STASH_BOX_HOST
-	_ = viper.BindEnv("port")       // STASH_BOX_PORT
-	_ = viper.BindEnv("database")   // STASH_BOX_DATABASE
+	viper.AutomaticEnv()
+	_ = viper.BindEnv("host")     // STASH_BOX_HOST
+	_ = viper.BindEnv("port")     // STASH_BOX_PORT
+	_ = viper.BindEnv("database") // STASH_BOX_DATABASE
 }
 
 func initLog() {

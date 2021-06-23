@@ -6,136 +6,142 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/stashapp/stash-box/pkg/logger"
+	"github.com/stashapp/stash-box/pkg/manager/paths"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-const Stash = "stash"
+type S3Config struct {
+	BaseURL      string `mapstructure:"base_url"`
+	Endpoint     string `mapstructure:"endpoint"`
+	Bucket       string `mapstructure:"bucket"`
+	AccessKey    string `mapstructure:"access_key"`
+	Secret       string `mapstructure:"secret"`
+	MaxDimension int64  `mapstructure:"max_dimension"`
+}
 
-const Database = "database"
+type config struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	Database string `mapstructure:"database"`
 
-const Host = "host"
-const Port = "port"
-const HTTPUpgrade = "http_upgrade"
-const IsProduction = "is_production"
+	HTTPUpgrade  bool `mapstructure:"http_upgrade"`
+	IsProduction bool `mapstructure:"is_production"`
 
-// key used to sign JWT tokens
-const JWTSignKey = "jwt_secret_key"
+	// Key used to sign JWT tokens
+	JWTSignKey string `mapstructure:"jwt_secret_key"`
+	// Key used for session store
+	SessionStoreKey string `mapstructure:"session_store_key"`
 
-// key used for session store
-const SessionStoreKey = "session_store_key"
+	// Invite settings
+	RequireInvite     bool     `mapstructure:"require_invite"`
+	RequireActivation bool     `mapstructure:"require_activation"`
+	ActivationExpiry  int      `mapstructure:"activation_expiry"`
+	EmailCooldown     int      `mapstructure:"email_cooldown"`
+	DefaultUserRoles  []string `mapstructure:"default_user_roles"`
 
-// invite settings
-const RequireInvite = "require_invite"
-const RequireActivation = "require_activation"
-const ActivationExpiry = "activation_expiry"
-const EmailCooldown = "email_cooldown"
+	// Email settings
+	EmailHost string `mapstructure:"email_host"`
+	EmailPort int    `mapstructure:"email_port"`
+	EmailUser string `mapstructure:"email_user"`
+	EmailPW   string `mapstructure:"email_password"`
+	EmailFrom string `mapstructure:"email_from"`
+	HostURL   string `mapstructure:"host_url"`
 
-const requireInviteDefault = true
-const requireActivationDefault = true
+	// Image storage settings
+	ImageLocation string `mapstructure:"image_location"`
+	ImageBackend  string `mapstructure:"image_backend"`
 
-const DefaultUserRoles = "default_user_roles"
+	// Logging options
+	LogFile     string `mapstructure:"logFile"`
+	UserLogFile string `mapstructure:"userLogFile"`
+	LogOut      bool   `mapstructure:"logOut"`
+	LogLevel    string `mapstructure:"logLevel"`
 
-var defaultUserRolesDefault = []string{"READ", "VOTE", "EDIT"}
+	S3 struct {
+		S3Config `mapstructure:",squash"`
+	}
 
+	PHashDistance int `mapstructure:"phash_distance"`
+}
+
+var JWTSignKey = "jwt_secret_key"
+var SessionStoreKey = "session_store_key"
+var Database = "database"
+
+type ImageBackendType string
+
+const (
+	FileBackend ImageBackendType = "file"
+	S3Backend   ImageBackendType = "s3"
+)
+
+var C = &config{
+	RequireInvite:     true,
+	RequireActivation: true,
+	ActivationExpiry:  7200,
+	EmailCooldown:     300,
+	//DefaultUserRoles: ["READ"],
+	EmailPort:     25,
+	ImageBackend:  string(FileBackend),
+	PHashDistance: 0,
+}
+
+//defaultConfig := &config{
+//RequireInvite: true,
+//RequireActivation: true,
+//const DefaultUserRoles = "default_user_roles"
+//var defaultUserRolesDefault = []string{"READ", "VOTE", "EDIT"}
 // 2 hours
-const activationExpiryDefault = 2 * 60 * 60
+//const activationExpiryDefault = 2 * 60 * 60
 
 // 5 minutes
-const emailCooldownDefault = 5 * 60
+//const emailCooldownDefault = 5 * 60
 
-// Email settings
-const EmailHost = "email_host"
-const EmailPort = "email_port"
-const EmailUser = "email_user"
-const EmailPW = "email_password"
-const EmailFrom = "email_from"
-const HostURL = "host_url"
-
-// Image storage settings
-const ImageLocation = "image_location"
-const ImageBackend = "image_backend"
-const S3 = "s3"
-
-// Logging options
-const LogFile = "logFile"
-const UserLogFile = "userLogFile"
-const LogOut = "logOut"
-const LogLevel = "logLevel"
-
-const PHashDistance = "phash_distance"
-
-func Set(key string, value interface{}) {
-	viper.Set(key, value)
-}
-
-func Write() error {
-	return viper.WriteConfig()
-}
+//}
 
 func GetDatabasePath() string {
-	return viper.GetString(Database)
+	return C.Database
 }
 
 func GetHost() string {
-	return viper.GetString(Host)
+	return C.Host
 }
 
 func GetPort() int {
-	return viper.GetInt(Port)
+	return C.Port
 }
 
 func GetJWTSignKey() []byte {
-	return []byte(viper.GetString(JWTSignKey))
+	return []byte(C.JWTSignKey)
 }
 
 func GetSessionStoreKey() []byte {
-	return []byte(viper.GetString(SessionStoreKey))
+	return []byte(C.SessionStoreKey)
 }
 
 func GetHTTPUpgrade() bool {
-	return viper.GetBool(HTTPUpgrade)
+	return C.HTTPUpgrade
 }
 
 func GetIsProduction() bool {
-	ret := false
-	if viper.IsSet(IsProduction) {
-		ret = viper.GetBool(IsProduction)
-	}
-
-	return ret
+	return C.IsProduction
 }
 
 // GetRequireInvite returns true if new users cannot register without an invite
 // key.
 func GetRequireInvite() bool {
-	ret := requireInviteDefault
-	if viper.IsSet(RequireInvite) {
-		ret = viper.GetBool(RequireInvite)
-	}
-
-	return ret
+	return C.RequireInvite
 }
 
 // GetRequireActivation returns true if new users must validate their email address
 // via activation to create an account.
 func GetRequireActivation() bool {
-	ret := requireActivationDefault
-	if viper.IsSet(RequireActivation) {
-		ret = viper.GetBool(RequireActivation)
-	}
-
-	return ret
+	return C.RequireActivation
 }
 
 // GetActivationExpiry returns the duration before an activation email expires.
 func GetActivationExpiry() time.Duration {
-	ret := activationExpiryDefault
-	if viper.IsSet(ActivationExpiry) {
-		ret = viper.GetInt(ActivationExpiry)
-	}
-
-	return time.Duration(ret * int(time.Second))
+	return time.Duration(C.ActivationExpiry * int(time.Second))
 }
 
 // GetActivationExpireTime returns the time at which activation emails expire,
@@ -150,100 +156,57 @@ func GetActivationExpireTime() time.Time {
 // GetEmailCooldown returns the duration before a second activation email may
 // be generated.
 func GetEmailCooldown() time.Duration {
-	ret := emailCooldownDefault
-	if viper.IsSet(EmailCooldown) {
-		ret = viper.GetInt(EmailCooldown)
-	}
-
-	return time.Duration(ret * int(time.Second))
+	return time.Duration(C.EmailCooldown * int(time.Second))
 }
 
 // GetDefaultUserRoles returns the default roles assigned to a new user
 // when created via registration.
 func GetDefaultUserRoles() []string {
-	ret := defaultUserRolesDefault
-	if viper.IsSet(DefaultUserRoles) {
-		ret = viper.GetStringSlice(DefaultUserRoles)
-	}
-
-	return ret
+	return C.DefaultUserRoles
 }
 
 func GetEmailHost() string {
-	return viper.GetString(EmailHost)
+	return C.EmailHost
 }
 
 func GetEmailPort() int {
-	// Default SMTP port
-	port := 25
-	if viper.IsSet(EmailPort) {
-		port = viper.GetInt(EmailPort)
-	}
-	return port
+	return C.EmailPort
 }
 
 func GetEmailUser() string {
-	return viper.GetString(EmailUser)
+	return C.EmailUser
 }
 
 func GetEmailPassword() string {
-	return viper.GetString(EmailPW)
+	return C.EmailPW
 }
 
 func GetEmailFrom() string {
-	return viper.GetString(EmailFrom)
+	return C.EmailFrom
 }
 
 func GetHostURL() string {
-	return viper.GetString(HostURL)
+	return C.HostURL
 }
 
 // GetImageLocation returns the path of where to locally store images.
 func GetImageLocation() string {
-	return viper.GetString(ImageLocation)
+	return C.ImageLocation
 }
-
-type ImageBackendType string
-
-const (
-	FileBackend ImageBackendType = "file"
-	S3Backend   ImageBackendType = "s3"
-)
 
 // GetImageBackend returns the backend used to store images.
 func GetImageBackend() ImageBackendType {
-	if viper.IsSet(ImageBackend) {
-		return ImageBackendType(viper.GetString(ImageBackend))
-	}
-	return FileBackend
-}
-
-type S3Config struct {
-	BaseURL      string `mapstructure:"base_url"`
-	Endpoint     string `mapstructure:"endpoint"`
-	Bucket       string `mapstructure:"bucket"`
-	AccessKey    string `mapstructure:"access_key"`
-	Secret       string `mapstructure:"secret"`
-	MaxDimension int64  `mapstructure:"max_dimension"`
+	return ImageBackendType(C.ImageBackend)
 }
 
 func GetS3Config() *S3Config {
-	if viper.IsSet(S3) {
-		var config S3Config
-		err := viper.UnmarshalKey(S3, &config)
-		if err != nil {
-			logger.Errorf("Error reading S3 config: %s", err.Error())
-		} else {
-			return &config
-		}
-	}
-	return nil
+	return &C.S3.S3Config
 }
 
 // ValidateImageLocation returns an error is image_location is not set.
 func ValidateImageLocation() error {
-	if GetImageLocation() == "" {
-		return errors.New(ImageLocation + " not set")
+	if C.ImageLocation == "" {
+		return errors.New("ImageLocation not set")
 	}
 
 	return nil
@@ -252,26 +215,21 @@ func ValidateImageLocation() error {
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func GetLogFile() string {
-	return viper.GetString(LogFile)
+	return C.LogFile
 }
 
 // GetUserLogFile returns the filename of the file to output user operation
 // logs to.
 // An empty string means that user operation logging will be output to stderr.
 func GetUserLogFile() string {
-	return viper.GetString(UserLogFile)
+	return C.UserLogFile
 }
 
 // GetLogOut returns true if logging should be output to the terminal
 // in addition to writing to a log file. Logging will be output to the
 // terminal if file logging is disabled. Defaults to true.
 func GetLogOut() bool {
-	ret := true
-	if viper.IsSet(LogOut) {
-		ret = viper.GetBool(LogOut)
-	}
-
-	return ret
+	return C.LogOut
 }
 
 // GetLogLevel returns the lowest log level to write to the log.
@@ -279,7 +237,7 @@ func GetLogOut() bool {
 func GetLogLevel() string {
 	const defaultValue = "Info"
 
-	value := viper.GetString(LogLevel)
+	value := C.LogLevel
 	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" {
 		value = defaultValue
 	}
@@ -287,39 +245,40 @@ func GetLogLevel() string {
 	return value
 }
 
-func IsValid() bool {
-	setPaths := viper.IsSet(Stash)
-
-	// TODO: check valid paths
-	return setPaths
-}
-
 func GetPHashDistance() int {
-	return viper.GetInt(PHashDistance)
+	return C.PHashDistance
 }
 
-// SetInitialConfig fills in missing required config fields
-func SetInitialConfig() error {
+func InitializeDefaults() error {
 	// generate some api keys
 	const apiKeyLength = 32
 
-	if string(GetJWTSignKey()) == "" {
+	if viper.GetString(JWTSignKey) == "" {
 		signKey, err := utils.GenerateRandomKey(apiKeyLength)
 		if err != nil {
 			return err
 		}
-		Set(JWTSignKey, signKey)
+		viper.Set(JWTSignKey, signKey)
 	}
 
-	if string(GetSessionStoreKey()) == "" {
+	if viper.GetString(SessionStoreKey) == "" {
 		sessionStoreKey, err := utils.GenerateRandomKey(apiKeyLength)
 		if err != nil {
 			return err
 		}
-		Set(SessionStoreKey, sessionStoreKey)
+		viper.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	return Write()
+	if viper.GetString(Database) == "" {
+		viper.Set(Database, paths.GetDefaultDatabaseFilePath())
+	}
+
+	return viper.WriteConfig()
+}
+
+// Unmarshal config
+func Initialize() error {
+	return viper.Unmarshal(&C)
 }
 
 func GetMissingEmailSettings() []string {
@@ -329,13 +288,13 @@ func GetMissingEmailSettings() []string {
 
 	missing := []string{}
 	if GetEmailFrom() == "" {
-		missing = append(missing, EmailFrom)
+		missing = append(missing, "EmailFrom")
 	}
 	if GetEmailHost() == "" {
-		missing = append(missing, EmailHost)
+		missing = append(missing, "EmailHost")
 	}
 	if GetHostURL() == "" {
-		missing = append(missing, HostURL)
+		missing = append(missing, "HostURL")
 	}
 
 	return missing
