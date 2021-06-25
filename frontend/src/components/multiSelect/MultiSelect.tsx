@@ -32,6 +32,16 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     onChange(values.map((v) => v.value));
   };
 
+  /** Allow creating a new option with a different casing. */
+  const isValidNewOption = (
+    inputValue: string,
+    selectValue: ValueType<IOptionType, true>
+  ): boolean =>
+    !!inputValue &&
+    !selectValue.some(
+      ({ value }) => value.toLowerCase() === inputValue.toLowerCase()
+    );
+
   return (
     <div>
       <CreatableSelect
@@ -40,6 +50,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         className="react-select"
         defaultValue={options}
         options={options}
+        isValidNewOption={isValidNewOption}
         onChange={handleChange}
         placeholder={placeholder}
         noOptionsMessage={() => null}
