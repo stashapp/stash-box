@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -121,7 +122,7 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 	phashClause := `
 		SELECT scene_id as id
 		FROM UNNEST(ARRAY[:phashes]) phash
-		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, 8)
+		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
 		AND algorithm = 'PHASH'
 	`
 
@@ -152,8 +153,9 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 	}
 
 	arg := map[string]interface{}{
-		"phashes": phashes,
-		"hashes":  hashes,
+		"phashes":  phashes,
+		"hashes":   hashes,
+		"distance": config.GetPHashDistance(),
 	}
 
 	query := `
