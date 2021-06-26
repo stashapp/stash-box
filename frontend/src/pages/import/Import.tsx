@@ -71,7 +71,7 @@ const Import: React.FC = () => {
   const [file, setFile] = useState<File>();
   const [page, setPage] = useState(1);
   const [analyzeData] = useAnalyzeData();
-  const [importData] = useImportData();
+  // const [importData] = useImportData();
   const { register, handleSubmit } = useForm<ColumnData>({ resolver: yupResolver(schema) });
   const [results, setResults] = useState<AnalyzeResult[]>([]);
   const [parseErrors, setParseErrors] = useState<string[]>([]);

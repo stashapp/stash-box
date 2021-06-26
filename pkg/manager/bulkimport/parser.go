@@ -9,9 +9,9 @@ import (
 )
 
 type Parser struct {
-	PQB        models.PerformerQueryBuilder
-	TQB        models.TagQueryBuilder
-	SQB        models.StudioQueryBuilder
+	PQB        models.PerformerRepo
+	TQB        models.TagRepo
+	SQB        models.StudioRepo
 	Performers map[string]*models.PerformerImportResult
 	Tags       map[string]*models.TagImportResult
 	Studios    map[string]*models.StudioImportResult
@@ -34,6 +34,15 @@ func (p *Parser) ParsePerformers(value *string, column *models.ImportColumn) ([]
 		existingPerformers, err := p.PQB.FindByName(*name)
 		if err != nil {
 			return nil, nil, err
+		}
+		if len(existingPerformers) > 0 && existingPerformers[0].Deleted == true {
+			performer, err := p.PQB.FindByRedirect(existingPerformers[0].ID)
+			if err != nil {
+				return nil, nil, err
+			}
+			if performer != nil {
+				existingPerformers[0] = performer
+			}
 		}
 
 		performer := models.PerformerImportResult{
@@ -67,6 +76,15 @@ func (p *Parser) ParseTags(value *string, column *models.ImportColumn) ([]*model
 		existingTag, err := p.TQB.FindByName(*name)
 		if err != nil {
 			return nil, nil, err
+		}
+		if existingTag != nil && existingTag.Deleted == true {
+			alias, err := p.TQB.FindByAlias(existingTag.Name)
+			if err != nil {
+				return nil, nil, err
+			}
+			if alias != nil {
+				existingTag = alias
+			}
 		}
 
 		tag := models.TagImportResult{

@@ -22,7 +22,7 @@ type TagRepo interface {
 	FindByNames(names []string) ([]*Tag, error)
 	FindByAliases(names []string) ([]*Tag, error)
 	FindByName(name string) (*Tag, error)
-	FindByAlias(name string) ([]*Tag, error)
+	FindByAlias(name string) (*Tag, error)
 	Count() (int, error)
 	Query(tagFilter *TagFilterType, findFilter *QuerySpec) ([]*Tag, int, error)
 	GetRawAliases(id uuid.UUID) (TagAliases, error)

@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi v4.0.2+incompatible

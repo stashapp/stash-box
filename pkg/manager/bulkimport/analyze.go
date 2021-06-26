@@ -10,8 +10,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func Analyze(input models.BulkImportInput) (*models.BulkAnalyzeResult, error) {
-
+func Analyze(repo models.Repo, input models.BulkImportInput) (*models.BulkAnalyzeResult, error) {
 	rows := []map[string]string{}
 	if input.Type == models.ImportDataTypeCsv {
 		data, err := parseCSV(&input)
@@ -27,10 +26,10 @@ func Analyze(input models.BulkImportInput) (*models.BulkAnalyzeResult, error) {
 		rows = data
 	}
 
-	return parseData(rows, &input)
+	return parseData(repo, rows, &input)
 }
 
-func ApplyImport(data *models.BulkAnalyzeResult) (*models.BulkImportResult, error) {
+func ApplyImport(repo models.Repo, data *models.BulkAnalyzeResult) (*models.BulkImportResult, error) {
 	return &models.BulkImportResult{}, nil
 }
 
@@ -66,14 +65,14 @@ func parseJSON(input *models.BulkImportInput) ([]map[string]string, error) {
 	return nil, nil
 }
 
-func parseData(rows []map[string]string, input *models.BulkImportInput) (*models.BulkAnalyzeResult, error) {
+func parseData(repo models.Repo, rows []map[string]string, input *models.BulkImportInput) (*models.BulkAnalyzeResult, error) {
 	var errors []string
 	var results []*models.SceneImportResult
 
 	parser := Parser{
-		PQB:        models.NewPerformerQueryBuilder(nil),
-		TQB:        models.NewTagQueryBuilder(nil),
-		SQB:        models.NewStudioQueryBuilder(nil),
+		PQB:        repo.Performer(),
+		TQB:        repo.Tag(),
+		SQB:        repo.Studio(),
 		Performers: map[string]*models.PerformerImportResult{},
 		Tags:       map[string]*models.TagImportResult{},
 		Studios:    map[string]*models.StudioImportResult{},

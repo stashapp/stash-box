@@ -24,6 +24,7 @@ type PerformerRepo interface {
 	FindByAliases(names []string) (Performers, error)
 	FindByName(name string) (Performers, error)
 	FindByAlias(name string) (Performers, error)
+	FindByRedirect(sourceID uuid.UUID) (*Performer, error)
 	Count() (int, error)
 	Query(performerFilter *PerformerFilterType, findFilter *QuerySpec) ([]*Performer, int)
 	GetAliases(id uuid.UUID) (PerformerAliases, error)

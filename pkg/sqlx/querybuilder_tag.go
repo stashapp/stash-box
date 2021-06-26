@@ -219,14 +219,22 @@ func (qb *tagQueryBuilder) FindByName(name string) (*models.Tag, error) {
 	return results[0], nil
 }
 
-func (qb *tagQueryBuilder) FindByAlias(name string) ([]*models.Tag, error) {
-	query := `SELECT tags.* FROM tags
-		left join tag_aliases on tag.id = tag_aliases.tag_id
-		WHERE upper(tag_aliases.alias) = UPPER(?)`
+func (qb *tagQueryBuilder) FindByAlias(name string) (*models.Tag, error) {
+	query := `
+		SELECT T.*
+		FROM tags T
+		JOIN tag_aliases TA on T.id = TA.tag_id
+		WHERE upper(TA.alias) = UPPER(?)
+	`
 
 	var args []interface{}
 	args = append(args, name)
-	return qb.queryTags(query, args)
+
+	results, err := qb.queryTags(query, args)
+	if err != nil || len(results) < 1 {
+		return nil, err
+	}
+	return results[0], nil
 }
 
 func (qb *tagQueryBuilder) Count() (int, error) {

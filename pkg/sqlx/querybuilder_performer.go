@@ -839,3 +839,18 @@ func (qb *performerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([]
 	}
 	return result, nil
 }
+
+func (qb *performerQueryBuilder) FindByRedirect(sourceID uuid.UUID) (*models.Performer, error) {
+	query := `
+		SELECT P.*
+		FROM performers P
+		JOIN performer_redirects PR ON P.id = PR.target_id
+		WHERE PR.source_id = ?
+	`
+	args := []interface{}{sourceID}
+	performers, err := qb.queryPerformers(query, args)
+	if len(performers) > 0 {
+		return performers[0], err
+	}
+	return nil, err
+}
