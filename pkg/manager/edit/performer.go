@@ -203,7 +203,7 @@ func BodyModCompare(subject []*models.BodyModification, against []*models.BodyMo
 		newMod := true
 		for _, a := range against {
 			if s.Location == a.Location {
-				newMod = false
+				newMod = s.Description != a.Description
 			}
 		}
 
@@ -222,7 +222,7 @@ func BodyModCompare(subject []*models.BodyModification, against []*models.BodyMo
 		removedMod := true
 		for _, a := range subject {
 			if s.Location == a.Location {
-				removedMod = false
+				removedMod = s.Description != a.Description
 			}
 		}
 
