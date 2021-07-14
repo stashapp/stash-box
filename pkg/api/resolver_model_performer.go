@@ -33,7 +33,7 @@ func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) 
 
 func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*models.GenderEnum, error) {
 	var ret models.GenderEnum
-	if !resolveEnum(obj.Gender, &ret) {
+	if !utils.ResolveEnum(obj.Gender, &ret) {
 		return nil, nil
 	}
 
@@ -72,7 +72,7 @@ func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*in
 
 func (r *performerResolver) Ethnicity(ctx context.Context, obj *models.Performer) (*models.EthnicityEnum, error) {
 	var ret models.EthnicityEnum
-	if !resolveEnum(obj.Ethnicity, &ret) {
+	if !utils.ResolveEnum(obj.Ethnicity, &ret) {
 		return nil, nil
 	}
 
@@ -85,7 +85,7 @@ func (r *performerResolver) Country(ctx context.Context, obj *models.Performer) 
 
 func (r *performerResolver) EyeColor(ctx context.Context, obj *models.Performer) (*models.EyeColorEnum, error) {
 	var ret models.EyeColorEnum
-	if !resolveEnum(obj.EyeColor, &ret) {
+	if !utils.ResolveEnum(obj.EyeColor, &ret) {
 		return nil, nil
 	}
 
@@ -94,7 +94,7 @@ func (r *performerResolver) EyeColor(ctx context.Context, obj *models.Performer)
 
 func (r *performerResolver) HairColor(ctx context.Context, obj *models.Performer) (*models.HairColorEnum, error) {
 	var ret models.HairColorEnum
-	if !resolveEnum(obj.HairColor, &ret) {
+	if !utils.ResolveEnum(obj.HairColor, &ret) {
 		return nil, nil
 	}
 
@@ -112,7 +112,7 @@ func (r *performerResolver) Measurements(ctx context.Context, obj *models.Perfor
 
 func (r *performerResolver) BreastType(ctx context.Context, obj *models.Performer) (*models.BreastTypeEnum, error) {
 	var ret models.BreastTypeEnum
-	if !resolveEnum(obj.BreastType, &ret) {
+	if !utils.ResolveEnum(obj.BreastType, &ret) {
 		return nil, nil
 	}
 

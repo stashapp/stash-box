@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/manager/edit"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
@@ -252,7 +253,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 		}
 
 		var status models.VoteStatusEnum
-		resolveEnumString(edit.Status, &status)
+		utils.ResolveEnumString(edit.Status, &status)
 		if status != models.VoteStatusEnumPending {
 			return errors.New("Invalid vote status: " + edit.Status)
 		}
@@ -297,15 +298,15 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 		}
 
 		var status models.VoteStatusEnum
-		resolveEnumString(edit.Status, &status)
+		utils.ResolveEnumString(edit.Status, &status)
 		if status != models.VoteStatusEnumPending {
 			return errors.New("Invalid vote status: " + edit.Status)
 		}
 
 		var operation models.OperationEnum
-		resolveEnumString(edit.Operation, &operation)
+		utils.ResolveEnumString(edit.Operation, &operation)
 		var targetType models.TargetTypeEnum
-		resolveEnumString(edit.TargetType, &targetType)
+		utils.ResolveEnumString(edit.TargetType, &targetType)
 		switch targetType {
 		case models.TargetTypeEnumTag:
 			tqb := r.getRepoFactory(ctx).Tag()
