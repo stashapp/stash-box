@@ -67,7 +67,7 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 		}
 
 		// save the edit
-		eqb := r.getRepoFactory(ctx).Edit()
+		eqb := fac.Edit()
 
 		created, err := eqb.Create(*newEdit)
 		if err != nil {
@@ -153,7 +153,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 		}
 
 		// save the edit
-		eqb := r.getRepoFactory(ctx).Edit()
+		eqb := fac.Edit()
 
 		created, err := eqb.Create(*newEdit)
 		if err != nil {
@@ -203,7 +203,7 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 	currentUser := getCurrentUser(ctx)
 	var edit *models.Edit
 	err := fac.WithTxn(func() error {
-		eqb := r.getRepoFactory(ctx).Edit()
+		eqb := fac.Edit()
 
 		editID, err := uuid.FromString(input.ID)
 		if err != nil {
@@ -239,7 +239,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		editID, _ := uuid.FromString(input.ID)
-		eqb := r.getRepoFactory(ctx).Edit()
+		eqb := fac.Edit()
 		edit, err := eqb.Find(editID)
 		if err != nil {
 			return err
