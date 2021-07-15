@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/manager/edit"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
@@ -66,7 +67,7 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 		}
 
 		// save the edit
-		eqb := r.getRepoFactory(ctx).Edit()
+		eqb := fac.Edit()
 
 		created, err := eqb.Create(*newEdit)
 		if err != nil {
@@ -152,7 +153,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 		}
 
 		// save the edit
-		eqb := r.getRepoFactory(ctx).Edit()
+		eqb := fac.Edit()
 
 		created, err := eqb.Create(*newEdit)
 		if err != nil {
@@ -202,7 +203,7 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 	currentUser := getCurrentUser(ctx)
 	var edit *models.Edit
 	err := fac.WithTxn(func() error {
-		eqb := r.getRepoFactory(ctx).Edit()
+		eqb := fac.Edit()
 
 		editID, err := uuid.FromString(input.ID)
 		if err != nil {
@@ -238,7 +239,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		editID, _ := uuid.FromString(input.ID)
-		eqb := r.getRepoFactory(ctx).Edit()
+		eqb := fac.Edit()
 		edit, err := eqb.Find(editID)
 		if err != nil {
 			return err
@@ -252,7 +253,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 		}
 
 		var status models.VoteStatusEnum
-		resolveEnumString(edit.Status, &status)
+		utils.ResolveEnumString(edit.Status, &status)
 		if status != models.VoteStatusEnumPending {
 			return errors.New("Invalid vote status: " + edit.Status)
 		}
@@ -279,119 +280,8 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 		return nil, err
 	}
 
-	var updatedEdit *models.Edit
+	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
-	err := fac.WithTxn(func() error {
-		editID, _ := uuid.FromString(input.ID)
-		eqb := r.getRepoFactory(ctx).Edit()
-		edit, err := eqb.Find(editID)
-		if err != nil {
-			return err
-		}
-		if edit == nil {
-			return errors.New("Edit not found")
-		}
 
-		if edit.Applied {
-			return errors.New("Edit already applied")
-		}
-
-		var status models.VoteStatusEnum
-		resolveEnumString(edit.Status, &status)
-		if status != models.VoteStatusEnumPending {
-			return errors.New("Invalid vote status: " + edit.Status)
-		}
-
-		var operation models.OperationEnum
-		resolveEnumString(edit.Operation, &operation)
-		var targetType models.TargetTypeEnum
-		resolveEnumString(edit.TargetType, &targetType)
-		switch targetType {
-		case models.TargetTypeEnumTag:
-			tqb := r.getRepoFactory(ctx).Tag()
-			var tag *models.Tag
-			if operation != models.OperationEnumCreate {
-				tagID, err := eqb.FindTagID(edit.ID)
-				if err != nil {
-					return err
-				}
-				tag, err = tqb.Find(*tagID)
-				if err != nil {
-					return err
-				}
-				if tag == nil {
-					return errors.New("Tag not found: " + tagID.String())
-				}
-			}
-			newTag, err := tqb.ApplyEdit(*edit, operation, tag)
-			if err != nil {
-				return err
-			}
-
-			if operation == models.OperationEnumCreate {
-				editTag := models.EditTag{
-					EditID: edit.ID,
-					TagID:  newTag.ID,
-				}
-
-				err = eqb.CreateEditTag(editTag)
-				if err != nil {
-					return err
-				}
-			}
-		case models.TargetTypeEnumPerformer:
-			pqb := r.getRepoFactory(ctx).Performer()
-			var performer *models.Performer
-			if operation != models.OperationEnumCreate {
-				performerID, err := eqb.FindPerformerID(edit.ID)
-				if err != nil {
-					return err
-				}
-				performer, err = pqb.Find(*performerID)
-				if err != nil {
-					return err
-				}
-				if performer == nil {
-					return errors.New("Performer not found: " + performerID.String())
-				}
-			}
-			newPerformer, err := pqb.ApplyEdit(*edit, operation, performer)
-			if err != nil {
-				return err
-			}
-
-			if operation == models.OperationEnumCreate {
-				editPerformer := models.EditPerformer{
-					EditID:      edit.ID,
-					PerformerID: newPerformer.ID,
-				}
-
-				err = eqb.CreateEditPerformer(editPerformer)
-				if err != nil {
-					return err
-				}
-			}
-		default:
-			return errors.New("Not implemented: " + edit.TargetType)
-		}
-
-		if err != nil {
-			return err
-		}
-
-		edit.ImmediateAccept()
-		updatedEdit, err = eqb.Update(*edit)
-
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return updatedEdit, nil
+	return edit.ApplyEdit(fac, editID)
 }

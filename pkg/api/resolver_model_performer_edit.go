@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 
 	"github.com/gofrs/uuid"
 )
@@ -13,7 +14,7 @@ type performerEditResolver struct{ *Resolver }
 
 func (r *performerEditResolver) Gender(ctx context.Context, obj *models.PerformerEdit) (*models.GenderEnum, error) {
 	var ret models.GenderEnum
-	if obj.Gender == nil || !resolveEnumString(*obj.Gender, &ret) {
+	if obj.Gender == nil || !utils.ResolveEnumString(*obj.Gender, &ret) {
 		return nil, nil
 	}
 
@@ -22,7 +23,7 @@ func (r *performerEditResolver) Gender(ctx context.Context, obj *models.Performe
 
 func (r *performerEditResolver) HairColor(ctx context.Context, obj *models.PerformerEdit) (*models.HairColorEnum, error) {
 	var ret models.HairColorEnum
-	if obj.HairColor == nil || !resolveEnumString(*obj.HairColor, &ret) {
+	if obj.HairColor == nil || !utils.ResolveEnumString(*obj.HairColor, &ret) {
 		return nil, nil
 	}
 
@@ -31,7 +32,7 @@ func (r *performerEditResolver) HairColor(ctx context.Context, obj *models.Perfo
 
 func (r *performerEditResolver) EyeColor(ctx context.Context, obj *models.PerformerEdit) (*models.EyeColorEnum, error) {
 	var ret models.EyeColorEnum
-	if obj.EyeColor == nil || !resolveEnumString(*obj.EyeColor, &ret) {
+	if obj.EyeColor == nil || !utils.ResolveEnumString(*obj.EyeColor, &ret) {
 		return nil, nil
 	}
 
@@ -40,7 +41,7 @@ func (r *performerEditResolver) EyeColor(ctx context.Context, obj *models.Perfor
 
 func (r *performerEditResolver) Ethnicity(ctx context.Context, obj *models.PerformerEdit) (*models.EthnicityEnum, error) {
 	var ret models.EthnicityEnum
-	if obj.Ethnicity == nil || !resolveEnumString(*obj.Ethnicity, &ret) {
+	if obj.Ethnicity == nil || !utils.ResolveEnumString(*obj.Ethnicity, &ret) {
 		return nil, nil
 	}
 
@@ -49,7 +50,7 @@ func (r *performerEditResolver) Ethnicity(ctx context.Context, obj *models.Perfo
 
 func (r *performerEditResolver) BreastType(ctx context.Context, obj *models.PerformerEdit) (*models.BreastTypeEnum, error) {
 	var ret models.BreastTypeEnum
-	if obj.BreastType == nil || !resolveEnumString(*obj.BreastType, &ret) {
+	if obj.BreastType == nil || !utils.ResolveEnumString(*obj.BreastType, &ret) {
 		return nil, nil
 	}
 
