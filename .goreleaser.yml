@@ -1,32 +1,37 @@
 project_name: stash-box
+
+before:
+  hooks:
+    - go mod tidy
+
 builds:
-- id: stash-box
-  binary: stash-box-{{.Os}}
-  goos:
-    - windows
-    - darwin
-  goarch:
-    - amd64
-  env:
-  - CGO_ENABLED=0
-  ldflags:
-    - -s -w
-    - -X github.com/stashapp/stash-box/pkg/api.version={{.Version}}
-    - -X github.com/stashapp/stash-box/pkg/api.buildstamp={{.Date}}
-    - -X github.com/stashapp/stash-box/pkg/api.githash={{.ShortCommit}}
-- id: stash-box_static
-  binary: stash-box-{{.Os}}
-  goos:
-    - linux
-  goarch:
-    - amd64
-  env:
-  - CGO_ENABLED=0
-  ldflags:
-    - -extldflags=-static -s -w
-    - -X github.com/stashapp/stash-box/pkg/api.version={{.Version}}
-    - -X github.com/stashapp/stash-box/pkg/api.buildstamp={{.Date}}
-    - -X github.com/stashapp/stash-box/pkg/api.githash={{.ShortCommit}}
+  - id: stash-box
+    binary: stash-box-{{.Os}}
+    goos:
+      - windows
+      - darwin
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X github.com/stashapp/stash-box/pkg/api.version={{.Version}}
+      - -X github.com/stashapp/stash-box/pkg/api.buildstamp={{.Date}}
+      - -X github.com/stashapp/stash-box/pkg/api.githash={{.ShortCommit}}
+  - id: stash-box_static
+    binary: stash-box-{{.Os}}
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -extldflags=-static -s -w
+      - -X github.com/stashapp/stash-box/pkg/api.version={{.Version}}
+      - -X github.com/stashapp/stash-box/pkg/api.buildstamp={{.Date}}
+      - -X github.com/stashapp/stash-box/pkg/api.githash={{.ShortCommit}}
 
 archives:
-- format: binary
+  - format: binary
