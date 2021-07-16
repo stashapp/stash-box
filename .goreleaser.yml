@@ -1,5 +1,9 @@
 project_name: stash-box
 
+before:
+  hooks:
+    - go mod tidy
+
 builds:
   - id: stash-box
     binary: stash-box-{{.Os}}
