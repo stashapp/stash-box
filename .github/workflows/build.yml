@@ -16,7 +16,7 @@ jobs:
       postgres:
         image: postgres:13.2
         env:
-          POSTGRES_DB: postgres        
+          POSTGRES_DB: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
         ports:
@@ -81,7 +81,9 @@ jobs:
       run: make generate
 
     - name: Run tests
-      run: POSTGRES_DB=postgres:postgres@localhost/postgres?sslmode=disable make lint it
+      env:
+        POSTGRES_DB: postgres:postgres@localhost/postgres?sslmode=disable
+      run: make lint it
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
@@ -126,12 +128,12 @@ jobs:
       with:
         name: stash-box-linux
         path: dist/stash-box_static_linux_amd64/stash-box-linux
-        
+
     - name: Update latest_develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       run : git tag -f latest_develop; git push -f --tags
     - name: Development Release
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       uses: meeDamian/github-release@2.0
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
@@ -158,7 +160,7 @@ jobs:
           dist/stash-box_darwin_amd64/stash-box-darwin
           CHECKSUMS_SHA1
         gzip: false
-    
+
     - name: Login to DockerHub
       if: ${{ github.event_name != 'pull_request' }}
       uses: docker/login-action@v1
