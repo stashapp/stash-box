@@ -55,7 +55,7 @@ const schema = yup.object().shape({
   performers: yup.array().of(
     yup.object().shape({
       performerId: yup.string().required(),
-      alias: yup.string().transform(nullCheck).nullable(),
+      alias: yup.string().trim().transform(nullCheck).nullable(),
     })
   ),
   fingerprints: yup
@@ -197,11 +197,12 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
   const handleChange = (result: PerformerResult, index: number) => {
     setChange(undefined);
+    const alias = performerFields[index].alias || performerFields[index].name;
     performerFields[index] = {
       name: result.name,
       performerId: result.id,
       gender: result.gender,
-      alias: performerFields[index].alias || performerFields[index].name,
+      alias: alias === result.name ? "" : alias,
       disambiguation: result.disambiguation ?? undefined,
       deleted: result.deleted,
     };
