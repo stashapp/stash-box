@@ -20,6 +20,7 @@ mutation AnalyzeData($input: BulkImportInput!) {
         existingPerformer {
           name
           id
+          deleted
         }
       }
       tags {
@@ -27,6 +28,7 @@ mutation AnalyzeData($input: BulkImportInput!) {
         existingTag {
           name
           id
+          deleted
         }
       }
     }

@@ -29,10 +29,6 @@ func Analyze(repo models.Repo, input models.BulkImportInput) (*models.BulkAnalyz
 	return parseData(repo, rows, &input)
 }
 
-func ApplyImport(repo models.Repo, data *models.BulkAnalyzeResult) (*models.BulkImportResult, error) {
-	return &models.BulkImportResult{}, nil
-}
-
 func parseCSV(input *models.BulkImportInput) ([]map[string]string, error) {
 	reader := csv.NewReader(input.Data.File)
 	rows := []map[string]string{}

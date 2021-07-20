@@ -18,8 +18,14 @@ func (r *mutationResolver) ImageCreate(ctx context.Context, input models.ImageCr
 	err := fac.WithTxn(func() error {
 		qb := fac.Image()
 		imageService := image.GetService(qb)
+
+		file := make([]byte, input.File.Size)
+		if _, err := input.File.File.Read(file); err != nil {
+			return err
+		}
+
 		var txnErr error
-		ret, txnErr = imageService.Create(input)
+		ret, txnErr = imageService.Create(input.URL, file)
 
 		return txnErr
 	})

@@ -3,7 +3,6 @@ package image
 import (
 	"bytes"
 	"database/sql"
-	"errors"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -15,7 +14,7 @@ type Service struct {
 	Backend    ImageBackend
 }
 
-func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
+func (s *Service) Create(url *string, file []byte) (*models.Image, error) {
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -34,58 +33,48 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 		ID: UUID,
 	}
 
-	newImage.CopyFromCreateInput(input)
-
 	// set RemoteURL from URL
-	if input.URL != nil {
+	if url != nil {
 		newImage.RemoteURL = sql.NullString{
-			String: *input.URL,
+			String: *url,
 			Valid:  true,
 		}
 	}
 
 	// handle image upload
-	if input.File != nil {
-		file := make([]byte, input.File.Size)
-		if _, err := input.File.File.Read(file); err != nil {
-			return nil, err
-		}
-		fileReader := bytes.NewReader(file)
+	fileReader := bytes.NewReader(file)
 
-		checksum, err := calculateChecksum(fileReader)
-		if err != nil {
-			return nil, err
-		}
+	checksum, err := calculateChecksum(fileReader)
+	if err != nil {
+		return nil, err
+	}
 
-		// check if image already exists with this checksum
-		existing, err := s.Repository.FindByChecksum(checksum)
-		if err != nil {
-			return nil, err
-		}
+	// check if image already exists with this checksum
+	existing, err := s.Repository.FindByChecksum(checksum)
+	if err != nil {
+		return nil, err
+	}
 
-		// if image already exists, just return it
-		if existing != nil {
-			return existing, nil
-		}
+	// if image already exists, just return it
+	if existing != nil {
+		return existing, nil
+	}
 
-		// set the checksum in the new image
-		newImage.Checksum = checksum
+	// set the checksum in the new image
+	newImage.Checksum = checksum
 
-		if _, err = fileReader.Seek(0, 0); err != nil {
-			return nil, err
-		}
-		if err := populateImageDimensions(fileReader, &newImage); err != nil {
-			return nil, err
-		}
+	if _, err = fileReader.Seek(0, 0); err != nil {
+		return nil, err
+	}
+	if err := populateImageDimensions(fileReader, &newImage); err != nil {
+		return nil, err
+	}
 
-		if _, err = fileReader.Seek(0, 0); err != nil {
-			return nil, err
-		}
-		if err := s.Backend.WriteFile(fileReader, &newImage); err != nil {
-			return nil, err
-		}
-	} else if input.URL != nil {
-		return nil, errors.New("Missing URL or file")
+	if _, err = fileReader.Seek(0, 0); err != nil {
+		return nil, err
+	}
+	if err := s.Backend.WriteFile(fileReader, &newImage); err != nil {
+		return nil, err
 	}
 
 	image, err := s.Repository.Create(newImage)

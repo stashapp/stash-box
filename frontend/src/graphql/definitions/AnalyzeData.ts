@@ -25,6 +25,7 @@ export interface AnalyzeData_analyzeData_results_performers_existingPerformer {
   __typename: "Performer";
   name: string;
   id: string;
+  deleted: boolean;
 }
 
 export interface AnalyzeData_analyzeData_results_performers {
@@ -37,6 +38,7 @@ export interface AnalyzeData_analyzeData_results_tags_existingTag {
   __typename: "Tag";
   name: string;
   id: string;
+  deleted: boolean;
 }
 
 export interface AnalyzeData_analyzeData_results_tags {

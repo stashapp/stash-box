@@ -61,6 +61,7 @@ import {
 } from "../definitions/RevokeInvite";
 import { EditComment, EditCommentVariables } from "../definitions/EditComment";
 import { AnalyzeData, AnalyzeDataVariables } from "../definitions/AnalyzeData";
+import { ImportData, ImportDataVariables } from "../definitions/ImportData";
 
 const ActivateUserMutation = loader("./ActivateNewUser.gql");
 const AddUserMutation = loader("./AddUser.gql");
@@ -89,6 +90,7 @@ const RescindInviteCodeMutation = loader("./RescindInviteCode.gql");
 const RevokeInviteMutation = loader("./RevokeInvite.gql");
 const EditCommentMutation = loader("./EditComment.gql");
 const AnalyzeDataMutation = loader("./AnalyzeData.gql");
+const ImportDataMutation = loader("./ImportData.gql");
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -197,3 +199,7 @@ export const useEditComment = (
 export const useAnalyzeData = (
   options?: MutationHookOptions<AnalyzeData, AnalyzeDataVariables>
 ) => useMutation(AnalyzeDataMutation, options);
+
+export const useImportData = (
+  options?: MutationHookOptions<ImportData, ImportDataVariables>
+) => useMutation(ImportDataMutation, options);

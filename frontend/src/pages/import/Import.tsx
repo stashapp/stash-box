@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import { ImportColumnType, ImportDataType, useAnalyzeData } from "src/graphql";
+import { ImportColumnType, ImportDataType, useAnalyzeData, useImportData } from "src/graphql";
 import { AnalyzeData_analyzeData_results as AnalyzeResult } from "src/graphql/definitions/AnalyzeData";
 import { Icon } from "src/components/fragments";
 import Pagination from "src/components/pagination";
@@ -71,12 +71,40 @@ const Import: React.FC = () => {
   const [file, setFile] = useState<File>();
   const [page, setPage] = useState(1);
   const [analyzeData] = useAnalyzeData();
-  // const [importData] = useImportData();
+  const [importData] = useImportData();
   const { register, handleSubmit } = useForm<ColumnData>({ resolver: yupResolver(schema) });
-  const [results, setResults] = useState<AnalyzeResult[]>([]);
+  const [analyzeResults, setAnalyzeResults] = useState<AnalyzeResult[]>([]);
   const [parseErrors, setParseErrors] = useState<string[]>([]);
+  const [scenesImported, setScenesImported] = useState<number | undefined>();
+  const [importErrors, setImportErrors] = useState<string[]>([]);
 
-  const submitData = (data: ColumnData) => {
+  const handleImport = (data: ColumnData) => {
+    if (!data.columns) return;
+
+    const columnData = data.columns.filter(c => c.enabled).map(c => ({
+      name: (c.name || "") as string,
+      type: c.type as ImportColumnType,
+      regularExpression: (c?.regularExpression ?? "").trim() === "" ? null : (c?.regularExpression ?? "").trim(),
+    }));
+
+    importData({
+      variables: {
+        input: {
+          type: ImportDataType.CSV,
+          columns: columnData,
+          mainStudio: data.mainStudio,
+          data: file,
+        }
+      },
+    }).then(res => {
+      setScenesImported(res.data?.importData.scenesImported ?? 0);
+      setImportErrors(res.data?.importData.errors ?? []);
+      setParseErrors([]);
+      setAnalyzeResults([]);
+    });
+  }
+
+  const handleAnalyze = (data: ColumnData) => {
     if (!data.columns) return;
 
     const columnData = data.columns.filter(c => c.enabled).map(c => ({
@@ -95,7 +123,7 @@ const Import: React.FC = () => {
         }
       },
     }).then(res => {
-      setResults(res.data?.analyzeData.results ?? []);
+      setAnalyzeResults(res.data?.analyzeData.results ?? []);
       setParseErrors(res.data?.analyzeData.errors ?? []);
     });
   }
@@ -110,7 +138,7 @@ const Import: React.FC = () => {
   }
 
   return (
-    <Form onSubmit={handleSubmit(submitData)}>
+    <Form>
       <h2>Bulk Import</h2>
       <Form.File onChange={onFileChange} accept=".json,.csv" />
       <Form.Group controlId="mainStudio">
@@ -145,8 +173,21 @@ const Import: React.FC = () => {
           </Form.Row>
         ))}
       </div>
-      <Button type="submit" disabled={!file}>Analyze</Button>
-      <Button type="submit" className="ml-2" disabled={!file || !results.length} variant="danger">Submit</Button>
+      <Button type="submit" disabled={!file} onClick={handleSubmit(handleAnalyze)}>Analyze</Button>
+      <Button type="submit" className="ml-2" disabled={!file || !analyzeResults.length} variant="danger" onClick={handleSubmit(handleImport)}>Import</Button>
+
+      { scenesImported && (
+        <h2>{ scenesImported } scenes imported.</h2>
+      )}
+
+      { importErrors.length > 0 && (
+        <>
+          <h4>Errors:</h4>
+          <ul>
+            { importErrors.map(error => <li>{error}</li>) }
+          </ul>
+        </>
+      )}
 
       { parseErrors.length > 0 && (
         <>
@@ -156,16 +197,16 @@ const Import: React.FC = () => {
           </ul>
         </>
       )}
-      { results.length > 0 && (
+      { analyzeResults.length > 0 && (
         <>
           <hr />
           <Row noGutters>
-            <h2>{ results.length } Results:</h2>
-            <Pagination perPage={PER_PAGE} active={page} onClick={setPage} count={results.length}  />
+            <h2>{ analyzeResults.length } Results:</h2>
+            <Pagination perPage={PER_PAGE} active={page} onClick={setPage} count={analyzeResults.length}  />
           </Row>
         </>
       )}
-      { results.length > 0 && results.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(result => (
+      { analyzeResults.length > 0 && analyzeResults.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(result => (
         <Card className="p-3">
             <Row>
               <Col xs={8}>
@@ -209,7 +250,11 @@ const Import: React.FC = () => {
                   <Col><b>Performers:</b> { result.performers.map(p => (
                     p?.existingPerformer
                     ? <span className="mr-2">
-                        <Icon icon="user-check" color="success" className="mr-1" />
+                        { p.existingPerformer.deleted ? (
+                          <Icon icon="times" color="red" className="mr-1" />
+                          ) : (
+                          <Icon icon="user-check" color="success" className="mr-1" />
+                        )}
                         <Link to={`/performers/${p.existingPerformer.id}`}>{p.existingPerformer.name}</Link>
                       </span>
                     : <span className="mr-2">
@@ -226,7 +271,11 @@ const Import: React.FC = () => {
                         result.tags.map(t => (
                           t?.existingTag
                           ? <small className="mr-2">
-                              <Icon icon="tag" className="mr-1" />
+                              { t.existingTag.deleted ? (
+                                <Icon icon="times" color="red" className="mr-1" />
+                                ) : (
+                                <Icon icon="tag" className="mr-1" />
+                              )}
                               <Link to={`/tags/${t.existingTag.name}`}>{t.existingTag.name}</Link>
                             </small>
                           : <small className="mr-2">

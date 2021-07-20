@@ -7,7 +7,7 @@ import (
 )
 
 type ImageService interface {
-	Create(input models.ImageCreateInput) (*models.Image, error)
+	Create(url *string, file []byte) (*models.Image, error)
 	Destroy(input models.ImageDestroyInput) error
 	DestroyUnusedImages() error
 	DestroyUnusedImage(imageID uuid.UUID) error
