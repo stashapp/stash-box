@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type tagCategoryResolver struct{ *Resolver }
@@ -19,7 +20,7 @@ func (r *tagCategoryResolver) Description(ctx context.Context, obj *models.TagCa
 }
 func (r *tagCategoryResolver) Group(ctx context.Context, obj *models.TagCategory) (models.TagGroupEnum, error) {
 	var ret models.TagGroupEnum
-	if !resolveEnumString(obj.Group, &ret) {
+	if !utils.ResolveEnumString(obj.Group, &ret) {
 		return "", nil
 	}
 
