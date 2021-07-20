@@ -52,6 +52,7 @@
 node_modules
 
 *.db
+.go-cache/
 
 stashdb
 stash-box
