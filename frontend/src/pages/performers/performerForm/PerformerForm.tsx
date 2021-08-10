@@ -460,7 +460,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 {errors?.birthdate?.message}
               </Form.Control.Feedback>
               <Form.Text>
-                If the precise date is unknown the date and or month can be
+                If the precise date is unknown the day and/or month can be
                 omitted.
               </Form.Text>
             </Form.Group>
