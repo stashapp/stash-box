@@ -21,7 +21,7 @@ func NewS3ImageURLBuilder(image *models.Image) S3ImageURLBuilder {
 func (b S3ImageURLBuilder) GetImageURL() string {
 	config := config.GetS3Config()
 
-	if b.Image.Width > config.MaxDimension || b.Image.Height > config.MaxDimension {
+	if s3config.MaxDimension != 0 && (b.Image.Width > config.MaxDimension || b.Image.Height > config.MaxDimension) {
 		hash := md5.Sum([]byte(b.Image.ID.String() + "-resized"))
 		id := hex.EncodeToString(hash[:])
 		return config.BaseURL + "/" + id[0:2] + "/" + id[2:4] + "/" + id
