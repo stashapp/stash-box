@@ -16,7 +16,7 @@ import { ROUTE_STUDIOS, ROUTE_STUDIO } from "src/constants/route";
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
 
-const schema = yup.object().shape({
+const schema = yup.object({
   title: yup.string().required("Title is required"),
   url: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
   images: yup
@@ -26,7 +26,7 @@ const schema = yup.object().shape({
   studio: yup.string().nullable(),
 });
 
-type StudioFormData = yup.InferType<typeof schema>;
+type StudioFormData = yup.Asserts<typeof schema>;
 
 interface StudioProps {
   studio: Studio;
@@ -40,7 +40,12 @@ const StudioForm: React.FC<StudioProps> = ({
   showNetworkSelect = true,
 }) => {
   const history = useHistory();
-  const { register, control, handleSubmit, errors } = useForm<StudioFormData>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<StudioFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -63,9 +68,8 @@ const StudioForm: React.FC<StudioProps> = ({
         <Form.Control
           className={cx({ "is-invalid": errors.title })}
           placeholder="Title"
-          name="title"
           defaultValue={studio.name}
-          ref={register}
+          {...register("title")}
         />
         <Form.Control.Feedback type="invalid">
           {errors?.title?.message}
@@ -77,9 +81,8 @@ const StudioForm: React.FC<StudioProps> = ({
         <Form.Control
           className={cx({ "is-invalid": errors.url })}
           placeholder="URL"
-          name="url"
           defaultValue={getUrlByType(studio.urls, "HOME")}
-          ref={register}
+          {...register("url")}
         />
         <Form.Control.Feedback type="invalid">
           {errors?.url?.message}

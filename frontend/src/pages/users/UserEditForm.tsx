@@ -11,7 +11,7 @@ import { RoleEnum, UserUpdateInput } from "src/graphql";
 import { isAdmin, userHref } from "src/utils";
 import AuthContext from "src/AuthContext";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   id: yup.string().required(),
   email: yup.string().email().required("Email is required"),
   roles: yup.array().of(yup.string()),
@@ -38,7 +38,12 @@ const roles = Object.keys(RoleEnum).map((role) => ({
 
 const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
   const Auth = useContext(AuthContext);
-  const { register, control, handleSubmit, errors } = useForm<UserFormData>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<UserFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -55,16 +60,15 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
       <Form.Row>
-        <Form.Control type="hidden" name="id" ref={register} value={user.id} />
+        <Form.Control type="hidden" value={user.id} {...register("id")} />
         <Form.Group controlId="email" className="col-6">
           <Form.Label>Email</Form.Label>
           <Form.Control
             className={cx({ "is-invalid": errors.email })}
-            name="email"
             type="email"
             placeholder="Email"
-            ref={register}
             defaultValue={user.email ?? ""}
+            {...register("email")}
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </Form.Group>
@@ -77,7 +81,7 @@ const UserForm: React.FC<UserProps> = ({ user, username, callback, error }) => {
               name="roles"
               control={control}
               defaultValue={user.roles ?? []}
-              render={({ onChange }) => (
+              render={({ field: { onChange } }) => (
                 <Select
                   classNamePrefix="react-select"
                   name="roles"

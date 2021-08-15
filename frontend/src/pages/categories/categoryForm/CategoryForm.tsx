@@ -13,13 +13,13 @@ import { ROUTE_CATEGORIES, ROUTE_CATEGORY } from "src/constants/route";
 
 const groups = Object.keys(TagGroupEnum);
 
-const schema = yup.object().shape({
+const schema = yup.object({
   name: yup.string().required("Name is required"),
   description: yup.string(),
   group: yup.mixed().oneOf(groups).required("Group is required"),
 });
 
-type CategoryFormData = yup.InferType<typeof schema>;
+type CategoryFormData = yup.Asserts<typeof schema>;
 
 interface TagProps {
   id?: string;
@@ -29,7 +29,11 @@ interface TagProps {
 
 const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
   const history = useHistory();
-  const { register, handleSubmit, errors } = useForm<CategoryFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CategoryFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -50,9 +54,8 @@ const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
           type="text"
           className={cx("form-control", { "is-invalid": errors.name })}
           placeholder="Name"
-          name="name"
+          {...register("name")}
           defaultValue={category?.name ?? ""}
-          ref={register({ required: true })}
         />
         <div className="invalid-feedback">{errors?.name?.message}</div>
       </Form.Group>
@@ -60,25 +63,23 @@ const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
       <Form.Group controlId="description">
         <Form.Label>Description</Form.Label>
         <Form.Control
-          name="description"
           placeholder="Description"
           defaultValue={category?.description ?? ""}
-          ref={register}
+          {...register("description")}
         />
       </Form.Group>
 
       <Form.Group>
         <Form.Label>Group</Form.Label>
         <Form.Control
-          name="group"
           as="select"
           defaultValue={category?.group ?? TagGroupEnum.ACTION}
-          ref={register}
+          {...register("group")}
         >
           {groups.map((g) => (
-            <option value={g} key={g}>{`${g
-              .charAt(0)
-              .toUpperCase()}${g.toLowerCase().slice(1)}`}</option>
+            <option value={g} key={g}>{`${g.charAt(0).toUpperCase()}${g
+              .toLowerCase()
+              .slice(1)}`}</option>
           ))}
         </Form.Control>
       </Form.Group>

@@ -19,11 +19,10 @@ const CLASSNAME_REMOVE = `${CLASSNAME}-remove`;
 const ImageInput: React.FC<ImageProps> = ({ image, control, onRemove }) => (
   <div className={CLASSNAME}>
     <Controller
-      type="hidden"
       name={`images[${image.id}]`}
       control={control}
       defaultValue={image.id}
-      render={() => <></>}
+      render={({ field }) => <input type="hidden" {...field} />}
     />
     <Button
       variant="danger"
