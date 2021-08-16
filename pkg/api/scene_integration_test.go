@@ -40,8 +40,7 @@ func (s *sceneTestRunner) testCreateScene() {
 		Details: &details,
 		Date:    &date,
 		Fingerprints: []*models.FingerprintEditInput{
-			s.generateSceneFingerprint(),
-			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint(nil),
 		},
 		StudioID: &studioID,
 		Performers: []*models.PerformerAppearanceInput{
@@ -203,10 +202,15 @@ func (s *sceneTestRunner) testFindSceneById() {
 func (s *sceneTestRunner) testFindSceneByFingerprint() {
 	createdScene, err := s.createTestScene(nil)
 	if err != nil {
+		s.t.Errorf("Error creating scene: %s", err.Error())
 		return
 	}
 
 	fingerprints, err := s.resolver.Scene().Fingerprints(s.ctx, createdScene)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
 	fingerprint := models.FingerprintQueryInput{
 		Algorithm: fingerprints[0].Algorithm,
 		Hash:      fingerprints[0].Hash,
@@ -234,8 +238,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 	scene1Input := models.SceneCreateInput{
 		Title: &scene1Title,
 		Fingerprints: []*models.FingerprintEditInput{
-			s.generateSceneFingerprint(),
-			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint(nil),
 		},
 	}
 	createdScene1, err := s.createTestScene(&scene1Input)
@@ -249,7 +252,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 
 	fingerprintList := []string{}
 	fingerprints, err := s.resolver.Scene().Fingerprints(s.ctx, createdScene1)
-	fingerprintList = append(fingerprintList, fingerprints[0].Hash, fingerprints[1].Hash)
+	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
 	fingerprints, err = s.resolver.Scene().Fingerprints(s.ctx, createdScene2)
 	fingerprintList = append(fingerprintList, fingerprints[0].Hash)
 
@@ -294,8 +297,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Details: &details,
 		Date:    &date,
 		Fingerprints: []*models.FingerprintEditInput{
-			s.generateSceneFingerprint(),
-			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint(nil),
 		},
 		StudioID: &studioID,
 		Performers: []*models.PerformerAppearanceInput{
@@ -342,7 +344,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Details: &newDetails,
 		Date:    &newDate,
 		Fingerprints: []*models.FingerprintEditInput{
-			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint([]string{s.getCurrentUser().ID.String()}),
 		},
 		Performers: []*models.PerformerAppearanceInput{
 			&models.PerformerAppearanceInput{

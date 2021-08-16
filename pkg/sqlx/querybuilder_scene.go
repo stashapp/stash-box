@@ -71,15 +71,22 @@ func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.Sce
 }
 
 func (qb *sceneQueryBuilder) CreateFingerprints(newJoins models.SceneFingerprints) error {
-	conflictHandling := `
-		ON CONFLICT ON CONSTRAINT scene_hash_unique
-		DO UPDATE SET submissions = (scene_fingerprints.submissions+1), updated_at = NOW()
-	`
-	return qb.dbi.InsertJoinsWithConflictHandling(sceneFingerprintTable, &newJoins, conflictHandling)
+	return qb.dbi.InsertJoins(sceneFingerprintTable, &newJoins)
 }
 
 func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins models.SceneFingerprints) error {
 	return qb.dbi.ReplaceJoins(sceneFingerprintTable, sceneID, &updatedJoins)
+}
+
+func (qb *sceneQueryBuilder) DestroyFingerprints(sceneID uuid.UUID, toDestroy models.SceneFingerprints) error {
+	for _, fp := range toDestroy {
+		query := qb.dbi.db().Rebind(`DELETE FROM ` + sceneFingerprintTable.name + ` WHERE algorithm = ? AND HASH = ? AND user_id = ?`)
+		if _, err := qb.dbi.db().Exec(query, fp.Algorithm, fp.Hash, fp.UserID); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (qb *sceneQueryBuilder) Find(id uuid.UUID) (*models.Scene, error) {
@@ -377,23 +384,70 @@ func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}) (mode
 	return output, err
 }
 
-func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*models.Fingerprint, error) {
-	joins := models.SceneFingerprints{}
-	err := qb.dbi.FindJoins(sceneFingerprintTable, id, &joins)
+type sceneFingerprintGroup struct {
+	SceneID     uuid.UUID                   `db:"scene_id" json:"scene_id"`
+	Hash        string                      `db:"hash" json:"hash"`
+	Algorithm   models.FingerprintAlgorithm `db:"algorithm" json:"algorithm"`
+	Duration    float64                     `db:"duration" json:"duration"`
+	Submissions int                         `db:"submissions" json:"submissions"`
+	CreatedAt   models.SQLiteTimestamp      `db:"created_at" json:"created_at"`
+	UpdatedAt   models.SQLiteTimestamp      `db:"updated_at" json:"updated_at"`
+}
 
-	return joins.ToFingerprints(), err
+func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
+	return &models.Fingerprint{
+		Hash:        fpg.Hash,
+		Algorithm:   fpg.Algorithm,
+		Duration:    int(fpg.Duration),
+		Submissions: fpg.Submissions,
+		Created:     fpg.CreatedAt.Timestamp,
+		Updated:     fpg.UpdatedAt.Timestamp,
+	}
+}
+
+func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*models.Fingerprint, error) {
+	query := `
+        SELECT f.scene_id, f.hash, f.algorithm, AVG(f.duration) as duration, COUNT(f.hash) as submissions, MIN(created_at) as created_at, MAX(created_at) as updated_at FROM scene_fingerprints f
+        WHERE f.scene_id = ?
+		GROUP BY f.scene_id, f.algorithm, f.hash, f.duration`
+
+	var ret []*models.Fingerprint
+	if err := qb.dbi.queryFunc(query, []interface{}{id}, func(rows *sqlx.Rows) error {
+		var fp sceneFingerprintGroup
+
+		if err := rows.StructScan(&fp); err != nil {
+			return err
+		}
+
+		ret = append(ret, fingerprintGroupToFingerprint(fp))
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (qb *sceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
-	joins := models.SceneFingerprints{}
-	err := qb.dbi.FindAllJoins(sceneFingerprintTable, ids, &joins)
-	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
-	}
+	query := `
+		SELECT f.scene_id, f.hash, f.algorithm, AVG(f.duration) as duration, COUNT(f.hash) as submissions, MIN(created_at) as created_at, MAX(created_at) as updated_at FROM scene_fingerprints f
+        WHERE f.scene_id IN (?)
+		GROUP BY f.scene_id, f.algorithm, f.hash`
 
 	m := make(map[uuid.UUID][]*models.Fingerprint)
-	for _, join := range joins {
-		m[join.SceneID] = append(m[join.SceneID], join.ToFingerprint())
+
+	query, args, _ := sqlx.In(query, ids)
+	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		var fp sceneFingerprintGroup
+
+		if err := rows.StructScan(&fp); err != nil {
+			return err
+		}
+
+		m[fp.SceneID] = append(m[fp.SceneID], fingerprintGroupToFingerprint(fp))
+		return nil
+	}); err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
 	}
 
 	result := make([][]*models.Fingerprint, len(ids))

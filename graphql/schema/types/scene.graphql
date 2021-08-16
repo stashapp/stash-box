@@ -26,18 +26,21 @@ type Fingerprint {
 }
 
 input FingerprintInput {
+  """assumes current user if omitted. Ignored for submitFingerprint"""
+  user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
 
 input FingerprintEditInput {
+  user_ids: [ID!]!
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
-  submissions: Int!
   created: Time!
-  updated: Time!
+  submissions: Int @deprecated(reason: "unused")
+  updated: Time @deprecated(reason: "unused")
 }
 
 input FingerprintQueryInput {
@@ -48,6 +51,7 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
+  unmatch: Boolean
 }
 
 type Scene {

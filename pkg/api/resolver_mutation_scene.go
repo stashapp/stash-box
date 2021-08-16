@@ -43,6 +43,14 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		}
 
 		// Save the checksums
+		currentUserID := getCurrentUser(ctx).ID
+		for _, fp := range input.Fingerprints {
+			if fp.UserIds == nil {
+				// set the current user
+				fp.UserIds = []string{currentUserID.String()}
+			}
+		}
+
 		sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
 		if err := qb.CreateFingerprints(sceneFingerprints); err != nil {
 			return err
@@ -223,9 +231,22 @@ func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.F
 			return err
 		}
 
+		// set the current user
+		currentUserID := getCurrentUser(ctx).ID
+		input.Fingerprint.UserIds = []string{currentUserID.String()}
+
 		sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
-		if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
+
+		// remove fingerprints that match the user id, algorithm and hash
+		if err := qb.DestroyFingerprints(sceneID, sceneFingerprint); err != nil {
 			return err
+		}
+
+		if input.Unmatch == nil || !*input.Unmatch {
+			// set the new fingerprints
+			if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
+				return err
+			}
 		}
 
 		return nil

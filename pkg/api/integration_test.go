@@ -6,7 +6,6 @@ import (
 	"context"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/stashapp/stash-box/pkg/api"
 	dbtest "github.com/stashapp/stash-box/pkg/database/databasetest"
@@ -350,7 +349,7 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Sc
 		input = &models.SceneCreateInput{
 			Title: &title,
 			Fingerprints: []*models.FingerprintEditInput{
-				s.generateSceneFingerprint(),
+				s.generateSceneFingerprint(nil),
 			},
 		}
 	}
@@ -365,15 +364,13 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Sc
 	return createdScene, nil
 }
 
-func (s *testRunner) generateSceneFingerprint() *models.FingerprintEditInput {
+func (s *testRunner) generateSceneFingerprint(userIDs []string) *models.FingerprintEditInput {
 	sceneChecksumSuffix += 1
 	return &models.FingerprintEditInput{
-		Algorithm:   "MD5",
-		Hash:        "scene-" + strconv.Itoa(sceneChecksumSuffix),
-		Duration:    1234,
-		Submissions: 1,
-		Created:     time.Now(),
-		Updated:     time.Now(),
+		Algorithm: "MD5",
+		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
+		Duration:  1234,
+		UserIds:   userIDs,
 	}
 }
 
@@ -405,6 +402,16 @@ func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User
 	}
 
 	return createdUser, nil
+}
+
+func (s *testRunner) getCurrentUser() *models.User {
+	userCtxVal := s.ctx.Value(api.ContextUser)
+	if userCtxVal != nil {
+		currentUser := userCtxVal.(*models.User)
+		return currentUser
+	}
+
+	return nil
 }
 
 func (s *testRunner) generateCategoryName() string {

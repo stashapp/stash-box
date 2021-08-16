@@ -36,13 +36,12 @@ func (p *Scenes) Add(o interface{}) {
 }
 
 type SceneFingerprint struct {
-	SceneID     uuid.UUID       `db:"scene_id" json:"scene_id"`
-	Hash        string          `db:"hash" json:"hash"`
-	Algorithm   string          `db:"algorithm" json:"algorithm"`
-	Duration    int             `db:"duration" json:"duration"`
-	Submissions int             `db:"submissions" json:"submissions"`
-	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	SceneID   uuid.UUID       `db:"scene_id" json:"scene_id"`
+	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
+	Hash      string          `db:"hash" json:"hash"`
+	Algorithm string          `db:"algorithm" json:"algorithm"`
+	Duration  int             `db:"duration" json:"duration"`
+	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
 }
 
 type SceneURL struct {
@@ -85,17 +84,6 @@ func CreateSceneURLs(sceneID uuid.UUID, urls []*URLInput) SceneURLs {
 	return ret
 }
 
-func (p SceneFingerprint) ToFingerprint() *Fingerprint {
-	return &Fingerprint{
-		Algorithm:   FingerprintAlgorithm(p.Algorithm),
-		Hash:        p.Hash,
-		Duration:    p.Duration,
-		Submissions: p.Submissions,
-		Created:     p.CreatedAt.Timestamp,
-		Updated:     p.UpdatedAt.Timestamp,
-	}
-}
-
 type SceneFingerprints []*SceneFingerprint
 
 func (p SceneFingerprints) Each(fn func(interface{})) {
@@ -108,29 +96,22 @@ func (p *SceneFingerprints) Add(o interface{}) {
 	*p = append(*p, o.(*SceneFingerprint))
 }
 
-func (p SceneFingerprints) ToFingerprints() []*Fingerprint {
-	var ret []*Fingerprint
-	for _, v := range p {
-		ret = append(ret, v.ToFingerprint())
-	}
-
-	return ret
-}
-
 func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditInput) SceneFingerprints {
 	var ret SceneFingerprints
 
 	for _, fingerprint := range fingerprints {
 		if fingerprint.Duration > 0 {
-			ret = append(ret, &SceneFingerprint{
-				SceneID:     sceneID,
-				Hash:        fingerprint.Hash,
-				Algorithm:   fingerprint.Algorithm.String(),
-				Duration:    fingerprint.Duration,
-				Submissions: fingerprint.Submissions,
-				CreatedAt:   SQLiteTimestamp{Timestamp: fingerprint.Created},
-				UpdatedAt:   SQLiteTimestamp{Timestamp: fingerprint.Updated},
-			})
+			for _, user := range fingerprint.UserIds {
+				userID, _ := uuid.FromString(user)
+				ret = append(ret, &SceneFingerprint{
+					SceneID:   sceneID,
+					UserID:    userID,
+					Hash:      fingerprint.Hash,
+					Algorithm: fingerprint.Algorithm.String(),
+					Duration:  fingerprint.Duration,
+					CreatedAt: SQLiteTimestamp{Timestamp: fingerprint.Created},
+				})
+			}
 		}
 	}
 
@@ -142,12 +123,16 @@ func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*Fingerp
 
 	for _, fingerprint := range fingerprints {
 		if fingerprint.Duration > 0 {
-			ret = append(ret, &SceneFingerprint{
-				SceneID:   sceneID,
-				Hash:      fingerprint.Hash,
-				Algorithm: fingerprint.Algorithm.String(),
-				Duration:  fingerprint.Duration,
-			})
+			for _, user := range fingerprint.UserIds {
+				userID, _ := uuid.FromString(user)
+				ret = append(ret, &SceneFingerprint{
+					SceneID:   sceneID,
+					UserID:    userID,
+					Hash:      fingerprint.Hash,
+					Algorithm: fingerprint.Algorithm.String(),
+					Duration:  fingerprint.Duration,
+				})
+			}
 		}
 	}
 
