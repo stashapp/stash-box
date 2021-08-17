@@ -21,7 +21,7 @@ func getCurrentUser(ctx context.Context) *models.User {
 	return nil
 }
 
-func isRole(ctx context.Context, role models.RoleEnum) bool {
+func isRole(ctx context.Context, requiredRole models.RoleEnum) bool {
 	var roles []models.RoleEnum
 
 	roleCtxVal := ctx.Value(ContextRoles)
@@ -32,7 +32,7 @@ func isRole(ctx context.Context, role models.RoleEnum) bool {
 	valid := false
 
 	for _, role := range roles {
-		if role.Implies(role) {
+		if role.Implies(requiredRole) {
 			valid = true
 			break
 		}
