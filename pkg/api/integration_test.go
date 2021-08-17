@@ -150,7 +150,7 @@ var sceneChecksumSuffix int
 var userSuffix int
 var categorySuffix int
 
-func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) *testRunner {
+func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *testRunner {
 	repoFn := func(context.Context) models.Repo {
 		return dbtest.Repo()
 	}
@@ -161,8 +161,8 @@ func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) 
 	var handlerFunc http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		// re-create context for each request
 		ctx := context.TODO()
-		ctx = context.WithValue(ctx, api.ContextUser, user)
-		ctx = context.WithValue(ctx, api.ContextRoles, roles)
+		ctx = context.WithValue(ctx, user.ContextUser, u)
+		ctx = context.WithValue(ctx, user.ContextRoles, roles)
 		ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(dbtest.Repo()))
 		ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
@@ -174,8 +174,8 @@ func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) 
 
 	// replicate what the server.go code does
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, user)
-	ctx = context.WithValue(ctx, api.ContextRoles, roles)
+	ctx = context.WithValue(ctx, user.ContextUser, u)
+	ctx = context.WithValue(ctx, user.ContextRoles, roles)
 	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(dbtest.Repo()))
 	ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
@@ -432,16 +432,6 @@ func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User
 	}
 
 	return createdUser, nil
-}
-
-func (s *testRunner) getCurrentUser() *models.User {
-	userCtxVal := s.ctx.Value(api.ContextUser)
-	if userCtxVal != nil {
-		currentUser := userCtxVal.(*models.User)
-		return currentUser
-	}
-
-	return nil
 }
 
 func (s *testRunner) generateCategoryName() string {

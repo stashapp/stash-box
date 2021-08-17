@@ -284,6 +284,12 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Details: &details,
 		Date:    &date,
 		Fingerprints: []*models.FingerprintEditInput{
+			// fingerprint that will be kept
+			s.generateSceneFingerprint([]string{
+				userDB.none.ID.String(),
+				userDB.admin.ID.String(),
+			}),
+			// fingerprint that will be removed
 			s.generateSceneFingerprint(nil),
 		},
 		StudioID: &studioID,
@@ -331,7 +337,8 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Details: &newDetails,
 		Date:    &newDate,
 		Fingerprints: []*models.FingerprintEditInput{
-			s.generateSceneFingerprint([]string{s.getCurrentUser().ID.String()}),
+			input.Fingerprints[0],
+			s.generateSceneFingerprint(nil),
 		},
 		Performers: []*models.PerformerAppearanceInput{
 			{
@@ -358,6 +365,9 @@ func (s *sceneTestRunner) testUpdateScene() {
 	}
 
 	s.verifyUpdatedScene(updateInput, scene)
+
+	// ensure fingerprint changes were enacted
+	s.verifyUpdatedFingerprints(input.Fingerprints, updateInput.Fingerprints, scene)
 }
 
 func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scene *sceneOutput) {
@@ -374,10 +384,6 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 
-	if !compareFingerprints(input.Fingerprints, scene.Fingerprints) {
-		s.fieldMismatch(input.Fingerprints, scene.Fingerprints, "Fingerprints")
-	}
-
 	// ensure urls were set correctly
 	if !compareUrls(input.Urls, scene.Urls) {
 		s.fieldMismatch(input.Urls, scene.Urls, "Urls")
@@ -389,6 +395,53 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 
 	if !compareTags(input.TagIds, scene.Tags) {
 		s.fieldMismatch(input.TagIds, scene.Tags, "Tags")
+	}
+}
+
+func (s *sceneTestRunner) verifyUpdatedFingerprints(original, updated []*models.FingerprintEditInput, scene *sceneOutput) {
+	hashExists := func(h *models.FingerprintEditInput, vs []*models.FingerprintEditInput) bool {
+		for _, v := range vs {
+			if h.Algorithm == v.Algorithm && h.Hash == v.Hash {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	inOutput := func(h *models.FingerprintEditInput) bool {
+		for _, hh := range scene.Fingerprints {
+			if hh.Algorithm == h.Algorithm && hh.Hash == h.Hash {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for _, o := range original {
+		// find in updated
+		if hashExists(o, updated) {
+			// exists, so ensure hash exists in output
+			if !inOutput(o) {
+				s.t.Errorf("existing hash %s missing in output", o.Hash)
+			}
+		} else {
+			// not exists, ensure not in output
+			if inOutput(o) {
+				s.t.Errorf("removed hash %s still in output", o.Hash)
+			}
+		}
+	}
+
+	for _, u := range updated {
+		// find in original
+		if !hashExists(u, original) {
+			// new hash, ensure in output
+			if !inOutput(u) {
+				s.t.Errorf("new hash %s missing in output", u.Hash)
+			}
+		}
 	}
 }
 

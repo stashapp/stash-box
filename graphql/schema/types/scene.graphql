@@ -34,7 +34,7 @@ input FingerprintInput {
 }
 
 input FingerprintEditInput {
-  user_ids: [ID!]!
+  user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!

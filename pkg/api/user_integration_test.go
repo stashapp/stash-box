@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type userTestRunner struct {
@@ -385,7 +386,7 @@ func (s *userTestRunner) testChangePassword() {
 
 	// change password as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
 	updatedPassword := name + "newpassword"
 	existingPassword := "incorrect password"
@@ -431,7 +432,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	// regenerate as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
 	adminID := userDB.admin.ID.String()
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
