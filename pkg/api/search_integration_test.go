@@ -38,7 +38,7 @@ func (s *searchTestRunner) testSearchPerformerByTerm() {
 	}
 
 	// ensure values were set
-	if createdPerformer.ID != performers[0].ID {
+	if createdPerformer.ID != performers[0].ID.String() {
 		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
 	}
 }
@@ -49,7 +49,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 		return
 	}
 
-	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID.String(), nil)
+	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -62,7 +62,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 	}
 
 	// ensure values were set
-	if createdPerformer.ID != performers[0].ID {
+	if createdPerformer.ID != performers[0].ID.String() {
 		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
 	}
 }
@@ -72,7 +72,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	if err != nil {
 		return
 	}
-	studioID := createdStudio.ID.String()
+	studioID := createdStudio.ID
 
 	title := "scene search title"
 	date := "2019-02-03"
@@ -86,7 +86,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 		return
 	}
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, createdScene.Title.String+" "+createdScene.Date.String, nil)
+	scenes, err := s.resolver.Query().SearchScene(s.ctx, *createdScene.Title+" "+*createdScene.Date, nil)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -99,7 +99,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	}
 
 	// ensure correct scene
-	if createdScene.ID != scenes[0].ID {
+	if createdScene.ID != scenes[0].ID.String() {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }
@@ -110,7 +110,7 @@ func (s *searchTestRunner) testSearchSceneByID() {
 		return
 	}
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID.String(), nil)
+	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -123,7 +123,7 @@ func (s *searchTestRunner) testSearchSceneByID() {
 	}
 
 	// ensure correct scene
-	if createdScene.ID != scenes[0].ID {
+	if createdScene.ID != scenes[0].ID.String() {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }

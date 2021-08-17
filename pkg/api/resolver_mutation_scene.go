@@ -45,7 +45,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		// Save the checksums
 		currentUserID := getCurrentUser(ctx).ID
 		for _, fp := range input.Fingerprints {
-			if fp.UserIds == nil {
+			if len(fp.UserIds) == 0 {
 				// set the current user
 				fp.UserIds = []string{currentUserID.String()}
 			}

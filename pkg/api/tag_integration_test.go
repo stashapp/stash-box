@@ -62,7 +62,7 @@ func (s *tagTestRunner) testFindTagById() {
 		return
 	}
 
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 	tag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding tag: %s", err.Error())
@@ -113,7 +113,7 @@ func (s *tagTestRunner) testUpdateTag() {
 		return
 	}
 
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 
 	newDescription := "newDescription"
 
@@ -151,7 +151,7 @@ func (s *tagTestRunner) testDestroyTag() {
 		return
 	}
 
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 
 	destroyed, err := s.resolver.Mutation().TagDestroy(s.ctx, models.TagDestroyInput{
 		ID: tagID,

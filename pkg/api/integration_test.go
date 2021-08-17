@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 	"testing"
 
@@ -13,7 +14,9 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 
+	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/99designs/gqlgen/graphql/handler"
 )
 
 // we need to create some users to test the api with, otherwise all calls
@@ -134,6 +137,7 @@ func TestMain(m *testing.M) {
 
 type testRunner struct {
 	t        *testing.T
+	client   *graphqlClient
 	resolver api.Resolver
 	ctx      context.Context
 	err      error
@@ -153,6 +157,21 @@ func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) 
 
 	resolver := api.NewResolver(repoFn)
 
+	gqlHandler := handler.NewDefaultServer(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
+	var handlerFunc http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		// re-create context for each request
+		ctx := context.TODO()
+		ctx = context.WithValue(ctx, api.ContextUser, user)
+		ctx = context.WithValue(ctx, api.ContextRoles, roles)
+		ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(dbtest.Repo()))
+		ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
+
+		r = r.WithContext(ctx)
+		gqlHandler.ServeHTTP(w, r)
+	}
+
+	c := client.New(handlerFunc)
+
 	// replicate what the server.go code does
 	ctx := context.TODO()
 	ctx = context.WithValue(ctx, api.ContextUser, user)
@@ -161,7 +180,10 @@ func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) 
 	ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
 	return &testRunner{
-		t:        t,
+		t: t,
+		client: &graphqlClient{
+			c,
+		},
 		resolver: *resolver,
 		ctx:      ctx,
 	}
@@ -217,7 +239,7 @@ func (s *testRunner) generatePerformerName() string {
 	return "performer-" + strconv.Itoa(performerSuffix)
 }
 
-func (s *testRunner) createTestPerformer(input *models.PerformerCreateInput) (*models.Performer, error) {
+func (s *testRunner) createTestPerformer(input *models.PerformerCreateInput) (*performerOutput, error) {
 	s.t.Helper()
 	if input == nil {
 		input = &models.PerformerCreateInput{
@@ -225,7 +247,7 @@ func (s *testRunner) createTestPerformer(input *models.PerformerCreateInput) (*m
 		}
 	}
 
-	createdPerformer, err := s.resolver.Mutation().PerformerCreate(s.ctx, *input)
+	createdPerformer, err := s.client.createPerformer(*input)
 
 	if err != nil {
 		s.t.Errorf("Error creating performer: %s", err.Error())
@@ -301,7 +323,7 @@ func (s *testRunner) generateStudioName() string {
 	return "studio-" + strconv.Itoa(studioSuffix)
 }
 
-func (s *testRunner) createTestStudio(input *models.StudioCreateInput) (*models.Studio, error) {
+func (s *testRunner) createTestStudio(input *models.StudioCreateInput) (*studioOutput, error) {
 	s.t.Helper()
 	if input == nil {
 		input = &models.StudioCreateInput{
@@ -309,7 +331,7 @@ func (s *testRunner) createTestStudio(input *models.StudioCreateInput) (*models.
 		}
 	}
 
-	createdStudio, err := s.resolver.Mutation().StudioCreate(s.ctx, *input)
+	createdStudio, err := s.client.createStudio(*input)
 
 	if err != nil {
 		s.t.Errorf("Error creating studio: %s", err.Error())
@@ -324,7 +346,7 @@ func (s *testRunner) generateTagName() string {
 	return "tag-" + strconv.Itoa(tagSuffix)
 }
 
-func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, error) {
+func (s *testRunner) createTestTag(input *models.TagCreateInput) (*tagOutput, error) {
 	s.t.Helper()
 	if input == nil {
 		input = &models.TagCreateInput{
@@ -332,7 +354,7 @@ func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, e
 		}
 	}
 
-	createdTag, err := s.resolver.Mutation().TagCreate(s.ctx, *input)
+	createdTag, err := s.client.createTag(*input)
 
 	if err != nil {
 		s.t.Errorf("Error creating tag: %s", err.Error())
@@ -342,7 +364,7 @@ func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, e
 	return createdTag, nil
 }
 
-func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Scene, error) {
+func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutput, error) {
 	s.t.Helper()
 	if input == nil {
 		title := "title"
@@ -354,7 +376,11 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Sc
 		}
 	}
 
-	createdScene, err := s.resolver.Mutation().SceneCreate(s.ctx, *input)
+	if input.Fingerprints == nil {
+		input.Fingerprints = []*models.FingerprintEditInput{}
+	}
+
+	createdScene, err := s.client.createScene(*input)
 
 	if err != nil {
 		s.t.Errorf("Error creating scene: %s", err.Error())
@@ -365,6 +391,10 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Sc
 }
 
 func (s *testRunner) generateSceneFingerprint(userIDs []string) *models.FingerprintEditInput {
+	if userIDs == nil {
+		userIDs = []string{}
+	}
+
 	sceneChecksumSuffix += 1
 	return &models.FingerprintEditInput{
 		Algorithm: "MD5",
