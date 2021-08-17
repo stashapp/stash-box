@@ -146,7 +146,7 @@ const DiffPerformer = (
     diffArray(
       "ImageIDs",
       original.images.map((i) => i.id),
-      (updated.images?.filter((i) => i) ?? []) as string[]
+      (updated.images ?? []).map((i) => i.id ?? "")
     )
   );
 

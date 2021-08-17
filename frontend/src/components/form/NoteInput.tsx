@@ -33,11 +33,10 @@ const NoteInput: React.FC<IProps> = ({
         <Tab eventKey="write" title="Write" className="NoteInput-tab">
           <Form.Control
             as="textarea"
-            name="note"
             className={className}
             onChange={handleChange}
             rows={5}
-            ref={register}
+            {...register("note")}
           />
         </Tab>
         <Tab eventKey="preview" title="Preview" unmountOnExit mountOnEnter>

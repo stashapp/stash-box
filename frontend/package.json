@@ -36,6 +36,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "graphql.macro": "^1.4.2",
     "prettier": "2.3.2",
+    "react-app-rewired": "^2.1.8",
     "react-scripts": "4.0.3",
     "sass": "^1.37.5",
     "stylelint": "^13.13.1",

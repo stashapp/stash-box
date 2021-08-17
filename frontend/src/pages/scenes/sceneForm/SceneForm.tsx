@@ -86,8 +86,13 @@ const schema = yup.object({
   tags: yup.array().of(yup.string().required()).nullable(),
   images: yup
     .array()
-    .of(yup.string().trim().transform(nullCheck).required())
-    .transform((_, obj) => Object.keys(obj ?? [])),
+    .of(
+      yup.object({
+        id: yup.string().required(),
+        url: yup.string().required(),
+      })
+    )
+    .required(),
 });
 
 interface SceneFormData extends yup.Asserts<typeof schema> {}
@@ -111,6 +116,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   } = useForm<SceneFormData>({
     resolver: yupResolver(schema),
     mode: "onBlur",
+    defaultValues: {
+      images: scene.images,
+    },
   });
   const {
     fields: performerFields,
@@ -173,7 +181,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         performer_id: performance.performerId,
         as: performance.alias,
       })),
-      image_ids: data.images,
+      image_ids: data.images.map((i) => i.id),
       fingerprints: (data?.fingerprints ?? []).map((f) => ({
         hash: f.hash,
         algorithm: f.algorithm as FingerprintAlgorithm,
@@ -494,11 +502,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
           <Form.Group>
             <Form.Label>Images</Form.Label>
-            <EditImages
-              initialImages={scene.images}
-              control={control}
-              maxImages={1}
-            />
+            <EditImages control={control} maxImages={1} />
           </Form.Group>
 
           <Form.Group>

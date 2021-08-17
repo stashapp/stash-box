@@ -194,8 +194,13 @@ const schema = yup.object({
     .required(),
   images: yup
     .array()
-    .of(yup.string().trim().transform(nullCheck).required())
-    .transform((_, obj) => Object.keys(obj ?? [])),
+    .of(
+      yup.object({
+        id: yup.string().required(),
+        url: yup.string().required(),
+      })
+    )
+    .required(),
   note: yup.string().required("Edit note is required"),
 });
 
@@ -224,6 +229,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
   changeType,
   saving,
 }) => {
+  const images = uniqBy([...performer.images, ...initialImages], (i) => i.id);
   const {
     register,
     control,
@@ -233,6 +239,9 @@ const PerformerForm: React.FC<PerformerProps> = ({
   } = useForm<PerformerFormData>({
     resolver: yupResolver(schema),
     mode: "onBlur",
+    defaultValues: {
+      images,
+    },
   });
 
   const aliases = uniq([...performer.aliases, ...initialAliases]);
@@ -245,7 +254,6 @@ const PerformerForm: React.FC<PerformerProps> = ({
     [fieldData, performer]
   );
   const history = useHistory();
-  const images = uniqBy([...performer.images, ...initialImages], (i) => i.id);
 
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
@@ -274,7 +282,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
       tattoos: data.tattoos ?? [],
       breast_type:
         BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum] || null,
-      image_ids: data.images,
+      image_ids: data.images.map((i) => i.id),
     };
 
     performerData.measurements = {
@@ -729,7 +737,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <Form.Row>
-            <EditImages initialImages={images} control={control} />
+            <EditImages control={control} />
           </Form.Row>
 
           <Form.Row className="mt-1">

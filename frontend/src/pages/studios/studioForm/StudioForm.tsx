@@ -21,8 +21,13 @@ const schema = yup.object({
   url: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
   images: yup
     .array()
-    .of(yup.string().trim().transform(nullCheck).required())
-    .transform((_, obj) => Object.keys(obj ?? [])),
+    .of(
+      yup.object({
+        id: yup.string().required(),
+        url: yup.string().required(),
+      })
+    )
+    .required(),
   studio: yup.string().nullable(),
 });
 
@@ -47,6 +52,9 @@ const StudioForm: React.FC<StudioProps> = ({
     formState: { errors },
   } = useForm<StudioFormData>({
     resolver: yupResolver(schema),
+    defaultValues: {
+      images: studio.images,
+    },
   });
 
   const onSubmit = (data: StudioFormData) => {
@@ -55,7 +63,7 @@ const StudioForm: React.FC<StudioProps> = ({
     const callbackData: StudioCreateInput = {
       name: data.title,
       urls,
-      image_ids: data.images,
+      image_ids: data.images.map((i) => i.id),
       parent_id: data.studio,
     };
     callback(callbackData);
@@ -104,11 +112,7 @@ const StudioForm: React.FC<StudioProps> = ({
 
       <Form.Group>
         <Form.Label>Images</Form.Label>
-        <EditImages
-          initialImages={studio.images}
-          control={control}
-          maxImages={1}
-        />
+        <EditImages control={control} maxImages={1} />
       </Form.Group>
 
       <Form.Group className="d-flex">
