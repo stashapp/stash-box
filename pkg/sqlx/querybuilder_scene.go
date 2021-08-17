@@ -71,7 +71,12 @@ func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.Sce
 }
 
 func (qb *sceneQueryBuilder) CreateFingerprints(newJoins models.SceneFingerprints) error {
-	return qb.dbi.InsertJoins(sceneFingerprintTable, &newJoins)
+	conflictHandling := `
+		ON CONFLICT ON CONSTRAINT scene_hash_unique
+		DO NOTHING
+	`
+
+	return qb.dbi.InsertJoinsWithConflictHandling(sceneFingerprintTable, &newJoins, conflictHandling)
 }
 
 func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins models.SceneFingerprints) error {

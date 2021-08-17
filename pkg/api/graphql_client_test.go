@@ -79,13 +79,13 @@ type performerOutput struct {
 }
 
 type studioOutput struct {
-	ID           string      `json:"id"`
-	Name         string      `json:"name"`
-	Urls         []*URL      `json:"urls"`
-	Parent       *idObject   `json:"parent"`
-	ChildStudios []*idObject `json:"child_studios"`
-	Images       []*idObject `json:"images"`
-	Deleted      bool        `json:"deleted"`
+	ID           string        `json:"id"`
+	Name         string        `json:"name"`
+	Urls         []*models.URL `json:"urls"`
+	Parent       *idObject     `json:"parent"`
+	ChildStudios []*idObject   `json:"child_studios"`
+	Images       []*idObject   `json:"images"`
+	Deleted      bool          `json:"deleted"`
 }
 
 type tagOutput struct {
@@ -251,6 +251,22 @@ func (c *graphqlClient) destroyScene(input models.SceneDestroyInput) (bool, erro
 	}
 
 	return resp.SceneDestroy, nil
+}
+
+func (c *graphqlClient) submitFingerprint(input models.FingerprintSubmission) (bool, error) {
+	q := `
+	mutation SubmitFingerprint($input: FingerprintSubmission!) {
+		submitFingerprint(input: $input)
+	}`
+
+	var resp struct {
+		SubmitFingerprint bool
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.SubmitFingerprint, nil
 }
 
 func (c *graphqlClient) createPerformer(input models.PerformerCreateInput) (*performerOutput, error) {
