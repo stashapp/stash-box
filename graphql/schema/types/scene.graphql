@@ -26,7 +26,7 @@ type Fingerprint {
 }
 
 input FingerprintInput {
-  """assumes current user if omitted. Ignored for submitFingerprint"""
+  """assumes current user if omitted. Ignored for non-modify Users"""
   user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!

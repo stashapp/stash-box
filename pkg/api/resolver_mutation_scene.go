@@ -231,20 +231,23 @@ func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.F
 			return err
 		}
 
-		// set the current user
-		currentUserID := getCurrentUser(ctx).ID
-		input.Fingerprint.UserIds = []string{currentUserID.String()}
+		// if no user is set, or if the current user does not have the modify
+		// role, then set users to the current user
+		if len(input.Fingerprint.UserIds) == 0 || !isRole(ctx, models.RoleEnumModify) {
+			currentUserID := getCurrentUser(ctx).ID
+			input.Fingerprint.UserIds = []string{currentUserID.String()}
+		}
 
 		sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
-
-		// remove fingerprints that match the user id, algorithm and hash
-		if err := qb.DestroyFingerprints(sceneID, sceneFingerprint); err != nil {
-			return err
-		}
 
 		if input.Unmatch == nil || !*input.Unmatch {
 			// set the new fingerprints
 			if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
+				return err
+			}
+		} else {
+			// remove fingerprints that match the user id, algorithm and hash
+			if err := qb.DestroyFingerprints(sceneID, sceneFingerprint); err != nil {
 				return err
 			}
 		}
