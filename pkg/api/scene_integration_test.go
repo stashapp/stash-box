@@ -368,6 +368,22 @@ func (s *sceneTestRunner) testUpdateScene() {
 
 	// ensure fingerprint changes were enacted
 	s.verifyUpdatedFingerprints(input.Fingerprints, updateInput.Fingerprints, scene)
+
+	// ensure submissions count was maintained
+	originalFP := input.Fingerprints[0]
+	foundFP := false
+	for _, f := range scene.Fingerprints {
+		if originalFP.Algorithm == f.Algorithm && originalFP.Hash == f.Hash {
+			foundFP = true
+			if f.Submissions != 2 {
+				s.t.Errorf("Incorrect fingerprint submissions count: %d", f.Submissions)
+			}
+		}
+	}
+
+	if !foundFP {
+		s.t.Error("Could not find original fingerprint")
+	}
 }
 
 func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scene *sceneOutput) {

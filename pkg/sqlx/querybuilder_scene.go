@@ -410,27 +410,10 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 	}
 }
 
-func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) ([]*models.Fingerprint, error) {
-	query := `
-        SELECT f.scene_id, f.hash, f.algorithm, AVG(f.duration) as duration, COUNT(f.hash) as submissions, MIN(created_at) as created_at, MAX(created_at) as updated_at FROM scene_fingerprints f
-        WHERE f.scene_id = ?
-		GROUP BY f.scene_id, f.algorithm, f.hash, f.duration`
-
-	var ret []*models.Fingerprint
-	if err := qb.dbi.queryFunc(query, []interface{}{id}, func(rows *sqlx.Rows) error {
-		var fp sceneFingerprintGroup
-
-		if err := rows.StructScan(&fp); err != nil {
-			return err
-		}
-
-		ret = append(ret, fingerprintGroupToFingerprint(fp))
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+func (qb *sceneQueryBuilder) GetSceneFingerprints(id uuid.UUID) ([]*models.SceneFingerprint, error) {
+	joins := models.SceneFingerprints{}
+	err := qb.dbi.FindJoins(sceneFingerprintTable, id, &joins)
+	return joins, err
 }
 
 func (qb *sceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {

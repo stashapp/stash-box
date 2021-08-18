@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
@@ -92,7 +93,11 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 	updatedScene, err := qb.Find(sceneID)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error finding scene")
+	}
+
+	if updatedScene == nil {
+		return nil, errors.New("scene not found")
 	}
 
 	updatedScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
@@ -102,47 +107,48 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 
 	scene, err := qb.Update(*updatedScene)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error updating scene")
 	}
 
-	// TODO - handle the checksums
-	// hashes present are kept
-	// hashes missing are destroyed
-	// new hashes are created and assigned to the current user
+	existingFingerprints, err := qb.GetSceneFingerprints(sceneID)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting scene fingerprints")
+	}
 
 	// Save the checksums
-	sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
+	currentUserID := user.GetCurrentUser(ctx).ID
+	sceneFingerprints := createUpdatedSceneFingerprints(scene.ID, existingFingerprints, input.Fingerprints, currentUserID)
 	if err := qb.UpdateFingerprints(scene.ID, sceneFingerprints); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error updating fingerprints")
 	}
 
 	scenePerformers := models.CreateScenePerformers(scene.ID, input.Performers)
 	if err := jqb.UpdatePerformersScenes(scene.ID, scenePerformers); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error updating scene performers")
 	}
 
 	// Save the tags
 	tagJoins := models.CreateSceneTags(scene.ID, input.TagIds)
 	if err := jqb.UpdateScenesTags(scene.ID, tagJoins); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error updating scene tags")
 	}
 
 	// Save the URLs
 	sceneUrls := models.CreateSceneURLs(scene.ID, input.Urls)
 	if err := qb.UpdateURLs(scene.ID, sceneUrls); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error updating scene URLs")
 	}
 
 	// Save the images
 	// get the existing images
 	existingImages, err := iqb.FindBySceneID(scene.ID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error finding scene images")
 	}
 
 	sceneImages := models.CreateSceneImages(scene.ID, input.ImageIds)
 	if err := jqb.UpdateScenesImages(scene.ID, sceneImages); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error updating scene images")
 	}
 
 	// remove images that are no longer used
@@ -150,11 +156,48 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 
 	for _, i := range existingImages {
 		if err := imageService.DestroyUnusedImage(i.ID); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "error destroying unused image")
 		}
 	}
 
 	return scene, nil
+}
+
+func isSameHash(f *models.SceneFingerprint, ff *models.FingerprintEditInput) bool {
+	return f.Algorithm == ff.Algorithm.String() && f.Hash == ff.Hash
+}
+
+func createUpdatedSceneFingerprints(sceneID uuid.UUID, original []*models.SceneFingerprint, updated []*models.FingerprintEditInput, currentUserID uuid.UUID) models.SceneFingerprints {
+	var ret models.SceneFingerprints
+
+	// hashes present are kept - use existing users
+	// hashes missing are destroyed
+	for _, o := range original {
+		for _, u := range updated {
+			if isSameHash(o, u) {
+				ret = append(ret, o)
+				break
+			}
+		}
+	}
+
+	// new hashes are created and assigned to the current user
+	for _, u := range updated {
+		found := false
+		for _, o := range original {
+			if isSameHash(o, u) {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			u.UserIds = []string{currentUserID.String()}
+			ret = append(ret, models.CreateSceneFingerprints(sceneID, []*models.FingerprintEditInput{u})...)
+		}
+	}
+
+	return ret
 }
 
 func Destroy(fac models.Repo, input models.SceneDestroyInput) (bool, error) {

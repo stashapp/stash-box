@@ -42,6 +42,9 @@ type SceneFingerprint struct {
 	Algorithm string          `db:"algorithm" json:"algorithm"`
 	Duration  int             `db:"duration" json:"duration"`
 	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
+	// unused fields
+	Submissions int             `db:"submissions" json:"submissions"`
+	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
 type SceneURL struct {

@@ -18,7 +18,7 @@ type SceneRepo interface {
 	FindByTitle(name string) ([]*Scene, error)
 	Count() (int, error)
 	Query(sceneFilter *SceneFilterType, findFilter *QuerySpec) ([]*Scene, int)
-	GetFingerprints(id uuid.UUID) ([]*Fingerprint, error)
+	GetSceneFingerprints(id uuid.UUID) ([]*SceneFingerprint, error)
 	GetAllFingerprints(ids []uuid.UUID) ([][]*Fingerprint, []error)
 	GetPerformers(id uuid.UUID) (PerformersScenes, error)
 	GetAllAppearances(ids []uuid.UUID) ([]PerformersScenes, []error)
