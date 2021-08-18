@@ -192,7 +192,9 @@ func createUpdatedSceneFingerprints(sceneID uuid.UUID, original []*models.SceneF
 		}
 
 		if !found {
-			u.UserIds = []string{currentUserID.String()}
+			if len(u.UserIds) == 0 {
+				u.UserIds = []string{currentUserID.String()}
+			}
 			ret = append(ret, models.CreateSceneFingerprints(sceneID, []*models.FingerprintEditInput{u})...)
 		}
 	}
