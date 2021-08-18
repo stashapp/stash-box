@@ -124,7 +124,7 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string) (string, error) {
 	currentUser := getCurrentUser(ctx)
 	if currentUser == nil {
-		return "", ErrUnauthorized
+		return "", user.ErrUnauthorized
 	}
 
 	if userID != nil {
@@ -192,7 +192,7 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 
 	// just setting password
 	if currentUser == nil {
-		return false, ErrUnauthorized
+		return false, user.ErrUnauthorized
 	}
 
 	if input.ExistingPassword == nil {

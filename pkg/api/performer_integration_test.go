@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type performerTestRunner struct {
@@ -400,31 +400,31 @@ func (s *performerTestRunner) testDestroyPerformer() {
 func (s *performerTestRunner) testUnauthorisedPerformerModify() {
 	// test each api interface - all require modify so all should fail
 	_, err := s.resolver.Mutation().PerformerCreate(s.ctx, models.PerformerCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("PerformerCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("PerformerCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().PerformerUpdate(s.ctx, models.PerformerUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("PerformerUpdate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("PerformerUpdate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().PerformerDestroy(s.ctx, models.PerformerDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("PerformerDestroy: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("PerformerDestroy: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
 func (s *performerTestRunner) testUnauthorisedPerformerQuery() {
 	// test each api interface - all require read so all should fail
 	_, err := s.resolver.Query().FindPerformer(s.ctx, "")
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("FindPerformer: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("FindPerformer: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Query().QueryPerformers(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("QueryPerformers: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("QueryPerformers: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 

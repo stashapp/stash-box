@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type studioTestRunner struct {
@@ -182,31 +182,31 @@ func (s *studioTestRunner) testDestroyStudio() {
 func (s *studioTestRunner) testUnauthorisedStudioModify() {
 	// test each api interface - all require modify so all should fail
 	_, err := s.resolver.Mutation().StudioCreate(s.ctx, models.StudioCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("StudioCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("StudioCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().StudioUpdate(s.ctx, models.StudioUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("StudioUpdate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("StudioUpdate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("StudioDestroy: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("StudioDestroy: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
 func (s *studioTestRunner) testUnauthorisedStudioQuery() {
 	// test each api interface - all require read so all should fail
 	_, err := s.resolver.Query().FindStudio(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("FindStudio: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("FindStudio: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Query().QueryStudios(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("QueryStudios: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("QueryStudios: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 

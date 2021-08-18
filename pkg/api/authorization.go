@@ -2,15 +2,12 @@ package api
 
 import (
 	"context"
-	"errors"
 
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
-
-var ErrUnauthorized = errors.New("Not authorized")
 
 func getCurrentUser(ctx context.Context) *models.User {
 	return user.GetCurrentUser(ctx)

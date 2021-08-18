@@ -5,8 +5,8 @@ package api_test
 import (
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type editTestRunner struct {
@@ -22,21 +22,21 @@ func createEditTestRunner(t *testing.T) *editTestRunner {
 func (s *editTestRunner) testUnauthorisedEditEdit() {
 	// requires edit so should fail
 	_, err := s.resolver.Mutation().TagEdit(s.ctx, models.TagEditInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
 func (s *editTestRunner) testUnauthorisedApplyEditAdmin() {
 	// both require admin so should fail
 	_, err := s.resolver.Mutation().ApplyEdit(s.ctx, models.ApplyEditInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().CancelEdit(s.ctx, models.CancelEditInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
