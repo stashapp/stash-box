@@ -117,7 +117,9 @@ func (q dbi) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows)
 		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
 		return err
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	for rows.Next() {
 		if err := f(rows); err != nil {

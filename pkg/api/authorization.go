@@ -13,10 +13,6 @@ func getCurrentUser(ctx context.Context) *models.User {
 	return user.GetCurrentUser(ctx)
 }
 
-func isRole(ctx context.Context, requiredRole models.RoleEnum) bool {
-	return user.IsRole(ctx, requiredRole)
-}
-
 func validateRead(ctx context.Context) error {
 	return user.ValidateRole(ctx, models.RoleEnumRead)
 }
