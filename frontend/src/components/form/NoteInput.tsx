@@ -34,7 +34,7 @@ const NoteInput: React.FC<IProps> = ({
           <Form.Control
             as="textarea"
             className={className}
-            onChange={handleChange}
+            onInput={handleChange}
             rows={5}
             {...register("note")}
           />
