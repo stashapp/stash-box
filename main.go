@@ -2,6 +2,8 @@
 package main
 
 import (
+	"embed"
+
 	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/manager"
@@ -9,9 +11,10 @@ import (
 	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/sqlx/postgres"
 	"github.com/stashapp/stash-box/pkg/user"
-
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
+
+//go:embed frontend/build
+var ui embed.FS
 
 func main() {
 	manager.Initialize()
@@ -20,7 +23,7 @@ func main() {
 	db := database.Initialize(databaseProvider, config.GetDatabasePath())
 	txnMgr := sqlx.NewTxnMgr(db, &postgres.Dialect{})
 	user.CreateRoot(txnMgr.Repo())
-	api.Start(txnMgr)
+	api.Start(txnMgr, ui)
 	blockForever()
 }
 

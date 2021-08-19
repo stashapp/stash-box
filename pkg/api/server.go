@@ -3,8 +3,10 @@ package api
 import (
 	"context"
 	"crypto/tls"
+	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -18,7 +20,6 @@ import (
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/gobuffalo/packr/v2"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/logger"
@@ -31,8 +32,6 @@ import (
 var version = "0.0.0"
 var buildstamp string
 var githash string
-
-var uiBox *packr.Box
 
 const APIKeyHeader = "ApiKey"
 
@@ -104,9 +103,7 @@ func redirect(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, target, http.StatusPermanentRedirect)
 }
 
-func Start(rfp RepoProvider) {
-	uiBox = packr.New("Setup UI Box", "../../frontend/build")
-
+func Start(rfp RepoProvider, ui embed.FS) {
 	r := chi.NewRouter()
 
 	var corsConfig *cors.Cors
@@ -154,7 +151,10 @@ func Start(rfp RepoProvider) {
 	// session handlers
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			data, _ := uiBox.Find("index.html")
+			data, err := ui.ReadFile("frontend/build/index.html")
+			if err != nil {
+				panic(error.Error(err))
+			}
 			_, _ = w.Write(data)
 			return
 		}
@@ -169,14 +169,21 @@ func Start(rfp RepoProvider) {
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data, _ := uiBox.Find("index.html")
+			data, err := ui.ReadFile("frontend/build/index.html")
+			if err != nil {
+				panic(error.Error(err))
+			}
 			_, _ = w.Write(data)
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
-			http.FileServer(uiBox).ServeHTTP(w, r)
+			uiRoot, err := fs.Sub(ui, "frontend/build")
+			if err != nil {
+				panic(error.Error(err))
+			}
+			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
 		}
 	})
 
