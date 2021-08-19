@@ -23,13 +23,7 @@ endif
 build: pre-build
 	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)'"
 
-install:
-	packr2 install
-
-clean:
-	packr2 clean
-
-# Regenerates GraphQL files and packr files
+# Regenerates GraphQL files
 .PHONY: generate
 generate:
 	go generate
@@ -90,18 +84,9 @@ lint: vet staticcheck errcheck
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile
 
-.PHONY: ui ui-only
-ui-only:
+.PHONY: ui
+ui:
 	cd frontend && yarn build
-
-ui: ui-only
-	packr2
-
-# just repacks the packr files - use when updating migrations and packed files without
-# rebuilding the UI
-.PHONY: packr
-packr:
-	packr2
 
 # runs tests and checks on the UI and builds it
 .PHONY: ui-validate
