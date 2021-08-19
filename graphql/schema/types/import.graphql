@@ -1,7 +1,8 @@
 input SubmitImportInput {
   type: ImportDataType!
   data: Upload!
-  fields: [ImportField!]!
+  fields: [ImportFieldInput!]!
+  listDelimiter: String
 }
 
 # type BulkAnalyzeResult {
@@ -19,7 +20,8 @@ enum ImportDataType {
     # JSON
 }
 
-input ImportField {
+input ImportFieldInput {
+  # ImportSceneColumnType for scenes
   outputField: String!
   inputField: String
   fixedValue: String
@@ -31,17 +33,17 @@ input RegexReplacementInput {
   replaceWith: String!
 }
 
-# enum ImportColumnType {
-#   TITLE
-#   DATE
-#   IMAGE
-#   URL
-#   DESCRIPTION
-#   DURATION
-#   PERFORMERS
-#   STUDIO
-#   TAGS
-# }
+enum ImportSceneColumnType {
+  TITLE
+  DATE
+  IMAGE
+  URL
+  DESCRIPTION
+  DURATION
+  PERFORMERS
+  STUDIO
+  TAGS
+}
 
 type QueryImportScenesResult {
   count: Int!
@@ -67,17 +69,17 @@ type SceneImportMappings {
 }
 
 type StudioImportMapping {
-  name: String
+  name: String!
   existingStudio: Studio
 }
 
 type PerformerImportMapping {
-  name: String
+  name: String!
   existingPerformer: Performer
 }
 
 type TagImportMapping {
-  name: String
+  name: String!
   existingTag: Tag
 }
 
