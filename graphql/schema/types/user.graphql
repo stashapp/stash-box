@@ -8,6 +8,10 @@ enum RoleEnum {
   INVITE
   """May grant and rescind invite tokens and resind invite keys"""
   MANAGE_INVITES
+  """May submit imports"""
+  SUBMIT_IMPORT
+  """May finalise pending imports"""
+  FINALIZE_IMPORT
 }
 
 type User {

@@ -6,6 +6,11 @@ func (r RoleEnum) Implies(other RoleEnum) bool {
 		return true
 	}
 
+	// FINALIZE_IMPORT implies SUBMIT_IMPORT
+	if r == RoleEnumFinalizeImport && other == RoleEnumSubmitImport {
+		return true
+	}
+
 	// MANAGE_INVITES implies INVITE
 	if r == RoleEnumManageInvites && other == RoleEnumInvite {
 		return true
