@@ -80,17 +80,17 @@ jobs:
     - name: Generate
       run: make generate
 
-    - name: Run tests
-      env:
-        POSTGRES_DB: postgres:postgres@localhost/postgres?sslmode=disable
-      run: make lint it
-
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
       # this means that the build version/time may be incorrect if the UI is
       # not changed in a pull request
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: make ui-only
+      run: make ui
+
+    - name: Run tests
+      env:
+        POSTGRES_DB: postgres:postgres@localhost/postgres?sslmode=disable
+      run: make lint it
 
     - name: Crosscompile binaries
       run: make cross-compile
