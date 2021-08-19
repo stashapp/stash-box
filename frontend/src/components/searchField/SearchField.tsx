@@ -173,9 +173,8 @@ const SearchField: React.FC<SearchFieldProps> = ({
 }) => {
   const history = useHistory();
   const [selectedValue, setSelected] = useState(null);
-  const [searchCallback, setCallback] = useState<
-    (result: (SearchGroup | SearchResult)[]) => void
-  >();
+  const [searchCallback, setCallback] =
+    useState<(result: (SearchGroup | SearchResult)[]) => void>();
   const searchTerm = useRef("");
   const [search] = useLazyQuery(
     searchType === SearchType.Performer

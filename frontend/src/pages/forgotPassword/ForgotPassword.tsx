@@ -9,10 +9,10 @@ import cx from "classnames";
 import { useResetPassword } from "src/graphql";
 import { ROUTE_HOME } from "src/constants/route";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   email: yup.string().email().required("Email is required"),
 });
-type ResetPasswordFormData = yup.InferType<typeof schema>;
+type ResetPasswordFormData = yup.Asserts<typeof schema>;
 
 const ForgotPassword: React.FC = () => {
   const history = useHistory();
@@ -20,7 +20,11 @@ const ForgotPassword: React.FC = () => {
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
-  const { register, handleSubmit, errors } = useForm<ResetPasswordFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -68,10 +72,9 @@ const ForgotPassword: React.FC = () => {
           <span className="col-4">Email: </span>
           <input
             className={cx("col-8", { "is-invalid": errors?.email })}
-            name="email"
             type="email"
             placeholder="Email"
-            ref={register}
+            {...register("email")}
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </label>

@@ -17,7 +17,7 @@ import MultiSelect from "src/components/multiSelect";
 import { createHref, tagHref } from "src/utils";
 import { ROUTE_TAGS } from "src/constants/route";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   name: yup.string().required("Name is required"),
   description: yup.string(),
   aliases: yup.array().of(yup.string().required()),
@@ -39,7 +39,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
     register,
     handleSubmit,
     setValue,
-    errors,
+    formState: { errors },
     control,
   } = useForm<TagFormData>({
     resolver: yupResolver(schema),
@@ -48,7 +48,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
   const { loading: loadingCategories, data: categoryData } = useCategories();
 
   useEffect(() => {
-    register({ name: "aliases" });
+    register("aliases");
     setValue("aliases", tag.aliases);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [register, setValue]);
@@ -90,9 +90,8 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
           type="text"
           className={cx("form-control", { "is-invalid": errors.name })}
           placeholder="Name"
-          name="name"
           defaultValue={tag.name}
-          ref={register({ required: true })}
+          {...register("name", { required: true })}
         />
         <div className="invalid-feedback">{errors?.name?.message}</div>
       </Form.Group>
@@ -100,10 +99,9 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
       <Form.Group controlId="description">
         <Form.Label>Description</Form.Label>
         <Form.Control
-          name="description"
           placeholder="Description"
           defaultValue={tag.description ?? ""}
-          ref={register}
+          {...register("description")}
         />
       </Form.Group>
 
@@ -118,7 +116,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
           name="categoryId"
           control={control}
           defaultValue={tag.category?.id ?? null}
-          render={({ onChange }) => (
+          render={({ field: { onChange } }) => (
             <Select
               classNamePrefix="react-select"
               className={cx({ "is-invalid": errors.categoryId })}
