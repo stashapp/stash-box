@@ -88,6 +88,7 @@ const UsersComponent: React.FC = () => {
       <List
         page={page}
         setPage={setPage}
+        perPage={PER_PAGE}
         loading={loading}
         listCount={data?.queryUsers.count}
         filters={filters}
