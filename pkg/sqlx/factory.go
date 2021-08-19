@@ -48,6 +48,10 @@ func (f *repo) Invite() models.InviteKeyRepo {
 	return newInviteCodeQueryBuilder(f.txnState)
 }
 
+func (f *repo) ImportRow() models.ImportRowRepo {
+	return newImportRowQueryBuilder(f.txnState)
+}
+
 func (f *repo) User() models.UserRepo {
 	return newUserQueryBuilder(f.txnState)
 }

@@ -28,20 +28,30 @@ func (q dbi) db() db {
 // Insert inserts the provided object as a row into the database.
 // It returns the new object.
 func (q dbi) Insert(t table, model Model) (interface{}, error) {
-	tableName := t.Name()
-	err := insertObject(q.txn, tableName, model, nil)
-
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(model).Name()))
+	if err := q.InsertObject(t, model); err != nil {
+		return nil, err
 	}
 
 	// don't want to modify the existing object
+	tableName := t.Name()
 	newModel := t.NewObject()
 	if err := getByID(q.txn, tableName, model.GetID(), newModel); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error getting %s after create", reflect.TypeOf(model).Name()))
 	}
 
 	return newModel, nil
+}
+
+// InsertObject inserts the provided object as a row into the database without returning the result.
+func (q dbi) InsertObject(t table, object interface{}) error {
+	tableName := t.Name()
+	err := insertObject(q.txn, tableName, object, nil)
+
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(object).Name()))
+	}
+
+	return nil
 }
 
 // Update updates a database row based on the id and values of the provided

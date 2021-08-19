@@ -56,7 +56,7 @@ func getPagination(findFilter *models.QuerySpec) string {
 	}
 	if perPage > 10000 {
 		perPage = 10000
-	} else if perPage < 1 {
+	} else if perPage < 0 {
 		perPage = 1
 	}
 

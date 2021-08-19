@@ -18,6 +18,8 @@ type Repo interface {
 
 	Joins() JoinsRepo
 
+	ImportRow() ImportRowRepo
+
 	PendingActivation() PendingActivationRepo
 	Invite() InviteKeyRepo
 	User() UserRepo
