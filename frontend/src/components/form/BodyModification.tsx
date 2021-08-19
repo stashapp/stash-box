@@ -49,17 +49,17 @@ const BodyModification: React.FC<BodyModificationProps> = ({
             </InputGroup.Text>
           </InputGroup.Prepend>
           <Controller
-            as={<Form.Control />}
+            render={({ field }) => <Form.Control {...field} readOnly />}
             name={`${idx}.location`}
             control={control}
             defaultValue={mod.location}
-            disabled
           />
           <Controller
-            as={<Form.Control />}
+            render={({ field }) => (
+              <Form.Control {...field} placeholder={descriptionPlaceholder} />
+            )}
             name={`${idx}.description`}
             defaultValue={mod.description}
-            placeholder={descriptionPlaceholder}
             control={control}
           />
           <InputGroup.Append>

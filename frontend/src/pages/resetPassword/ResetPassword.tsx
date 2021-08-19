@@ -10,12 +10,12 @@ import { Form } from "react-bootstrap";
 import { useChangePassword } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   email: yup.string().email().required("Email is required"),
   resetKey: yup.string().required("Reset Key is required"),
   password: yup.string().required("Password is required"),
 });
-type ResetPasswordFormData = yup.InferType<typeof schema>;
+type ResetPasswordFormData = yup.Asserts<typeof schema>;
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -27,7 +27,11 @@ const ResetPassword: React.FC = () => {
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
-  const { register, handleSubmit, errors } = useForm<ResetPasswordFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -60,24 +64,21 @@ const ResetPassword: React.FC = () => {
       >
         <Form.Control
           type="hidden"
-          name="email"
           value={query.get("email") ?? ""}
-          ref={register}
+          {...register("email")}
         />
         <Form.Control
           type="hidden"
-          name="resetKey"
           value={query.get("key") ?? ""}
-          ref={register}
+          {...register("resetKey")}
         />
         <label className="row" htmlFor="password">
           <span className="col-4">New Password: </span>
           <input
             className={cx("col-8", { "is-invalid": errors?.password })}
-            name="password"
             type="password"
             placeholder="Password"
-            ref={register}
+            {...register("password")}
           />
           <div className="invalid-feedback">{errors?.password?.message}</div>
         </label>
