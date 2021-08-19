@@ -32,7 +32,7 @@ const nullCheck = (input: string | null) =>
 const zeroCheck = (input: number | null) =>
   input === 0 || Number.isNaN(input) ? null : input;
 
-const schema = yup.object().shape({
+const schema = yup.object({
   id: yup.string().defined(),
   title: yup.string().required("Title is required"),
   details: yup.string().trim(),
@@ -52,45 +52,50 @@ const schema = yup.object().shape({
     .transform(nullCheck)
     .required("Studio is required"),
   studioURL: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
-  performers: yup.array().of(
-    yup.object().shape({
-      performerId: yup.string().required(),
-      alias: yup.string().trim().transform(nullCheck).nullable(),
-    })
-  ),
-  fingerprints: yup
+  performers: yup
     .array()
     .of(
       yup
-        .object()
-        .shape({
-          algorithm: yup
-            .string()
-            .oneOf(Object.keys(FingerprintAlgorithm))
-            .required(),
-          hash: yup.string().required(),
-          duration: yup.number().min(1).required(),
+        .object({
+          performerId: yup.string().required(),
+          name: yup.string().required(),
+          disambiguation: yup.string().nullable(),
+          alias: yup.string().trim().transform(nullCheck).nullable(),
+          gender: yup.string().oneOf(Object.keys(GenderEnum)).nullable(),
+          deleted: yup.bool().required(),
         })
         .required()
+    )
+    .required(),
+  fingerprints: yup
+    .array()
+    .of(
+      yup.object({
+        algorithm: yup
+          .string()
+          .oneOf(Object.keys(FingerprintAlgorithm))
+          .required(),
+        hash: yup.string().required(),
+        duration: yup.number().min(1).required(),
+        submissions: yup.number().default(1).required(),
+        created: yup.string().required(),
+        updated: yup.string().required(),
+      })
     )
     .nullable(),
   tags: yup.array().of(yup.string().required()).nullable(),
   images: yup
     .array()
-    .of(yup.string().trim().transform(nullCheck).required())
-    .transform((_, obj) => Object.keys(obj ?? [])),
+    .of(
+      yup.object({
+        id: yup.string().required(),
+        url: yup.string().required(),
+      })
+    )
+    .required(),
 });
 
 interface SceneFormData extends yup.Asserts<typeof schema> {}
-
-interface Performer {
-  performerId: string;
-  name: string;
-  disambiguation: string;
-  alias: string | null;
-  gender: GenderEnum | null;
-  deleted: boolean;
-}
 
 interface SceneProps {
   scene: Scene;
@@ -107,19 +112,22 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     control,
     handleSubmit,
     setValue,
-    errors,
+    formState: { errors },
   } = useForm<SceneFormData>({
     resolver: yupResolver(schema),
-    defaultValues: {},
     mode: "onBlur",
+    defaultValues: {
+      images: scene.images,
+    },
   });
   const {
     fields: performerFields,
     append: appendPerformer,
     remove: removePerformer,
-  } = useFieldArray<Performer>({
+  } = useFieldArray({
     control,
     name: "performers",
+    keyName: "performerId",
   });
 
   const [fingerprints, setFingerprints] = useState<FingerprintEditInput[]>(
@@ -136,8 +144,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const [isChanging, setChange] = useState<number | undefined>();
 
   useEffect(() => {
-    register({ name: "tags" });
-    register({ name: "fingerprints" });
+    register("tags");
+    register("fingerprints");
     setValue("fingerprints", fingerprints);
     setValue("tags", scene.tags ? scene.tags.map((tag) => tag.id) : []);
     setValue(
@@ -173,8 +181,15 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         performer_id: performance.performerId,
         as: performance.alias,
       })),
-      image_ids: data.images,
-      fingerprints: data.fingerprints,
+      image_ids: data.images.map((i) => i.id),
+      fingerprints: (data?.fingerprints ?? []).map((f) => ({
+        hash: f.hash,
+        algorithm: f.algorithm as FingerprintAlgorithm,
+        duration: f.duration,
+        created: f.created,
+        updated: f.updated,
+        submissions: f.submissions,
+      })),
       tag_ids: data.tags,
     };
     const urls = [];
@@ -209,12 +224,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   };
 
   const performerList = performerFields.map((p, index) => (
-    <Form.Row className="performer-item d-flex" key={p.id}>
+    <Form.Row className="performer-item d-flex" key={p.performerId}>
       <Form.Control
         type="hidden"
         defaultValue={p.performerId}
-        name={`performers[${index}].performerId`}
-        ref={register()}
+        {...register(`performers.${index}.performerId`)}
       />
 
       <Col xs={6}>
@@ -265,10 +279,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           </InputGroup.Prepend>
           <Form.Control
             className="performer-alias"
-            name={`performers[${index}].alias`}
             defaultValue={p.alias ?? ""}
             placeholder={p.name}
-            ref={register()}
+            {...register(`performers.${index}.alias`)}
           />
         </InputGroup>
       </Col>
@@ -360,12 +373,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
   return (
     <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
-      <input
-        type="hidden"
-        name="id"
-        value={scene.id}
-        ref={register({ required: true })}
-      />
+      <input type="hidden" value={scene.id} {...register("id")} />
       <Row>
         <Col xs={10}>
           <Form.Row>
@@ -376,9 +384,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 className={cx({ "is-invalid": errors.title })}
                 type="text"
                 placeholder="Title"
-                name="title"
                 defaultValue={scene?.title ?? ""}
-                ref={register({ required: true })}
+                {...register("title", { required: true })}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.title?.message}
@@ -392,9 +399,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 className={cx({ "is-invalid": errors.date })}
                 type="text"
                 placeholder="YYYY-MM-DD"
-                name="date"
                 defaultValue={scene.date}
-                ref={register}
+                {...register("date")}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.date?.message}
@@ -408,9 +414,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 className={cx({ "is-invalid": errors.duration })}
                 type="number"
                 placeholder="Duration"
-                name="duration"
                 defaultValue={scene?.duration ?? ""}
-                ref={register}
+                {...register("duration")}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.duration?.message}
@@ -449,9 +454,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 as="input"
                 className={cx({ "is-invalid": errors.studioURL })}
                 type="url"
-                name="studioURL"
                 defaultValue={getUrlByType(scene.urls, "STUDIO")}
-                ref={register}
+                {...register("studioURL")}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.studioURL?.message}
@@ -466,9 +470,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 as="textarea"
                 className="description"
                 placeholder="Details"
-                name="details"
                 defaultValue={scene?.details ?? ""}
-                ref={register}
+                {...register("details")}
               />
             </Form.Group>
           </Form.Row>
@@ -481,9 +484,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 className={cx({ "is-invalid": errors.director })}
                 type="text"
                 placeholder="Director"
-                name="director"
                 defaultValue={scene?.director ?? ""}
-                ref={register}
+                {...register("director")}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.director?.message}
@@ -500,11 +502,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
           <Form.Group>
             <Form.Label>Images</Form.Label>
-            <EditImages
-              initialImages={scene.images}
-              control={control}
-              maxImages={1}
-            />
+            <EditImages control={control} maxImages={1} />
           </Form.Group>
 
           <Form.Group>

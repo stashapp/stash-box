@@ -10,7 +10,7 @@ import cx from "classnames";
 import { useActivateUser } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   name: yup.string().required("Username is required"),
   email: yup.string().email().required("Email is required"),
   activationKey: yup.string().required("Activation Key is required"),
@@ -28,7 +28,11 @@ const ActivateNewUserPage: React.FC = () => {
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
-  const { register, handleSubmit, errors } = useForm<ActivateNewUserFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ActivateNewUserFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -63,25 +67,22 @@ const ActivateNewUserPage: React.FC = () => {
       >
         <Form.Control
           type="hidden"
-          name="email"
           value={query.get("email") ?? ""}
-          ref={register}
+          {...register("email")}
         />
         <Form.Control
           type="hidden"
-          name="activationKey"
           value={query.get("key") ?? ""}
-          ref={register}
+          {...register("activationKey")}
         />
 
         <label className="row" htmlFor="name">
           <span className="col-4">Username: </span>
           <input
             className={cx("col-8", { "is-invalid": errors?.name })}
-            name="name"
             type="text"
             placeholder="Username"
-            ref={register}
+            {...register("name")}
           />
           <div className="invalid-feedback">{errors?.name?.message}</div>
         </label>
@@ -90,10 +91,9 @@ const ActivateNewUserPage: React.FC = () => {
           <span className="col-4">Password: </span>
           <input
             className={cx("col-8", { "is-invalid": errors?.password })}
-            name="password"
             type="password"
             placeholder="Password"
-            ref={register}
+            {...register("password")}
           />
           <div className="invalid-feedback">{errors?.password?.message}</div>
         </label>

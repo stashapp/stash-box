@@ -10,7 +10,7 @@ import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 
 import "./App.scss";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   username: yup.string().required("Username is required"),
   password: yup.string().required("Password is required"),
 });
@@ -27,7 +27,11 @@ const Login: React.FC = () => {
   const [loginError, setLoginError] = useState("");
   const msg = new URLSearchParams(history.location.search.substr(1)).get("msg");
   const Auth = useContext<ContextType>(AuthContext);
-  const { register, handleSubmit, errors } = useForm<LoginFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -56,10 +60,9 @@ const Login: React.FC = () => {
         <label className="row" htmlFor="username">
           <span className="col-4">Username: </span>
           <input
-            ref={register}
-            name="username"
             type="text"
             className={cx("col-8", { "is-invalid": errors?.username })}
+            {...register("username")}
           />
           <div className="invalid-feedback text-right">
             {errors?.username?.message}
@@ -68,10 +71,9 @@ const Login: React.FC = () => {
         <label className="row" htmlFor="password">
           <span className="col-4">Password:</span>
           <input
-            ref={register}
-            name="password"
             type="password"
             className={cx("col-8", { "is-invalid": errors?.password })}
+            {...register("password")}
           />
           <div className="invalid-feedback text-right">
             {errors?.password?.message}

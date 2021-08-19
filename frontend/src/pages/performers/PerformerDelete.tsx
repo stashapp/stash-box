@@ -10,7 +10,7 @@ import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   id: yup.string().required(),
   note: yup.string().required("An edit note is required."),
 });
@@ -23,7 +23,11 @@ const PerformerDelete: React.FC = () => {
     { id: id ?? "" },
     !id
   );
-  const { register, handleSubmit, errors } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: yupResolver(schema),
     mode: "onBlur",
   });
@@ -62,7 +66,7 @@ const PerformerDelete: React.FC = () => {
             Delete performer <em>{performer.findPerformer?.name}</em>
           </h4>
         </Form.Row>
-        <Form.Control type="hidden" name="id" value={id} ref={register} />
+        <Form.Control type="hidden" value={id} {...register("id")} />
         <Form.Row className="my-4">
           <Col md={6}>
             <EditNote register={register} error={errors.note} />
