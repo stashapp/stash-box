@@ -1,41 +1,51 @@
-input BulkImportInput {
+input SubmitImportInput {
   type: ImportDataType!
   data: Upload!
-  columns: [ImportColumn!]!
-  mainStudio: String!
+  fields: [ImportField!]!
 }
 
-type BulkAnalyzeResult {
-  results: [SceneImportResult!]!
-  errors: [String!]!
-}
+# type BulkAnalyzeResult {
+#   results: [SceneImportResult!]!
+#   errors: [String!]!
+# }
 
-type BulkImportResult {
-  scenesImported: Int!
-  errors: [String!]!
-}
+# type BulkImportResult {
+#   scenesImported: Int!
+#   errors: [String!]!
+# }
 
 enum ImportDataType {
     CSV
-    JSON
+    # JSON
 }
 
-input ImportColumn {
-  name: String!
-  type: ImportColumnType!
-  regularExpression: String
+input ImportField {
+  outputField: String!
+  inputField: String
+  fixedValue: String
+  regexReplacements: [RegexReplacementInput!]
 }
 
-enum ImportColumnType {
-  TITLE
-  DATE
-  IMAGE
-  URL
-  DESCRIPTION
-  DURATION
-  PERFORMERS
-  STUDIO
-  TAGS
+input RegexReplacementInput {
+  regex: String!
+  replaceWith: String!
+}
+
+# enum ImportColumnType {
+#   TITLE
+#   DATE
+#   IMAGE
+#   URL
+#   DESCRIPTION
+#   DURATION
+#   PERFORMERS
+#   STUDIO
+#   TAGS
+# }
+
+type QueryImportScenesResult {
+  count: Int!
+  scenes: [SceneImportResult!]!
 }
 
 type SceneImportResult {
@@ -45,23 +55,39 @@ type SceneImportResult {
   image: String
   url: String
   duration: Int
-  existingScene: Scene
-  studio: StudioImportResult
-  performers: [PerformerImportResult!]!
-  tags: [TagImportResult!]!
+  studio: String
+  performers: [String!]!
+  tags: [String!]!
 }
 
-type StudioImportResult {
+type SceneImportMappings {
+  studios: [StudioImportMapping!]!
+  performers: [PerformerImportMapping!]!
+  tags: [TagImportMapping!]!
+}
+
+type StudioImportMapping {
   name: String
   existingStudio: Studio
 }
 
-type PerformerImportResult {
+type PerformerImportMapping {
   name: String
   existingPerformer: Performer
 }
 
-type TagImportResult {
+type TagImportMapping {
   name: String
   existingTag: Tag
+}
+
+input ImportMappingInput {
+  name: String!
+  id: ID
+}
+
+input CompleteSceneImportInput {
+  studios: [ImportMappingInput!]!
+  performers: [ImportMappingInput!]!
+  tags: [ImportMappingInput!]!
 }

@@ -45,6 +45,10 @@ type Query {
 
   queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType!
 
+  """returns pending imported scene data for the current user"""
+  queryImportScenes(querySpec: QuerySpec): QueryImportScenesResult!
+  """returns the current mappings of name to performer/tag/studio from the current pending import"""
+  queryImportSceneMappings: SceneImportMappings!
 
   #### Edits ####
 
@@ -144,8 +148,12 @@ type Mutation {
   submitFingerprint(input: FingerprintSubmission!): Boolean!
 
   # Bulk ingest
-  analyzeData(input: BulkImportInput!): BulkAnalyzeResult!
-  importData(input: BulkImportInput!): BulkImportResult!
+  """submits data to begin an import of scenes"""
+  submitSceneImport(input: SubmitImportInput!): Boolean!
+  """aborts the pending scene import for the current user"""
+  abortSceneImport: Boolean!
+  """finalises a pending scene import, creating the scenes"""
+  completeSceneImport(input: CompleteSceneImportInput!): Boolean!
 }
 
 schema {
