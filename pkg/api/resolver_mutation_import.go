@@ -7,15 +7,46 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *mutationResolver) AnalyzeData(ctx context.Context, input models.BulkImportInput) (*models.BulkAnalyzeResult, error) {
-	return bulkimport.Analyze(r.getRepoFactory(ctx), input)
-}
-
-func (r *mutationResolver) ImportData(ctx context.Context, input models.BulkImportInput) (*models.BulkImportResult, error) {
-	data, err := bulkimport.Analyze(r.getRepoFactory(ctx), input)
-	if err != nil {
-		return nil, err
+func (r *mutationResolver) SubmitSceneImport(ctx context.Context, input models.SubmitImportInput) (bool, error) {
+	if err := validateRole(ctx, models.RoleEnumSubmitImport); err != nil {
+		return false, err
 	}
 
-	return bulkimport.ApplyImport(r.getRepoFactory(ctx), data)
+	fac := r.getRepoFactory(ctx)
+
+	if err := fac.WithTxn(func() error {
+		return bulkimport.SubmitImport(fac, getCurrentUser(ctx), input)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) AbortSceneImport(ctx context.Context) (bool, error) {
+	fac := r.getRepoFactory(ctx)
+
+	if err := fac.WithTxn(func() error {
+		return bulkimport.AbortImport(fac, getCurrentUser(ctx))
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) CompleteSceneImport(ctx context.Context, input models.CompleteSceneImportInput) (bool, error) {
+	if err := validateRole(ctx, models.RoleEnumSubmitImport); err != nil {
+		return false, err
+	}
+
+	fac := r.getRepoFactory(ctx)
+
+	if err := fac.WithTxn(func() error {
+		return bulkimport.CompleteImport(fac, getCurrentUser(ctx), input)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
