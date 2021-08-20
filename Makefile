@@ -97,6 +97,14 @@ ui-only:
 ui: ui-only
 	packr2
 
+.PHONY: ui-fmt
+ui-fmt:
+	cd frontend && yarn format
+
+.PHONY: ui-start
+ui-start: pre-build
+	cd frontend && yarn start
+
 # just repacks the packr files - use when updating migrations and packed files without 
 # rebuilding the UI
 .PHONY: packr
