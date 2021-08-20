@@ -99,12 +99,12 @@ func (m *mapper) mapPerformer(value string) error {
 		performer = existingPerformers[i]
 
 		if performer.Deleted {
-			performer = nil
 			redirectPerformer, err := m.pqb.FindByRedirect(performer.ID)
 			if err != nil {
 				return err
 			}
 
+			performer = nil
 			if redirectPerformer != nil {
 				performer = redirectPerformer
 			}
@@ -135,26 +135,25 @@ func (m *mapper) mapTag(value string) error {
 	}
 
 	// use the first viable tag
-	var tag *models.Tag
 	if existingTag != nil {
-		if tag.Deleted {
-			tag = nil
+		if existingTag.Deleted {
 			alias, err := m.tqb.FindByAlias(existingTag.Name)
 			if err != nil {
 				return err
 			}
 
+			existingTag = nil
 			if alias != nil {
-				tag = alias
+				existingTag = alias
 			}
 		}
 	}
 
 	var result *models.TagImportMapping
-	if tag != nil {
+	if existingTag != nil {
 		result = &models.TagImportMapping{
 			Name:        value,
-			ExistingTag: tag,
+			ExistingTag: existingTag,
 		}
 	}
 
@@ -168,35 +167,26 @@ func (m *mapper) mapStudio(value string) error {
 		return nil
 	}
 
-	existingTag, err := m.tqb.FindByName(value)
+	existingStudio, err := m.sqb.FindByName(value)
 	if err != nil {
 		return err
 	}
 
-	// use the first viable tag
-	var tag *models.Tag
-	if existingTag != nil {
-		if tag.Deleted {
-			tag = nil
-			alias, err := m.tqb.FindByAlias(existingTag.Name)
-			if err != nil {
-				return err
-			}
-
-			if alias != nil {
-				tag = alias
-			}
+	// use the first viable studio
+	if existingStudio != nil {
+		if existingStudio.Deleted {
+			existingStudio = nil
 		}
 	}
 
-	var result *models.TagImportMapping
-	if tag != nil {
-		result = &models.TagImportMapping{
-			Name:        value,
-			ExistingTag: tag,
+	var result *models.StudioImportMapping
+	if existingStudio != nil {
+		result = &models.StudioImportMapping{
+			Name:           value,
+			ExistingStudio: existingStudio,
 		}
 	}
 
-	m.tags[value] = result
+	m.studios[value] = result
 	return nil
 }

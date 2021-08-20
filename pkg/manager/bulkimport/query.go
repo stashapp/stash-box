@@ -80,6 +80,12 @@ func getDataList(data models.ImportRowData, field models.ImportSceneColumnType) 
 		return nil
 	}
 
+	// possible to be a single string
+	strVal, isStr := v.(string)
+	if isStr {
+		return []string{strVal}
+	}
+
 	// expect a []interface{}
 	slice, isSlice := v.([]interface{})
 	if !isSlice {
