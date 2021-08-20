@@ -1,0 +1,3 @@
+mutation SubmitSceneImport($input: SubmitImportInput!) {
+  submitSceneImport(input: $input)
+}

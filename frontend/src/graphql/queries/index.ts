@@ -30,6 +30,11 @@ import { Tag, TagVariables } from "../definitions/Tag";
 import { Tags, TagsVariables } from "../definitions/Tags";
 import { User, UserVariables } from "../definitions/User";
 import { Users, UsersVariables } from "../definitions/Users";
+import {
+  ImportScenes,
+  ImportScenesVariables,
+} from "../definitions/ImportScenes";
+import { ImportSceneMappings } from "../definitions/ImportSceneMappings";
 
 const CategoryQuery = loader("./Category.gql");
 const CategoriesQuery = loader("./Categories.gql");
@@ -49,6 +54,8 @@ const TagQuery = loader("./Tag.gql");
 const TagsQuery = loader("./Tags.gql");
 const UserQuery = loader("./User.gql");
 const UsersQuery = loader("./Users.gql");
+const ImportScenesQuery = loader("./ImportScenes.gql");
+const ImportSceneMappingsQuery = loader("./ImportSceneMappings.gql");
 
 export const useCategory = (
   variables: CategoryVariables,
@@ -172,3 +179,11 @@ export const useUsers = (variables: UsersVariables) =>
   useQuery<Users, UsersVariables>(UsersQuery, {
     variables,
   });
+
+export const useImportScenes = (variables: ImportScenesVariables) =>
+  useQuery<ImportScenes, ImportScenesVariables>(ImportScenesQuery, {
+    variables,
+  });
+
+export const useImportSceneMappings = () =>
+  useQuery<ImportSceneMappings>(ImportSceneMappingsQuery);

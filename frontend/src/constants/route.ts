@@ -39,3 +39,4 @@ export const ROUTE_FORGOT_PASSWORD = "/forgotPassword";
 export const ROUTE_RESET_PASSWORD = "/resetPassword";
 export const ROUTE_SEARCH = "/search/:term?";
 export const ROUTE_IMPORT = "/import";
+export const ROUTE_COMPLETE_IMPORT = "/completeImport";

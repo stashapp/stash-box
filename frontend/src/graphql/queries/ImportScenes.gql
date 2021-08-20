@@ -1,0 +1,16 @@
+query ImportScenes($querySpec: QuerySpec) {
+  queryImportScenes(querySpec: $querySpec) {
+    count
+    scenes {
+      title
+      date
+      description
+      image
+      url
+      duration
+      studio
+      performers
+      tags
+    }
+  }
+}

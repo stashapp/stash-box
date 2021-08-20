@@ -98,21 +98,8 @@ export enum HairColorEnum {
   VARIOUS = "VARIOUS",
 }
 
-export enum ImportColumnType {
-  DATE = "DATE",
-  DESCRIPTION = "DESCRIPTION",
-  DURATION = "DURATION",
-  IMAGE = "IMAGE",
-  PERFORMERS = "PERFORMERS",
-  STUDIO = "STUDIO",
-  TAGS = "TAGS",
-  TITLE = "TITLE",
-  URL = "URL",
-}
-
 export enum ImportDataType {
   CSV = "CSV",
-  JSON = "JSON",
 }
 
 export enum OperationEnum {
@@ -125,10 +112,12 @@ export enum OperationEnum {
 export enum RoleEnum {
   ADMIN = "ADMIN",
   EDIT = "EDIT",
+  FINALIZE_IMPORT = "FINALIZE_IMPORT",
   INVITE = "INVITE",
   MANAGE_INVITES = "MANAGE_INVITES",
   MODIFY = "MODIFY",
   READ = "READ",
+  SUBMIT_IMPORT = "SUBMIT_IMPORT",
   VOTE = "VOTE",
 }
 
@@ -185,15 +174,14 @@ export interface BreastTypeCriterionInput {
   modifier: CriterionModifier;
 }
 
-export interface BulkImportInput {
-  type: ImportDataType;
-  data: any;
-  columns: ImportColumn[];
-  mainStudio: string;
-}
-
 export interface CancelEditInput {
   id: string;
+}
+
+export interface CompleteSceneImportInput {
+  studios: ImportMappingInput[];
+  performers: ImportMappingInput[];
+  tags: ImportMappingInput[];
 }
 
 export interface DateCriterionInput {
@@ -263,10 +251,16 @@ export interface ImageCreateInput {
   file?: any | null;
 }
 
-export interface ImportColumn {
+export interface ImportFieldInput {
+  outputField: string;
+  inputField?: string | null;
+  fixedValue?: string | null;
+  regexReplacements?: RegexReplacementInput[] | null;
+}
+
+export interface ImportMappingInput {
   name: string;
-  type: ImportColumnType;
-  regularExpression?: string | null;
+  id?: string | null;
 }
 
 export interface IntCriterionInput {
@@ -361,6 +355,11 @@ export interface QuerySpec {
   direction?: SortDirectionEnum | null;
 }
 
+export interface RegexReplacementInput {
+  regex: string;
+  replaceWith: string;
+}
+
 export interface ResetPasswordInput {
   email: string;
 }
@@ -453,6 +452,13 @@ export interface StudioUpdateInput {
   parent_id?: string | null;
   child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
+}
+
+export interface SubmitImportInput {
+  type: ImportDataType;
+  data: any;
+  fields: ImportFieldInput[];
+  listDelimiter?: string | null;
 }
 
 export interface TagCategoryCreateInput {

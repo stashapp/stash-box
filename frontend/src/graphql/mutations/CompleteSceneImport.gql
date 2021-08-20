@@ -1,0 +1,3 @@
+mutation CompleteSceneImport($input: CompleteSceneImportInput!) {
+  completeSceneImport(input: $input)
+}

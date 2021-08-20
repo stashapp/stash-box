@@ -19,6 +19,7 @@ import {
   ROUTE_ACTIVATE,
   ROUTE_RESET_PASSWORD,
   ROUTE_HOME,
+  ROUTE_IMPORT,
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
@@ -132,6 +133,9 @@ const Main: React.FC = ({ children }) => {
           </NavLink>
           <NavLink to={ROUTE_EDITS} className="nav-link">
             Edits
+          </NavLink>
+          <NavLink to={ROUTE_IMPORT} className="nav-link">
+            Import
           </NavLink>
         </Nav>
         <Nav className="align-items-center">

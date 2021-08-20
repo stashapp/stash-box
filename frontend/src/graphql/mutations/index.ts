@@ -60,8 +60,15 @@ import {
   RevokeInviteVariables,
 } from "../definitions/RevokeInvite";
 import { EditComment, EditCommentVariables } from "../definitions/EditComment";
-import { AnalyzeData, AnalyzeDataVariables } from "../definitions/AnalyzeData";
-import { ImportData, ImportDataVariables } from "../definitions/ImportData";
+import {
+  SubmitSceneImport,
+  SubmitSceneImportVariables,
+} from "../definitions/SubmitSceneImport";
+import {
+  CompleteSceneImport,
+  CompleteSceneImportVariables,
+} from "../definitions/CompleteSceneImport";
+import { AbortSceneImport } from "../definitions/AbortSceneImport";
 
 const ActivateUserMutation = loader("./ActivateNewUser.gql");
 const AddUserMutation = loader("./AddUser.gql");
@@ -89,8 +96,9 @@ const GrantInviteMutation = loader("./GrantInvite.gql");
 const RescindInviteCodeMutation = loader("./RescindInviteCode.gql");
 const RevokeInviteMutation = loader("./RevokeInvite.gql");
 const EditCommentMutation = loader("./EditComment.gql");
-const AnalyzeDataMutation = loader("./AnalyzeData.gql");
-const ImportDataMutation = loader("./ImportData.gql");
+const SubmitSceneImportMutation = loader("./SubmitSceneImport.gql");
+const CompleteSceneImportMutation = loader("./CompleteSceneImport.gql");
+const AbortSceneImportMutation = loader("./AbortSceneImport.gql");
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -196,10 +204,17 @@ export const useEditComment = (
   options?: MutationHookOptions<EditComment, EditCommentVariables>
 ) => useMutation(EditCommentMutation, options);
 
-export const useAnalyzeData = (
-  options?: MutationHookOptions<AnalyzeData, AnalyzeDataVariables>
-) => useMutation(AnalyzeDataMutation, options);
+export const useSubmitSceneImport = (
+  options?: MutationHookOptions<SubmitSceneImport, SubmitSceneImportVariables>
+) => useMutation(SubmitSceneImportMutation, options);
 
-export const useImportData = (
-  options?: MutationHookOptions<ImportData, ImportDataVariables>
-) => useMutation(ImportDataMutation, options);
+export const useCompleteSceneImport = (
+  options?: MutationHookOptions<
+    CompleteSceneImport,
+    CompleteSceneImportVariables
+  >
+) => useMutation(CompleteSceneImportMutation, options);
+
+export const useAbortSceneImport = (
+  options?: MutationHookOptions<AbortSceneImport>
+) => useMutation(AbortSceneImportMutation, options);

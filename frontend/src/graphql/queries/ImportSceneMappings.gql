@@ -1,0 +1,25 @@
+query ImportSceneMappings {
+  queryImportSceneMappings {
+    studios {
+      name
+      existingStudio {
+        id
+        name
+      }
+    }
+    performers {
+      name
+      existingPerformer {
+        id
+        name
+      }
+    }
+    tags {
+      name
+      existingTag {
+        id
+        name
+      }
+    }
+  }
+}

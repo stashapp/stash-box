@@ -5,16 +5,6 @@ input SubmitImportInput {
   listDelimiter: String
 }
 
-# type BulkAnalyzeResult {
-#   results: [SceneImportResult!]!
-#   errors: [String!]!
-# }
-
-# type BulkImportResult {
-#   scenesImported: Int!
-#   errors: [String!]!
-# }
-
 enum ImportDataType {
     CSV
     # JSON
