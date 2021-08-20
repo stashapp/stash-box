@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
-import { Icon } from "src/components/fragments";
+import { Icon, LoadingIndicator } from "src/components/fragments";
 import { ROUTE_IMPORT } from "src/constants";
 import {
   ImportMappingInput,
@@ -15,15 +15,20 @@ import Pagination from "src/components/pagination";
 
 const PER_PAGE = 40;
 
+interface ObjectMapping {
+  name: string;
+  id?: string | null;
+  existingName?: string;
+}
+
 const CompleteImport: React.FC = () => {
   const [page, setPage] = useState(1);
-  const [studioMappings, setStudioMappings] = useState<ImportMappingInput[]>(
+  const [studioMappings, setStudioMappings] = useState<ObjectMapping[]>([]);
+  const [performerMappings, setPerformerMappings] = useState<ObjectMapping[]>(
     []
   );
-  const [performerMappings, setPerformerMappings] = useState<
-    ImportMappingInput[]
-  >([]);
-  const [tagMappings, setTagMappings] = useState<ImportMappingInput[]>([]);
+  const [tagMappings, setTagMappings] = useState<ObjectMapping[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const history = useHistory();
 
@@ -57,14 +62,17 @@ const CompleteImport: React.FC = () => {
     const performerMap = data.performers.map((p) => ({
       name: p.name,
       id: p.existingPerformer?.id,
+      existingName: p.existingPerformer?.name,
     }));
     const studioMap = data.studios.map((s) => ({
       name: s.name,
       id: s.existingStudio?.id,
+      existingName: s.existingStudio?.name,
     }));
-    const tagMap = data.tags.map((p) => ({
-      name: p.name,
-      id: p.existingTag?.id,
+    const tagMap = data.tags.map((t) => ({
+      name: t.name,
+      id: t.existingTag?.id,
+      existingName: t.existingTag?.name,
     }));
 
     setPerformerMappings(performerMap);
@@ -72,8 +80,22 @@ const CompleteImport: React.FC = () => {
     setTagMappings(tagMap);
   }, [sceneMappings]);
 
-  function findMapping(name: string, mappings: ImportMappingInput[]) {
+  function findMapping(name: string, mappings: ObjectMapping[]) {
     return mappings.find((m) => m.name === name);
+  }
+
+  function mappingToInput(mappings: ObjectMapping[]): ImportMappingInput[] {
+    return mappings.map((m) => ({
+      name: m.name,
+      id: m.id,
+    }));
+  }
+
+  function renderName(name: string, mapping: ObjectMapping) {
+    if (mapping.existingName && mapping.name !== mapping.existingName) {
+      return `${name} (${mapping.existingName})`;
+    }
+    return name;
   }
 
   function renderStudio(name: string) {
@@ -82,12 +104,12 @@ const CompleteImport: React.FC = () => {
     return studio && studio.id ? (
       <span className="mx-2">
         <Icon icon="video" className="mr-1" />
-        <Link to={`/studios/${studio.id}`}>{name}</Link>
+        <Link to={`/studios/${studio.id}`}>{renderName(name, studio)}</Link>
       </span>
     ) : (
       <span className="mx-2">
-        <Icon icon="star" color="gold" className="mr-1" />
-        <span>{name}</span>
+        <Icon icon="question" className="mr-1" />
+        <span className="text-muted">{name}</span>
       </span>
     );
   }
@@ -98,12 +120,14 @@ const CompleteImport: React.FC = () => {
     return performer && performer.id ? (
       <span className="mx-2">
         <Icon icon="user-check" color="success" className="mr-1" />
-        <Link to={`/performers/${performer.id}`}>{name}</Link>
+        <Link to={`/performers/${performer.id}`}>
+          {renderName(name, performer)}
+        </Link>
       </span>
     ) : (
       <span className="mx-2">
-        <Icon icon="star" color="gold" className="mr-1" />
-        <span>{name}</span>
+        <Icon icon="question" className="mr-1" />
+        <span className="text-muted">{name}</span>
       </span>
     );
   }
@@ -114,24 +138,48 @@ const CompleteImport: React.FC = () => {
     return tag && tag.id ? (
       <small className="mx-2">
         <Icon icon="tag" color="success" className="mr-1" />
-        <Link to={`/tags/${tag.id}`}>{name}</Link>
+        <Link to={`/tags/${tag.id}`}>{renderName(name, tag)}</Link>
       </small>
     ) : (
       <small className="mx-2">
-        <Icon icon="star" color="gold" className="mr-1" />
-        <span>{name}</span>
+        <Icon icon="question" className="mr-1" />
+        <span className="text-muted">{name}</span>
       </small>
     );
   }
 
   async function handleSubmit() {
-    await completeImport();
-    history.push(ROUTE_IMPORT);
+    setLoading(true);
+    try {
+      await completeImport({
+        variables: {
+          input: {
+            performers: mappingToInput(performerMappings),
+            studios: mappingToInput(studioMappings),
+            tags: mappingToInput(tagMappings),
+          },
+        },
+      });
+      history.push(ROUTE_IMPORT);
+    } finally {
+      setLoading(false);
+    }
+
+    // TODO - error handling
   }
 
   async function handleAbortImport() {
-    await abortImport();
-    history.push(ROUTE_IMPORT);
+    setLoading(true);
+    try {
+      await abortImport();
+      history.push(ROUTE_IMPORT);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return <LoadingIndicator message={`Importing ${sceneCount} scenes...`} />;
   }
 
   return (
@@ -140,7 +188,8 @@ const CompleteImport: React.FC = () => {
 
       {sceneCount && <h2>{sceneCount} scenes loaded.</h2>}
 
-      <h3>Mappings</h3>
+      {/* TODO */}
+      {/* <h3>Mappings</h3> */}
 
       <Button onClick={() => handleSubmit()} className="mr-2">
         Submit

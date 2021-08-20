@@ -213,7 +213,9 @@ func (r rowImporter) processImportRow(i int, row map[string]string) error {
 		}
 	}
 
-	out.SetData(outMap)
+	if err := out.SetData(outMap); err != nil {
+		return err
+	}
 
 	if _, err := r.rw.Create(out); err != nil {
 		return err
@@ -243,7 +245,7 @@ func createImage(repo models.Repo, url string) (*models.Image, error) {
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}

@@ -262,7 +262,7 @@ const NewImport: React.FC = () => {
   useEffect(() => {
     if (importScenes.data?.queryImportScenes.count) {
       history.push(ROUTE_COMPLETE_IMPORT);
-    } 
+    }
   }, [importScenes, history]);
 
   async function handleSubmit() {

@@ -58,8 +58,8 @@ const Main: React.FC = ({ children }) => {
 
   if (loading) return <></>;
 
-  const isRole = (role: string) =>
-    (user?.roles ?? []).includes(role as RoleEnum);
+  const isRole = (role: RoleEnum) =>
+    (user?.roles ?? []).some((r) => r === RoleEnum.ADMIN || r === role);
 
   const contextValue = user
     ? {
@@ -97,7 +97,7 @@ const Main: React.FC = ({ children }) => {
         >
           {contextValue!.user!.name}
         </NavLink>
-        {isRole("ADMIN") && (
+        {isRole(RoleEnum.ADMIN) && (
           <NavLink exact to={ROUTE_USERS} className="nav-link">
             Users
           </NavLink>
@@ -134,9 +134,11 @@ const Main: React.FC = ({ children }) => {
           <NavLink to={ROUTE_EDITS} className="nav-link">
             Edits
           </NavLink>
-          <NavLink to={ROUTE_IMPORT} className="nav-link">
-            Import
-          </NavLink>
+          {isRole(RoleEnum.SUBMIT_IMPORT) && isRole(RoleEnum.FINALIZE_IMPORT) && (
+            <NavLink to={ROUTE_IMPORT} className="nav-link">
+              Import
+            </NavLink>
+          )}
         </Nav>
         <Nav className="align-items-center">
           {contextValue.authenticated && renderUserNav()}
