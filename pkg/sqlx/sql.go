@@ -194,19 +194,7 @@ func sqlGenKeysCreate(dialect Dialect, i interface{}) (string, string) {
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		switch t := v.Field(i).Interface().(type) {
-		case string:
-			if t != "" {
-				addPlaceholder(key)
-			}
-		case int, int64, float64:
-			if t != 0 {
-				addPlaceholder(key)
-			}
-		case uuid.UUID:
-			if t != uuid.Nil {
-				addPlaceholder(key)
-			}
-		case bool:
+		case string, int, int64, float64, uuid.UUID, bool:
 			addPlaceholder(key)
 		case optionalValue:
 			if t.IsValid() {

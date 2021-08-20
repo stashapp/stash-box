@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	importRowTable = "pending_activations"
+	importRowTable = "import_data"
 )
 
 var (
