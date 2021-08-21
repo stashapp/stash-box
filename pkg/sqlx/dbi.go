@@ -178,7 +178,7 @@ func (q dbi) InsertJoins(tj tableJoin, joins Joins) error {
 	return err
 }
 
-// InsertJoinsWithoutConflict inserts multiple join objects and doesn't fail on id conflicts
+// InsertJoinsWithConflictHandling inserts multiple join objects and adds a conflict clause
 func (q dbi) InsertJoinsWithConflictHandling(tj tableJoin, joins Joins, conflictHandling string) error {
 	var err error
 	joins.Each(func(ro interface{}) {

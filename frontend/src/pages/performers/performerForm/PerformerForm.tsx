@@ -104,7 +104,7 @@ const nullCheck = (input: string | null) =>
 const zeroCheck = (input: number | null) =>
   input === 0 || Number.isNaN(input) ? null : input;
 
-const schema = yup.object().shape({
+const schema = yup.object({
   id: yup.string(),
   name: yup.string().required("Name is required"),
   gender: yup
@@ -177,7 +177,7 @@ const schema = yup.object().shape({
     .nullable()
     .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
   tattoos: yup.array().of(
-    yup.object().shape({
+    yup.object({
       location: yup.string().trim().required("Location is required"),
       description: yup.string().trim().transform(nullCheck).nullable(),
     })
@@ -194,8 +194,13 @@ const schema = yup.object().shape({
     .required(),
   images: yup
     .array()
-    .of(yup.string().trim().transform(nullCheck).required())
-    .transform((_, obj) => Object.keys(obj ?? [])),
+    .of(
+      yup.object({
+        id: yup.string().required(),
+        url: yup.string().required(),
+      })
+    )
+    .required(),
   note: yup.string().required("Edit note is required"),
 });
 
@@ -224,17 +229,21 @@ const PerformerForm: React.FC<PerformerProps> = ({
   changeType,
   saving,
 }) => {
+  const images = uniqBy([...performer.images, ...initialImages], (i) => i.id);
   const {
     register,
     control,
     handleSubmit,
-    errors,
     watch,
+    formState: { errors },
   } = useForm<PerformerFormData>({
     resolver: yupResolver(schema),
     mode: "onBlur",
+    defaultValues: {
+      images,
+    },
   });
-  const [gender, setGender] = useState(performer.gender || "FEMALE");
+
   const aliases = uniq([...performer.aliases, ...initialAliases]);
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState(false);
@@ -245,10 +254,6 @@ const PerformerForm: React.FC<PerformerProps> = ({
     [fieldData, performer]
   );
   const history = useHistory();
-  const images = uniqBy([...performer.images, ...initialImages], (i) => i.id);
-
-  const onGenderChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setGender(e.currentTarget.value);
 
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
@@ -277,7 +282,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
       tattoos: data.tattoos ?? [],
       breast_type:
         BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum] || null,
-      image_ids: data.images,
+      image_ids: data.images.map((i) => i.id),
     };
 
     performerData.measurements = {
@@ -342,12 +347,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
 
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
-      <input
-        type="hidden"
-        name="id"
-        value={performer.id}
-        ref={register({ required: true })}
-      />
+      <input type="hidden" value={performer.id} {...register("id")} />
       <Tabs
         activeKey={activeTab}
         onSelect={(key) => key && setActiveTab(key)}
@@ -364,8 +364,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Control
                 className={cx({ "is-invalid": errors.name })}
                 defaultValue={performer.name}
-                name="name"
-                ref={register({ required: true })}
+                {...register("name", { required: true })}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.name?.message}
@@ -377,8 +376,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Control
                 className={cx({ "is-invalid": errors.disambiguation })}
                 defaultValue={performer.disambiguation ?? ""}
-                name="disambiguation"
-                ref={register}
+                {...register("disambiguation")}
               />
               <Form.Text>Required if the primary name is not unique.</Form.Text>
               <Form.Control.Feedback type="invalid">
@@ -411,7 +409,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 control={control}
                 name="aliases"
                 defaultValue={aliases}
-                render={({ onChange }) => (
+                render={({ field: { onChange } }) => (
                   <MultiSelect
                     values={aliases}
                     onChange={onChange}
@@ -431,10 +429,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Control
                 as="select"
                 className={cx({ "is-invalid": errors.gender })}
-                name="gender"
                 defaultValue={performer?.gender ?? ""}
-                onChange={onGenderChange}
-                ref={register}
+                {...register("gender")}
               >
                 {enumOptions(GENDER)}
               </Form.Control>
@@ -448,19 +444,18 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Control
                 className={cx({ "is-invalid": errors.birthdate })}
                 placeholder="YYYY-MM-DD"
-                name="birthdate"
                 defaultValue={
                   performer.birthdate
                     ? formatFuzzyDate(performer.birthdate)
                     : ""
                 }
-                ref={register}
+                {...register("birthdate")}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.birthdate?.message}
               </Form.Control.Feedback>
               <Form.Text>
-                If the precise date is unknown the date and or month can be
+                If the precise date is unknown the day and/or month can be
                 omitted.
               </Form.Text>
             </Form.Group>
@@ -472,13 +467,12 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Control
                 as="select"
                 className={cx({ "is-invalid": errors.eye_color })}
-                name="eye_color"
                 defaultValue={
                   performer.eye_color
                     ? getEnumValue(EYE, performer.eye_color)
                     : ""
                 }
-                ref={register}
+                {...register("eye_color")}
               >
                 {enumOptions(EYE)}
               </Form.Control>
@@ -492,13 +486,12 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Control
                 as="select"
                 className={cx({ "is-invalid": errors.hair_color })}
-                name="hair_color"
                 defaultValue={
                   performer.hair_color
                     ? getEnumValue(HAIR, performer.hair_color)
                     : ""
                 }
-                ref={register}
+                {...register("hair_color")}
               >
                 {enumOptions(HAIR)}
               </Form.Control>
@@ -514,9 +507,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Control
                 className={cx({ "is-invalid": errors.height })}
                 type="number"
-                name="height"
                 defaultValue={performer?.height || ""}
-                ref={register}
+                {...register("height")}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.height?.message}
@@ -524,39 +516,40 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Text>Height in centimeters</Form.Text>
             </Form.Group>
 
-            {gender !== "MALE" && gender !== "TRANSGENDER_MALE" && (
-              <Form.Group controlId="boobJob" className="col-6">
-                <Form.Label>Breast type</Form.Label>
-                <Form.Control
-                  as="select"
-                  className={cx({ "is-invalid": errors.boobJob })}
-                  name="boobJob"
-                  defaultValue={
-                    performer.breast_type
-                      ? getEnumValue(BREAST, performer.breast_type)
-                      : ""
-                  }
-                  ref={register}
-                >
-                  {enumOptions(BREAST)}
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                  {errors?.boobJob?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            )}
+            {fieldData.gender !== "MALE" &&
+              fieldData.gender !== "TRANSGENDER_MALE" && (
+                <Form.Group controlId="boobJob" className="col-6">
+                  <Form.Label>Breast type</Form.Label>
+                  <Form.Control
+                    as="select"
+                    className={cx({ "is-invalid": errors.boobJob })}
+                    defaultValue={
+                      performer.breast_type
+                        ? getEnumValue(BREAST, performer.breast_type)
+                        : ""
+                    }
+                    {...register("boobJob")}
+                  >
+                    {enumOptions(BREAST)}
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">
+                    {errors?.boobJob?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              )}
           </Form.Row>
 
-          {gender !== GenderEnum.MALE &&
-            gender !== GenderEnum.TRANSGENDER_MALE && (
+          {fieldData.gender !== GenderEnum.MALE &&
+            fieldData.gender !== GenderEnum.TRANSGENDER_MALE && (
               <Form.Row>
                 <Form.Group controlId="braSize" className="col-4">
                   <Form.Label>Bra size</Form.Label>
                   <Form.Control
                     className={cx({ "is-invalid": errors.braSize })}
-                    name="braSize"
                     defaultValue={getBraSize(performer.measurements)}
-                    ref={register({ pattern: /\d{2,3}[a-zA-Z]{1,4}/i })}
+                    {...register("braSize", {
+                      pattern: /\d{2,3}[a-zA-Z]{1,4}/i,
+                    })}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors?.braSize?.message}
@@ -569,9 +562,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
                   <Form.Control
                     className={cx({ "is-invalid": errors.waistSize })}
                     type="number"
-                    name="waistSize"
                     defaultValue={performer.measurements.waist ?? ""}
-                    ref={register}
+                    {...register("waistSize")}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors?.waistSize?.message}
@@ -584,9 +576,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
                   <Form.Control
                     className={cx({ "is-invalid": errors.hipSize })}
                     type="number"
-                    name="hipSize"
                     defaultValue={performer.measurements.hip ?? ""}
-                    ref={register}
+                    {...register("hipSize")}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors?.hipSize?.message}
@@ -603,7 +594,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 control={control}
                 name="country"
                 defaultValue={performer.country}
-                render={({ onChange }) => (
+                render={({ field: { onChange } }) => (
                   <Select
                     classNamePrefix="react-select"
                     onChange={(option) =>
@@ -628,13 +619,12 @@ const PerformerForm: React.FC<PerformerProps> = ({
               <Form.Control
                 as="select"
                 className={cx({ "is-invalid": errors.ethnicity })}
-                name="ethnicity"
                 defaultValue={
                   performer.ethnicity
                     ? getEnumValue(ETHNICITY, performer.ethnicity)
                     : ""
                 }
-                ref={register}
+                {...register("ethnicity")}
               >
                 {enumOptions(ETHNICITY)}
               </Form.Control>
@@ -651,9 +641,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 className={cx({ "is-invalid": errors.career_start_year })}
                 type="year"
                 placeholder="Year"
-                name="career_start_year"
                 defaultValue={performer?.career_start_year ?? ""}
-                ref={register}
+                {...register("career_start_year")}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.career_start_year?.message}
@@ -666,9 +655,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 className={cx({ "is-invalid": errors.career_end_year })}
                 type="year"
                 placeholder="Year"
-                name="career_end_year"
                 defaultValue={performer?.career_end_year ?? ""}
-                ref={register}
+                {...register("career_end_year")}
               />
               <Form.Control.Feedback type="invalid">
                 {errors?.career_end_year?.message}
@@ -749,7 +737,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <Form.Row>
-            <EditImages initialImages={images} control={control} />
+            <EditImages control={control} />
           </Form.Row>
 
           <Form.Row className="mt-1">

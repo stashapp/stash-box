@@ -11,9 +11,6 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Packr2 artifacts
-**/*-packr.go
-
 ####
 # Visual Studio Code
 ####
@@ -59,7 +56,6 @@ stash-box
 dist
 
 pkg/models/generated_*.go
-packrd
 # TODO - we'll add this in later
 vendor
 docker

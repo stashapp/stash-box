@@ -23,13 +23,7 @@ endif
 build: pre-build
 	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)'"
 
-install:
-	packr2 install
-
-clean:
-	packr2 clean
-
-# Regenerates GraphQL files and packr files
+# Regenerates GraphQL files
 .PHONY: generate
 generate:
 	go generate
@@ -53,7 +47,7 @@ generate-dataloaders:
 		go run github.com/vektah/dataloaden TagCategoryLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.TagCategory";
 
 .PHONY: test
-test: 
+test:
 	go test ./...
 
 # Runs the integration tests. -count=1 is used to ensure results are not
@@ -61,7 +55,7 @@ test:
 .PHONY: it
 it:
 	go test -tags=integration -count=1 ./...
-	
+
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt
 fmt:
@@ -90,12 +84,9 @@ lint: vet staticcheck errcheck
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile
 
-.PHONY: ui ui-only
-ui-only:
+.PHONY: ui
+ui:
 	cd frontend && yarn build
-
-ui: ui-only
-	packr2
 
 .PHONY: ui-fmt
 ui-fmt:
@@ -105,12 +96,6 @@ ui-fmt:
 ui-start: pre-build
 	cd frontend && yarn start
 
-# just repacks the packr files - use when updating migrations and packed files without 
-# rebuilding the UI
-.PHONY: packr
-packr:
-	packr2
-
 # runs tests and checks on the UI and builds it
 .PHONY: ui-validate
 ui-validate:
@@ -118,7 +103,10 @@ ui-validate:
 
 .PHONY: cross-compile
 cross-compile:
-	docker run --rm --privileged \
+ifdef CI
+	$(eval CI_ARGS := -v $(PWD)/.go-cache:/root/.cache/go-build)
+endif
+	docker run --rm --privileged $(CI_ARGS) \
 				-v $(PWD):/go/src/github.com/stashapp/stash-box \
 				-v /var/run/docker.sock:/var/run/docker.sock \
 				-w /go/src/github.com/stashapp/stash-box \

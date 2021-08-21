@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import { Control, useFieldArray } from "react-hook-form";
 import cx from "classnames";
-import { uniqBy } from "lodash";
 
 import { useAddImage } from "src/graphql";
-import { Image } from "src/utils/transforms";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
@@ -15,22 +14,23 @@ const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
 
 interface EditImagesProps {
-  initialImages: Image[];
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  control: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  control: Control<any>;
   maxImages?: number;
 }
 
-const EditImages: React.FC<EditImagesProps> = ({
-  initialImages,
-  control,
-  maxImages,
-}) => {
-  const [images, setImages] = useState(initialImages);
+const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
+  const {
+    fields: images,
+    append,
+    remove,
+  } = useFieldArray<{ images: Array<{ id: string; url: string }> }>({
+    control,
+    name: "images",
+  });
   const [file, setFile] = useState<File | undefined>();
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
-
   const [addImage] = useAddImage();
 
   const handleAddImage = () => {
@@ -42,7 +42,9 @@ const EditImages: React.FC<EditImagesProps> = ({
     })
       .then((i) => {
         if (i.data?.imageCreate?.id) {
-          setImages(uniqBy([...images, i.data.imageCreate], (img) => img.id));
+          if (!images.some((image) => image.id === i.data?.imageCreate?.id)) {
+            append(i.data.imageCreate);
+          }
           setFile(undefined);
           setImageData("");
         }
@@ -50,10 +52,6 @@ const EditImages: React.FC<EditImagesProps> = ({
       .finally(() => {
         setUploading(false);
       });
-  };
-
-  const handleRemoveImage = (id: string) => {
-    setImages(images.filter((i) => i.id !== id));
   };
 
   const removeImage = () => {
@@ -79,13 +77,8 @@ const EditImages: React.FC<EditImagesProps> = ({
   return (
     <Form.Row className={CLASSNAME}>
       <Col xs={7} className="d-flex flex-wrap justify-content-between">
-        {images.map((i) => (
-          <ImageInput
-            control={control}
-            image={i}
-            onRemove={handleRemoveImage}
-            key={i.id}
-          />
+        {images.map((i, index) => (
+          <ImageInput image={i} onRemove={() => remove(index)} key={i.id} />
         ))}
       </Col>
       <Col xs={5}>

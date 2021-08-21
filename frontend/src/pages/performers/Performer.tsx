@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import { groupBy, keyBy, sortBy } from "lodash";
@@ -25,6 +25,11 @@ const PerformerComponent: React.FC = () => {
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const { loading, data } = useFullPerformer({ id });
   const [studioFilter, setStudioFilter] = useState<string[] | null>(null);
+
+  // Clear studio filter on performer change
+  useEffect(() => {
+    setStudioFilter(null);
+  }, [id]);
 
   const { data: editData } = useEdits({
     filter: {
@@ -107,6 +112,7 @@ const PerformerComponent: React.FC = () => {
             onChange={handleStudioSelect}
             placeholder="Filter by studios"
             plural="studios"
+            key={`performer-${id}-studio-select`}
           />
           <SceneList
             perPage={40}

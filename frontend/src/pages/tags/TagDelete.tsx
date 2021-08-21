@@ -10,7 +10,7 @@ import { EditNote } from "src/components/form";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   id: yup.string().required(),
   note: yup.string().required("An edit note is required."),
 });
@@ -20,7 +20,11 @@ const TagDelete: React.FC = () => {
   const history = useHistory();
   const { id } = useParams<{ id?: string }>();
   const { data: tag, loading: loadingTag } = useTag({ id: id ?? "" }, !id);
-  const { register, handleSubmit, errors } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: yupResolver(schema),
     mode: "onBlur",
   });
@@ -55,7 +59,7 @@ const TagDelete: React.FC = () => {
             Delete tag <em>{tag.findTag?.name}</em>
           </h4>
         </Form.Row>
-        <Form.Control type="hidden" name="id" value={id} ref={register} />
+        <Form.Control type="hidden" value={id} {...register("id")} />
         <Form.Row className="my-4">
           <Col md={6}>
             <EditNote register={register} error={errors.note} />
