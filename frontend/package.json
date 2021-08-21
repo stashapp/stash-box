@@ -20,6 +20,9 @@
     "node": ">=8.10.0",
     "yarn": ">=1.15.2"
   },
+  "resolutions": {
+    "**/graphql": "^15.5.1"
+  },
   "devDependencies": {
     "@types/lodash": "^4.14.172",
     "@types/node": "^16.6.1",
