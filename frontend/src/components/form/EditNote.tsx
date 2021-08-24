@@ -1,13 +1,13 @@
 import React from "react";
 import { Form } from "react-bootstrap";
 import cx from "classnames";
-import { FieldError } from "react-hook-form";
+import { FieldError, UseFormRegister } from "react-hook-form";
 
 import NoteInput from "./NoteInput";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  register: any;
+  register: UseFormRegister<any>;
   error?: FieldError;
 }
 
