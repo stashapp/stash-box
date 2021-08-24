@@ -68,7 +68,7 @@ const AddComment: React.FC<IProps> = ({ editID }) => {
         <Button
           variant="primary"
           className="ml-2"
-          disabled={saving}
+          disabled={saving || !comment.trim()}
           onClick={handleSaveComment}
         >
           Save
