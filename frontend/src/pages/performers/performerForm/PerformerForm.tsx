@@ -230,6 +230,12 @@ const PerformerForm: React.FC<PerformerProps> = ({
   saving,
 }) => {
   const images = uniqBy([...performer.images, ...initialImages], (i) => i.id);
+  const tattoos = (performer?.tattoos ?? []).map(
+    ({ __typename, ...mod }) => mod
+  );
+  const piercings = (performer?.piercings ?? []).map(
+    ({ __typename, ...mod }) => mod
+  );
   const {
     register,
     control,
@@ -240,6 +246,8 @@ const PerformerForm: React.FC<PerformerProps> = ({
     resolver: yupResolver(schema),
     mode: "onBlur",
     defaultValues: {
+      tattoos,
+      piercings,
       images,
     },
   });
@@ -689,7 +697,6 @@ const PerformerForm: React.FC<PerformerProps> = ({
             locationPlaceholder="Add a tattoo for a location..."
             descriptionPlaceholder="Tattoo description..."
             formatLabel={(text) => `Add tattoo for location "${text}"`}
-            defaultValues={performer?.tattoos ?? []}
           />
           <Form.Control.Feedback
             className={cx({ "d-block": errors.tattoos })}
@@ -708,7 +715,6 @@ const PerformerForm: React.FC<PerformerProps> = ({
             locationPlaceholder="Add a piercing for a location..."
             descriptionPlaceholder="Piercing description..."
             formatLabel={(text) => `Add piercing for location "${text}"`}
-            defaultValues={performer?.piercings ?? []}
           />
           <Form.Control.Feedback
             className={cx({ "d-block": errors.piercings })}
