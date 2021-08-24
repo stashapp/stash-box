@@ -44,3 +44,22 @@ func (r *queryResolver) QueryImportSceneMappings(ctx context.Context) (*models.S
 
 	return ret, nil
 }
+
+func (r *queryResolver) ParseImportData(ctx context.Context, input models.MassageImportDataInput, filter *models.QuerySpec) (*models.ParseImportDataResult, error) {
+	if err := validateRole(ctx, models.RoleEnumSubmitImport); err != nil {
+		return nil, err
+	}
+
+	fac := r.getRepoFactory(ctx)
+
+	var ret *models.ParseImportDataResult
+	if err := fac.WithTxn(func() error {
+		var err error
+		ret, err = bulkimport.PreviewMassageImportData(fac, getCurrentUser(ctx), input, filter)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}

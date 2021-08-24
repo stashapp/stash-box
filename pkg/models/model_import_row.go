@@ -10,6 +10,18 @@ import (
 
 type ImportRowData map[string]interface{}
 
+func (e ImportRowData) ToJSON() (string, error) {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(e); err != nil {
+		return "", err
+	}
+	ret := buffer.Bytes()
+	return string(ret), nil
+}
+
 type ImportRow struct {
 	UserID uuid.UUID      `db:"user_id" json:"user_id"`
 	Row    int            `db:"row" json:"row"`
@@ -17,14 +29,12 @@ type ImportRow struct {
 }
 
 func (e *ImportRow) SetData(data ImportRowData) error {
-	buffer := &bytes.Buffer{}
-	encoder := json.NewEncoder(buffer)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(data); err != nil {
+	s, err := data.ToJSON()
+	if err != nil {
 		return err
 	}
-	e.Data = buffer.Bytes()
+
+	e.Data = []byte(s)
 	return nil
 }
 

@@ -1,13 +1,16 @@
 input SubmitImportInput {
   type: ImportDataType!
   data: Upload!
-  fields: [ImportFieldInput!]!
-  listDelimiter: String
 }
 
 enum ImportDataType {
     CSV
     # JSON
+}
+
+input MassageImportDataInput {
+  fields: [ImportFieldInput!]!
+  listDelimiter: String
 }
 
 input ImportFieldInput {
@@ -16,6 +19,16 @@ input ImportFieldInput {
   inputField: String
   fixedValue: String
   regexReplacements: [RegexReplacementInput!]
+}
+
+type ParseImportDataResult {
+  count: Int!
+  data: [[ParseImportDataTuple!]!]!
+}
+
+type ParseImportDataTuple {
+  field: String!
+  value: [String!]!
 }
 
 input RegexReplacementInput {

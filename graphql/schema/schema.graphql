@@ -45,6 +45,8 @@ type Query {
 
   queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType!
 
+  """Returns the result of parsing import data"""
+  parseImportData(input: MassageImportDataInput!, filter: QuerySpec): ParseImportDataResult!
   """returns pending imported scene data for the current user"""
   queryImportScenes(querySpec: QuerySpec): QueryImportScenesResult!
   """returns the current mappings of name to performer/tag/studio from the current pending import"""
@@ -149,7 +151,9 @@ type Mutation {
 
   # Bulk ingest
   """submits data to begin an import of scenes"""
-  submitSceneImport(input: SubmitImportInput!): Boolean!
+  submitImport(input: SubmitImportInput!): Boolean!
+  """massages import data"""
+  massageImportData(input: MassageImportDataInput!): Boolean!
   """aborts the pending scene import for the current user"""
   abortSceneImport: Boolean!
   """finalises a pending scene import, creating the scenes"""

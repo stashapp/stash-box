@@ -32,6 +32,28 @@ func (qb *importRowQueryBuilder) Create(newRow models.ImportRow) (*models.Import
 	return &newRow, nil
 }
 
+func (qb *importRowQueryBuilder) Update(updatedRow models.ImportRow) (*models.ImportRow, error) {
+	// need to update by user and row
+	ensureTx(qb.dbi.txn)
+
+	t := importRowTable
+	if _, err := qb.dbi.db().NamedExec(
+		`UPDATE `+t+` SET `+sqlGenKeys(qb.dbi.txn.dialect, updatedRow, true)+` WHERE `+t+`.user_id = :user_id AND `+t+`.row = :row`,
+		updatedRow,
+	); err != nil {
+		return nil, err
+	}
+
+	// don't want to modify the existing object
+	updatedModel := &models.ImportRow{}
+	query := qb.dbi.db().Rebind(`SELECT * FROM ` + t + ` WHERE ` + t + `.user_id = ? AND ` + t + `.row = ?`)
+	if err := qb.dbi.db().Get(updatedModel, query, updatedRow.UserID, updatedRow.Row); err != nil {
+		return nil, err
+	}
+
+	return updatedModel, nil
+}
+
 func (qb *importRowQueryBuilder) DestroyForUser(userID uuid.UUID) error {
 	q := newDeleteQueryBuilder(importRowDBTable)
 	q.AddWhere("user_id = ?")

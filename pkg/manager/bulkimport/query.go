@@ -15,23 +15,26 @@ func QueryImportSceneData(rw models.ImportRowRepo, user *models.User, querySpec 
 	}
 
 	for _, r := range rows {
-		data := r.GetData()
-		row := models.SceneImportResult{
-			Title:       getDataString(data, models.ImportSceneColumnTypeTitle),
-			Date:        getDataString(data, models.ImportSceneColumnTypeDate),
-			Description: getDataString(data, models.ImportSceneColumnTypeDescription),
-			Image:       getDataString(data, models.ImportSceneColumnTypeImage),
-			URL:         getDataString(data, models.ImportSceneColumnTypeURL),
-			Duration:    getDataInt(data, models.ImportSceneColumnTypeDuration),
-			Studio:      getDataString(data, models.ImportSceneColumnTypeStudio),
-			Performers:  getDataList(data, models.ImportSceneColumnTypePerformers),
-			Tags:        getDataList(data, models.ImportSceneColumnTypeTags),
-		}
-
+		row := rowToSceneData(r)
 		ret.Scenes = append(ret.Scenes, &row)
 	}
 
 	return ret, nil
+}
+
+func rowToSceneData(r *models.ImportRow) models.SceneImportResult {
+	data := r.GetData()
+	return models.SceneImportResult{
+		Title:       getDataString(data, models.ImportSceneColumnTypeTitle),
+		Date:        getDataString(data, models.ImportSceneColumnTypeDate),
+		Description: getDataString(data, models.ImportSceneColumnTypeDescription),
+		Image:       getDataString(data, models.ImportSceneColumnTypeImage),
+		URL:         getDataString(data, models.ImportSceneColumnTypeURL),
+		Duration:    getDataInt(data, models.ImportSceneColumnTypeDuration),
+		Studio:      getDataString(data, models.ImportSceneColumnTypeStudio),
+		Performers:  getDataList(data, models.ImportSceneColumnTypePerformers),
+		Tags:        getDataList(data, models.ImportSceneColumnTypeTags),
+	}
 }
 
 func getDataString(data models.ImportRowData, field models.ImportSceneColumnType) *string {
@@ -105,7 +108,7 @@ func getDataList(data models.ImportRowData, field models.ImportSceneColumnType) 
 	return ret
 }
 
-func processImportSceneData(rw models.ImportRowRepo, user *models.User, fn func(s *models.SceneImportResult) error) error {
+func processImportData(rw models.ImportRowRepo, user *models.User, fn func(r *models.ImportRow) error) error {
 	// determine total
 	page := 1
 	pp := 0
@@ -121,17 +124,21 @@ func processImportSceneData(rw models.ImportRowRepo, user *models.User, fn func(
 	pp = batchSize
 
 	for page = 1; page <= totalPages; page++ {
-		r, err := QueryImportSceneData(rw, user, querySpec)
-		if err != nil {
-			return err
-		}
+		rows, _ := rw.QueryForUser(user.ID, querySpec)
 
-		for _, s := range r.Scenes {
-			if err := fn(s); err != nil {
+		for _, r := range rows {
+			if err := fn(r); err != nil {
 				return err
 			}
 		}
 	}
 
 	return nil
+}
+
+func processImportSceneData(rw models.ImportRowRepo, user *models.User, fn func(s *models.SceneImportResult) error) error {
+	return processImportData(rw, user, func(r *models.ImportRow) error {
+		sd := rowToSceneData(r)
+		return fn(&sd)
+	})
 }

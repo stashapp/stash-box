@@ -31,6 +31,35 @@ func SubmitImport(repo models.Repo, user *models.User, input models.SubmitImport
 		return errors.New("existing import pending")
 	}
 
+	var i int
+	if err := readImportData(repo, input.Type, input.Data.File, func(row map[string]string) error {
+		out := models.ImportRow{
+			UserID: user.ID,
+			Row:    i,
+		}
+
+		outMap := make(models.ImportRowData)
+		for key, val := range row {
+			outMap[key] = val
+		}
+
+		if err := out.SetData(outMap); err != nil {
+			return err
+		}
+
+		if _, err := repo.ImportRow().Create(out); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func PreviewMassageImportData(repo models.Repo, user *models.User, input models.MassageImportDataInput, querySpec *models.QuerySpec) (*models.ParseImportDataResult, error) {
 	delimiter := ""
 	if input.ListDelimiter != nil {
 		delimiter = *input.ListDelimiter
@@ -43,16 +72,63 @@ func SubmitImport(repo models.Repo, user *models.User, input models.SubmitImport
 		delimiter: delimiter,
 	}
 
-	var i int
-	if err := readImportData(repo, input.Type, input.Data.File, func(row map[string]string) error {
-		err := importer.processImportRow(i, row)
-		i++
-		return err
-	}); err != nil {
-		return err
+	rows, count := repo.ImportRow().QueryForUser(user.ID, querySpec)
+
+	data := [][]*models.ParseImportDataTuple{}
+
+	for _, r := range rows {
+		dt := []*models.ParseImportDataTuple{}
+		rr := importer.processImportRow(r.GetData())
+
+		for k, v := range rr {
+			vSlice, isSlice := v.([]string)
+			if !isSlice {
+				vSlice = []string{v.(string)}
+			}
+
+			dt = append(dt, &models.ParseImportDataTuple{
+				Field: k,
+				Value: vSlice,
+			})
+		}
+
+		data = append(data, dt)
 	}
 
-	return nil
+	return &models.ParseImportDataResult{
+		Count: count,
+		Data:  data,
+	}, nil
+}
+
+func MassageImportData(repo models.Repo, user *models.User, input models.MassageImportDataInput) error {
+	delimiter := ""
+	if input.ListDelimiter != nil {
+		delimiter = *input.ListDelimiter
+	}
+
+	rw := repo.ImportRow()
+
+	importer := rowImporter{
+		userID:    user.ID,
+		rw:        rw,
+		fields:    input.Fields,
+		delimiter: delimiter,
+	}
+
+	return processImportData(rw, user, func(r *models.ImportRow) error {
+		rr := importer.processImportRow(r.GetData())
+
+		// overwrite existing row data
+		newRow := *r
+		if err := newRow.SetData(rr); err != nil {
+			return err
+		}
+
+		_, err := rw.Update(newRow)
+
+		return err
+	})
 }
 
 func AbortImport(repo models.Repo, user *models.User) error {
@@ -185,26 +261,30 @@ type rowImporter struct {
 	fields    []*models.ImportFieldInput
 }
 
-func (r rowImporter) processImportRow(i int, row map[string]string) error {
-	out := models.ImportRow{
-		UserID: r.userID,
-		Row:    i,
-	}
-
+func (r rowImporter) processImportRow(row models.ImportRowData) models.ImportRowData {
 	outMap := make(models.ImportRowData)
+	touchedFields := []string{}
 	for _, field := range r.fields {
 		var v interface{}
 		if field.FixedValue != nil {
 			v = *field.FixedValue
 		} else if field.InputField != nil {
-			vStr := row[*field.InputField]
+			touchedFields = append(touchedFields, *field.InputField)
 
-			vStr = processRegex(vStr, field.RegexReplacements)
+			vIfc := row[*field.InputField]
 
-			if r.delimiter != "" && strings.Contains(vStr, r.delimiter) {
-				v = strings.Split(vStr, r.delimiter)
+			vStr, isStr := vIfc.(string)
+			if !isStr {
+				// leave already list-parsed fields as-is
+				v = vIfc
 			} else {
-				v = vStr
+				vStr = processRegex(vStr, field.RegexReplacements)
+
+				if r.delimiter != "" && strings.Contains(vStr, r.delimiter) {
+					v = strings.Split(vStr, r.delimiter)
+				} else {
+					v = vStr
+				}
 			}
 		}
 
@@ -213,15 +293,7 @@ func (r rowImporter) processImportRow(i int, row map[string]string) error {
 		}
 	}
 
-	if err := out.SetData(outMap); err != nil {
-		return err
-	}
-
-	if _, err := r.rw.Create(out); err != nil {
-		return err
-	}
-
-	return nil
+	return outMap
 }
 
 func processRegex(v string, replacements []*models.RegexReplacementInput) string {

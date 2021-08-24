@@ -8,5 +8,6 @@ type ImportRowRepo interface {
 	QueryForUser(userID uuid.UUID, findFilter *QuerySpec) (ImportRows, int)
 
 	Create(newRow ImportRow) (*ImportRow, error)
+	Update(updatedRow ImportRow) (*ImportRow, error)
 	DestroyForUser(userID uuid.UUID) error
 }

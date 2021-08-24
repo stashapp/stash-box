@@ -7,7 +7,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *mutationResolver) SubmitSceneImport(ctx context.Context, input models.SubmitImportInput) (bool, error) {
+func (r *mutationResolver) SubmitImport(ctx context.Context, input models.SubmitImportInput) (bool, error) {
 	if err := validateRole(ctx, models.RoleEnumSubmitImport); err != nil {
 		return false, err
 	}
@@ -44,6 +44,22 @@ func (r *mutationResolver) CompleteSceneImport(ctx context.Context, input models
 
 	if err := fac.WithTxn(func() error {
 		return bulkimport.CompleteImport(fac, getCurrentUser(ctx), input)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) MassageImportData(ctx context.Context, input models.MassageImportDataInput) (bool, error) {
+	if err := validateRole(ctx, models.RoleEnumSubmitImport); err != nil {
+		return false, err
+	}
+
+	fac := r.getRepoFactory(ctx)
+
+	if err := fac.WithTxn(func() error {
+		return bulkimport.MassageImportData(fac, getCurrentUser(ctx), input)
 	}); err != nil {
 		return false, err
 	}
