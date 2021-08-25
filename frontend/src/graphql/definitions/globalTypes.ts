@@ -268,6 +268,11 @@ export interface IntCriterionInput {
   modifier: CriterionModifier;
 }
 
+export interface MassageImportDataInput {
+  fields: ImportFieldInput[];
+  listDelimiter?: string | null;
+}
+
 export interface MeasurementsInput {
   cup_size?: string | null;
   band_size?: number | null;
@@ -457,8 +462,6 @@ export interface StudioUpdateInput {
 export interface SubmitImportInput {
   type: ImportDataType;
   data: any;
-  fields: ImportFieldInput[];
-  listDelimiter?: string | null;
 }
 
 export interface TagCategoryCreateInput {

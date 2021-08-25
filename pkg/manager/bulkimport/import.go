@@ -38,6 +38,8 @@ func SubmitImport(repo models.Repo, user *models.User, input models.SubmitImport
 			Row:    i,
 		}
 
+		i++
+
 		outMap := make(models.ImportRowData)
 		for key, val := range row {
 			outMap[key] = val
@@ -81,14 +83,11 @@ func PreviewMassageImportData(repo models.Repo, user *models.User, input models.
 		rr := importer.processImportRow(r.GetData())
 
 		for k, v := range rr {
-			vSlice, isSlice := v.([]string)
-			if !isSlice {
-				vSlice = []string{v.(string)}
-			}
+			vv := valueToStringSlice(v)
 
 			dt = append(dt, &models.ParseImportDataTuple{
 				Field: k,
-				Value: vSlice,
+				Value: vv,
 			})
 		}
 
@@ -99,6 +98,25 @@ func PreviewMassageImportData(repo models.Repo, user *models.User, input models.
 		Count: count,
 		Data:  data,
 	}, nil
+}
+
+func valueToStringSlice(v interface{}) []string {
+	switch vv := v.(type) {
+	case string:
+		return []string{vv}
+	case []string:
+		return vv
+	case []interface{}:
+		// assume slice of strings
+		var ret []string
+		for _, vvv := range vv {
+			ret = append(ret, vvv.(string))
+		}
+
+		return ret
+	}
+
+	return nil
 }
 
 func MassageImportData(repo models.Repo, user *models.User, input models.MassageImportDataInput) error {
@@ -263,29 +281,16 @@ type rowImporter struct {
 
 func (r rowImporter) processImportRow(row models.ImportRowData) models.ImportRowData {
 	outMap := make(models.ImportRowData)
-	touchedFields := []string{}
+	touchedFields := make(map[string]bool)
 	for _, field := range r.fields {
 		var v interface{}
 		if field.FixedValue != nil {
 			v = *field.FixedValue
 		} else if field.InputField != nil {
-			touchedFields = append(touchedFields, *field.InputField)
+			touchedFields[*field.InputField] = true
 
 			vIfc := row[*field.InputField]
-
-			vStr, isStr := vIfc.(string)
-			if !isStr {
-				// leave already list-parsed fields as-is
-				v = vIfc
-			} else {
-				vStr = processRegex(vStr, field.RegexReplacements)
-
-				if r.delimiter != "" && strings.Contains(vStr, r.delimiter) {
-					v = strings.Split(vStr, r.delimiter)
-				} else {
-					v = vStr
-				}
-			}
+			v = r.processFieldValue(vIfc, field.RegexReplacements, r.delimiter)
 		}
 
 		if v != "" {
@@ -293,7 +298,38 @@ func (r rowImporter) processImportRow(row models.ImportRowData) models.ImportRow
 		}
 	}
 
+	for k, v := range row {
+		if !touchedFields[k] {
+			// don't apply list delimiter to unmatched fields
+			vv := r.processFieldValue(v, nil, "")
+
+			if vv != "" {
+				outMap[k] = vv
+			}
+		}
+	}
+
 	return outMap
+}
+
+func (r rowImporter) processFieldValue(vIfc interface{}, regexReplacements []*models.RegexReplacementInput, delimiter string) interface{} {
+	var v interface{}
+
+	vStr, isStr := vIfc.(string)
+	if !isStr {
+		// leave already list-parsed fields as-is
+		v = vIfc
+	} else {
+		vStr = processRegex(vStr, regexReplacements)
+
+		if delimiter != "" && strings.Contains(vStr, delimiter) {
+			v = strings.Split(vStr, delimiter)
+		} else {
+			v = vStr
+		}
+	}
+
+	return v
 }
 
 func processRegex(v string, replacements []*models.RegexReplacementInput) string {

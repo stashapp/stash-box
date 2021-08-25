@@ -6,16 +6,16 @@
 import { SubmitImportInput } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: SubmitSceneImport
+// GraphQL mutation operation: SubmitImport
 // ====================================================
 
-export interface SubmitSceneImport {
+export interface SubmitImport {
   /**
    * submits data to begin an import of scenes
    */
-  submitSceneImport: boolean;
+  submitImport: boolean;
 }
 
-export interface SubmitSceneImportVariables {
+export interface SubmitImportVariables {
   input: SubmitImportInput;
 }

@@ -1,0 +1,9 @@
+query ParseImportData($input: MassageImportDataInput!, $filter: QuerySpec) {
+  parseImportData(input: $input, filter: $filter) {
+    count
+    data {
+      field
+      value
+    }
+  }
+}

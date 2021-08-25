@@ -18,6 +18,7 @@ import {
   ROUTE_SEARCH,
   ROUTE_IMPORT,
   ROUTE_COMPLETE_IMPORT,
+  ROUTE_MASSAGE_IMPORT,
 } from "src/constants/route";
 
 import Home from "src/pages/home";
@@ -36,6 +37,7 @@ import ResetPassword from "src/pages/resetPassword";
 import Search from "src/pages/search";
 import NewImport from "src/pages/newImport";
 import CompleteImport from "./completeImport";
+import MassageImport from "./massageImport";
 
 const Pages: React.FC = () => (
   <Switch>
@@ -83,6 +85,9 @@ const Pages: React.FC = () => (
     </Route>
     <Route exact path={ROUTE_IMPORT}>
       <NewImport />
+    </Route>
+    <Route exact path={ROUTE_MASSAGE_IMPORT}>
+      <MassageImport />
     </Route>
     <Route exact path={ROUTE_COMPLETE_IMPORT}>
       <CompleteImport />

@@ -1,0 +1,3 @@
+mutation MassageImportData($input: MassageImportDataInput!) {
+  massageImportData(input: $input)
+}

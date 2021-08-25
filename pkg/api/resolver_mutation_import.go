@@ -23,7 +23,7 @@ func (r *mutationResolver) SubmitImport(ctx context.Context, input models.Submit
 	return true, nil
 }
 
-func (r *mutationResolver) AbortSceneImport(ctx context.Context) (bool, error) {
+func (r *mutationResolver) AbortImport(ctx context.Context) (bool, error) {
 	fac := r.getRepoFactory(ctx)
 
 	if err := fac.WithTxn(func() error {

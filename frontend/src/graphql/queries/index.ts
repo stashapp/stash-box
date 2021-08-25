@@ -35,6 +35,7 @@ import {
   ImportScenesVariables,
 } from "../definitions/ImportScenes";
 import { ImportSceneMappings } from "../definitions/ImportSceneMappings";
+import { ParseImportData, ParseImportDataVariables } from "../definitions/ParseImportData";
 
 const CategoryQuery = loader("./Category.gql");
 const CategoriesQuery = loader("./Categories.gql");
@@ -54,6 +55,7 @@ const TagQuery = loader("./Tag.gql");
 const TagsQuery = loader("./Tags.gql");
 const UserQuery = loader("./User.gql");
 const UsersQuery = loader("./Users.gql");
+const ParseImportDataQuery = loader("./ParseImportData.gql");
 const ImportScenesQuery = loader("./ImportScenes.gql");
 const ImportSceneMappingsQuery = loader("./ImportSceneMappings.gql");
 
@@ -180,10 +182,17 @@ export const useUsers = (variables: UsersVariables) =>
     variables,
   });
 
+export const useParseImportData = (variables: ParseImportDataVariables) =>
+  useQuery<ParseImportData, ParseImportDataVariables>(ParseImportDataQuery, {
+    variables,
+    fetchPolicy: "network-only",
+  });
+
 export const useImportScenes = (variables: ImportScenesVariables) =>
   useQuery<ImportScenes, ImportScenesVariables>(ImportScenesQuery, {
     variables,
+    fetchPolicy: "network-only",
   });
 
 export const useImportSceneMappings = () =>
-  useQuery<ImportSceneMappings>(ImportSceneMappingsQuery);
+  useQuery<ImportSceneMappings>(ImportSceneMappingsQuery, {fetchPolicy: "network-only"});

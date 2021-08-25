@@ -3,10 +3,10 @@ import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import { Icon, LoadingIndicator } from "src/components/fragments";
-import { ROUTE_IMPORT } from "src/constants";
+import { ROUTE_IMPORT, ROUTE_MASSAGE_IMPORT } from "src/constants";
 import {
   ImportMappingInput,
-  useAbortSceneImport,
+  useAbortImport,
   useCompleteSceneImport,
   useImportSceneMappings,
   useImportScenes,
@@ -41,7 +41,7 @@ const CompleteImport: React.FC = () => {
 
   const sceneMappings = useImportSceneMappings();
   const [completeImport] = useCompleteSceneImport();
-  const [abortImport] = useAbortSceneImport();
+  const [abortImport] = useAbortImport();
 
   const sceneCount = importScenes.data?.queryImportScenes.count ?? 0;
   const scenes = importScenes.data?.queryImportScenes.scenes;
@@ -178,6 +178,10 @@ const CompleteImport: React.FC = () => {
     }
   }
 
+  function handleBack() {
+    history.push(ROUTE_MASSAGE_IMPORT);
+  }
+
   if (loading) {
     return <LoadingIndicator message={`Importing ${sceneCount} scenes...`} />;
   }
@@ -191,12 +195,18 @@ const CompleteImport: React.FC = () => {
       {/* TODO */}
       {/* <h3>Mappings</h3> */}
 
-      <Button onClick={() => handleSubmit()} className="mr-2">
-        Submit
-      </Button>
-      <Button onClick={() => handleAbortImport()} variant="danger">
-        Abort
-      </Button>
+      <div className="d-flex">
+        <Button onClick={() => handleBack()} className="mr-2">
+          Massage Data
+        </Button>
+        <div className="ml-auto" />
+        <Button onClick={() => handleAbortImport()} variant="danger" className="mr-2">
+          Cancel Import
+        </Button>
+        <Button onClick={() => handleSubmit()} className="mr-2">
+          Complete Import
+        </Button>
+      </div>
 
       {sceneCount > 0 && (
         <>

@@ -155,7 +155,7 @@ type Mutation {
   """massages import data"""
   massageImportData(input: MassageImportDataInput!): Boolean!
   """aborts the pending scene import for the current user"""
-  abortSceneImport: Boolean!
+  abortImport: Boolean!
   """finalises a pending scene import, creating the scenes"""
   completeSceneImport(input: CompleteSceneImportInput!): Boolean!
 }

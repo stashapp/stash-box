@@ -61,14 +61,12 @@ import {
 } from "../definitions/RevokeInvite";
 import { EditComment, EditCommentVariables } from "../definitions/EditComment";
 import {
-  SubmitSceneImport,
-  SubmitSceneImportVariables,
-} from "../definitions/SubmitSceneImport";
-import {
   CompleteSceneImport,
   CompleteSceneImportVariables,
 } from "../definitions/CompleteSceneImport";
-import { AbortSceneImport } from "../definitions/AbortSceneImport";
+import { AbortImport } from "../definitions/AbortImport";
+import { SubmitImport, SubmitImportVariables } from "../definitions/SubmitImport";
+import { MassageImportData, MassageImportDataVariables } from "../definitions/MassageImportData";
 
 const ActivateUserMutation = loader("./ActivateNewUser.gql");
 const AddUserMutation = loader("./AddUser.gql");
@@ -96,9 +94,10 @@ const GrantInviteMutation = loader("./GrantInvite.gql");
 const RescindInviteCodeMutation = loader("./RescindInviteCode.gql");
 const RevokeInviteMutation = loader("./RevokeInvite.gql");
 const EditCommentMutation = loader("./EditComment.gql");
-const SubmitSceneImportMutation = loader("./SubmitSceneImport.gql");
+const SubmitImportMutation = loader("./SubmitImport.gql");
+const MassageImportDataMutation = loader("./MassageImportData.gql");
 const CompleteSceneImportMutation = loader("./CompleteSceneImport.gql");
-const AbortSceneImportMutation = loader("./AbortSceneImport.gql");
+const AbortImportMutation = loader("./AbortImport.gql");
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -204,9 +203,13 @@ export const useEditComment = (
   options?: MutationHookOptions<EditComment, EditCommentVariables>
 ) => useMutation(EditCommentMutation, options);
 
-export const useSubmitSceneImport = (
-  options?: MutationHookOptions<SubmitSceneImport, SubmitSceneImportVariables>
-) => useMutation(SubmitSceneImportMutation, options);
+export const useSubmitImport = (
+  options?: MutationHookOptions<SubmitImport, SubmitImportVariables>
+) => useMutation(SubmitImportMutation, options);
+
+export const useMassageImportData = (
+  options?: MutationHookOptions<MassageImportData, MassageImportDataVariables>
+) => useMutation(MassageImportDataMutation, options);
 
 export const useCompleteSceneImport = (
   options?: MutationHookOptions<
@@ -215,6 +218,6 @@ export const useCompleteSceneImport = (
   >
 ) => useMutation(CompleteSceneImportMutation, options);
 
-export const useAbortSceneImport = (
-  options?: MutationHookOptions<AbortSceneImport>
-) => useMutation(AbortSceneImportMutation, options);
+export const useAbortImport = (
+  options?: MutationHookOptions<AbortImport>
+) => useMutation(AbortImportMutation, options);

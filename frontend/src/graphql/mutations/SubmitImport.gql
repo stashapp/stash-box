@@ -1,0 +1,3 @@
+mutation SubmitImport($input: SubmitImportInput!) {
+  submitImport(input: $input)
+}

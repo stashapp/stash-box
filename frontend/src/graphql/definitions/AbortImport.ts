@@ -4,12 +4,12 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL mutation operation: AbortSceneImport
+// GraphQL mutation operation: AbortImport
 // ====================================================
 
-export interface AbortSceneImport {
+export interface AbortImport {
   /**
    * aborts the pending scene import for the current user
    */
-  abortSceneImport: boolean;
+  abortImport: boolean;
 }
