@@ -3,7 +3,9 @@ package bulkimport
 import (
 	"math"
 	"strconv"
+	"time"
 
+	"github.com/araddon/dateparse"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -26,15 +28,75 @@ func rowToSceneData(r *models.ImportRow) models.SceneImportResult {
 	data := r.GetData()
 	return models.SceneImportResult{
 		Title:       getDataString(data, models.ImportSceneColumnTypeTitle),
-		Date:        getDataString(data, models.ImportSceneColumnTypeDate),
+		Date:        getDateString(data, models.ImportSceneColumnTypeDate),
 		Description: getDataString(data, models.ImportSceneColumnTypeDescription),
 		Image:       getDataString(data, models.ImportSceneColumnTypeImage),
 		URL:         getDataString(data, models.ImportSceneColumnTypeURL),
-		Duration:    getDataInt(data, models.ImportSceneColumnTypeDuration),
+		Duration:    parseDuration(data, models.ImportSceneColumnTypeDuration),
 		Studio:      getDataString(data, models.ImportSceneColumnTypeStudio),
 		Performers:  getDataList(data, models.ImportSceneColumnTypePerformers),
 		Tags:        getDataList(data, models.ImportSceneColumnTypeTags),
 	}
+}
+
+// expects seconds or hh:mm:ss - returns seconds
+func parseDuration(data models.ImportRowData, field models.ImportSceneColumnType) *int {
+	v := data[field.String()]
+	if v == nil {
+		return nil
+	}
+
+	switch vv := v.(type) {
+	case int:
+		return &vv
+	case string:
+		layout := "15:04:05"
+		// truncate layout to same length input string
+		if len(vv) < len(layout) {
+			layout = layout[len(layout)-len(vv):]
+		}
+
+		c, err := time.Parse(layout, vv)
+		if err != nil {
+			// see if we can fallback to seconds
+			sInt, err := strconv.Atoi(vv)
+			if err != nil {
+				return nil
+			}
+
+			return &sInt
+		}
+
+		h, m, s := c.Clock()
+		d := time.Duration(h)*time.Hour +
+			time.Duration(m)*time.Minute +
+			time.Duration(s)*time.Second
+		sInt := int(d.Seconds())
+		return &sInt
+	}
+
+	return nil
+}
+
+func getDateString(data models.ImportRowData, field models.ImportSceneColumnType) *string {
+	v := data[field.String()]
+	if v == nil {
+		return nil
+	}
+
+	vStr, isStr := v.(string)
+
+	if !isStr || vStr == "" {
+		return nil
+	}
+
+	parsedDate, err := dateparse.ParseAny(vStr)
+	if err == nil {
+		isoDate := parsedDate.Format("2006-01-02")
+		vStr = isoDate
+	}
+
+	return &vStr
 }
 
 func getDataString(data models.ImportRowData, field models.ImportSceneColumnType) *string {
@@ -50,31 +112,6 @@ func getDataString(data models.ImportRowData, field models.ImportSceneColumnType
 	}
 
 	return &vStr
-}
-
-func getDataInt(data models.ImportRowData, field models.ImportSceneColumnType) *int {
-	v := data[field.String()]
-	if v == nil {
-		return nil
-	}
-
-	vInt, isInt := v.(int)
-	if isInt {
-		return &vInt
-	}
-
-	vStr, isStr := v.(string)
-
-	if !isStr || vStr == "" {
-		return nil
-	}
-
-	vInt, err := strconv.Atoi(vStr)
-	if err != nil {
-		return nil
-	}
-
-	return &vInt
 }
 
 func getDataList(data models.ImportRowData, field models.ImportSceneColumnType) []string {
@@ -110,18 +147,17 @@ func getDataList(data models.ImportRowData, field models.ImportSceneColumnType) 
 
 func processImportData(rw models.ImportRowRepo, user *models.User, fn func(r *models.ImportRow) error) error {
 	// determine total
+	count := getRowDataCount(rw, user)
+
+	const batchSize = 1000
 	page := 1
-	pp := 0
+	pp := batchSize
 	querySpec := &models.QuerySpec{
 		Page:    &page,
 		PerPage: &pp,
 	}
-	_, count := rw.QueryForUser(user.ID, querySpec)
-
-	const batchSize = 1000
 
 	totalPages := int(math.Ceil(float64(count) / float64(batchSize)))
-	pp = batchSize
 
 	for page = 1; page <= totalPages; page++ {
 		rows, _ := rw.QueryForUser(user.ID, querySpec)
@@ -134,6 +170,19 @@ func processImportData(rw models.ImportRowRepo, user *models.User, fn func(r *mo
 	}
 
 	return nil
+}
+
+func getRowDataCount(rw models.ImportRowRepo, user *models.User) int {
+	// determine total
+	page := 1
+	pp := 0
+	querySpec := &models.QuerySpec{
+		Page:    &page,
+		PerPage: &pp,
+	}
+	_, count := rw.QueryForUser(user.ID, querySpec)
+
+	return count
 }
 
 func processImportSceneData(rw models.ImportRowRepo, user *models.User, fn func(s *models.SceneImportResult) error) error {
