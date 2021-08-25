@@ -9,6 +9,7 @@ type csvParser struct{}
 
 func (csvParser) parse(input io.Reader, fn processFn) error {
 	reader := csv.NewReader(input)
+	reader.ReuseRecord = true
 	var header []string
 
 	for {
@@ -21,7 +22,7 @@ func (csvParser) parse(input io.Reader, fn processFn) error {
 		}
 
 		if header == nil {
-			header = record
+			header = append(header, record...)
 		} else {
 			dict := map[string]string{}
 			for i := range header {
