@@ -10,7 +10,6 @@ enum ImportDataType {
 
 input MassageImportDataInput {
   fields: [ImportFieldInput!]!
-  listDelimiter: String
 }
 
 input ImportFieldInput {
@@ -19,6 +18,7 @@ input ImportFieldInput {
   inputField: String
   fixedValue: String
   regexReplacements: [RegexReplacementInput!]
+  listDelimiter: String
 }
 
 type ParseImportDataResult {

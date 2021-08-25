@@ -138,6 +138,10 @@ const ImportField: React.FC<IImportField> = ({ field, setField, onDelete }) => {
     }
   }
 
+  function setDelimiter(delimiter: string) {
+    setField({...field, listDelimiter: delimiter});
+  }
+
   function changeFieldType(type: FieldType) {
     setFieldType(type);
     setValue(type, "");
@@ -227,6 +231,21 @@ const ImportField: React.FC<IImportField> = ({ field, setField, onDelete }) => {
           </InputGroup>
         </Form.Group>
         <Form.Group as={Col}>
+          <InputGroup>
+            <InputGroup.Prepend>
+              <InputGroup.Text>
+                List delimiter
+              </InputGroup.Text>
+            </InputGroup.Prepend>
+            <Form.Control
+              name="listDelimiter"
+              value={field.listDelimiter ?? ""}
+              onChange={(v) => setDelimiter(v.target.value)}
+              disabled={!field.outputField}
+            />
+          </InputGroup>
+        </Form.Group>
+        <Form.Group as={Col}>
           <Button onClick={() => addRegex()}>Add Replacement</Button>
         </Form.Group>
       </Form.Row>
@@ -298,10 +317,8 @@ const PER_PAGE = 20;
 
 const MassageImport: React.FC = () => {
   const [fields, setFields] = useState<ImportFieldInput[]>([]);
-  const [listDelimiter, setListDelimiter] = useState("");
   const [massageInput, setMassageInput] = useState<MassageImportDataInput>({
     fields,
-    listDelimiter,
   });
   const [matchedFields, setMatchedFields] = useState<string[]>([]);
   const [unmatchedFields, setUnmatchedFields] = useState<string[]>([]);
@@ -359,7 +376,6 @@ const MassageImport: React.FC = () => {
         variables: {
           input: {
             fields,
-            listDelimiter,
           },
         },
       });
@@ -370,10 +386,9 @@ const MassageImport: React.FC = () => {
     }
   }
 
-  async function handlePreview(thisFields?: ImportFieldInput[], thisDelimiter?: string) {
+  async function handlePreview(thisFields?: ImportFieldInput[]) {
     setMassageInput({
       fields: thisFields ?? fields,
-      listDelimiter: thisDelimiter ?? listDelimiter,
     })
   }
 
@@ -433,10 +448,8 @@ const MassageImport: React.FC = () => {
           }
 
           const newFields = [...data.fields];
-          const newDelimiter = data.listDelimiter ?? "";
           setFields(newFields);
-          setListDelimiter(newDelimiter);
-          handlePreview(newFields, newDelimiter);
+          handlePreview(newFields);
         }
       };
     };
@@ -448,7 +461,6 @@ const MassageImport: React.FC = () => {
     const data = JSON.stringify(
       {
         fields,
-        listDelimiter,
       },
       null,
       1
@@ -514,14 +526,6 @@ const MassageImport: React.FC = () => {
             <Icon icon="plus" />
           </Button>
         </div>
-        <Form.Group>
-          <Form.Label>List delimiter</Form.Label>
-          <Form.Control
-            name="listDelimiter"
-            value={listDelimiter}
-            onChange={(v) => setListDelimiter(v.target.value)}
-          />
-        </Form.Group>
         <Form.Group className="text-danger">{errors}</Form.Group>
         <div className="d-flex">
           <Button onClick={() => handlePreview()} className="mr-2">

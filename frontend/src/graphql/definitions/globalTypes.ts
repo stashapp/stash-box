@@ -256,6 +256,7 @@ export interface ImportFieldInput {
   inputField?: string | null;
   fixedValue?: string | null;
   regexReplacements?: RegexReplacementInput[] | null;
+  listDelimiter?: string | null;
 }
 
 export interface ImportMappingInput {
@@ -270,7 +271,6 @@ export interface IntCriterionInput {
 
 export interface MassageImportDataInput {
   fields: ImportFieldInput[];
-  listDelimiter?: string | null;
 }
 
 export interface MeasurementsInput {

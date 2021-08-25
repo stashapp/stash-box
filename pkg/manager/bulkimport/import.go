@@ -62,16 +62,10 @@ func SubmitImport(repo models.Repo, user *models.User, input models.SubmitImport
 }
 
 func PreviewMassageImportData(repo models.Repo, user *models.User, input models.MassageImportDataInput, querySpec *models.QuerySpec) (*models.ParseImportDataResult, error) {
-	delimiter := ""
-	if input.ListDelimiter != nil {
-		delimiter = *input.ListDelimiter
-	}
-
 	importer := rowImporter{
-		userID:    user.ID,
-		rw:        repo.ImportRow(),
-		fields:    input.Fields,
-		delimiter: delimiter,
+		userID: user.ID,
+		rw:     repo.ImportRow(),
+		fields: input.Fields,
 	}
 
 	rows, count := repo.ImportRow().QueryForUser(user.ID, querySpec)
@@ -120,18 +114,12 @@ func valueToStringSlice(v interface{}) []string {
 }
 
 func MassageImportData(repo models.Repo, user *models.User, input models.MassageImportDataInput) error {
-	delimiter := ""
-	if input.ListDelimiter != nil {
-		delimiter = *input.ListDelimiter
-	}
-
 	rw := repo.ImportRow()
 
 	importer := rowImporter{
-		userID:    user.ID,
-		rw:        rw,
-		fields:    input.Fields,
-		delimiter: delimiter,
+		userID: user.ID,
+		rw:     rw,
+		fields: input.Fields,
 	}
 
 	return processImportData(rw, user, func(r *models.ImportRow) error {
@@ -273,10 +261,9 @@ func makeTagJoins(tags []string, sceneID uuid.UUID, tagMap map[string]*uuid.UUID
 }
 
 type rowImporter struct {
-	userID    uuid.UUID
-	rw        models.ImportRowRepo
-	delimiter string
-	fields    []*models.ImportFieldInput
+	userID uuid.UUID
+	rw     models.ImportRowRepo
+	fields []*models.ImportFieldInput
 }
 
 func (r rowImporter) processImportRow(row models.ImportRowData) models.ImportRowData {
@@ -290,7 +277,7 @@ func (r rowImporter) processImportRow(row models.ImportRowData) models.ImportRow
 			touchedFields[*field.InputField] = true
 
 			vIfc := row[*field.InputField]
-			v = r.processFieldValue(vIfc, field.RegexReplacements, r.delimiter)
+			v = r.processFieldValue(vIfc, field.RegexReplacements, field.ListDelimiter)
 		}
 
 		if v != "" {
@@ -301,7 +288,7 @@ func (r rowImporter) processImportRow(row models.ImportRowData) models.ImportRow
 	for k, v := range row {
 		if !touchedFields[k] {
 			// don't apply list delimiter to unmatched fields
-			vv := r.processFieldValue(v, nil, "")
+			vv := r.processFieldValue(v, nil, nil)
 
 			if vv != "" {
 				outMap[k] = vv
@@ -312,7 +299,7 @@ func (r rowImporter) processImportRow(row models.ImportRowData) models.ImportRow
 	return outMap
 }
 
-func (r rowImporter) processFieldValue(vIfc interface{}, regexReplacements []*models.RegexReplacementInput, delimiter string) interface{} {
+func (r rowImporter) processFieldValue(vIfc interface{}, regexReplacements []*models.RegexReplacementInput, delimiter *string) interface{} {
 	var v interface{}
 
 	vStr, isStr := vIfc.(string)
@@ -322,8 +309,8 @@ func (r rowImporter) processFieldValue(vIfc interface{}, regexReplacements []*mo
 	} else {
 		vStr = processRegex(vStr, regexReplacements)
 
-		if delimiter != "" && strings.Contains(vStr, delimiter) {
-			v = strings.Split(vStr, delimiter)
+		if delimiter != nil && *delimiter != "" && strings.Contains(vStr, *delimiter) {
+			v = strings.Split(vStr, *delimiter)
 		} else {
 			v = vStr
 		}
