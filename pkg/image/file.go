@@ -13,6 +13,10 @@ import (
 type FileBackend struct{}
 
 func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
+	if err := config.ValidateImageLocation(); err != nil {
+		return err
+	}
+
 	fileDir := config.GetImageLocation()
 
 	// check fileDir for the identical file
@@ -38,5 +42,9 @@ func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
 }
 
 func (s *FileBackend) DestroyFile(image *models.Image) error {
+	if err := config.ValidateImageLocation(); err != nil {
+		return err
+	}
+
 	return os.Remove(GetImagePath(config.GetImageLocation(), image.Checksum))
 }
