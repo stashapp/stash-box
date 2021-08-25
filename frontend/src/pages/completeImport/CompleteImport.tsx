@@ -200,7 +200,11 @@ const CompleteImport: React.FC = () => {
           Massage Data
         </Button>
         <div className="ml-auto" />
-        <Button onClick={() => handleAbortImport()} variant="danger" className="mr-2">
+        <Button
+          onClick={() => handleAbortImport()}
+          variant="danger"
+          className="mr-2"
+        >
           Cancel Import
         </Button>
         <Button onClick={() => handleSubmit()} className="mr-2">

@@ -23,7 +23,7 @@ const NewImport: React.FC = () => {
     },
     filter: {
       per_page: 0,
-    }
+    },
   });
 
   // redirect to complete import page if import is pending

@@ -65,8 +65,14 @@ import {
   CompleteSceneImportVariables,
 } from "../definitions/CompleteSceneImport";
 import { AbortImport } from "../definitions/AbortImport";
-import { SubmitImport, SubmitImportVariables } from "../definitions/SubmitImport";
-import { MassageImportData, MassageImportDataVariables } from "../definitions/MassageImportData";
+import {
+  SubmitImport,
+  SubmitImportVariables,
+} from "../definitions/SubmitImport";
+import {
+  MassageImportData,
+  MassageImportDataVariables,
+} from "../definitions/MassageImportData";
 
 const ActivateUserMutation = loader("./ActivateNewUser.gql");
 const AddUserMutation = loader("./AddUser.gql");
@@ -218,6 +224,5 @@ export const useCompleteSceneImport = (
   >
 ) => useMutation(CompleteSceneImportMutation, options);
 
-export const useAbortImport = (
-  options?: MutationHookOptions<AbortImport>
-) => useMutation(AbortImportMutation, options);
+export const useAbortImport = (options?: MutationHookOptions<AbortImport>) =>
+  useMutation(AbortImportMutation, options);

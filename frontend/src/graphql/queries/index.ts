@@ -35,7 +35,10 @@ import {
   ImportScenesVariables,
 } from "../definitions/ImportScenes";
 import { ImportSceneMappings } from "../definitions/ImportSceneMappings";
-import { ParseImportData, ParseImportDataVariables } from "../definitions/ParseImportData";
+import {
+  ParseImportData,
+  ParseImportDataVariables,
+} from "../definitions/ParseImportData";
 
 const CategoryQuery = loader("./Category.gql");
 const CategoriesQuery = loader("./Categories.gql");
@@ -195,4 +198,6 @@ export const useImportScenes = (variables: ImportScenesVariables) =>
   });
 
 export const useImportSceneMappings = () =>
-  useQuery<ImportSceneMappings>(ImportSceneMappingsQuery, {fetchPolicy: "network-only"});
+  useQuery<ImportSceneMappings>(ImportSceneMappingsQuery, {
+    fetchPolicy: "network-only",
+  });

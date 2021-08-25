@@ -139,7 +139,7 @@ const ImportField: React.FC<IImportField> = ({ field, setField, onDelete }) => {
   }
 
   function setDelimiter(delimiter: string) {
-    setField({...field, listDelimiter: delimiter});
+    setField({ ...field, listDelimiter: delimiter });
   }
 
   function changeFieldType(type: FieldType) {
@@ -233,9 +233,7 @@ const ImportField: React.FC<IImportField> = ({ field, setField, onDelete }) => {
         <Form.Group as={Col}>
           <InputGroup>
             <InputGroup.Prepend>
-              <InputGroup.Text>
-                List delimiter
-              </InputGroup.Text>
+              <InputGroup.Text>List delimiter</InputGroup.Text>
             </InputGroup.Prepend>
             <Form.Control
               name="listDelimiter"
@@ -265,15 +263,21 @@ const ImportField: React.FC<IImportField> = ({ field, setField, onDelete }) => {
 interface IImportRow {
   matchedFields: string[];
   unmatchedFields: string[];
-  data: ParseImportData_parseImportData_data[]
+  data: ParseImportData_parseImportData_data[];
 }
 
-const ImportRow: React.FC<IImportRow> = ({matchedFields, unmatchedFields, data}) => {
+const ImportRow: React.FC<IImportRow> = ({
+  matchedFields,
+  unmatchedFields,
+  data,
+}) => {
   function renderValues(v: string[]) {
     if (v.length > 1) {
       return (
         <ul>
-          {v.map(vv => <li>{vv}</li>)}
+          {v.map((vv) => (
+            <li>{vv}</li>
+          ))}
         </ul>
       );
     }
@@ -282,22 +286,23 @@ const ImportRow: React.FC<IImportRow> = ({matchedFields, unmatchedFields, data})
   }
 
   function renderIcon(matched: boolean) {
-    if (!matched) 
-      return <Icon icon="question" className="mr-1" />
-    
-    return <Icon icon="check" className="mr-1" color="#0f9960"/>
+    if (!matched) return <Icon icon="question" className="mr-1" />;
+
+    return <Icon icon="check" className="mr-1" color="#0f9960" />;
   }
-  
+
   function renderField(field: string, matched: boolean) {
     const cn = matched ? "matched" : "unmatched";
-    const tuple = data.find(dd => dd.field === field);
+    const tuple = data.find((dd) => dd.field === field);
     if (!tuple || tuple.value.length === 0) {
       return;
     }
 
     return (
       <>
-        <dt className={cn}>{renderIcon(matched)} {field}</dt>
+        <dt className={cn}>
+          {renderIcon(matched)} {field}
+        </dt>
         <dd className={cn}>{renderValues(tuple.value)}</dd>
       </>
     );
@@ -306,12 +311,12 @@ const ImportRow: React.FC<IImportRow> = ({matchedFields, unmatchedFields, data})
   return (
     <Card className="p-3">
       <dl className="import-raw-data">
-        {matchedFields.map(f => renderField(f, true))}
-        {unmatchedFields.map(f => renderField(f, false))}
+        {matchedFields.map((f) => renderField(f, true))}
+        {unmatchedFields.map((f) => renderField(f, false))}
       </dl>
     </Card>
   );
-}
+};
 
 const PER_PAGE = 20;
 
@@ -333,7 +338,7 @@ const MassageImport: React.FC = () => {
     filter: {
       page,
       per_page: PER_PAGE,
-    }
+    },
   });
 
   const [massageImportData] = useMassageImportData();
@@ -343,13 +348,16 @@ const MassageImport: React.FC = () => {
 
   // update header fields
   useEffect(() => {
-    const newMatchedResultFields: string[] = []
+    const newMatchedResultFields: string[] = [];
     const newUnmatchedResultFields: string[] = [];
     parseImportData.data?.parseImportData.data.forEach((v) => {
-      v.forEach(f => {
+      v.forEach((f) => {
         // show matched fields first
-        if (!newUnmatchedResultFields.includes(f.field) && !newMatchedResultFields.includes(f.field)) {
-          if (sceneFields.some(ff => ff.value === f.field)) {
+        if (
+          !newUnmatchedResultFields.includes(f.field) &&
+          !newMatchedResultFields.includes(f.field)
+        ) {
+          if (sceneFields.some((ff) => ff.value === f.field)) {
             newMatchedResultFields.push(f.field);
           } else {
             newUnmatchedResultFields.push(f.field);
@@ -362,7 +370,6 @@ const MassageImport: React.FC = () => {
     setMatchedFields(newMatchedResultFields);
     setUnmatchedFields(newUnmatchedResultFields);
   }, [parseImportData]);
-  
 
   // redirect to submit import page if import is not pending
   useEffect(() => {
@@ -391,7 +398,7 @@ const MassageImport: React.FC = () => {
   async function handlePreview(thisFields?: ImportFieldInput[]) {
     setMassageInput({
       fields: thisFields ?? fields,
-    })
+    });
   }
 
   async function handleAbortImport() {
@@ -496,8 +503,12 @@ const MassageImport: React.FC = () => {
           </Row>
         </div>
 
-        {parseImportData.data?.parseImportData.data.map(r => (
-          <ImportRow matchedFields={matchedFields} unmatchedFields={unmatchedFields} data={r} />
+        {parseImportData.data?.parseImportData.data.map((r) => (
+          <ImportRow
+            matchedFields={matchedFields}
+            unmatchedFields={unmatchedFields}
+            data={r}
+          />
         ))}
       </div>
     );
@@ -534,7 +545,11 @@ const MassageImport: React.FC = () => {
             Preview
           </Button>
           <div className="ml-auto" />
-          <Button onClick={() => handleAbortImport()} variant="danger" className="mr-2">
+          <Button
+            onClick={() => handleAbortImport()}
+            variant="danger"
+            className="mr-2"
+          >
             Cancel Import
           </Button>
           <Button onClick={() => handleSubmit()} className="mr-2">
