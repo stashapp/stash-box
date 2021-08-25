@@ -14,6 +14,8 @@ type Mgr interface {
 type State interface {
 	WithTxn(fn func() error) error
 	InTxn() bool
+	// commit the current transaction and begin a new one
+	CommitCheckpoint() error
 }
 
 func MustBeIn(m State) {

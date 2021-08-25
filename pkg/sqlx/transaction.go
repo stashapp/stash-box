@@ -2,6 +2,7 @@ package sqlx
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -53,6 +54,24 @@ func (m *txnState) WithTxn(fn func() error) (txErr error) {
 
 func (m *txnState) InTxn() bool {
 	return m.tx != nil
+}
+
+func (m *txnState) CommitCheckpoint() error {
+	if !m.InTxn() {
+		return errors.New("not in transaction")
+	}
+
+	if err := m.tx.Commit(); err != nil {
+		return err
+	}
+
+	tx, err := m.rootDB.Beginx()
+	if err != nil {
+		return err
+	}
+
+	m.tx = tx
+	return nil
 }
 
 func (m *txnState) DB() db {

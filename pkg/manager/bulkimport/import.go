@@ -11,6 +11,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/image"
+	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -146,6 +147,9 @@ func CompleteImport(repo models.Repo, user *models.User, input models.CompleteSc
 	studioMap := createMappingMap(input.Studios)
 	tagMap := createMappingMap(input.Tags)
 
+	totalRows := getRowDataCount(repo.ImportRow(), user)
+	i := 0
+
 	if err := processImportSceneData(repo.ImportRow(), user, func(scene *models.SceneImportResult) error {
 		// TODO - move to scene package
 		UUID, err := uuid.NewV4()
@@ -215,6 +219,13 @@ func CompleteImport(repo models.Repo, user *models.User, input models.CompleteSc
 				}
 			}
 		}
+
+		if err := repo.CommitCheckpoint(); err != nil {
+			return err
+		}
+
+		i++
+		logger.Infof("Imported scene #%d of %d (%s)", i, totalRows, newScene.Title.String)
 
 		return nil
 	}); err != nil {
