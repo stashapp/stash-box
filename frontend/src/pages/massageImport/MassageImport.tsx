@@ -357,6 +357,8 @@ const MassageImport: React.FC = () => {
         }
       });
     });
+    newMatchedResultFields.sort();
+    newUnmatchedResultFields.sort();
     setMatchedFields(newMatchedResultFields);
     setUnmatchedFields(newUnmatchedResultFields);
   }, [parseImportData]);
