@@ -9,8 +9,39 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-func ModifyPerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
-	pqb := fac.Performer()
+type PerformerEditProcessor struct {
+	mutator
+}
+
+func Performer(fac models.Repo, edit *models.Edit) *PerformerEditProcessor {
+	return &PerformerEditProcessor{
+		mutator{
+			fac:  fac,
+			edit: edit,
+		},
+	}
+}
+
+func (m *PerformerEditProcessor) Edit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+	var err error
+	switch input.Edit.Operation {
+	case models.OperationEnumModify:
+		err = m.modifyEdit(input, inputSpecified)
+	case models.OperationEnumMerge:
+		err = m.mergeEdit(input, inputSpecified)
+	case models.OperationEnumDestroy:
+		err = m.destroyEdit(input, inputSpecified)
+	case models.OperationEnumCreate:
+		err = m.createEdit(input, inputSpecified)
+	default:
+		panic("not implemented")
+	}
+
+	return err
+}
+
+func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+	pqb := m.fac.Performer()
 
 	// get the existing performer
 	performerID, _ := uuid.FromString(*input.Edit.ID)
@@ -37,21 +68,21 @@ func ModifyPerformerEdit(fac models.Repo, edit *models.Edit, input models.Perfor
 	if err != nil {
 		return err
 	}
-	performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = BodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
+	performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = bodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
 
 	piercings, err := pqb.GetPiercings(performerID)
 	if err != nil {
 		return err
 	}
-	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = BodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
+	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = bodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
 
 	urls, err := pqb.GetURLs(performerID)
 	if err != nil {
 		return err
 	}
-	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = URLCompare(input.Details.Urls, urls)
+	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = urlCompare(input.Details.Urls, urls)
 
-	iqb := fac.Image()
+	iqb := m.fac.Image()
 	images, err := iqb.FindByPerformerID(performerID)
 	if err != nil {
 		return err
@@ -67,11 +98,11 @@ func ModifyPerformerEdit(fac models.Repo, edit *models.Edit, input models.Perfor
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
 	}
 
-	return edit.SetData(performerEdit)
+	return m.edit.SetData(performerEdit)
 }
 
-func MergePerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
-	pqb := fac.Performer()
+func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+	pqb := m.fac.Performer()
 
 	// get the existing performer
 	if input.Edit.ID == nil {
@@ -122,21 +153,21 @@ func MergePerformerEdit(fac models.Repo, edit *models.Edit, input models.Perform
 	if err != nil {
 		return err
 	}
-	performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = BodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
+	performerEdit.New.AddedTattoos, performerEdit.New.RemovedTattoos = bodyModCompare(input.Details.Tattoos, tattoos.ToBodyModifications())
 
 	piercings, err := pqb.GetPiercings(performerID)
 	if err != nil {
 		return err
 	}
-	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = BodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
+	performerEdit.New.AddedPiercings, performerEdit.New.RemovedPiercings = bodyModCompare(input.Details.Piercings, piercings.ToBodyModifications())
 
 	urls, err := pqb.GetURLs(performerID)
 	if err != nil {
 		return err
 	}
-	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = URLCompare(input.Details.Urls, urls)
+	performerEdit.New.AddedUrls, performerEdit.New.RemovedUrls = urlCompare(input.Details.Urls, urls)
 
-	iqb := fac.Image()
+	iqb := m.fac.Image()
 	images, err := iqb.FindByPerformerID(performerID)
 	if err != nil {
 		return err
@@ -155,10 +186,10 @@ func MergePerformerEdit(fac models.Repo, edit *models.Edit, input models.Perform
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
 	}
 
-	return edit.SetData(performerEdit)
+	return m.edit.SetData(performerEdit)
 }
 
-func CreatePerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	performerEdit := input.Details.PerformerEditFromCreate()
 
 	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
@@ -181,11 +212,11 @@ func CreatePerformerEdit(fac models.Repo, edit *models.Edit, input models.Perfor
 		performerEdit.New.AddedImages = input.Details.ImageIds
 	}
 
-	return edit.SetData(performerEdit)
+	return m.edit.SetData(performerEdit)
 }
 
-func DestroyPerformerEdit(fac models.Repo, edit *models.Edit, input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
-	pqb := fac.Performer()
+func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
+	pqb := m.fac.Performer()
 
 	// get the existing performer
 	performerID, _ := uuid.FromString(*input.Edit.ID)
@@ -198,7 +229,62 @@ func DestroyPerformerEdit(fac models.Repo, edit *models.Edit, input models.Perfo
 	return nil
 }
 
-func BodyModCompare(subject []*models.BodyModification, against []*models.BodyModification) (added []*models.BodyModification, missing []*models.BodyModification) {
+func (m *PerformerEditProcessor) CreateJoin(input models.PerformerEditInput) error {
+	if input.Edit.ID != nil {
+		performerID, _ := uuid.FromString(*input.Edit.ID)
+
+		editTag := models.EditPerformer{
+			EditID:      m.edit.ID,
+			PerformerID: performerID,
+		}
+
+		return m.fac.Edit().CreateEditPerformer(editTag)
+	}
+
+	return nil
+}
+
+func (m *PerformerEditProcessor) apply() error {
+	pqb := m.fac.Performer()
+	eqb := m.fac.Edit()
+	operation := m.operation()
+	isCreate := operation == models.OperationEnumCreate
+
+	var performer *models.Performer = nil
+	if !isCreate {
+		performerID, err := eqb.FindPerformerID(m.edit.ID)
+		if err != nil {
+			return err
+		}
+		performer, err = pqb.Find(*performerID)
+		if err != nil {
+			return err
+		}
+		if performer == nil {
+			return errors.New("Performer not found: " + performerID.String())
+		}
+	}
+	newPerformer, err := pqb.ApplyEdit(*m.edit, operation, performer)
+	if err != nil {
+		return err
+	}
+
+	if isCreate {
+		editPerformer := models.EditPerformer{
+			EditID:      m.edit.ID,
+			PerformerID: newPerformer.ID,
+		}
+
+		err = eqb.CreateEditPerformer(editPerformer)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func bodyModCompare(subject []*models.BodyModification, against []*models.BodyModification) (added []*models.BodyModification, missing []*models.BodyModification) {
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {
@@ -243,7 +329,7 @@ func BodyModCompare(subject []*models.BodyModification, against []*models.BodyMo
 	return
 }
 
-func URLCompare(subject []*models.URL, against []*models.URL) (added []*models.URL, missing []*models.URL) {
+func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.URL, missing []*models.URL) {
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {

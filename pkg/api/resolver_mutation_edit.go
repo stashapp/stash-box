@@ -38,62 +38,22 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 	fac := r.getRepoFactory(ctx)
 
 	err = fac.WithTxn(func() error {
-		if input.Edit.Operation == models.OperationEnumModify {
-			err = edit.ModifyTagEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
-
-			if err != nil {
-				return err
-			}
-		} else if input.Edit.Operation == models.OperationEnumMerge {
-			err = edit.MergeTagEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
-
-			if err != nil {
-				return err
-			}
-		} else if input.Edit.Operation == models.OperationEnumDestroy {
-			err = edit.DestroyTagEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
-
-			if err != nil {
-				return err
-			}
-		} else if input.Edit.Operation == models.OperationEnumCreate {
-			err = edit.CreateTagEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
-
-			if err != nil {
-				return err
-			}
-		} else {
-			panic("not implemented")
+		p := edit.Tag(fac, newEdit)
+		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+			return err
 		}
 
-		// save the edit
-		eqb := fac.Edit()
-
-		created, err := eqb.Create(*newEdit)
+		_, err := p.CreateEdit()
 		if err != nil {
 			return err
 		}
 
-		if input.Edit.ID != nil {
-			tagID, _ := uuid.FromString(*input.Edit.ID)
-
-			editTag := models.EditTag{
-				EditID: created.ID,
-				TagID:  tagID,
-			}
-
-			err = eqb.CreateEditTag(editTag)
-			if err != nil {
-				return err
-			}
+		if err := p.CreateJoin(input); err != nil {
+			return err
 		}
 
-		if input.Edit.Comment != nil && len(*input.Edit.Comment) > 0 {
-			commentID, _ := uuid.NewV4()
-			comment := models.NewEditComment(commentID, currentUser, created, *input.Edit.Comment)
-			if err := eqb.CreateComment(*comment); err != nil {
-				return err
-			}
+		if err := p.CreateComment(currentUser, input.Edit.Comment); err != nil {
+			return err
 		}
 
 		return nil
@@ -124,62 +84,22 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumPerformer, input.Edit)
 	fac := r.getRepoFactory(ctx)
 	err = fac.WithTxn(func() error {
-		if input.Edit.Operation == models.OperationEnumModify {
-			err = edit.ModifyPerformerEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
-
-			if err != nil {
-				return err
-			}
-		} else if input.Edit.Operation == models.OperationEnumMerge {
-			err = edit.MergePerformerEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
-
-			if err != nil {
-				return err
-			}
-		} else if input.Edit.Operation == models.OperationEnumDestroy {
-			err = edit.DestroyPerformerEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
-
-			if err != nil {
-				return err
-			}
-		} else if input.Edit.Operation == models.OperationEnumCreate {
-			err = edit.CreatePerformerEdit(fac, newEdit, input, wasFieldIncludedFunc(ctx))
-
-			if err != nil {
-				return err
-			}
-		} else {
-			panic("not implemented")
+		p := edit.Performer(fac, newEdit)
+		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+			return err
 		}
 
-		// save the edit
-		eqb := fac.Edit()
-
-		created, err := eqb.Create(*newEdit)
+		_, err := p.CreateEdit()
 		if err != nil {
 			return err
 		}
 
-		if input.Edit.ID != nil {
-			performerID, _ := uuid.FromString(*input.Edit.ID)
-
-			editPerformer := models.EditPerformer{
-				EditID:      created.ID,
-				PerformerID: performerID,
-			}
-
-			err = eqb.CreateEditPerformer(editPerformer)
-			if err != nil {
-				return err
-			}
+		if err := p.CreateJoin(input); err != nil {
+			return err
 		}
 
-		if input.Edit.Comment != nil && len(*input.Edit.Comment) > 0 {
-			commentID, _ := uuid.NewV4()
-			comment := models.NewEditComment(commentID, currentUser, created, *input.Edit.Comment)
-			if err := eqb.CreateComment(*comment); err != nil {
-				return err
-			}
+		if err := p.CreateComment(currentUser, input.Edit.Comment); err != nil {
+			return err
 		}
 
 		return nil
