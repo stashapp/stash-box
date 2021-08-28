@@ -124,6 +124,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     fields: performerFields,
     append: appendPerformer,
     remove: removePerformer,
+    update: updatePerformer,
   } = useFieldArray({
     control,
     name: "performers",
@@ -213,14 +214,14 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   const handleChange = (result: PerformerResult, index: number) => {
     setChange(undefined);
     const alias = performerFields[index].alias || performerFields[index].name;
-    performerFields[index] = {
+    updatePerformer(index, {
       name: result.name,
       performerId: result.id,
       gender: result.gender,
       alias: alias === result.name ? "" : alias,
       disambiguation: result.disambiguation ?? undefined,
       deleted: result.deleted,
-    };
+    });
   };
 
   const performerList = performerFields.map((p, index) => (
