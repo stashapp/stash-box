@@ -260,7 +260,7 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 		if data.New.Name == nil {
 			return nil, errors.New("Missing studio name")
 		}
-		newStudio.CopyFromStudioEdit(*data.New, nil)
+		newStudio.CopyFromStudioEdit(*data.New, &models.StudioEdit{})
 
 		studio, err = qb.Create(newStudio)
 		if err != nil {
@@ -354,7 +354,7 @@ func (qb *studioQueryBuilder) SoftDelete(studio models.Studio) (*models.Studio, 
 
 func (qb *studioQueryBuilder) updateSceneStudios(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
 	// set existing studio ids to the new id
-	query := `UPDATE scenes SET studio_id = ? WHERE studio = ?`
+	query := `UPDATE ` + sceneDBTable.Name() + ` SET studio_id = ? WHERE studio_id = ?`
 	args := []interface{}{newTargetID, oldTargetID}
 
 	return qb.dbi.RawExec(query, args)
@@ -362,7 +362,7 @@ func (qb *studioQueryBuilder) updateSceneStudios(oldTargetID uuid.UUID, newTarge
 
 func (qb *studioQueryBuilder) deleteSceneStudios(id uuid.UUID) error {
 	// set existing studio ids to null
-	query := `UPDATE scenes SET studio_id = NULL WHERE studio = ?`
+	query := `UPDATE ` + sceneDBTable.Name() + ` SET studio_id = NULL WHERE studio_id = ?`
 	args := []interface{}{id}
 
 	return qb.dbi.RawExec(query, args)

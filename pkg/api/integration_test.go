@@ -1,4 +1,4 @@
-// +build integration
+//go:build integration
 
 package api_test
 
@@ -468,6 +468,39 @@ func (s *testRunner) createTestTagEdit(operation models.OperationEnum, detailsIn
 	return createdEdit, nil
 }
 
+func (s *testRunner) createTestStudioEdit(operation models.OperationEnum, detailsInput *models.StudioEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+	s.t.Helper()
+
+	if editInput == nil {
+		input := models.EditInput{
+			Operation: operation,
+		}
+		editInput = &input
+	}
+
+	if detailsInput == nil {
+		name := s.generateStudioName()
+		input := models.StudioEditDetailsInput{
+			Name: &name,
+		}
+		detailsInput = &input
+	}
+
+	studioEditInput := models.StudioEditInput{
+		Edit:    editInput,
+		Details: detailsInput,
+	}
+
+	createdEdit, err := s.resolver.Mutation().StudioEdit(s.ctx, studioEditInput)
+
+	if err != nil {
+		s.t.Errorf("Error creating edit: %s", err.Error())
+		return nil, err
+	}
+
+	return createdEdit, nil
+}
+
 func (s *testRunner) applyEdit(id string) (*models.Edit, error) {
 	s.t.Helper()
 
@@ -499,6 +532,24 @@ func (s *testRunner) getEditTagTarget(input *models.Edit) *models.Tag {
 
 	target, _ := r.Target(s.ctx, input)
 	tagTarget := target.(*models.Tag)
+	return tagTarget
+}
+
+func (s *testRunner) getEditStudioDetails(input *models.Edit) *models.StudioEdit {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	details, _ := r.Details(s.ctx, input)
+	tagDetails := details.(*models.StudioEdit)
+	return tagDetails
+}
+
+func (s *testRunner) getEditStudioTarget(input *models.Edit) *models.Studio {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	target, _ := r.Target(s.ctx, input)
+	tagTarget := target.(*models.Studio)
 	return tagTarget
 }
 
