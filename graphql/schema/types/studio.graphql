@@ -1,7 +1,7 @@
 type Studio {
   id: ID!
   name: String!
-  urls: [URL]!
+  urls: [URL!]!
   parent: Studio
   child_studios: [Studio!]!
   images: [Image!]!
