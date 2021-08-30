@@ -20,22 +20,16 @@ const EditUserComponent: React.FC = () => {
 
   const doUpdate = (userData: UserEditData) => {
     updateUser({ variables: { userData } })
-      .then(() => history.push(userHref(user)))
+      .then((res) => history.push(userHref(res.data?.userUpdate ?? user)))
       .catch((res) => setQueryError(res.message));
   };
-
-  const userData = {
-    id: user.id,
-    email: user.email,
-    roles: user.roles,
-  } as UserEditData;
 
   return (
     <div>
       <h3>Edit &lsquo;{user.name}&rsquo;</h3>
       <hr />
       <UserEditForm
-        user={userData}
+        user={user}
         username={user.name}
         error={queryError}
         callback={doUpdate}
