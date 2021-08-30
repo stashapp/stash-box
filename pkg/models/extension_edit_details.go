@@ -2,6 +2,8 @@ package models
 
 import (
 	"errors"
+
+	"github.com/gofrs/uuid"
 )
 
 func (e TagEditDetailsInput) TagEditFromDiff(orig Tag) TagEditData {
@@ -334,6 +336,39 @@ func (e PerformerEditDetailsInput) PerformerEditFromCreate() PerformerEditData {
 	}
 
 	return PerformerEditData{
+		New: newData,
+	}
+}
+
+func (e StudioEditDetailsInput) StudioEditFromDiff(orig Studio) StudioEditData {
+	newData := &StudioEdit{}
+	oldData := &StudioEdit{}
+
+	ed := editDiff{}
+	oldData.Name, newData.Name = ed.string(&orig.Name, e.Name)
+	oldData.ParentID, newData.ParentID = ed.nullUUID(orig.ParentStudioID, e.ParentID)
+
+	return StudioEditData{
+		New: newData,
+		Old: oldData,
+	}
+}
+
+func (e StudioEditDetailsInput) StudioEditFromMerge(orig Studio, sources []string) StudioEditData {
+	data := e.StudioEditFromDiff(orig)
+	data.MergeSources = sources
+
+	return data
+}
+
+func (e StudioEditDetailsInput) StudioEditFromCreate() StudioEditData {
+	newData := &StudioEdit{}
+
+	ed := editDiff{}
+	_, newData.Name = ed.string(nil, e.Name)
+	_, newData.ParentID = ed.nullUUID(uuid.NullUUID{}, e.ParentID)
+
+	return StudioEditData{
 		New: newData,
 	}
 }

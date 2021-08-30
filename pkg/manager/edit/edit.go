@@ -106,3 +106,44 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 
 	return updatedEdit, nil
 }
+
+func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.URL, missing []*models.URL) {
+	for _, s := range subject {
+		newMod := true
+		for _, a := range against {
+			if s.URL == a.URL {
+				newMod = false
+			}
+		}
+
+		for _, a := range added {
+			if s.URL == a.URL {
+				newMod = false
+			}
+		}
+
+		if newMod {
+			added = append(added, s)
+		}
+	}
+
+	for _, s := range against {
+		removedMod := true
+		for _, a := range subject {
+			if s.URL == a.URL {
+				removedMod = false
+			}
+		}
+
+		for _, a := range missing {
+			if s.URL == a.URL {
+				removedMod = false
+			}
+		}
+
+		if removedMod {
+			missing = append(missing, s)
+		}
+	}
+	return
+}

@@ -34,11 +34,6 @@ func (p *Tags) Add(o interface{}) {
 	*p = append(*p, o.(*Tag))
 }
 
-type TagRedirect struct {
-	SourceID uuid.UUID `db:"source_id" json:"source_id"`
-	TargetID uuid.UUID `db:"target_id" json:"target_id"`
-}
-
 type TagAlias struct {
 	TagID uuid.UUID `db:"tag_id" json:"tag_id"`
 	Alias string    `db:"alias" json:"alias"`

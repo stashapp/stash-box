@@ -25,7 +25,7 @@ var (
 	})
 
 	tagRedirectTable = newTableJoin(tagTable, "tag_redirects", "source_id", func() interface{} {
-		return &models.TagRedirect{}
+		return &models.Redirect{}
 	})
 )
 
@@ -80,7 +80,7 @@ func (qb *tagQueryBuilder) SoftDelete(tag models.Tag) (*models.Tag, error) {
 	return qb.toModel(ret), err
 }
 
-func (qb *tagQueryBuilder) CreateRedirect(newJoin models.TagRedirect) error {
+func (qb *tagQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
 	return qb.dbi.InsertJoin(tagRedirectTable, newJoin, nil)
 }
 
@@ -298,7 +298,7 @@ func (qb *tagQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
 	return joins.ToAliases(), err
 }
 
-func (qb *tagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
+func (qb *tagQueryBuilder) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
 	tag, err := qb.Find(sourceID)
 	if err != nil {
 		return err
@@ -319,7 +319,7 @@ func (qb *tagQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID) err
 	if err := qb.UpdateSceneTags(sourceID, targetID); err != nil {
 		return err
 	}
-	redirect := models.TagRedirect{SourceID: sourceID, TargetID: targetID}
+	redirect := models.Redirect{SourceID: sourceID, TargetID: targetID}
 	return qb.CreateRedirect(redirect)
 }
 
@@ -406,7 +406,7 @@ func (qb *tagQueryBuilder) ApplyEdit(edit models.Edit, operation models.Operatio
 
 		for _, v := range data.MergeSources {
 			sourceUUID, _ := uuid.FromString(v)
-			if err := qb.MergeInto(sourceUUID, tag.ID); err != nil {
+			if err := qb.mergeInto(sourceUUID, tag.ID); err != nil {
 				return nil, err
 			}
 		}

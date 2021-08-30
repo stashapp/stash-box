@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -99,6 +101,29 @@ func (p *Studio) CopyFromUpdateInput(input StudioUpdateInput) {
 	} else {
 		p.ParentStudioID = uuid.NullUUID{}
 	}
+}
+
+func (p *Studio) CopyFromStudioEdit(input StudioEdit, existing *StudioEdit) {
+	if input.Name != nil {
+		p.Name = *input.Name
+	}
+
+	if input.ParentID != nil {
+		UUID, err := uuid.FromString(*input.ParentID)
+		if err == nil {
+			p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
+		}
+	} else {
+		p.ParentStudioID = uuid.NullUUID{}
+	}
+}
+
+func (p *Studio) ValidateModifyEdit(edit StudioEditData) error {
+	if edit.Old.Name != nil && *edit.Old.Name != p.Name {
+		return errors.New("Invalid name. Expected '" + *edit.Old.Name + "'  but was '" + p.Name + "'")
+	}
+
+	return nil
 }
 
 func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudiosImages {

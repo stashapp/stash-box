@@ -48,23 +48,6 @@ func (p *Performers) Add(o interface{}) {
 	*p = append(*p, o.(*Performer))
 }
 
-type PerformerRedirect struct {
-	SourceID uuid.UUID `db:"source_id" json:"source_id"`
-	TargetID uuid.UUID `db:"target_id" json:"target_id"`
-}
-
-type PerformerRedirects []*PerformerRedirect
-
-func (p *PerformerRedirects) Add(o interface{}) {
-	*p = append(*p, o.(*PerformerRedirect))
-}
-
-func (p PerformerRedirects) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
-}
-
 type PerformerAlias struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	Alias       string    `db:"alias" json:"alias"`

@@ -2,6 +2,8 @@ package sqlx
 
 import (
 	"database/sql"
+	"errors"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -20,6 +22,10 @@ var (
 
 	studioURLTable = newTableJoin(studioTable, "studio_urls", studioJoinKey, func() interface{} {
 		return &models.StudioURL{}
+	})
+
+	studioRedirectTable = newTableJoin(tagTable, "studio_redirects", "source_id", func() interface{} {
+		return &models.Redirect{}
 	})
 )
 
@@ -174,11 +180,20 @@ func (qb *studioQueryBuilder) queryStudios(query string, args []interface{}) (mo
 	return output, err
 }
 
-func (qb *studioQueryBuilder) GetURLs(id uuid.UUID) (models.StudioURLs, error) {
+func (qb *studioQueryBuilder) GetURLs(id uuid.UUID) ([]*models.URL, error) {
 	joins := models.StudioURLs{}
 	err := qb.dbi.FindJoins(studioURLTable, id, &joins)
 
-	return joins, err
+	urls := make([]*models.URL, len(joins))
+	for i, u := range joins {
+		url := models.URL{
+			URL:  u.URL,
+			Type: u.Type,
+		}
+		urls[i] = &url
+	}
+
+	return urls, err
 }
 
 func (qb *studioQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*models.URL, []error) {
@@ -222,4 +237,133 @@ func (qb *studioQueryBuilder) CountByPerformer(performerID uuid.UUID) ([]*models
 	}
 
 	return results, nil
+}
+
+func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.OperationEnum, studio *models.Studio) (*models.Studio, error) {
+	data, err := edit.GetStudioData()
+	if err != nil {
+		return nil, err
+	}
+
+	switch operation {
+	case models.OperationEnumCreate:
+		now := time.Now()
+		UUID, err := uuid.NewV4()
+		if err != nil {
+			return nil, err
+		}
+		newStudio := models.Studio{
+			ID:        UUID,
+			CreatedAt: models.SQLiteTimestamp{Timestamp: now},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
+		}
+		if data.New.Name == nil {
+			return nil, errors.New("Missing studio name")
+		}
+		newStudio.CopyFromStudioEdit(*data.New, nil)
+
+		studio, err = qb.Create(newStudio)
+		if err != nil {
+			return nil, err
+		}
+
+		return studio, nil
+	case models.OperationEnumDestroy:
+		updatedStudio, err := qb.SoftDelete(*studio)
+		if err != nil {
+			return nil, err
+		}
+
+		err = qb.deleteSceneStudios(studio.ID)
+		return updatedStudio, err
+	case models.OperationEnumModify:
+		if err := studio.ValidateModifyEdit(*data); err != nil {
+			return nil, err
+		}
+
+		studio.CopyFromStudioEdit(*data.New, data.Old)
+		updatedStudio, err := qb.Update(*studio)
+		if err != nil {
+			return nil, err
+		}
+
+		return updatedStudio, err
+	case models.OperationEnumMerge:
+		if err := studio.ValidateModifyEdit(*data); err != nil {
+			return nil, err
+		}
+
+		studio.CopyFromStudioEdit(*data.New, data.Old)
+		updatedStudio, err := qb.Update(*studio)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range data.MergeSources {
+			sourceUUID, _ := uuid.FromString(v)
+			if err := qb.mergeInto(sourceUUID, studio.ID); err != nil {
+				return nil, err
+			}
+		}
+
+		return updatedStudio, nil
+	default:
+		return nil, errors.New("Unsupported operation: " + operation.String())
+	}
+}
+
+func (qb *studioQueryBuilder) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
+	studio, err := qb.Find(sourceID)
+	if err != nil {
+		return err
+	}
+	if studio == nil {
+		return errors.New("Merge source studio not found: " + sourceID.String())
+	}
+	if studio.Deleted {
+		return errors.New("Merge source studio is deleted: " + sourceID.String())
+	}
+	_, err = qb.SoftDelete(*studio)
+	if err != nil {
+		return err
+	}
+	if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
+		return err
+	}
+	if err := qb.updateSceneStudios(sourceID, targetID); err != nil {
+		return err
+	}
+	redirect := models.Redirect{SourceID: sourceID, TargetID: targetID}
+	return qb.CreateRedirect(redirect)
+}
+
+func (qb *studioQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
+	return qb.dbi.InsertJoin(studioRedirectTable, newJoin, nil)
+}
+
+func (qb *studioQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+	query := "UPDATE " + studioRedirectTable.table.Name() + " SET target_id = ? WHERE target_id = ?"
+	args := []interface{}{newTargetID, oldTargetID}
+	return qb.dbi.RawQuery(studioRedirectTable.table, query, args, nil)
+}
+
+func (qb *studioQueryBuilder) SoftDelete(studio models.Studio) (*models.Studio, error) {
+	ret, err := qb.dbi.SoftDelete(studioDBTable, studio)
+	return qb.toModel(ret), err
+}
+
+func (qb *studioQueryBuilder) updateSceneStudios(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+	// set existing studio ids to the new id
+	query := `UPDATE scenes SET studio_id = ? WHERE studio = ?`
+	args := []interface{}{newTargetID, oldTargetID}
+
+	return qb.dbi.RawExec(query, args)
+}
+
+func (qb *studioQueryBuilder) deleteSceneStudios(id uuid.UUID) error {
+	// set existing studio ids to null
+	query := `UPDATE scenes SET studio_id = NULL WHERE studio = ?`
+	args := []interface{}{id}
+
+	return qb.dbi.RawExec(query, args)
 }
