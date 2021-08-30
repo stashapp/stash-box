@@ -188,14 +188,19 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 		if editFilter.TargetType == nil || *editFilter.TargetType == "" {
 			panic("TargetType is required when TargetID filter is used")
 		}
-		if *editFilter.TargetType == "TAG" {
+		if *editFilter.TargetType == models.TargetTypeEnumTag {
 			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
-		} else if *editFilter.TargetType == "PERFORMER" {
+		} else if *editFilter.TargetType == models.TargetTypeEnumPerformer {
 			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
+			jsonID, _ := json.Marshal(*q)
+			query.AddArg(*q, jsonID)
+		} else if *editFilter.TargetType == models.TargetTypeEnumStudio {
+			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id")
+			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
 		} else {
