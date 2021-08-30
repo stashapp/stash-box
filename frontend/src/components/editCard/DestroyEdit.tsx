@@ -2,18 +2,30 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits_target as Target } from "src/graphql/definitions/Edits";
-import { isTag, isPerformer, createHref } from "src/utils";
-import { ROUTE_TAG, ROUTE_PERFORMER } from "src/constants/route";
+import { isTag, isPerformer, createHref, isStudio } from "src/utils";
+import { ROUTE_TAG, ROUTE_PERFORMER, ROUTE_STUDIO } from "src/constants/route";
 
 interface DestroyProps {
   target?: Target | null;
 }
 
 const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
-  if (!isTag(target) && !isPerformer(target))
-    return <span>Unsupported target type</span>;
+  function getRoute() {
+    if (isTag(target)) {
+      return ROUTE_TAG;
+    }
+    if (isPerformer(target)) {
+      return ROUTE_PERFORMER;
+    }
+    if (isStudio(target)) {
+      return ROUTE_STUDIO;
+    }
+  }
 
-  const route = isTag(target) ? ROUTE_TAG : ROUTE_PERFORMER;
+  const route = getRoute();
+
+  if ((!isTag(target) && !isPerformer(target) && !isStudio(target)) || !route)
+    return <span>Unsupported target type</span>;
 
   return (
     <div>

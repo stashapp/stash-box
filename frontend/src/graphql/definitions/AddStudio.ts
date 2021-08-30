@@ -19,7 +19,7 @@ export interface AddStudio_studioCreate {
   __typename: "Studio";
   id: string;
   name: string;
-  urls: (AddStudio_studioCreate_urls | null)[];
+  urls: AddStudio_studioCreate_urls[];
 }
 
 export interface AddStudio {
