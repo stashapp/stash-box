@@ -344,7 +344,7 @@ func (qb *tagQueryBuilder) ApplyEdit(edit models.Edit, operation models.Operatio
 		if data.New.Name == nil {
 			return nil, errors.New("Missing tag name")
 		}
-		newTag.CopyFromTagEdit(*data.New, nil)
+		newTag.CopyFromTagEdit(*data.New, &models.TagEdit{})
 
 		tag, err = qb.Create(newTag)
 		if err != nil {
