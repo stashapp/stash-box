@@ -65,6 +65,14 @@ func (qb *studioQueryBuilder) CreateURLs(newJoins models.StudioURLs) error {
 	return qb.dbi.InsertJoins(studioURLTable, &newJoins)
 }
 
+func (qb *studioQueryBuilder) CreateImages(newJoins models.StudiosImages) error {
+	return qb.dbi.InsertJoins(studioImageTable, &newJoins)
+}
+
+func (qb *studioQueryBuilder) UpdateImages(studioID uuid.UUID, updatedJoins models.StudiosImages) error {
+	return qb.dbi.ReplaceJoins(studioImageTable, studioID, &updatedJoins)
+}
+
 func (qb *studioQueryBuilder) UpdateURLs(studioID uuid.UUID, updatedJoins models.StudioURLs) error {
 	return qb.dbi.ReplaceJoins(studioURLTable, studioID, &updatedJoins)
 }
@@ -182,6 +190,13 @@ func (qb *studioQueryBuilder) queryStudios(query string, args []interface{}) (mo
 	return output, err
 }
 
+func (qb *studioQueryBuilder) GetImages(id uuid.UUID) (models.StudiosImages, error) {
+	joins := models.StudiosImages{}
+	err := qb.dbi.FindJoins(studioImageTable, id, &joins)
+
+	return joins, err
+}
+
 func (qb *studioQueryBuilder) GetURLs(id uuid.UUID) ([]*models.URL, error) {
 	joins := models.StudioURLs{}
 	err := qb.dbi.FindJoins(studioURLTable, id, &joins)
@@ -269,6 +284,20 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 			return nil, err
 		}
 
+		if len(data.New.AddedUrls) > 0 {
+			urls := models.CreateStudioURLs(UUID, data.New.AddedUrls)
+			if err := qb.CreateURLs(urls); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(data.New.AddedImages) > 0 {
+			images := models.CreateStudioImages(UUID, data.New.AddedImages)
+			if err := qb.CreateImages(images); err != nil {
+				return nil, err
+			}
+		}
+
 		return studio, nil
 	case models.OperationEnumDestroy:
 		updatedStudio, err := qb.SoftDelete(*studio)
@@ -279,24 +308,9 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 		err = qb.deleteSceneStudios(studio.ID)
 		return updatedStudio, err
 	case models.OperationEnumModify:
-		if err := studio.ValidateModifyEdit(*data); err != nil {
-			return nil, err
-		}
-
-		studio.CopyFromStudioEdit(*data.New, data.Old)
-		updatedStudio, err := qb.Update(*studio)
-		if err != nil {
-			return nil, err
-		}
-
-		return updatedStudio, err
+		return qb.applyModifyEdit(studio, data)
 	case models.OperationEnumMerge:
-		if err := studio.ValidateModifyEdit(*data); err != nil {
-			return nil, err
-		}
-
-		studio.CopyFromStudioEdit(*data.New, data.Old)
-		updatedStudio, err := qb.Update(*studio)
+		updatedStudio, err := qb.applyModifyEdit(studio, data)
 		if err != nil {
 			return nil, err
 		}
@@ -312,6 +326,51 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 	default:
 		return nil, errors.New("Unsupported operation: " + operation.String())
 	}
+}
+
+func (qb *studioQueryBuilder) applyModifyEdit(studio *models.Studio, data *models.StudioEditData) (*models.Studio, error) {
+	if err := studio.ValidateModifyEdit(*data); err != nil {
+		return nil, err
+	}
+
+	studio.CopyFromStudioEdit(*data.New, data.Old)
+	updatedStudio, err := qb.Update(*studio)
+	if err != nil {
+		return nil, err
+	}
+
+	urls, err := qb.GetURLs(updatedStudio.ID)
+	currentUrls := models.CreateStudioURLs(updatedStudio.ID, urls)
+	if err != nil {
+		return nil, err
+	}
+	newUrls := models.CreateStudioURLs(updatedStudio.ID, data.New.AddedUrls)
+	oldUrls := models.CreateStudioURLs(updatedStudio.ID, data.New.RemovedUrls)
+
+	if err := models.ProcessSlice(&currentUrls, &newUrls, &oldUrls); err != nil {
+		return nil, err
+	}
+
+	if err := qb.UpdateURLs(updatedStudio.ID, currentUrls); err != nil {
+		return nil, err
+	}
+
+	currentImages, err := qb.GetImages(updatedStudio.ID)
+	if err != nil {
+		return nil, err
+	}
+	newImages := models.CreateStudioImages(updatedStudio.ID, data.New.AddedImages)
+	oldImages := models.CreateStudioImages(updatedStudio.ID, data.New.RemovedImages)
+
+	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages); err != nil {
+		return nil, err
+	}
+
+	if err := qb.UpdateImages(updatedStudio.ID, currentImages); err != nil {
+		return nil, err
+	}
+
+	return updatedStudio, err
 }
 
 func (qb *studioQueryBuilder) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {

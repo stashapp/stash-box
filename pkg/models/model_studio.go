@@ -35,6 +35,10 @@ type StudioURL struct {
 	Type     string    `db:"type" json:"type"`
 }
 
+func (s StudioURL) ID() string {
+	return s.URL + s.Type
+}
+
 func (p *StudioURL) ToURL() URL {
 	url := URL{
 		URL:  p.URL,
@@ -56,8 +60,24 @@ func (p StudioURLs) Each(fn func(interface{})) {
 	}
 }
 
+func (p StudioURLs) EachPtr(fn func(interface{})) {
+	for _, v := range p {
+		fn(v)
+	}
+}
+
 func (p *StudioURLs) Add(o interface{}) {
 	*p = append(*p, (o.(*StudioURL)))
+}
+
+func (p *StudioURLs) Remove(id string) {
+	for i, v := range *p {
+		if (*v).ID() == id {
+			(*p)[i] = (*p)[len(*p)-1]
+			*p = (*p)[:len(*p)-1]
+			break
+		}
+	}
 }
 
 func CreateStudioURLs(studioID uuid.UUID, urls []*URLInput) StudioURLs {

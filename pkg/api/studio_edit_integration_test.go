@@ -105,9 +105,14 @@ func (s *studioEditTestRunner) testModifyStudioEdit() {
 	}
 	newParentID := newParent.ID.String()
 	newName := "newName"
+	url := models.URL{
+		URL:  "http://example.org",
+		Type: "HOME",
+	}
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name:     &newName,
 		ParentID: &newParentID,
+		Urls:     []*models.URL{&url},
 	}
 	id := createdStudio.ID.String()
 	editInput := models.EditInput{
@@ -135,6 +140,10 @@ func (s *studioEditTestRunner) verifyUpdatedStudioEdit(originalStudio *models.St
 
 	if *input.ParentID != *studioDetails.ParentID {
 		s.fieldMismatch(*input.ParentID, *studioDetails.ParentID, "ParentID")
+	}
+
+	if !reflect.DeepEqual(studioDetails.AddedUrls, input.Urls) {
+		s.fieldMismatch(input.Urls, studioDetails.AddedUrls, "URLs")
 	}
 }
 
@@ -269,6 +278,10 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 	existingName := "studioName3"
 	studioCreateInput := models.StudioCreateInput{
 		Name: existingName,
+		Urls: []*models.URL{{
+			URL:  "http://example.org/old",
+			Type: "HOME",
+		}},
 	}
 	createdStudio, err := s.createTestStudio(&studioCreateInput)
 	if err != nil {
@@ -281,9 +294,14 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 		return
 	}
 	newParentID := newParent.ID.String()
+	newUrl := models.URL{
+		URL:  "http://example.org/new",
+		Type: "HOME",
+	}
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name:     &newName,
 		ParentID: &newParentID,
+		Urls:     []*models.URL{&newUrl},
 	}
 	id := createdStudio.ID.String()
 	editInput := models.EditInput{
@@ -317,6 +335,11 @@ func (s *studioEditTestRunner) verifyApplyModifyStudioEdit(input models.StudioEd
 
 	if !updatedStudio.ParentStudioID.Valid || *input.ParentID != updatedStudio.ParentStudioID.UUID.String() {
 		s.fieldMismatch(*input.ParentID, updatedStudio.ParentStudioID.UUID.String(), "ParentStudioID")
+	}
+
+	urls, _ := s.resolver.Studio().Urls(s.ctx, updatedStudio)
+	if !reflect.DeepEqual(input.Urls, urls) {
+		s.fieldMismatch(input.Urls, urls, "URLs")
 	}
 }
 
