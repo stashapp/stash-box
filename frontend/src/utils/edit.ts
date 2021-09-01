@@ -62,10 +62,8 @@ export const isValidEditTarget = (
   target !== undefined;
 
 export const getEditTargetRoute = (
-  target: Target | null | undefined
+  target: Target
 ): string => {
-  if (!isValidEditTarget(target)) return ROUTE_HOME;
-
   if (isTag(target)) {
     return tagHref(target);
   }
