@@ -39,8 +39,9 @@ export interface Studio_findStudio {
   name: string;
   child_studios: Studio_findStudio_child_studios[];
   parent: Studio_findStudio_parent | null;
-  urls: (Studio_findStudio_urls | null)[];
+  urls: Studio_findStudio_urls[];
   images: Studio_findStudio_images[];
+  deleted: boolean;
 }
 
 export interface Studio {

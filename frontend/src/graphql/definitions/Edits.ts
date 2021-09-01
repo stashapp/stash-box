@@ -29,7 +29,7 @@ export interface Edits_queryEdits_edits_user {
 }
 
 export interface Edits_queryEdits_edits_target_Scene {
-  __typename: "Scene" | "Studio";
+  __typename: "Scene";
 }
 
 export interface Edits_queryEdits_edits_target_Tag_category {
@@ -115,10 +115,47 @@ export interface Edits_queryEdits_edits_target_Performer {
   images: Edits_queryEdits_edits_target_Performer_images[];
 }
 
-export type Edits_queryEdits_edits_target = Edits_queryEdits_edits_target_Scene | Edits_queryEdits_edits_target_Tag | Edits_queryEdits_edits_target_Performer;
+export interface Edits_queryEdits_edits_target_Studio_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_target_Studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_target_Studio_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface Edits_queryEdits_edits_target_Studio_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface Edits_queryEdits_edits_target_Studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: Edits_queryEdits_edits_target_Studio_child_studios[];
+  parent: Edits_queryEdits_edits_target_Studio_parent | null;
+  urls: Edits_queryEdits_edits_target_Studio_urls[];
+  images: Edits_queryEdits_edits_target_Studio_images[];
+  deleted: boolean;
+}
+
+export type Edits_queryEdits_edits_target = Edits_queryEdits_edits_target_Scene | Edits_queryEdits_edits_target_Tag | Edits_queryEdits_edits_target_Performer | Edits_queryEdits_edits_target_Studio;
 
 export interface Edits_queryEdits_edits_details_SceneEdit {
-  __typename: "SceneEdit" | "StudioEdit";
+  __typename: "SceneEdit";
 }
 
 export interface Edits_queryEdits_edits_details_TagEdit {
@@ -216,10 +253,88 @@ export interface Edits_queryEdits_edits_details_PerformerEdit {
   removed_images: (Edits_queryEdits_edits_details_PerformerEdit_removed_images | null)[] | null;
 }
 
-export type Edits_queryEdits_edits_details = Edits_queryEdits_edits_details_SceneEdit | Edits_queryEdits_edits_details_TagEdit | Edits_queryEdits_edits_details_PerformerEdit;
+export interface Edits_queryEdits_edits_details_StudioEdit_added_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_removed_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_parent_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_parent_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_parent_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_parent_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: Edits_queryEdits_edits_details_StudioEdit_parent_child_studios[];
+  parent: Edits_queryEdits_edits_details_StudioEdit_parent_parent | null;
+  urls: Edits_queryEdits_edits_details_StudioEdit_parent_urls[];
+  images: Edits_queryEdits_edits_details_StudioEdit_parent_images[];
+  deleted: boolean;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_added_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_removed_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit {
+  __typename: "StudioEdit";
+  name: string | null;
+  /**
+   * Added and modified URLs
+   */
+  added_urls: Edits_queryEdits_edits_details_StudioEdit_added_urls[] | null;
+  removed_urls: Edits_queryEdits_edits_details_StudioEdit_removed_urls[] | null;
+  parent: Edits_queryEdits_edits_details_StudioEdit_parent | null;
+  added_images: (Edits_queryEdits_edits_details_StudioEdit_added_images | null)[] | null;
+  removed_images: (Edits_queryEdits_edits_details_StudioEdit_removed_images | null)[] | null;
+}
+
+export type Edits_queryEdits_edits_details = Edits_queryEdits_edits_details_SceneEdit | Edits_queryEdits_edits_details_TagEdit | Edits_queryEdits_edits_details_PerformerEdit | Edits_queryEdits_edits_details_StudioEdit;
 
 export interface Edits_queryEdits_edits_old_details_SceneEdit {
-  __typename: "SceneEdit" | "StudioEdit";
+  __typename: "SceneEdit";
 }
 
 export interface Edits_queryEdits_edits_old_details_TagEdit {
@@ -253,10 +368,53 @@ export interface Edits_queryEdits_edits_old_details_PerformerEdit {
   career_end_year: number | null;
 }
 
-export type Edits_queryEdits_edits_old_details = Edits_queryEdits_edits_old_details_SceneEdit | Edits_queryEdits_edits_old_details_TagEdit | Edits_queryEdits_edits_old_details_PerformerEdit;
+export interface Edits_queryEdits_edits_old_details_StudioEdit_parent_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_old_details_StudioEdit_parent_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_old_details_StudioEdit_parent_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface Edits_queryEdits_edits_old_details_StudioEdit_parent_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface Edits_queryEdits_edits_old_details_StudioEdit_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: Edits_queryEdits_edits_old_details_StudioEdit_parent_child_studios[];
+  parent: Edits_queryEdits_edits_old_details_StudioEdit_parent_parent | null;
+  urls: Edits_queryEdits_edits_old_details_StudioEdit_parent_urls[];
+  images: Edits_queryEdits_edits_old_details_StudioEdit_parent_images[];
+  deleted: boolean;
+}
+
+export interface Edits_queryEdits_edits_old_details_StudioEdit {
+  __typename: "StudioEdit";
+  name: string | null;
+  parent: Edits_queryEdits_edits_old_details_StudioEdit_parent | null;
+}
+
+export type Edits_queryEdits_edits_old_details = Edits_queryEdits_edits_old_details_SceneEdit | Edits_queryEdits_edits_old_details_TagEdit | Edits_queryEdits_edits_old_details_PerformerEdit | Edits_queryEdits_edits_old_details_StudioEdit;
 
 export interface Edits_queryEdits_edits_merge_sources_Scene {
-  __typename: "Scene" | "Studio";
+  __typename: "Scene";
 }
 
 export interface Edits_queryEdits_edits_merge_sources_Tag_category {
@@ -342,7 +500,44 @@ export interface Edits_queryEdits_edits_merge_sources_Performer {
   images: Edits_queryEdits_edits_merge_sources_Performer_images[];
 }
 
-export type Edits_queryEdits_edits_merge_sources = Edits_queryEdits_edits_merge_sources_Scene | Edits_queryEdits_edits_merge_sources_Tag | Edits_queryEdits_edits_merge_sources_Performer;
+export interface Edits_queryEdits_edits_merge_sources_Studio_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_merge_sources_Studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface Edits_queryEdits_edits_merge_sources_Studio_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface Edits_queryEdits_edits_merge_sources_Studio_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface Edits_queryEdits_edits_merge_sources_Studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: Edits_queryEdits_edits_merge_sources_Studio_child_studios[];
+  parent: Edits_queryEdits_edits_merge_sources_Studio_parent | null;
+  urls: Edits_queryEdits_edits_merge_sources_Studio_urls[];
+  images: Edits_queryEdits_edits_merge_sources_Studio_images[];
+  deleted: boolean;
+}
+
+export type Edits_queryEdits_edits_merge_sources = Edits_queryEdits_edits_merge_sources_Scene | Edits_queryEdits_edits_merge_sources_Tag | Edits_queryEdits_edits_merge_sources_Performer | Edits_queryEdits_edits_merge_sources_Studio;
 
 export interface Edits_queryEdits_edits_options {
   __typename: "PerformerEditOptions";

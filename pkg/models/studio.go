@@ -9,13 +9,12 @@ type StudioRepo interface {
 	CreateURLs(newJoins StudioURLs) error
 	UpdateURLs(studioID uuid.UUID, updatedJoins StudioURLs) error
 	Find(id uuid.UUID) (*Studio, error)
-	FindBySceneID(sceneID int) (Studios, error)
-	FindByNames(names []string) (Studios, error)
 	FindByName(name string) (*Studio, error)
 	FindByParentID(id uuid.UUID) (Studios, error)
 	Count() (int, error)
 	Query(studioFilter *StudioFilterType, findFilter *QuerySpec) (Studios, int)
-	GetURLs(id uuid.UUID) (StudioURLs, error)
+	GetURLs(id uuid.UUID) ([]*URL, error)
 	GetAllURLs(ids []uuid.UUID) ([][]*URL, []error)
 	CountByPerformer(performerID uuid.UUID) ([]*PerformerStudio, error)
+	ApplyEdit(edit Edit, operation OperationEnum, studio *Studio) (*Studio, error)
 }
