@@ -100,6 +100,10 @@ type StudioImage struct {
 	ImageID  uuid.UUID `db:"image_id" json:"image_id"`
 }
 
+func (s StudioImage) ID() string {
+	return s.ImageID.String()
+}
+
 type StudiosImages []*StudioImage
 
 func (p StudiosImages) Each(fn func(interface{})) {
@@ -108,8 +112,24 @@ func (p StudiosImages) Each(fn func(interface{})) {
 	}
 }
 
+func (p StudiosImages) EachPtr(fn func(interface{})) {
+	for _, v := range p {
+		fn(v)
+	}
+}
+
 func (p *StudiosImages) Add(o interface{}) {
 	*p = append(*p, o.(*StudioImage))
+}
+
+func (p *StudiosImages) Remove(id string) {
+	for i, v := range *p {
+		if (*v).ID() == id {
+			(*p)[i] = (*p)[len(*p)-1]
+			*p = (*p)[:len(*p)-1]
+			break
+		}
+	}
 }
 
 type URL struct {
