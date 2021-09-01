@@ -24,6 +24,7 @@ import {
 } from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
+import URLChangeRow from "src/components/urlChangeRow";
 import CategoryChangeRow from "src/components/categoryChangeRow";
 import { Icon } from "src/components/fragments";
 import StudioChangeRow from "../studioChangeRow";
@@ -251,6 +252,10 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
           newStudioID={studioDetails.parent?.id}
           oldStudioID={oldStudioDetails?.parent?.id}
           showDiff={showDiff}
+        />
+        <URLChangeRow
+          newURLs={studioDetails.added_urls}
+          oldURLs={studioDetails.removed_urls}
         />
         <ImageChangeRow
           newImages={studioDetails?.added_images}

@@ -5,10 +5,13 @@ import {
   Edits_queryEdits_edits_old_details_TagEdit as OldTagEdit,
   Edits_queryEdits_edits_old_details_PerformerEdit as OldPerformerEdit,
   Edits_queryEdits_edits_old_details_StudioEdit as OldStudioEdit,
+  Edits_queryEdits_edits_target as Target,
   Edits_queryEdits_edits_target_Studio as Studio,
   Edits_queryEdits_edits_target_Tag as Tag,
   Edits_queryEdits_edits_target_Performer as Performer,
 } from "src/graphql/definitions/Edits";
+import { ROUTE_HOME } from "src/constants/route";
+import { performerHref, tagHref, studioHref } from "./route";
 
 interface TypeName {
   __typename: string;
@@ -51,3 +54,27 @@ export const isTagOldDetails = (
 export const isPerformerOldDetails = (
   details?: TypeName | null
 ): details is OldPerformerEdit => details?.__typename === "PerformerEdit";
+
+export const isValidEditTarget = (
+  target: Target | null | undefined
+): target is Performer | Tag | Studio =>
+  (isPerformer(target) || isTag(target) || isStudio(target)) &&
+  target !== undefined;
+
+export const getEditTargetRoute = (
+  target: Target | null | undefined
+): string => {
+  if (!isValidEditTarget(target)) return ROUTE_HOME;
+
+  if (isTag(target)) {
+    return tagHref(target);
+  }
+  if (isPerformer(target)) {
+    return performerHref(target);
+  }
+  if (isStudio(target)) {
+    return studioHref(target);
+  }
+
+  return ROUTE_HOME;
+};

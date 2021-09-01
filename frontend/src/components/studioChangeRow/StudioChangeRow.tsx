@@ -21,7 +21,7 @@ const StudioChangeRow: React.FC<StudioChangeRowProps> = ({
 
   return (
     <ChangeRow
-      name={name ?? "Studio"}
+      name={name ?? "Network"}
       oldValue={oldData?.findStudio?.name}
       newValue={newData?.findStudio?.name}
       showDiff={showDiff}
