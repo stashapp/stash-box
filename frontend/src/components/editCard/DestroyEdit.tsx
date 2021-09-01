@@ -2,20 +2,16 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits_target as Target } from "src/graphql/definitions/Edits";
-import {
-  isValidEditTarget,
-  getEditTargetRoute,
-} from "src/utils";
+import { isValidEditTarget, getEditTargetRoute } from "src/utils";
 
 interface DestroyProps {
   target?: Target | null;
 }
 
 const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
-  if (!isValidEditTarget(target))
-    return <span>Unsupported target type</span>;
+  if (!isValidEditTarget(target)) return <span>Unsupported target type</span>;
 
-  const route = getEditTargetRoute(target); 
+  const route = getEditTargetRoute(target);
 
   return (
     <div>

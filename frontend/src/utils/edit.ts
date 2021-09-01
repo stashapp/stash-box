@@ -61,9 +61,7 @@ export const isValidEditTarget = (
   (isPerformer(target) || isTag(target) || isStudio(target)) &&
   target !== undefined;
 
-export const getEditTargetRoute = (
-  target: Target
-): string => {
+export const getEditTargetRoute = (target: Target): string => {
   if (isTag(target)) {
     return tagHref(target);
   }
