@@ -162,7 +162,7 @@ type editValidator struct {
 }
 
 func (v *editValidator) error(field string, expected interface{}, actual interface{}) error {
-	return fmt.Errorf("Invalid name. Expected '%v' but was '%v'", expected, actual)
+	return fmt.Errorf("Invalid %s. Expected '%v' but was '%v'", field, expected, actual)
 }
 
 func (v *editValidator) string(field string, old *string, current string) {
