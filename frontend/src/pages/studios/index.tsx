@@ -6,12 +6,14 @@ import {
   ROUTE_STUDIO_ADD,
   ROUTE_STUDIOS,
   ROUTE_STUDIO_EDIT,
+  ROUTE_STUDIO_DELETE,
 } from "src/constants/route";
 
 import Studio from "./Studio";
 import Studios from "./Studios";
 import StudioEdit from "./StudioEdit";
 import StudioAdd from "./StudioAdd";
+import StudioDelete from "./StudioDelete";
 
 const SceneRoutes: React.FC = () => (
   <Switch>
@@ -26,6 +28,9 @@ const SceneRoutes: React.FC = () => (
     </Route>
     <Route exact path={ROUTE_STUDIO_EDIT}>
       <StudioEdit />
+    </Route>
+    <Route exact path={ROUTE_STUDIO_DELETE}>
+      <StudioDelete />
     </Route>
   </Switch>
 );

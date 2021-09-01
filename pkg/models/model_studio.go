@@ -13,20 +13,20 @@ type Studio struct {
 	Deleted        bool            `db:"deleted" json:"deleted"`
 }
 
-func (p Studio) GetID() uuid.UUID {
-	return p.ID
+func (s Studio) GetID() uuid.UUID {
+	return s.ID
 }
 
 type Studios []*Studio
 
-func (p Studios) Each(fn func(interface{})) {
-	for _, v := range p {
+func (s Studios) Each(fn func(interface{})) {
+	for _, v := range s {
 		fn(*v)
 	}
 }
 
-func (p *Studios) Add(o interface{}) {
-	*p = append(*p, o.(*Studio))
+func (s *Studios) Add(o interface{}) {
+	*s = append(*s, o.(*Studio))
 }
 
 type StudioURL struct {
@@ -35,10 +35,14 @@ type StudioURL struct {
 	Type     string    `db:"type" json:"type"`
 }
 
-func (p *StudioURL) ToURL() URL {
+func (s StudioURL) ID() string {
+	return s.URL + s.Type
+}
+
+func (s *StudioURL) ToURL() URL {
 	url := URL{
-		URL:  p.URL,
-		Type: p.Type,
+		URL:  s.URL,
+		Type: s.Type,
 	}
 	return url
 }
@@ -50,14 +54,30 @@ type PerformerStudio struct {
 
 type StudioURLs []*StudioURL
 
-func (p StudioURLs) Each(fn func(interface{})) {
-	for _, v := range p {
+func (s StudioURLs) Each(fn func(interface{})) {
+	for _, v := range s {
 		fn(*v)
 	}
 }
 
-func (p *StudioURLs) Add(o interface{}) {
-	*p = append(*p, (o.(*StudioURL)))
+func (s StudioURLs) EachPtr(fn func(interface{})) {
+	for _, v := range s {
+		fn(v)
+	}
+}
+
+func (s *StudioURLs) Add(o interface{}) {
+	*s = append(*s, (o.(*StudioURL)))
+}
+
+func (s *StudioURLs) Remove(id string) {
+	for i, v := range *s {
+		if (*v).ID() == id {
+			(*s)[i] = (*s)[len(*s)-1]
+			*s = (*s)[:len(*s)-1]
+			break
+		}
+	}
 }
 
 func CreateStudioURLs(studioID uuid.UUID, urls []*URLInput) StudioURLs {
@@ -74,31 +94,46 @@ func CreateStudioURLs(studioID uuid.UUID, urls []*URLInput) StudioURLs {
 	return ret
 }
 
-func (p *Studio) IsEditTarget() {
+func (s *Studio) IsEditTarget() {
 }
 
-func (p *Studio) CopyFromCreateInput(input StudioCreateInput) {
-	CopyFull(p, input)
+func (s *Studio) CopyFromCreateInput(input StudioCreateInput) {
+	CopyFull(s, input)
 
 	if input.ParentID != nil {
 		UUID, err := uuid.FromString(*input.ParentID)
 		if err == nil {
-			p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
+			s.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
 		}
 	}
 }
 
-func (p *Studio) CopyFromUpdateInput(input StudioUpdateInput) {
-	CopyFull(p, input)
+func (s *Studio) CopyFromUpdateInput(input StudioUpdateInput) {
+	CopyFull(s, input)
 
 	if input.ParentID != nil {
 		UUID, err := uuid.FromString(*input.ParentID)
 		if err == nil {
-			p.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
+			s.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
 		}
 	} else {
-		p.ParentStudioID = uuid.NullUUID{}
+		s.ParentStudioID = uuid.NullUUID{}
 	}
+}
+
+func (s *Studio) CopyFromStudioEdit(input StudioEdit, existing *StudioEdit) {
+	fe := fromEdit{}
+	fe.string(&s.Name, input.Name)
+	fe.nullUUID(&s.ParentStudioID, input.ParentID, existing.ParentID)
+}
+
+func (s *Studio) ValidateModifyEdit(edit StudioEditData) error {
+	v := editValidator{}
+
+	v.string("name", edit.Old.Name, s.Name)
+	v.uuid("ParentID", edit.Old.ParentID, s.ParentStudioID)
+
+	return nil
 }
 
 func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudiosImages {

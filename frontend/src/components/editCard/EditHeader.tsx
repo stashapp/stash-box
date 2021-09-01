@@ -2,18 +2,16 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 import { OperationEnum } from "src/graphql";
-import { isPerformer, isTag, tagHref, performerHref } from "src/utils";
+import { isValidEditTarget, getEditTargetRoute } from "src/utils";
 
 interface EditHeaderProps {
   edit: Edit;
 }
 
 const EditHeader: React.FC<EditHeaderProps> = ({ edit }) => {
-  if (!edit.target || (!isTag(edit.target) && !isPerformer(edit.target)))
-    return <></>;
-  let route = "";
-  if (isTag(edit.target)) route = tagHref(edit.target);
-  else if (isPerformer(edit.target)) route = performerHref(edit.target);
+  if (!isValidEditTarget(edit.target)) return <></>;
+
+  const route = getEditTargetRoute(edit.target);
 
   if (edit.operation === OperationEnum.MODIFY) {
     return (

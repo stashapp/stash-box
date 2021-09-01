@@ -19,4 +19,5 @@ fragment StudioFragment on Studio {
         height
         width
     }
+    deleted
 }

@@ -3,6 +3,7 @@ package sqlx
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -26,6 +27,10 @@ var (
 
 	editPerformerTable = newTableJoin(editTable, "performer_edits", editJoinKey, func() interface{} {
 		return &models.EditPerformer{}
+	})
+
+	editStudioTable = newTableJoin(editTable, "studio_edits", editJoinKey, func() interface{} {
+		return &models.EditStudio{}
 	})
 
 	editCommentTable = newTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
@@ -82,6 +87,10 @@ func (qb *editQueryBuilder) CreateEditPerformer(newJoin models.EditPerformer) er
 	return qb.dbi.InsertJoin(editPerformerTable, newJoin, nil)
 }
 
+func (qb *editQueryBuilder) CreateEditStudio(newJoin models.EditStudio) error {
+	return qb.dbi.InsertJoin(editStudioTable, newJoin, nil)
+}
+
 func (qb *editQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
 	joins := models.EditTags{}
 	err := qb.dbi.FindJoins(editTagTable, id, &joins)
@@ -104,6 +113,18 @@ func (qb *editQueryBuilder) FindPerformerID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, errors.New("performer edit not found")
 	}
 	return &joins[0].PerformerID, nil
+}
+
+func (qb *editQueryBuilder) FindStudioID(id uuid.UUID) (*uuid.UUID, error) {
+	joins := models.EditStudios{}
+	err := qb.dbi.FindJoins(editStudioTable, id, &joins)
+	if err != nil {
+		return nil, err
+	}
+	if len(joins) == 0 {
+		return nil, errors.New("studio edit not found")
+	}
+	return &joins[0].StudioID, nil
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
@@ -167,14 +188,19 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 		if editFilter.TargetType == nil || *editFilter.TargetType == "" {
 			panic("TargetType is required when TargetID filter is used")
 		}
-		if *editFilter.TargetType == "TAG" {
+		if *editFilter.TargetType == models.TargetTypeEnumTag {
 			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
-		} else if *editFilter.TargetType == "PERFORMER" {
+		} else if *editFilter.TargetType == models.TargetTypeEnumPerformer {
 			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
+			jsonID, _ := json.Marshal(*q)
+			query.AddArg(*q, jsonID)
+		} else if *editFilter.TargetType == models.TargetTypeEnumStudio {
+			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id")
+			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
 		} else {
@@ -237,22 +263,25 @@ func (qb *editQueryBuilder) GetComments(id uuid.UUID) (models.EditComments, erro
 	return joins, err
 }
 
-func (qb *editQueryBuilder) FindByTagID(id uuid.UUID) ([]*models.Edit, error) {
-	query := `
-        SELECT edits.* FROM edits
-        JOIN tag_edits
-        ON tag_edits.edit_id = edits.id
-        WHERE tag_edits.tag_id = ?`
+func (qb *editQueryBuilder) findByJoin(id uuid.UUID, table tableJoin, idColumn string) ([]*models.Edit, error) {
+	query := fmt.Sprintf(`
+SELECT edits.* FROM edits
+JOIN %s as edit_join
+ON edit_join.edit_id = edits.id
+WHERE edit_join.%s = ?`, table.name, idColumn)
+
 	args := []interface{}{id}
 	return qb.queryEdits(query, args)
 }
 
+func (qb *editQueryBuilder) FindByTagID(id uuid.UUID) ([]*models.Edit, error) {
+	return qb.findByJoin(id, editTagTable, "tag_id")
+}
+
 func (qb *editQueryBuilder) FindByPerformerID(id uuid.UUID) ([]*models.Edit, error) {
-	query := `
-        SELECT edits.* FROM edits
-        JOIN performer_edits
-        ON performer_edits.edit_id = edits.id
-        WHERE performer_edits.performer_id = ?`
-	args := []interface{}{id}
-	return qb.queryEdits(query, args)
+	return qb.findByJoin(id, editPerformerTable, "performer_id")
+}
+
+func (qb *editQueryBuilder) FindByStudioID(id uuid.UUID) ([]*models.Edit, error) {
+	return qb.findByJoin(id, editStudioTable, "studio_id")
 }
