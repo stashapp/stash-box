@@ -24,7 +24,7 @@ var (
 		return &models.StudioURL{}
 	})
 
-	studioRedirectTable = newTableJoin(tagTable, "studio_redirects", "source_id", func() interface{} {
+	studioRedirectTable = newTableJoin(studioTable, "studio_redirects", "source_id", func() interface{} {
 		return &models.Redirect{}
 	})
 )
