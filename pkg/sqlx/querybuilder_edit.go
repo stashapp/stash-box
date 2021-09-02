@@ -34,7 +34,7 @@ var (
 	})
 
 	editSceneTable = newTableJoin(editTable, "scene_edits", editJoinKey, func() interface{} {
-		return &models.EditStudio{}
+		return &models.EditScene{}
 	})
 
 	editCommentTable = newTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
