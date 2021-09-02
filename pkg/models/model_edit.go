@@ -114,6 +114,12 @@ func (e *Edit) GetStudioData() (*StudioEditData, error) {
 	return &data, nil
 }
 
+func (e *Edit) GetSceneData() (*SceneEditData, error) {
+	data := SceneEditData{}
+	_ = json.Unmarshal(e.Data, &data)
+	return &data, nil
+}
+
 type Edits []*Edit
 
 func (p Edits) Each(fn func(interface{})) {
@@ -192,6 +198,23 @@ func (p EditStudios) Each(fn func(interface{})) {
 
 func (p *EditStudios) Add(o interface{}) {
 	*p = append(*p, o.(*EditStudio))
+}
+
+type EditScene struct {
+	EditID  uuid.UUID `db:"edit_id" json:"edit_id"`
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+type EditScenes []*EditScene
+
+func (p EditScenes) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditScenes) Add(o interface{}) {
+	*p = append(*p, o.(*EditScene))
 }
 
 // type VoteComment struct {
@@ -291,6 +314,34 @@ type StudioEditData struct {
 	New          *StudioEdit `json:"new_data,omitempty"`
 	Old          *StudioEdit `json:"old_data,omitempty"`
 	MergeSources []string    `json:"merge_sources,omitempty"`
+}
+
+type SceneEdit struct {
+	Title       *string `json:"title"`
+	Details     *string `json:"details"`
+	AddedUrls   []*URL  `json:"added_urls"`
+	RemovedUrls []*URL  `json:"removed_urls"`
+	Date        *string `json:"date"`
+	StudioID    *string `json:"studio_id"`
+	// Added or modified performer appearance entries
+	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers"`
+	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers"`
+	AddedTags           []string                    `json:"added_tags"`
+	RemovedTags         []string                    `json:"removed_tags"`
+	AddedImages         []string                    `json:"added_images"`
+	RemovedImages       []string                    `json:"removed_images"`
+	AddedFingerprints   []*FingerprintEditInput     `json:"added_fingerprints"`
+	RemovedFingerprints []*FingerprintEditInput     `json:"removed_fingerprints"`
+	Duration            *int64                      `json:"duration"`
+	Director            *string                     `json:"director"`
+}
+
+func (SceneEdit) IsEditDetails() {}
+
+type SceneEditData struct {
+	New          *SceneEdit `json:"new_data,omitempty"`
+	Old          *SceneEdit `json:"old_data,omitempty"`
+	MergeSources []string   `json:"merge_sources,omitempty"`
 }
 
 type EditData struct {

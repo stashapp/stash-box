@@ -33,6 +33,10 @@ var (
 		return &models.EditStudio{}
 	})
 
+	editSceneTable = newTableJoin(editTable, "scene_edits", editJoinKey, func() interface{} {
+		return &models.EditStudio{}
+	})
+
 	editCommentTable = newTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
 		return &models.EditComment{}
 	})
@@ -91,6 +95,10 @@ func (qb *editQueryBuilder) CreateEditStudio(newJoin models.EditStudio) error {
 	return qb.dbi.InsertJoin(editStudioTable, newJoin, nil)
 }
 
+func (qb *editQueryBuilder) CreateEditScene(newJoin models.EditScene) error {
+	return qb.dbi.InsertJoin(editSceneTable, newJoin, nil)
+}
+
 func (qb *editQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
 	joins := models.EditTags{}
 	err := qb.dbi.FindJoins(editTagTable, id, &joins)
@@ -125,6 +133,18 @@ func (qb *editQueryBuilder) FindStudioID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, errors.New("studio edit not found")
 	}
 	return &joins[0].StudioID, nil
+}
+
+func (qb *editQueryBuilder) FindSceneID(id uuid.UUID) (*uuid.UUID, error) {
+	joins := models.EditScenes{}
+	err := qb.dbi.FindJoins(editSceneTable, id, &joins)
+	if err != nil {
+		return nil, err
+	}
+	if len(joins) == 0 {
+		return nil, errors.New("scene edit not found")
+	}
+	return &joins[0].SceneID, nil
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
