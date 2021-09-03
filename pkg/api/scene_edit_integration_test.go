@@ -21,7 +21,28 @@ func createSceneEditTestRunner(t *testing.T) *sceneEditTestRunner {
 }
 
 func (s *sceneEditTestRunner) testCreateSceneEdit() {
+	as := "as"
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		return
+	}
+	createdTag, err := s.createTestTag(nil)
+	if err != nil {
+		return
+	}
+
 	sceneEditDetailsInput := s.createSceneEditDetailsInput()
+	sceneEditDetailsInput.Performers = []*models.PerformerAppearanceInput{
+		{
+			PerformerID: createdPerformer.ID.String(),
+			As:          &as,
+		},
+	}
+	sceneEditDetailsInput.TagIds = []string{createdTag.ID.String()}
+	sceneEditDetailsInput.Fingerprints = []*models.FingerprintEditInput{
+		s.generateSceneFingerprint(),
+	}
+
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
 	if err == nil {
 		s.verifyCreatedSceneEdit(*sceneEditDetailsInput, edit)
@@ -121,8 +142,13 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 		s.fieldMismatch(input.TagIds, sceneDetails.AddedTags, "Tags")
 	}
 
-	// TODO - performers
-	// TODO - fingerprints
+	if !comparePerformersInput(input.Performers, sceneDetails.AddedPerformers) {
+		s.fieldMismatch(input.Performers, sceneDetails.AddedPerformers, "Performers")
+	}
+
+	if !compareFingerprintsInput(input.Fingerprints, sceneDetails.AddedFingerprints) {
+		s.fieldMismatch(input.Fingerprints, sceneDetails.AddedFingerprints, "Fingerprints")
+	}
 }
 
 func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput, scene *models.Scene) {

@@ -10,6 +10,22 @@ import (
 
 type sceneEditResolver struct{ *Resolver }
 
+func (r *sceneEditResolver) Studio(ctx context.Context, obj *models.SceneEdit) (*models.Studio, error) {
+	if obj.StudioID == nil {
+		return nil, nil
+	}
+
+	qb := r.getRepoFactory(ctx).Studio()
+	studioID, _ := uuid.FromString(*obj.StudioID)
+	studio, err := qb.Find(studioID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return studio, nil
+}
+
 func (r *sceneEditResolver) performerAppearanceList(ctx context.Context, performers []*models.PerformerAppearanceInput) ([]*models.PerformerAppearance, error) {
 	if len(performers) == 0 {
 		return nil, nil

@@ -126,7 +126,7 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: Date
-  studio_id: ID
+  studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
   removed_performers: [PerformerAppearance!]

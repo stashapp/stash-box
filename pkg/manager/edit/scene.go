@@ -337,13 +337,11 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
 	sceneEdit := input.Details.SceneEditFromCreate()
 
-	if len(input.Details.Urls) != 0 || inputSpecified("urls") {
-		sceneEdit.New.AddedUrls = input.Details.Urls
-	}
-
-	if len(input.Details.ImageIds) != 0 || inputSpecified("image_ids") {
-		sceneEdit.New.AddedImages = input.Details.ImageIds
-	}
+	sceneEdit.New.AddedUrls = input.Details.Urls
+	sceneEdit.New.AddedTags = input.Details.TagIds
+	sceneEdit.New.AddedImages = input.Details.ImageIds
+	sceneEdit.New.AddedFingerprints = input.Details.Fingerprints
+	sceneEdit.New.AddedPerformers = input.Details.Performers
 
 	return m.edit.SetData(sceneEdit)
 }
