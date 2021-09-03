@@ -363,6 +363,26 @@ export interface SceneDestroyInput {
   id: string;
 }
 
+export interface SceneEditDetailsInput {
+  title?: string | null;
+  details?: string | null;
+  urls?: URLInput[] | null;
+  date?: any | null;
+  studio_id?: string | null;
+  performers?: PerformerAppearanceInput[] | null;
+  tag_ids?: string[] | null;
+  image_ids?: string[] | null;
+  fingerprints?: FingerprintEditInput[] | null;
+  duration?: number | null;
+  director?: string | null;
+}
+
+export interface SceneEditInput {
+  edit: EditInput;
+  details?: SceneEditDetailsInput | null;
+  duration?: number | null;
+}
+
 export interface SceneFilterType {
   text?: string | null;
   title?: string | null;

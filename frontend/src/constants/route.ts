@@ -16,6 +16,7 @@ export const ROUTE_PERFORMERS = "/performers";
 export const ROUTE_SCENE = "/scenes/:id";
 export const ROUTE_SCENE_ADD = "/scenes/add";
 export const ROUTE_SCENE_EDIT = "/scenes/:id/edit";
+export const ROUTE_SCENE_DELETE = "/scenes/:id/delete";
 export const ROUTE_SCENES = "/scenes";
 export const ROUTE_STUDIO = "/studios/:id";
 export const ROUTE_STUDIO_ADD = "/studios/add";

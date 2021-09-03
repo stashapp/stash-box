@@ -1,22 +1,29 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useState, useEffect, useRef } from "react";
-import { useHistory, Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
-import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Form,
+  InputGroup,
+  Tab,
+  Table,
+  Tabs,
+} from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 import {
-  SceneUpdateInput,
   FingerprintEditInput,
   FingerprintAlgorithm,
   GenderEnum,
+  SceneEditDetailsInput,
 } from "src/graphql";
-import { getUrlByType, createHref } from "src/utils";
-import { ROUTE_SCENES, ROUTE_SCENE } from "src/constants/route";
+import { getUrlByType } from "src/utils";
 
 import { GenderIcon, Icon } from "src/components/fragments";
 import SearchField, {
@@ -26,6 +33,7 @@ import SearchField, {
 import TagSelect from "src/components/tagSelect";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
+import { EditNote } from "src/components/form";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
@@ -33,7 +41,6 @@ const zeroCheck = (input: number | null) =>
   input === 0 || Number.isNaN(input) ? null : input;
 
 const schema = yup.object({
-  id: yup.string().defined(),
   title: yup.string().required("Title is required"),
   details: yup.string().trim(),
   date: yup
@@ -93,16 +100,19 @@ const schema = yup.object({
       })
     )
     .required(),
+  note: yup.string().required("Edit note is required"),
 });
 
 interface SceneFormData extends yup.Asserts<typeof schema> {}
+export type CastedSceneFormData = yup.TypeOf<typeof schema>;
 
 interface SceneProps {
   scene: Scene;
-  callback: (updateData: SceneUpdateInput) => void;
+  callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
+  saving: boolean;
 }
 
-const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
+const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
   const history = useHistory();
   const fingerprintHash = useRef<HTMLInputElement>(null);
   const fingerprintDuration = useRef<HTMLInputElement>(null);
@@ -143,6 +153,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   );
 
   const [isChanging, setChange] = useState<number | undefined>();
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     register("tags");
@@ -170,8 +181,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     );
 
   const onSubmit = (data: SceneFormData) => {
-    const sceneData: SceneUpdateInput = {
-      id: data.id,
+    const sceneData: SceneEditDetailsInput = {
       title: data.title,
       date: data.date,
       duration: data.duration,
@@ -197,7 +207,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     if (data.studioURL) urls.push({ url: data.studioURL, type: "STUDIO" });
     sceneData.urls = urls;
 
-    callback(sceneData);
+    callback(sceneData, data.note);
   };
 
   const addPerformer = (result: PerformerResult) => {
@@ -374,9 +384,12 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
   return (
     <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
-      <input type="hidden" value={scene.id} {...register("id")} />
-      <Row>
-        <Col xs={10}>
+      <Tabs
+        activeKey={activeTab}
+        onSelect={(key) => key && setActiveTab(key)}
+        className="row"
+      >
+        <Tab eventKey="details" title="Details" className="col-xl-9">
           <Form.Row>
             <Form.Group controlId="title" className="col-8">
               <Form.Label>Title</Form.Label>
@@ -501,11 +514,41 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             <TagSelect tags={scene.tags} onChange={onTagChange} />
           </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Images</Form.Label>
-            <EditImages control={control} maxImages={1} />
-          </Form.Group>
+          <Form.Row className="mt-1">
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button className="mr-1" onClick={() => setActiveTab("images")}>
+              Next
+            </Button>
+          </Form.Row>
+        </Tab>
+        <Tab eventKey="images" title="Images">
+          <Form.Row>
+            <EditImages control={control} />
+          </Form.Row>
 
+          <Form.Row className="mt-1">
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="mr-1"
+              onClick={() => setActiveTab("fingerprints")}
+            >
+              Next
+            </Button>
+          </Form.Row>
+        </Tab>
+        <Tab eventKey="fingerprints" title="Fingerprints">
           <Form.Group>
             <Form.Label>Fingerprints</Form.Label>
             {renderFingerprints()}
@@ -546,24 +589,45 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             </Button>
           </Form.Group>
 
-          <Form.Group className="row">
-            <Col>
-              <Button type="submit">Save</Button>
-            </Col>
-            <Button type="reset" variant="secondary" className="ml-auto">
-              Reset
-            </Button>
-            <Link
-              to={createHref(scene.id ? ROUTE_SCENE : ROUTE_SCENES, scene)}
-              className="ml-2"
+          <Form.Row className="mt-1">
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
             >
-              <Button variant="danger" onClick={() => history.goBack()}>
-                Cancel
-              </Button>
-            </Link>
-          </Form.Group>
-        </Col>
-      </Row>
+              Cancel
+            </Button>
+            <Button className="mr-1" onClick={() => setActiveTab("confirm")}>
+              Next
+            </Button>
+          </Form.Row>
+        </Tab>
+        <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
+          <Form.Row className="my-4">
+            <Col md={{ span: 8, offset: 4 }}>
+              <EditNote register={register} error={errors.note} />
+            </Col>
+          </Form.Row>
+          <Form.Row className="mt-2">
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled
+              className="d-none"
+              aria-hidden="true"
+            />
+            <Button type="submit" disabled={saving}>
+              Submit Edit
+            </Button>
+          </Form.Row>
+        </Tab>
+      </Tabs>
     </Form>
   );
 };

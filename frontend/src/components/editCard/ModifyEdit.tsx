@@ -3,10 +3,13 @@ import React from "react";
 import {
   Edits_queryEdits_edits_details as Details,
   Edits_queryEdits_edits_details_PerformerEdit,
+  Edits_queryEdits_edits_details_SceneEdit,
+  Edits_queryEdits_edits_details_SceneEdit_added_performers,
   Edits_queryEdits_edits_details_StudioEdit,
   Edits_queryEdits_edits_details_TagEdit,
   Edits_queryEdits_edits_old_details as OldDetails,
   Edits_queryEdits_edits_old_details_PerformerEdit,
+  Edits_queryEdits_edits_old_details_SceneEdit,
   Edits_queryEdits_edits_old_details_StudioEdit,
   Edits_queryEdits_edits_old_details_TagEdit,
   Edits_queryEdits_edits_options as Options,
@@ -21,13 +24,29 @@ import {
   formatFuzzyDateComponents,
   isStudioDetails,
   isStudioOldDetails,
+  isSceneDetails,
+  isSceneOldDetails,
+  studioHref,
+  performerHref,
+  tagHref,
+  createHref,
+  formatDuration,
 } from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
 import URLChangeRow from "src/components/urlChangeRow";
 import CategoryChangeRow from "src/components/categoryChangeRow";
-import { Icon } from "src/components/fragments";
-import StudioChangeRow from "../studioChangeRow";
+import {
+  GenderIcon,
+  Icon,
+  PerformerName,
+  TagLink,
+} from "src/components/fragments";
+import { Link } from "react-router-dom";
+import { ROUTE_SCENES } from "src/constants";
+import { FingerprintAlgorithm } from "src/graphql";
+import LinkedChangeRow from "../linkedChangeRow";
+import ListChangeRow from "../listChangeRow";
 
 interface ModifyEditProps {
   details: Details | null;
@@ -248,18 +267,153 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
           oldValue={oldStudioDetails?.name}
           showDiff={showDiff}
         />
-        <StudioChangeRow
-          newStudioID={studioDetails.parent?.id}
-          oldStudioID={oldStudioDetails?.parent?.id}
+        <LinkedChangeRow
+          name="Network"
+          newName={studioDetails.parent?.name}
+          newLink={studioDetails.parent && studioHref(studioDetails.parent)}
+          oldName={studioDetails.parent?.name}
+          oldLink={
+            oldStudioDetails?.parent && studioHref(oldStudioDetails.parent)
+          }
           showDiff={showDiff}
         />
         <URLChangeRow
           newURLs={studioDetails.added_urls}
           oldURLs={studioDetails.removed_urls}
+          showDiff={showDiff}
         />
         <ImageChangeRow
           newImages={studioDetails?.added_images}
           oldImages={studioDetails?.removed_images}
+        />
+      </>
+    );
+  }
+
+  function renderPerformer(
+    appearance: Edits_queryEdits_edits_details_SceneEdit_added_performers
+  ) {
+    return (
+      <Link
+        key={appearance.performer.id}
+        to={performerHref(appearance.performer)}
+        className="scene-performer"
+      >
+        <GenderIcon gender={appearance.performer.gender} />
+        <PerformerName performer={appearance.performer} as={appearance.as} />
+      </Link>
+    );
+  }
+
+  function renderTag(tag: { id: string; name: string }) {
+    return (
+      <li key={tag.name}>
+        <TagLink title={tag.name} link={tagHref(tag)} />
+      </li>
+    );
+  }
+
+  function renderFingerprint(fingerprint: {
+    hash: string;
+    duration: number;
+    algorithm: FingerprintAlgorithm;
+  }) {
+    return (
+      <li key={fingerprint.hash}>
+        <Link
+          to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
+        >
+          {fingerprint.algorithm}: {fingerprint.hash}
+        </Link>
+        <span title={formatDuration(fingerprint.duration)}>
+          {" "}
+          ({fingerprint.duration})
+        </span>
+      </li>
+    );
+  }
+
+  function renderSceneDetails(
+    sceneDetails: Edits_queryEdits_edits_details_SceneEdit,
+    oldSceneDetails?: Edits_queryEdits_edits_old_details_SceneEdit
+  ) {
+    return (
+      <>
+        {sceneDetails.title && (
+          <ChangeRow
+            name="Title"
+            newValue={sceneDetails.title}
+            oldValue={oldSceneDetails?.title}
+            showDiff={showDiff}
+          />
+        )}
+        <ChangeRow
+          name="Date"
+          newValue={sceneDetails.date}
+          oldValue={oldSceneDetails?.date}
+          showDiff={showDiff}
+        />
+        <ChangeRow
+          name="Duration"
+          newValue={sceneDetails.duration}
+          oldValue={oldSceneDetails?.duration}
+          showDiff={showDiff}
+        />
+        <ListChangeRow
+          name="Performers"
+          added={sceneDetails.added_performers}
+          removed={sceneDetails.removed_performers}
+          renderItem={renderPerformer}
+          getKey={(o) => o.performer.id}
+          showDiff={showDiff}
+        />
+        <LinkedChangeRow
+          name="Studio"
+          newName={sceneDetails.studio?.name}
+          newLink={sceneDetails.studio && studioHref(sceneDetails.studio)}
+          oldName={oldSceneDetails?.studio?.name}
+          oldLink={
+            oldSceneDetails?.studio && studioHref(oldSceneDetails?.studio)
+          }
+          showDiff={showDiff}
+        />
+        <URLChangeRow
+          newURLs={sceneDetails.added_urls}
+          oldURLs={oldSceneDetails?.removed_urls}
+          showDiff={showDiff}
+        />
+        <ChangeRow
+          name="Details"
+          newValue={sceneDetails.details}
+          oldValue={oldSceneDetails?.details}
+          showDiff={showDiff}
+        />
+        <ChangeRow
+          name="Director"
+          newValue={sceneDetails.director}
+          oldValue={oldSceneDetails?.director}
+          showDiff={showDiff}
+        />
+        <ListChangeRow
+          name="Tags"
+          added={sceneDetails.added_tags}
+          removed={sceneDetails.removed_tags}
+          renderItem={renderTag}
+          getKey={(o) => o.id}
+          showDiff={showDiff}
+        />
+        <ImageChangeRow
+          newImages={sceneDetails?.added_images}
+          oldImages={sceneDetails?.removed_images}
+          showDiff={showDiff}
+        />
+        <ListChangeRow
+          name="Fingerprints"
+          added={sceneDetails.added_fingerprints}
+          removed={sceneDetails.removed_fingerprints}
+          renderItem={renderFingerprint}
+          getKey={(o) => o.hash}
+          showDiff={showDiff}
         />
       </>
     );
@@ -284,6 +438,13 @@ const ModifyEdit: React.FC<ModifyEditProps> = ({
     (isStudioOldDetails(oldDetails) || oldDetails === undefined)
   ) {
     return renderStudioDetails(details, oldDetails);
+  }
+
+  if (
+    isSceneDetails(details) &&
+    (isSceneOldDetails(oldDetails) || oldDetails === undefined)
+  ) {
+    return renderSceneDetails(details, oldDetails);
   }
 
   return null;

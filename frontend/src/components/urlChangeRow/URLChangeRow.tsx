@@ -11,30 +11,37 @@ interface URL {
 interface URLChangeRowProps {
   newURLs?: URL[] | null;
   oldURLs?: URL[] | null;
+  showDiff?: boolean;
 }
 
-const URLChangeRow: React.FC<URLChangeRowProps> = ({ newURLs, oldURLs }) =>
+const URLChangeRow: React.FC<URLChangeRowProps> = ({
+  newURLs,
+  oldURLs,
+  showDiff,
+}) =>
   (newURLs ?? []).length > 0 || (oldURLs ?? []).length > 0 ? (
     <Row className={CLASSNAME}>
       <b className="col-2 text-right">URLs</b>
-      <div className="col-5">
-        {(oldURLs ?? []).length > 0 && (
-          <>
-            <h6>Removed</h6>
-            <div className={CLASSNAME}>
-              <ul>
-                {(oldURLs ?? []).map((u) => (
-                  <li key={u.url}>{u.url}</li>
-                ))}
-              </ul>
-            </div>
-          </>
-        )}
-      </div>
+      {showDiff && (
+        <div className="col-5">
+          {(oldURLs ?? []).length > 0 && (
+            <>
+              <h6>Removed</h6>
+              <div className={CLASSNAME}>
+                <ul>
+                  {(oldURLs ?? []).map((u) => (
+                    <li key={u.url}>{u.url}</li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+        </div>
+      )}
       <span className="col-5">
         {(newURLs ?? []).length > 0 && (
           <>
-            <h6>Added</h6>
+            {showDiff && <h6>Added</h6>}
             <div className={CLASSNAME}>
               <ul>
                 {(newURLs ?? []).map((u) => (

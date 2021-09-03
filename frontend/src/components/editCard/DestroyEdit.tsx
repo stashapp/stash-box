@@ -2,7 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits_target as Target } from "src/graphql/definitions/Edits";
-import { isValidEditTarget, getEditTargetRoute } from "src/utils";
+import {
+  isValidEditTarget,
+  getEditTargetRoute,
+  getEditTargetName,
+} from "src/utils";
 
 interface DestroyProps {
   target?: Target | null;
@@ -18,7 +22,9 @@ const DestroyEdit: React.FC<DestroyProps> = ({ target }) => {
       <div className="row">
         <b className="col-2 text-right">Deleting: </b>
         <Link to={route}>
-          <span className="EditDiff bg-danger">{target?.name}</span>
+          <span className="EditDiff bg-danger">
+            {getEditTargetName(target)}
+          </span>
         </Link>
       </div>
     </div>

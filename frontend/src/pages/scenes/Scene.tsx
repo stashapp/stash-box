@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
-import { Link, useHistory, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 
-import { useScene, useDeleteScene } from "src/graphql";
+import { useScene } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   isAdmin,
@@ -15,31 +15,26 @@ import {
   formatDuration,
   formatDateTime,
 } from "src/utils";
-import { ROUTE_SCENE_EDIT, ROUTE_SCENES } from "src/constants/route";
+import {
+  ROUTE_SCENE_EDIT,
+  ROUTE_SCENES,
+  ROUTE_SCENE_DELETE,
+} from "src/constants/route";
 import {
   GenderIcon,
   LoadingIndicator,
   TagLink,
   PerformerName,
 } from "src/components/fragments";
-import DeleteButton from "src/components/deleteButton";
 
 const SceneComponent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const history = useHistory();
   const { loading, data } = useScene({ id });
-  const [deleteScene, { loading: deleting }] = useDeleteScene();
   const auth = useContext(AuthContext);
 
   if (loading) return <LoadingIndicator message="Loading scene..." />;
   if (!data?.findScene) return <div>Scene not found!</div>;
   const scene = data.findScene;
-
-  const handleDelete = (): void => {
-    deleteScene({ variables: { input: { id: scene.id } } }).then(() =>
-      history.push(ROUTE_SCENES)
-    );
-  };
 
   const performers = data.findScene.performers
     .map((performance) => {
@@ -99,12 +94,12 @@ const SceneComponent: React.FC = () => {
                 <Link to={createHref(ROUTE_SCENE_EDIT, { id })}>
                   <Button>Edit</Button>
                 </Link>
-                <DeleteButton
-                  onClick={handleDelete}
+                <Link
+                  to={createHref(ROUTE_SCENE_DELETE, { id })}
                   className="ml-2"
-                  disabled={deleting}
-                  message="Do you want to delete scene? This cannot be undone."
-                />
+                >
+                  <Button variant="danger">Delete</Button>
+                </Link>
               </>
             )}
           </div>
