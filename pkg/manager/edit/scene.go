@@ -189,7 +189,7 @@ func (m *SceneEditProcessor) diffPerformers(sceneEdit *models.SceneEditData, sce
 		return err
 	}
 
-	sceneEdit.New.AddedPerformers, sceneEdit.New.AddedPerformers = performerAppearanceCompare(newPerformers, existingPerformers)
+	sceneEdit.New.AddedPerformers, sceneEdit.New.RemovedPerformers = performerAppearanceCompare(newPerformers, existingPerformers)
 	return nil
 }
 
@@ -444,35 +444,16 @@ func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData) (*models.Sc
 	if err != nil {
 		return nil, err
 	}
-	newScene := models.Scene{
+	newScene := &models.Scene{
 		ID:        UUID,
 		CreatedAt: models.SQLiteTimestamp{Timestamp: now},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
 	}
-	newScene.CopyFromSceneEdit(*data.New, &models.SceneEdit{})
 
 	qb := m.fac.Scene()
-	jqb := m.fac.Joins()
-	scene, err := qb.Create(newScene)
-	if err != nil {
-		return nil, err
-	}
 
-	if len(data.New.AddedUrls) > 0 {
-		urls := models.CreateSceneURLs(UUID, data.New.AddedUrls)
-		if err := qb.CreateURLs(urls); err != nil {
-			return nil, err
-		}
-	}
-
-	if len(data.New.AddedImages) > 0 {
-		images := models.CreateSceneImages(UUID, data.New.AddedImages)
-		if err := jqb.CreateScenesImages(images); err != nil {
-			return nil, err
-		}
-	}
-
-	return scene, nil
+	const create = true
+	return qb.ApplyEdit(newScene, create, data)
 }
 
 func (m *SceneEditProcessor) applyModify(scene *models.Scene, data *models.SceneEditData) (*models.Scene, error) {
@@ -481,7 +462,8 @@ func (m *SceneEditProcessor) applyModify(scene *models.Scene, data *models.Scene
 	}
 
 	qb := m.fac.Scene()
-	return qb.ApplyModifyEdit(scene, data)
+	const create = false
+	return qb.ApplyEdit(scene, create, data)
 }
 
 func (m *SceneEditProcessor) applyDestroy(scene *models.Scene) (*models.Scene, error) {

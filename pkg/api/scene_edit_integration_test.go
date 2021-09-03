@@ -21,27 +21,7 @@ func createSceneEditTestRunner(t *testing.T) *sceneEditTestRunner {
 }
 
 func (s *sceneEditTestRunner) testCreateSceneEdit() {
-	as := "as"
-	createdPerformer, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
-	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
-
-	sceneEditDetailsInput := s.createSceneEditDetailsInput()
-	sceneEditDetailsInput.Performers = []*models.PerformerAppearanceInput{
-		{
-			PerformerID: createdPerformer.ID.String(),
-			As:          &as,
-		},
-	}
-	sceneEditDetailsInput.TagIds = []string{createdTag.ID.String()}
-	sceneEditDetailsInput.Fingerprints = []*models.FingerprintEditInput{
-		s.generateSceneFingerprint(),
-	}
+	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
 	if err == nil {
@@ -177,16 +157,19 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	}
 
 	tags, _ := resolver.Tags(s.ctx, scene)
-	var tagIds []string
-	for _, tag := range tags {
-		tagIds = append(tagIds, tag.ID.String())
-	}
-	if !reflect.DeepEqual(input.TagIds, tagIds) {
-		s.fieldMismatch(input.TagIds, tagIds, "Tags")
+	if !compareTags(input.TagIds, tags) {
+		s.fieldMismatch(input.TagIds, tags, "Tags")
 	}
 
-	// TODO - performers
-	// TODO - fingerprints
+	performers, _ := resolver.Performers(s.ctx, scene)
+	if !comparePerformers(input.Performers, performers) {
+		s.fieldMismatch(input.Performers, performers, "Performers")
+	}
+
+	fingerprints, _ := resolver.Fingerprints(s.ctx, scene)
+	if !compareFingerprints(input.Fingerprints, fingerprints) {
+		s.fieldMismatch(input.Fingerprints, fingerprints, "Fingerprints")
+	}
 }
 
 func (s *sceneEditTestRunner) testDestroySceneEdit() {
@@ -232,7 +215,7 @@ func (s *sceneEditTestRunner) testMergeSceneEdit() {
 
 	createdMergeScene, err := s.createTestScene(nil)
 
-	sceneEditDetailsInput := s.createSceneEditDetailsInput()
+	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	id := createdPrimaryScene.ID.String()
 	mergeSources := []string{createdMergeScene.ID.String()}
 	editInput := models.EditInput{
@@ -266,7 +249,7 @@ func (s *sceneEditTestRunner) verifyMergeSceneEdit(originalScene *models.Scene, 
 }
 
 func (s *sceneEditTestRunner) testApplyCreateSceneEdit() {
-	sceneEditDetailsInput := s.createSceneEditDetailsInput()
+	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
 	appliedEdit, err := s.applyEdit(edit.ID.String())
 	if err == nil {
@@ -309,7 +292,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 	}
 
 	// Create edit that replaces all metadata for the scene
-	sceneEditDetailsInput := s.createSceneEditDetailsInput()
+	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	id := createdScene.ID.String()
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
@@ -417,7 +400,7 @@ func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
 		return
 	}
 
-	sceneEditDetailsInput := s.createSceneEditDetailsInput()
+	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	id := mergeTarget.ID.String()
 	mergeSources := []string{mergeSource1.ID.String(), mergeSource2.ID.String()}
 

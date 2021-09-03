@@ -769,6 +769,52 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 	}
 }
 
+func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsInput {
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		s.t.Errorf("Error creating performer: %s", err.Error())
+		return nil
+	}
+	createdTag, err := s.createTestTag(nil)
+	if err != nil {
+		s.t.Errorf("Error creating tag: %s", err.Error())
+		return nil
+	}
+
+	title := s.generateSceneName()
+	details := "Details"
+	date := "2000-02-03"
+	duration := 123
+	director := "Director"
+	as := "Alias"
+
+	return &models.SceneEditDetailsInput{
+		Title:   &title,
+		Details: &details,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Date: &date,
+		Performers: []*models.PerformerAppearanceInput{
+			{
+				PerformerID: createdPerformer.ID.String(),
+				As:          &as,
+			},
+		},
+		TagIds: []string{
+			createdTag.ID.String(),
+		},
+		Fingerprints: []*models.FingerprintEditInput{
+			s.generateSceneFingerprint(),
+		},
+		Duration: &duration,
+		Director: &director,
+	}
+}
+
 func (s *testRunner) createTestSceneEdit(operation models.OperationEnum, detailsInput *models.SceneEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
 	s.t.Helper()
 

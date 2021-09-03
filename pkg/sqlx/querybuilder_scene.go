@@ -558,12 +558,23 @@ func (qb *sceneQueryBuilder) UpdateTags(sceneID uuid.UUID, updatedJoins models.S
 }
 
 func (qb *sceneQueryBuilder) UpdatePerformers(sceneID uuid.UUID, updatedJoins models.PerformersScenes) error {
-	return qb.dbi.ReplaceJoins(sceneTagTable, sceneID, &updatedJoins)
+	return qb.dbi.ReplaceJoins(scenePerformerTable, sceneID, &updatedJoins)
 }
 
-func (qb *sceneQueryBuilder) ApplyModifyEdit(scene *models.Scene, data *models.SceneEditData) (*models.Scene, error) {
-	scene.CopyFromSceneEdit(*data.New, data.Old)
-	updatedScene, err := qb.Update(*scene)
+func (qb *sceneQueryBuilder) ApplyEdit(scene *models.Scene, create bool, data *models.SceneEditData) (*models.Scene, error) {
+	old := data.Old
+	if old == nil {
+		old = &models.SceneEdit{}
+	}
+	scene.CopyFromSceneEdit(*data.New, old)
+
+	var updatedScene *models.Scene
+	var err error
+	if create {
+		updatedScene, err = qb.Create(*scene)
+	} else {
+		updatedScene, err = qb.Update(*scene)
+	}
 	if err != nil {
 		return nil, err
 	}
