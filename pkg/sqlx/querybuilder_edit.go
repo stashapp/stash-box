@@ -333,3 +333,20 @@ func (qb *editQueryBuilder) FindByStudioID(id uuid.UUID) ([]*models.Edit, error)
 func (qb *editQueryBuilder) FindBySceneID(id uuid.UUID) ([]*models.Edit, error) {
 	return qb.findByJoin(id, editSceneTable, "scene_id")
 }
+
+func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPeriod int, minimumVotes int) ([]*models.Edit, error) {
+	query := `
+		SELECT edits.* FROM edits
+		WHERE status = 'PENDING'
+		AND (
+			created_at <= (now()::time - INTERVAL ? minute)
+			OR (
+				VOTES >= ?
+				AND created_at <= (now()::time - INTERVAL ? minute)
+			)
+		)
+	`
+
+	args := []interface{}{votingPeriod, minimumVotes, minimumVotingPeriod}
+	return qb.queryEdits(query, args)
+}

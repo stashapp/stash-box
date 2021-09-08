@@ -45,6 +45,8 @@ type config struct {
 	VoteApplicationThreshold int `mapstructure:"vote_application_threshold"`
 	// Duration, in seconds, of the voting period
 	VotingPeriod int `mapstructure:"voting_period"`
+	// Interval between checks for completed voting periods
+	VoteCronInterval string `mapstructure:"vote_cron_interval"`
 
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
@@ -92,6 +94,8 @@ var C = &config{
 	ImageBackend:             string(FileBackend),
 	PHashDistance:            0,
 	VoteApplicationThreshold: 3,
+	VoteCronInterval:         "5m",
+	VotingPeriod:             345600,
 }
 
 func GetDatabasePath() string {
@@ -307,4 +311,12 @@ func GetVotePromotionThreshold() *int {
 
 func GetVoteApplicationThreshold() int {
 	return C.VoteApplicationThreshold
+}
+
+func GetVotingPeriod() int {
+	return C.VotingPeriod
+}
+
+func GetVoteCronInterval() string {
+	return C.VoteCronInterval
 }
