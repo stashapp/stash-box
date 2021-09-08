@@ -2,6 +2,7 @@ package edit
 
 import (
 	"errors"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -163,6 +164,13 @@ func IsVotingThresholdMet(fac models.Repo, edit *models.Edit) (bool, error) {
 
 		for _, vote := range votes {
 			if vote.Vote == models.VoteTypeEnumReject.String() {
+				return false, nil
+			}
+		}
+
+		// For destructive edits we check if they've been open for a minimum period before applying
+		if edit.Operation == models.OperationEnumDestroy.String() || edit.Operation == models.OperationEnumMerge.String() {
+			if time.Now().Sub(edit.CreatedAt.Timestamp).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
 				return false, nil
 			}
 		}

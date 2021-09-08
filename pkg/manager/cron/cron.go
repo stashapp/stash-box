@@ -22,7 +22,7 @@ func (c EditCron) processEdits() {
 	}
 	defer sem.Release(1)
 
-	edits, err := c.rfp.Repo().Edit().FindCompletedEdits(config.GetVotingPeriod(), config.GetVotingPeriod(), config.GetVoteApplicationThreshold())
+	edits, err := c.rfp.Repo().Edit().FindCompletedEdits(config.GetVotingPeriod(), config.GetMinDestructiveVotingPeriod(), config.GetVoteApplicationThreshold())
 	if err != nil {
 		logger.Errorf("Edit cronjob failed to fetch completed edits: %s", err.Error())
 		return
