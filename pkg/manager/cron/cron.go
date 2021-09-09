@@ -68,5 +68,6 @@ func Init(rfp api.RepoProvider) {
 		}
 
 		c.Start()
+		logger.Debugf("Edit cronjob initialized to run every %s", interval)
 	}
 }

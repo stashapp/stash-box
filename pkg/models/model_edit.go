@@ -106,6 +106,11 @@ func (e *Edit) Reject() {
 	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
+func (e *Edit) Fail() {
+	e.Status = VoteStatusEnumFailed.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
 func (e *Edit) SetData(data interface{}) error {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)

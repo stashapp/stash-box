@@ -467,6 +467,14 @@ func getDefaultUserRoles() []models.RoleEnum {
 func PromoteUserVoteRights(fac models.Repo, userID uuid.UUID, threshold int) error {
 	qb := fac.User()
 
+	user, err := qb.Find(userID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return errors.New("user not found: " + userID.String())
+	}
+
 	roles, err := qb.GetRoles(userID)
 	if err != nil {
 		return err

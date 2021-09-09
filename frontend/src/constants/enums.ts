@@ -92,6 +92,7 @@ export const EditStatusTypes: EnumDictionary<VoteStatusEnum, string> = {
   [VoteStatusEnum.IMMEDIATE_REJECTED]: "Cancelled",
   [VoteStatusEnum.ACCEPTED]: "Accepted",
   [VoteStatusEnum.REJECTED]: "Rejected",
+  [VoteStatusEnum.FAILED]: "Failed",
 };
 
 export const VoteTypes: EnumDictionary<VoteTypeEnum, string> = {

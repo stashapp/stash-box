@@ -52,7 +52,7 @@ type editApplyer interface {
 	apply() error
 }
 
-func validatePendingEdit(edit *models.Edit) error {
+func validateEditPresence(edit *models.Edit) error {
 	if edit == nil {
 		return errors.New("Edit not found")
 	}
@@ -61,10 +61,14 @@ func validatePendingEdit(edit *models.Edit) error {
 		return errors.New("Edit already applied")
 	}
 
+	return nil
+}
+
+func validateEditPrerequisites(fac models.Repo, edit *models.Edit) error {
 	var status models.VoteStatusEnum
 	utils.ResolveEnumString(edit.Status, &status)
 	if status != models.VoteStatusEnumPending {
-		return errors.New("Invalid vote status: " + edit.Status)
+		return errors.New("invalid vote status: " + edit.Status)
 	}
 
 	return nil
@@ -79,7 +83,11 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 			return err
 		}
 
-		if err := validatePendingEdit(edit); err != nil {
+		if err := validateEditPresence(edit); err != nil {
+			return err
+		}
+		if err := validateEditPrerequisites(fac, edit); err != nil {
+			edit.Fail()
 			return err
 		}
 
@@ -137,7 +145,11 @@ func RejectEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit
 			return err
 		}
 
-		if err := validatePendingEdit(edit); err != nil {
+		if err := validateEditPresence(edit); err != nil {
+			return err
+		}
+		if err := validateEditPrerequisites(fac, edit); err != nil {
+			edit.Fail()
 			return err
 		}
 
