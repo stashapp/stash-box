@@ -84,6 +84,12 @@ func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
 	return ret
 }
 
+func (e *Edit) Accept() {
+	e.Status = VoteStatusEnumAccepted.String()
+	e.Applied = true
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
 func (e *Edit) ImmediateAccept() {
 	e.Status = VoteStatusEnumImmediateAccepted.String()
 	e.Applied = true
@@ -92,6 +98,11 @@ func (e *Edit) ImmediateAccept() {
 
 func (e *Edit) ImmediateReject() {
 	e.Status = VoteStatusEnumImmediateRejected.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
+func (e *Edit) Reject() {
+	e.Status = VoteStatusEnumRejected.String()
 	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 

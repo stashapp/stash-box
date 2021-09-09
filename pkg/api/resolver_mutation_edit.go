@@ -2,13 +2,11 @@ package api
 
 import (
 	"context"
-	"errors"
 
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/manager/edit"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
@@ -216,7 +214,7 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 
 		thresholdMet, err := edit.IsVotingThresholdMet(fac, voteEdit)
 		if thresholdMet {
-			voteEdit, err = edit.ApplyEdit(fac, editID)
+			voteEdit, err = edit.ApplyEdit(fac, editID, false)
 			return err
 		}
 
@@ -266,44 +264,10 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 		return nil, err
 	}
 
-	var updatedEdit *models.Edit
+	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
-	err := fac.WithTxn(func() error {
-		editID, _ := uuid.FromString(input.ID)
-		eqb := fac.Edit()
-		edit, err := eqb.Find(editID)
-		if err != nil {
-			return err
-		}
-		if edit == nil {
-			return errors.New("Edit not found")
-		}
 
-		if err = validateOwner(ctx, edit.UserID); err != nil {
-			return err
-		}
-
-		var status models.VoteStatusEnum
-		utils.ResolveEnumString(edit.Status, &status)
-		if status != models.VoteStatusEnumPending {
-			return errors.New("Invalid vote status: " + edit.Status)
-		}
-
-		edit.ImmediateReject()
-		updatedEdit, err = eqb.Update(*edit)
-
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return updatedEdit, nil
+	return edit.RejectEdit(fac, editID, true)
 }
 
 func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
@@ -314,5 +278,5 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
 
-	return edit.ApplyEdit(fac, editID)
+	return edit.ApplyEdit(fac, editID, true)
 }

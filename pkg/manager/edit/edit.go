@@ -52,7 +52,25 @@ type editApplyer interface {
 	apply() error
 }
 
-func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
+func validatePendingEdit(edit *models.Edit) error {
+	if edit == nil {
+		return errors.New("Edit not found")
+	}
+
+	if edit.Applied {
+		return errors.New("Edit already applied")
+	}
+
+	var status models.VoteStatusEnum
+	utils.ResolveEnumString(edit.Status, &status)
+	if status != models.VoteStatusEnumPending {
+		return errors.New("Invalid vote status: " + edit.Status)
+	}
+
+	return nil
+}
+
+func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit, error) {
 	var updatedEdit *models.Edit
 	err := fac.WithTxn(func() error {
 		eqb := fac.Edit()
@@ -60,18 +78,9 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 		if err != nil {
 			return err
 		}
-		if edit == nil {
-			return errors.New("Edit not found")
-		}
 
-		if edit.Applied {
-			return errors.New("Edit already applied")
-		}
-
-		var status models.VoteStatusEnum
-		utils.ResolveEnumString(edit.Status, &status)
-		if status != models.VoteStatusEnumPending {
-			return errors.New("Invalid vote status: " + edit.Status)
+		if err := validatePendingEdit(edit); err != nil {
+			return err
 		}
 
 		var operation models.OperationEnum
@@ -97,7 +106,11 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 			return err
 		}
 
-		edit.ImmediateAccept()
+		if immediate {
+			edit.ImmediateAccept()
+		} else {
+			edit.Accept()
+		}
 		updatedEdit, err = eqb.Update(*edit)
 
 		if err != nil {
@@ -112,11 +125,34 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 		return err
 	})
 
-	if err != nil {
-		return nil, err
-	}
+	return updatedEdit, err
+}
 
-	return updatedEdit, nil
+func RejectEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit, error) {
+	var updatedEdit *models.Edit
+	err := fac.WithTxn(func() error {
+		eqb := fac.Edit()
+		edit, err := eqb.Find(editID)
+		if err != nil {
+			return err
+		}
+
+		if err := validatePendingEdit(edit); err != nil {
+			return err
+		}
+
+		if immediate {
+			edit.ImmediateReject()
+		} else {
+			edit.Reject()
+		}
+
+		updatedEdit, err = eqb.Update(*edit)
+
+		return err
+	})
+
+	return updatedEdit, err
 }
 
 func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.URL, missing []*models.URL) {

@@ -146,6 +146,100 @@ func TestUnauthorisedEditEdit(t *testing.T) {
 	pt.testUnauthorisedEditEdit()
 }
 
+func (s *editTestRunner) testEditVoteApplication() {
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	if err != nil {
+		return
+	}
+
+	for i := 1; i <= 3; i++ {
+		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		if err != nil {
+			return
+		}
+		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+			ID:   createdEdit.ID.String(),
+			Vote: models.VoteTypeEnumAccept,
+		})
+	}
+
+	editID := createdEdit.ID.String()
+	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+
+	s.verifyEditApplied(updatedEdit)
+}
+
+func (s *editTestRunner) verifyEditApplied(edit *models.Edit) {
+	s.verifyEditStatus(models.VoteStatusEnumAccepted.String(), edit)
+}
+
+func (s *editTestRunner) testEditVoteNotApplying() {
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	if err != nil {
+		return
+	}
+
+	for i := 1; i <= 3; i++ {
+		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		if err != nil {
+			return
+		}
+		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+
+		vote := models.VoteTypeEnumAccept
+		if i == 3 {
+			vote = models.VoteTypeEnumReject
+		}
+		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+			ID:   createdEdit.ID.String(),
+			Vote: vote,
+		})
+	}
+
+	editID := createdEdit.ID.String()
+	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+
+	s.verifyEditPending(updatedEdit)
+}
+
+func (s *editTestRunner) verifyEditPending(edit *models.Edit) {
+	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
+}
+
+func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
+	createdTag, err := s.createTestTag(nil)
+	if err != nil {
+		return
+	}
+	tagID := createdTag.ID.String()
+	input := models.EditInput{
+		ID:        &tagID,
+		Operation: models.OperationEnumDestroy,
+	}
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumDestroy, nil, &input)
+	if err != nil {
+		return
+	}
+
+	for i := 1; i <= 3; i++ {
+		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		if err != nil {
+			return
+		}
+		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+			ID:   createdEdit.ID.String(),
+			Vote: models.VoteTypeEnumAccept,
+		})
+	}
+
+	editID := createdEdit.ID.String()
+	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+
+	s.verifyEditPending(updatedEdit)
+}
+
 func TestUnauthorisedApplyEditAdmin(t *testing.T) {
 	pt := &editTestRunner{
 		testRunner: *asModify(t),
@@ -171,8 +265,21 @@ func TestEditComment(t *testing.T) {
 }
 
 func TestVotePermissionsPromotion(t *testing.T) {
-	pt := &editTestRunner{
-		testRunner: *asAdmin(t),
-	}
+	pt := createEditTestRunner(t)
 	pt.testVotePermissionsPromotion()
+}
+
+func TestEditVoteApplication(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testEditVoteApplication()
+}
+
+func TestEditVoteNotApplying(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testEditVoteNotApplying()
+}
+
+func TestDestructiveEditsNotAutoApplied(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testDestructiveEditsNotAutoApplied()
 }

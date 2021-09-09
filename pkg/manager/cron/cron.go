@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/edit"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
 var sem = semaphore.NewWeighted(1)
@@ -31,7 +32,23 @@ func (c EditCron) processEdits() {
 	logger.Debugf("Edit cronjob running for %d edits", len(edits))
 	for _, e := range edits {
 		if err := c.rfp.Repo().WithTxn(func() error {
-			_, err := edit.ApplyEdit(c.rfp.Repo(), e.ID)
+			applyEdit := false
+			if e.Operation == models.OperationEnumDestroy.String() || e.Operation == models.OperationEnumMerge.String() {
+				if e.VoteCount > 0 {
+					applyEdit = true
+				}
+			} else {
+				if e.VoteCount >= 0 {
+					applyEdit = true
+				}
+			}
+
+			var err error
+			if applyEdit {
+				_, err = edit.ApplyEdit(c.rfp.Repo(), e.ID, false)
+			} else {
+				_, err = edit.RejectEdit(c.rfp.Repo(), e.ID, false)
+			}
 			return err
 		}); err != nil {
 			logger.Errorf("Edit cronjob failed to apply edit %s: %s", e.ID.String(), err.Error())
