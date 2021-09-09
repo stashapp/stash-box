@@ -267,6 +267,15 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
 
+	e, err := fac.Edit().Find(editID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = validateOwner(ctx, e.UserID); err != nil {
+		return nil, err
+	}
+
 	return edit.RejectEdit(fac, editID, true)
 }
 
