@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -103,7 +104,12 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 			return err
 		}
 
-		return nil
+		userPromotionThreshold := config.GetVotePromotionThreshold()
+		if userPromotionThreshold != nil {
+			err = user.PromoteUserVoteRights(fac, updatedEdit.UserID, *userPromotionThreshold)
+		}
+
+		return err
 	})
 
 	if err != nil {
@@ -170,7 +176,7 @@ func IsVotingThresholdMet(fac models.Repo, edit *models.Edit) (bool, error) {
 
 		// For destructive edits we check if they've been open for a minimum period before applying
 		if edit.Operation == models.OperationEnumDestroy.String() || edit.Operation == models.OperationEnumMerge.String() {
-			if time.Now().Sub(edit.CreatedAt.Timestamp).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
+			if time.Since(edit.CreatedAt.Timestamp).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
 				return false, nil
 			}
 		}

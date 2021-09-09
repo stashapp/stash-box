@@ -4,6 +4,7 @@
 package api_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stashapp/stash-box/pkg/api"
@@ -100,6 +101,44 @@ func (s *editTestRunner) verifyEditComment(edit *models.Edit, comment string) {
 	}
 }
 
+func (s *editTestRunner) testVotePermissionsPromotion() {
+	createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
+	if err != nil {
+		return
+	}
+
+	for i := 1; i <= 10; i++ {
+		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+		if err != nil {
+			return
+		}
+		s.ctx = context.WithValue(s.ctx, api.ContextUser, userDB.adminRoles)
+		_, err = s.applyEdit(createdEdit.ID.String())
+		if err != nil {
+			return
+		}
+	}
+
+	userID := createdUser.ID.String()
+	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
+	s.verifyUserRolePromotion(user)
+}
+
+func (s *editTestRunner) verifyUserRolePromotion(user *models.User) {
+	roles, _ := s.resolver.User().Roles(s.ctx, user)
+
+	hasVotePermission := false
+	for _, role := range roles {
+		if role == models.RoleEnumVote {
+			hasVotePermission = true
+		}
+	}
+	if !hasVotePermission {
+		s.fieldMismatch(hasVotePermission, true, "User has vote permission")
+	}
+}
+
 func TestUnauthorisedEditEdit(t *testing.T) {
 	pt := &editTestRunner{
 		testRunner: *asRead(t),
@@ -129,4 +168,11 @@ func TestOwnerCancelEdit(t *testing.T) {
 func TestEditComment(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testEditComment()
+}
+
+func TestVotePermissionsPromotion(t *testing.T) {
+	pt := &editTestRunner{
+		testRunner: *asAdmin(t),
+	}
+	pt.testVotePermissionsPromotion()
 }

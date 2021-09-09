@@ -485,7 +485,7 @@ func PromoteUserVoteRights(fac models.Repo, userID uuid.UUID, threshold int) err
 			return nil
 		}
 
-		if editCount > threshold {
+		if editCount >= threshold {
 			userRoles := models.CreateUserRoles(userID, []models.RoleEnum{models.RoleEnumVote})
 			return qb.CreateRoles(userRoles)
 		}

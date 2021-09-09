@@ -96,6 +96,7 @@ var C = &config{
 	ImageBackend:               string(FileBackend),
 	PHashDistance:              0,
 	VoteApplicationThreshold:   3,
+	VotePromotionThreshold:     10,
 	VoteCronInterval:           "5m",
 	VotingPeriod:               345600,
 	MinDestructiveVotingPeriod: 172800,
