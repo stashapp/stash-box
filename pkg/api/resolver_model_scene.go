@@ -108,3 +108,8 @@ func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene) ([]
 func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]*models.URL, error) {
 	return dataloader.For(ctx).SceneUrlsByID.Load(obj.ID)
 }
+
+func (r *sceneResolver) Edits(ctx context.Context, obj *models.Scene) ([]*models.Edit, error) {
+	eqb := r.getRepoFactory(ctx).Edit()
+	return eqb.FindBySceneID(obj.ID)
+}

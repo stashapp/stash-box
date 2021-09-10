@@ -310,3 +310,7 @@ func (qb *editQueryBuilder) FindByPerformerID(id uuid.UUID) ([]*models.Edit, err
 func (qb *editQueryBuilder) FindByStudioID(id uuid.UUID) ([]*models.Edit, error) {
 	return qb.findByJoin(id, editStudioTable, "studio_id")
 }
+
+func (qb *editQueryBuilder) FindBySceneID(id uuid.UUID) ([]*models.Edit, error) {
+	return qb.findByJoin(id, editSceneTable, "scene_id")
+}

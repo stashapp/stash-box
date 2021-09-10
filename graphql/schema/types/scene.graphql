@@ -64,6 +64,7 @@ type Scene {
   duration: Int
   director: String
   deleted: Boolean!
+  edits: [Edit!]!
 }
 
 input SceneCreateInput {

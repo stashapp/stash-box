@@ -22,4 +22,5 @@ type EditRepo interface {
 	FindByTagID(id uuid.UUID) ([]*Edit, error)
 	FindByPerformerID(id uuid.UUID) ([]*Edit, error)
 	FindByStudioID(id uuid.UUID) ([]*Edit, error)
+	FindBySceneID(id uuid.UUID) ([]*Edit, error)
 }
