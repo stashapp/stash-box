@@ -1,8 +1,13 @@
 import React, { useContext } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useHistory } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 
-import { useScene } from "src/graphql";
+import {
+  useScene,
+  useEdits,
+  TargetTypeEnum,
+  VoteStatusEnum,
+} from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   isAdmin,
@@ -14,6 +19,7 @@ import {
   createHref,
   formatDuration,
   formatDateTime,
+  formatPendingEdits,
 } from "src/utils";
 import {
   ROUTE_SCENE_EDIT,
@@ -26,11 +32,31 @@ import {
   TagLink,
   PerformerName,
 } from "src/components/fragments";
+import { EditList } from "src/components/list";
+
+const DEFAULT_TAB = "description";
 
 const SceneComponent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const history = useHistory();
+  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const { loading, data } = useScene({ id });
   const auth = useContext(AuthContext);
+
+  const { data: editData } = useEdits({
+    filter: {
+      per_page: 1,
+    },
+    editFilter: {
+      target_type: TargetTypeEnum.SCENE,
+      target_id: id,
+      status: VoteStatusEnum.PENDING,
+    },
+  });
+  const pendingEditCount = editData?.queryEdits.count;
+
+  const setTab = (tab: string | null) =>
+    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   if (loading) return <LoadingIndicator message="Loading scene..." />;
   if (!data?.findScene) return <div>Scene not found!</div>;
@@ -135,7 +161,12 @@ const SceneComponent: React.FC = () => {
           )}
         </Card.Footer>
       </Card>
-      <Tabs defaultActiveKey="description" id="scene-tab">
+      <Tabs
+        activeKey={activeTab}
+        id="scene-tabs"
+        mountOnEnter
+        onSelect={setTab}
+      >
         <Tab eventKey="description" title="Description">
           <div className="scene-description my-4">
             <h4>Description:</h4>
@@ -190,6 +221,13 @@ const SceneComponent: React.FC = () => {
               </Table>
             )}
           </div>
+        </Tab>
+        <Tab
+          eventKey="edits"
+          title={`Edits${formatPendingEdits(pendingEditCount)}`}
+          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
+        >
+          <EditList type={TargetTypeEnum.SCENE} id={id} />
         </Tab>
       </Tabs>
     </>

@@ -223,6 +223,11 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 			jsonID, _ := json.Marshal(*q)
 			query.AddArg(*q, jsonID)
+		} else if *editFilter.TargetType == models.TargetTypeEnumScene {
+			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id")
+			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
+			jsonID, _ := json.Marshal(*q)
+			query.AddArg(*q, jsonID)
 		} else {
 			panic("TargetType is not yet supported: " + *editFilter.TargetType)
 		}
