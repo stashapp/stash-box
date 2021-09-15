@@ -4,12 +4,13 @@ import cx from "classnames";
 
 import AuthContext from "src/AuthContext";
 import EditComment from "src/components/editCard/EditComment";
+import { UseFormRegister } from "react-hook-form";
 
 interface IProps {
   onChange?: (text: string) => void;
   className?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  register?: any;
+  register?: UseFormRegister<any>;
   hasError?: boolean;
 }
 
@@ -27,6 +28,8 @@ const NoteInput: React.FC<IProps> = ({
     onChange?.(e.currentTarget.value);
   };
 
+  const textareaProps = register ? register("note") : { name: "note" };
+
   return (
     <div className={cx("NoteInput", { "is-invalid": hasError })}>
       <Tabs id="add-comment">
@@ -36,7 +39,7 @@ const NoteInput: React.FC<IProps> = ({
             className={className}
             onInput={handleChange}
             rows={5}
-            {...register("note")}
+            {...textareaProps}
           />
         </Tab>
         <Tab eventKey="preview" title="Preview" unmountOnExit mountOnEnter>

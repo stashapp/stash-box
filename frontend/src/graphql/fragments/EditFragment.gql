@@ -1,4 +1,5 @@
 #import "../fragments/PerformerFragment.gql"
+#import "../fragments/StudioFragment.gql"
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/CommentFragment.gql"
 fragment EditFragment on Edit {
@@ -29,6 +30,9 @@ fragment EditFragment on Edit {
     }
     ... on Performer {
       ...PerformerFragment
+    }
+    ... on Studio {
+      ...StudioFragment
     }
   }
   details {
@@ -90,6 +94,26 @@ fragment EditFragment on Edit {
         ...ImageFragment
       }
     }
+    ... on StudioEdit {
+      name
+      added_urls {
+        url
+        type
+      }
+      removed_urls {
+        url
+        type
+      }
+      parent {
+        ...StudioFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+    }
   }
   old_details {
     ... on TagEdit {
@@ -116,6 +140,12 @@ fragment EditFragment on Edit {
       career_start_year
       career_end_year
     }
+    ... on StudioEdit {
+      name
+      parent {
+        ...StudioFragment
+      }
+    }
   }
   merge_sources {
     ... on Tag {
@@ -130,6 +160,9 @@ fragment EditFragment on Edit {
     }
     ... on Performer {
       ...PerformerFragment
+    }
+    ... on Studio {
+      ...StudioFragment
     }
   }
   options {

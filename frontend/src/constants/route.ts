@@ -20,6 +20,7 @@ export const ROUTE_SCENES = "/scenes";
 export const ROUTE_STUDIO = "/studios/:id";
 export const ROUTE_STUDIO_ADD = "/studios/add";
 export const ROUTE_STUDIO_EDIT = "/studios/:id/edit";
+export const ROUTE_STUDIO_DELETE = "/studios/:id/delete";
 export const ROUTE_STUDIOS = "/studios";
 export const ROUTE_TAG = "/tags/:id";
 export const ROUTE_TAG_ADD = "/tags/add";

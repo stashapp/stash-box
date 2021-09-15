@@ -10,8 +10,6 @@ type PerformerRepo interface {
 	CreateAliases(newJoins PerformerAliases) error
 	UpdateAliases(performerID uuid.UUID, updatedJoins PerformerAliases) error
 	CreateUrls(newJoins PerformerURLs) error
-	CreateImages(newJoins PerformersImages) error
-	UpdateImages(performerID uuid.UUID, updatedJoins PerformersImages) error
 	UpdateUrls(performerID uuid.UUID, updatedJoins PerformerURLs) error
 	CreateTattoos(newJoins PerformerBodyMods) error
 	UpdateTattoos(performerID uuid.UUID, updatedJoins PerformerBodyMods) error
@@ -37,14 +35,6 @@ type PerformerRepo interface {
 	GetPiercings(id uuid.UUID) (PerformerBodyMods, error)
 	GetAllPiercings(ids []uuid.UUID) ([][]*BodyModification, []error)
 	SearchPerformers(term string, limit int) (Performers, error)
-	DeleteScenePerformers(id uuid.UUID) error
-	SoftDelete(performer Performer) (*Performer, error)
-	CreateRedirect(newJoin PerformerRedirect) error
-	UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error
-	UpdateScenePerformers(oldPerformer *Performer, newTargetID uuid.UUID, setAliases bool) error
-	UpdateScenePerformerAlias(performerID uuid.UUID, name string) error
-	MergeInto(sourceID uuid.UUID, targetID uuid.UUID, setAliases bool) error
 	ApplyEdit(edit Edit, operation OperationEnum, performer *Performer) (*Performer, error)
-	ApplyModifyEdit(performer *Performer, data *PerformerEditData) (*Performer, error)
 	FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error)
 }

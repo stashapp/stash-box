@@ -434,12 +434,23 @@ export interface StudioCreateInput {
   name: string;
   urls?: URLInput[] | null;
   parent_id?: string | null;
-  child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
 }
 
 export interface StudioDestroyInput {
   id: string;
+}
+
+export interface StudioEditDetailsInput {
+  name?: string | null;
+  urls?: URLInput[] | null;
+  parent_id?: string | null;
+  image_ids?: string[] | null;
+}
+
+export interface StudioEditInput {
+  edit: EditInput;
+  details?: StudioEditDetailsInput | null;
 }
 
 export interface StudioFilterType {
@@ -455,7 +466,6 @@ export interface StudioUpdateInput {
   name?: string | null;
   urls?: URLInput[] | null;
   parent_id?: string | null;
-  child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
 }
 

@@ -12,7 +12,7 @@ import AuthContext from "src/AuthContext";
 import { LoadingIndicator } from "src/components/fragments";
 import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
-import { isAdmin, isTag, isPerformer, tagHref, performerHref } from "src/utils";
+import { isAdmin, getEditTargetRoute } from "src/utils";
 
 const EditComponent: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -41,11 +41,7 @@ const EditComponent: React.FC = () => {
         const target = result.data?.applyEdit.target;
         if (!target) return;
 
-        let url = "";
-        if (isTag(target)) url = `${tagHref(target)}#edits`;
-        else if (isPerformer(target)) url = `${performerHref(target)}#edits`;
-
-        window.location.href = url;
+        window.location.href = `${getEditTargetRoute(target)}#edits`;
       });
     setShowApply(false);
   };

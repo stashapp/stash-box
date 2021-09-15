@@ -39,6 +39,7 @@ export interface StudioFragment {
   name: string;
   child_studios: StudioFragment_child_studios[];
   parent: StudioFragment_parent | null;
-  urls: (StudioFragment_urls | null)[];
+  urls: StudioFragment_urls[];
   images: StudioFragment_images[];
+  deleted: boolean;
 }

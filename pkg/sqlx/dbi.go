@@ -257,6 +257,26 @@ func (q dbi) RawQuery(t table, query string, args []interface{}, output Models) 
 	return rows.Err()
 }
 
+// RawExec performs a query on the provided table using the query string
+// and argument slice.
+func (q dbi) RawExec(query string, args []interface{}) error {
+	var rows *sqlx.Rows
+	var err error
+
+	rows, err = q.queryx(query, args...)
+
+	if err != nil && err != sql.ErrNoRows {
+		// TODO - log error instead of returning SQL
+		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
+		return err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	return rows.Err()
+}
+
 // Count performs a count query using the provided query builder
 func (q dbi) Count(query queryBuilder) (int, error) {
 	var err error

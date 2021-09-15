@@ -7,11 +7,12 @@ import * as yup from "yup";
 import cx from "classnames";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { StudioCreateInput } from "src/graphql";
+import { StudioEditDetailsInput } from "src/graphql";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
 import { getUrlByType, createHref } from "src/utils";
 import { ROUTE_STUDIOS, ROUTE_STUDIO } from "src/constants/route";
+import { EditNote } from "src/components/form";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
@@ -29,20 +30,23 @@ const schema = yup.object({
     )
     .required(),
   studio: yup.string().nullable(),
+  note: yup.string().required("Edit note is required"),
 });
 
 type StudioFormData = yup.Asserts<typeof schema>;
 
 interface StudioProps {
   studio: Studio;
-  callback: (data: StudioCreateInput) => void;
+  callback: (data: StudioEditDetailsInput, editNote: string) => void;
   showNetworkSelect?: boolean;
+  saving: boolean;
 }
 
 const StudioForm: React.FC<StudioProps> = ({
   studio,
   callback,
   showNetworkSelect = true,
+  saving,
 }) => {
   const history = useHistory();
   const {
@@ -60,13 +64,13 @@ const StudioForm: React.FC<StudioProps> = ({
   const onSubmit = (data: StudioFormData) => {
     const urls = [];
     if (data.url) urls.push({ url: data.url, type: "HOME" });
-    const callbackData: StudioCreateInput = {
+    const callbackData: StudioEditDetailsInput = {
       name: data.title,
       urls,
       image_ids: data.images.map((i) => i.id),
       parent_id: data.studio,
     };
-    callback(callbackData);
+    callback(callbackData, data.note);
   };
 
   return (
@@ -115,8 +119,10 @@ const StudioForm: React.FC<StudioProps> = ({
         <EditImages control={control} maxImages={1} />
       </Form.Group>
 
+      <EditNote register={register} error={errors.note} />
+
       <Form.Group className="d-flex">
-        <Button className="col-2" type="submit">
+        <Button className="col-2" type="submit" disabled={saving}>
           Save
         </Button>
         <Button type="reset" variant="secondary" className="ml-auto mr-2">

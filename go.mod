@@ -32,5 +32,5 @@ require (
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
 	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1 // indirect
 	golang.org/x/tools v0.1.1 // indirect
-	honnef.co/go/tools v0.2.0
+	honnef.co/go/tools v0.2.1
 )
