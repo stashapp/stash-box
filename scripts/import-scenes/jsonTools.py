@@ -167,6 +167,12 @@ def parseDuration(state: State, cmd: Command):
     # convert to seconds
     state.data[field] = int(td.total_seconds())
 
+def setStr(state: State, cmd: Command):
+    field = cmd.args[0]
+    value = cmd.args[1]
+
+    state.data[field] = value
+
 def replace(state: State, cmd: Command):
     field = cmd.args[0]
     regex = cmd.args[1]
@@ -230,7 +236,8 @@ commands = {
     "parseduration": CommandSpec(parseDuration, 2, "parseduration <field> <format>"),
     "split": CommandSpec(split, 2, "split <field> <separator>"),
     "wget": CommandSpec(wget, 2, "wget <field> <dir>"),
-    "extractmap": CommandSpec(extractMap, 2, "extractmap <field> <filename>")
+    "extractmap": CommandSpec(extractMap, 2, "extractmap <field> <filename>"),
+    "setstr": CommandSpec(setStr, 2, "setstr <field> <value>")
 }
 
 def main():
