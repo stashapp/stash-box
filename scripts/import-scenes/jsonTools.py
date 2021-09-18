@@ -12,6 +12,7 @@ class State:
     out = None
     data = None
 
+    mapFiles = {}
     outputs = {}
 
     def __init__(self) -> None:
@@ -181,7 +182,7 @@ def replace(state: State, cmd: Command):
     regex = re.compile(regex)
     state.data[field] = regex.sub(repl, state.data[field])
 
-def split(state: State, cmd: Command):
+def tolist(state: State, cmd: Command):
     field = cmd.args[0]
     sep = cmd.args[1]
 
@@ -224,6 +225,34 @@ def extractMap(state: State, cmd: Command):
         if v not in output:
             output[v] = None
 
+def mapValues(state: State, cmd: Command):
+    field = cmd.args[0]
+    mapFile = cmd.args[1]
+
+    if mapFile not in state.mapFiles:
+        with open(mapFile) as file:
+            mappings = json.load(file)
+            state.mapFiles[mapFile] = mappings
+
+    mappings = state.mapFiles[mapFile]
+    value = state.data[field]
+    if isinstance(value, list):
+        out = []
+        for e in value:
+            if e in mappings:
+                mapped = mappings[e]
+                if mapped != None:
+                    out.append(mappings[e])
+        state.data[field] = out
+    else:
+        if value != None:
+            mapped = mappings[value]
+            if mapped == None:
+                # remove
+                del(state.data[field])
+            else:
+                state.data[field] = mapped
+
 commands = {
     "readcsv": CommandSpec(readCSV, 1, "readcsv <filename>", True),
     "readjson": CommandSpec(readJSON, 1, "readjson <filename>", True),
@@ -234,10 +263,11 @@ commands = {
     "replace": CommandSpec(replace, 3, "replace <field> <regex> <replace with>"),
     "parsedate": CommandSpec(parseDate, 2, "parsedate <field> <format>"),
     "parseduration": CommandSpec(parseDuration, 2, "parseduration <field> <format>"),
-    "split": CommandSpec(split, 2, "split <field> <separator>"),
+    "tolist": CommandSpec(tolist, 2, "tolist <field> <separator>"),
     "wget": CommandSpec(wget, 2, "wget <field> <dir>"),
     "extractmap": CommandSpec(extractMap, 2, "extractmap <field> <filename>"),
-    "setstr": CommandSpec(setStr, 2, "setstr <field> <value>")
+    "setstr": CommandSpec(setStr, 2, "setstr <field> <value>"),
+    "mapvalues": CommandSpec(mapValues, 2, "mapvalues <field> <mapfile>")
 }
 
 def main():
