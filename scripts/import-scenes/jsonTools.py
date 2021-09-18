@@ -210,18 +210,20 @@ def tolist(state: State, cmd: Command):
 def wget(state: State, cmd: Command):
     field = cmd.args[0]
     outDir = cmd.args[1]
+    suffix = cmd.args[2]
 
     url = state.data[field]
-    try:
-        r = requests.get(url)
-    except:
-        print("Failed to get url {}, skipping".format(url))
-        return
-    
     filename = os.path.join(outDir, hashlib.md5(url.encode("utf-8")).hexdigest())
+    filename = filename + suffix
 
     if not os.path.exists(filename):
         print("Downloading {}".format(url))
+        try:
+            r = requests.get(url)
+        except:
+            print("Failed to get url {}, skipping".format(url))
+            return
+        
         with open(filename, 'wb') as fd:
             for chunk in r.iter_content(chunk_size=128):
                 fd.write(chunk)
@@ -283,7 +285,7 @@ commands = {
     "parsedate": CommandSpec(parseDate, 2, "parsedate <field> <format>"),
     "parseduration": CommandSpec(parseDuration, 2, "parseduration <field> <format>"),
     "tolist": CommandSpec(tolist, 2, "tolist <field> <separator>"),
-    "wget": CommandSpec(wget, 2, "wget <field> <dir>"),
+    "wget": CommandSpec(wget, 3, "wget <field> <dir> <suffix>"),
     "extractmap": CommandSpec(extractMap, 2, "extractmap <field> <filename>"),
     "setstr": CommandSpec(setStr, 2, "setstr <field> <value>"),
     "mapvalues": CommandSpec(mapValues, 2, "mapvalues <field> <mapfile>")
