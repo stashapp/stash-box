@@ -10,15 +10,9 @@ import os
 class State:
     file = None
     out = None
-    buffer = []
     data = None
 
-    outTags = None
-    tagsBuffer = {}
-    outPerformers = None
-    performersBuffer = {}
-    outStudios = None
-    studiosBuffer = {}
+    outputs = {}
 
     def __init__(self) -> None:
         self.args = sys.argv[1:]
@@ -31,9 +25,9 @@ class State:
         return self.args.pop(0)
 
     def finalise(self):
-        if self.out != None:
-            out = open(self.out, 'w')
-            json.dump(self.buffer, out, indent=1)
+        for o in self.outputs:
+            out = open(o, 'w')
+            json.dump(self.outputs[o], out, indent=1)
             out.close()
 
 class CommandSpec:
@@ -114,10 +108,10 @@ def readJSON(state: State, cmd: Command):
 def write(state: State, cmd: Command):
     fn = cmd.args[0]
     
-    if state.out == None:
-        state.out = fn
-    
-    state.buffer.append(state.data)
+    if fn not in state.outputs:
+        state.outputs[fn] = []
+
+    state.outputs[fn].append(state.data)
 
 def rm(state: State, cmd: Command):
     field = cmd.args[0]
@@ -208,6 +202,22 @@ def wget(state: State, cmd: Command):
 
     state.data[field] = filename
 
+def extractMap(state: State, cmd: Command):
+    field = cmd.args[0]
+    outFile = cmd.args[1]
+
+    if outFile not in state.outputs:
+        state.outputs[outFile] = {}
+
+    output = state.outputs[outFile]
+    value = state.data[field]
+    if not isinstance(value, list):
+        value = [value]
+
+    for v in value:
+        if v not in output:
+            output[v] = None
+
 commands = {
     "readcsv": CommandSpec(readCSV, 1, "readcsv <filename>", True),
     "readjson": CommandSpec(readJSON, 1, "readjson <filename>", True),
@@ -219,7 +229,8 @@ commands = {
     "parsedate": CommandSpec(parseDate, 2, "parsedate <field> <format>"),
     "parseduration": CommandSpec(parseDuration, 2, "parseduration <field> <format>"),
     "split": CommandSpec(split, 2, "split <field> <separator>"),
-    "wget": CommandSpec(wget, 2, "wget <field> <dir>")
+    "wget": CommandSpec(wget, 2, "wget <field> <dir>"),
+    "extractmap": CommandSpec(extractMap, 2, "extractmap <field> <filename>")
 }
 
 def main():
