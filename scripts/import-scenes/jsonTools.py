@@ -6,6 +6,7 @@ import re
 import requests
 import hashlib
 import os
+import shlex
 
 class State:
     file = None
@@ -73,10 +74,27 @@ class Command:
         for c in self.commands:
             c.execute(state)
 
+def includeFile(fn, args):
+    subargs = []
+    with open(fn) as file:
+        lines = file.readlines()
+        for l in lines:
+            if len(l) > 0 and l[0] != "#":
+                subargs.extend(shlex.split(l))
+    
+    args[0:0] = subargs
+
+
 def makeCommands(args):
     ret = []
     while len(args) > 0:
         cmd = args.pop(0).lower()
+
+        # special case for run - include a file
+        if cmd == "run":
+            fn = args.pop(0)
+            includeFile(fn, args)
+            continue
 
         if cmd not in commands:
             raise Exception("unknown command", cmd)
@@ -129,11 +147,12 @@ def keep(state: State, cmd: Command):
             toRemove.append(df)
     
     for f in toRemove:
-        rm(state.data, f)
+        if f in state.data:
+            state.data.pop(f)
 
 def mv(state: State, cmd: Command):
     frm = cmd.args[0]
-    to = cmd.arg[1]
+    to = cmd.args[1]
 
     if frm in state.data:
         state.data[to] = state.data[frm]
