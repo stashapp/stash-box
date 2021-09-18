@@ -247,7 +247,8 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	if q := sceneFilter.URL; q != nil && *q != "" {
-		searchColumns := []string{"scenes.url"}
+		query.Body += "LEFT JOIN " + sceneURLTable.name + " scene_urls ON scenes.id = scene_urls." + sceneURLTable.joinColumn
+		searchColumns := []string{"scene_urls.url"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
