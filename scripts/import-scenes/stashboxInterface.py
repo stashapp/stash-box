@@ -17,18 +17,25 @@ class StashBoxInterface:
 		"ApiKey": config.api_key,
 		"DNT": "1"
 		}
+	formHeaders = {
+		"Accept-Encoding": "gzip, deflate, br",
+		"Accept": "application/json",
+		"Connection": "keep-alive",
+		"ApiKey": config.api_key,
+		"DNT": "1"
+		}
 
 	def __init__(self):
 		self.url = config.server_url
 
-	def __callGraphQL(self, query, variables = None):
+	def __callGraphQL(self, query, variables = None, files = None):
 		json = {}
 		json['query'] = query
 		if variables != None:
 			json['variables'] = variables
 		
 		# handle cookies
-		response = requests.post(self.url, json=json, headers=self.headers)
+		response = requests.post(self.url, json=json, headers=self.headers, files=files)
 		
 		if response.status_code == 200:
 			result = response.json()
@@ -39,6 +46,20 @@ class StashBoxInterface:
 				return result.get("data")
 		else:
 			raise Exception("GraphQL query failed:{} - {}. Query: {}. Variables: {}".format(response.status_code, response.content, query, variables))
+
+	def __callGraphQLMultiPart(self, files):
+		# handle cookies
+		response = requests.post(self.url, headers=self.formHeaders, files=files)
+		
+		if response.status_code == 200:
+			result = response.json()
+			if result.get("errors", None):
+				for error in result["errors"]:
+					raise Exception("GraphQL error: {}".format(error))
+			if result.get("data", None):
+				return result.get("data")
+		else:
+			raise Exception("GraphQL form query failed:{} - {}.".format(response.status_code, response.content))
 
 	def createScene(self, input):
 		query = """
@@ -68,12 +89,12 @@ query queryScenes($scene_filter: SceneFilterType, $querySpec:QuerySpec) {
 				'per_page': 1
 			},
 			'scene_filter': {
-				'url': url
+				'url': '"{}"'.format(url)
 			}
 		}
 
 		result = self.__callGraphQL(query, variables)
-		return result["queryScenes"].count > 0
+		return result["queryScenes"]["count"] > 0
 
 	def performerIDByName(self, name):
 		query = """
@@ -141,3 +162,30 @@ query findTag($name: String) {
 			return studio["id"]
 		
 		return None
+
+	def createImage(self, file, fn):
+		query = """
+mutation imageCreate($input:ImageCreateInput!) {
+  imageCreate(input: $input) {
+    id
+  }
+}
+		"""
+
+		variables = {'input': {
+			'file': None
+		}}
+		files = {
+			'operations': (None, json.dumps({
+				'query': query,
+				'variables': variables
+			})),
+			'map': (None, json.dumps({
+				'0': ['variables.input.file']
+			})),
+			'0': (fn, file)
+		}
+		
+
+		result = self.__callGraphQLMultiPart(files)
+		return result["imageCreate"]["id"]
