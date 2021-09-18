@@ -221,7 +221,8 @@ def wget(state: State, cmd: Command):
         try:
             r = requests.get(url)
         except:
-            print("Failed to get url {}, skipping".format(url))
+            print("Failed to get url {}, clearing field".format(url))
+            del(state.data[field])
             return
         
         with open(filename, 'wb') as fd:
