@@ -301,11 +301,11 @@ type PerformerEditData struct {
 type StudioEdit struct {
 	Name *string `json:"name"`
 	// Added and modified URLs
-	AddedUrls     []*URL   `json:"added_urls"`
-	RemovedUrls   []*URL   `json:"removed_urls"`
-	ParentID      *string  `json:"parent_id"`
-	AddedImages   []string `json:"added_images"`
-	RemovedImages []string `json:"removed_images"`
+	AddedUrls     []*URL   `json:"added_urls,omitempty"`
+	RemovedUrls   []*URL   `json:"removed_urls,omitempty"`
+	ParentID      *string  `json:"parent_id,omitempty"`
+	AddedImages   []string `json:"added_images,omitempty"`
+	RemovedImages []string `json:"removed_images,omitempty"`
 }
 
 func (StudioEdit) IsEditDetails() {}
@@ -317,23 +317,23 @@ type StudioEditData struct {
 }
 
 type SceneEdit struct {
-	Title       *string `json:"title"`
-	Details     *string `json:"details"`
-	AddedUrls   []*URL  `json:"added_urls"`
-	RemovedUrls []*URL  `json:"removed_urls"`
-	Date        *string `json:"date"`
-	StudioID    *string `json:"studio_id"`
+	Title       *string `json:"title,omitempty"`
+	Details     *string `json:"details,omitempty"`
+	AddedUrls   []*URL  `json:"added_urls,omitempty"`
+	RemovedUrls []*URL  `json:"removed_urls,omitempty"`
+	Date        *string `json:"date,omitempty"`
+	StudioID    *string `json:"studio_id,omitempty"`
 	// Added or modified performer appearance entries
-	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers"`
-	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers"`
-	AddedTags           []string                    `json:"added_tags"`
-	RemovedTags         []string                    `json:"removed_tags"`
-	AddedImages         []string                    `json:"added_images"`
-	RemovedImages       []string                    `json:"removed_images"`
-	AddedFingerprints   []*FingerprintEditInput     `json:"added_fingerprints"`
-	RemovedFingerprints []*FingerprintEditInput     `json:"removed_fingerprints"`
-	Duration            *int64                      `json:"duration"`
-	Director            *string                     `json:"director"`
+	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
+	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`
+	AddedTags           []string                    `json:"added_tags,omitempty"`
+	RemovedTags         []string                    `json:"removed_tags,omitempty"`
+	AddedImages         []string                    `json:"added_images,omitempty"`
+	RemovedImages       []string                    `json:"removed_images,omitempty"`
+	AddedFingerprints   []*FingerprintEditInput     `json:"added_fingerprints,omitempty"`
+	RemovedFingerprints []*FingerprintEditInput     `json:"removed_fingerprints,omitempty"`
+	Duration            *int64                      `json:"duration,omitempty"`
+	Director            *string                     `json:"director,omitempty"`
 }
 
 func (SceneEdit) IsEditDetails() {}
