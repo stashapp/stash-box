@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
@@ -13,10 +13,13 @@ import SceneForm from "./sceneForm";
 
 const SceneAdd: React.FC = () => {
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const [submitSceneEdit, { loading: saving }] = useSceneEdit({
     onCompleted: (data) => {
+      if (submissionError) setSubmissionError("");
       if (data.sceneEdit.id) history.push(editHref(data.sceneEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   const doInsert = (updateData: SceneEditDetailsInput, editNote: string) => {
@@ -54,6 +57,11 @@ const SceneAdd: React.FC = () => {
       <h3>Add new scene</h3>
       <hr />
       <SceneForm scene={emptyScene} callback={doInsert} saving={saving} />
+      {submissionError && (
+        <div className="text-danger text-right col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </div>
   );
 };

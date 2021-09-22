@@ -3,51 +3,52 @@ import React from "react";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
+interface Change {
+  name: string | null | undefined;
+  link: string | null | undefined;
+}
+
 interface LinkedChangeRowProps {
-  newName?: string | null;
-  oldName?: string | null;
-  newLink?: string | null;
-  oldLink?: string | null;
   name: string;
+  oldEntity?: Change | null;
+  newEntity?: Change | null;
   showDiff?: boolean;
 }
 
 const LinkedChangeRow: React.FC<LinkedChangeRowProps> = ({
-  newName,
-  oldName,
-  newLink,
-  oldLink,
   name,
+  newEntity,
+  oldEntity,
   showDiff = false,
 }) => {
-  function getValue(n?: string | null, link?: string | null) {
-    if (!n) {
+  function getValue(value: Change | null | undefined) {
+    if (!value?.name) {
       return;
     }
 
-    if (!link) {
-      return n;
+    if (!value.link) {
+      return value.name;
     }
 
-    return <Link to={link}>{n}</Link>;
+    return <Link to={value.link}>{value.name}</Link>;
   }
 
-  return newName || oldName ? (
+  if (!newEntity?.link && !oldEntity?.link) return null;
+
+  return (
     <div className="row mb-2">
       <b className="col-2 text-right">{name}</b>
       {showDiff && (
-        <span className="col-5">
-          <div className="EditDiff bg-danger">{getValue(oldName, oldLink)}</div>
+        <span className="col-5 ml-auto mt-2" key={oldEntity?.name}>
+          <div className="EditDiff bg-danger">{getValue(oldEntity)}</div>
         </span>
       )}
-      <span className="col-5">
+      <span className="col-5 mt-2" key={newEntity?.name}>
         <div className={cx("EditDiff", { "bg-success": showDiff })}>
-          {getValue(newName, newLink)}
+          {getValue(newEntity)}
         </div>
       </span>
     </div>
-  ) : (
-    <></>
   );
 };
 

@@ -313,8 +313,8 @@ export interface Edits_queryEdits_edits_details_PerformerEdit {
   removed_tattoos: Edits_queryEdits_edits_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: Edits_queryEdits_edits_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: Edits_queryEdits_edits_details_PerformerEdit_removed_piercings[] | null;
-  added_images: (Edits_queryEdits_edits_details_PerformerEdit_added_images | null)[] | null;
-  removed_images: (Edits_queryEdits_edits_details_PerformerEdit_removed_images | null)[] | null;
+  added_images: Edits_queryEdits_edits_details_PerformerEdit_added_images[] | null;
+  removed_images: Edits_queryEdits_edits_details_PerformerEdit_removed_images[] | null;
 }
 
 export interface Edits_queryEdits_edits_details_StudioEdit_added_urls {
@@ -391,8 +391,8 @@ export interface Edits_queryEdits_edits_details_StudioEdit {
   added_urls: Edits_queryEdits_edits_details_StudioEdit_added_urls[] | null;
   removed_urls: Edits_queryEdits_edits_details_StudioEdit_removed_urls[] | null;
   parent: Edits_queryEdits_edits_details_StudioEdit_parent | null;
-  added_images: (Edits_queryEdits_edits_details_StudioEdit_added_images | null)[] | null;
-  removed_images: (Edits_queryEdits_edits_details_StudioEdit_removed_images | null)[] | null;
+  added_images: Edits_queryEdits_edits_details_StudioEdit_added_images[] | null;
+  removed_images: Edits_queryEdits_edits_details_StudioEdit_removed_images[] | null;
 }
 
 export interface Edits_queryEdits_edits_details_SceneEdit_added_urls {
@@ -679,8 +679,8 @@ export interface Edits_queryEdits_edits_details_SceneEdit {
   removed_performers: Edits_queryEdits_edits_details_SceneEdit_removed_performers[] | null;
   added_tags: Edits_queryEdits_edits_details_SceneEdit_added_tags[] | null;
   removed_tags: Edits_queryEdits_edits_details_SceneEdit_removed_tags[] | null;
-  added_images: (Edits_queryEdits_edits_details_SceneEdit_added_images | null)[] | null;
-  removed_images: (Edits_queryEdits_edits_details_SceneEdit_removed_images | null)[] | null;
+  added_images: Edits_queryEdits_edits_details_SceneEdit_added_images[] | null;
+  removed_images: Edits_queryEdits_edits_details_SceneEdit_removed_images[] | null;
   added_fingerprints: Edits_queryEdits_edits_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: Edits_queryEdits_edits_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
@@ -1047,8 +1047,8 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit {
   removed_performers: Edits_queryEdits_edits_old_details_SceneEdit_removed_performers[] | null;
   added_tags: Edits_queryEdits_edits_old_details_SceneEdit_added_tags[] | null;
   removed_tags: Edits_queryEdits_edits_old_details_SceneEdit_removed_tags[] | null;
-  added_images: (Edits_queryEdits_edits_old_details_SceneEdit_added_images | null)[] | null;
-  removed_images: (Edits_queryEdits_edits_old_details_SceneEdit_removed_images | null)[] | null;
+  added_images: Edits_queryEdits_edits_old_details_SceneEdit_added_images[] | null;
+  removed_images: Edits_queryEdits_edits_old_details_SceneEdit_removed_images[] | null;
   added_fingerprints: Edits_queryEdits_edits_old_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: Edits_queryEdits_edits_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;

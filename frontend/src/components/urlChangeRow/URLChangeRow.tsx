@@ -30,7 +30,7 @@ const URLChangeRow: React.FC<URLChangeRowProps> = ({
               <div className={CLASSNAME}>
                 <ul>
                   {(oldURLs ?? []).map((u) => (
-                    <li key={u.url}>{u.url}</li>
+                    <li key={u.url}>{`${u.type}: ${u.url}`}</li>
                   ))}
                 </ul>
               </div>
@@ -45,7 +45,7 @@ const URLChangeRow: React.FC<URLChangeRowProps> = ({
             <div className={CLASSNAME}>
               <ul>
                 {(newURLs ?? []).map((u) => (
-                  <li key={u.url}>{u.url}</li>
+                  <li key={u.url}>{`${u.type}: ${u.url}`}</li>
                 ))}
               </ul>
             </div>

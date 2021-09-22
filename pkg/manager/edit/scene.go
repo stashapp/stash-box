@@ -2,6 +2,7 @@ package edit
 
 import (
 	"errors"
+	"reflect"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -61,6 +62,10 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 
 	if err := m.diffRelationships(&sceneEdit, sceneID, input); err != nil {
 		return err
+	}
+
+	if reflect.DeepEqual(sceneEdit.Old, sceneEdit.New) {
+		return errors.New("edit contains no changes")
 	}
 
 	return m.edit.SetData(sceneEdit)

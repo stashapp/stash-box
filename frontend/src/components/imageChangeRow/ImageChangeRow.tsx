@@ -7,14 +7,14 @@ const CLASSNAME = "ImageChangeRow";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 
 export interface ImageChangeRowProps {
-  newImages?: (Image | null)[] | null;
-  oldImages?: (Image | null)[] | null;
+  newImages?: (Pick<Image, "id" | "url"> | null)[] | null;
+  oldImages?: (Pick<Image, "id" | "url"> | null)[] | null;
   showDiff?: boolean;
 }
 
-const Images: React.FC<{ images: (Image | null)[] | null | undefined }> = ({
-  images,
-}) => (
+const Images: React.FC<{
+  images: (Pick<Image, "id" | "url"> | null)[] | null | undefined;
+}> = ({ images }) => (
   <>
     {(images ?? []).map((image) =>
       image === null ? (

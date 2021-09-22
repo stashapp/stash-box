@@ -89,8 +89,8 @@ const SceneComponent: React.FC = () => {
         </Link>
       </td>
       <td>
-        <span title={formatDuration(fingerprint.duration)}>
-          {fingerprint.duration}
+        <span title={`${fingerprint.duration}s`}>
+          {formatDuration(fingerprint.duration)}
         </span>
       </td>
       <td>{fingerprint.submissions}</td>

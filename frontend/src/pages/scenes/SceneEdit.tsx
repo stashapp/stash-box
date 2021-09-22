@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 
 import {
@@ -15,12 +15,15 @@ import SceneForm from "./sceneForm";
 const SceneEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const { loading, data: scene } = useScene({ id });
   const [insertSceneEdit, { loading: saving }] = useSceneEdit({
     onCompleted: (data) => {
+      if (submissionError) setSubmissionError("");
       if (data.sceneEdit.id)
         history.push(createHref(ROUTE_EDIT, data.sceneEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   if (loading) return <LoadingIndicator message="Loading studio..." />;
@@ -46,6 +49,11 @@ const SceneEdit: React.FC = () => {
       <h3>Edit “{scene.findScene.title}”</h3>
       <hr />
       <SceneForm scene={scene.findScene} callback={doUpdate} saving={saving} />
+      {submissionError && (
+        <div className="text-danger text-right col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </div>
   );
 };
