@@ -84,7 +84,7 @@ func (d *editDiff) nullString(old sql.NullString, new *string) (oldOut *string, 
 		oldOut = &oldVal
 	}
 
-	if new != nil && (!old.Valid || *new != old.String) {
+	if new != nil && *new != "" && (!old.Valid || *new != old.String) {
 		newVal := *new
 		newOut = &newVal
 	}
