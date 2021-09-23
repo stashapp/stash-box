@@ -1,6 +1,6 @@
 module github.com/stashapp/stash-box
 
-go 1.16
+go 1.17
 
 require (
 	github.com/99designs/gqlgen v0.13.0
