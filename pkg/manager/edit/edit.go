@@ -84,6 +84,8 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 			applyer = Performer(fac, edit)
 		case models.TargetTypeEnumStudio:
 			applyer = Studio(fac, edit)
+		case models.TargetTypeEnumScene:
+			applyer = Scene(fac, edit)
 		default:
 			return errors.New("Not implemented: " + edit.TargetType)
 		}

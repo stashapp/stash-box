@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { ApplyEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import { ApplyEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: ApplyEdit
@@ -26,10 +26,6 @@ export interface ApplyEdit_applyEdit_user {
   __typename: "User";
   id: string;
   name: string;
-}
-
-export interface ApplyEdit_applyEdit_target_Scene {
-  __typename: "Scene";
 }
 
 export interface ApplyEdit_applyEdit_target_Tag_category {
@@ -152,11 +148,79 @@ export interface ApplyEdit_applyEdit_target_Studio {
   deleted: boolean;
 }
 
-export type ApplyEdit_applyEdit_target = ApplyEdit_applyEdit_target_Scene | ApplyEdit_applyEdit_target_Tag | ApplyEdit_applyEdit_target_Performer | ApplyEdit_applyEdit_target_Studio;
-
-export interface ApplyEdit_applyEdit_details_SceneEdit {
-  __typename: "SceneEdit";
+export interface ApplyEdit_applyEdit_target_Scene_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
 }
+
+export interface ApplyEdit_applyEdit_target_Scene_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_target_Scene_studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_target_Scene_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  gender: GenderEnum | null;
+  aliases: string[];
+}
+
+export interface ApplyEdit_applyEdit_target_Scene_performers {
+  __typename: "PerformerAppearance";
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+  performer: ApplyEdit_applyEdit_target_Scene_performers_performer;
+}
+
+export interface ApplyEdit_applyEdit_target_Scene_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface ApplyEdit_applyEdit_target_Scene_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_target_Scene {
+  __typename: "Scene";
+  id: string;
+  date: any | null;
+  title: string | null;
+  details: string | null;
+  director: string | null;
+  duration: number | null;
+  urls: ApplyEdit_applyEdit_target_Scene_urls[];
+  images: ApplyEdit_applyEdit_target_Scene_images[];
+  studio: ApplyEdit_applyEdit_target_Scene_studio | null;
+  performers: ApplyEdit_applyEdit_target_Scene_performers[];
+  fingerprints: ApplyEdit_applyEdit_target_Scene_fingerprints[];
+  tags: ApplyEdit_applyEdit_target_Scene_tags[];
+}
+
+export type ApplyEdit_applyEdit_target = ApplyEdit_applyEdit_target_Tag | ApplyEdit_applyEdit_target_Performer | ApplyEdit_applyEdit_target_Studio | ApplyEdit_applyEdit_target_Scene;
 
 export interface ApplyEdit_applyEdit_details_TagEdit {
   __typename: "TagEdit";
@@ -249,8 +313,8 @@ export interface ApplyEdit_applyEdit_details_PerformerEdit {
   removed_tattoos: ApplyEdit_applyEdit_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: ApplyEdit_applyEdit_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: ApplyEdit_applyEdit_details_PerformerEdit_removed_piercings[] | null;
-  added_images: (ApplyEdit_applyEdit_details_PerformerEdit_added_images | null)[] | null;
-  removed_images: (ApplyEdit_applyEdit_details_PerformerEdit_removed_images | null)[] | null;
+  added_images: ApplyEdit_applyEdit_details_PerformerEdit_added_images[] | null;
+  removed_images: ApplyEdit_applyEdit_details_PerformerEdit_removed_images[] | null;
 }
 
 export interface ApplyEdit_applyEdit_details_StudioEdit_added_urls {
@@ -327,15 +391,303 @@ export interface ApplyEdit_applyEdit_details_StudioEdit {
   added_urls: ApplyEdit_applyEdit_details_StudioEdit_added_urls[] | null;
   removed_urls: ApplyEdit_applyEdit_details_StudioEdit_removed_urls[] | null;
   parent: ApplyEdit_applyEdit_details_StudioEdit_parent | null;
-  added_images: (ApplyEdit_applyEdit_details_StudioEdit_added_images | null)[] | null;
-  removed_images: (ApplyEdit_applyEdit_details_StudioEdit_removed_images | null)[] | null;
+  added_images: ApplyEdit_applyEdit_details_StudioEdit_added_images[] | null;
+  removed_images: ApplyEdit_applyEdit_details_StudioEdit_removed_images[] | null;
 }
 
-export type ApplyEdit_applyEdit_details = ApplyEdit_applyEdit_details_SceneEdit | ApplyEdit_applyEdit_details_TagEdit | ApplyEdit_applyEdit_details_PerformerEdit | ApplyEdit_applyEdit_details_StudioEdit;
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
 
-export interface ApplyEdit_applyEdit_old_details_SceneEdit {
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_studio_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_studio_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_studio_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: ApplyEdit_applyEdit_details_SceneEdit_studio_child_studios[];
+  parent: ApplyEdit_applyEdit_details_SceneEdit_studio_parent | null;
+  urls: ApplyEdit_applyEdit_details_SceneEdit_studio_urls[];
+  images: ApplyEdit_applyEdit_details_SceneEdit_studio_images[];
+  deleted: boolean;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_measurements {
+  __typename: "Measurements";
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_measurements;
+  tattoos: ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_tattoos[] | null;
+  piercings: ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_piercings[] | null;
+  urls: ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_urls[];
+  images: ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer_images[];
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_performers {
+  __typename: "PerformerAppearance";
+  performer: ApplyEdit_applyEdit_details_SceneEdit_added_performers_performer;
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_measurements {
+  __typename: "Measurements";
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_measurements;
+  tattoos: ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_tattoos[] | null;
+  piercings: ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_piercings[] | null;
+  urls: ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_urls[];
+  images: ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer_images[];
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_performers {
+  __typename: "PerformerAppearance";
+  performer: ApplyEdit_applyEdit_details_SceneEdit_removed_performers_performer;
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_tags_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+  deleted: boolean;
+  category: ApplyEdit_applyEdit_details_SceneEdit_added_tags_category | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_tags_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+  deleted: boolean;
+  category: ApplyEdit_applyEdit_details_SceneEdit_removed_tags_category | null;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_added_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit_removed_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface ApplyEdit_applyEdit_details_SceneEdit {
   __typename: "SceneEdit";
+  title: string | null;
+  details: string | null;
+  added_urls: ApplyEdit_applyEdit_details_SceneEdit_added_urls[] | null;
+  removed_urls: ApplyEdit_applyEdit_details_SceneEdit_removed_urls[] | null;
+  date: any | null;
+  studio: ApplyEdit_applyEdit_details_SceneEdit_studio | null;
+  /**
+   * Added or modified performer appearance entries
+   */
+  added_performers: ApplyEdit_applyEdit_details_SceneEdit_added_performers[] | null;
+  removed_performers: ApplyEdit_applyEdit_details_SceneEdit_removed_performers[] | null;
+  added_tags: ApplyEdit_applyEdit_details_SceneEdit_added_tags[] | null;
+  removed_tags: ApplyEdit_applyEdit_details_SceneEdit_removed_tags[] | null;
+  added_images: ApplyEdit_applyEdit_details_SceneEdit_added_images[] | null;
+  removed_images: ApplyEdit_applyEdit_details_SceneEdit_removed_images[] | null;
+  added_fingerprints: ApplyEdit_applyEdit_details_SceneEdit_added_fingerprints[] | null;
+  removed_fingerprints: ApplyEdit_applyEdit_details_SceneEdit_removed_fingerprints[] | null;
+  duration: number | null;
+  director: string | null;
 }
+
+export type ApplyEdit_applyEdit_details = ApplyEdit_applyEdit_details_TagEdit | ApplyEdit_applyEdit_details_PerformerEdit | ApplyEdit_applyEdit_details_StudioEdit | ApplyEdit_applyEdit_details_SceneEdit;
 
 export interface ApplyEdit_applyEdit_old_details_TagEdit {
   __typename: "TagEdit";
@@ -411,11 +763,299 @@ export interface ApplyEdit_applyEdit_old_details_StudioEdit {
   parent: ApplyEdit_applyEdit_old_details_StudioEdit_parent | null;
 }
 
-export type ApplyEdit_applyEdit_old_details = ApplyEdit_applyEdit_old_details_SceneEdit | ApplyEdit_applyEdit_old_details_TagEdit | ApplyEdit_applyEdit_old_details_PerformerEdit | ApplyEdit_applyEdit_old_details_StudioEdit;
-
-export interface ApplyEdit_applyEdit_merge_sources_Scene {
-  __typename: "Scene";
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
 }
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_studio_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_studio_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_studio_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: ApplyEdit_applyEdit_old_details_SceneEdit_studio_child_studios[];
+  parent: ApplyEdit_applyEdit_old_details_SceneEdit_studio_parent | null;
+  urls: ApplyEdit_applyEdit_old_details_SceneEdit_studio_urls[];
+  images: ApplyEdit_applyEdit_old_details_SceneEdit_studio_images[];
+  deleted: boolean;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_measurements {
+  __typename: "Measurements";
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_measurements;
+  tattoos: ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_tattoos[] | null;
+  piercings: ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_piercings[] | null;
+  urls: ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_urls[];
+  images: ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer_images[];
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_performers {
+  __typename: "PerformerAppearance";
+  performer: ApplyEdit_applyEdit_old_details_SceneEdit_added_performers_performer;
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_measurements {
+  __typename: "Measurements";
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_measurements;
+  tattoos: ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_tattoos[] | null;
+  piercings: ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_piercings[] | null;
+  urls: ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_urls[];
+  images: ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer_images[];
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers {
+  __typename: "PerformerAppearance";
+  performer: ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers_performer;
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_tags_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+  deleted: boolean;
+  category: ApplyEdit_applyEdit_old_details_SceneEdit_added_tags_category | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_tags_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+  deleted: boolean;
+  category: ApplyEdit_applyEdit_old_details_SceneEdit_removed_tags_category | null;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_added_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit_removed_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface ApplyEdit_applyEdit_old_details_SceneEdit {
+  __typename: "SceneEdit";
+  title: string | null;
+  details: string | null;
+  added_urls: ApplyEdit_applyEdit_old_details_SceneEdit_added_urls[] | null;
+  removed_urls: ApplyEdit_applyEdit_old_details_SceneEdit_removed_urls[] | null;
+  date: any | null;
+  studio: ApplyEdit_applyEdit_old_details_SceneEdit_studio | null;
+  /**
+   * Added or modified performer appearance entries
+   */
+  added_performers: ApplyEdit_applyEdit_old_details_SceneEdit_added_performers[] | null;
+  removed_performers: ApplyEdit_applyEdit_old_details_SceneEdit_removed_performers[] | null;
+  added_tags: ApplyEdit_applyEdit_old_details_SceneEdit_added_tags[] | null;
+  removed_tags: ApplyEdit_applyEdit_old_details_SceneEdit_removed_tags[] | null;
+  added_images: ApplyEdit_applyEdit_old_details_SceneEdit_added_images[] | null;
+  removed_images: ApplyEdit_applyEdit_old_details_SceneEdit_removed_images[] | null;
+  added_fingerprints: ApplyEdit_applyEdit_old_details_SceneEdit_added_fingerprints[] | null;
+  removed_fingerprints: ApplyEdit_applyEdit_old_details_SceneEdit_removed_fingerprints[] | null;
+  duration: number | null;
+  director: string | null;
+}
+
+export type ApplyEdit_applyEdit_old_details = ApplyEdit_applyEdit_old_details_TagEdit | ApplyEdit_applyEdit_old_details_PerformerEdit | ApplyEdit_applyEdit_old_details_StudioEdit | ApplyEdit_applyEdit_old_details_SceneEdit;
 
 export interface ApplyEdit_applyEdit_merge_sources_Tag_category {
   __typename: "TagCategory";
@@ -537,7 +1177,79 @@ export interface ApplyEdit_applyEdit_merge_sources_Studio {
   deleted: boolean;
 }
 
-export type ApplyEdit_applyEdit_merge_sources = ApplyEdit_applyEdit_merge_sources_Scene | ApplyEdit_applyEdit_merge_sources_Tag | ApplyEdit_applyEdit_merge_sources_Performer | ApplyEdit_applyEdit_merge_sources_Studio;
+export interface ApplyEdit_applyEdit_merge_sources_Scene_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface ApplyEdit_applyEdit_merge_sources_Scene_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface ApplyEdit_applyEdit_merge_sources_Scene_studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface ApplyEdit_applyEdit_merge_sources_Scene_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  gender: GenderEnum | null;
+  aliases: string[];
+}
+
+export interface ApplyEdit_applyEdit_merge_sources_Scene_performers {
+  __typename: "PerformerAppearance";
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+  performer: ApplyEdit_applyEdit_merge_sources_Scene_performers_performer;
+}
+
+export interface ApplyEdit_applyEdit_merge_sources_Scene_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface ApplyEdit_applyEdit_merge_sources_Scene_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface ApplyEdit_applyEdit_merge_sources_Scene {
+  __typename: "Scene";
+  id: string;
+  date: any | null;
+  title: string | null;
+  details: string | null;
+  director: string | null;
+  duration: number | null;
+  urls: ApplyEdit_applyEdit_merge_sources_Scene_urls[];
+  images: ApplyEdit_applyEdit_merge_sources_Scene_images[];
+  studio: ApplyEdit_applyEdit_merge_sources_Scene_studio | null;
+  performers: ApplyEdit_applyEdit_merge_sources_Scene_performers[];
+  fingerprints: ApplyEdit_applyEdit_merge_sources_Scene_fingerprints[];
+  tags: ApplyEdit_applyEdit_merge_sources_Scene_tags[];
+}
+
+export type ApplyEdit_applyEdit_merge_sources = ApplyEdit_applyEdit_merge_sources_Tag | ApplyEdit_applyEdit_merge_sources_Performer | ApplyEdit_applyEdit_merge_sources_Studio | ApplyEdit_applyEdit_merge_sources_Scene;
 
 export interface ApplyEdit_applyEdit_options {
   __typename: "PerformerEditOptions";

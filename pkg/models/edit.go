@@ -10,9 +10,11 @@ type EditRepo interface {
 	CreateEditTag(newJoin EditTag) error
 	CreateEditPerformer(newJoin EditPerformer) error
 	CreateEditStudio(newJoin EditStudio) error
+	CreateEditScene(newJoin EditScene) error
 	FindTagID(id uuid.UUID) (*uuid.UUID, error)
 	FindPerformerID(id uuid.UUID) (*uuid.UUID, error)
 	FindStudioID(id uuid.UUID) (*uuid.UUID, error)
+	FindSceneID(id uuid.UUID) (*uuid.UUID, error)
 	Count() (int, error)
 	Query(editFilter *EditFilterType, findFilter *QuerySpec) ([]*Edit, int)
 	CreateComment(newJoin EditComment) error
@@ -20,4 +22,5 @@ type EditRepo interface {
 	FindByTagID(id uuid.UUID) ([]*Edit, error)
 	FindByPerformerID(id uuid.UUID) ([]*Edit, error)
 	FindByStudioID(id uuid.UUID) ([]*Edit, error)
+	FindBySceneID(id uuid.UUID) ([]*Edit, error)
 }

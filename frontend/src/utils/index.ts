@@ -5,3 +5,4 @@ export * from "./edit";
 export * from "./transforms";
 export * from "./route";
 export * from "./markdown";
+export * from "./enum";

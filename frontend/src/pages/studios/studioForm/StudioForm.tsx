@@ -29,7 +29,12 @@ const schema = yup.object({
       })
     )
     .required(),
-  studio: yup.string().nullable(),
+  studio: yup
+    .object({
+      id: yup.string().required(),
+      name: yup.string().required(),
+    })
+    .nullable(),
   note: yup.string().required("Edit note is required"),
 });
 
@@ -68,7 +73,7 @@ const StudioForm: React.FC<StudioProps> = ({
       name: data.title,
       urls,
       image_ids: data.images.map((i) => i.id),
-      parent_id: data.studio,
+      parent_id: data.studio?.id,
     };
     callback(callbackData, data.note);
   };

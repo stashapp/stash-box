@@ -1,23 +1,30 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useState, useEffect, useRef } from "react";
-import { useHistory, Link } from "react-router-dom";
+import React, { useState, useMemo, useRef } from "react";
+import { useHistory } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
-import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Form,
+  InputGroup,
+  Tab,
+  Table,
+  Tabs,
+} from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 import {
-  SceneUpdateInput,
-  FingerprintEditInput,
   FingerprintAlgorithm,
   GenderEnum,
+  SceneEditDetailsInput,
 } from "src/graphql";
-import { getUrlByType, createHref } from "src/utils";
-import { ROUTE_SCENES, ROUTE_SCENE } from "src/constants/route";
+import { getUrlByType, formatDuration, parseDuration } from "src/utils";
 
+import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import { GenderIcon, Icon } from "src/components/fragments";
 import SearchField, {
   SearchType,
@@ -26,14 +33,13 @@ import SearchField, {
 import TagSelect from "src/components/tagSelect";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
+import { EditNote } from "src/components/form";
+import DiffScene from "./diff";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
-const zeroCheck = (input: number | null) =>
-  input === 0 || Number.isNaN(input) ? null : input;
 
 const schema = yup.object({
-  id: yup.string().defined(),
   title: yup.string().required("Title is required"),
   details: yup.string().trim(),
   date: yup
@@ -43,13 +49,22 @@ const schema = yup.object({
       excludeEmptyString: true,
       message: "Invalid date",
     })
+    .nullable()
+    .required("Release date is required"),
+  duration: yup
+    .string()
+    .matches(/^((\d+:)?([0-5]?\d):)?([0-5]?\d)$/, {
+      excludeEmptyString: true,
+      message: "Invalid duration, format should be HH:MM:SS",
+    })
     .nullable(),
-  duration: yup.number().positive().transform(zeroCheck).nullable(),
   director: yup.string().trim().transform(nullCheck).nullable(),
   studio: yup
-    .string()
-    .typeError("Studio is required")
-    .transform(nullCheck)
+    .object({
+      id: yup.string().required("asdasd"),
+      name: yup.string().required(),
+    })
+    .nullable()
     .required("Studio is required"),
   studioURL: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
   performers: yup
@@ -66,7 +81,7 @@ const schema = yup.object({
         })
         .required()
     )
-    .required(),
+    .ensure(),
   fingerprints: yup
     .array()
     .of(
@@ -82,8 +97,16 @@ const schema = yup.object({
         updated: yup.string().required(),
       })
     )
-    .nullable(),
-  tags: yup.array().of(yup.string().required()).nullable(),
+    .ensure(),
+  tags: yup
+    .array()
+    .of(
+      yup.object({
+        id: yup.string().required(),
+        name: yup.string().required(),
+      })
+    )
+    .ensure(),
   images: yup
     .array()
     .of(
@@ -93,16 +116,19 @@ const schema = yup.object({
       })
     )
     .required(),
+  note: yup.string().required("Edit note is required"),
 });
 
 interface SceneFormData extends yup.Asserts<typeof schema> {}
+export type CastedSceneFormData = yup.TypeOf<typeof schema>;
 
 interface SceneProps {
   scene: Scene;
-  callback: (updateData: SceneUpdateInput) => void;
+  callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
+  saving: boolean;
 }
 
-const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
+const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
   const history = useHistory();
   const fingerprintHash = useRef<HTMLInputElement>(null);
   const fingerprintDuration = useRef<HTMLInputElement>(null);
@@ -111,13 +137,30 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     register,
     control,
     handleSubmit,
-    setValue,
+    watch,
     formState: { errors },
   } = useForm<SceneFormData>({
     resolver: yupResolver(schema),
     mode: "onBlur",
     defaultValues: {
+      title: scene?.title ?? undefined,
+      details: scene?.details ?? undefined,
+      date: scene?.date,
+      duration: formatDuration(scene?.duration),
+      director: scene?.director,
+      studioURL: getUrlByType(scene.urls, "STUDIO"),
       images: scene.images,
+      studio: scene.studio ?? undefined,
+      fingerprints: scene.fingerprints,
+      tags: scene.tags,
+      performers: scene.performers.map((p) => ({
+        performerId: p.performer.id,
+        name: p.performer.name,
+        alias: p.as ?? "",
+        gender: p.performer.gender,
+        disambiguation: p.performer.disambiguation,
+        deleted: p.performer.deleted,
+      })),
     },
   });
   const {
@@ -128,62 +171,49 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
   } = useFieldArray({
     control,
     name: "performers",
-    keyName: "performerId",
+    keyName: "key",
+  });
+  const {
+    fields: fingerprintFields,
+    append: appendFingerprint,
+    remove: removeFingerprint,
+  } = useFieldArray({
+    control,
+    name: "fingerprints",
+    keyName: "key",
+  });
+  const { replace: replaceTags } = useFieldArray({
+    control,
+    name: "tags",
+    keyName: "key",
   });
 
-  const [fingerprints, setFingerprints] = useState<FingerprintEditInput[]>(
-    scene.fingerprints.map((f) => ({
-      hash: f.hash,
-      algorithm: f.algorithm,
-      duration: f.duration,
-      submissions: f.submissions,
-      updated: f.updated,
-      created: f.created,
-    }))
+  const fieldData = watch();
+  const [oldSceneChanges, newSceneChanges] = useMemo(
+    () => DiffScene(schema.cast(fieldData), scene),
+    [fieldData, scene]
   );
 
   const [isChanging, setChange] = useState<number | undefined>();
-
-  useEffect(() => {
-    register("tags");
-    register("fingerprints");
-    setValue("fingerprints", fingerprints);
-    setValue("tags", scene.tags ? scene.tags.map((tag) => tag.id) : []);
-    setValue(
-      "performers",
-      scene.performers.map((p) => ({
-        performerId: p.performer.id,
-        name: p.performer.name,
-        alias: p.as ?? "",
-        gender: p.performer.gender,
-        disambiguation: p.performer.disambiguation,
-        deleted: p.performer.deleted,
-      }))
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [register, setValue]);
+  const [activeTab, setActiveTab] = useState("details");
 
   const onTagChange = (selectedTags: Tag[]) =>
-    setValue(
-      "tags",
-      selectedTags.map((t) => t.id)
-    );
+    replaceTags(selectedTags.map((t) => ({ id: t.id, name: t.name })));
 
   const onSubmit = (data: SceneFormData) => {
-    const sceneData: SceneUpdateInput = {
-      id: data.id,
+    const sceneData: SceneEditDetailsInput = {
       title: data.title,
       date: data.date,
-      duration: data.duration,
+      duration: parseDuration(data.duration),
       director: data.director,
       details: data.details,
-      studio_id: data.studio,
+      studio_id: data.studio?.id,
       performers: (data.performers ?? []).map((performance) => ({
         performer_id: performance.performerId,
         as: performance.alias,
       })),
       image_ids: data.images.map((i) => i.id),
-      fingerprints: (data?.fingerprints ?? []).map((f) => ({
+      fingerprints: data.fingerprints.map((f) => ({
         hash: f.hash,
         algorithm: f.algorithm as FingerprintAlgorithm,
         duration: f.duration,
@@ -191,13 +221,13 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         updated: f.updated,
         submissions: f.submissions,
       })),
-      tag_ids: data.tags,
+      tag_ids: data.tags.map((t) => t.id),
     };
     const urls = [];
     if (data.studioURL) urls.push({ url: data.studioURL, type: "STUDIO" });
     sceneData.urls = urls;
 
-    callback(sceneData);
+    callback(sceneData, data.note);
   };
 
   const addPerformer = (result: PerformerResult) => {
@@ -305,40 +335,30 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       !algorithm ||
       !hash ||
       !duration ||
-      fingerprints.some((f) => f.hash === hash) ||
+      fingerprintFields.some((f) => f.hash === hash) ||
       hash === ""
     )
       return;
-    const newFingerprints = [
-      ...fingerprints,
-      {
-        hash,
-        algorithm,
-        duration,
-        submissions: 1,
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-      },
-    ];
-    setFingerprints(newFingerprints);
-    setValue("fingerprints", newFingerprints);
+    appendFingerprint({
+      hash,
+      algorithm,
+      duration,
+      submissions: 1,
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+    });
     fingerprintHash.current.value = "";
     fingerprintDuration.current.value = "";
   };
-  const removeFingerprint = (hash: string) => {
-    const newFingerprints = fingerprints.filter((f) => f.hash !== hash);
-    setFingerprints(newFingerprints);
-    setValue("fingerprints", newFingerprints);
-  };
 
   const renderFingerprints = () => {
-    const fingerprintList = fingerprints.map((f) => (
+    const fingerprintList = fingerprintFields.map((f, i) => (
       <tr key={f.hash}>
         <td>
           <button
             className="remove-item"
             type="button"
-            onClick={() => removeFingerprint(f.hash)}
+            onClick={() => removeFingerprint(i)}
           >
             <Icon icon="times-circle" />
           </button>
@@ -352,7 +372,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
       </tr>
     ));
 
-    return fingerprints.length > 0 ? (
+    return fingerprintFields.length > 0 ? (
       <Table size="sm">
         <thead>
           <tr>
@@ -374,9 +394,12 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
 
   return (
     <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
-      <input type="hidden" value={scene.id} {...register("id")} />
-      <Row>
-        <Col xs={10}>
+      <Tabs
+        activeKey={activeTab}
+        onSelect={(key) => key && setActiveTab(key)}
+        className="row"
+      >
+        <Tab eventKey="details" title="Details" className="col-xl-9">
           <Form.Row>
             <Form.Group controlId="title" className="col-8">
               <Form.Label>Title</Form.Label>
@@ -413,7 +436,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               <Form.Control
                 as="input"
                 className={cx({ "is-invalid": errors.duration })}
-                type="number"
                 placeholder="Duration"
                 defaultValue={scene?.duration ?? ""}
                 {...register("duration")}
@@ -443,9 +465,14 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
           <Form.Row>
             <Form.Group controlId="studioId" className="studio-select col-6">
               <Form.Label>Studio</Form.Label>
-              <StudioSelect initialStudio={scene.studio} control={control} />
+              <StudioSelect
+                initialStudio={scene.studio}
+                control={control}
+                isClearable
+              />
               <Form.Control.Feedback type="invalid">
-                {errors?.studio?.message}
+                {/* Workaround for typing error in react-hook-form */}
+                {(errors.studio as { message: string })?.message}
               </Form.Control.Feedback>
             </Form.Group>
 
@@ -501,11 +528,41 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             <TagSelect tags={scene.tags} onChange={onTagChange} />
           </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Images</Form.Label>
-            <EditImages control={control} maxImages={1} />
-          </Form.Group>
+          <Form.Row className="mt-1">
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button className="mr-1" onClick={() => setActiveTab("images")}>
+              Next
+            </Button>
+          </Form.Row>
+        </Tab>
+        <Tab eventKey="images" title="Images">
+          <Form.Row>
+            <EditImages control={control} />
+          </Form.Row>
 
+          <Form.Row className="mt-1">
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="mr-1"
+              onClick={() => setActiveTab("fingerprints")}
+            >
+              Next
+            </Button>
+          </Form.Row>
+        </Tab>
+        <Tab eventKey="fingerprints" title="Fingerprints">
           <Form.Group>
             <Form.Label>Fingerprints</Form.Label>
             {renderFingerprints()}
@@ -522,7 +579,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
               ref={fingerprintAlgorithm}
             >
               {Object.keys(FingerprintAlgorithm).map((f) => (
-                <option value={f}>{f}</option>
+                <option value={f} key={f}>
+                  {f}
+                </option>
               ))}
             </Form.Control>
             <Form.Control
@@ -546,24 +605,46 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             </Button>
           </Form.Group>
 
-          <Form.Group className="row">
-            <Col>
-              <Button type="submit">Save</Button>
-            </Col>
-            <Button type="reset" variant="secondary" className="ml-auto">
-              Reset
-            </Button>
-            <Link
-              to={createHref(scene.id ? ROUTE_SCENE : ROUTE_SCENES, scene)}
-              className="ml-2"
+          <Form.Row className="mt-1">
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
             >
-              <Button variant="danger" onClick={() => history.goBack()}>
-                Cancel
-              </Button>
-            </Link>
-          </Form.Group>
-        </Col>
-      </Row>
+              Cancel
+            </Button>
+            <Button className="mr-1" onClick={() => setActiveTab("confirm")}>
+              Next
+            </Button>
+          </Form.Row>
+        </Tab>
+        <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
+          {renderSceneDetails(newSceneChanges, oldSceneChanges, true)}
+          <Form.Row className="my-4">
+            <Col md={{ span: 8, offset: 4 }}>
+              <EditNote register={register} error={errors.note} />
+            </Col>
+          </Form.Row>
+          <Form.Row className="mt-2">
+            <Button
+              variant="danger"
+              className="ml-auto mr-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled
+              className="d-none"
+              aria-hidden="true"
+            />
+            <Button type="submit" disabled={saving}>
+              Submit Edit
+            </Button>
+          </Form.Row>
+        </Tab>
+      </Tabs>
     </Form>
   );
 };

@@ -12,7 +12,51 @@ import (
 )
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
-	panic("not implemented")
+	if err := validateEdit(ctx); err != nil {
+		return nil, err
+	}
+
+	// TODO - handle modification of existing edit
+
+	UUID, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
+	// create the edit
+	currentUser := getCurrentUser(ctx)
+
+	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumScene, input.Edit)
+
+	fac := r.getRepoFactory(ctx)
+
+	err = fac.WithTxn(func() error {
+		p := edit.Scene(fac, newEdit)
+		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+			return err
+		}
+
+		_, err := p.CreateEdit()
+		if err != nil {
+			return err
+		}
+
+		if err := p.CreateJoin(input); err != nil {
+			return err
+		}
+
+		if err := p.CreateComment(currentUser, input.Edit.Comment); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return newEdit, nil
 }
 func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
 	if err := validateEdit(ctx); err != nil {

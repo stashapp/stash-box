@@ -10,6 +10,7 @@ type TagRepo interface {
 	CreateAliases(newJoins TagAliases) error
 	UpdateAliases(tagID uuid.UUID, updatedJoins TagAliases) error
 	Find(id uuid.UUID) (*Tag, error)
+	FindBySceneID(sceneID uuid.UUID) ([]*Tag, error)
 	FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error)
 	FindByIds(ids []uuid.UUID) ([]*Tag, []error)
 	FindByNames(names []string) ([]*Tag, error)
