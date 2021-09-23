@@ -44,6 +44,7 @@ type ResolverRoot interface {
 	PerformerEdit() PerformerEditResolver
 	Query() QueryResolver
 	Scene() SceneResolver
+	SceneEdit() SceneEditResolver
 	Studio() StudioResolver
 	StudioEdit() StudioEditResolver
 	Tag() TagResolver
@@ -292,6 +293,7 @@ type ComplexityRoot struct {
 		Details      func(childComplexity int) int
 		Director     func(childComplexity int) int
 		Duration     func(childComplexity int) int
+		Edits        func(childComplexity int) int
 		Fingerprints func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Images       func(childComplexity int) int
@@ -317,7 +319,7 @@ type ComplexityRoot struct {
 		RemovedPerformers   func(childComplexity int) int
 		RemovedTags         func(childComplexity int) int
 		RemovedUrls         func(childComplexity int) int
-		StudioID            func(childComplexity int) int
+		Studio              func(childComplexity int) int
 		Title               func(childComplexity int) int
 	}
 
@@ -543,6 +545,19 @@ type SceneResolver interface {
 	Fingerprints(ctx context.Context, obj *Scene) ([]*Fingerprint, error)
 	Duration(ctx context.Context, obj *Scene) (*int, error)
 	Director(ctx context.Context, obj *Scene) (*string, error)
+
+	Edits(ctx context.Context, obj *Scene) ([]*Edit, error)
+}
+type SceneEditResolver interface {
+	Studio(ctx context.Context, obj *SceneEdit) (*Studio, error)
+	AddedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
+	RemovedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
+	AddedTags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
+	RemovedTags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
+	AddedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
+	RemovedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
+	AddedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
+	RemovedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
 }
 type StudioResolver interface {
 	ID(ctx context.Context, obj *Studio) (string, error)
@@ -2093,6 +2108,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Duration(childComplexity), true
 
+	case "Scene.edits":
+		if e.complexity.Scene.Edits == nil {
+			break
+		}
+
+		return e.complexity.Scene.Edits(childComplexity), true
+
 	case "Scene.fingerprints":
 		if e.complexity.Scene.Fingerprints == nil {
 			break
@@ -2247,12 +2269,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneEdit.RemovedUrls(childComplexity), true
 
-	case "SceneEdit.studio_id":
-		if e.complexity.SceneEdit.StudioID == nil {
+	case "SceneEdit.studio":
+		if e.complexity.SceneEdit.Studio == nil {
 			break
 		}
 
-		return e.complexity.SceneEdit.StudioID(childComplexity), true
+		return e.complexity.SceneEdit.Studio(childComplexity), true
 
 	case "SceneEdit.title":
 		if e.complexity.SceneEdit.Title == nil {
@@ -3149,8 +3171,8 @@ type PerformerEdit {
   removed_tattoos: [BodyModification!]
   added_piercings: [BodyModification!]
   removed_piercings: [BodyModification!]
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
 }
 
 type PerformerEditOptions {
@@ -3292,6 +3314,7 @@ type Scene {
   duration: Int
   director: String
   deleted: Boolean!
+  edits: [Edit!]!
 }
 
 input SceneCreateInput {
@@ -3354,14 +3377,14 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: Date
-  studio_id: ID
+  studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
   removed_performers: [PerformerAppearance!]
   added_tags: [Tag!]
   removed_tags: [Tag!]
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
   added_fingerprints: [Fingerprint!]
   removed_fingerprints: [Fingerprint!]
   duration: Int
@@ -3444,8 +3467,8 @@ type StudioEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   parent: Studio
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
 }
 
 type QueryStudiosResultType {
@@ -9378,7 +9401,7 @@ func (ec *executionContext) _PerformerEdit_added_images(ctx context.Context, fie
 	}
 	res := resTmp.([]*Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PerformerEdit_removed_images(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
@@ -9410,7 +9433,7 @@ func (ec *executionContext) _PerformerEdit_removed_images(ctx context.Context, f
 	}
 	res := resTmp.([]*Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PerformerEditOptions_set_modify_aliases(ctx context.Context, field graphql.CollectedField, obj *PerformerEditOptions) (ret graphql.Marshaler) {
@@ -11395,6 +11418,41 @@ func (ec *executionContext) _Scene_deleted(ctx context.Context, field graphql.Co
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Scene_edits(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().Edits(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _SceneEdit_title(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11555,7 +11613,7 @@ func (ec *executionContext) _SceneEdit_date(ctx context.Context, field graphql.C
 	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SceneEdit_studio_id(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+func (ec *executionContext) _SceneEdit_studio(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11566,14 +11624,14 @@ func (ec *executionContext) _SceneEdit_studio_id(ctx context.Context, field grap
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.StudioID, nil
+		return ec.resolvers.SceneEdit().Studio(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11582,9 +11640,9 @@ func (ec *executionContext) _SceneEdit_studio_id(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*Studio)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOStudio2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudio(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneEdit_added_performers(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
@@ -11598,14 +11656,14 @@ func (ec *executionContext) _SceneEdit_added_performers(ctx context.Context, fie
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AddedPerformers, nil
+		return ec.resolvers.SceneEdit().AddedPerformers(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11630,14 +11688,14 @@ func (ec *executionContext) _SceneEdit_removed_performers(ctx context.Context, f
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.RemovedPerformers, nil
+		return ec.resolvers.SceneEdit().RemovedPerformers(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11662,14 +11720,14 @@ func (ec *executionContext) _SceneEdit_added_tags(ctx context.Context, field gra
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AddedTags, nil
+		return ec.resolvers.SceneEdit().AddedTags(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11694,14 +11752,14 @@ func (ec *executionContext) _SceneEdit_removed_tags(ctx context.Context, field g
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.RemovedTags, nil
+		return ec.resolvers.SceneEdit().RemovedTags(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11726,14 +11784,14 @@ func (ec *executionContext) _SceneEdit_added_images(ctx context.Context, field g
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AddedImages, nil
+		return ec.resolvers.SceneEdit().AddedImages(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11744,7 +11802,7 @@ func (ec *executionContext) _SceneEdit_added_images(ctx context.Context, field g
 	}
 	res := resTmp.([]*Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneEdit_removed_images(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
@@ -11758,14 +11816,14 @@ func (ec *executionContext) _SceneEdit_removed_images(ctx context.Context, field
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.RemovedImages, nil
+		return ec.resolvers.SceneEdit().RemovedImages(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11776,7 +11834,7 @@ func (ec *executionContext) _SceneEdit_removed_images(ctx context.Context, field
 	}
 	res := resTmp.([]*Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneEdit_added_fingerprints(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
@@ -11790,14 +11848,14 @@ func (ec *executionContext) _SceneEdit_added_fingerprints(ctx context.Context, f
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AddedFingerprints, nil
+		return ec.resolvers.SceneEdit().AddedFingerprints(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11822,14 +11880,14 @@ func (ec *executionContext) _SceneEdit_removed_fingerprints(ctx context.Context,
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.RemovedFingerprints, nil
+		return ec.resolvers.SceneEdit().RemovedFingerprints(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11870,9 +11928,9 @@ func (ec *executionContext) _SceneEdit_duration(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*int64)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneEdit_director(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
@@ -12306,7 +12364,7 @@ func (ec *executionContext) _StudioEdit_added_images(ctx context.Context, field 
 	}
 	res := resTmp.([]*Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _StudioEdit_removed_images(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
@@ -12338,7 +12396,7 @@ func (ec *executionContext) _StudioEdit_removed_images(ctx context.Context, fiel
 	}
 	res := resTmp.([]*Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Tag_id(ctx context.Context, field graphql.CollectedField, obj *Tag) (ret graphql.Marshaler) {
@@ -19788,6 +19846,20 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "edits":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_edits(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -19820,24 +19892,105 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = ec._SceneEdit_removed_urls(ctx, field, obj)
 		case "date":
 			out.Values[i] = ec._SceneEdit_date(ctx, field, obj)
-		case "studio_id":
-			out.Values[i] = ec._SceneEdit_studio_id(ctx, field, obj)
+		case "studio":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_studio(ctx, field, obj)
+				return res
+			})
 		case "added_performers":
-			out.Values[i] = ec._SceneEdit_added_performers(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_added_performers(ctx, field, obj)
+				return res
+			})
 		case "removed_performers":
-			out.Values[i] = ec._SceneEdit_removed_performers(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_removed_performers(ctx, field, obj)
+				return res
+			})
 		case "added_tags":
-			out.Values[i] = ec._SceneEdit_added_tags(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_added_tags(ctx, field, obj)
+				return res
+			})
 		case "removed_tags":
-			out.Values[i] = ec._SceneEdit_removed_tags(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_removed_tags(ctx, field, obj)
+				return res
+			})
 		case "added_images":
-			out.Values[i] = ec._SceneEdit_added_images(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_added_images(ctx, field, obj)
+				return res
+			})
 		case "removed_images":
-			out.Values[i] = ec._SceneEdit_removed_images(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_removed_images(ctx, field, obj)
+				return res
+			})
 		case "added_fingerprints":
-			out.Values[i] = ec._SceneEdit_added_fingerprints(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_added_fingerprints(ctx, field, obj)
+				return res
+			})
 		case "removed_fingerprints":
-			out.Values[i] = ec._SceneEdit_removed_fingerprints(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_removed_fingerprints(ctx, field, obj)
+				return res
+			})
 		case "duration":
 			out.Values[i] = ec._SceneEdit_duration(ctx, field, obj)
 		case "director":
@@ -22798,7 +22951,7 @@ func (ec *executionContext) unmarshalOIDCriterionInput2ᚖgithubᚗcomᚋstashap
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx context.Context, sel ast.SelectionSet, v []*Image) graphql.Marshaler {
+func (ec *executionContext) marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []*Image) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -22825,7 +22978,7 @@ func (ec *executionContext) marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, sel, v[i])
+			ret[i] = ec.marshalNImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
