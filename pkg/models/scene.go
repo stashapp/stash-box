@@ -6,6 +6,7 @@ type SceneRepo interface {
 	Create(newScene Scene) (*Scene, error)
 	Update(updatedScene Scene) (*Scene, error)
 	Destroy(id uuid.UUID) error
+	SoftDelete(scene Scene) (*Scene, error)
 	CreateURLs(newJoins SceneURLs) error
 	UpdateURLs(scene uuid.UUID, updatedJoins SceneURLs) error
 	CreateFingerprints(newJoins SceneFingerprints) error
@@ -17,12 +18,14 @@ type SceneRepo interface {
 	FindByTitle(name string) ([]*Scene, error)
 	Count() (int, error)
 	Query(sceneFilter *SceneFilterType, findFilter *QuerySpec) ([]*Scene, int)
-	GetFingerprints(id uuid.UUID) ([]*Fingerprint, error)
+	GetFingerprints(id uuid.UUID) (SceneFingerprints, error)
 	GetAllFingerprints(ids []uuid.UUID) ([][]*Fingerprint, []error)
 	GetPerformers(id uuid.UUID) (PerformersScenes, error)
 	GetAllAppearances(ids []uuid.UUID) ([]PerformersScenes, []error)
-	GetURLs(id uuid.UUID) (SceneURLs, error)
+	GetURLs(id uuid.UUID) ([]*URL, error)
 	GetAllURLs(ids []uuid.UUID) ([][]*URL, []error)
 	SearchScenes(term string, limit int) ([]*Scene, error)
 	CountByPerformer(id uuid.UUID) (int, error)
+	MergeInto(source *Scene, target *Scene) error
+	ApplyEdit(scene *Scene, create bool, data *SceneEditData) (*Scene, error)
 }

@@ -71,7 +71,7 @@ const StudioSelect: React.FC<StudioSelectProps> = ({
           <Async
             classNamePrefix="react-select"
             className={`react-select ${CLASSNAME_SELECT}`}
-            onChange={(s) => onChange(s?.value ?? null)}
+            onChange={(s) => onChange({ id: s?.value, name: s?.label })}
             defaultValue={defaultValue}
             loadOptions={debouncedLoad}
             placeholder="Search for studio"

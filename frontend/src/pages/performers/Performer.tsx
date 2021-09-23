@@ -105,7 +105,12 @@ const PerformerComponent: React.FC = () => {
         <PerformerInfo performer={data.findPerformer} />
       </div>
       <hr className="my-2" />
-      <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
+      <Tabs
+        activeKey={activeTab}
+        id="performer-tabs"
+        mountOnEnter
+        onSelect={setTab}
+      >
         <Tab eventKey="scenes" title="Scenes" className="PerformerScenes">
           <CheckboxSelect
             values={obj}
