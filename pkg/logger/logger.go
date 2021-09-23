@@ -61,7 +61,6 @@ func openLogFile(logFile string) *os.File {
 
 		if err != nil {
 			fmt.Printf("Could not open '%s' for log output due to error: %s\n", logFile, err.Error())
-			logFile = ""
 		}
 	}
 
