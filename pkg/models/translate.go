@@ -84,7 +84,7 @@ func (d *editDiff) nullString(old sql.NullString, new *string) (oldOut *string, 
 		oldOut = &oldVal
 	}
 
-	if new != nil && (!old.Valid || *new != old.String) {
+	if new != nil && *new != "" && (!old.Valid || *new != old.String) {
 		newVal := *new
 		newOut = &newVal
 	}
@@ -152,6 +152,20 @@ func (d *editDiff) fuzzyDate(oldDate SQLiteDate, oldAcc sql.NullString, new *Fuz
 		if oldAcc.Valid {
 			outOldAcc = &oldAcc.String
 		}
+	}
+
+	return
+}
+
+func (d *editDiff) sqliteDate(old SQLiteDate, new *string) (oldOut *string, newOut *string) {
+	if old.Valid && (new == nil || *new != old.String) {
+		oldVal := old.String
+		oldOut = &oldVal
+	}
+
+	if new != nil && (!old.Valid || *new != old.String) {
+		newVal := *new
+		newOut = &newVal
 	}
 
 	return

@@ -119,6 +119,39 @@ func (e StudioEditDetailsInput) StudioEditFromCreate() StudioEditData {
 	}
 }
 
+func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) SceneEditData {
+	newData := &SceneEdit{}
+	oldData := &SceneEdit{}
+
+	ed := editDiff{}
+	oldData.Title, newData.Title = ed.nullString(orig.Title, e.Title)
+	oldData.Details, newData.Details = ed.nullString(orig.Details, e.Details)
+	oldData.Date, newData.Date = ed.sqliteDate(orig.Date, e.Date)
+	oldData.StudioID, newData.StudioID = ed.nullUUID(orig.StudioID, e.StudioID)
+	oldData.Duration, newData.Duration = ed.nullInt64(orig.Duration, e.Duration)
+	oldData.Director, newData.Director = ed.nullString(orig.Director, e.Director)
+
+	return SceneEditData{
+		New: newData,
+		Old: oldData,
+	}
+}
+
+func (e SceneEditDetailsInput) SceneEditFromMerge(orig Scene, sources []string) SceneEditData {
+	data := e.SceneEditFromDiff(orig)
+	data.MergeSources = sources
+
+	return data
+}
+
+func (e SceneEditDetailsInput) SceneEditFromCreate() SceneEditData {
+	ret := e.SceneEditFromDiff(Scene{})
+
+	return SceneEditData{
+		New: ret.New,
+	}
+}
+
 type EditSliceValue interface {
 	ID() string
 }

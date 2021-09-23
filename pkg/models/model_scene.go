@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 )
@@ -35,40 +36,50 @@ func (p *Scenes) Add(o interface{}) {
 	*p = append(*p, o.(*Scene))
 }
 
-type SceneFingerprint struct {
-	SceneID     uuid.UUID       `db:"scene_id" json:"scene_id"`
-	Hash        string          `db:"hash" json:"hash"`
-	Algorithm   string          `db:"algorithm" json:"algorithm"`
-	Duration    int             `db:"duration" json:"duration"`
-	Submissions int             `db:"submissions" json:"submissions"`
-	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-}
-
 type SceneURL struct {
 	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
 	URL     string    `db:"url" json:"url"`
 	Type    string    `db:"type" json:"type"`
 }
 
-func (p *SceneURL) ToURL() URL {
+func (u SceneURL) ID() string {
+	return u.URL + u.Type
+}
+
+func (u *SceneURL) ToURL() URL {
 	url := URL{
-		URL:  p.URL,
-		Type: p.Type,
+		URL:  u.URL,
+		Type: u.Type,
 	}
 	return url
 }
 
 type SceneURLs []*SceneURL
 
-func (p SceneURLs) Each(fn func(interface{})) {
-	for _, v := range p {
+func (u SceneURLs) Each(fn func(interface{})) {
+	for _, v := range u {
 		fn(*v)
 	}
 }
 
-func (p *SceneURLs) Add(o interface{}) {
-	*p = append(*p, o.(*SceneURL))
+func (u SceneURLs) EachPtr(fn func(interface{})) {
+	for _, v := range u {
+		fn(v)
+	}
+}
+
+func (u *SceneURLs) Add(o interface{}) {
+	*u = append(*u, o.(*SceneURL))
+}
+
+func (u *SceneURLs) Remove(id string) {
+	for i, v := range *u {
+		if (*v).ID() == id {
+			(*u)[i] = (*u)[len(*u)-1]
+			*u = (*u)[:len(*u)-1]
+			break
+		}
+	}
 }
 
 func CreateSceneURLs(sceneID uuid.UUID, urls []*URLInput) SceneURLs {
@@ -85,6 +96,20 @@ func CreateSceneURLs(sceneID uuid.UUID, urls []*URLInput) SceneURLs {
 	return ret
 }
 
+type SceneFingerprint struct {
+	SceneID     uuid.UUID       `db:"scene_id" json:"scene_id"`
+	Hash        string          `db:"hash" json:"hash"`
+	Algorithm   string          `db:"algorithm" json:"algorithm"`
+	Duration    int             `db:"duration" json:"duration"`
+	Submissions int             `db:"submissions" json:"submissions"`
+	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
+	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+}
+
+func (p SceneFingerprint) ID() string {
+	return p.Algorithm + p.Hash + ":" + strconv.Itoa(p.Duration) + ":" + strconv.Itoa(p.Submissions)
+}
+
 func (p SceneFingerprint) ToFingerprint() *Fingerprint {
 	return &Fingerprint{
 		Algorithm:   FingerprintAlgorithm(p.Algorithm),
@@ -98,19 +123,35 @@ func (p SceneFingerprint) ToFingerprint() *Fingerprint {
 
 type SceneFingerprints []*SceneFingerprint
 
-func (p SceneFingerprints) Each(fn func(interface{})) {
-	for _, v := range p {
+func (f SceneFingerprints) Each(fn func(interface{})) {
+	for _, v := range f {
 		fn(*v)
 	}
 }
 
-func (p *SceneFingerprints) Add(o interface{}) {
-	*p = append(*p, o.(*SceneFingerprint))
+func (f SceneFingerprints) EachPtr(fn func(interface{})) {
+	for _, v := range f {
+		fn(v)
+	}
 }
 
-func (p SceneFingerprints) ToFingerprints() []*Fingerprint {
+func (f *SceneFingerprints) Add(o interface{}) {
+	*f = append(*f, o.(*SceneFingerprint))
+}
+
+func (f *SceneFingerprints) Remove(id string) {
+	for i, v := range *f {
+		if (*v).ID() == id {
+			(*f)[i] = (*f)[len(*f)-1]
+			*f = (*f)[:len(*f)-1]
+			break
+		}
+	}
+}
+
+func (f SceneFingerprints) ToFingerprints() []*Fingerprint {
 	var ret []*Fingerprint
-	for _, v := range p {
+	for _, v := range f {
 		ret = append(ret, v.ToFingerprint())
 	}
 
@@ -222,4 +263,27 @@ func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) {
 	if input.Date != nil {
 		p.setDate(*input.Date)
 	}
+}
+
+func (p *Scene) CopyFromSceneEdit(input SceneEdit, old *SceneEdit) {
+	fe := fromEdit{}
+	fe.nullString(&p.Title, input.Title, old.Title)
+	fe.nullString(&p.Details, input.Details, old.Details)
+	fe.sqliteDate(&p.Date, input.Date, old.Date)
+	fe.nullUUID(&p.StudioID, input.StudioID, old.StudioID)
+	fe.nullInt64(&p.Duration, input.Duration, old.Duration)
+	fe.nullString(&p.Director, input.Director, old.Director)
+}
+
+func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
+	v := editValidator{}
+
+	v.string("Title", edit.Old.Title, p.Title.String)
+	v.string("Details", edit.Old.Details, p.Details.String)
+	v.string("Date", edit.Old.Date, p.Date.String)
+	v.uuid("StudioID", edit.Old.StudioID, p.StudioID)
+	v.int64("Duration", edit.Old.Duration, p.Duration.Int64)
+	v.string("Director", edit.Old.Director, p.Director.String)
+
+	return nil
 }

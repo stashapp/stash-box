@@ -90,6 +90,19 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 
 		return target, nil
+	} else if targetType == models.TargetTypeEnumScene {
+		sceneID, err := eqb.FindSceneID(obj.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		sqb := fac.Scene()
+		target, err := sqb.Find(*sceneID)
+		if err != nil {
+			return nil, err
+		}
+
+		return target, nil
 	} else {
 		return nil, errors.New("not implemented")
 	}
@@ -142,6 +155,15 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 					mergeSources = append(mergeSources, studio)
 				}
 			}
+		} else if ret == models.TargetTypeEnumScene {
+			qb := fac.Scene()
+			for _, sceneStringID := range editData.MergeSources {
+				sceneID, _ := uuid.FromString(sceneStringID)
+				scene, err := qb.Find(sceneID)
+				if err == nil {
+					mergeSources = append(mergeSources, scene)
+				}
+			}
 		} else {
 			return nil, errors.New("not implemented")
 		}
@@ -180,6 +202,12 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 			return nil, err
 		}
 		ret = studioData.New
+	} else if targetType == models.TargetTypeEnumScene {
+		sceneData, err := obj.GetSceneData()
+		if err != nil {
+			return nil, err
+		}
+		ret = sceneData.New
 	}
 
 	return ret, nil
@@ -207,6 +235,12 @@ func (r *editResolver) OldDetails(ctx context.Context, obj *models.Edit) (models
 			return nil, err
 		}
 		ret = studioData.Old
+	} else if targetType == models.TargetTypeEnumScene {
+		sceneData, err := obj.GetSceneData()
+		if err != nil {
+			return nil, err
+		}
+		ret = sceneData.Old
 	}
 
 	return ret, nil

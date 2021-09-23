@@ -6,12 +6,14 @@ import {
   ROUTE_SCENE_ADD,
   ROUTE_SCENES,
   ROUTE_SCENE_EDIT,
+  ROUTE_SCENE_DELETE,
 } from "src/constants/route";
 
 import Scenes from "./Scenes";
 import Scene from "./Scene";
 import SceneEdit from "./SceneEdit";
 import SceneAdd from "./SceneAdd";
+import SceneDelete from "./SceneDelete";
 
 const SceneRoutes: React.FC = () => (
   <Switch>
@@ -26,6 +28,9 @@ const SceneRoutes: React.FC = () => (
     </Route>
     <Route exact path={ROUTE_SCENE_EDIT}>
       <SceneEdit />
+    </Route>
+    <Route exact path={ROUTE_SCENE_DELETE}>
+      <SceneDelete />
     </Route>
   </Switch>
 );

@@ -24,10 +24,16 @@ const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
     fields: images,
     append,
     remove,
-  } = useFieldArray<{ images: Array<{ id: string; url: string }> }>({
+  } = useFieldArray<
+    { images: Array<{ id: string; url: string; key: string }> },
+    "images",
+    "key"
+  >({
     control,
     name: "images",
+    keyName: "key",
   });
+
   const [file, setFile] = useState<File | undefined>();
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
@@ -75,7 +81,7 @@ const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
   const isDisabled = maxImages !== undefined && images.length >= maxImages;
 
   return (
-    <Form.Row className={CLASSNAME}>
+    <Form.Row className={`${CLASSNAME} w-100`}>
       <Col xs={7} className="d-flex flex-wrap justify-content-between">
         {images.map((i, index) => (
           <ImageInput image={i} onRemove={() => remove(index)} key={i.id} />

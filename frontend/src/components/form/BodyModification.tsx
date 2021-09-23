@@ -34,10 +34,10 @@ const BodyModification: React.FC<BodyModificationProps> = ({
     append,
     remove,
     update,
-  } = useFieldArray<BodyModificationFieldArray, string, "location">({
+  } = useFieldArray<BodyModificationFieldArray, string, "key">({
     control,
     name,
-    keyName: "location",
+    keyName: "key",
   });
   const isNewLocationValid = (inputValue: string): boolean =>
     !!inputValue &&
