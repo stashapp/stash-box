@@ -1,10 +1,8 @@
 // +build tools
 
-package main
+package tools
 
 import (
-	_ "github.com/99designs/gqlgen/cmd"
-	_ "github.com/kisielk/errcheck"
+	_ "github.com/99designs/gqlgen"
 	_ "github.com/vektah/dataloaden"
-	_ "honnef.co/go/tools/cmd/staticcheck"
 )

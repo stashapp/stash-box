@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash-box/pkg/models"
-	. "github.com/stashapp/stash-box/pkg/user"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 const (
@@ -19,11 +19,11 @@ type userNameTest struct {
 }
 
 var userNameScenarios []userNameTest = []userNameTest{
-	{"", ErrEmptyUsername},
-	{"  aa", ErrUsernameHasWhitespace},
-	{"\taa", ErrUsernameHasWhitespace},
-	{"aa  ", ErrUsernameHasWhitespace},
-	{"aa\t", ErrUsernameHasWhitespace},
+	{"", user.ErrEmptyUsername},
+	{"  aa", user.ErrUsernameHasWhitespace},
+	{"\taa", user.ErrUsernameHasWhitespace},
+	{"aa  ", user.ErrUsernameHasWhitespace},
+	{"aa\t", user.ErrUsernameHasWhitespace},
 	{"aa aa", nil},
 	{"aa\taa", nil},
 }
@@ -34,12 +34,12 @@ type userEmailTest struct {
 }
 
 var userEmailScenarios []userEmailTest = []userEmailTest{
-	{"", ErrEmptyEmail},
-	{"just a string", ErrInvalidEmail},
-	{"   aa@bb.com", ErrEmailHasWhitespace},
-	{"aa@bb.com    ", ErrEmailHasWhitespace},
-	{"aa\t@bb.com", ErrInvalidEmail},
-	{"aa@bb", ErrInvalidEmail},
+	{"", user.ErrEmptyEmail},
+	{"just a string", user.ErrInvalidEmail},
+	{"   aa@bb.com", user.ErrEmailHasWhitespace},
+	{"aa@bb.com    ", user.ErrEmailHasWhitespace},
+	{"aa\t@bb.com", user.ErrInvalidEmail},
+	{"aa@bb", user.ErrInvalidEmail},
 	{"abc@def.com", nil},
 }
 
@@ -49,13 +49,13 @@ type userPasswordTest struct {
 }
 
 var userPasswordScenarios []userPasswordTest = []userPasswordTest{
-	{"", ErrPasswordTooShort},
-	{"fyebg25", ErrPasswordTooShort},
-	{"password901234567890123456789012345678901234567890123456789012345", ErrPasswordTooLong},
-	{"qhdyydhq", ErrPasswordInsufficientUniqueChars},
-	{"password", ErrBannedPassword},
-	{DefaultUsername, ErrPasswordUsername},
-	{DefaultEmail, ErrPasswordEmail},
+	{"", user.ErrPasswordTooShort},
+	{"fyebg25", user.ErrPasswordTooShort},
+	{"password901234567890123456789012345678901234567890123456789012345", user.ErrPasswordTooLong},
+	{"qhdyydhq", user.ErrPasswordInsufficientUniqueChars},
+	{"password", user.ErrBannedPassword},
+	{DefaultUsername, user.ErrPasswordUsername},
+	{DefaultEmail, user.ErrPasswordEmail},
 	{"abcdeabcde", nil},
 }
 
@@ -72,7 +72,7 @@ func TestValidateUserNameCreate(t *testing.T) {
 		input := makeValidUserCreateInput()
 		input.Name = v.username
 
-		err := ValidateCreate(input)
+		err := user.ValidateCreate(input)
 
 		if err != v.err {
 			t.Errorf("name: %s - got %v; want %v", v.username, err, v.err)
@@ -85,7 +85,7 @@ func TestValidateUserEmailCreate(t *testing.T) {
 		input := makeValidUserCreateInput()
 		input.Email = v.email
 
-		err := ValidateCreate(input)
+		err := user.ValidateCreate(input)
 
 		if err != v.err {
 			t.Errorf("email: %s - got %v; want %v", v.email, err, v.err)
@@ -98,7 +98,7 @@ func TestValidatePasswordCreate(t *testing.T) {
 		input := makeValidUserCreateInput()
 		input.Password = v.password
 
-		err := ValidateCreate(input)
+		err := user.ValidateCreate(input)
 
 		if err != v.err {
 			t.Errorf("password: %s - got %v; want %v", v.password, err, v.err)
@@ -124,7 +124,7 @@ func TestValidateUserNameUpdate(t *testing.T) {
 		input := makeValidUserUpdateInput()
 		input.Name = &v.username
 
-		err := ValidateUpdate(input, makeValidUser())
+		err := user.ValidateUpdate(input, makeValidUser())
 
 		if err != v.err {
 			t.Errorf("name: %s - got %v; want %v", v.username, err, v.err)
@@ -137,7 +137,7 @@ func TestValidateUserEmailUpdate(t *testing.T) {
 		input := makeValidUserUpdateInput()
 		input.Email = &v.email
 
-		err := ValidateUpdate(input, makeValidUser())
+		err := user.ValidateUpdate(input, makeValidUser())
 
 		if err != v.err {
 			t.Errorf("email: %s - got %v; want %v", v.email, err, v.err)
@@ -150,7 +150,7 @@ func TestValidatePasswordUpdate(t *testing.T) {
 		input := makeValidUserUpdateInput()
 		input.Email = &v.email
 
-		err := ValidateUpdate(input, makeValidUser())
+		err := user.ValidateUpdate(input, makeValidUser())
 
 		if err != v.err {
 			t.Errorf("password: %s - got %v; want %v", v.email, err, v.err)
@@ -165,10 +165,10 @@ func TestChangeRootUsername(t *testing.T) {
 
 	rootUser := makeValidUser()
 	rootUser.Name = "root"
-	err := ValidateUpdate(input, rootUser)
+	err := user.ValidateUpdate(input, rootUser)
 
-	if err != ErrChangeRootName {
-		t.Errorf("change root username: got %v; want %v", err, ErrChangeRootName)
+	if err != user.ErrChangeRootName {
+		t.Errorf("change root username: got %v; want %v", err, user.ErrChangeRootName)
 	}
 }
 
@@ -180,25 +180,25 @@ func TestChangeRootRoles(t *testing.T) {
 
 	rootUser := makeValidUser()
 	rootUser.Name = "root"
-	err := ValidateUpdate(input, rootUser)
+	err := user.ValidateUpdate(input, rootUser)
 
-	if err != ErrChangeRootRoles {
-		t.Errorf("change root roles: got %v; want %v", err, ErrChangeRootRoles)
+	if err != user.ErrChangeRootRoles {
+		t.Errorf("change root roles: got %v; want %v", err, user.ErrChangeRootRoles)
 	}
 }
 
 var destroyUserScenarios []userNameTest = []userNameTest{
-	{"root", ErrDeleteRoot},
+	{"root", user.ErrDeleteRoot},
 	{"user", nil},
 }
 
 func TestDestroyUser(t *testing.T) {
 	for _, v := range destroyUserScenarios {
-		user := &models.User{
+		u := &models.User{
 			Name: v.username,
 		}
 
-		err := ValidateDestroy(user)
+		err := user.ValidateDestroy(u)
 
 		if err != v.err {
 			t.Errorf("username: %s - got %v; want %v", v.username, err, v.err)

@@ -90,7 +90,7 @@ jobs:
     - name: Run tests
       env:
         POSTGRES_DB: postgres:postgres@localhost/postgres?sslmode=disable
-      run: make lint it
+      run: make it
 
     - name: Crosscompile binaries
       run: make cross-compile
