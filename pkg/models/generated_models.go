@@ -402,28 +402,6 @@ type SceneDestroyInput struct {
 	ID string `json:"id"`
 }
 
-type SceneEdit struct {
-	Title       *string `json:"title"`
-	Details     *string `json:"details"`
-	AddedUrls   []*URL  `json:"added_urls"`
-	RemovedUrls []*URL  `json:"removed_urls"`
-	Date        *string `json:"date"`
-	StudioID    *string `json:"studio_id"`
-	// Added or modified performer appearance entries
-	AddedPerformers     []*PerformerAppearance `json:"added_performers"`
-	RemovedPerformers   []*PerformerAppearance `json:"removed_performers"`
-	AddedTags           []*Tag                 `json:"added_tags"`
-	RemovedTags         []*Tag                 `json:"removed_tags"`
-	AddedImages         []*Image               `json:"added_images"`
-	RemovedImages       []*Image               `json:"removed_images"`
-	AddedFingerprints   []*Fingerprint         `json:"added_fingerprints"`
-	RemovedFingerprints []*Fingerprint         `json:"removed_fingerprints"`
-	Duration            *int                   `json:"duration"`
-	Director            *string                `json:"director"`
-}
-
-func (SceneEdit) IsEditDetails() {}
-
 type SceneEditDetailsInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
