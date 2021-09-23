@@ -222,6 +222,7 @@ const renderPerformerDetails = (
     <ImageChangeRow
       newImages={performerDetails?.added_images}
       oldImages={performerDetails?.removed_images}
+      showDiff={showDiff}
     />
   </>
 );
@@ -417,6 +418,7 @@ const renderStudioDetails = (
     <ImageChangeRow
       newImages={studioDetails?.added_images}
       oldImages={studioDetails?.removed_images}
+      showDiff={showDiff}
     />
   </>
 );
