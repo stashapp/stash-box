@@ -8,8 +8,9 @@ import (
 )
 
 type Scene struct {
-	ID        uuid.UUID       `db:"id" json:"id"`
-	Title     sql.NullString  `db:"title" json:"title"`
+	ID    uuid.UUID      `db:"id" json:"id"`
+	Title sql.NullString `db:"title" json:"title"`
+
 	Details   sql.NullString  `db:"details" json:"details"`
 	Date      SQLiteDate      `db:"date" json:"date"`
 	StudioID  uuid.NullUUID   `db:"studio_id,omitempty" json:"studio_id"`

@@ -2,3 +2,7 @@ run:
   timeout: 3m
   skip-files:
     - "pkg/models/generated_.*.go$"
+
+linters:
+  enable:
+    - gofmt

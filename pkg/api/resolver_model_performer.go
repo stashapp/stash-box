@@ -17,6 +17,7 @@ func (r *performerResolver) ID(ctx context.Context, obj *models.Performer) (stri
 }
 
 func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Performer) (*string, error) {
+
 	return resolveNullString(obj.Disambiguation), nil
 }
 
