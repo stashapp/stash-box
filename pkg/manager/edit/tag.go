@@ -139,7 +139,7 @@ func (m *TagEditProcessor) createEdit(input models.TagEditInput, inputSpecified 
 	return m.edit.SetData(tagEdit)
 }
 
-func (m *TagEditProcessor) destroyEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *TagEditProcessor) destroyEdit(input models.TagEditInput, _ InputSpecifiedFunc) error {
 	tqb := m.fac.Tag()
 
 	// get the existing tag
@@ -174,7 +174,7 @@ func (m *TagEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
 
-	var tag *models.Tag = nil
+	var tag *models.Tag
 	if !isCreate {
 		tagID, err := eqb.FindTagID(m.edit.ID)
 		if err != nil {

@@ -40,7 +40,7 @@ func (m *StudioEditProcessor) Edit(input models.StudioEditInput, inputSpecified 
 	return err
 }
 
-func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, _ InputSpecifiedFunc) error {
 	sqb := m.fac.Studio()
 
 	// get the existing studio
@@ -79,7 +79,7 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, _ InputSpecifiedFunc) error {
 	sqb := m.fac.Studio()
 
 	// get the existing studio
@@ -156,7 +156,7 @@ func (m *StudioEditProcessor) createEdit(input models.StudioEditInput, inputSpec
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput, _ InputSpecifiedFunc) error {
 	tqb := m.fac.Studio()
 
 	// get the existing studio
@@ -191,7 +191,7 @@ func (m *StudioEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
 
-	var studio *models.Studio = nil
+	var studio *models.Studio
 	if !isCreate {
 		studioID, err := eqb.FindStudioID(m.edit.ID)
 		if err != nil {

@@ -12,7 +12,7 @@ import (
 
 type imageResolver struct{ *Resolver }
 
-func (r *imageResolver) ID(ctx context.Context, obj *models.Image) (string, error) {
+func (r *imageResolver) ID(_ context.Context, obj *models.Image) (string, error) {
 	return obj.ID.String(), nil
 }
 func (r *imageResolver) URL(ctx context.Context, obj *models.Image) (string, error) {

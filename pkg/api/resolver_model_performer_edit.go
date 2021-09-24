@@ -12,7 +12,7 @@ import (
 
 type performerEditResolver struct{ *Resolver }
 
-func (r *performerEditResolver) Gender(ctx context.Context, obj *models.PerformerEdit) (*models.GenderEnum, error) {
+func (r *performerEditResolver) Gender(_ context.Context, obj *models.PerformerEdit) (*models.GenderEnum, error) {
 	var ret models.GenderEnum
 	if obj.Gender == nil || !utils.ResolveEnumString(*obj.Gender, &ret) {
 		return nil, nil
@@ -21,7 +21,7 @@ func (r *performerEditResolver) Gender(ctx context.Context, obj *models.Performe
 	return &ret, nil
 }
 
-func (r *performerEditResolver) HairColor(ctx context.Context, obj *models.PerformerEdit) (*models.HairColorEnum, error) {
+func (r *performerEditResolver) HairColor(_ context.Context, obj *models.PerformerEdit) (*models.HairColorEnum, error) {
 	var ret models.HairColorEnum
 	if obj.HairColor == nil || !utils.ResolveEnumString(*obj.HairColor, &ret) {
 		return nil, nil
@@ -30,7 +30,7 @@ func (r *performerEditResolver) HairColor(ctx context.Context, obj *models.Perfo
 	return &ret, nil
 }
 
-func (r *performerEditResolver) EyeColor(ctx context.Context, obj *models.PerformerEdit) (*models.EyeColorEnum, error) {
+func (r *performerEditResolver) EyeColor(_ context.Context, obj *models.PerformerEdit) (*models.EyeColorEnum, error) {
 	var ret models.EyeColorEnum
 	if obj.EyeColor == nil || !utils.ResolveEnumString(*obj.EyeColor, &ret) {
 		return nil, nil
@@ -39,7 +39,7 @@ func (r *performerEditResolver) EyeColor(ctx context.Context, obj *models.Perfor
 	return &ret, nil
 }
 
-func (r *performerEditResolver) Ethnicity(ctx context.Context, obj *models.PerformerEdit) (*models.EthnicityEnum, error) {
+func (r *performerEditResolver) Ethnicity(_ context.Context, obj *models.PerformerEdit) (*models.EthnicityEnum, error) {
 	var ret models.EthnicityEnum
 	if obj.Ethnicity == nil || !utils.ResolveEnumString(*obj.Ethnicity, &ret) {
 		return nil, nil
@@ -48,7 +48,7 @@ func (r *performerEditResolver) Ethnicity(ctx context.Context, obj *models.Perfo
 	return &ret, nil
 }
 
-func (r *performerEditResolver) BreastType(ctx context.Context, obj *models.PerformerEdit) (*models.BreastTypeEnum, error) {
+func (r *performerEditResolver) BreastType(_ context.Context, obj *models.PerformerEdit) (*models.BreastTypeEnum, error) {
 	var ret models.BreastTypeEnum
 	if obj.BreastType == nil || !utils.ResolveEnumString(*obj.BreastType, &ret) {
 		return nil, nil

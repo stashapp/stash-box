@@ -9,7 +9,7 @@ import (
 
 type studioResolver struct{ *Resolver }
 
-func (r *studioResolver) ID(ctx context.Context, obj *models.Studio) (string, error) {
+func (r *studioResolver) ID(_ context.Context, obj *models.Studio) (string, error) {
 	return obj.ID.String(), nil
 }
 

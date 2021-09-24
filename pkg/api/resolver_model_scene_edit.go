@@ -90,7 +90,7 @@ func (r *sceneEditResolver) RemovedTags(ctx context.Context, obj *models.SceneEd
 	return r.tagList(ctx, obj.RemovedTags)
 }
 
-func (r *sceneEditResolver) fingerprintList(ctx context.Context, performers []*models.FingerprintEditInput) ([]*models.Fingerprint, error) {
+func (r *sceneEditResolver) fingerprintList(_ context.Context, performers []*models.FingerprintEditInput) ([]*models.Fingerprint, error) {
 	var ret []*models.Fingerprint
 	for _, p := range performers {
 		rr := &models.Fingerprint{

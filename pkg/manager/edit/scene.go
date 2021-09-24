@@ -42,7 +42,7 @@ func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputSpecified In
 	return err
 }
 
-func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, _ InputSpecifiedFunc) error {
 	sqb := m.fac.Scene()
 
 	// get the existing scene
@@ -88,11 +88,7 @@ func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, 
 		return err
 	}
 
-	if err := m.diffPerformers(sceneEdit, sceneID, input.Details.Performers); err != nil {
-		return err
-	}
-
-	return nil
+	return m.diffPerformers(sceneEdit, sceneID, input.Details.Performers)
 }
 
 func (m *SceneEditProcessor) diffFingerprints(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newFingerprints []*models.FingerprintEditInput) error {
@@ -290,7 +286,7 @@ func (m *SceneEditProcessor) diffImages(sceneEdit *models.SceneEditData, sceneID
 	return nil
 }
 
-func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, _ InputSpecifiedFunc) error {
 	sqb := m.fac.Scene()
 
 	// get the existing scene
@@ -339,7 +335,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 	return m.edit.SetData(sceneEdit)
 }
 
-func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, _ InputSpecifiedFunc) error {
 	sceneEdit := input.Details.SceneEditFromCreate()
 
 	sceneEdit.New.AddedUrls = input.Details.Urls
@@ -351,7 +347,7 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecif
 	return m.edit.SetData(sceneEdit)
 }
 
-func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, _ InputSpecifiedFunc) error {
 	tqb := m.fac.Scene()
 
 	// get the existing scene
@@ -386,7 +382,7 @@ func (m *SceneEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
 
-	var scene *models.Scene = nil
+	var scene *models.Scene
 	if !isCreate {
 		sceneID, err := eqb.FindSceneID(m.edit.ID)
 		if err != nil {

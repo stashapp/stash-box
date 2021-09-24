@@ -13,7 +13,7 @@ import (
 
 type editResolver struct{ *Resolver }
 
-func (r *editResolver) ID(ctx context.Context, obj *models.Edit) (string, error) {
+func (r *editResolver) ID(_ context.Context, obj *models.Edit) (string, error) {
 	return obj.ID.String(), nil
 }
 
@@ -29,11 +29,11 @@ func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User
 	return user, nil
 }
 
-func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Time, error) {
+func (r *editResolver) Created(_ context.Context, obj *models.Edit) (*time.Time, error) {
 	return &obj.CreatedAt.Timestamp, nil
 }
 
-func (r *editResolver) Updated(ctx context.Context, obj *models.Edit) (*time.Time, error) {
+func (r *editResolver) Updated(_ context.Context, obj *models.Edit) (*time.Time, error) {
 	return &obj.UpdatedAt.Timestamp, nil
 }
 
@@ -108,7 +108,7 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 	}
 }
 
-func (r *editResolver) TargetType(ctx context.Context, obj *models.Edit) (models.TargetTypeEnum, error) {
+func (r *editResolver) TargetType(_ context.Context, obj *models.Edit) (models.TargetTypeEnum, error) {
 	var ret models.TargetTypeEnum
 	if !utils.ResolveEnumString(obj.TargetType, &ret) {
 		return "", nil
@@ -171,7 +171,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 	return mergeSources, nil
 }
 
-func (r *editResolver) Operation(ctx context.Context, obj *models.Edit) (models.OperationEnum, error) {
+func (r *editResolver) Operation(_ context.Context, obj *models.Edit) (models.OperationEnum, error) {
 	var ret models.OperationEnum
 	if !utils.ResolveEnumString(obj.Operation, &ret) {
 		return "", nil
@@ -180,7 +180,7 @@ func (r *editResolver) Operation(ctx context.Context, obj *models.Edit) (models.
 	return ret, nil
 }
 
-func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.EditDetails, error) {
+func (r *editResolver) Details(_ context.Context, obj *models.Edit) (models.EditDetails, error) {
 	var ret models.EditDetails
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(obj.TargetType, &targetType)
@@ -213,7 +213,7 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 	return ret, nil
 }
 
-func (r *editResolver) OldDetails(ctx context.Context, obj *models.Edit) (models.EditDetails, error) {
+func (r *editResolver) OldDetails(_ context.Context, obj *models.Edit) (models.EditDetails, error) {
 	var ret models.EditDetails
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(obj.TargetType, &targetType)
@@ -267,12 +267,12 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*model
 	return ret, nil
 }
 
-func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]*models.VoteComment, error) {
+func (r *editResolver) Votes(_ context.Context, _ *models.Edit) ([]*models.VoteComment, error) {
 	// TODO
 	return nil, nil
 }
 
-func (r *editResolver) Status(ctx context.Context, obj *models.Edit) (models.VoteStatusEnum, error) {
+func (r *editResolver) Status(_ context.Context, obj *models.Edit) (models.VoteStatusEnum, error) {
 	var ret models.VoteStatusEnum
 	if !utils.ResolveEnumString(obj.Status, &ret) {
 		return "", nil
@@ -281,7 +281,7 @@ func (r *editResolver) Status(ctx context.Context, obj *models.Edit) (models.Vot
 	return ret, nil
 }
 
-func (r *editResolver) Options(ctx context.Context, obj *models.Edit) (*models.PerformerEditOptions, error) {
+func (r *editResolver) Options(_ context.Context, obj *models.Edit) (*models.PerformerEditOptions, error) {
 	if obj.TargetType == models.TargetTypeEnumPerformer.String() {
 		data, err := obj.GetPerformerData()
 		if err != nil {

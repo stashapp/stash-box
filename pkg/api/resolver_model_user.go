@@ -9,7 +9,7 @@ import (
 
 type userResolver struct{ *Resolver }
 
-func (r *userResolver) ID(ctx context.Context, obj *models.User) (string, error) {
+func (r *userResolver) ID(_ context.Context, obj *models.User) (string, error) {
 	return obj.ID.String(), nil
 }
 
@@ -24,22 +24,22 @@ func (r *userResolver) Roles(ctx context.Context, obj *models.User) ([]models.Ro
 	return roles.ToRoles(), nil
 }
 
-func (r *userResolver) SuccessfulEdits(ctx context.Context, obj *models.User) (int, error) {
+func (r *userResolver) SuccessfulEdits(_ context.Context, _ *models.User) (int, error) {
 	// TODO
 	return 0, nil
 }
 
-func (r *userResolver) UnsuccessfulEdits(ctx context.Context, obj *models.User) (int, error) {
+func (r *userResolver) UnsuccessfulEdits(_ context.Context, _ *models.User) (int, error) {
 	// TODO
 	return 0, nil
 }
 
-func (r *userResolver) SuccessfulVotes(ctx context.Context, obj *models.User) (int, error) {
+func (r *userResolver) SuccessfulVotes(_ context.Context, _ *models.User) (int, error) {
 	// TODO
 	return 0, nil
 }
 
-func (r *userResolver) UnsuccessfulVotes(ctx context.Context, obj *models.User) (int, error) {
+func (r *userResolver) UnsuccessfulVotes(_ context.Context, _ *models.User) (int, error) {
 	// TODO
 	return 0, nil
 }
