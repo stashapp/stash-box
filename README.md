@@ -103,7 +103,7 @@ If the extension is installed after the migrations have been run, migration #14 
 
 ## Install
 
-**** [Go](https://golang.org/dl/), minimum version 1.17.
+* [Go](https://golang.org/dl/), minimum version 1.17.
 * [golangci-lint](https://golangci-lint.run/) - Linter aggregator
     * Follow instructions for your platform from [https://golangci-lint.run/usage/install/](https://golangci-lint.run/usage/install/).
     * Run the linters with `make lint`.
