@@ -9,10 +9,16 @@ import { QuerySpec, SceneFilterType, GenderEnum } from "./globalTypes";
 // GraphQL query operation: Scenes
 // ====================================================
 
+export interface Scenes_queryScenes_scenes_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Scenes_queryScenes_scenes_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Scenes_queryScenes_scenes_urls_site;
 }
 
 export interface Scenes_queryScenes_scenes_images {

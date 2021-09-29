@@ -15,10 +15,16 @@ export interface SearchPerformerFragment_birthdate {
   accuracy: DateAccuracyEnum;
 }
 
+export interface SearchPerformerFragment_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface SearchPerformerFragment_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: SearchPerformerFragment_urls_site;
 }
 
 export interface SearchPerformerFragment_images {

@@ -82,10 +82,16 @@ export interface Edits_queryEdits_edits_target_Performer_piercings {
   description: string | null;
 }
 
+export interface Edits_queryEdits_edits_target_Performer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_target_Performer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_target_Performer_urls_site;
 }
 
 export interface Edits_queryEdits_edits_target_Performer_images {
@@ -136,10 +142,16 @@ export interface Edits_queryEdits_edits_target_Studio_parent {
   name: string;
 }
 
+export interface Edits_queryEdits_edits_target_Studio_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_target_Studio_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_target_Studio_urls_site;
 }
 
 export interface Edits_queryEdits_edits_target_Studio_images {
@@ -161,10 +173,16 @@ export interface Edits_queryEdits_edits_target_Studio {
   deleted: boolean;
 }
 
+export interface Edits_queryEdits_edits_target_Scene_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_target_Scene_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_target_Scene_urls_site;
 }
 
 export interface Edits_queryEdits_edits_target_Scene_images {
@@ -252,16 +270,28 @@ export interface Edits_queryEdits_edits_details_TagEdit {
   category: Edits_queryEdits_edits_details_TagEdit_category | null;
 }
 
+export interface Edits_queryEdits_edits_details_PerformerEdit_added_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_details_PerformerEdit_added_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_PerformerEdit_added_urls_site;
+}
+
+export interface Edits_queryEdits_edits_details_PerformerEdit_removed_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
 }
 
 export interface Edits_queryEdits_edits_details_PerformerEdit_removed_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_PerformerEdit_removed_urls_site;
 }
 
 export interface Edits_queryEdits_edits_details_PerformerEdit_added_tattoos {
@@ -338,16 +368,28 @@ export interface Edits_queryEdits_edits_details_PerformerEdit {
   removed_images: Edits_queryEdits_edits_details_PerformerEdit_removed_images[] | null;
 }
 
+export interface Edits_queryEdits_edits_details_StudioEdit_added_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_details_StudioEdit_added_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_StudioEdit_added_urls_site;
+}
+
+export interface Edits_queryEdits_edits_details_StudioEdit_removed_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
 }
 
 export interface Edits_queryEdits_edits_details_StudioEdit_removed_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_StudioEdit_removed_urls_site;
 }
 
 export interface Edits_queryEdits_edits_details_StudioEdit_parent_child_studios {
@@ -362,10 +404,16 @@ export interface Edits_queryEdits_edits_details_StudioEdit_parent_parent {
   name: string;
 }
 
+export interface Edits_queryEdits_edits_details_StudioEdit_parent_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_details_StudioEdit_parent_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_StudioEdit_parent_urls_site;
 }
 
 export interface Edits_queryEdits_edits_details_StudioEdit_parent_images {
@@ -416,16 +464,28 @@ export interface Edits_queryEdits_edits_details_StudioEdit {
   removed_images: Edits_queryEdits_edits_details_StudioEdit_removed_images[] | null;
 }
 
+export interface Edits_queryEdits_edits_details_SceneEdit_added_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_details_SceneEdit_added_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_SceneEdit_added_urls_site;
+}
+
+export interface Edits_queryEdits_edits_details_SceneEdit_removed_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
 }
 
 export interface Edits_queryEdits_edits_details_SceneEdit_removed_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_SceneEdit_removed_urls_site;
 }
 
 export interface Edits_queryEdits_edits_details_SceneEdit_studio_child_studios {
@@ -440,10 +500,16 @@ export interface Edits_queryEdits_edits_details_SceneEdit_studio_parent {
   name: string;
 }
 
+export interface Edits_queryEdits_edits_details_SceneEdit_studio_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_details_SceneEdit_studio_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_SceneEdit_studio_urls_site;
 }
 
 export interface Edits_queryEdits_edits_details_SceneEdit_studio_images {
@@ -491,10 +557,16 @@ export interface Edits_queryEdits_edits_details_SceneEdit_added_performers_perfo
   description: string | null;
 }
 
+export interface Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_urls_site;
 }
 
 export interface Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_images {
@@ -568,10 +640,16 @@ export interface Edits_queryEdits_edits_details_SceneEdit_removed_performers_per
   description: string | null;
 }
 
+export interface Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_urls_site;
 }
 
 export interface Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_images {
@@ -737,10 +815,16 @@ export interface Edits_queryEdits_edits_old_details_StudioEdit_parent_parent {
   name: string;
 }
 
+export interface Edits_queryEdits_edits_old_details_StudioEdit_parent_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_old_details_StudioEdit_parent_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_old_details_StudioEdit_parent_urls_site;
 }
 
 export interface Edits_queryEdits_edits_old_details_StudioEdit_parent_images {
@@ -768,16 +852,28 @@ export interface Edits_queryEdits_edits_old_details_StudioEdit {
   parent: Edits_queryEdits_edits_old_details_StudioEdit_parent | null;
 }
 
+export interface Edits_queryEdits_edits_old_details_SceneEdit_added_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_old_details_SceneEdit_added_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_old_details_SceneEdit_added_urls_site;
+}
+
+export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
 }
 
 export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_old_details_SceneEdit_removed_urls_site;
 }
 
 export interface Edits_queryEdits_edits_old_details_SceneEdit_studio_child_studios {
@@ -792,10 +888,16 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit_studio_parent {
   name: string;
 }
 
+export interface Edits_queryEdits_edits_old_details_SceneEdit_studio_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_old_details_SceneEdit_studio_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_old_details_SceneEdit_studio_urls_site;
 }
 
 export interface Edits_queryEdits_edits_old_details_SceneEdit_studio_images {
@@ -843,10 +945,16 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit_added_performers_p
   description: string | null;
 }
 
+export interface Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_urls_site;
 }
 
 export interface Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_images {
@@ -920,10 +1028,16 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_performers
   description: string | null;
 }
 
+export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_urls_site;
 }
 
 export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_images {
@@ -1081,10 +1195,16 @@ export interface Edits_queryEdits_edits_merge_sources_Performer_piercings {
   description: string | null;
 }
 
+export interface Edits_queryEdits_edits_merge_sources_Performer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_merge_sources_Performer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_merge_sources_Performer_urls_site;
 }
 
 export interface Edits_queryEdits_edits_merge_sources_Performer_images {
@@ -1135,10 +1255,16 @@ export interface Edits_queryEdits_edits_merge_sources_Studio_parent {
   name: string;
 }
 
+export interface Edits_queryEdits_edits_merge_sources_Studio_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_merge_sources_Studio_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_merge_sources_Studio_urls_site;
 }
 
 export interface Edits_queryEdits_edits_merge_sources_Studio_images {
@@ -1160,10 +1286,16 @@ export interface Edits_queryEdits_edits_merge_sources_Studio {
   deleted: boolean;
 }
 
+export interface Edits_queryEdits_edits_merge_sources_Scene_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_merge_sources_Scene_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Edits_queryEdits_edits_merge_sources_Scene_urls_site;
 }
 
 export interface Edits_queryEdits_edits_merge_sources_Scene_images {

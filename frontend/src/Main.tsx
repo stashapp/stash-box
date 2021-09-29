@@ -20,6 +20,7 @@ import {
   ROUTE_HOME,
   ROUTE_REGISTER,
   ROUTE_FORGOT_PASSWORD,
+  ROUTE_SITES,
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
@@ -110,6 +111,11 @@ const Main: FC = ({ children }) => {
           <NavLink to={ROUTE_EDITS} className="nav-link">
             Edits
           </NavLink>
+          {isAdmin(user) && (
+            <NavLink to={ROUTE_SITES} className="nav-link">
+              Sites
+            </NavLink>
+          )}
         </Nav>
         <Nav className="align-items-center">
           {contextValue.authenticated && renderUserNav()}

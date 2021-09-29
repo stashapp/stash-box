@@ -35,10 +35,16 @@ export interface PerformerFragment_piercings {
   description: string | null;
 }
 
+export interface PerformerFragment_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface PerformerFragment_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: PerformerFragment_urls_site;
 }
 
 export interface PerformerFragment_images {

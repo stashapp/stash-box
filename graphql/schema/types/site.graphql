@@ -1,0 +1,42 @@
+type Site {
+  id: ID!
+  name: String!
+  description:  String
+  url:  String
+  regex:  String
+  valid_types: [ValidSiteTypeEnum!]!
+  created: Time!
+  updated: Time!
+}
+
+input SiteCreateInput {
+  name: String!
+  description: String
+  url: String
+  regex: String
+  valid_types: [ValidSiteTypeEnum!]!
+}
+
+input SiteUpdateInput {
+  id: ID!
+  name: String!
+  description: String
+  url: String
+  regex: String
+  valid_types: [ValidSiteTypeEnum!]!
+}
+
+input SiteDestroyInput {
+  id: ID!
+}
+
+type QuerySitesResultType {
+  count: Int!
+  sites: [Site!]!
+}
+
+enum ValidSiteTypeEnum {
+  PERFORMER
+  SCENE
+  STUDIO
+}

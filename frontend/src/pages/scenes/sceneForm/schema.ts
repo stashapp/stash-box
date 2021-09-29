@@ -65,6 +65,20 @@ export const SceneSchema = yup.object({
       })
     )
     .required(),
+  urls: yup
+    .array()
+    .of(
+      yup.object({
+        url: yup.string().url("Invalid URL").required(),
+        site: yup
+          .object({
+            id: yup.string().required(),
+            name: yup.string().required(),
+          })
+          .required(),
+      })
+    )
+    .ensure(),
   note: yup.string().required("Edit note is required"),
 });
 

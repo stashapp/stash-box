@@ -107,9 +107,7 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
 	c.intPtrInt64Ptr(input.Duration, sceneDetails.Duration, "Duration")
 
-	if !reflect.DeepEqual(input.Urls, sceneDetails.AddedUrls) {
-		s.fieldMismatch(input.Urls, sceneDetails.AddedUrls, "URLs")
-	}
+	s.compareURLs(input.Urls, sceneDetails.AddedUrls)
 
 	if !reflect.DeepEqual(input.ImageIds, sceneDetails.AddedImages) {
 		s.fieldMismatch(input.ImageIds, sceneDetails.AddedImages, "Images")
@@ -136,9 +134,7 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	c.intPtrNullInt64(input.Duration, scene.Duration, "Duration")
 
 	urls, _ := resolver.Urls(s.ctx, scene)
-	if (len(input.Urls) > 0 || len(urls) > 0) && !reflect.DeepEqual(input.Urls, urls) {
-		s.fieldMismatch(input.Urls, urls, "Urls")
-	}
+	s.compareURLs(input.Urls, urls)
 
 	images, _ := resolver.Images(s.ctx, scene)
 	var imageIds []uuid.UUID
@@ -277,13 +273,17 @@ func (s *sceneEditTestRunner) verifyAppliedSceneCreateEdit(input models.SceneEdi
 
 func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 	title := "sceneName3"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
 
 	sceneCreateInput := models.SceneCreateInput{
 		Title: &title,
-		Urls: []*models.URL{
+		Urls: []*models.URLInput{
 			{
-				URL:  "http://example.org/asd",
-				Type: "someothertype",
+				URL:    "http://example.org/asd",
+				SiteID: site.ID,
 			},
 		},
 	}
@@ -331,7 +331,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 	id := createdScene.UUID()
 
 	sceneUnsetInput := models.SceneEditDetailsInput{
-		Urls: []*models.URL{},
+		Urls: []*models.URLInput{},
 	}
 
 	editInput := models.EditInput{

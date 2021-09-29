@@ -32,12 +32,18 @@ type fingerprint struct {
 	Updated     string                      `json:"updated"`
 }
 
+type siteURL struct {
+	Site *idObject `json:"site"`
+	// Performing as alias
+	URL string `json:"url"`
+}
+
 type sceneOutput struct {
 	ID           string                 `json:"id"`
 	Title        *string                `json:"title"`
 	Details      *string                `json:"details"`
 	Date         *string                `json:"date"`
-	Urls         []*models.URL          `json:"urls"`
+	Urls         []*siteURL             `json:"urls"`
 	Studio       *idObject              `json:"studio"`
 	Tags         []*idObject            `json:"tags"`
 	Images       []*idObject            `json:"images"`

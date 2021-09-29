@@ -11,7 +11,7 @@ import {
 } from "src/graphql";
 
 import { formatPendingEdits } from "src/utils";
-import { EditList, SceneList } from "src/components/list";
+import { EditList, SceneList, URLList } from "src/components/list";
 import CheckboxSelect from "src/components/checkboxSelect";
 import PerformerInfo from "./performerInfo";
 
@@ -126,6 +126,9 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
                 : {}),
             }}
           />
+        </Tab>
+        <Tab eventKey="links" title="Links">
+          <URLList urls={performer.urls} />
         </Tab>
         <Tab
           eventKey="edits"

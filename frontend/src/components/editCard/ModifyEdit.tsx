@@ -126,6 +126,8 @@ export interface PerformerDetails {
   removed_aliases?: string[] | null;
   added_images?: Image[] | null;
   removed_images?: Image[] | null;
+  added_urls?: URL[] | null;
+  removed_urls?: URL[] | null;
 }
 
 export const renderPerformerDetails = (
@@ -273,6 +275,11 @@ export const renderPerformerDetails = (
         .join("\n")}
       showDiff={showDiff}
     />
+    <URLChangeRow
+      newURLs={performerDetails.added_urls}
+      oldURLs={performerDetails.removed_urls}
+      showDiff={showDiff}
+    />
     <ImageChangeRow
       newImages={performerDetails.added_images}
       oldImages={performerDetails.removed_images}
@@ -291,7 +298,10 @@ type ScenePerformance = {
 
 interface URL {
   url: string;
-  type: string;
+  site: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface SceneDetails {

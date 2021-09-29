@@ -37,22 +37,36 @@ export const diffURLs = (
   newURLs:
     | {
         url: string | undefined;
-        type: string;
+        site:
+          | {
+              id: string | undefined;
+              name: string | undefined;
+            }
+          | undefined;
       }[]
     | undefined,
   originalURLs: {
     url: string;
-    type: string;
+    site: {
+      id: string;
+      name: string;
+    };
   }[]
 ) =>
   diffArray(
     (newURLs ?? []).map((u) => ({
       url: u.url ?? "",
-      type: u.type ?? "",
+      site: {
+        id: u.site?.id ?? "",
+        name: u.site?.name ?? "",
+      },
     })),
     originalURLs.map((u) => ({
       url: u.url,
-      type: u.type,
+      site: {
+        id: u.site.id,
+        name: u.site.name,
+      },
     })),
-    (u) => `${u.url}${u.type}`
+    (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
   );

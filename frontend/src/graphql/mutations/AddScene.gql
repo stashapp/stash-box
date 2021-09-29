@@ -6,7 +6,10 @@ mutation AddScene($sceneData: SceneCreateInput!) {
       details,
       urls {
         url,
-        type
+        site {
+          id
+          name
+        }
       }
       studio {
         id

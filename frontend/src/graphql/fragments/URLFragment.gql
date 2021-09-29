@@ -1,4 +1,7 @@
 fragment URLFragment on URL {
   url
-  type
+  site {
+    id
+    name
+  }
 }

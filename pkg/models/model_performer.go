@@ -138,20 +138,20 @@ func CreatePerformerAliases(performerID uuid.UUID, aliases []string) PerformerAl
 
 type PerformerURL struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	SiteID      uuid.UUID `db:"site_id" json:"site_id"`
 	URL         string    `db:"url" json:"url"`
-	Type        string    `db:"type" json:"type"`
 }
 
 func (p *PerformerURL) ToURL() URL {
 	url := URL{
-		URL:  p.URL,
-		Type: p.Type,
+		URL:    p.URL,
+		SiteID: p.SiteID,
 	}
 	return url
 }
 
 func (p PerformerURL) ID() string {
-	return p.URL + p.Type
+	return p.URL
 }
 
 type PerformerURLs []*PerformerURL
@@ -189,7 +189,7 @@ func CreatePerformerURLs(performerID uuid.UUID, urls []*URL) PerformerURLs {
 		ret = append(ret, &PerformerURL{
 			PerformerID: performerID,
 			URL:         urlInput.URL,
-			Type:        urlInput.Type,
+			SiteID:      urlInput.SiteID,
 		})
 	}
 

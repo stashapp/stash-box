@@ -17,7 +17,7 @@ type performerTestRunner struct {
 
 func createPerformerTestRunner(t *testing.T) *performerTestRunner {
 	return &performerTestRunner{
-		testRunner: *asModify(t),
+		testRunner: *asAdmin(t),
 	}
 }
 
@@ -34,6 +34,10 @@ func (s *performerTestRunner) testCreatePerformer() {
 	eyeColor := models.EyeColorEnumBlue
 	hairColor := models.HairColorEnumBlonde
 	breastType := models.BreastTypeEnumNatural
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
 
 	input := models.PerformerCreateInput{
 		Name:           s.generatePerformerName(),
@@ -42,8 +46,8 @@ func (s *performerTestRunner) testCreatePerformer() {
 		Gender:         &gender,
 		Urls: []*models.URLInput{
 			&models.URLInput{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		Birthdate: &models.FuzzyDateInput{
@@ -227,14 +231,18 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	cupSize := "C"
 	bandSize := 32
 	tattooDesc := "Foobar"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
 
 	input := &models.PerformerCreateInput{
 		Name:    s.generatePerformerName(),
 		Aliases: []string{"Alias1", "Alias2"},
 		Urls: []*models.URLInput{
 			&models.URLInput{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		Birthdate: &models.FuzzyDateInput{
@@ -273,8 +281,8 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		Aliases: []string{"Alias3", "Alias4"},
 		Urls: []*models.URLInput{
 			&models.URLInput{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		Birthdate: &models.FuzzyDateInput{

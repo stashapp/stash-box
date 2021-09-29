@@ -9,10 +9,16 @@ import { GenderEnum } from "./globalTypes";
 // GraphQL fragment: QuerySceneFragment
 // ====================================================
 
+export interface QuerySceneFragment_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface QuerySceneFragment_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: QuerySceneFragment_urls_site;
 }
 
 export interface QuerySceneFragment_images {

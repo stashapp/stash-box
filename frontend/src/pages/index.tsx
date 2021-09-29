@@ -17,6 +17,7 @@ import {
   ROUTE_RESET_PASSWORD,
   ROUTE_SEARCH,
   ROUTE_VERSION,
+  ROUTE_SITES,
 } from "src/constants/route";
 
 import Home from "src/pages/home";
@@ -34,6 +35,7 @@ import ForgotPassword from "src/pages/forgotPassword";
 import ResetPassword from "src/pages/resetPassword";
 import Search from "src/pages/search";
 import Version from "src/pages/version";
+import Sites from "src/pages/sites";
 
 const Pages: FC = () => (
   <Switch>
@@ -84,6 +86,9 @@ const Pages: FC = () => (
           </Route>
           <Route exact path={ROUTE_VERSION}>
             <Version />
+          </Route>
+          <Route path={ROUTE_SITES}>
+            <Sites />
           </Route>
         </Switch>
       </div>

@@ -584,8 +584,8 @@ func (qb *sceneQueryBuilder) GetURLs(id uuid.UUID) ([]*models.URL, error) {
 	urls := make([]*models.URL, len(joins))
 	for i, u := range joins {
 		url := models.URL{
-			URL:  u.URL,
-			Type: u.Type,
+			URL:    u.URL,
+			SiteID: u.SiteID,
 		}
 		urls[i] = &url
 	}
@@ -603,8 +603,8 @@ func (qb *sceneQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*models.URL, []err
 	m := make(map[uuid.UUID][]*models.URL)
 	for _, join := range joins {
 		url := models.URL{
-			URL:  join.URL,
-			Type: join.Type,
+			URL:    join.URL,
+			SiteID: join.SiteID,
 		}
 		m[join.SceneID] = append(m[join.SceneID], &url)
 	}

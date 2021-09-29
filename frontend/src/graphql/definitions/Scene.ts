@@ -9,10 +9,16 @@ import { GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 // GraphQL query operation: Scene
 // ====================================================
 
+export interface Scene_findScene_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface Scene_findScene_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Scene_findScene_urls_site;
 }
 
 export interface Scene_findScene_images {

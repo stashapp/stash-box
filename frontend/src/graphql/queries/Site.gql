@@ -1,0 +1,12 @@
+query Site($id: ID!) {
+  findSite(id: $id) {
+    id
+    name
+    description
+    url
+    regex
+    valid_types
+    created
+    updated
+  }
+}

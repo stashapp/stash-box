@@ -9,11 +9,10 @@ import {
   TargetTypeEnum,
   CriterionModifier,
 } from "src/graphql";
-import { EditList, SceneList } from "src/components/list";
+import { EditList, SceneList, URLList } from "src/components/list";
 
 import {
   getImage,
-  getUrlByType,
   createHref,
   studioHref,
   canEdit,
@@ -62,15 +61,6 @@ const StudioComponent: FC<Props> = ({ studio }) => {
               <span>{studio.name}</span>
             )}
           </h3>
-          <h6>
-            <a
-              href={getUrlByType(studio.urls, "HOME")}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              {getUrlByType(studio.urls, "HOME")}
-            </a>
-          </h6>
           {studio.parent && (
             <span>
               Part of{" "}
@@ -133,6 +123,9 @@ const StudioComponent: FC<Props> = ({ studio }) => {
             />
           </Tab>
         )}
+        <Tab eventKey="links" title="Links">
+          <URLList urls={studio.urls} />
+        </Tab>
         <Tab
           eventKey="edits"
           title={`Edits${formatPendingEdits(pendingEditCount)}`}

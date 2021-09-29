@@ -16,6 +16,7 @@ import {
   EthnicityEnum,
   DateAccuracyEnum,
   PerformerEditDetailsInput,
+  ValidSiteTypeEnum,
 } from "src/graphql";
 import { getBraSize, parseBraSize, formatFuzzyDate } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
@@ -33,6 +34,7 @@ import MultiSelect from "src/components/multiSelect";
 import EditImages from "src/components/editImages";
 import DiffPerformer from "./diff";
 import { PerformerSchema, PerformerFormData } from "./schema";
+import URLInput from "src/components/urlInput";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en");
@@ -145,6 +147,13 @@ const PerformerForm: FC<PerformerProps> = ({
       tattoos,
       piercings,
       images,
+      urls: performer.urls.map((u) => ({
+        url: u.url,
+        site: {
+          id: u.site?.id ?? "",
+          name: u.site?.name ?? "",
+        },
+      })),
     },
   });
 
@@ -195,6 +204,10 @@ const PerformerForm: FC<PerformerProps> = ({
       breast_type:
         BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum] || null,
       image_ids: data.images.map((i) => i.id),
+      urls: data.urls.map((u) => ({
+        url: u.url,
+        site_id: u.site.id,
+      })),
     };
 
     performerData.measurements = {
@@ -602,6 +615,16 @@ const PerformerForm: FC<PerformerProps> = ({
               </div>
             ))}
           </Form.Control.Feedback>
+
+          <NavButtons onNext={() => setActiveTab("links")} />
+        </Tab>
+
+        <Tab eventKey="links" title="Links">
+          <Row>
+            <Col xs={8}>
+              <URLInput control={control} type={ValidSiteTypeEnum.PERFORMER} />
+            </Col>
+          </Row>
 
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>

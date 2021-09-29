@@ -8,6 +8,7 @@ import {
   diffArray,
   diffValue,
   diffImages,
+  diffURLs,
   filterData,
   parseBraSize,
 } from "src/utils";
@@ -40,6 +41,7 @@ const selectPerformerDetails = (
   original: PerformerFragment
 ): [PerformerDetails, PerformerDetails] => {
   const [addedImages, removedImages] = diffImages(data.images, original.images);
+  const [addedUrls, removedUrls] = diffURLs(data.urls, original.urls);
   const [addedTattoos, removedTattoos] = diffBodyMods(
     data.tattoos,
     original.tattoos
@@ -117,6 +119,8 @@ const selectPerformerDetails = (
       removed_aliases: removedAliases,
       added_images: addedImages,
       removed_images: removedImages,
+      added_urls: addedUrls,
+      removed_urls: removedUrls,
     },
   ];
 };

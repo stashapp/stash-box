@@ -8,17 +8,7 @@ const selectStudioDetails = (
   original: StudioFragment
 ): [StudioDetails, StudioDetails] => {
   const [addedImages, removedImages] = diffImages(data.images, original.images);
-  const [addedUrls, removedUrls] = diffURLs(
-    data.url
-      ? [
-          {
-            url: data.url,
-            type: "HOME",
-          },
-        ]
-      : [],
-    original.urls
-  );
+  const [addedUrls, removedUrls] = diffURLs(data.urls, original.urls);
 
   return [
     {

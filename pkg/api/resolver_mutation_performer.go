@@ -48,7 +48,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		}
 
 		// Save the URLs
-		performerUrls := models.CreatePerformerURLs(performer.ID, input.Urls)
+		performerUrls := models.CreatePerformerURLs(performer.ID, models.ParseURLInput(input.Urls))
 		if err := qb.CreateUrls(performerUrls); err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		}
 
 		// Save the URLs
-		performerUrls := models.CreatePerformerURLs(performer.ID, input.Urls)
+		performerUrls := models.CreatePerformerURLs(performer.ID, models.ParseURLInput(input.Urls))
 		if err := qb.UpdateUrls(performer.ID, performerUrls); err != nil {
 			return err
 		}

@@ -12,7 +12,6 @@ import AuthContext from "src/AuthContext";
 import {
   canEdit,
   getImage,
-  getUrlByType,
   tagHref,
   performerHref,
   studioHref,
@@ -32,7 +31,7 @@ import {
   PerformerName,
   Icon,
 } from "src/components/fragments";
-import { EditList } from "src/components/list";
+import { EditList, URLList } from "src/components/list";
 
 const DEFAULT_TAB = "description";
 
@@ -188,14 +187,14 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             </div>
             <hr />
             <div>
-              <strong className="me-2">Studio URL: </strong>
-              <a
-                href={getUrlByType(scene.urls, "STUDIO")}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {getUrlByType(scene.urls, "STUDIO")}
-              </a>
+              {scene.urls.map((u) => (
+                <>
+                  <strong className="me-2">{u.site?.name ?? "Unknown"}:</strong>
+                  <a href={u.url} target="_blank" rel="noopener noreferrer">
+                    {u.url}
+                  </a>
+                </>
+              ))}
             </div>
           </div>
         </Tab>
@@ -232,6 +231,9 @@ const SceneComponent: FC<Props> = ({ scene }) => {
               </Table>
             )}
           </div>
+        </Tab>
+        <Tab eventKey="links" title="Links">
+          <URLList urls={scene.urls} />
         </Tab>
         <Tab
           eventKey="edits"

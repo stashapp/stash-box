@@ -1,0 +1,3 @@
+mutation DeleteSite($input: SiteDestroyInput!) {
+  siteDestroy(input: $input)
+}

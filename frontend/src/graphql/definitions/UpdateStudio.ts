@@ -21,10 +21,16 @@ export interface UpdateStudio_studioUpdate_parent {
   name: string;
 }
 
+export interface UpdateStudio_studioUpdate_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface UpdateStudio_studioUpdate_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: UpdateStudio_studioUpdate_urls_site;
 }
 
 export interface UpdateStudio_studioUpdate_images {

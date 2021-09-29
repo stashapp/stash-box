@@ -75,6 +75,8 @@ type config struct {
 	PHashDistance int `mapstructure:"phash_distance"`
 
 	Title string `mapstructure:"title"`
+
+	FaviconPath string `mapstructure:"favicon_path"`
 }
 
 var JWTSignKey = "jwt_secret_key"
@@ -336,4 +338,11 @@ func GetTitle() string {
 		return "Stash-Box"
 	}
 	return C.Title
+}
+
+func GetFaviconPath() *string {
+	if len(C.FaviconPath) == 0 {
+		return nil
+	}
+	return &C.FaviconPath
 }
