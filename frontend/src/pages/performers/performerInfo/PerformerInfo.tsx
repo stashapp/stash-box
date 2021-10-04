@@ -1,6 +1,14 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card, Col, Row, Table } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  OverlayTrigger,
+  Popover,
+  Row,
+  Table,
+} from "react-bootstrap";
 
 import { GenderEnum } from "src/graphql";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
@@ -52,7 +60,19 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                   to={createHref(ROUTE_PERFORMER_MERGE, performer)}
                   className="ml-2"
                 >
-                  <Button>Merge into</Button>
+                  <OverlayTrigger
+                    overlay={
+                      <Popover id="merge">
+                        <Popover.Content>
+                          Merge other performers into <b>{performer.name}</b>.
+                        </Popover.Content>
+                      </Popover>
+                    }
+                    placement="bottom-end"
+                    trigger="hover"
+                  >
+                    <Button>Merge</Button>
+                  </OverlayTrigger>
                 </Link>
                 <Link
                   to={createHref(ROUTE_PERFORMER_DELETE, performer)}

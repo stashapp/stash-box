@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
-import { Button, Tab, Tabs } from "react-bootstrap";
+import { Button, OverlayTrigger, Popover, Tab, Tabs } from "react-bootstrap";
 
 import {
   useScenes,
@@ -95,7 +95,19 @@ const TagComponent: React.FC = () => {
               <Button>Edit</Button>
             </Link>
             <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="ml-2">
-              <Button>Merge into</Button>
+              <OverlayTrigger
+                overlay={
+                  <Popover id="merge">
+                    <Popover.Content>
+                      Merge other tags into <b>{tag.name}</b>.
+                    </Popover.Content>
+                  </Popover>
+                }
+                placement="bottom-end"
+                trigger="hover"
+              >
+                <Button>Merge</Button>
+              </OverlayTrigger>
             </Link>
             <Link to={createHref(ROUTE_TAG_DELETE, tag)} className="ml-2">
               <Button variant="danger">Delete</Button>
