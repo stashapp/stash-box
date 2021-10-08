@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Button, Card, Form } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
-import { isAdmin, studioHref, createHref } from "src/utils";
+import { studioHref, createHref, canEdit } from "src/utils";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
 import { debounce } from "lodash";
 import AuthContext from "src/AuthContext";
@@ -64,7 +64,7 @@ const StudiosComponent: React.FC = () => {
     <>
       <div className="d-flex">
         <h3 className="mr-4">Studios</h3>
-        {isAdmin(auth.user) && (
+        {canEdit(auth.user) && (
           <Link to={createHref(ROUTE_STUDIO_ADD)} className="ml-auto">
             <Button className="mr-auto">Create</Button>
           </Link>
