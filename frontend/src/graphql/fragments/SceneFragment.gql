@@ -3,12 +3,13 @@
 fragment SceneFragment on Scene {
   id
   date
-  title,
-  details,
-  director,
+  title
+  deleted
+  details
+  director
   duration
   urls {
-    url,
+    url
     type
   }
   images {
