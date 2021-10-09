@@ -255,6 +255,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
   const aliases = uniq([...performer.aliases, ...initialAliases]);
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState(false);
+  const [file, setFile] = useState<File | undefined>();
 
   const fieldData = watch();
   const changes = useMemo(
@@ -743,7 +744,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <Form.Row>
-            <EditImages control={control} />
+            <EditImages control={control} file={file} setFile={(f) => setFile(f)} />
           </Form.Row>
 
           <Form.Row className="mt-1">
@@ -754,9 +755,18 @@ const PerformerForm: React.FC<PerformerProps> = ({
             >
               Cancel
             </Button>
-            <Button className="mr-1" onClick={() => setActiveTab("confirm")}>
+            <Button className="mr-1" disabled={!!file} onClick={() => setActiveTab("confirm")}>
               Next
             </Button>
+          </Form.Row>
+          <Form.Row>
+            {/* dummy element for feedback */}
+            <div className="ml-auto">
+              <span className={file ? "is-invalid" : ""} />
+              <Form.Control.Feedback type="invalid">
+                Upload or remove image to continue.
+              </Form.Control.Feedback>
+            </div>
           </Form.Row>
         </Tab>
 
