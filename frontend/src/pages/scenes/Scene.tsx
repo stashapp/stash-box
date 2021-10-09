@@ -129,7 +129,13 @@ const SceneComponent: React.FC = () => {
               </>
             )}
           </div>
-          <h3>{scene.title}</h3>
+          <h3>
+            {scene.deleted ? (
+              <del>{scene.title}</del>
+            ) : (
+              <span>{scene.title}</span>
+            )}
+          </h3>
           <h6>
             {scene.studio && (
               <>
