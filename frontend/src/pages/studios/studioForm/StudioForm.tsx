@@ -125,7 +125,12 @@ const StudioForm: React.FC<StudioProps> = ({
 
       <Form.Group>
         <Form.Label>Images</Form.Label>
-        <EditImages control={control} maxImages={1} file={file} setFile={(f) => setFile(f)} />
+        <EditImages
+          control={control}
+          maxImages={1}
+          file={file}
+          setFile={(f) => setFile(f)}
+        />
       </Form.Group>
 
       <EditNote register={register} error={errors.note} />
@@ -138,7 +143,9 @@ const StudioForm: React.FC<StudioProps> = ({
           <Button type="reset" variant="secondary" className="ml-auto mr-2">
             Reset
           </Button>
-          <Link to={createHref(studio.id ? ROUTE_STUDIO : ROUTE_STUDIOS, studio)}>
+          <Link
+            to={createHref(studio.id ? ROUTE_STUDIO : ROUTE_STUDIOS, studio)}
+          >
             <Button variant="danger" onClick={() => history.goBack()}>
               Cancel
             </Button>

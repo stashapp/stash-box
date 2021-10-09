@@ -744,7 +744,11 @@ const PerformerForm: React.FC<PerformerProps> = ({
 
         <Tab eventKey="images" title="Images">
           <Form.Row>
-            <EditImages control={control} file={file} setFile={(f) => setFile(f)} />
+            <EditImages
+              control={control}
+              file={file}
+              setFile={(f) => setFile(f)}
+            />
           </Form.Row>
 
           <Form.Row className="mt-1">
@@ -755,7 +759,11 @@ const PerformerForm: React.FC<PerformerProps> = ({
             >
               Cancel
             </Button>
-            <Button className="mr-1" disabled={!!file} onClick={() => setActiveTab("confirm")}>
+            <Button
+              className="mr-1"
+              disabled={!!file}
+              onClick={() => setActiveTab("confirm")}
+            >
               Next
             </Button>
           </Form.Row>

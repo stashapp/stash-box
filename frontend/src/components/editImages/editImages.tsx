@@ -21,7 +21,12 @@ interface EditImagesProps {
   maxImages?: number;
 }
 
-const EditImages: React.FC<EditImagesProps> = ({ control, maxImages, file, setFile }) => {
+const EditImages: React.FC<EditImagesProps> = ({
+  control,
+  maxImages,
+  file,
+  setFile,
+}) => {
   const {
     fields: images,
     append,

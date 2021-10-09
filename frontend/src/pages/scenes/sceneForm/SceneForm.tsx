@@ -544,7 +544,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
         </Tab>
         <Tab eventKey="images" title="Images">
           <Form.Row>
-            <EditImages control={control} file={file} setFile={(f) => setFile(f)} />
+            <EditImages
+              control={control}
+              file={file}
+              setFile={(f) => setFile(f)}
+            />
           </Form.Row>
 
           <Form.Row className="mt-1">
