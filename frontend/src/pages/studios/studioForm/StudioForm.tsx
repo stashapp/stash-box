@@ -62,6 +62,8 @@ const StudioForm: React.FC<StudioProps> = ({
   } = useForm<StudioFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
+      title: studio.name,
+      studio: studio.parent,
       images: studio.images,
     },
   });
