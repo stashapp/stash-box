@@ -100,9 +100,10 @@ export const usePerformers = (variables: PerformersVariables) =>
     variables,
   });
 
-export const useScene = (variables: SceneVariables) =>
+export const useScene = (variables: SceneVariables, skip: boolean = false) =>
   useQuery<Scene, SceneVariables>(SceneQuery, {
     variables,
+    skip,
   });
 
 export const useScenes = (variables: ScenesVariables, skip: boolean = false) =>

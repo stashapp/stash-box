@@ -66,6 +66,12 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 			return err
 		}
 
+		if input.Name != nil && *input.Name != current.Name {
+			if err := validateAdmin(ctx); err != nil {
+				return fmt.Errorf("must be admin to change user name")
+			}
+		}
+
 		u, err = user.Update(fac, input)
 		if err != nil {
 			return err

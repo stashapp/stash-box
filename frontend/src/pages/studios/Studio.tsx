@@ -1,32 +1,45 @@
 import React, { useContext } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
-import { Button } from "react-bootstrap";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import { sortBy } from "lodash";
 
-import { useStudio, useDeleteStudio } from "src/graphql";
+import {
+  TargetTypeEnum,
+  useEdits,
+  useStudio,
+  VoteStatusEnum,
+} from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import DeleteButton from "src/components/deleteButton";
-import { SceneList } from "src/components/list";
+import { EditList, SceneList } from "src/components/list";
 
 import {
-  isAdmin,
   getImage,
   getUrlByType,
   createHref,
   studioHref,
+  canEdit,
+  formatPendingEdits,
 } from "src/utils";
-import { ROUTE_STUDIO_EDIT, ROUTE_STUDIOS } from "src/constants/route";
+import { ROUTE_STUDIO_EDIT, ROUTE_STUDIO_DELETE } from "src/constants/route";
 import AuthContext from "src/AuthContext";
+
+const DEFAULT_TAB = "scenes";
 
 const StudioComponent: React.FC = () => {
   const auth = useContext(AuthContext);
-  const history = useHistory();
   const { id = "" } = useParams<{ id?: string }>();
   const { loading, data } = useStudio({ id }, id === "");
+  const history = useHistory();
+  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
 
-  const [deleteStudio, { loading: deleting }] = useDeleteStudio({
-    onCompleted: (result) => {
-      if (result.studioDestroy) history.push(ROUTE_STUDIOS);
+  const { data: editData } = useEdits({
+    filter: {
+      per_page: 1,
+    },
+    editFilter: {
+      target_type: TargetTypeEnum.STUDIO,
+      target_id: id,
+      status: VoteStatusEnum.PENDING,
     },
   });
 
@@ -36,16 +49,6 @@ const StudioComponent: React.FC = () => {
 
   const studio = data.findStudio;
 
-  const handleDelete = () => {
-    deleteStudio({
-      variables: {
-        input: {
-          id: studio.id,
-        },
-      },
-    });
-  };
-
   const studioImage = getImage(studio.images, "landscape");
 
   const subStudios = sortBy(studio.child_studios, (s) => s.name).map((s) => (
@@ -54,11 +57,23 @@ const StudioComponent: React.FC = () => {
     </li>
   ));
 
+  const pendingEditCount = editData?.queryEdits.count;
+
+  const setTab = (tab: string | null) =>
+    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+
   return (
     <>
       <div className="d-flex">
         <div className="studio-title mr-auto">
-          <h3>{studio.name}</h3>
+          <h3>
+            <span className="mr-2">Studio:</span>
+            {studio.deleted ? (
+              <del>{studio.name}</del>
+            ) : (
+              <span>{studio.name}</span>
+            )}
+          </h3>
           <h6>
             <a
               href={getUrlByType(studio.urls, "HOME")}
@@ -83,17 +98,17 @@ const StudioComponent: React.FC = () => {
           </div>
         )}
         <div>
-          {isAdmin(auth.user) && (
+          {canEdit(auth.user) && !studio.deleted && (
             <>
               <Link to={createHref(ROUTE_STUDIO_EDIT, { id })} className="ml-2">
                 <Button>Edit</Button>
               </Link>
-              <DeleteButton
-                onClick={handleDelete}
-                disabled={deleting}
+              <Link
+                to={createHref(ROUTE_STUDIO_DELETE, studio)}
                 className="ml-2"
-                message="Do you want to delete studio? This cannot be undone."
-              />
+              >
+                <Button variant="danger">Delete</Button>
+              </Link>
             </>
           )}
         </div>
@@ -106,10 +121,19 @@ const StudioComponent: React.FC = () => {
           </div>
         </>
       )}
-      <>
-        {subStudios.length > 0 && <h4>Scenes</h4>}
-        <SceneList filter={{ parentStudio: id }} />
-      </>
+      <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
+        <Tab eventKey="scenes" title="Scenes">
+          {subStudios.length > 0 && <h4>Scenes</h4>}
+          <SceneList filter={{ parentStudio: id }} />
+        </Tab>
+        <Tab
+          eventKey="edits"
+          title={`Edits${formatPendingEdits(pendingEditCount)}`}
+          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
+        >
+          <EditList type={TargetTypeEnum.STUDIO} id={studio.id} />
+        </Tab>
+      </Tabs>
     </>
   );
 };

@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	tagCategoryTable   = "tag_categories"
-	tagCategoryJoinKey = "category_id"
+	tagCategoryTable = "tag_categories"
 )
 
 var (

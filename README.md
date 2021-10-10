@@ -116,9 +116,6 @@ Join the [Discord server](https://discord.gg/2TsNFKt).
 
 * [Revive](https://github.com/mgechev/revive) - Configurable linter
     * Go Install: `go get github.com/mgechev/revive`
-* [Packr2](https://github.com/gobuffalo/packr/tree/v2.0.2/v2) - Static asset bundler
-    * Go Install: `go get github.com/gobuffalo/packr/v2/packr2@v2.0.2`
-    * [Binary Download](https://github.com/gobuffalo/packr/releases)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
 
 NOTE: You may need to run the `go get` commands outside the project directory to avoid modifying the projects module file.
@@ -141,8 +138,7 @@ TODO
 ## Commands
 
 * `make generate` - Generate Go GraphQL files. This should be run if the graphql schema has changed.
-* `make ui` - Builds the UI and regenerates the packr2 files.
-* `make packr` - Regenerates the packr2 files. Run this if schema migration files have changed and you don't want to rebuild the UI.
+* `make ui` - Builds the UI.
 * `make build` - Builds the binary
 * `make vet` - Run `go vet`
 * `make lint` - Run the linter

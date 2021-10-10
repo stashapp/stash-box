@@ -37,7 +37,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.16.x
+        go-version: 1.17.x
 
     - name: Install Node
       uses: actions/setup-node@v2
@@ -80,31 +80,26 @@ jobs:
     - name: Generate
       run: make generate
 
-    - name: Run tests
-      env:
-        POSTGRES_DB: postgres:postgres@localhost/postgres?sslmode=disable
-      run: make lint it
-
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
       # this means that the build version/time may be incorrect if the UI is
       # not changed in a pull request
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: make ui-only
+      run: make ui
 
-    - name: Bundle static assets
-      run: |
-        go get -u github.com/gobuffalo/packr/v2/packr2@v2.0.2
-        make packr
+    - name: Run tests
+      env:
+        POSTGRES_DB: postgres:postgres@localhost/postgres?sslmode=disable
+      run: make it
 
     - name: Crosscompile binaries
       run: make cross-compile
 
     - name: Generate checksums
       run: |
-        git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
+        git describe --tags --exclude 0.0.0-latest-develop | tee CHECKSUMS_SHA1
         sha1sum dist/*/stash-box-* | sed 's/dist\/.*\///g' | tee -a CHECKSUMS_SHA1
-        echo "STASH_BOX_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
+        echo "STASH_BOX_VERSION=$(git describe --tags --exclude 0.0.0-latest-develop)" >> $GITHUB_ENV
         echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
 
     - name: Upload Windows binary
@@ -129,9 +124,9 @@ jobs:
         name: stash-box-linux
         path: dist/stash-box_static_linux_amd64/stash-box-linux
 
-    - name: Update latest_develop tag
+    - name: Update latest-develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
-      run : git tag -f latest_develop; git push -f --tags
+      run : git tag -f 0.0.0-latest-develop; git push -f --tags
     - name: Development Release
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       uses: meeDamian/github-release@2.0
@@ -139,7 +134,7 @@ jobs:
         token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
         allow_override: true
-        tag: latest_develop
+        tag: 0.0.0-latest-develop
         name: "${{ env.STASH_BOX_VERSION }}: Latest development build"
         body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
@@ -149,7 +144,7 @@ jobs:
           CHECKSUMS_SHA1
         gzip: false
     - name: Master release
-      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/0.0.0-latest-develop' }}
       uses: meeDamian/github-release@2.0
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
@@ -175,7 +170,7 @@ jobs:
         docker push stashapp/stash-box:development
 
     - name: Release Docker
-      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/0.0.0-latest-develop' }}
       run: |
         docker build -t stashapp/stash-box:latest -f ./docker/ci/x86_64/Dockerfile ./dist
         docker push stashapp/stash-box:latest

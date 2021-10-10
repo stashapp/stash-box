@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package api_test
@@ -143,6 +144,7 @@ type testRunner struct {
 	err      error
 }
 
+var sceneSuffix int
 var performerSuffix int
 var studioSuffix int
 var tagSuffix int
@@ -364,10 +366,15 @@ func (s *testRunner) createTestTag(input *models.TagCreateInput) (*tagOutput, er
 	return createdTag, nil
 }
 
+func (s *testRunner) generateSceneName() string {
+	sceneSuffix += 1
+	return "scene-" + strconv.Itoa(sceneSuffix)
+}
+
 func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutput, error) {
 	s.t.Helper()
 	if input == nil {
-		title := "title"
+		title := s.generateSceneName()
 		input = &models.SceneCreateInput{
 			Title: &title,
 			Fingerprints: []*models.FingerprintEditInput{
@@ -495,6 +502,39 @@ func (s *testRunner) createTestTagEdit(operation models.OperationEnum, detailsIn
 	return createdEdit, nil
 }
 
+func (s *testRunner) createTestStudioEdit(operation models.OperationEnum, detailsInput *models.StudioEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+	s.t.Helper()
+
+	if editInput == nil {
+		input := models.EditInput{
+			Operation: operation,
+		}
+		editInput = &input
+	}
+
+	if detailsInput == nil {
+		name := s.generateStudioName()
+		input := models.StudioEditDetailsInput{
+			Name: &name,
+		}
+		detailsInput = &input
+	}
+
+	studioEditInput := models.StudioEditInput{
+		Edit:    editInput,
+		Details: detailsInput,
+	}
+
+	createdEdit, err := s.resolver.Mutation().StudioEdit(s.ctx, studioEditInput)
+
+	if err != nil {
+		s.t.Errorf("Error creating edit: %s", err.Error())
+		return nil, err
+	}
+
+	return createdEdit, nil
+}
+
 func (s *testRunner) applyEdit(id string) (*models.Edit, error) {
 	s.t.Helper()
 
@@ -526,6 +566,24 @@ func (s *testRunner) getEditTagTarget(input *models.Edit) *models.Tag {
 
 	target, _ := r.Target(s.ctx, input)
 	tagTarget := target.(*models.Tag)
+	return tagTarget
+}
+
+func (s *testRunner) getEditStudioDetails(input *models.Edit) *models.StudioEdit {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	details, _ := r.Details(s.ctx, input)
+	tagDetails := details.(*models.StudioEdit)
+	return tagDetails
+}
+
+func (s *testRunner) getEditStudioTarget(input *models.Edit) *models.Studio {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	target, _ := r.Target(s.ctx, input)
+	tagTarget := target.(*models.Studio)
 	return tagTarget
 }
 
@@ -686,4 +744,151 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 			},
 		},
 	}
+}
+
+func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
+	title := s.generateSceneName()
+	details := "Details"
+	date := "2000-02-03"
+	duration := 123
+	director := "Director"
+
+	return &models.SceneCreateInput{
+		Title:   &title,
+		Details: &details,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Date: &date,
+		Fingerprints: []*models.FingerprintEditInput{
+			s.generateSceneFingerprint(),
+		},
+		Duration: &duration,
+		Director: &director,
+	}
+}
+
+func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput {
+	title := s.generateSceneName()
+	details := "Details"
+	date := "2000-02-03"
+	duration := 123
+	director := "Director"
+
+	return &models.SceneEditDetailsInput{
+		Title:   &title,
+		Details: &details,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Date: &date,
+		Fingerprints: []*models.FingerprintEditInput{
+			s.generateSceneFingerprint(),
+		},
+		Duration: &duration,
+		Director: &director,
+	}
+}
+
+func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsInput {
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		s.t.Errorf("Error creating performer: %s", err.Error())
+		return nil
+	}
+	createdTag, err := s.createTestTag(nil)
+	if err != nil {
+		s.t.Errorf("Error creating tag: %s", err.Error())
+		return nil
+	}
+
+	title := s.generateSceneName()
+	details := "Details"
+	date := "2000-02-03"
+	duration := 123
+	director := "Director"
+	as := "Alias"
+
+	return &models.SceneEditDetailsInput{
+		Title:   &title,
+		Details: &details,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Date: &date,
+		Performers: []*models.PerformerAppearanceInput{
+			{
+				PerformerID: createdPerformer.ID.String(),
+				As:          &as,
+			},
+		},
+		TagIds: []string{
+			createdTag.ID.String(),
+		},
+		Fingerprints: []*models.FingerprintEditInput{
+			s.generateSceneFingerprint(),
+		},
+		Duration: &duration,
+		Director: &director,
+	}
+}
+
+func (s *testRunner) createTestSceneEdit(operation models.OperationEnum, detailsInput *models.SceneEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+	s.t.Helper()
+
+	if editInput == nil {
+		input := models.EditInput{
+			Operation: operation,
+		}
+		editInput = &input
+	}
+
+	if detailsInput == nil {
+		title := s.generateSceneName()
+		input := models.SceneEditDetailsInput{
+			Title: &title,
+		}
+		detailsInput = &input
+	}
+
+	sceneEditInput := models.SceneEditInput{
+		Edit:    editInput,
+		Details: detailsInput,
+	}
+
+	createdEdit, err := s.resolver.Mutation().SceneEdit(s.ctx, sceneEditInput)
+
+	if err != nil {
+		s.t.Errorf("Error creating edit: %s", err.Error())
+		return nil, err
+	}
+
+	return createdEdit, nil
+}
+
+func (s *testRunner) getEditSceneDetails(input *models.Edit) *models.SceneEdit {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	details, _ := r.Details(s.ctx, input)
+	sceneDetails := details.(*models.SceneEdit)
+	return sceneDetails
+}
+
+func (s *testRunner) getEditSceneTarget(input *models.Edit) *models.Scene {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	target, _ := r.Target(s.ctx, input)
+	sceneTarget := target.(*models.Scene)
+	return sceneTarget
 }

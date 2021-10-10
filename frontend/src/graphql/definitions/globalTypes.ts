@@ -363,6 +363,26 @@ export interface SceneDestroyInput {
   id: string;
 }
 
+export interface SceneEditDetailsInput {
+  title?: string | null;
+  details?: string | null;
+  urls?: URLInput[] | null;
+  date?: any | null;
+  studio_id?: string | null;
+  performers?: PerformerAppearanceInput[] | null;
+  tag_ids?: string[] | null;
+  image_ids?: string[] | null;
+  fingerprints?: FingerprintEditInput[] | null;
+  duration?: number | null;
+  director?: string | null;
+}
+
+export interface SceneEditInput {
+  edit: EditInput;
+  details?: SceneEditDetailsInput | null;
+  duration?: number | null;
+}
+
 export interface SceneFilterType {
   text?: string | null;
   title?: string | null;
@@ -400,12 +420,23 @@ export interface StudioCreateInput {
   name: string;
   urls?: URLInput[] | null;
   parent_id?: string | null;
-  child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
 }
 
 export interface StudioDestroyInput {
   id: string;
+}
+
+export interface StudioEditDetailsInput {
+  name?: string | null;
+  urls?: URLInput[] | null;
+  parent_id?: string | null;
+  image_ids?: string[] | null;
+}
+
+export interface StudioEditInput {
+  edit: EditInput;
+  details?: StudioEditDetailsInput | null;
 }
 
 export interface StudioFilterType {
@@ -421,7 +452,6 @@ export interface StudioUpdateInput {
   name?: string | null;
   urls?: URLInput[] | null;
   parent_id?: string | null;
-  child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
 }
 

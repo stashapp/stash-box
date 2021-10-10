@@ -52,10 +52,10 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
     />
   );
   const destruction = edit.operation === OperationEnum.DESTROY && (
-    <DestroyEdit target={edit.target} />
+    <DestroyEdit {...edit} />
   );
   const comments = (edit.comments ?? []).map((comment) => (
-    <EditComment {...comment} />
+    <EditComment {...comment} key={`${comment.user}-${comment.date}`} />
   ));
 
   return (

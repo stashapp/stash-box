@@ -60,6 +60,8 @@ import {
   RevokeInviteVariables,
 } from "../definitions/RevokeInvite";
 import { EditComment, EditCommentVariables } from "../definitions/EditComment";
+import { StudioEdit, StudioEditVariables } from "../definitions/StudioEdit";
+import { SceneEdit, SceneEditVariables } from "../definitions/SceneEdit";
 
 const ActivateUserMutation = loader("./ActivateNewUser.gql");
 const AddUserMutation = loader("./AddUser.gql");
@@ -72,6 +74,8 @@ const UpdateTagCategoryMutation = loader("./UpdateTagCategory.gql");
 const AddImageMutation = loader("./AddImage.gql");
 const PerformerEditMutation = loader("./PerformerEdit.gql");
 const TagEditMutation = loader("./TagEdit.gql");
+const StudioEditMutation = loader("./StudioEdit.gql");
+const SceneEditMutation = loader("./SceneEdit.gql");
 const AddSceneMutation = loader("./AddScene.gql");
 const DeleteSceneMutation = loader("./DeleteScene.gql");
 const UpdateSceneMutation = loader("./UpdateScene.gql");
@@ -155,6 +159,14 @@ export const useUpdateStudio = (
 export const useTagEdit = (
   options?: MutationHookOptions<TagEdit, TagEditVariables>
 ) => useMutation(TagEditMutation, options);
+
+export const useStudioEdit = (
+  options?: MutationHookOptions<StudioEdit, StudioEditVariables>
+) => useMutation(StudioEditMutation, options);
+
+export const useSceneEdit = (
+  options?: MutationHookOptions<SceneEdit, SceneEditVariables>
+) => useMutation(SceneEditMutation, options);
 
 export const useApplyEdit = (
   options?: MutationHookOptions<ApplyEdit, ApplyEditVariables>

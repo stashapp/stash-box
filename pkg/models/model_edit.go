@@ -108,6 +108,18 @@ func (e *Edit) GetPerformerData() (*PerformerEditData, error) {
 	return &data, nil
 }
 
+func (e *Edit) GetStudioData() (*StudioEditData, error) {
+	data := StudioEditData{}
+	_ = json.Unmarshal(e.Data, &data)
+	return &data, nil
+}
+
+func (e *Edit) GetSceneData() (*SceneEditData, error) {
+	data := SceneEditData{}
+	_ = json.Unmarshal(e.Data, &data)
+	return &data, nil
+}
+
 type Edits []*Edit
 
 func (p Edits) Each(fn func(interface{})) {
@@ -118,6 +130,23 @@ func (p Edits) Each(fn func(interface{})) {
 
 func (p *Edits) Add(o interface{}) {
 	*p = append(*p, o.(*Edit))
+}
+
+type Redirect struct {
+	SourceID uuid.UUID `db:"source_id" json:"source_id"`
+	TargetID uuid.UUID `db:"target_id" json:"target_id"`
+}
+
+type Redirects []*Redirect
+
+func (p *Redirects) Add(o interface{}) {
+	*p = append(*p, o.(*Redirect))
+}
+
+func (p Redirects) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
 }
 
 type EditTag struct {
@@ -152,6 +181,40 @@ func (p EditPerformers) Each(fn func(interface{})) {
 
 func (p *EditPerformers) Add(o interface{}) {
 	*p = append(*p, o.(*EditPerformer))
+}
+
+type EditStudio struct {
+	EditID   uuid.UUID `db:"edit_id" json:"edit_id"`
+	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+}
+
+type EditStudios []*EditStudio
+
+func (p EditStudios) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditStudios) Add(o interface{}) {
+	*p = append(*p, o.(*EditStudio))
+}
+
+type EditScene struct {
+	EditID  uuid.UUID `db:"edit_id" json:"edit_id"`
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+type EditScenes []*EditScene
+
+func (p EditScenes) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditScenes) Add(o interface{}) {
+	*p = append(*p, o.(*EditScene))
 }
 
 // type VoteComment struct {
@@ -233,6 +296,52 @@ type PerformerEditData struct {
 	MergeSources     []string       `json:"merge_sources,omitempty"`
 	SetModifyAliases bool           `json:"modify_aliases,omitempty"`
 	SetMergeAliases  bool           `json:"merge_aliases,omitempty"`
+}
+
+type StudioEdit struct {
+	Name *string `json:"name"`
+	// Added and modified URLs
+	AddedUrls     []*URL   `json:"added_urls,omitempty"`
+	RemovedUrls   []*URL   `json:"removed_urls,omitempty"`
+	ParentID      *string  `json:"parent_id,omitempty"`
+	AddedImages   []string `json:"added_images,omitempty"`
+	RemovedImages []string `json:"removed_images,omitempty"`
+}
+
+func (StudioEdit) IsEditDetails() {}
+
+type StudioEditData struct {
+	New          *StudioEdit `json:"new_data,omitempty"`
+	Old          *StudioEdit `json:"old_data,omitempty"`
+	MergeSources []string    `json:"merge_sources,omitempty"`
+}
+
+type SceneEdit struct {
+	Title       *string `json:"title,omitempty"`
+	Details     *string `json:"details,omitempty"`
+	AddedUrls   []*URL  `json:"added_urls,omitempty"`
+	RemovedUrls []*URL  `json:"removed_urls,omitempty"`
+	Date        *string `json:"date,omitempty"`
+	StudioID    *string `json:"studio_id,omitempty"`
+	// Added or modified performer appearance entries
+	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
+	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`
+	AddedTags           []string                    `json:"added_tags,omitempty"`
+	RemovedTags         []string                    `json:"removed_tags,omitempty"`
+	AddedImages         []string                    `json:"added_images,omitempty"`
+	RemovedImages       []string                    `json:"removed_images,omitempty"`
+	AddedFingerprints   []*FingerprintEditInput     `json:"added_fingerprints,omitempty"`
+	RemovedFingerprints []*FingerprintEditInput     `json:"removed_fingerprints,omitempty"`
+	Duration            *int64                      `json:"duration,omitempty"`
+	Director            *string                     `json:"director,omitempty"`
+}
+
+func (SceneEdit) IsEditDetails() {}
+
+type SceneEditData struct {
+	New          *SceneEdit `json:"new_data,omitempty"`
+	Old          *SceneEdit `json:"old_data,omitempty"`
+	MergeSources []string   `json:"merge_sources,omitempty"`
 }
 
 type EditData struct {

@@ -32,13 +32,11 @@ export const EthnicityTypes: EnumDictionary<EthnicityEnum, string> = {
   [EthnicityEnum.MIDDLE_EASTERN]: "Middle Eastern",
 };
 
-export const EthnicityFilterTypes: EnumDictionary<
-  EthnicityFilterEnum,
-  string
-> = {
-  ...EthnicityTypes,
-  [EthnicityFilterEnum.UNKNOWN]: "Unknown Ethnicity",
-};
+export const EthnicityFilterTypes: EnumDictionary<EthnicityFilterEnum, string> =
+  {
+    ...EthnicityTypes,
+    [EthnicityFilterEnum.UNKNOWN]: "Unknown Ethnicity",
+  };
 
 export const EyeColorTypes: EnumDictionary<EyeColorEnum, string> = {
   [EyeColorEnum.BLUE]: "Blue",

@@ -1,6 +1,7 @@
 package sqlx
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -27,6 +28,10 @@ var (
 
 	sceneURLTable = newTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
 		return &models.SceneURL{}
+	})
+
+	sceneRedirectTable = newTableJoin(sceneTable, "scene_redirects", "source_id", func() interface{} {
+		return &models.Redirect{}
 	})
 )
 
@@ -410,7 +415,7 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 	}
 }
 
-func (qb *sceneQueryBuilder) GetSceneFingerprints(id uuid.UUID) ([]*models.SceneFingerprint, error) {
+func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) (models.SceneFingerprints, error) {
 	joins := models.SceneFingerprints{}
 	err := qb.dbi.FindJoins(sceneFingerprintTable, id, &joins)
 	return joins, err
@@ -471,11 +476,42 @@ func (qb *sceneQueryBuilder) GetAllAppearances(ids []uuid.UUID) ([]models.Perfor
 	return result, nil
 }
 
-func (qb *sceneQueryBuilder) GetURLs(id uuid.UUID) (models.SceneURLs, error) {
-	joins := models.SceneURLs{}
-	err := qb.dbi.FindJoins(sceneURLTable, id, &joins)
+func (qb *sceneQueryBuilder) GetImages(id uuid.UUID) (models.ScenesImages, error) {
+	joins := models.ScenesImages{}
+	err := qb.dbi.FindJoins(sceneImageTable, id, &joins)
 
 	return joins, err
+}
+
+func (qb *sceneQueryBuilder) GetTags(id uuid.UUID) (models.ScenesTags, error) {
+	joins := models.ScenesTags{}
+	err := qb.dbi.FindJoins(sceneTagTable, id, &joins)
+
+	return joins, err
+}
+
+func (qb *sceneQueryBuilder) getSceneURLs(id uuid.UUID) (models.SceneURLs, error) {
+	joins := models.SceneURLs{}
+	err := qb.dbi.FindJoins(sceneURLTable, id, &joins)
+	return joins, err
+}
+
+func (qb *sceneQueryBuilder) GetURLs(id uuid.UUID) ([]*models.URL, error) {
+	joins, err := qb.getSceneURLs(id)
+	if err != nil {
+		return nil, err
+	}
+
+	urls := make([]*models.URL, len(joins))
+	for i, u := range joins {
+		url := models.URL{
+			URL:  u.URL,
+			Type: u.Type,
+		}
+		urls[i] = &url
+	}
+
+	return urls, nil
 }
 
 func (qb *sceneQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*models.URL, []error) {
@@ -521,4 +557,204 @@ func (qb *sceneQueryBuilder) CountByPerformer(id uuid.UUID) (int, error) {
 	var args []interface{}
 	args = append(args, id)
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
+}
+
+func (qb *sceneQueryBuilder) SoftDelete(scene models.Scene) (*models.Scene, error) {
+	// Delete joins
+	if err := qb.dbi.DeleteJoins(sceneFingerprintTable, scene.ID); err != nil {
+		return nil, err
+	}
+	if err := qb.dbi.DeleteJoins(sceneImageTable, scene.ID); err != nil {
+		return nil, err
+	}
+	if err := qb.dbi.DeleteJoins(sceneURLTable, scene.ID); err != nil {
+		return nil, err
+	}
+	if err := qb.dbi.DeleteJoins(scenePerformerTable, scene.ID); err != nil {
+		return nil, err
+	}
+	if err := qb.dbi.DeleteJoins(sceneTagTable, scene.ID); err != nil {
+		return nil, err
+	}
+
+	ret, err := qb.dbi.SoftDelete(sceneDBTable, scene)
+	return qb.toModel(ret), err
+}
+
+func (qb *sceneQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
+	return qb.dbi.InsertJoin(sceneRedirectTable, newJoin, nil)
+}
+
+func (qb *sceneQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+	query := "UPDATE " + sceneRedirectTable.table.Name() + " SET target_id = ? WHERE target_id = ?"
+	args := []interface{}{newTargetID, oldTargetID}
+	return qb.dbi.RawQuery(sceneRedirectTable.table, query, args, nil)
+}
+
+func (qb *sceneQueryBuilder) UpdateImages(sceneID uuid.UUID, updatedJoins models.ScenesImages) error {
+	return qb.dbi.ReplaceJoins(sceneImageTable, sceneID, &updatedJoins)
+}
+
+func (qb *sceneQueryBuilder) UpdateTags(sceneID uuid.UUID, updatedJoins models.ScenesTags) error {
+	return qb.dbi.ReplaceJoins(sceneTagTable, sceneID, &updatedJoins)
+}
+
+func (qb *sceneQueryBuilder) UpdatePerformers(sceneID uuid.UUID, updatedJoins models.PerformersScenes) error {
+	return qb.dbi.ReplaceJoins(scenePerformerTable, sceneID, &updatedJoins)
+}
+
+func (qb *sceneQueryBuilder) ApplyEdit(scene *models.Scene, create bool, data *models.SceneEditData) (*models.Scene, error) {
+	old := data.Old
+	if old == nil {
+		old = &models.SceneEdit{}
+	}
+	scene.CopyFromSceneEdit(*data.New, old)
+
+	var updatedScene *models.Scene
+	var err error
+	if create {
+		updatedScene, err = qb.Create(*scene)
+	} else {
+		updatedScene, err = qb.Update(*scene)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	if err := qb.updateURLsFromEdit(scene, data); err != nil {
+		return nil, err
+	}
+
+	if err := qb.updateImagesFromEdit(scene, data); err != nil {
+		return nil, err
+	}
+
+	if err := qb.updateTagsFromEdit(scene, data); err != nil {
+		return nil, err
+	}
+
+	if err := qb.updatePerformersFromEdit(scene, data); err != nil {
+		return nil, err
+	}
+
+	if err := qb.updateFingerprintsFromEdit(scene, data); err != nil {
+		return nil, err
+	}
+
+	return updatedScene, err
+}
+
+func (qb *sceneQueryBuilder) updateURLsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
+	urls, err := qb.getSceneURLs(scene.ID)
+	if err != nil {
+		return err
+	}
+	newUrls := models.CreateSceneURLs(scene.ID, data.New.AddedUrls)
+	oldUrls := models.CreateSceneURLs(scene.ID, data.New.RemovedUrls)
+
+	if err := models.ProcessSlice(&urls, &newUrls, &oldUrls); err != nil {
+		return err
+	}
+
+	if err := qb.UpdateURLs(scene.ID, urls); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *sceneQueryBuilder) updateImagesFromEdit(scene *models.Scene, data *models.SceneEditData) error {
+	currentImages, err := qb.GetImages(scene.ID)
+	if err != nil {
+		return err
+	}
+	newImages := models.CreateSceneImages(scene.ID, data.New.AddedImages)
+	oldImages := models.CreateSceneImages(scene.ID, data.New.RemovedImages)
+
+	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages); err != nil {
+		return err
+	}
+
+	if err := qb.UpdateImages(scene.ID, currentImages); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *sceneQueryBuilder) updateTagsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
+	currentTags, err := qb.GetTags(scene.ID)
+	if err != nil {
+		return err
+	}
+	newTags := models.CreateSceneTags(scene.ID, data.New.AddedTags)
+	oldTags := models.CreateSceneTags(scene.ID, data.New.RemovedTags)
+
+	if err := models.ProcessSlice(&currentTags, &newTags, &oldTags); err != nil {
+		return err
+	}
+
+	if err := qb.UpdateTags(scene.ID, currentTags); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *sceneQueryBuilder) updatePerformersFromEdit(scene *models.Scene, data *models.SceneEditData) error {
+	currentPerformers, err := qb.GetPerformers(scene.ID)
+	if err != nil {
+		return err
+	}
+	newPerformers := models.CreateScenePerformers(scene.ID, data.New.AddedPerformers)
+	oldPerformers := models.CreateScenePerformers(scene.ID, data.New.RemovedPerformers)
+
+	if err := models.ProcessSlice(&currentPerformers, &newPerformers, &oldPerformers); err != nil {
+		return err
+	}
+
+	if err := qb.UpdatePerformers(scene.ID, currentPerformers); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *sceneQueryBuilder) updateFingerprintsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
+	currentFingerprints, err := qb.GetFingerprints(scene.ID)
+	if err != nil {
+		return err
+	}
+	newFingerprints := models.CreateSceneFingerprints(scene.ID, data.New.AddedFingerprints)
+	oldFingerprints := models.CreateSceneFingerprints(scene.ID, data.New.RemovedFingerprints)
+
+	if err := models.ProcessSlice(&currentFingerprints, &newFingerprints, &oldFingerprints); err != nil {
+		return err
+	}
+
+	if err := qb.UpdateFingerprints(scene.ID, currentFingerprints); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *sceneQueryBuilder) MergeInto(source *models.Scene, target *models.Scene) error {
+	if source.Deleted {
+		return fmt.Errorf("merge source scene is deleted: %s", source.ID.String())
+	}
+	if target.Deleted {
+		return fmt.Errorf("merge target scene is deleted: %s", target.ID.String())
+	}
+
+	if _, err := qb.SoftDelete(*source); err != nil {
+		return err
+	}
+
+	if err := qb.UpdateRedirects(source.ID, target.ID); err != nil {
+		return err
+	}
+
+	redirect := models.Redirect{SourceID: source.ID, TargetID: target.ID}
+	return qb.CreateRedirect(redirect)
 }

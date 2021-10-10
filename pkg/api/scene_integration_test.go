@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package api_test
@@ -95,6 +96,31 @@ func comparePerformers(input []*models.PerformerAppearanceInput, performers []*p
 	return true
 }
 
+func comparePerformersInput(input, performers []*models.PerformerAppearanceInput) bool {
+	if len(performers) != len(input) {
+		return false
+	}
+
+	for i, v := range performers {
+		performerID := v.PerformerID
+		if performerID != input[i].PerformerID {
+			return false
+		}
+
+		if v.As != input[i].As {
+			if v.As == nil || input[i].As == nil {
+				return false
+			}
+
+			if *v.As != *input[i].As {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 func compareTags(tagIDs []string, tags []*idObject) bool {
 	if len(tags) != len(tagIDs) {
 		return false
@@ -111,6 +137,20 @@ func compareTags(tagIDs []string, tags []*idObject) bool {
 }
 
 func compareFingerprints(input []*models.FingerprintEditInput, fingerprints []*fingerprint) bool {
+	if len(input) != len(fingerprints) {
+		return false
+	}
+
+	for i, v := range fingerprints {
+		if input[i].Algorithm != v.Algorithm || input[i].Hash != v.Hash {
+			return false
+		}
+	}
+
+	return true
+}
+
+func compareFingerprintsInput(input, fingerprints []*models.FingerprintEditInput) bool {
 	if len(input) != len(fingerprints) {
 		return false
 	}

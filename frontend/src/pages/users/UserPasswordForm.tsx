@@ -6,7 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { useHistory } from "react-router-dom";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   id: yup.string(),
   existingPassword: yup.string().required("Existing password is required"),
   newPassword: yup
@@ -44,7 +44,11 @@ interface UserProps {
 
 const UserForm: React.FC<UserProps> = ({ callback, error }) => {
   const history = useHistory();
-  const { register, handleSubmit, errors } = useForm<UserFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<UserFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -61,10 +65,9 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
       <Form.Group controlId="existingPassword">
         <Form.Control
           className={cx({ "is-invalid": errors.existingPassword })}
-          name="existingPassword"
           type="password"
           placeholder="Existing Password"
-          ref={register}
+          {...register("existingPassword")}
         />
         <div className="invalid-feedback">
           {errors?.existingPassword?.message}
@@ -73,20 +76,18 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
       <Form.Group controlId="newPassword">
         <Form.Control
           className={cx({ "is-invalid": errors.newPassword })}
-          name="newPassword"
           type="password"
           placeholder="New Password"
-          ref={register}
+          {...register("newPassword")}
         />
         <div className="invalid-feedback">{errors?.newPassword?.message}</div>
       </Form.Group>
       <Form.Group controlId="confirmNewPassword">
         <Form.Control
           className={cx({ "is-invalid": errors.confirmNewPassword })}
-          name="confirmNewPassword"
           type="password"
           placeholder="Confirm New Password"
-          ref={register}
+          {...register("confirmNewPassword")}
         />
         <div className="invalid-feedback">
           {errors?.confirmNewPassword?.message}

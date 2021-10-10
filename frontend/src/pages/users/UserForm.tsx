@@ -9,7 +9,7 @@ import cx from "classnames";
 
 import { RoleEnum, UserUpdateInput } from "src/graphql";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   id: yup.string(),
   name: yup.string().required("Username is required"),
   email: yup.string().email().required("Email is required"),
@@ -54,7 +54,12 @@ const roles = Object.keys(RoleEnum).map((role) => ({
 
 const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
   const history = useHistory();
-  const { register, handleSubmit, errors, control } = useForm<UserFormData>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<UserFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -77,10 +82,9 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
           <Form.Label>Username</Form.Label>
           <Form.Control
             className={cx({ "is-invalid": errors.name })}
-            name="name"
             placeholder="Username"
-            ref={register}
             defaultValue={user.name ?? ""}
+            {...register("name")}
           />
           <div className="invalid-feedback">{errors?.name?.message}</div>
         </Form.Group>
@@ -90,11 +94,10 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
           <Form.Label>Email</Form.Label>
           <Form.Control
             className={cx({ "is-invalid": errors.email })}
-            name="email"
             type="email"
             placeholder="Email"
-            ref={register}
             defaultValue={user.email ?? ""}
+            {...register("email")}
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </Form.Group>
@@ -104,11 +107,10 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
           <Form.Label>Password</Form.Label>
           <Form.Control
             className={cx({ "is-invalid": errors.password })}
-            name="password"
             type="password"
             placeholder="Password"
-            ref={register}
             defaultValue={user.password ?? ""}
+            {...register("password")}
           />
           <div className="invalid-feedback">{errors?.password?.message}</div>
         </Form.Group>
@@ -120,7 +122,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
             name="roles"
             control={control}
             defaultValue={user.roles ?? []}
-            render={({ onChange, value }) => (
+            render={({ field: { onChange, value } }) => (
               <Select
                 classNamePrefix="react-select"
                 name="roles"

@@ -1,21 +1,23 @@
 package database
 
 import (
+	"embed"
 	"fmt"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/logger"
-	"github.com/stashapp/stash-box/pkg/utils"
 
 	// Driver used here only
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/lib/pq"
 )
 
 const postgresDriver = "postgres"
+
+//go:embed migrations/postgres/*.sql
+var fs embed.FS
 
 func init() {
 	registerProvider("postgres", &PostgresProvider{})
@@ -37,17 +39,14 @@ func (p *PostgresProvider) Open(databasePath string) *sqlx.DB {
 
 // Migrate the database
 func (p *PostgresProvider) runMigrations(databasePath string) {
-	migrationsBox := packr.New("Postgres Migrations", "./migrations/postgres")
-	packrSource := &Packr2Source{
-		Box:        migrationsBox,
-		Migrations: source.NewMigrations(),
+	migrations, err := iofs.New(fs, "migrations/postgres")
+	if err != nil {
+		panic(err.Error())
 	}
 
-	databasePath = utils.FixWindowsPath(databasePath)
-	s, _ := WithInstance(packrSource)
 	m, err := migrate.NewWithSourceInstance(
-		"packr2",
-		s,
+		"iofs",
+		migrations,
 		fmt.Sprintf("%s://%s", postgresDriver, databasePath),
 	)
 	if err != nil {

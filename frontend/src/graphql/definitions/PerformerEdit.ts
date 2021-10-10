@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { PerformerEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import { PerformerEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: PerformerEdit
@@ -26,10 +26,6 @@ export interface PerformerEdit_performerEdit_user {
   __typename: "User";
   id: string;
   name: string;
-}
-
-export interface PerformerEdit_performerEdit_target_Scene {
-  __typename: "Scene" | "Studio";
 }
 
 export interface PerformerEdit_performerEdit_target_Tag_category {
@@ -115,11 +111,116 @@ export interface PerformerEdit_performerEdit_target_Performer {
   images: PerformerEdit_performerEdit_target_Performer_images[];
 }
 
-export type PerformerEdit_performerEdit_target = PerformerEdit_performerEdit_target_Scene | PerformerEdit_performerEdit_target_Tag | PerformerEdit_performerEdit_target_Performer;
-
-export interface PerformerEdit_performerEdit_details_SceneEdit {
-  __typename: "SceneEdit" | "StudioEdit";
+export interface PerformerEdit_performerEdit_target_Studio_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
 }
+
+export interface PerformerEdit_performerEdit_target_Studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_target_Studio_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_target_Studio_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface PerformerEdit_performerEdit_target_Studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: PerformerEdit_performerEdit_target_Studio_child_studios[];
+  parent: PerformerEdit_performerEdit_target_Studio_parent | null;
+  urls: PerformerEdit_performerEdit_target_Studio_urls[];
+  images: PerformerEdit_performerEdit_target_Studio_images[];
+  deleted: boolean;
+}
+
+export interface PerformerEdit_performerEdit_target_Scene_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_target_Scene_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_target_Scene_studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_target_Scene_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  gender: GenderEnum | null;
+  aliases: string[];
+}
+
+export interface PerformerEdit_performerEdit_target_Scene_performers {
+  __typename: "PerformerAppearance";
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+  performer: PerformerEdit_performerEdit_target_Scene_performers_performer;
+}
+
+export interface PerformerEdit_performerEdit_target_Scene_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface PerformerEdit_performerEdit_target_Scene_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_target_Scene {
+  __typename: "Scene";
+  id: string;
+  date: any | null;
+  title: string | null;
+  details: string | null;
+  director: string | null;
+  duration: number | null;
+  urls: PerformerEdit_performerEdit_target_Scene_urls[];
+  images: PerformerEdit_performerEdit_target_Scene_images[];
+  studio: PerformerEdit_performerEdit_target_Scene_studio | null;
+  performers: PerformerEdit_performerEdit_target_Scene_performers[];
+  fingerprints: PerformerEdit_performerEdit_target_Scene_fingerprints[];
+  tags: PerformerEdit_performerEdit_target_Scene_tags[];
+}
+
+export type PerformerEdit_performerEdit_target = PerformerEdit_performerEdit_target_Tag | PerformerEdit_performerEdit_target_Performer | PerformerEdit_performerEdit_target_Studio | PerformerEdit_performerEdit_target_Scene;
 
 export interface PerformerEdit_performerEdit_details_TagEdit {
   __typename: "TagEdit";
@@ -212,15 +313,381 @@ export interface PerformerEdit_performerEdit_details_PerformerEdit {
   removed_tattoos: PerformerEdit_performerEdit_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: PerformerEdit_performerEdit_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: PerformerEdit_performerEdit_details_PerformerEdit_removed_piercings[] | null;
-  added_images: (PerformerEdit_performerEdit_details_PerformerEdit_added_images | null)[] | null;
-  removed_images: (PerformerEdit_performerEdit_details_PerformerEdit_removed_images | null)[] | null;
+  added_images: PerformerEdit_performerEdit_details_PerformerEdit_added_images[] | null;
+  removed_images: PerformerEdit_performerEdit_details_PerformerEdit_removed_images[] | null;
 }
 
-export type PerformerEdit_performerEdit_details = PerformerEdit_performerEdit_details_SceneEdit | PerformerEdit_performerEdit_details_TagEdit | PerformerEdit_performerEdit_details_PerformerEdit;
-
-export interface PerformerEdit_performerEdit_old_details_SceneEdit {
-  __typename: "SceneEdit" | "StudioEdit";
+export interface PerformerEdit_performerEdit_details_StudioEdit_added_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
 }
+
+export interface PerformerEdit_performerEdit_details_StudioEdit_removed_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_details_StudioEdit_parent_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_details_StudioEdit_parent_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_details_StudioEdit_parent_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_details_StudioEdit_parent_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface PerformerEdit_performerEdit_details_StudioEdit_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: PerformerEdit_performerEdit_details_StudioEdit_parent_child_studios[];
+  parent: PerformerEdit_performerEdit_details_StudioEdit_parent_parent | null;
+  urls: PerformerEdit_performerEdit_details_StudioEdit_parent_urls[];
+  images: PerformerEdit_performerEdit_details_StudioEdit_parent_images[];
+  deleted: boolean;
+}
+
+export interface PerformerEdit_performerEdit_details_StudioEdit_added_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_details_StudioEdit_removed_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_details_StudioEdit {
+  __typename: "StudioEdit";
+  name: string | null;
+  /**
+   * Added and modified URLs
+   */
+  added_urls: PerformerEdit_performerEdit_details_StudioEdit_added_urls[] | null;
+  removed_urls: PerformerEdit_performerEdit_details_StudioEdit_removed_urls[] | null;
+  parent: PerformerEdit_performerEdit_details_StudioEdit_parent | null;
+  added_images: PerformerEdit_performerEdit_details_StudioEdit_added_images[] | null;
+  removed_images: PerformerEdit_performerEdit_details_StudioEdit_removed_images[] | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_studio_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_studio_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_studio_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: PerformerEdit_performerEdit_details_SceneEdit_studio_child_studios[];
+  parent: PerformerEdit_performerEdit_details_SceneEdit_studio_parent | null;
+  urls: PerformerEdit_performerEdit_details_SceneEdit_studio_urls[];
+  images: PerformerEdit_performerEdit_details_SceneEdit_studio_images[];
+  deleted: boolean;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_measurements {
+  __typename: "Measurements";
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_measurements;
+  tattoos: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_tattoos[] | null;
+  piercings: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_piercings[] | null;
+  urls: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_urls[];
+  images: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_images[];
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers {
+  __typename: "PerformerAppearance";
+  performer: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer;
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_measurements {
+  __typename: "Measurements";
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_measurements;
+  tattoos: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_tattoos[] | null;
+  piercings: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_piercings[] | null;
+  urls: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_urls[];
+  images: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_images[];
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers {
+  __typename: "PerformerAppearance";
+  performer: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer;
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_tags_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+  deleted: boolean;
+  category: PerformerEdit_performerEdit_details_SceneEdit_added_tags_category | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_tags_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+  deleted: boolean;
+  category: PerformerEdit_performerEdit_details_SceneEdit_removed_tags_category | null;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_added_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit_removed_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface PerformerEdit_performerEdit_details_SceneEdit {
+  __typename: "SceneEdit";
+  title: string | null;
+  details: string | null;
+  added_urls: PerformerEdit_performerEdit_details_SceneEdit_added_urls[] | null;
+  removed_urls: PerformerEdit_performerEdit_details_SceneEdit_removed_urls[] | null;
+  date: any | null;
+  studio: PerformerEdit_performerEdit_details_SceneEdit_studio | null;
+  /**
+   * Added or modified performer appearance entries
+   */
+  added_performers: PerformerEdit_performerEdit_details_SceneEdit_added_performers[] | null;
+  removed_performers: PerformerEdit_performerEdit_details_SceneEdit_removed_performers[] | null;
+  added_tags: PerformerEdit_performerEdit_details_SceneEdit_added_tags[] | null;
+  removed_tags: PerformerEdit_performerEdit_details_SceneEdit_removed_tags[] | null;
+  added_images: PerformerEdit_performerEdit_details_SceneEdit_added_images[] | null;
+  removed_images: PerformerEdit_performerEdit_details_SceneEdit_removed_images[] | null;
+  added_fingerprints: PerformerEdit_performerEdit_details_SceneEdit_added_fingerprints[] | null;
+  removed_fingerprints: PerformerEdit_performerEdit_details_SceneEdit_removed_fingerprints[] | null;
+  duration: number | null;
+  director: string | null;
+}
+
+export type PerformerEdit_performerEdit_details = PerformerEdit_performerEdit_details_TagEdit | PerformerEdit_performerEdit_details_PerformerEdit | PerformerEdit_performerEdit_details_StudioEdit | PerformerEdit_performerEdit_details_SceneEdit;
 
 export interface PerformerEdit_performerEdit_old_details_TagEdit {
   __typename: "TagEdit";
@@ -253,11 +720,342 @@ export interface PerformerEdit_performerEdit_old_details_PerformerEdit {
   career_end_year: number | null;
 }
 
-export type PerformerEdit_performerEdit_old_details = PerformerEdit_performerEdit_old_details_SceneEdit | PerformerEdit_performerEdit_old_details_TagEdit | PerformerEdit_performerEdit_old_details_PerformerEdit;
-
-export interface PerformerEdit_performerEdit_merge_sources_Scene {
-  __typename: "Scene" | "Studio";
+export interface PerformerEdit_performerEdit_old_details_StudioEdit_parent_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
 }
+
+export interface PerformerEdit_performerEdit_old_details_StudioEdit_parent_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_StudioEdit_parent_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_StudioEdit_parent_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface PerformerEdit_performerEdit_old_details_StudioEdit_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: PerformerEdit_performerEdit_old_details_StudioEdit_parent_child_studios[];
+  parent: PerformerEdit_performerEdit_old_details_StudioEdit_parent_parent | null;
+  urls: PerformerEdit_performerEdit_old_details_StudioEdit_parent_urls[];
+  images: PerformerEdit_performerEdit_old_details_StudioEdit_parent_images[];
+  deleted: boolean;
+}
+
+export interface PerformerEdit_performerEdit_old_details_StudioEdit {
+  __typename: "StudioEdit";
+  name: string | null;
+  parent: PerformerEdit_performerEdit_old_details_StudioEdit_parent | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_studio_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_studio_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_studio_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: PerformerEdit_performerEdit_old_details_SceneEdit_studio_child_studios[];
+  parent: PerformerEdit_performerEdit_old_details_SceneEdit_studio_parent | null;
+  urls: PerformerEdit_performerEdit_old_details_SceneEdit_studio_urls[];
+  images: PerformerEdit_performerEdit_old_details_SceneEdit_studio_images[];
+  deleted: boolean;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_measurements {
+  __typename: "Measurements";
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_measurements;
+  tattoos: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_tattoos[] | null;
+  piercings: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_piercings[] | null;
+  urls: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_urls[];
+  images: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_images[];
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers {
+  __typename: "PerformerAppearance";
+  performer: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer;
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_birthdate {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_measurements {
+  __typename: "Measurements";
+  waist: number | null;
+  hip: number | null;
+  band_size: number | null;
+  cup_size: string | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_tattoos {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_piercings {
+  __typename: "BodyModification";
+  location: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  aliases: string[];
+  gender: GenderEnum | null;
+  birthdate: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_birthdate | null;
+  age: number | null;
+  /**
+   * Height in cm
+   */
+  height: number | null;
+  hair_color: HairColorEnum | null;
+  eye_color: EyeColorEnum | null;
+  ethnicity: EthnicityEnum | null;
+  country: string | null;
+  career_end_year: number | null;
+  career_start_year: number | null;
+  breast_type: BreastTypeEnum | null;
+  measurements: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_measurements;
+  tattoos: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_tattoos[] | null;
+  piercings: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_piercings[] | null;
+  urls: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_urls[];
+  images: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_images[];
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers {
+  __typename: "PerformerAppearance";
+  performer: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer;
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_tags_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+  deleted: boolean;
+  category: PerformerEdit_performerEdit_old_details_SceneEdit_added_tags_category | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_tags_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+  deleted: boolean;
+  category: PerformerEdit_performerEdit_old_details_SceneEdit_removed_tags_category | null;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface PerformerEdit_performerEdit_old_details_SceneEdit {
+  __typename: "SceneEdit";
+  title: string | null;
+  details: string | null;
+  added_urls: PerformerEdit_performerEdit_old_details_SceneEdit_added_urls[] | null;
+  removed_urls: PerformerEdit_performerEdit_old_details_SceneEdit_removed_urls[] | null;
+  date: any | null;
+  studio: PerformerEdit_performerEdit_old_details_SceneEdit_studio | null;
+  /**
+   * Added or modified performer appearance entries
+   */
+  added_performers: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers[] | null;
+  removed_performers: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers[] | null;
+  added_tags: PerformerEdit_performerEdit_old_details_SceneEdit_added_tags[] | null;
+  removed_tags: PerformerEdit_performerEdit_old_details_SceneEdit_removed_tags[] | null;
+  added_images: PerformerEdit_performerEdit_old_details_SceneEdit_added_images[] | null;
+  removed_images: PerformerEdit_performerEdit_old_details_SceneEdit_removed_images[] | null;
+  added_fingerprints: PerformerEdit_performerEdit_old_details_SceneEdit_added_fingerprints[] | null;
+  removed_fingerprints: PerformerEdit_performerEdit_old_details_SceneEdit_removed_fingerprints[] | null;
+  duration: number | null;
+  director: string | null;
+}
+
+export type PerformerEdit_performerEdit_old_details = PerformerEdit_performerEdit_old_details_TagEdit | PerformerEdit_performerEdit_old_details_PerformerEdit | PerformerEdit_performerEdit_old_details_StudioEdit | PerformerEdit_performerEdit_old_details_SceneEdit;
 
 export interface PerformerEdit_performerEdit_merge_sources_Tag_category {
   __typename: "TagCategory";
@@ -342,7 +1140,116 @@ export interface PerformerEdit_performerEdit_merge_sources_Performer {
   images: PerformerEdit_performerEdit_merge_sources_Performer_images[];
 }
 
-export type PerformerEdit_performerEdit_merge_sources = PerformerEdit_performerEdit_merge_sources_Scene | PerformerEdit_performerEdit_merge_sources_Tag | PerformerEdit_performerEdit_merge_sources_Performer;
+export interface PerformerEdit_performerEdit_merge_sources_Studio_child_studios {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Studio_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Studio_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+  child_studios: PerformerEdit_performerEdit_merge_sources_Studio_child_studios[];
+  parent: PerformerEdit_performerEdit_merge_sources_Studio_parent | null;
+  urls: PerformerEdit_performerEdit_merge_sources_Studio_urls[];
+  images: PerformerEdit_performerEdit_merge_sources_Studio_images[];
+  deleted: boolean;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Scene_urls {
+  __typename: "URL";
+  url: string;
+  type: string;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Scene_images {
+  __typename: "Image";
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Scene_studio {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Scene_performers_performer {
+  __typename: "Performer";
+  id: string;
+  name: string;
+  disambiguation: string | null;
+  deleted: boolean;
+  gender: GenderEnum | null;
+  aliases: string[];
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Scene_performers {
+  __typename: "PerformerAppearance";
+  /**
+   * Performing as alias
+   */
+  as: string | null;
+  performer: PerformerEdit_performerEdit_merge_sources_Scene_performers_performer;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Scene_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+  submissions: number;
+  created: any;
+  updated: any;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Scene_tags {
+  __typename: "Tag";
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface PerformerEdit_performerEdit_merge_sources_Scene {
+  __typename: "Scene";
+  id: string;
+  date: any | null;
+  title: string | null;
+  details: string | null;
+  director: string | null;
+  duration: number | null;
+  urls: PerformerEdit_performerEdit_merge_sources_Scene_urls[];
+  images: PerformerEdit_performerEdit_merge_sources_Scene_images[];
+  studio: PerformerEdit_performerEdit_merge_sources_Scene_studio | null;
+  performers: PerformerEdit_performerEdit_merge_sources_Scene_performers[];
+  fingerprints: PerformerEdit_performerEdit_merge_sources_Scene_fingerprints[];
+  tags: PerformerEdit_performerEdit_merge_sources_Scene_tags[];
+}
+
+export type PerformerEdit_performerEdit_merge_sources = PerformerEdit_performerEdit_merge_sources_Tag | PerformerEdit_performerEdit_merge_sources_Performer | PerformerEdit_performerEdit_merge_sources_Studio | PerformerEdit_performerEdit_merge_sources_Scene;
 
 export interface PerformerEdit_performerEdit_options {
   __typename: "PerformerEditOptions";

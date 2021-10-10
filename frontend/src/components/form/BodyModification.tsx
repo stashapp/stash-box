@@ -1,18 +1,24 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import Creatable from "react-select/creatable";
 import { components } from "react-select";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import { Controller } from "react-hook-form";
+import { Control, useFieldArray } from "react-hook-form";
 
 interface BodyModificationProps {
   name: string;
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  control: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  control: Control<any>;
   locationPlaceholder: string;
   descriptionPlaceholder: string;
-  defaultValues?: { location: string; description?: string | null }[];
   formatLabel: (text: string) => string;
 }
+
+type BodyModificationFieldArray = {
+  [name: string]: Array<{
+    location: string;
+    description?: string | null;
+  }>;
+};
 
 const CLASSNAME = "BodyModification";
 
@@ -21,56 +27,50 @@ const BodyModification: React.FC<BodyModificationProps> = ({
   locationPlaceholder,
   descriptionPlaceholder,
   control,
-  defaultValues,
   formatLabel,
 }) => {
-  const [modifications, setModifications] = useState(defaultValues || []);
-  const selectRef = useRef(null);
-
+  const {
+    fields: modifications,
+    append,
+    remove,
+    update,
+  } = useFieldArray<BodyModificationFieldArray, string, "key">({
+    control,
+    name,
+    keyName: "key",
+  });
   const isNewLocationValid = (inputValue: string): boolean =>
     !!inputValue &&
     !modifications.find(({ location }) => inputValue === location);
 
   const handleNewLocation = (inputValue: string) => {
-    setModifications([...modifications, { location: inputValue }]);
+    append({ location: inputValue });
   };
 
-  const removeMod = (index: number) =>
-    setModifications(modifications.filter((_, i) => i !== index));
-
-  const modificationList = modifications.map((mod, index) => {
-    const idx = `${name}[${index}]`;
-    return (
-      <Form.Row key={mod.location} className="mb-1">
-        <InputGroup className="col">
-          <InputGroup.Prepend>
-            <InputGroup.Text className="font-weight-bold">
-              Location
-            </InputGroup.Text>
-          </InputGroup.Prepend>
-          <Controller
-            as={<Form.Control />}
-            name={`${idx}.location`}
-            control={control}
-            defaultValue={mod.location}
-            disabled
-          />
-          <Controller
-            as={<Form.Control />}
-            name={`${idx}.description`}
-            defaultValue={mod.description}
-            placeholder={descriptionPlaceholder}
-            control={control}
-          />
-          <InputGroup.Append>
-            <Button variant="danger" onClick={() => removeMod(index)}>
-              Remove
-            </Button>
-          </InputGroup.Append>
-        </InputGroup>
-      </Form.Row>
-    );
-  });
+  const modificationList = modifications.map((mod, index) => (
+    <Form.Row key={mod.location} className="mb-1">
+      <InputGroup className="col">
+        <InputGroup.Prepend>
+          <InputGroup.Text className="font-weight-bold">
+            Location
+          </InputGroup.Text>
+        </InputGroup.Prepend>
+        <Form.Control defaultValue={mod.location} readOnly />
+        <Form.Control
+          defaultValue={mod.description ?? ""}
+          placeholder={descriptionPlaceholder}
+          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
+            update(index, { ...mod, description: e.currentTarget.value })
+          }
+        />
+        <InputGroup.Append>
+          <Button variant="danger" onClick={() => remove(index)}>
+            Remove
+          </Button>
+        </InputGroup.Append>
+      </InputGroup>
+    </Form.Row>
+  ));
 
   return (
     <>
@@ -80,7 +80,6 @@ const BodyModification: React.FC<BodyModificationProps> = ({
           <Creatable
             classNamePrefix="react-select"
             value={null}
-            ref={selectRef}
             name={name}
             placeholder={locationPlaceholder}
             isValidNewOption={isNewLocationValid}

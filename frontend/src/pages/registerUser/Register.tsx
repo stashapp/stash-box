@@ -10,11 +10,11 @@ import * as yup from "yup";
 
 import { ROUTE_HOME, ROUTE_ACTIVATE, ROUTE_LOGIN } from "src/constants/route";
 
-const schema = yup.object().shape({
+const schema = yup.object({
   email: yup.string().email().required("Email is required"),
   inviteKey: yup.string().required("Invite key is required"),
 });
-type RegisterFormData = yup.InferType<typeof schema>;
+type RegisterFormData = yup.Asserts<typeof schema>;
 
 const Register: React.FC = () => {
   const history = useHistory();
@@ -22,7 +22,11 @@ const Register: React.FC = () => {
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
-  const { register, handleSubmit, errors } = useForm<RegisterFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -74,10 +78,9 @@ const Register: React.FC = () => {
           <span className="col-4">Email: </span>
           <input
             className={cx("col-8", { "is-invalid": errors?.email })}
-            name="email"
             type="email"
             placeholder="Email"
-            ref={register}
+            {...register("email")}
           />
           <div className="invalid-feedback text-right">
             {errors?.email?.message}
@@ -87,10 +90,9 @@ const Register: React.FC = () => {
           <span className="col-4">Invite Key: </span>
           <input
             className={cx("col-8", { "is-invalid": errors?.inviteKey })}
-            name="inviteKey"
             type="text"
             placeholder="Invite Key"
-            ref={register}
+            {...register("inviteKey")}
           />
           <div className="invalid-feedback text-right">
             {errors?.inviteKey?.message}

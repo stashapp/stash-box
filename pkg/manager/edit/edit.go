@@ -9,6 +9,46 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
+// InputSpecifiedFunc is function that returns true if the qualified field name
+// was specified in the input. Used to distinguish between nil/empty fields and
+// unspecified fields
+type InputSpecifiedFunc func(qualifiedField string) bool
+
+type mutator struct {
+	edit *models.Edit
+	fac  models.Repo
+}
+
+func (m *mutator) operation() models.OperationEnum {
+	var operation models.OperationEnum
+	utils.ResolveEnumString(m.edit.Operation, &operation)
+	return operation
+}
+
+func (m *mutator) CreateEdit() (*models.Edit, error) {
+	created, err := m.fac.Edit().Create(*m.edit)
+	if err != nil {
+		return nil, err
+	}
+
+	m.edit = created
+	return created, nil
+}
+
+func (m *mutator) CreateComment(user *models.User, comment *string) error {
+	if comment != nil && len(*comment) > 0 {
+		commentID, _ := uuid.NewV4()
+		comment := models.NewEditComment(commentID, user, m.edit, *comment)
+		return m.fac.Edit().CreateComment(*comment)
+	}
+
+	return nil
+}
+
+type editApplyer interface {
+	apply() error
+}
+
 func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 	var updatedEdit *models.Edit
 	err := fac.WithTxn(func() error {
@@ -35,76 +75,22 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 		utils.ResolveEnumString(edit.Operation, &operation)
 		var targetType models.TargetTypeEnum
 		utils.ResolveEnumString(edit.TargetType, &targetType)
+
+		var applyer editApplyer
 		switch targetType {
 		case models.TargetTypeEnumTag:
-			tqb := fac.Tag()
-			var tag *models.Tag = nil
-			if operation != models.OperationEnumCreate {
-				tagID, err := eqb.FindTagID(edit.ID)
-				if err != nil {
-					return err
-				}
-				tag, err = tqb.Find(*tagID)
-				if err != nil {
-					return err
-				}
-				if tag == nil {
-					return errors.New("Tag not found: " + tagID.String())
-				}
-			}
-			newTag, err := tqb.ApplyEdit(*edit, operation, tag)
-			if err != nil {
-				return err
-			}
-
-			if operation == models.OperationEnumCreate {
-				editTag := models.EditTag{
-					EditID: edit.ID,
-					TagID:  newTag.ID,
-				}
-
-				err = eqb.CreateEditTag(editTag)
-				if err != nil {
-					return err
-				}
-			}
+			applyer = Tag(fac, edit)
 		case models.TargetTypeEnumPerformer:
-			pqb := fac.Performer()
-			var performer *models.Performer = nil
-			if operation != models.OperationEnumCreate {
-				performerID, err := eqb.FindPerformerID(edit.ID)
-				if err != nil {
-					return err
-				}
-				performer, err = pqb.Find(*performerID)
-				if err != nil {
-					return err
-				}
-				if performer == nil {
-					return errors.New("Performer not found: " + performerID.String())
-				}
-			}
-			newPerformer, err := pqb.ApplyEdit(*edit, operation, performer)
-			if err != nil {
-				return err
-			}
-
-			if operation == models.OperationEnumCreate {
-				editPerformer := models.EditPerformer{
-					EditID:      edit.ID,
-					PerformerID: newPerformer.ID,
-				}
-
-				err = eqb.CreateEditPerformer(editPerformer)
-				if err != nil {
-					return err
-				}
-			}
+			applyer = Performer(fac, edit)
+		case models.TargetTypeEnumStudio:
+			applyer = Studio(fac, edit)
+		case models.TargetTypeEnumScene:
+			applyer = Scene(fac, edit)
 		default:
 			return errors.New("Not implemented: " + edit.TargetType)
 		}
 
-		if err != nil {
+		if err := applyer.apply(); err != nil {
 			return err
 		}
 
@@ -123,4 +109,45 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 	}
 
 	return updatedEdit, nil
+}
+
+func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.URL, missing []*models.URL) {
+	for _, s := range subject {
+		newMod := true
+		for _, a := range against {
+			if s.URL == a.URL {
+				newMod = false
+			}
+		}
+
+		for _, a := range added {
+			if s.URL == a.URL {
+				newMod = false
+			}
+		}
+
+		if newMod {
+			added = append(added, s)
+		}
+	}
+
+	for _, s := range against {
+		removedMod := true
+		for _, a := range subject {
+			if s.URL == a.URL {
+				removedMod = false
+			}
+		}
+
+		for _, a := range missing {
+			if s.URL == a.URL {
+				removedMod = false
+			}
+		}
+
+		if removedMod {
+			missing = append(missing, s)
+		}
+	}
+	return
 }

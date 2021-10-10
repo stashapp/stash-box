@@ -68,6 +68,7 @@ type Scene {
   duration: Int
   director: String
   deleted: Boolean!
+  edits: [Edit!]!
 }
 
 input SceneCreateInput {
@@ -130,14 +131,14 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: Date
-  studio_id: ID
+  studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
   removed_performers: [PerformerAppearance!]
   added_tags: [Tag!]
   removed_tags: [Tag!]
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
   added_fingerprints: [Fingerprint!]
   removed_fingerprints: [Fingerprint!]
   duration: Int
