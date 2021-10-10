@@ -423,9 +423,10 @@ func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) (models.SceneFingerpr
 
 func (qb *sceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
 	query := `
-		SELECT f.scene_id, f.hash, f.algorithm, AVG(f.duration) as duration, COUNT(f.hash) as submissions, MIN(created_at) as created_at, MAX(created_at) as updated_at FROM scene_fingerprints f
+		SELECT f.scene_id, f.hash, f.algorithm, mode() WITHIN GROUP (ORDER BY f.duration) as duration, COUNT(f.hash) as submissions, MIN(created_at) as created_at, MAX(created_at) as updated_at FROM scene_fingerprints f
         WHERE f.scene_id IN (?)
-		GROUP BY f.scene_id, f.algorithm, f.hash`
+		GROUP BY f.scene_id, f.algorithm, f.hash
+		ORDER BY submissions DESC`
 
 	m := make(map[uuid.UUID][]*models.Fingerprint)
 

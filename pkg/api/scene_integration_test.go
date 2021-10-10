@@ -664,7 +664,7 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 		Duration:    fp.Duration,
 		Submissions: 3,
 	}
-	actualFP := scene.Fingerprints[1]
+	actualFP := scene.Fingerprints[0]
 	actual := fingerprint{
 		Hash:        actualFP.Hash,
 		Algorithm:   actualFP.Algorithm,
@@ -672,7 +672,7 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 		Submissions: actualFP.Submissions,
 	}
 	if !reflect.DeepEqual(actual, expected) {
-		s.fieldMismatch(expected, *scene.Fingerprints[1], "fingerprints")
+		s.fieldMismatch(expected, *scene.Fingerprints[0], "fingerprints")
 	}
 
 	// submit the same fingerprint - should add
@@ -695,10 +695,10 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 	}
 
 	expected.Submissions = 4
-	actual.Submissions = scene.Fingerprints[1].Submissions
+	actual.Submissions = scene.Fingerprints[0].Submissions
 
 	if !reflect.DeepEqual(actual, expected) {
-		s.fieldMismatch(expected, *scene.Fingerprints[1], "fingerprints")
+		s.fieldMismatch(expected, *scene.Fingerprints[0], "fingerprints")
 	}
 }
 
@@ -756,7 +756,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 		Duration:    fp.Duration,
 		Submissions: 2,
 	}
-	actualFP := scene.Fingerprints[1]
+	actualFP := scene.Fingerprints[0]
 	actual := fingerprint{
 		Hash:        actualFP.Hash,
 		Algorithm:   actualFP.Algorithm,
@@ -764,7 +764,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 		Submissions: actualFP.Submissions,
 	}
 	if !reflect.DeepEqual(actual, expected) {
-		s.fieldMismatch(expected, *scene.Fingerprints[1], "fingerprints")
+		s.fieldMismatch(expected, *scene.Fingerprints[0], "fingerprints")
 	}
 }
 
