@@ -644,26 +644,6 @@ export interface SceneEdit_sceneEdit_details_SceneEdit_removed_images {
   height: number;
 }
 
-export interface SceneEdit_sceneEdit_details_SceneEdit_added_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
-export interface SceneEdit_sceneEdit_details_SceneEdit_removed_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
 export interface SceneEdit_sceneEdit_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -681,8 +661,6 @@ export interface SceneEdit_sceneEdit_details_SceneEdit {
   removed_tags: SceneEdit_sceneEdit_details_SceneEdit_removed_tags[] | null;
   added_images: SceneEdit_sceneEdit_details_SceneEdit_added_images[] | null;
   removed_images: SceneEdit_sceneEdit_details_SceneEdit_removed_images[] | null;
-  added_fingerprints: SceneEdit_sceneEdit_details_SceneEdit_added_fingerprints[] | null;
-  removed_fingerprints: SceneEdit_sceneEdit_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }
@@ -1012,26 +990,6 @@ export interface SceneEdit_sceneEdit_old_details_SceneEdit_removed_images {
   height: number;
 }
 
-export interface SceneEdit_sceneEdit_old_details_SceneEdit_added_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
-export interface SceneEdit_sceneEdit_old_details_SceneEdit_removed_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
 export interface SceneEdit_sceneEdit_old_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -1049,8 +1007,6 @@ export interface SceneEdit_sceneEdit_old_details_SceneEdit {
   removed_tags: SceneEdit_sceneEdit_old_details_SceneEdit_removed_tags[] | null;
   added_images: SceneEdit_sceneEdit_old_details_SceneEdit_added_images[] | null;
   removed_images: SceneEdit_sceneEdit_old_details_SceneEdit_removed_images[] | null;
-  added_fingerprints: SceneEdit_sceneEdit_old_details_SceneEdit_added_fingerprints[] | null;
-  removed_fingerprints: SceneEdit_sceneEdit_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }

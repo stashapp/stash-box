@@ -158,22 +158,6 @@ fragment EditFragment on Edit {
       removed_images {
         ...ImageFragment
       }
-      added_fingerprints {
-        hash
-        algorithm
-        duration
-        submissions
-        created
-        updated
-      }
-      removed_fingerprints {
-        hash
-        algorithm
-        duration
-        submissions
-        created
-        updated
-      }
       duration
       director
     }
@@ -247,22 +231,6 @@ fragment EditFragment on Edit {
       }
       removed_images {
         ...ImageFragment
-      }
-      added_fingerprints {
-        hash
-        algorithm
-        duration
-        submissions
-        created
-        updated
-      }
-      removed_fingerprints {
-        hash
-        algorithm
-        duration
-        submissions
-        created
-        updated
       }
       duration
       director

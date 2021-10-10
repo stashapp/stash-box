@@ -1,19 +1,11 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
-import {
-  Button,
-  Col,
-  Form,
-  InputGroup,
-  Tab,
-  Table,
-  Tabs,
-} from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Tab, Tabs } from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
@@ -25,7 +17,7 @@ import {
 import { getUrlByType, formatDuration, parseDuration } from "src/utils";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
-import { GenderIcon, Icon } from "src/components/fragments";
+import { GenderIcon } from "src/components/fragments";
 import SearchField, {
   SearchType,
   PerformerResult,
@@ -130,9 +122,6 @@ interface SceneProps {
 
 const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
   const history = useHistory();
-  const fingerprintHash = useRef<HTMLInputElement>(null);
-  const fingerprintDuration = useRef<HTMLInputElement>(null);
-  const fingerprintAlgorithm = useRef<HTMLSelectElement>(null);
   const {
     register,
     control,
@@ -151,7 +140,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
       studioURL: getUrlByType(scene.urls, "STUDIO"),
       images: scene.images,
       studio: scene.studio ?? undefined,
-      fingerprints: scene.fingerprints,
       tags: scene.tags,
       performers: scene.performers.map((p) => ({
         performerId: p.performer.id,
@@ -171,15 +159,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
   } = useFieldArray({
     control,
     name: "performers",
-    keyName: "key",
-  });
-  const {
-    fields: fingerprintFields,
-    append: appendFingerprint,
-    remove: removeFingerprint,
-  } = useFieldArray({
-    control,
-    name: "fingerprints",
     keyName: "key",
   });
   const { replace: replaceTags } = useFieldArray({
@@ -213,14 +192,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
         as: performance.alias,
       })),
       image_ids: data.images.map((i) => i.id),
-      fingerprints: data.fingerprints.map((f) => ({
-        hash: f.hash,
-        algorithm: f.algorithm as FingerprintAlgorithm,
-        duration: f.duration,
-        created: f.created,
-        updated: f.updated,
-        submissions: f.submissions,
-      })),
       tag_ids: data.tags.map((t) => t.id),
     };
     const urls = [];
@@ -318,79 +289,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
       </Col>
     </Form.Row>
   ));
-
-  const addFingerprint = () => {
-    if (
-      !fingerprintHash.current ||
-      !fingerprintAlgorithm.current ||
-      !fingerprintDuration.current
-    )
-      return;
-    const hash = fingerprintHash.current.value?.trim();
-    const algorithm = fingerprintAlgorithm.current
-      .value as FingerprintAlgorithm;
-    const duration =
-      Number.parseInt(fingerprintDuration.current.value?.trim(), 10) ?? 0;
-    if (
-      !algorithm ||
-      !hash ||
-      !duration ||
-      fingerprintFields.some((f) => f.hash === hash) ||
-      hash === ""
-    )
-      return;
-    appendFingerprint({
-      hash,
-      algorithm,
-      duration,
-      submissions: 1,
-      created: new Date().toISOString(),
-      updated: new Date().toISOString(),
-    });
-    fingerprintHash.current.value = "";
-    fingerprintDuration.current.value = "";
-  };
-
-  const renderFingerprints = () => {
-    const fingerprintList = fingerprintFields.map((f, i) => (
-      <tr key={f.hash}>
-        <td>
-          <button
-            className="remove-item"
-            type="button"
-            onClick={() => removeFingerprint(i)}
-          >
-            <Icon icon="times-circle" />
-          </button>
-        </td>
-        <td>{f.algorithm}</td>
-        <td>{f.hash}</td>
-        <td>{f.duration}</td>
-        <td>{f.submissions}</td>
-        <td>{f.created.slice(0, 10)}</td>
-        <td>{f.updated.slice(0, 10)}</td>
-      </tr>
-    ));
-
-    return fingerprintFields.length > 0 ? (
-      <Table size="sm">
-        <thead>
-          <tr>
-            <th />
-            <th>Algorithm</th>
-            <th>Hash</th>
-            <th>Duration</th>
-            <th>Submissions</th>
-            <th>First Submitted</th>
-            <th>Last Submitted</th>
-          </tr>
-        </thead>
-        <tbody>{fingerprintList}</tbody>
-      </Table>
-    ) : (
-      <div>No fingerprints found for this scene.</div>
-    );
-  };
 
   return (
     <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
@@ -545,65 +443,6 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
           <Form.Row>
             <EditImages control={control} />
           </Form.Row>
-
-          <Form.Row className="mt-1">
-            <Button
-              variant="danger"
-              className="ml-auto mr-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="mr-1"
-              onClick={() => setActiveTab("fingerprints")}
-            >
-              Next
-            </Button>
-          </Form.Row>
-        </Tab>
-        <Tab eventKey="fingerprints" title="Fingerprints">
-          <Form.Group>
-            <Form.Label>Fingerprints</Form.Label>
-            {renderFingerprints()}
-          </Form.Group>
-
-          <Form.Group className="add-fingerprint row">
-            <Form.Label htmlFor="hash" column>
-              Add fingerprint:
-            </Form.Label>
-            <Form.Control
-              id="algorithm"
-              as="select"
-              className="col-2 mr-1"
-              ref={fingerprintAlgorithm}
-            >
-              {Object.keys(FingerprintAlgorithm).map((f) => (
-                <option value={f} key={f}>
-                  {f}
-                </option>
-              ))}
-            </Form.Control>
-            <Form.Control
-              id="hash"
-              placeholder="Hash"
-              className="col-3 mr-2"
-              ref={fingerprintHash}
-            />
-            <Form.Control
-              id="duration"
-              placeholder="Duration"
-              type="number"
-              className="col-2 mr-2"
-              ref={fingerprintDuration}
-            />
-            <Button
-              className="col-2 add-performer-button"
-              onClick={addFingerprint}
-            >
-              Add
-            </Button>
-          </Form.Group>
 
           <Form.Row className="mt-1">
             <Button

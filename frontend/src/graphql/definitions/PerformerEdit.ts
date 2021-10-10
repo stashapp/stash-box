@@ -644,26 +644,6 @@ export interface PerformerEdit_performerEdit_details_SceneEdit_removed_images {
   height: number;
 }
 
-export interface PerformerEdit_performerEdit_details_SceneEdit_added_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
-export interface PerformerEdit_performerEdit_details_SceneEdit_removed_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
 export interface PerformerEdit_performerEdit_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -681,8 +661,6 @@ export interface PerformerEdit_performerEdit_details_SceneEdit {
   removed_tags: PerformerEdit_performerEdit_details_SceneEdit_removed_tags[] | null;
   added_images: PerformerEdit_performerEdit_details_SceneEdit_added_images[] | null;
   removed_images: PerformerEdit_performerEdit_details_SceneEdit_removed_images[] | null;
-  added_fingerprints: PerformerEdit_performerEdit_details_SceneEdit_added_fingerprints[] | null;
-  removed_fingerprints: PerformerEdit_performerEdit_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }
@@ -1012,26 +990,6 @@ export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_image
   height: number;
 }
 
-export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
-export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
 export interface PerformerEdit_performerEdit_old_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -1049,8 +1007,6 @@ export interface PerformerEdit_performerEdit_old_details_SceneEdit {
   removed_tags: PerformerEdit_performerEdit_old_details_SceneEdit_removed_tags[] | null;
   added_images: PerformerEdit_performerEdit_old_details_SceneEdit_added_images[] | null;
   removed_images: PerformerEdit_performerEdit_old_details_SceneEdit_removed_images[] | null;
-  added_fingerprints: PerformerEdit_performerEdit_old_details_SceneEdit_added_fingerprints[] | null;
-  removed_fingerprints: PerformerEdit_performerEdit_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }
