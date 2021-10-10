@@ -90,30 +90,6 @@ func (r *sceneEditResolver) RemovedTags(ctx context.Context, obj *models.SceneEd
 	return r.tagList(ctx, obj.RemovedTags)
 }
 
-func (r *sceneEditResolver) fingerprintList(ctx context.Context, performers []*models.FingerprintEditInput) ([]*models.Fingerprint, error) {
-	var ret []*models.Fingerprint
-	for _, p := range performers {
-		rr := &models.Fingerprint{
-			Hash:        p.Hash,
-			Algorithm:   p.Algorithm,
-			Duration:    p.Duration,
-			Submissions: p.Submissions,
-			Created:     p.Created,
-			Updated:     p.Updated,
-		}
-		ret = append(ret, rr)
-	}
-
-	return ret, nil
-}
-
-func (r *sceneEditResolver) AddedFingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
-	return r.fingerprintList(ctx, obj.AddedFingerprints)
-}
-func (r *sceneEditResolver) RemovedFingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
-	return r.fingerprintList(ctx, obj.RemovedFingerprints)
-}
-
 func (r *sceneEditResolver) AddedImages(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.AddedImages)
 }

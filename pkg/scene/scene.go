@@ -110,7 +110,7 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 		return nil, errors.Wrap(err, "error updating scene")
 	}
 
-	existingFingerprints, err := qb.GetSceneFingerprints(sceneID)
+	existingFingerprints, err := qb.GetFingerprints(sceneID)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting scene fingerprints")
 	}

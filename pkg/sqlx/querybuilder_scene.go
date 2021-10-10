@@ -637,10 +637,6 @@ func (qb *sceneQueryBuilder) ApplyEdit(scene *models.Scene, create bool, data *m
 		return nil, err
 	}
 
-	if err := qb.updateFingerprintsFromEdit(scene, data); err != nil {
-		return nil, err
-	}
-
 	return updatedScene, err
 }
 
@@ -714,25 +710,6 @@ func (qb *sceneQueryBuilder) updatePerformersFromEdit(scene *models.Scene, data 
 	}
 
 	if err := qb.UpdatePerformers(scene.ID, currentPerformers); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (qb *sceneQueryBuilder) updateFingerprintsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	currentFingerprints, err := qb.GetFingerprints(scene.ID)
-	if err != nil {
-		return err
-	}
-	newFingerprints := models.CreateSceneFingerprints(scene.ID, data.New.AddedFingerprints)
-	oldFingerprints := models.CreateSceneFingerprints(scene.ID, data.New.RemovedFingerprints)
-
-	if err := models.ProcessSlice(&currentFingerprints, &newFingerprints, &oldFingerprints); err != nil {
-		return err
-	}
-
-	if err := qb.UpdateFingerprints(scene.ID, currentFingerprints); err != nil {
 		return err
 	}
 

@@ -76,10 +76,6 @@ func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, 
 		return err
 	}
 
-	if err := m.diffFingerprints(sceneEdit, sceneID, input.Details.Fingerprints); err != nil {
-		return err
-	}
-
 	if err := m.diffTags(sceneEdit, sceneID, input.Details.TagIds); err != nil {
 		return err
 	}
@@ -93,72 +89,6 @@ func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, 
 	}
 
 	return nil
-}
-
-func (m *SceneEditProcessor) diffFingerprints(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newFingerprints []*models.FingerprintEditInput) error {
-	sqb := m.fac.Scene()
-	fingerprints, err := sqb.GetFingerprints(sceneID)
-	if err != nil {
-		return err
-	}
-	sceneEdit.New.AddedFingerprints, sceneEdit.New.RemovedFingerprints = sceneFingerprintCompare(newFingerprints, fingerprints)
-	return nil
-}
-
-func sceneFingerprintCompare(subject []*models.FingerprintEditInput, against models.SceneFingerprints) (added []*models.FingerprintEditInput, missing []*models.FingerprintEditInput) {
-	eq := func(s *models.FingerprintEditInput, a *models.SceneFingerprint) bool {
-		return s.Algorithm.String() == a.Algorithm && s.Hash == a.Hash && s.Duration == a.Duration && s.Submissions == a.Submissions
-	}
-
-	eqI := func(s, a *models.FingerprintEditInput) bool {
-		return s.Algorithm.String() == a.Algorithm.String() && s.Hash == a.Hash && s.Duration == a.Duration && s.Submissions == a.Submissions
-	}
-
-	for _, s := range subject {
-		newMod := true
-		for _, a := range against {
-			if eq(s, a) {
-				newMod = false
-			}
-		}
-
-		for _, a := range added {
-			if eqI(s, a) {
-				newMod = false
-			}
-		}
-
-		if newMod {
-			added = append(added, s)
-		}
-	}
-
-	for _, s := range against {
-		removedMod := true
-		for _, a := range subject {
-			if eq(a, s) {
-				removedMod = false
-			}
-		}
-
-		for _, a := range missing {
-			if eq(a, s) {
-				removedMod = false
-			}
-		}
-
-		if removedMod {
-			missing = append(missing, &models.FingerprintEditInput{
-				Hash:        s.Hash,
-				Algorithm:   models.FingerprintAlgorithm(s.Algorithm),
-				Duration:    s.Duration,
-				Submissions: s.Submissions,
-				Created:     s.CreatedAt.Timestamp,
-				Updated:     s.UpdatedAt.Timestamp,
-			})
-		}
-	}
-	return
 }
 
 func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newImageIds []string) error {
@@ -345,7 +275,6 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecif
 	sceneEdit.New.AddedUrls = input.Details.Urls
 	sceneEdit.New.AddedTags = input.Details.TagIds
 	sceneEdit.New.AddedImages = input.Details.ImageIds
-	sceneEdit.New.AddedFingerprints = input.Details.Fingerprints
 	sceneEdit.New.AddedPerformers = input.Details.Performers
 
 	return m.edit.SetData(sceneEdit)

@@ -764,7 +764,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 		},
 		Date: &date,
 		Fingerprints: []*models.FingerprintEditInput{
-			s.generateSceneFingerprint(),
+			s.generateSceneFingerprint(nil),
 		},
 		Duration: &duration,
 		Director: &director,
@@ -787,10 +787,7 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 				Type: "someurl",
 			},
 		},
-		Date: &date,
-		Fingerprints: []*models.FingerprintEditInput{
-			s.generateSceneFingerprint(),
-		},
+		Date:     &date,
 		Duration: &duration,
 		Director: &director,
 	}
@@ -827,15 +824,12 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 		Date: &date,
 		Performers: []*models.PerformerAppearanceInput{
 			{
-				PerformerID: createdPerformer.ID.String(),
+				PerformerID: createdPerformer.ID,
 				As:          &as,
 			},
 		},
 		TagIds: []string{
-			createdTag.ID.String(),
-		},
-		Fingerprints: []*models.FingerprintEditInput{
-			s.generateSceneFingerprint(),
+			createdTag.ID,
 		},
 		Duration: &duration,
 		Director: &director,

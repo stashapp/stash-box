@@ -305,22 +305,20 @@ type ComplexityRoot struct {
 	}
 
 	SceneEdit struct {
-		AddedFingerprints   func(childComplexity int) int
-		AddedImages         func(childComplexity int) int
-		AddedPerformers     func(childComplexity int) int
-		AddedTags           func(childComplexity int) int
-		AddedUrls           func(childComplexity int) int
-		Date                func(childComplexity int) int
-		Details             func(childComplexity int) int
-		Director            func(childComplexity int) int
-		Duration            func(childComplexity int) int
-		RemovedFingerprints func(childComplexity int) int
-		RemovedImages       func(childComplexity int) int
-		RemovedPerformers   func(childComplexity int) int
-		RemovedTags         func(childComplexity int) int
-		RemovedUrls         func(childComplexity int) int
-		Studio              func(childComplexity int) int
-		Title               func(childComplexity int) int
+		AddedImages       func(childComplexity int) int
+		AddedPerformers   func(childComplexity int) int
+		AddedTags         func(childComplexity int) int
+		AddedUrls         func(childComplexity int) int
+		Date              func(childComplexity int) int
+		Details           func(childComplexity int) int
+		Director          func(childComplexity int) int
+		Duration          func(childComplexity int) int
+		RemovedImages     func(childComplexity int) int
+		RemovedPerformers func(childComplexity int) int
+		RemovedTags       func(childComplexity int) int
+		RemovedUrls       func(childComplexity int) int
+		Studio            func(childComplexity int) int
+		Title             func(childComplexity int) int
 	}
 
 	Studio struct {
@@ -556,8 +554,6 @@ type SceneEditResolver interface {
 	RemovedTags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
 	AddedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
 	RemovedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
-	AddedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
-	RemovedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
 }
 type StudioResolver interface {
 	ID(ctx context.Context, obj *Studio) (string, error)
@@ -2171,13 +2167,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Urls(childComplexity), true
 
-	case "SceneEdit.added_fingerprints":
-		if e.complexity.SceneEdit.AddedFingerprints == nil {
-			break
-		}
-
-		return e.complexity.SceneEdit.AddedFingerprints(childComplexity), true
-
 	case "SceneEdit.added_images":
 		if e.complexity.SceneEdit.AddedImages == nil {
 			break
@@ -2233,13 +2222,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneEdit.Duration(childComplexity), true
-
-	case "SceneEdit.removed_fingerprints":
-		if e.complexity.SceneEdit.RemovedFingerprints == nil {
-			break
-		}
-
-		return e.complexity.SceneEdit.RemovedFingerprints(childComplexity), true
 
 	case "SceneEdit.removed_images":
 		if e.complexity.SceneEdit.RemovedImages == nil {
@@ -3276,18 +3258,21 @@ type Fingerprint {
 }
 
 input FingerprintInput {
+  """assumes current user if omitted. Ignored for non-modify Users"""
+  user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
 
 input FingerprintEditInput {
+  user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
-  submissions: Int!
   created: Time!
-  updated: Time!
+  submissions: Int @deprecated(reason: "unused")
+  updated: Time @deprecated(reason: "unused")
 }
 
 input FingerprintQueryInput {
@@ -3298,6 +3283,7 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
+  unmatch: Boolean
 }
 
 type Scene {
@@ -3359,7 +3345,6 @@ input SceneEditDetailsInput {
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
   image_ids: [ID!]
-  fingerprints: [FingerprintEditInput!]
   duration: Int
   director: String
 }
@@ -3385,8 +3370,6 @@ type SceneEdit {
   removed_tags: [Tag!]
   added_images: [Image!]
   removed_images: [Image!]
-  added_fingerprints: [Fingerprint!]
-  removed_fingerprints: [Fingerprint!]
   duration: Int
   director: String
 }
@@ -3859,6 +3842,7 @@ type Mutation {
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit!
 
+  """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean!
 }
 
@@ -11837,70 +11821,6 @@ func (ec *executionContext) _SceneEdit_removed_images(ctx context.Context, field
 	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SceneEdit_added_fingerprints(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "SceneEdit",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.SceneEdit().AddedFingerprints(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*Fingerprint)
-	fc.Result = res
-	return ec.marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _SceneEdit_removed_fingerprints(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "SceneEdit",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.SceneEdit().RemovedFingerprints(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*Fingerprint)
-	fc.Result = res
-	return ec.marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _SceneEdit_duration(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15184,6 +15104,14 @@ func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Conte
 
 	for k, v := range asMap {
 		switch k {
+		case "user_ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_ids"))
+			it.UserIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "hash":
 			var err error
 
@@ -15208,14 +15136,6 @@ func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
-		case "submissions":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("submissions"))
-			it.Submissions, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "created":
 			var err error
 
@@ -15224,11 +15144,19 @@ func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
+		case "submissions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("submissions"))
+			it.Submissions, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "updated":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updated"))
-			it.Updated, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			it.Updated, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15244,6 +15172,14 @@ func (ec *executionContext) unmarshalInputFingerprintInput(ctx context.Context, 
 
 	for k, v := range asMap {
 		switch k {
+		case "user_ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_ids"))
+			it.UserIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "hash":
 			var err error
 
@@ -15321,6 +15257,14 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprint"))
 			it.Fingerprint, err = ec.unmarshalNFingerprintInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "unmatch":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unmatch"))
+			it.Unmatch, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16741,14 +16685,6 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
 			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "fingerprints":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
-			it.Fingerprints, err = ec.unmarshalOFingerprintEditInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19969,28 +19905,6 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 				res = ec._SceneEdit_removed_images(ctx, field, obj)
 				return res
 			})
-		case "added_fingerprints":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SceneEdit_added_fingerprints(ctx, field, obj)
-				return res
-			})
-		case "removed_fingerprints":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SceneEdit_removed_fingerprints(ctx, field, obj)
-				return res
-			})
 		case "duration":
 			out.Values[i] = ec._SceneEdit_duration(ctx, field, obj)
 		case "director":
@@ -22757,46 +22671,6 @@ func (ec *executionContext) marshalOEyeColorEnum2ᚖgithubᚗcomᚋstashappᚋst
 	return v
 }
 
-func (ec *executionContext) marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx context.Context, sel ast.SelectionSet, v []*Fingerprint) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNFingerprint2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprint(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
 func (ec *executionContext) unmarshalOFingerprintEditInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx context.Context, v interface{}) ([]*FingerprintEditInput, error) {
 	if v == nil {
 		return nil, nil
@@ -23489,6 +23363,21 @@ func (ec *executionContext) marshalOTargetTypeEnum2ᚖgithubᚗcomᚋstashappᚋ
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalTime(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalTime(*v)
 }
 
 func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx context.Context, sel ast.SelectionSet, v []*URL) graphql.Marshaler {

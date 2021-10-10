@@ -113,7 +113,6 @@ input SceneEditDetailsInput {
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
   image_ids: [ID!]
-  fingerprints: [FingerprintEditInput!]
   duration: Int
   director: String
 }
@@ -139,8 +138,6 @@ type SceneEdit {
   removed_tags: [Tag!]
   added_images: [Image!]
   removed_images: [Image!]
-  added_fingerprints: [Fingerprint!]
-  removed_fingerprints: [Fingerprint!]
   duration: Int
   director: String
 }

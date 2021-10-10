@@ -125,16 +125,6 @@ func (f *SceneFingerprints) Add(o interface{}) {
 	*f = append(*f, o.(*SceneFingerprint))
 }
 
-func (f *SceneFingerprints) Remove(id string) {
-	for i, v := range *f {
-		if (*v).ID() == id {
-			(*f)[i] = (*f)[len(*f)-1]
-			*f = (*f)[:len(*f)-1]
-			break
-		}
-	}
-}
-
 func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditInput) SceneFingerprints {
 	var ret SceneFingerprints
 
