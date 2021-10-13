@@ -191,7 +191,7 @@ func (m *StudioEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
 
-	var studio *models.Studio = nil
+	var studio *models.Studio
 	if !isCreate {
 		studioID, err := eqb.FindStudioID(m.edit.ID)
 		if err != nil {

@@ -47,11 +47,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 
 		// Save the aliases
 		tagAliases := models.CreateTagAliases(tag.ID, input.Aliases)
-		if err := qb.CreateAliases(tagAliases); err != nil {
-			return err
-		}
-
-		return nil
+		return qb.CreateAliases(tagAliases)
 	})
 
 	if err != nil {
@@ -92,11 +88,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		// Save the aliases
 		// TODO - only do this if provided
 		tagAliases := models.CreateTagAliases(tag.ID, input.Aliases)
-		if err := qb.UpdateAliases(tag.ID, tagAliases); err != nil {
-			return err
-		}
-
-		return nil
+		return qb.UpdateAliases(tag.ID, tagAliases)
 	})
 
 	if err != nil {
@@ -122,11 +114,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 		if err != nil {
 			return err
 		}
-		if err = qb.Destroy(tagID); err != nil {
-			return err
-		}
-
-		return nil
+		return qb.Destroy(tagID)
 	})
 
 	if err != nil {

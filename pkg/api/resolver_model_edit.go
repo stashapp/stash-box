@@ -267,7 +267,7 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*model
 	return ret, nil
 }
 
-func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]*models.VoteComment, error) {
+func (r *editResolver) Votes(ctx context.Context, edit *models.Edit) ([]*models.VoteComment, error) {
 	// TODO
 	return nil, nil
 }
