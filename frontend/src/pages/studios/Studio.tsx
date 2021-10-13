@@ -8,6 +8,7 @@ import {
   useEdits,
   useStudio,
   VoteStatusEnum,
+  CriterionModifier,
 } from "src/graphql";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { EditList, SceneList } from "src/components/list";
@@ -122,9 +123,21 @@ const StudioComponent: React.FC = () => {
         </>
       )}
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
-        <Tab eventKey="scenes" title="Scenes">
+        <Tab
+          eventKey="scenes"
+          title={subStudios.length > 0 ? "All Scenes" : "Scenes"}
+        >
           <SceneList filter={{ parentStudio: id }} />
         </Tab>
+        {subStudios.length > 0 && (
+          <Tab eventKey="studio-scenes" title="Studio Scenes">
+            <SceneList
+              filter={{
+                studios: { value: [id], modifier: CriterionModifier.INCLUDES },
+              }}
+            />
+          </Tab>
+        )}
         <Tab
           eventKey="edits"
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
