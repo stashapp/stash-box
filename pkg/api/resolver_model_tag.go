@@ -10,10 +10,10 @@ import (
 
 type tagResolver struct{ *Resolver }
 
-func (r *tagResolver) ID(_ context.Context, obj *models.Tag) (string, error) {
+func (r *tagResolver) ID(ctx context.Context, obj *models.Tag) (string, error) {
 	return obj.ID.String(), nil
 }
-func (r *tagResolver) Description(_ context.Context, obj *models.Tag) (*string, error) {
+func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string, error) {
 	return resolveNullString(obj.Description), nil
 }
 func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) ([]string, error) {

@@ -66,7 +66,7 @@ type mutationResolver struct{ *Resolver }
 
 type queryResolver struct{ *Resolver }
 
-func (r *queryResolver) Version(_ context.Context) (*models.Version, error) {
+func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 	version, githash, buildstamp := GetVersion()
 
 	return &models.Version{

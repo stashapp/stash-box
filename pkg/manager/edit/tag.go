@@ -139,7 +139,7 @@ func (m *TagEditProcessor) createEdit(input models.TagEditInput, inputSpecified 
 	return m.edit.SetData(tagEdit)
 }
 
-func (m *TagEditProcessor) destroyEdit(input models.TagEditInput, _ InputSpecifiedFunc) error {
+func (m *TagEditProcessor) destroyEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tqb := m.fac.Tag()
 
 	// get the existing tag

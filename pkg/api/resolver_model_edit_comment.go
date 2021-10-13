@@ -9,15 +9,15 @@ import (
 
 type editCommentResolver struct{ *Resolver }
 
-func (r *editCommentResolver) ID(_ context.Context, obj *models.EditComment) (string, error) {
+func (r *editCommentResolver) ID(ctx context.Context, obj *models.EditComment) (string, error) {
 	return obj.ID.String(), nil
 }
 
-func (r *editCommentResolver) Comment(_ context.Context, obj *models.EditComment) (string, error) {
+func (r *editCommentResolver) Comment(ctx context.Context, obj *models.EditComment) (string, error) {
 	return obj.Text, nil
 }
 
-func (r *editCommentResolver) Date(_ context.Context, obj *models.EditComment) (*time.Time, error) {
+func (r *editCommentResolver) Date(ctx context.Context, obj *models.EditComment) (*time.Time, error) {
 	return &obj.CreatedAt.Timestamp, nil
 }
 

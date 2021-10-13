@@ -9,13 +9,13 @@ import (
 
 type userResolver struct{ *Resolver }
 
-func (r *userResolver) ID(_ context.Context, obj *models.User) (string, error) {
-	return obj.ID.String(), nil
+func (r *userResolver) ID(ctx context.Context, user *models.User) (string, error) {
+	return user.ID.String(), nil
 }
 
-func (r *userResolver) Roles(ctx context.Context, obj *models.User) ([]models.RoleEnum, error) {
+func (r *userResolver) Roles(ctx context.Context, user *models.User) ([]models.RoleEnum, error) {
 	qb := r.getRepoFactory(ctx).User()
-	roles, err := qb.GetRoles(obj.ID)
+	roles, err := qb.GetRoles(user.ID)
 
 	if err != nil {
 		return nil, err
@@ -24,28 +24,28 @@ func (r *userResolver) Roles(ctx context.Context, obj *models.User) ([]models.Ro
 	return roles.ToRoles(), nil
 }
 
-func (r *userResolver) SuccessfulEdits(_ context.Context, _ *models.User) (int, error) {
+func (r *userResolver) SuccessfulEdits(ctx context.Context, user *models.User) (int, error) {
 	// TODO
 	return 0, nil
 }
 
-func (r *userResolver) UnsuccessfulEdits(_ context.Context, _ *models.User) (int, error) {
+func (r *userResolver) UnsuccessfulEdits(ctx context.Context, user *models.User) (int, error) {
 	// TODO
 	return 0, nil
 }
 
-func (r *userResolver) SuccessfulVotes(_ context.Context, _ *models.User) (int, error) {
+func (r *userResolver) SuccessfulVotes(ctx context.Context, user *models.User) (int, error) {
 	// TODO
 	return 0, nil
 }
 
-func (r *userResolver) UnsuccessfulVotes(_ context.Context, _ *models.User) (int, error) {
+func (r *userResolver) UnsuccessfulVotes(ctx context.Context, user *models.User) (int, error) {
 	// TODO
 	return 0, nil
 }
 
-func (r *userResolver) InvitedBy(ctx context.Context, obj *models.User) (*models.User, error) {
-	invitedBy := obj.InvitedByID
+func (r *userResolver) InvitedBy(ctx context.Context, user *models.User) (*models.User, error) {
+	invitedBy := user.InvitedByID
 	if invitedBy.Valid {
 		qb := r.getRepoFactory(ctx).User()
 		return qb.Find(invitedBy.UUID)
@@ -54,18 +54,18 @@ func (r *userResolver) InvitedBy(ctx context.Context, obj *models.User) (*models
 	return nil, nil
 }
 
-func (r *userResolver) ActiveInviteCodes(ctx context.Context, obj *models.User) ([]string, error) {
+func (r *userResolver) ActiveInviteCodes(ctx context.Context, user *models.User) ([]string, error) {
 	// only show if current user or invite manager
 	currentUser := getCurrentUser(ctx)
 
-	if currentUser.ID != obj.ID {
+	if currentUser.ID != user.ID {
 		if err := validateManageInvites(ctx); err != nil {
 			return nil, nil
 		}
 	}
 
 	qb := r.getRepoFactory(ctx).Invite()
-	ik, err := qb.FindActiveKeysForUser(obj.ID, config.GetActivationExpireTime())
+	ik, err := qb.FindActiveKeysForUser(user.ID, config.GetActivationExpireTime())
 	if err != nil {
 		return nil, err
 	}

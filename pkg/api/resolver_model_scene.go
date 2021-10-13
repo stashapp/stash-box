@@ -9,27 +9,27 @@ import (
 
 type sceneResolver struct{ *Resolver }
 
-func (r *sceneResolver) ID(_ context.Context, obj *models.Scene) (string, error) {
+func (r *sceneResolver) ID(ctx context.Context, obj *models.Scene) (string, error) {
 	return obj.ID.String(), nil
 }
 
-func (r *sceneResolver) Title(_ context.Context, obj *models.Scene) (*string, error) {
+func (r *sceneResolver) Title(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.Title), nil
 }
 
-func (r *sceneResolver) Details(_ context.Context, obj *models.Scene) (*string, error) {
+func (r *sceneResolver) Details(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.Details), nil
 }
 
-func (r *sceneResolver) Duration(_ context.Context, obj *models.Scene) (*int, error) {
+func (r *sceneResolver) Duration(ctx context.Context, obj *models.Scene) (*int, error) {
 	return resolveNullInt64(obj.Duration)
 }
 
-func (r *sceneResolver) Director(_ context.Context, obj *models.Scene) (*string, error) {
+func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveNullString(obj.Director), nil
 }
 
-func (r *sceneResolver) Date(_ context.Context, obj *models.Scene) (*string, error) {
+func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveSQLiteDate(obj.Date)
 }
 

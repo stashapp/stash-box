@@ -40,7 +40,7 @@ func (m *PerformerEditProcessor) Edit(input models.PerformerEditInput, inputSpec
 	return err
 }
 
-func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, _ InputSpecifiedFunc) error {
+func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	pqb := m.fac.Performer()
 
 	// get the existing performer
@@ -101,7 +101,7 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, _ I
 	return m.edit.SetData(performerEdit)
 }
 
-func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, _ InputSpecifiedFunc) error {
+func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	pqb := m.fac.Performer()
 
 	// get the existing performer
@@ -215,7 +215,7 @@ func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inp
 	return m.edit.SetData(performerEdit)
 }
 
-func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput, _ InputSpecifiedFunc) error {
+func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
 	pqb := m.fac.Performer()
 
 	// get the existing performer

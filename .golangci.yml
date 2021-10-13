@@ -40,5 +40,6 @@ linters-settings:
       - name: empty-block
       - name: superfluous-else
       - name: unused-parameter
+        disabled: true
       - name: unreachable-code
       - name: redefines-builtin-id

@@ -40,7 +40,7 @@ func (m *StudioEditProcessor) Edit(input models.StudioEditInput, inputSpecified 
 	return err
 }
 
-func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, _ InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
 	sqb := m.fac.Studio()
 
 	// get the existing studio
@@ -79,7 +79,7 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, _ InputSp
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, _ InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
 	sqb := m.fac.Studio()
 
 	// get the existing studio
@@ -156,7 +156,7 @@ func (m *StudioEditProcessor) createEdit(input models.StudioEditInput, inputSpec
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput, _ InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
 	tqb := m.fac.Studio()
 
 	// get the existing studio

@@ -12,11 +12,11 @@ import (
 
 type performerResolver struct{ *Resolver }
 
-func (r *performerResolver) ID(_ context.Context, obj *models.Performer) (string, error) {
+func (r *performerResolver) ID(ctx context.Context, obj *models.Performer) (string, error) {
 	return obj.ID.String(), nil
 }
 
-func (r *performerResolver) Disambiguation(_ context.Context, obj *models.Performer) (*string, error) {
+func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Performer) (*string, error) {
 	return resolveNullString(obj.Disambiguation), nil
 }
 
@@ -31,7 +31,7 @@ func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) 
 	return aliases, nil
 }
 
-func (r *performerResolver) Gender(_ context.Context, obj *models.Performer) (*models.GenderEnum, error) {
+func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*models.GenderEnum, error) {
 	var ret models.GenderEnum
 	if !utils.ResolveEnum(obj.Gender, &ret) {
 		return nil, nil
@@ -44,12 +44,12 @@ func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]
 	return dataloader.For(ctx).PerformerUrlsByID.Load(obj.ID)
 }
 
-func (r *performerResolver) Birthdate(_ context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
+func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
 	ret := obj.ResolveBirthdate()
 	return &ret, nil
 }
 
-func (r *performerResolver) Age(_ context.Context, obj *models.Performer) (*int, error) {
+func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {
 	if !obj.Birthdate.Valid {
 		return nil, nil
 	}
@@ -70,7 +70,7 @@ func (r *performerResolver) Age(_ context.Context, obj *models.Performer) (*int,
 	return &age, nil
 }
 
-func (r *performerResolver) Ethnicity(_ context.Context, obj *models.Performer) (*models.EthnicityEnum, error) {
+func (r *performerResolver) Ethnicity(ctx context.Context, obj *models.Performer) (*models.EthnicityEnum, error) {
 	var ret models.EthnicityEnum
 	if !utils.ResolveEnum(obj.Ethnicity, &ret) {
 		return nil, nil
@@ -79,11 +79,11 @@ func (r *performerResolver) Ethnicity(_ context.Context, obj *models.Performer) 
 	return &ret, nil
 }
 
-func (r *performerResolver) Country(_ context.Context, obj *models.Performer) (*string, error) {
+func (r *performerResolver) Country(ctx context.Context, obj *models.Performer) (*string, error) {
 	return resolveNullString(obj.Country), nil
 }
 
-func (r *performerResolver) EyeColor(_ context.Context, obj *models.Performer) (*models.EyeColorEnum, error) {
+func (r *performerResolver) EyeColor(ctx context.Context, obj *models.Performer) (*models.EyeColorEnum, error) {
 	var ret models.EyeColorEnum
 	if !utils.ResolveEnum(obj.EyeColor, &ret) {
 		return nil, nil
@@ -92,7 +92,7 @@ func (r *performerResolver) EyeColor(_ context.Context, obj *models.Performer) (
 	return &ret, nil
 }
 
-func (r *performerResolver) HairColor(_ context.Context, obj *models.Performer) (*models.HairColorEnum, error) {
+func (r *performerResolver) HairColor(ctx context.Context, obj *models.Performer) (*models.HairColorEnum, error) {
 	var ret models.HairColorEnum
 	if !utils.ResolveEnum(obj.HairColor, &ret) {
 		return nil, nil
@@ -101,16 +101,16 @@ func (r *performerResolver) HairColor(_ context.Context, obj *models.Performer) 
 	return &ret, nil
 }
 
-func (r *performerResolver) Height(_ context.Context, obj *models.Performer) (*int, error) {
+func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (*int, error) {
 	return resolveNullInt64(obj.Height)
 }
 
-func (r *performerResolver) Measurements(_ context.Context, obj *models.Performer) (*models.Measurements, error) {
+func (r *performerResolver) Measurements(ctx context.Context, obj *models.Performer) (*models.Measurements, error) {
 	ret := obj.ResolveMeasurements()
 	return &ret, nil
 }
 
-func (r *performerResolver) BreastType(_ context.Context, obj *models.Performer) (*models.BreastTypeEnum, error) {
+func (r *performerResolver) BreastType(ctx context.Context, obj *models.Performer) (*models.BreastTypeEnum, error) {
 	var ret models.BreastTypeEnum
 	if !utils.ResolveEnum(obj.BreastType, &ret) {
 		return nil, nil
@@ -119,11 +119,11 @@ func (r *performerResolver) BreastType(_ context.Context, obj *models.Performer)
 	return &ret, nil
 }
 
-func (r *performerResolver) CareerStartYear(_ context.Context, obj *models.Performer) (*int, error) {
+func (r *performerResolver) CareerStartYear(ctx context.Context, obj *models.Performer) (*int, error) {
 	return resolveNullInt64(obj.CareerStartYear)
 }
 
-func (r *performerResolver) CareerEndYear(_ context.Context, obj *models.Performer) (*int, error) {
+func (r *performerResolver) CareerEndYear(ctx context.Context, obj *models.Performer) (*int, error) {
 	return resolveNullInt64(obj.CareerEndYear)
 }
 

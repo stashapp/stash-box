@@ -42,7 +42,7 @@ func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputSpecified In
 	return err
 }
 
-func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, _ InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
 	sqb := m.fac.Scene()
 
 	// get the existing scene
@@ -286,7 +286,7 @@ func (m *SceneEditProcessor) diffImages(sceneEdit *models.SceneEditData, sceneID
 	return nil
 }
 
-func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, _ InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
 	sqb := m.fac.Scene()
 
 	// get the existing scene
@@ -335,7 +335,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, _ InputSpeci
 	return m.edit.SetData(sceneEdit)
 }
 
-func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, _ InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
 	sceneEdit := input.Details.SceneEditFromCreate()
 
 	sceneEdit.New.AddedUrls = input.Details.Urls
@@ -347,7 +347,7 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, _ InputSpec
 	return m.edit.SetData(sceneEdit)
 }
 
-func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, _ InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
 	tqb := m.fac.Scene()
 
 	// get the existing scene

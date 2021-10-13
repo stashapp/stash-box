@@ -14,7 +14,7 @@ type testUserFinderUpdater struct {
 	updateErr error
 }
 
-func (u *testUserFinderUpdater) Find(_ uuid.UUID) (*models.User, error) {
+func (u *testUserFinderUpdater) Find(id uuid.UUID) (*models.User, error) {
 	if u.findErr != nil {
 		return nil, u.findErr
 	}
@@ -22,7 +22,7 @@ func (u *testUserFinderUpdater) Find(_ uuid.UUID) (*models.User, error) {
 	return u.user, nil
 }
 
-func (u *testUserFinderUpdater) FindByEmail(_ string) (*models.User, error) {
+func (u *testUserFinderUpdater) FindByEmail(email string) (*models.User, error) {
 	if u.findErr != nil {
 		return nil, u.findErr
 	}
