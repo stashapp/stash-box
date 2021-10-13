@@ -88,11 +88,7 @@ func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, 
 		return err
 	}
 
-	if err := m.diffPerformers(sceneEdit, sceneID, input.Details.Performers); err != nil {
-		return err
-	}
-
-	return nil
+	return m.diffPerformers(sceneEdit, sceneID, input.Details.Performers)
 }
 
 func (m *SceneEditProcessor) diffFingerprints(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newFingerprints []*models.FingerprintEditInput) error {
@@ -386,7 +382,7 @@ func (m *SceneEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
 
-	var scene *models.Scene = nil
+	var scene *models.Scene
 	if !isCreate {
 		sceneID, err := eqb.FindSceneID(m.edit.ID)
 		if err != nil {

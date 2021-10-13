@@ -18,7 +18,7 @@ type userNameTest struct {
 	err      error
 }
 
-var userNameScenarios []userNameTest = []userNameTest{
+var userNameScenarios = []userNameTest{
 	{"", user.ErrEmptyUsername},
 	{"  aa", user.ErrUsernameHasWhitespace},
 	{"\taa", user.ErrUsernameHasWhitespace},
@@ -33,7 +33,7 @@ type userEmailTest struct {
 	err   error
 }
 
-var userEmailScenarios []userEmailTest = []userEmailTest{
+var userEmailScenarios = []userEmailTest{
 	{"", user.ErrEmptyEmail},
 	{"just a string", user.ErrInvalidEmail},
 	{"   aa@bb.com", user.ErrEmailHasWhitespace},
@@ -48,7 +48,7 @@ type userPasswordTest struct {
 	err      error
 }
 
-var userPasswordScenarios []userPasswordTest = []userPasswordTest{
+var userPasswordScenarios = []userPasswordTest{
 	{"", user.ErrPasswordTooShort},
 	{"fyebg25", user.ErrPasswordTooShort},
 	{"password901234567890123456789012345678901234567890123456789012345", user.ErrPasswordTooLong},
@@ -187,7 +187,7 @@ func TestChangeRootRoles(t *testing.T) {
 	}
 }
 
-var destroyUserScenarios []userNameTest = []userNameTest{
+var destroyUserScenarios = []userNameTest{
 	{"root", user.ErrDeleteRoot},
 	{"user", nil},
 }

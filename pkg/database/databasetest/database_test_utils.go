@@ -1,9 +1,7 @@
 package databasetest
 
 import (
-	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -101,23 +99,6 @@ func runTests(m *testing.M, populater DatabasePopulater) int {
 func TestWithDatabase(m *testing.M, populater DatabasePopulater) {
 	ret := runTests(m, populater)
 	os.Exit(ret)
-}
-
-func WithTransientTransaction(ctx context.Context, fn func() error) error {
-	rollbackErr := errors.New("expected rollback")
-	err := repo.WithTxn(func() error {
-		if err := fn(); err != nil {
-			return err
-		}
-
-		return rollbackErr
-	})
-
-	if err != rollbackErr {
-		return err
-	}
-
-	return nil
 }
 
 func Repo() models.Repo {

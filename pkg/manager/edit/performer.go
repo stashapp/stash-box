@@ -250,7 +250,7 @@ func (m *PerformerEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
 
-	var performer *models.Performer = nil
+	var performer *models.Performer
 	if !isCreate {
 		performerID, err := eqb.FindPerformerID(m.edit.ID)
 		if err != nil {

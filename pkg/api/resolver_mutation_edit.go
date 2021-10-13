@@ -45,11 +45,7 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 			return err
 		}
 
-		if err := p.CreateComment(currentUser, input.Edit.Comment); err != nil {
-			return err
-		}
-
-		return nil
+		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
 	if err != nil {
@@ -92,11 +88,7 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 			return err
 		}
 
-		if err := p.CreateComment(currentUser, input.Edit.Comment); err != nil {
-			return err
-		}
-
-		return nil
+		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
 	if err != nil {
@@ -140,11 +132,7 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 			return err
 		}
 
-		if err := p.CreateComment(currentUser, input.Edit.Comment); err != nil {
-			return err
-		}
-
-		return nil
+		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
 	if err != nil {
@@ -186,11 +174,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 			return err
 		}
 
-		if err := p.CreateComment(currentUser, input.Edit.Comment); err != nil {
-			return err
-		}
-
-		return nil
+		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
 	if err != nil {
@@ -200,7 +184,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	return newEdit, nil
 }
 
-func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
+func (r *mutationResolver) EditVote(_ context.Context, _ models.EditVoteInput) (*models.Edit, error) {
 	panic("not implemented")
 }
 func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCommentInput) (*models.Edit, error) {
@@ -224,11 +208,7 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 
 		commentID, _ := uuid.NewV4()
 		comment := models.NewEditComment(commentID, currentUser, edit, input.Comment)
-		if err := eqb.CreateComment(*comment); err != nil {
-			return err
-		}
-
-		return nil
+		return eqb.CreateComment(*comment)
 	})
 
 	if err != nil {
