@@ -106,15 +106,8 @@ func (r *mutationResolver) TagCategoryDestroy(ctx context.Context, input models.
 		if err != nil {
 			return err
 		}
-		if err = qb.Destroy(categoryID); err != nil {
-			return err
-		}
-
-		return nil
+		return qb.Destroy(categoryID)
 	})
 
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+	return err == nil, err
 }

@@ -12,7 +12,9 @@ The graphql playground can be accessed at `host:port/playground`. The graphql in
 
 # Docker install
 
-TODO
+A docker-compose file for production deployment can be found [here](https://github.com/stashapp/stash-box/blob/develop/docker/production/docker-compose.yml). Traefik can be omitted if you don't need a reverse proxy.
+
+Alternatively, if postgresql is already available, stash-box can be installed on its own from [dockerhub](https://hub.docker.com/r/stashapp/stash-box).
 
 # Bare-metal Install
 
@@ -23,8 +25,9 @@ Releases TODO
 ## Initial setup
 
 Before building the binary the frontend project needs to be built.
-* Run `yarn install --frozen-lockfile` in the `stash-box/frontend` folder.
-* Run `make generate`, followed by `make ui build` from the main folder.
+* Run `make pre-ui` to install frontend dependencies.
+* Run `make ui` to build the frontend bundles.
+* Run `make build` to build the binary.
 
 Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stash-box-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
 
@@ -96,6 +99,29 @@ Enabling distance matching for phashes requires installation of the [pg-spgist_h
 
 If the extension is installed after the migrations have been run, migration #14 will have to be run manually to install the extension and add the index. Alternatively the database can be wiped so the migrations will run the next time stash-box is started.
 
+# Development
+
+## Install
+
+* [Go](https://golang.org/dl/), minimum version 1.17.
+* [golangci-lint](https://golangci-lint.run/) - Linter aggregator
+    * Follow instructions for your platform from [https://golangci-lint.run/usage/install/](https://golangci-lint.run/usage/install/).
+    * Run the linters with `make lint`.
+* [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
+
+## Commands
+
+* `make generate` - Generate Go GraphQL files. This should be run if the graphql schema has changed.
+* `make ui` - Builds the UI.
+* `make pre-ui` - Download frontend dependencies
+* `make build` - Builds the binary
+* `make test` - Runs the unit tests
+* `make it` - Runs the unit and integration tests
+* `make lint` - Run the linters
+* `make fmt` - Formats and aligns whitespace
+
+**Note:** the integration tests run against a temporary sqlite3 database by default. They can be run against a postgres server by setting the environment variable `POSTGRES_DB` to the postgres connection string. For example: `postgres@localhost/stash-box-test?sslmode=disable`. **Be aware that the integration tests drop all tables before and after the tests.**
+
 ## Frontend development
 
 To run the frontend in development mode, run `yarn start` from the frontend directory.
@@ -104,54 +130,13 @@ When developing the API key can be set in `frontend/.env.development.local` to a
 When `is_production` is enabled on the server this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  
 See `frontend/.env.development.local.shadow` for examples. 
 
+## Building a release
+
+1. Run `make generate` to create generated files, if they have been changed.
+2. Run `make ui build` to build the executable for your current platform.
+
 # FAQ
 
 > I have a question not answered here.
 
 Join the [Discord server](https://discord.gg/2TsNFKt).
-
-# Development
-
-## Install
-
-* [Revive](https://github.com/mgechev/revive) - Configurable linter
-    * Go Install: `go get github.com/mgechev/revive`
-* [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
-
-NOTE: You may need to run the `go get` commands outside the project directory to avoid modifying the projects module file.
-
-## Environment
-
-### macOS
-
-TODO
-
-### Windows
-
-1. Download and install [Go for Windows](https://golang.org/dl/)
-2. Download and install [MingW](https://sourceforge.net/projects/mingw-w64/)
-3. Search for "advanced system settings" and open the system properties dialog.
-    1. Click the `Environment Variables` button
-    2. Add `GO111MODULE=on`
-    3. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
-
-## Commands
-
-* `make generate` - Generate Go GraphQL files. This should be run if the graphql schema has changed.
-* `make ui` - Builds the UI.
-* `make build` - Builds the binary
-* `make vet` - Run `go vet`
-* `make lint` - Run the linter
-* `make test` - Runs the unit tests
-* `make it` - Runs the unit and integration tests
-
-**Note:** the integration tests run against a temporary sqlite3 database by default. They can be run against a postgres server by setting the environment variable `POSTGRES_DB` to the postgres connection string. For example: `postgres@localhost/stash-box-test?sslmode=disable`. **Be aware that the integration tests drop all tables before and after the tests.**
-
-## Building a release
-
-1. Run `make generate` to create generated files 
-2. Run `make ui build` to build the executable for your current platform
-
-## Cross compiling
-
-TODO

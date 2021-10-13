@@ -12,7 +12,7 @@ import (
 
 type Service struct {
 	Repository models.ImageRepo
-	Backend    ImageBackend
+	Backend    Backend
 }
 
 func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
