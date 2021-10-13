@@ -49,6 +49,7 @@ const SceneAdd: React.FC = () => {
     tags: [],
     fingerprints: [],
     performers: [],
+    deleted: false,
     __typename: "Scene",
   };
 

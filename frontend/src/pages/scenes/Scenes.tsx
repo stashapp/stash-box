@@ -4,7 +4,7 @@ import { Link, useHistory } from "react-router-dom";
 import querystring from "query-string";
 
 import { CriterionModifier } from "src/graphql";
-import { isAdmin, createHref } from "src/utils";
+import { canEdit, createHref } from "src/utils";
 import AuthContext from "src/AuthContext";
 import { SceneList } from "src/components/list";
 import { ROUTE_SCENE_ADD } from "src/constants/route";
@@ -29,7 +29,7 @@ const Scenes: React.FC = () => {
     <>
       <div className="d-flex">
         <h3 className="mr-4">Scenes</h3>
-        {isAdmin(auth.user) && (
+        {canEdit(auth.user) && (
           <Link to={createHref(ROUTE_SCENE_ADD)} className="ml-auto">
             <Button>Create</Button>
           </Link>

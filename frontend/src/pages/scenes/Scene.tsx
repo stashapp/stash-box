@@ -10,7 +10,7 @@ import {
 } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
-  isAdmin,
+  canEdit,
   getImage,
   getUrlByType,
   tagHref,
@@ -115,7 +115,7 @@ const SceneComponent: React.FC = () => {
       <Card className="scene-info">
         <Card.Header>
           <div className="float-right">
-            {isAdmin(auth.user) && (
+            {canEdit(auth.user) && !scene.deleted && (
               <>
                 <Link to={createHref(ROUTE_SCENE_EDIT, { id })}>
                   <Button>Edit</Button>
@@ -129,7 +129,13 @@ const SceneComponent: React.FC = () => {
               </>
             )}
           </div>
-          <h3>{scene.title}</h3>
+          <h3>
+            {scene.deleted ? (
+              <del>{scene.title}</del>
+            ) : (
+              <span>{scene.title}</span>
+            )}
+          </h3>
           <h6>
             {scene.studio && (
               <>

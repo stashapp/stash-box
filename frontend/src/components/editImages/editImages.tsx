@@ -16,10 +16,17 @@ const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
 interface EditImagesProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<any>;
+  file: File | undefined;
+  setFile: (f: File | undefined) => void;
   maxImages?: number;
 }
 
-const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
+const EditImages: React.FC<EditImagesProps> = ({
+  control,
+  maxImages,
+  file,
+  setFile,
+}) => {
   const {
     fields: images,
     append,
@@ -34,7 +41,6 @@ const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
     keyName: "key",
   });
 
-  const [file, setFile] = useState<File | undefined>();
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [addImage] = useAddImage();
