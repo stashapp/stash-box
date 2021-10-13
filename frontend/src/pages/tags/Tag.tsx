@@ -16,7 +16,11 @@ import AuthContext from "src/AuthContext";
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import {
+  ErrorMessage,
+  LoadingIndicator,
+  Tooltip,
+} from "src/components/fragments";
 import { EditList } from "src/components/list";
 import { canEdit, createHref, tagHref, formatPendingEdits } from "src/utils";
 import {
@@ -95,7 +99,15 @@ const TagComponent: React.FC = () => {
               <Button>Edit</Button>
             </Link>
             <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="ml-2">
-              <Button>Merge into</Button>
+              <Tooltip
+                text={
+                  <>
+                    Merge other tags into <b>{tag.name}</b>.
+                  </>
+                }
+              >
+                <Button>Merge</Button>
+              </Tooltip>
             </Link>
             <Link to={createHref(ROUTE_TAG_DELETE, tag)} className="ml-2">
               <Button variant="danger">Delete</Button>
