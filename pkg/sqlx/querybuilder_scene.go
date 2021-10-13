@@ -236,6 +236,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	query := newQueryBuilder(sceneDBTable)
+	query.Eq("scenes.deleted", false)
 
 	if q := sceneFilter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
@@ -505,6 +506,7 @@ func (qb *sceneQueryBuilder) SearchScenes(term string, limit int) ([]*models.Sce
 			to_tsvector('english', COALESCE(performer_names, '')) ||
 			to_tsvector('english', scene_title)
         ) @@ plainto_tsquery(?)
+        AND S.deleted = FALSE
         LIMIT ?`
 	var args []interface{}
 	args = append(args, term, limit)

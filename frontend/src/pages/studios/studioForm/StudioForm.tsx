@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
@@ -62,9 +62,13 @@ const StudioForm: React.FC<StudioProps> = ({
   } = useForm<StudioFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
+      title: studio.name,
+      studio: studio.parent,
       images: studio.images,
     },
   });
+
+  const [file, setFile] = useState<File | undefined>();
 
   const onSubmit = (data: StudioFormData) => {
     const urls = [];
@@ -121,23 +125,37 @@ const StudioForm: React.FC<StudioProps> = ({
 
       <Form.Group>
         <Form.Label>Images</Form.Label>
-        <EditImages control={control} maxImages={1} />
+        <EditImages
+          control={control}
+          maxImages={1}
+          file={file}
+          setFile={(f) => setFile(f)}
+        />
       </Form.Group>
 
       <EditNote register={register} error={errors.note} />
 
-      <Form.Group className="d-flex">
-        <Button className="col-2" type="submit" disabled={saving}>
-          Save
-        </Button>
-        <Button type="reset" variant="secondary" className="ml-auto mr-2">
-          Reset
-        </Button>
-        <Link to={createHref(studio.id ? ROUTE_STUDIO : ROUTE_STUDIOS, studio)}>
-          <Button variant="danger" onClick={() => history.goBack()}>
-            Cancel
+      <Form.Group>
+        <div className="d-flex">
+          <Button className="col-2" type="submit" disabled={!!file || saving}>
+            Save
           </Button>
-        </Link>
+          <Button type="reset" variant="secondary" className="ml-auto mr-2">
+            Reset
+          </Button>
+          <Link
+            to={createHref(studio.id ? ROUTE_STUDIO : ROUTE_STUDIOS, studio)}
+          >
+            <Button variant="danger" onClick={() => history.goBack()}>
+              Cancel
+            </Button>
+          </Link>
+        </div>
+        {/* dummy element for feedback */}
+        <span className={file ? "is-invalid" : ""} />
+        <Form.Control.Feedback type="invalid">
+          Upload or remove image to continue.
+        </Form.Control.Feedback>
       </Form.Group>
     </Form>
   );
