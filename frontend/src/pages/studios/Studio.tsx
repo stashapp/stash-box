@@ -123,7 +123,6 @@ const StudioComponent: React.FC = () => {
       )}
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
         <Tab eventKey="scenes" title="Scenes">
-          {subStudios.length > 0 && <h4>Scenes</h4>}
           <SceneList filter={{ parentStudio: id }} />
         </Tab>
         <Tab
