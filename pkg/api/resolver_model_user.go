@@ -46,7 +46,6 @@ func (r *userResolver) UnsuccessfulVotes(ctx context.Context, obj *models.User) 
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
 	return qb.CountVotesByType(obj.ID, models.VoteTypeEnumReject)
->>>>>>> 1eb7e13 (Add voting on edits)
 }
 
 func (r *userResolver) InvitedBy(ctx context.Context, user *models.User) (*models.User, error) {

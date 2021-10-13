@@ -84,9 +84,8 @@ type EditInput struct {
 }
 
 type EditVoteInput struct {
-	ID      string       `json:"id"`
-	Comment *string      `json:"comment"`
-	Type    VoteTypeEnum `json:"type"`
+	ID   string       `json:"id"`
+	Vote VoteTypeEnum `json:"vote"`
 }
 
 type EyeColorCriterionInput struct {
@@ -625,13 +624,6 @@ type Version struct {
 	Hash      string `json:"hash"`
 	BuildTime string `json:"build_time"`
 	Version   string `json:"version"`
-}
-
-type VoteComment struct {
-	User    *User         `json:"user"`
-	Date    *string       `json:"date"`
-	Comment *string       `json:"comment"`
-	Type    *VoteTypeEnum `json:"type"`
 }
 
 type BreastTypeEnum string
@@ -1368,6 +1360,7 @@ const (
 	VoteStatusEnumPending           VoteStatusEnum = "PENDING"
 	VoteStatusEnumImmediateAccepted VoteStatusEnum = "IMMEDIATE_ACCEPTED"
 	VoteStatusEnumImmediateRejected VoteStatusEnum = "IMMEDIATE_REJECTED"
+	VoteStatusEnumFailed            VoteStatusEnum = "FAILED"
 )
 
 var AllVoteStatusEnum = []VoteStatusEnum{
@@ -1376,11 +1369,12 @@ var AllVoteStatusEnum = []VoteStatusEnum{
 	VoteStatusEnumPending,
 	VoteStatusEnumImmediateAccepted,
 	VoteStatusEnumImmediateRejected,
+	VoteStatusEnumFailed,
 }
 
 func (e VoteStatusEnum) IsValid() bool {
 	switch e {
-	case VoteStatusEnumAccepted, VoteStatusEnumRejected, VoteStatusEnumPending, VoteStatusEnumImmediateAccepted, VoteStatusEnumImmediateRejected:
+	case VoteStatusEnumAccepted, VoteStatusEnumRejected, VoteStatusEnumPending, VoteStatusEnumImmediateAccepted, VoteStatusEnumImmediateRejected, VoteStatusEnumFailed:
 		return true
 	}
 	return false
@@ -1410,7 +1404,7 @@ func (e VoteStatusEnum) MarshalGQL(w io.Writer) {
 type VoteTypeEnum string
 
 const (
-	VoteTypeEnumComment VoteTypeEnum = "COMMENT"
+	VoteTypeEnumAbstain VoteTypeEnum = "ABSTAIN"
 	VoteTypeEnumAccept  VoteTypeEnum = "ACCEPT"
 	VoteTypeEnumReject  VoteTypeEnum = "REJECT"
 	// Immediately accepts the edit - bypassing the vote
@@ -1420,7 +1414,7 @@ const (
 )
 
 var AllVoteTypeEnum = []VoteTypeEnum{
-	VoteTypeEnumComment,
+	VoteTypeEnumAbstain,
 	VoteTypeEnumAccept,
 	VoteTypeEnumReject,
 	VoteTypeEnumImmediateAccept,
@@ -1429,7 +1423,7 @@ var AllVoteTypeEnum = []VoteTypeEnum{
 
 func (e VoteTypeEnum) IsValid() bool {
 	switch e {
-	case VoteTypeEnumComment, VoteTypeEnumAccept, VoteTypeEnumReject, VoteTypeEnumImmediateAccept, VoteTypeEnumImmediateReject:
+	case VoteTypeEnumAbstain, VoteTypeEnumAccept, VoteTypeEnumReject, VoteTypeEnumImmediateAccept, VoteTypeEnumImmediateReject:
 		return true
 	}
 	return false

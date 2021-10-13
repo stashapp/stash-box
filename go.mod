@@ -18,6 +18,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.7
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/cors v1.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.2.0 // indirect
@@ -28,6 +29,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.2.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/tools v0.1.5 // indirect
 )

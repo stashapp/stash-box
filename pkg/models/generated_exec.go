@@ -38,6 +38,7 @@ type Config struct {
 type ResolverRoot interface {
 	Edit() EditResolver
 	EditComment() EditCommentResolver
+	EditVote() EditVoteResolver
 	Image() ImageResolver
 	Mutation() MutationResolver
 	Performer() PerformerResolver
@@ -84,6 +85,12 @@ type ComplexityRoot struct {
 		Comment func(childComplexity int) int
 		Date    func(childComplexity int) int
 		User    func(childComplexity int) int
+	}
+
+	EditVote struct {
+		Date func(childComplexity int) int
+		User func(childComplexity int) int
+		Vote func(childComplexity int) int
 	}
 
 	Fingerprint struct {
@@ -393,13 +400,6 @@ type ComplexityRoot struct {
 		Hash      func(childComplexity int) int
 		Version   func(childComplexity int) int
 	}
-
-	VoteComment struct {
-		Comment func(childComplexity int) int
-		Date    func(childComplexity int) int
-		Type    func(childComplexity int) int
-		User    func(childComplexity int) int
-	}
 }
 
 type EditResolver interface {
@@ -413,7 +413,7 @@ type EditResolver interface {
 	OldDetails(ctx context.Context, obj *Edit) (EditDetails, error)
 	Options(ctx context.Context, obj *Edit) (*PerformerEditOptions, error)
 	Comments(ctx context.Context, obj *Edit) ([]*EditComment, error)
-	Votes(ctx context.Context, obj *Edit) ([]*VoteComment, error)
+	Votes(ctx context.Context, obj *Edit) ([]*EditVote, error)
 
 	Status(ctx context.Context, obj *Edit) (VoteStatusEnum, error)
 
@@ -424,6 +424,11 @@ type EditCommentResolver interface {
 	User(ctx context.Context, obj *EditComment) (*User, error)
 	Date(ctx context.Context, obj *EditComment) (*time.Time, error)
 	Comment(ctx context.Context, obj *EditComment) (string, error)
+}
+type EditVoteResolver interface {
+	User(ctx context.Context, obj *EditVote) (*User, error)
+	Date(ctx context.Context, obj *EditVote) (*time.Time, error)
+	Vote(ctx context.Context, obj *EditVote) (VoteTypeEnum, error)
 }
 type ImageResolver interface {
 	ID(ctx context.Context, obj *Image) (string, error)
@@ -763,6 +768,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.EditComment.User(childComplexity), true
+
+	case "EditVote.date":
+		if e.complexity.EditVote.Date == nil {
+			break
+		}
+
+		return e.complexity.EditVote.Date(childComplexity), true
+
+	case "EditVote.user":
+		if e.complexity.EditVote.User == nil {
+			break
+		}
+
+		return e.complexity.EditVote.User(childComplexity), true
+
+	case "EditVote.vote":
+		if e.complexity.EditVote.Vote == nil {
+			break
+		}
+
+		return e.complexity.EditVote.Vote(childComplexity), true
 
 	case "Fingerprint.algorithm":
 		if e.complexity.Fingerprint.Algorithm == nil {
@@ -2612,34 +2638,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Version.Version(childComplexity), true
 
-	case "VoteComment.comment":
-		if e.complexity.VoteComment.Comment == nil {
-			break
-		}
-
-		return e.complexity.VoteComment.Comment(childComplexity), true
-
-	case "VoteComment.date":
-		if e.complexity.VoteComment.Date == nil {
-			break
-		}
-
-		return e.complexity.VoteComment.Date(childComplexity), true
-
-	case "VoteComment.type":
-		if e.complexity.VoteComment.Type == nil {
-			break
-		}
-
-		return e.complexity.VoteComment.Type(childComplexity), true
-
-	case "VoteComment.user":
-		if e.complexity.VoteComment.User == nil {
-			break
-		}
-
-		return e.complexity.VoteComment.User(childComplexity), true
-
 	}
 	return 0, false
 }
@@ -2712,7 +2710,7 @@ var sources = []*ast.Source{
 }
 
 enum VoteTypeEnum {
-    COMMENT
+    ABSTAIN
     ACCEPT
     REJECT
     """Immediately accepts the edit - bypassing the vote"""
@@ -2727,13 +2725,13 @@ enum VoteStatusEnum {
     PENDING
     IMMEDIATE_ACCEPTED
     IMMEDIATE_REJECTED
+    FAILED
 }
 
-type VoteComment {
-    user: User
-    date: DateTime
-    comment: String
-    type: VoteTypeEnum
+type EditVote {
+    user: User!
+    date: Time!
+    vote: VoteTypeEnum!
 }
 
 type EditComment {
@@ -2768,7 +2766,7 @@ type Edit {
     """Entity specific options"""
     options: PerformerEditOptions
     comments: [EditComment!]!
-    votes: [VoteComment!]!
+    votes: [EditVote!]!
     """ = Accepted - Rejected"""
     vote_count: Int!
     status: VoteStatusEnum!
@@ -2790,8 +2788,7 @@ input EditInput {
 
 input EditVoteInput {
     id: ID!
-    comment: String
-    type: VoteTypeEnum!
+    vote: VoteTypeEnum!
 }
 
 input EditCommentInput {
@@ -5298,9 +5295,9 @@ func (ec *executionContext) _Edit_votes(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*VoteComment)
+	res := resTmp.([]*EditVote)
 	fc.Result = res
-	return ec.marshalNVoteComment2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteCommentᚄ(ctx, field.Selections, res)
+	return ec.marshalNEditVote2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVoteᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Edit_vote_count(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
@@ -5578,6 +5575,111 @@ func (ec *executionContext) _EditComment_comment(ctx context.Context, field grap
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EditVote_user(ctx context.Context, field graphql.CollectedField, obj *EditVote) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EditVote",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.EditVote().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EditVote_date(ctx context.Context, field graphql.CollectedField, obj *EditVote) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EditVote",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.EditVote().Date(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EditVote_vote(ctx context.Context, field graphql.CollectedField, obj *EditVote) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EditVote",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.EditVote().Vote(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(VoteTypeEnum)
+	fc.Result = res
+	return ec.marshalNVoteTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteTypeEnum(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Fingerprint_hash(ctx context.Context, field graphql.CollectedField, obj *Fingerprint) (ret graphql.Marshaler) {
@@ -13547,134 +13649,6 @@ func (ec *executionContext) _Version_version(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _VoteComment_user(ctx context.Context, field graphql.CollectedField, obj *VoteComment) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "VoteComment",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*User)
-	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _VoteComment_date(ctx context.Context, field graphql.CollectedField, obj *VoteComment) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "VoteComment",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Date, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _VoteComment_comment(ctx context.Context, field graphql.CollectedField, obj *VoteComment) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "VoteComment",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Comment, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _VoteComment_type(ctx context.Context, field graphql.CollectedField, obj *VoteComment) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "VoteComment",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Type, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*VoteTypeEnum)
-	fc.Result = res
-	return ec.marshalOVoteTypeEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteTypeEnum(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15196,19 +15170,11 @@ func (ec *executionContext) unmarshalInputEditVoteInput(ctx context.Context, obj
 			if err != nil {
 				return it, err
 			}
-		case "comment":
+		case "vote":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("comment"))
-			it.Comment, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "type":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			it.Type, err = ec.unmarshalNVoteTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteTypeEnum(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("vote"))
+			it.Vote, err = ec.unmarshalNVoteTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteTypeEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18503,6 +18469,70 @@ func (ec *executionContext) _EditComment(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
+var editVoteImplementors = []string{"EditVote"}
+
+func (ec *executionContext) _EditVote(ctx context.Context, sel ast.SelectionSet, obj *EditVote) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, editVoteImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EditVote")
+		case "user":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EditVote_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "date":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EditVote_date(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "vote":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EditVote_vote(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var fingerprintImplementors = []string{"Fingerprint"}
 
 func (ec *executionContext) _Fingerprint(ctx context.Context, sel ast.SelectionSet, obj *Fingerprint) graphql.Marshaler {
@@ -20806,36 +20836,6 @@ func (ec *executionContext) _Version(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
-var voteCommentImplementors = []string{"VoteComment"}
-
-func (ec *executionContext) _VoteComment(ctx context.Context, sel ast.SelectionSet, obj *VoteComment) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, voteCommentImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("VoteComment")
-		case "user":
-			out.Values[i] = ec._VoteComment_user(ctx, field, obj)
-		case "date":
-			out.Values[i] = ec._VoteComment_date(ctx, field, obj)
-		case "comment":
-			out.Values[i] = ec._VoteComment_comment(ctx, field, obj)
-		case "type":
-			out.Values[i] = ec._VoteComment_type(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var __DirectiveImplementors = []string{"__Directive"}
 
 func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionSet, obj *introspection.Directive) graphql.Marshaler {
@@ -21340,6 +21340,60 @@ func (ec *executionContext) marshalNEditTarget2ᚕgithubᚗcomᚋstashappᚋstas
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNEditVote2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVoteᚄ(ctx context.Context, sel ast.SelectionSet, v []*EditVote) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNEditVote2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVote(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNEditVote2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVote(ctx context.Context, sel ast.SelectionSet, v *EditVote) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._EditVote(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNEditVoteInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditVoteInput(ctx context.Context, v interface{}) (EditVoteInput, error) {
@@ -22488,6 +22542,10 @@ func (ec *executionContext) unmarshalNURLInput2ᚖgithubᚗcomᚋstashappᚋstas
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNUser2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -22574,60 +22632,6 @@ func (ec *executionContext) marshalNVersion2ᚖgithubᚗcomᚋstashappᚋstash�
 		return graphql.Null
 	}
 	return ec._Version(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNVoteComment2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteCommentᚄ(ctx context.Context, sel ast.SelectionSet, v []*VoteComment) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNVoteComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteComment(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNVoteComment2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteComment(ctx context.Context, sel ast.SelectionSet, v *VoteComment) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._VoteComment(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNVoteStatusEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteStatusEnum(ctx context.Context, v interface{}) (VoteStatusEnum, error) {
@@ -23055,21 +23059,6 @@ func (ec *executionContext) unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstash
 	}
 	res, err := ec.unmarshalInputDateCriterionInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalODateTime2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalString(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalODateTime2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return graphql.MarshalString(*v)
 }
 
 func (ec *executionContext) marshalOEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx context.Context, sel ast.SelectionSet, v *Edit) graphql.Marshaler {
@@ -24049,22 +24038,6 @@ func (ec *executionContext) unmarshalOVoteStatusEnum2ᚖgithubᚗcomᚋstashapp�
 }
 
 func (ec *executionContext) marshalOVoteStatusEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteStatusEnum(ctx context.Context, sel ast.SelectionSet, v *VoteStatusEnum) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
-}
-
-func (ec *executionContext) unmarshalOVoteTypeEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteTypeEnum(ctx context.Context, v interface{}) (*VoteTypeEnum, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(VoteTypeEnum)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOVoteTypeEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteTypeEnum(ctx context.Context, sel ast.SelectionSet, v *VoteTypeEnum) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
