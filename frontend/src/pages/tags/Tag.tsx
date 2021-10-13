@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
-import { Button, OverlayTrigger, Popover, Tab, Tabs } from "react-bootstrap";
+import { Button, Tab, Tabs } from "react-bootstrap";
 
 import {
   useScenes,
@@ -16,7 +16,11 @@ import AuthContext from "src/AuthContext";
 import { usePagination } from "src/hooks";
 import Pagination from "src/components/pagination";
 import SceneCard from "src/components/sceneCard";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import {
+  ErrorMessage,
+  LoadingIndicator,
+  Tooltip,
+} from "src/components/fragments";
 import { EditList } from "src/components/list";
 import { canEdit, createHref, tagHref, formatPendingEdits } from "src/utils";
 import {
@@ -95,19 +99,15 @@ const TagComponent: React.FC = () => {
               <Button>Edit</Button>
             </Link>
             <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="ml-2">
-              <OverlayTrigger
-                overlay={
-                  <Popover id="merge">
-                    <Popover.Content>
-                      Merge other tags into <b>{tag.name}</b>.
-                    </Popover.Content>
-                  </Popover>
+              <Tooltip
+                text={
+                  <>
+                    Merge other tags into <b>{tag.name}</b>.
+                  </>
                 }
-                placement="bottom-end"
-                trigger="hover"
               >
                 <Button>Merge</Button>
-              </OverlayTrigger>
+              </Tooltip>
             </Link>
             <Link to={createHref(ROUTE_TAG_DELETE, tag)} className="ml-2">
               <Button variant="danger">Delete</Button>

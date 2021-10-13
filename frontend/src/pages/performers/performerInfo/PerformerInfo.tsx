@@ -1,14 +1,6 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import {
-  Button,
-  Card,
-  Col,
-  OverlayTrigger,
-  Popover,
-  Row,
-  Table,
-} from "react-bootstrap";
+import { Button, Card, Col, Row, Table } from "react-bootstrap";
 
 import { GenderEnum } from "src/graphql";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
@@ -36,7 +28,7 @@ import {
   ROUTE_PERFORMER_DELETE,
 } from "src/constants/route";
 
-import { GenderIcon, PerformerName } from "src/components/fragments";
+import { GenderIcon, PerformerName, Tooltip } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 
 const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
@@ -60,19 +52,15 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
                   to={createHref(ROUTE_PERFORMER_MERGE, performer)}
                   className="ml-2"
                 >
-                  <OverlayTrigger
-                    overlay={
-                      <Popover id="merge">
-                        <Popover.Content>
-                          Merge other performers into <b>{performer.name}</b>.
-                        </Popover.Content>
-                      </Popover>
+                  <Tooltip
+                    text={
+                      <>
+                        Merge other performers into <b>{performer.name}</b>
+                      </>
                     }
-                    placement="bottom-end"
-                    trigger="hover"
                   >
                     <Button>Merge</Button>
-                  </OverlayTrigger>
+                  </Tooltip>
                 </Link>
                 <Link
                   to={createHref(ROUTE_PERFORMER_DELETE, performer)}
