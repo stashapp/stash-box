@@ -146,7 +146,7 @@ func TestUnauthorisedEditEdit(t *testing.T) {
 	pt.testUnauthorisedEditEdit()
 }
 
-func (s *editTestRunner) testEditVoteApplication() {
+func (s *editTestRunner) testPositiveEditVoteApplication() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 	if err != nil {
 		return
@@ -172,6 +172,30 @@ func (s *editTestRunner) testEditVoteApplication() {
 
 func (s *editTestRunner) verifyEditApplied(edit *models.Edit) {
 	s.verifyEditStatus(models.VoteStatusEnumAccepted.String(), edit)
+}
+
+func (s *editTestRunner) testNegativeEditVoteApplication() {
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	if err != nil {
+		return
+	}
+
+	for i := 1; i <= 3; i++ {
+		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
+		if err != nil {
+			return
+		}
+		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+			ID:   createdEdit.ID.String(),
+			Vote: models.VoteTypeEnumReject,
+		})
+	}
+
+	editID := createdEdit.ID.String()
+	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+
+	s.verifyEditApplied(updatedEdit)
 }
 
 func (s *editTestRunner) testEditVoteNotApplying() {
@@ -285,9 +309,14 @@ func TestVotePermissionsPromotion(t *testing.T) {
 	pt.testVotePermissionsPromotion()
 }
 
-func TestEditVoteApplication(t *testing.T) {
+func TestPositiveEditVoteApplication(t *testing.T) {
 	pt := createEditTestRunner(t)
-	pt.testEditVoteApplication()
+	pt.testPositiveEditVoteApplication()
+}
+
+func TestNegativeEditVoteApplication(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testNegativeEditVoteApplication()
 }
 
 func TestEditVoteNotApplying(t *testing.T) {

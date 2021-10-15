@@ -210,27 +210,32 @@ func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.U
 
 func IsVotingThresholdMet(fac models.Repo, edit *models.Edit) (bool, error) {
 	threshold := config.GetVoteApplicationThreshold()
-	if threshold != 0 && edit.VoteCount >= threshold {
-		votes, err := fac.Edit().GetVotes(edit.ID)
-		if err != nil {
-			return false, err
-		}
-
-		for _, vote := range votes {
-			if vote.Vote == models.VoteTypeEnumReject.String() {
-				return false, nil
-			}
-		}
-
-		// For destructive edits we check if they've been open for a minimum period before applying
-		if edit.Operation == models.OperationEnumDestroy.String() || edit.Operation == models.OperationEnumMerge.String() {
-			if time.Since(edit.CreatedAt.Timestamp).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
-				return false, nil
-			}
-		}
-
-		return true, nil
+	if threshold == 0 {
+		return false, nil
 	}
 
-	return false, nil
+	// For destructive edits we check if they've been open for a minimum period before applying
+	if edit.Operation == models.OperationEnumDestroy.String() || edit.Operation == models.OperationEnumMerge.String() {
+		if time.Since(edit.CreatedAt.Timestamp).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
+			return false, nil
+		}
+	}
+
+	votes, err := fac.Edit().GetVotes(edit.ID)
+	if err != nil {
+		return false, err
+	}
+
+	positive := 0
+	negative := 0
+	for _, vote := range votes {
+		if vote.Vote == string(models.VoteTypeEnumAccept) {
+			positive += 1
+		} else if vote.Vote == string(models.VoteTypeEnumReject) {
+			negative += 1
+		}
+	}
+
+	thresholdMet := (positive >= threshold && negative == 0) || (negative >= threshold && positive == 0)
+	return thresholdMet, nil
 }
