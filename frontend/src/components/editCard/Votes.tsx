@@ -23,13 +23,15 @@ const Votes: React.FC<VotesProps> = ({ edit }) => (
         <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length}</b>
         <span className="ml-1">yes</span>
       </div>
-      {edit.votes.map((v) => (
-        <div>
-          <Link to={userHref(v.user)}>{v.user.name}</Link>
-          <span className="mx-2">&bull;</span>
-          {VoteTypes[v.vote]}
-        </div>
-      ))}
+      {edit.votes
+        .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)
+        .map((v) => (
+          <div>
+            <Link to={userHref(v.user)}>{v.user.name}</Link>
+            <span className="mx-2">&bull;</span>
+            {VoteTypes[v.vote]}
+          </div>
+        ))}
     </div>
   </>
 );
