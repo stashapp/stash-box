@@ -230,9 +230,9 @@ func IsVotingThresholdMet(fac models.Repo, edit *models.Edit) (bool, error) {
 	negative := 0
 	for _, vote := range votes {
 		if vote.Vote == string(models.VoteTypeEnumAccept) {
-			positive += 1
+			positive++
 		} else if vote.Vote == string(models.VoteTypeEnumReject) {
-			negative += 1
+			negative++
 		}
 	}
 
