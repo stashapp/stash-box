@@ -472,7 +472,8 @@ func PromoteUserVoteRights(fac models.Repo, userID uuid.UUID, threshold int) err
 		return err
 	}
 	if user == nil {
-		return errors.New("user not found: " + userID.String())
+		// nil user is valid so no need to return error
+		return nil
 	}
 
 	roles, err := qb.GetRoles(userID)
