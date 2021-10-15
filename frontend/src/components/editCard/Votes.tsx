@@ -14,29 +14,23 @@ interface VotesProps {
 
 const Votes: React.FC<VotesProps> = ({ edit }) => (
   <>
-    {edit.votes.length > 0 && (
-      <div className={CLASSNAME}>
-        <h5>Votes:</h5>
-        <div>
-          <b className="mr-2">Vote Tally:</b>
-          <b>
-            {edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length}
-          </b>
-          <span className="mx-1">no &mdash;</span>
-          <b>
-            {edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length}
-          </b>
-          <span className="ml-1">yes</span>
-        </div>
-        {edit.votes.map((v) => (
-          <div>
-            <Link to={userHref(v.user)}>{v.user.name}</Link>
-            <span className="mx-2">&bull;</span>
-            {VoteTypes[v.vote]}
-          </div>
-        ))}
+    <div className={CLASSNAME}>
+      <h5>Votes:</h5>
+      <div>
+        <b className="mr-2">Vote Tally:</b>
+        <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length}</b>
+        <span className="mx-1">no &mdash;</span>
+        <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length}</b>
+        <span className="ml-1">yes</span>
       </div>
-    )}
+      {edit.votes.map((v) => (
+        <div>
+          <Link to={userHref(v.user)}>{v.user.name}</Link>
+          <span className="mx-2">&bull;</span>
+          {VoteTypes[v.vote]}
+        </div>
+      ))}
+    </div>
   </>
 );
 

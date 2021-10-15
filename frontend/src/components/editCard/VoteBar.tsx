@@ -6,6 +6,7 @@ import AuthContext from "src/AuthContext";
 import { VoteStatusEnum, VoteTypeEnum, useVote } from "src/graphql";
 import { Icon } from "src/components/fragments";
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
+import { canVote } from "src/utils";
 
 const CLASSNAME = "VoteBar";
 const CLASSNAME_VOTED = `${CLASSNAME}-voted`;
@@ -21,7 +22,12 @@ const VoteBar: React.FC<Props> = ({ edit }) => {
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
   const [submitVote, { loading: savingVote }] = useVote();
 
-  if (edit.status !== VoteStatusEnum.PENDING) return <></>;
+  if (
+    edit.status !== VoteStatusEnum.PENDING ||
+    !canVote(auth.user) ||
+    auth.user?.id === edit.user?.id
+  )
+    return <></>;
 
   const handleSave = () => {
     if (!vote) return;

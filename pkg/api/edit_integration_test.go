@@ -240,6 +240,22 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	s.verifyEditPending(updatedEdit)
 }
 
+func (s *editTestRunner) testVoteOwnedEditsDisallowed() {
+	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
+	if err != nil {
+		return
+	}
+
+	_, err = s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
+		ID:   createdEdit.ID.String(),
+		Vote: models.VoteTypeEnumAccept,
+	})
+
+	if err != api.ErrUnauthorized {
+		s.t.Errorf("Voting: got %v want %v", err, api.ErrUnauthorized)
+	}
+}
+
 func TestUnauthorisedApplyEditAdmin(t *testing.T) {
 	pt := &editTestRunner{
 		testRunner: *asModify(t),
@@ -282,4 +298,9 @@ func TestEditVoteNotApplying(t *testing.T) {
 func TestDestructiveEditsNotAutoApplied(t *testing.T) {
 	pt := createEditTestRunner(t)
 	pt.testDestructiveEditsNotAutoApplied()
+}
+
+func TestVoteOwnedEditsDisallowed(t *testing.T) {
+	pt := createEditTestRunner(t)
+	pt.testVoteOwnedEditsDisallowed()
 }

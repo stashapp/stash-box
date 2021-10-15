@@ -183,7 +183,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 }
 
 func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
-	if err := validateEdit(ctx); err != nil {
+	if err := validateVote(ctx); err != nil {
 		return nil, err
 	}
 
@@ -200,6 +200,10 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 		voteEdit, err = eqb.Find(editID)
 		if err != nil {
 			return err
+		}
+
+		if voteEdit.UserID == currentUser.ID {
+			return ErrUnauthorized
 		}
 
 		vote := models.NewEditVote(currentUser, voteEdit, input.Vote)
