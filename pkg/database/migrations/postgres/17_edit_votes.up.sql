@@ -1,3 +1,5 @@
+UPDATE edits SET status = 'REJECTED' WHERE status = 'PENDING';
+
 CREATE TABLE "edit_votes" (
   "edit_id" UUID NOT NULL,
   "user_id" UUID NOT NULL,
