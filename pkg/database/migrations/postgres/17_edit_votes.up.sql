@@ -14,8 +14,8 @@ BEGIN
   FROM (
     SELECT SUM(
       CASE
-        WHEN NEW.vote = 'ACCEPT' THEN 1 
-        WHEN NEW.vote = 'REJECT' THEN -1 
+        WHEN vote = 'ACCEPT' THEN 1
+        WHEN vote = 'REJECT' THEN -1
         ELSE 0
       END
     ) as votesum
