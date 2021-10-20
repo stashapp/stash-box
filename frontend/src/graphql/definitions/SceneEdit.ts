@@ -193,6 +193,7 @@ export interface SceneEdit_sceneEdit_target_Scene_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }
@@ -1179,6 +1180,7 @@ export interface SceneEdit_sceneEdit_merge_sources_Scene_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }
