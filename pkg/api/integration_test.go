@@ -165,7 +165,7 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 		ctx := context.TODO()
 		ctx = context.WithValue(ctx, user.ContextUser, u)
 		ctx = context.WithValue(ctx, user.ContextRoles, roles)
-		ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(dbtest.Repo()))
+		ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, dbtest.Repo()))
 		ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
 		r = r.WithContext(ctx)
@@ -178,7 +178,7 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 	ctx := context.TODO()
 	ctx = context.WithValue(ctx, user.ContextUser, u)
 	ctx = context.WithValue(ctx, user.ContextRoles, roles)
-	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(dbtest.Repo()))
+	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, dbtest.Repo()))
 	ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
 	return &testRunner{
