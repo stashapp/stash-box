@@ -87,12 +87,13 @@ type ComplexityRoot struct {
 	}
 
 	Fingerprint struct {
-		Algorithm   func(childComplexity int) int
-		Created     func(childComplexity int) int
-		Duration    func(childComplexity int) int
-		Hash        func(childComplexity int) int
-		Submissions func(childComplexity int) int
-		Updated     func(childComplexity int) int
+		Algorithm     func(childComplexity int) int
+		Created       func(childComplexity int) int
+		Duration      func(childComplexity int) int
+		Hash          func(childComplexity int) int
+		Submissions   func(childComplexity int) int
+		Updated       func(childComplexity int) int
+		UserSubmitted func(childComplexity int) int
 	}
 
 	FuzzyDate struct {
@@ -801,6 +802,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Fingerprint.Updated(childComplexity), true
+
+	case "Fingerprint.user_submitted":
+		if e.complexity.Fingerprint.UserSubmitted == nil {
+			break
+		}
+
+		return e.complexity.Fingerprint.UserSubmitted(childComplexity), true
 
 	case "FuzzyDate.accuracy":
 		if e.complexity.FuzzyDate.Accuracy == nil {
@@ -3255,6 +3263,7 @@ type Fingerprint {
   submissions: Int!
   created: Time!
   updated: Time!
+  user_submitted: Boolean!
 }
 
 input FingerprintInput {
@@ -5776,6 +5785,41 @@ func (ec *executionContext) _Fingerprint_updated(ctx context.Context, field grap
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Fingerprint_user_submitted(ctx context.Context, field graphql.CollectedField, obj *Fingerprint) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Fingerprint",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserSubmitted, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FuzzyDate_date(ctx context.Context, field graphql.CollectedField, obj *FuzzyDate) (ret graphql.Marshaler) {
@@ -18481,6 +18525,11 @@ func (ec *executionContext) _Fingerprint(ctx context.Context, sel ast.SelectionS
 			}
 		case "updated":
 			out.Values[i] = ec._Fingerprint_updated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "user_submitted":
+			out.Values[i] = ec._Fingerprint_user_submitted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

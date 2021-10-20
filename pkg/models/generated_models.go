@@ -95,12 +95,13 @@ type EyeColorCriterionInput struct {
 }
 
 type Fingerprint struct {
-	Hash        string               `json:"hash"`
-	Algorithm   FingerprintAlgorithm `json:"algorithm"`
-	Duration    int                  `json:"duration"`
-	Submissions int                  `json:"submissions"`
-	Created     time.Time            `json:"created"`
-	Updated     time.Time            `json:"updated"`
+	Hash          string               `json:"hash"`
+	Algorithm     FingerprintAlgorithm `json:"algorithm"`
+	Duration      int                  `json:"duration"`
+	Submissions   int                  `json:"submissions"`
+	Created       time.Time            `json:"created"`
+	Updated       time.Time            `json:"updated"`
+	UserSubmitted bool                 `json:"user_submitted"`
 }
 
 type FingerprintEditInput struct {

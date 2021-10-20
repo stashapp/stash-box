@@ -127,11 +127,7 @@ func (q dbi) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows)
 		}
 	}
 
-	if err := rows.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return rows.Err()
 }
 
 // Find returns the row object with the provided id, or returns nil if not

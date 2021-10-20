@@ -405,6 +405,16 @@ type sceneFingerprintGroup struct {
 	UpdatedAt   models.SQLiteTimestamp      `db:"updated_at" json:"updated_at"`
 }
 
+func (fg sceneFingerprintGroup) isFingerprintUserSubmitted(userSubmissions []*models.SceneFingerprint) bool {
+	for _, sub := range userSubmissions {
+		if sub.SceneID == fg.SceneID && sub.Algorithm == fg.Algorithm.String() && sub.Hash == fg.Hash {
+			return true
+		}
+	}
+
+	return false
+}
+
 func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
 	return &models.Fingerprint{
 		Hash:        fpg.Hash,
@@ -422,7 +432,12 @@ func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) (models.SceneFingerpr
 	return joins, err
 }
 
-func (qb *sceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
+func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
+	userFPs, err := qb.getFingerprintUserSubmissions(currentUserID, ids)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
 	query := `
 		SELECT f.scene_id, f.hash, f.algorithm, mode() WITHIN GROUP (ORDER BY f.duration) as duration, COUNT(f.hash) as submissions, MIN(created_at) as created_at, MAX(created_at) as updated_at FROM scene_fingerprints f
         WHERE f.scene_id IN (?)
@@ -433,13 +448,18 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*models.Fi
 
 	query, args, _ := sqlx.In(query, ids)
 	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
-		var fp sceneFingerprintGroup
+		var fg sceneFingerprintGroup
 
-		if err := rows.StructScan(&fp); err != nil {
+		if err := rows.StructScan(&fg); err != nil {
 			return err
 		}
 
-		m[fp.SceneID] = append(m[fp.SceneID], fingerprintGroupToFingerprint(fp))
+		fp := fingerprintGroupToFingerprint(fg)
+		if fg.isFingerprintUserSubmitted(userFPs) {
+			fp.UserSubmitted = true
+		}
+
+		m[fg.SceneID] = append(m[fg.SceneID], fp)
 		return nil
 	}); err != nil {
 		return nil, utils.DuplicateError(err, len(ids))
@@ -450,6 +470,32 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(ids []uuid.UUID) ([][]*models.Fi
 		result[i] = m[id]
 	}
 	return result, nil
+}
+
+func (qb *sceneQueryBuilder) getFingerprintUserSubmissions(currentUserID uuid.UUID, ids []uuid.UUID) ([]*models.SceneFingerprint, error) {
+	query := `
+		SELECT f.scene_id, f.hash, f.algorithm FROM scene_fingerprints f
+		WHERE f.scene_id IN (?) AND f.user_id = ?`
+
+	query, args, _ := sqlx.In(query, ids, currentUserID)
+
+	var ret []*models.SceneFingerprint
+
+	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		var fp models.SceneFingerprint
+
+		if err := rows.StructScan(&fp); err != nil {
+			return err
+		}
+
+		ret = append(ret, &fp)
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (qb *sceneQueryBuilder) GetPerformers(id uuid.UUID) (models.PerformersScenes, error) {

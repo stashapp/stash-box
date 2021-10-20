@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type contextKey int
@@ -38,7 +39,7 @@ type Loaders struct {
 func Middleware(fac models.Repo) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), loadersKey, GetLoaders(fac))
+			ctx := context.WithValue(r.Context(), loadersKey, GetLoaders(r.Context(), fac))
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
 		})
@@ -52,14 +53,16 @@ func For(ctx context.Context) *Loaders {
 func GetLoadersKey() contextKey {
 	return loadersKey
 }
-func GetLoaders(fac models.Repo) *Loaders {
+func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
+	currentUser := user.GetCurrentUser(ctx)
+
 	return &Loaders{
 		SceneFingerprintsByID: FingerprintsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
 				qb := fac.Scene()
-				return qb.GetAllFingerprints(ids)
+				return qb.GetAllFingerprints(currentUser.ID, ids)
 			},
 		},
 		PerformerByID: PerformerLoader{

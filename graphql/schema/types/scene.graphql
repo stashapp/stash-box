@@ -23,6 +23,7 @@ type Fingerprint {
   submissions: Int!
   created: Time!
   updated: Time!
+  user_submitted: Boolean!
 }
 
 input FingerprintInput {
