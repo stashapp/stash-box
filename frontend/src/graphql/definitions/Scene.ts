@@ -70,6 +70,7 @@ export interface Scene_findScene {
   id: string;
   date: any | null;
   title: string | null;
+  deleted: boolean;
   details: string | null;
   director: string | null;
   duration: number | null;

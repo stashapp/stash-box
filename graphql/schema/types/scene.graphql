@@ -39,8 +39,12 @@ input FingerprintEditInput {
   algorithm: FingerprintAlgorithm!
   duration: Int!
   created: Time!
-  submissions: Int @deprecated(reason: "unused")
-  updated: Time @deprecated(reason: "unused")
+  # v0.14.0 of gqlgen does not allow deprecated on input fields
+  # https://github.com/99designs/gqlgen/issues/1636
+  """@deprecated(reason: "unused")"""
+  submissions: Int 
+  """@deprecated(reason: "unused")"""
+  updated: Time 
 }
 
 input FingerprintQueryInput {

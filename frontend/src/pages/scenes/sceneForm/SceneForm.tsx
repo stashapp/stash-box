@@ -175,6 +175,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
 
   const [isChanging, setChange] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState("details");
+  const [file, setFile] = useState<File | undefined>();
 
   const onTagChange = (selectedTags: Tag[]) =>
     replaceTags(selectedTags.map((t) => ({ id: t.id, name: t.name })));
@@ -441,7 +442,11 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
         </Tab>
         <Tab eventKey="images" title="Images">
           <Form.Row>
-            <EditImages control={control} />
+            <EditImages
+              control={control}
+              file={file}
+              setFile={(f) => setFile(f)}
+            />
           </Form.Row>
 
           <Form.Row className="mt-1">
@@ -452,9 +457,22 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
             >
               Cancel
             </Button>
-            <Button className="mr-1" onClick={() => setActiveTab("confirm")}>
+            <Button
+              className="mr-1"
+              disabled={!!file}
+              onClick={() => setActiveTab("confirm")}
+            >
               Next
             </Button>
+          </Form.Row>
+          <Form.Row>
+            {/* dummy element for feedback */}
+            <div className="ml-auto">
+              <span className={file ? "is-invalid" : ""} />
+              <Form.Control.Feedback type="invalid">
+                Upload or remove image to continue.
+              </Form.Control.Feedback>
+            </div>
           </Form.Row>
         </Tab>
         <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">

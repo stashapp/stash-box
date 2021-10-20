@@ -84,11 +84,7 @@ func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, 
 		return err
 	}
 
-	if err := m.diffPerformers(sceneEdit, sceneID, input.Details.Performers); err != nil {
-		return err
-	}
-
-	return nil
+	return m.diffPerformers(sceneEdit, sceneID, input.Details.Performers)
 }
 
 func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newImageIds []string) error {
@@ -315,7 +311,7 @@ func (m *SceneEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
 
-	var scene *models.Scene = nil
+	var scene *models.Scene
 	if !isCreate {
 		sceneID, err := eqb.FindSceneID(m.edit.ID)
 		if err != nil {

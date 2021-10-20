@@ -3271,8 +3271,12 @@ input FingerprintEditInput {
   algorithm: FingerprintAlgorithm!
   duration: Int!
   created: Time!
-  submissions: Int @deprecated(reason: "unused")
-  updated: Time @deprecated(reason: "unused")
+  # v0.14.0 of gqlgen does not allow deprecated on input fields
+  # https://github.com/99designs/gqlgen/issues/1636
+  """@deprecated(reason: "unused")"""
+  submissions: Int 
+  """@deprecated(reason: "unused")"""
+  updated: Time 
 }
 
 input FingerprintQueryInput {
@@ -13732,6 +13736,41 @@ func (ec *executionContext) ___Directive_args(ctx context.Context, field graphql
 	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) ___Directive_isRepeatable(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "__Directive",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsRepeatable, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) ___EnumValue_name(ctx context.Context, field graphql.CollectedField, obj *introspection.EnumValue) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -14684,7 +14723,10 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 func (ec *executionContext) unmarshalInputActivateNewUserInput(ctx context.Context, obj interface{}) (ActivateNewUserInput, error) {
 	var it ActivateNewUserInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14728,7 +14770,10 @@ func (ec *executionContext) unmarshalInputActivateNewUserInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputApplyEditInput(ctx context.Context, obj interface{}) (ApplyEditInput, error) {
 	var it ApplyEditInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14748,7 +14793,10 @@ func (ec *executionContext) unmarshalInputApplyEditInput(ctx context.Context, ob
 
 func (ec *executionContext) unmarshalInputBodyModificationCriterionInput(ctx context.Context, obj interface{}) (BodyModificationCriterionInput, error) {
 	var it BodyModificationCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14784,7 +14832,10 @@ func (ec *executionContext) unmarshalInputBodyModificationCriterionInput(ctx con
 
 func (ec *executionContext) unmarshalInputBodyModificationInput(ctx context.Context, obj interface{}) (BodyModification, error) {
 	var it BodyModification
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14812,7 +14863,10 @@ func (ec *executionContext) unmarshalInputBodyModificationInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputBreastTypeCriterionInput(ctx context.Context, obj interface{}) (BreastTypeCriterionInput, error) {
 	var it BreastTypeCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14840,7 +14894,10 @@ func (ec *executionContext) unmarshalInputBreastTypeCriterionInput(ctx context.C
 
 func (ec *executionContext) unmarshalInputCancelEditInput(ctx context.Context, obj interface{}) (CancelEditInput, error) {
 	var it CancelEditInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14860,7 +14917,10 @@ func (ec *executionContext) unmarshalInputCancelEditInput(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputDateCriterionInput(ctx context.Context, obj interface{}) (DateCriterionInput, error) {
 	var it DateCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14888,7 +14948,10 @@ func (ec *executionContext) unmarshalInputDateCriterionInput(ctx context.Context
 
 func (ec *executionContext) unmarshalInputEditCommentInput(ctx context.Context, obj interface{}) (EditCommentInput, error) {
 	var it EditCommentInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14916,7 +14979,10 @@ func (ec *executionContext) unmarshalInputEditCommentInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputEditFilterType(ctx context.Context, obj interface{}) (EditFilterType, error) {
 	var it EditFilterType
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -14984,7 +15050,10 @@ func (ec *executionContext) unmarshalInputEditFilterType(ctx context.Context, ob
 
 func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj interface{}) (EditInput, error) {
 	var it EditInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15036,7 +15105,10 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 
 func (ec *executionContext) unmarshalInputEditVoteInput(ctx context.Context, obj interface{}) (EditVoteInput, error) {
 	var it EditVoteInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15072,7 +15144,10 @@ func (ec *executionContext) unmarshalInputEditVoteInput(ctx context.Context, obj
 
 func (ec *executionContext) unmarshalInputEyeColorCriterionInput(ctx context.Context, obj interface{}) (EyeColorCriterionInput, error) {
 	var it EyeColorCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15100,7 +15175,10 @@ func (ec *executionContext) unmarshalInputEyeColorCriterionInput(ctx context.Con
 
 func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Context, obj interface{}) (FingerprintEditInput, error) {
 	var it FingerprintEditInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15168,7 +15246,10 @@ func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputFingerprintInput(ctx context.Context, obj interface{}) (FingerprintInput, error) {
 	var it FingerprintInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15212,7 +15293,10 @@ func (ec *executionContext) unmarshalInputFingerprintInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputFingerprintQueryInput(ctx context.Context, obj interface{}) (FingerprintQueryInput, error) {
 	var it FingerprintQueryInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15240,7 +15324,10 @@ func (ec *executionContext) unmarshalInputFingerprintQueryInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Context, obj interface{}) (FingerprintSubmission, error) {
 	var it FingerprintSubmission
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15276,7 +15363,10 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputFuzzyDateInput(ctx context.Context, obj interface{}) (FuzzyDateInput, error) {
 	var it FuzzyDateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15304,7 +15394,10 @@ func (ec *executionContext) unmarshalInputFuzzyDateInput(ctx context.Context, ob
 
 func (ec *executionContext) unmarshalInputGrantInviteInput(ctx context.Context, obj interface{}) (GrantInviteInput, error) {
 	var it GrantInviteInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15332,7 +15425,10 @@ func (ec *executionContext) unmarshalInputGrantInviteInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputHairColorCriterionInput(ctx context.Context, obj interface{}) (HairColorCriterionInput, error) {
 	var it HairColorCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15360,7 +15456,10 @@ func (ec *executionContext) unmarshalInputHairColorCriterionInput(ctx context.Co
 
 func (ec *executionContext) unmarshalInputIDCriterionInput(ctx context.Context, obj interface{}) (IDCriterionInput, error) {
 	var it IDCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15388,7 +15487,10 @@ func (ec *executionContext) unmarshalInputIDCriterionInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputImageCreateInput(ctx context.Context, obj interface{}) (ImageCreateInput, error) {
 	var it ImageCreateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15416,7 +15518,10 @@ func (ec *executionContext) unmarshalInputImageCreateInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputImageDestroyInput(ctx context.Context, obj interface{}) (ImageDestroyInput, error) {
 	var it ImageDestroyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15436,7 +15541,10 @@ func (ec *executionContext) unmarshalInputImageDestroyInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, obj interface{}) (ImageUpdateInput, error) {
 	var it ImageUpdateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15464,7 +15572,10 @@ func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputIntCriterionInput(ctx context.Context, obj interface{}) (IntCriterionInput, error) {
 	var it IntCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15492,7 +15603,10 @@ func (ec *executionContext) unmarshalInputIntCriterionInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputMeasurementsInput(ctx context.Context, obj interface{}) (MeasurementsInput, error) {
 	var it MeasurementsInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15536,7 +15650,10 @@ func (ec *executionContext) unmarshalInputMeasurementsInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputMultiIDCriterionInput(ctx context.Context, obj interface{}) (MultiIDCriterionInput, error) {
 	var it MultiIDCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15564,7 +15681,10 @@ func (ec *executionContext) unmarshalInputMultiIDCriterionInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputNewUserInput(ctx context.Context, obj interface{}) (NewUserInput, error) {
 	var it NewUserInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15592,7 +15712,10 @@ func (ec *executionContext) unmarshalInputNewUserInput(ctx context.Context, obj 
 
 func (ec *executionContext) unmarshalInputPerformerAppearanceInput(ctx context.Context, obj interface{}) (PerformerAppearanceInput, error) {
 	var it PerformerAppearanceInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15620,7 +15743,10 @@ func (ec *executionContext) unmarshalInputPerformerAppearanceInput(ctx context.C
 
 func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Context, obj interface{}) (PerformerCreateInput, error) {
 	var it PerformerCreateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15776,7 +15902,10 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputPerformerDestroyInput(ctx context.Context, obj interface{}) (PerformerDestroyInput, error) {
 	var it PerformerDestroyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15796,7 +15925,10 @@ func (ec *executionContext) unmarshalInputPerformerDestroyInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.Context, obj interface{}) (PerformerEditDetailsInput, error) {
 	var it PerformerEditDetailsInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15952,7 +16084,10 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 
 func (ec *executionContext) unmarshalInputPerformerEditInput(ctx context.Context, obj interface{}) (PerformerEditInput, error) {
 	var it PerformerEditInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -15988,7 +16123,10 @@ func (ec *executionContext) unmarshalInputPerformerEditInput(ctx context.Context
 
 func (ec *executionContext) unmarshalInputPerformerEditOptionsInput(ctx context.Context, obj interface{}) (PerformerEditOptionsInput, error) {
 	var it PerformerEditOptionsInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	if _, present := asMap["set_merge_aliases"]; !present {
 		asMap["set_merge_aliases"] = true
@@ -16020,7 +16158,10 @@ func (ec *executionContext) unmarshalInputPerformerEditOptionsInput(ctx context.
 
 func (ec *executionContext) unmarshalInputPerformerFilterType(ctx context.Context, obj interface{}) (PerformerFilterType, error) {
 	var it PerformerFilterType
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16216,7 +16357,10 @@ func (ec *executionContext) unmarshalInputPerformerFilterType(ctx context.Contex
 
 func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Context, obj interface{}) (PerformerUpdateInput, error) {
 	var it PerformerUpdateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16380,7 +16524,10 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputQuerySpec(ctx context.Context, obj interface{}) (QuerySpec, error) {
 	var it QuerySpec
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16424,7 +16571,10 @@ func (ec *executionContext) unmarshalInputQuerySpec(ctx context.Context, obj int
 
 func (ec *executionContext) unmarshalInputResetPasswordInput(ctx context.Context, obj interface{}) (ResetPasswordInput, error) {
 	var it ResetPasswordInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16444,7 +16594,10 @@ func (ec *executionContext) unmarshalInputResetPasswordInput(ctx context.Context
 
 func (ec *executionContext) unmarshalInputRevokeInviteInput(ctx context.Context, obj interface{}) (RevokeInviteInput, error) {
 	var it RevokeInviteInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16472,7 +16625,10 @@ func (ec *executionContext) unmarshalInputRevokeInviteInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputRoleCriterionInput(ctx context.Context, obj interface{}) (RoleCriterionInput, error) {
 	var it RoleCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16500,7 +16656,10 @@ func (ec *executionContext) unmarshalInputRoleCriterionInput(ctx context.Context
 
 func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, obj interface{}) (SceneCreateInput, error) {
 	var it SceneCreateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16600,7 +16759,10 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputSceneDestroyInput(ctx context.Context, obj interface{}) (SceneDestroyInput, error) {
 	var it SceneDestroyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16620,7 +16782,10 @@ func (ec *executionContext) unmarshalInputSceneDestroyInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Context, obj interface{}) (SceneEditDetailsInput, error) {
 	var it SceneEditDetailsInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16712,7 +16877,10 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 
 func (ec *executionContext) unmarshalInputSceneEditInput(ctx context.Context, obj interface{}) (SceneEditInput, error) {
 	var it SceneEditInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16748,7 +16916,10 @@ func (ec *executionContext) unmarshalInputSceneEditInput(ctx context.Context, ob
 
 func (ec *executionContext) unmarshalInputSceneFilterType(ctx context.Context, obj interface{}) (SceneFilterType, error) {
 	var it SceneFilterType
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16840,7 +17011,10 @@ func (ec *executionContext) unmarshalInputSceneFilterType(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, obj interface{}) (SceneUpdateInput, error) {
 	var it SceneUpdateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16948,7 +17122,10 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputStringCriterionInput(ctx context.Context, obj interface{}) (StringCriterionInput, error) {
 	var it StringCriterionInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -16976,7 +17153,10 @@ func (ec *executionContext) unmarshalInputStringCriterionInput(ctx context.Conte
 
 func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context, obj interface{}) (StudioCreateInput, error) {
 	var it StudioCreateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17020,7 +17200,10 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputStudioDestroyInput(ctx context.Context, obj interface{}) (StudioDestroyInput, error) {
 	var it StudioDestroyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17040,7 +17223,10 @@ func (ec *executionContext) unmarshalInputStudioDestroyInput(ctx context.Context
 
 func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Context, obj interface{}) (StudioEditDetailsInput, error) {
 	var it StudioEditDetailsInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17084,7 +17270,10 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 
 func (ec *executionContext) unmarshalInputStudioEditInput(ctx context.Context, obj interface{}) (StudioEditInput, error) {
 	var it StudioEditInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17112,7 +17301,10 @@ func (ec *executionContext) unmarshalInputStudioEditInput(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputStudioFilterType(ctx context.Context, obj interface{}) (StudioFilterType, error) {
 	var it StudioFilterType
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17164,7 +17356,10 @@ func (ec *executionContext) unmarshalInputStudioFilterType(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context, obj interface{}) (StudioUpdateInput, error) {
 	var it StudioUpdateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17216,7 +17411,10 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 
 func (ec *executionContext) unmarshalInputTagCategoryCreateInput(ctx context.Context, obj interface{}) (TagCategoryCreateInput, error) {
 	var it TagCategoryCreateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17252,7 +17450,10 @@ func (ec *executionContext) unmarshalInputTagCategoryCreateInput(ctx context.Con
 
 func (ec *executionContext) unmarshalInputTagCategoryDestroyInput(ctx context.Context, obj interface{}) (TagCategoryDestroyInput, error) {
 	var it TagCategoryDestroyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17272,7 +17473,10 @@ func (ec *executionContext) unmarshalInputTagCategoryDestroyInput(ctx context.Co
 
 func (ec *executionContext) unmarshalInputTagCategoryUpdateInput(ctx context.Context, obj interface{}) (TagCategoryUpdateInput, error) {
 	var it TagCategoryUpdateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17316,7 +17520,10 @@ func (ec *executionContext) unmarshalInputTagCategoryUpdateInput(ctx context.Con
 
 func (ec *executionContext) unmarshalInputTagCreateInput(ctx context.Context, obj interface{}) (TagCreateInput, error) {
 	var it TagCreateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17360,7 +17567,10 @@ func (ec *executionContext) unmarshalInputTagCreateInput(ctx context.Context, ob
 
 func (ec *executionContext) unmarshalInputTagDestroyInput(ctx context.Context, obj interface{}) (TagDestroyInput, error) {
 	var it TagDestroyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17380,7 +17590,10 @@ func (ec *executionContext) unmarshalInputTagDestroyInput(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputTagEditDetailsInput(ctx context.Context, obj interface{}) (TagEditDetailsInput, error) {
 	var it TagEditDetailsInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17424,7 +17637,10 @@ func (ec *executionContext) unmarshalInputTagEditDetailsInput(ctx context.Contex
 
 func (ec *executionContext) unmarshalInputTagEditInput(ctx context.Context, obj interface{}) (TagEditInput, error) {
 	var it TagEditInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17452,7 +17668,10 @@ func (ec *executionContext) unmarshalInputTagEditInput(ctx context.Context, obj 
 
 func (ec *executionContext) unmarshalInputTagFilterType(ctx context.Context, obj interface{}) (TagFilterType, error) {
 	var it TagFilterType
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17496,7 +17715,10 @@ func (ec *executionContext) unmarshalInputTagFilterType(ctx context.Context, obj
 
 func (ec *executionContext) unmarshalInputTagUpdateInput(ctx context.Context, obj interface{}) (TagUpdateInput, error) {
 	var it TagUpdateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17548,7 +17770,10 @@ func (ec *executionContext) unmarshalInputTagUpdateInput(ctx context.Context, ob
 
 func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj interface{}) (URL, error) {
 	var it URL
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17576,7 +17801,10 @@ func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj inte
 
 func (ec *executionContext) unmarshalInputUserChangePasswordInput(ctx context.Context, obj interface{}) (UserChangePasswordInput, error) {
 	var it UserChangePasswordInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17612,7 +17840,10 @@ func (ec *executionContext) unmarshalInputUserChangePasswordInput(ctx context.Co
 
 func (ec *executionContext) unmarshalInputUserCreateInput(ctx context.Context, obj interface{}) (UserCreateInput, error) {
 	var it UserCreateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17664,7 +17895,10 @@ func (ec *executionContext) unmarshalInputUserCreateInput(ctx context.Context, o
 
 func (ec *executionContext) unmarshalInputUserDestroyInput(ctx context.Context, obj interface{}) (UserDestroyInput, error) {
 	var it UserDestroyInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17684,7 +17918,10 @@ func (ec *executionContext) unmarshalInputUserDestroyInput(ctx context.Context, 
 
 func (ec *executionContext) unmarshalInputUserFilterType(ctx context.Context, obj interface{}) (UserFilterType, error) {
 	var it UserFilterType
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -17776,7 +18013,10 @@ func (ec *executionContext) unmarshalInputUserFilterType(ctx context.Context, ob
 
 func (ec *executionContext) unmarshalInputUserUpdateInput(ctx context.Context, obj interface{}) (UserUpdateInput, error) {
 	var it UserUpdateInput
-	var asMap = obj.(map[string]interface{})
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
 
 	for k, v := range asMap {
 		switch k {
@@ -20542,6 +20782,11 @@ func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "isRepeatable":
+			out.Values[i] = ec.___Directive_isRepeatable(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20877,6 +21122,13 @@ func (ec *executionContext) marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -20924,6 +21176,13 @@ func (ec *executionContext) marshalNEditComment2ᚕᚖgithubᚗcomᚋstashappᚋ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -20991,6 +21250,13 @@ func (ec *executionContext) marshalNEditTarget2ᚕgithubᚗcomᚋstashappᚋstas
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21033,6 +21299,13 @@ func (ec *executionContext) marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21170,6 +21443,12 @@ func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast
 		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
 	}
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21207,6 +21486,13 @@ func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21323,6 +21609,13 @@ func (ec *executionContext) marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋst
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21370,6 +21663,13 @@ func (ec *executionContext) marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋsta
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21437,6 +21737,13 @@ func (ec *executionContext) marshalNPerformerStudio2ᚕᚖgithubᚗcomᚋstashap
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21628,6 +21935,13 @@ func (ec *executionContext) marshalNRoleEnum2ᚕgithubᚗcomᚋstashappᚋstash�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21665,6 +21979,13 @@ func (ec *executionContext) marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21740,6 +22061,12 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
 	}
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21781,6 +22108,13 @@ func (ec *executionContext) marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstash
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21848,6 +22182,13 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -21895,6 +22236,13 @@ func (ec *executionContext) marshalNTagCategory2ᚕᚖgithubᚗcomᚋstashappᚋ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22033,6 +22381,13 @@ func (ec *executionContext) marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22085,6 +22440,13 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22166,6 +22528,13 @@ func (ec *executionContext) marshalNVoteComment2ᚕᚖgithubᚗcomᚋstashappᚋ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22237,6 +22606,13 @@ func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgq
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22310,6 +22686,13 @@ func (ec *executionContext) marshalN__DirectiveLocation2ᚕstringᚄ(ctx context
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22359,6 +22742,13 @@ func (ec *executionContext) marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22400,6 +22790,13 @@ func (ec *executionContext) marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22465,6 +22862,13 @@ func (ec *executionContext) marshalOBodyModification2ᚕᚖgithubᚗcomᚋstasha
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22799,6 +23203,12 @@ func (ec *executionContext) marshalOID2ᚕstringᚄ(ctx context.Context, sel ast
 		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
 	}
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22862,6 +23272,13 @@ func (ec *executionContext) marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstash�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -22995,6 +23412,13 @@ func (ec *executionContext) marshalOPerformerAppearance2ᚕᚖgithubᚗcomᚋsta
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -23130,6 +23554,13 @@ func (ec *executionContext) marshalORoleEnum2ᚕgithubᚗcomᚋstashappᚋstash�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -23212,6 +23643,12 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 	ret := make(graphql.Array, len(v))
 	for i := range v {
 		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
 	}
 
 	return ret
@@ -23300,6 +23737,13 @@ func (ec *executionContext) marshalOTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -23417,6 +23861,13 @@ func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -23543,6 +23994,13 @@ func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgq
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -23583,6 +24041,13 @@ func (ec *executionContext) marshalO__Field2ᚕgithubᚗcomᚋ99designsᚋgqlgen
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -23623,6 +24088,13 @@ func (ec *executionContext) marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 
@@ -23670,6 +24142,13 @@ func (ec *executionContext) marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
 }
 

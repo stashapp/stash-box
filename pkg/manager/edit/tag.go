@@ -174,7 +174,7 @@ func (m *TagEditProcessor) apply() error {
 	operation := m.operation()
 	isCreate := operation == models.OperationEnumCreate
 
-	var tag *models.Tag = nil
+	var tag *models.Tag
 	if !isCreate {
 		tagID, err := eqb.FindTagID(m.edit.ID)
 		if err != nil {

@@ -3,13 +3,13 @@ module github.com/stashapp/stash-box
 go 1.17
 
 require (
-	github.com/99designs/gqlgen v0.13.0
+	github.com/99designs/gqlgen v0.14.0
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.0.0
-	github.com/golang-migrate/migrate/v4 v4.15.0-beta.1
+	github.com/golang-migrate/migrate/v4 v4.15.0
 	github.com/gorilla/sessions v1.1.3
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -25,11 +25,11 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0
 	github.com/vektah/dataloaden v0.3.0
-	github.com/vektah/gqlparser/v2 v2.1.0
+	github.com/vektah/gqlparser/v2 v2.2.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
-	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1 // indirect
-	golang.org/x/tools v0.1.1 // indirect
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
+	golang.org/x/tools v0.1.5 // indirect
 )
 
 require (
@@ -68,6 +68,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	honnef.co/go/tools v0.2.1
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )

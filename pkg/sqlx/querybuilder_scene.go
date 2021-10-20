@@ -248,6 +248,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	query := newQueryBuilder(sceneDBTable)
+	query.Eq("scenes.deleted", false)
 
 	if q := sceneFilter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
@@ -548,6 +549,7 @@ func (qb *sceneQueryBuilder) SearchScenes(term string, limit int) ([]*models.Sce
 			to_tsvector('english', COALESCE(performer_names, '')) ||
 			to_tsvector('english', scene_title)
         ) @@ plainto_tsquery(?)
+        AND S.deleted = FALSE
         LIMIT ?`
 	var args []interface{}
 	args = append(args, term, limit)
@@ -653,11 +655,7 @@ func (qb *sceneQueryBuilder) updateURLsFromEdit(scene *models.Scene, data *model
 		return err
 	}
 
-	if err := qb.UpdateURLs(scene.ID, urls); err != nil {
-		return err
-	}
-
-	return nil
+	return qb.UpdateURLs(scene.ID, urls)
 }
 
 func (qb *sceneQueryBuilder) updateImagesFromEdit(scene *models.Scene, data *models.SceneEditData) error {
@@ -672,11 +670,7 @@ func (qb *sceneQueryBuilder) updateImagesFromEdit(scene *models.Scene, data *mod
 		return err
 	}
 
-	if err := qb.UpdateImages(scene.ID, currentImages); err != nil {
-		return err
-	}
-
-	return nil
+	return qb.UpdateImages(scene.ID, currentImages)
 }
 
 func (qb *sceneQueryBuilder) updateTagsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
@@ -691,11 +685,7 @@ func (qb *sceneQueryBuilder) updateTagsFromEdit(scene *models.Scene, data *model
 		return err
 	}
 
-	if err := qb.UpdateTags(scene.ID, currentTags); err != nil {
-		return err
-	}
-
-	return nil
+	return qb.UpdateTags(scene.ID, currentTags)
 }
 
 func (qb *sceneQueryBuilder) updatePerformersFromEdit(scene *models.Scene, data *models.SceneEditData) error {
@@ -710,11 +700,7 @@ func (qb *sceneQueryBuilder) updatePerformersFromEdit(scene *models.Scene, data 
 		return err
 	}
 
-	if err := qb.UpdatePerformers(scene.ID, currentPerformers); err != nil {
-		return err
-	}
-
-	return nil
+	return qb.UpdatePerformers(scene.ID, currentPerformers)
 }
 
 func (qb *sceneQueryBuilder) MergeInto(source *models.Scene, target *models.Scene) error {

@@ -209,6 +209,7 @@ export interface StudioEdit_studioEdit_target_Scene {
   id: string;
   date: any | null;
   title: string | null;
+  deleted: boolean;
   details: string | null;
   director: string | null;
   duration: number | null;
@@ -1194,6 +1195,7 @@ export interface StudioEdit_studioEdit_merge_sources_Scene {
   id: string;
   date: any | null;
   title: string | null;
+  deleted: boolean;
   details: string | null;
   director: string | null;
   duration: number | null;

@@ -23,7 +23,11 @@ func (u *testUserFinderUpdater) Find(id uuid.UUID) (*models.User, error) {
 }
 
 func (u *testUserFinderUpdater) FindByEmail(email string) (*models.User, error) {
-	return nil, nil
+	if u.findErr != nil {
+		return nil, u.findErr
+	}
+
+	return u.user, nil
 }
 
 func (u *testUserFinderUpdater) UpdateFull(updatedUser models.User) (*models.User, error) {
