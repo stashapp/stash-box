@@ -174,6 +174,10 @@ func (s *editTestRunner) verifyEditApplied(edit *models.Edit) {
 	s.verifyEditStatus(models.VoteStatusEnumAccepted.String(), edit)
 }
 
+func (s *editTestRunner) verifyEditRejected(edit *models.Edit) {
+	s.verifyEditStatus(models.VoteStatusEnumRejected.String(), edit)
+}
+
 func (s *editTestRunner) testNegativeEditVoteApplication() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 	if err != nil {
@@ -195,7 +199,7 @@ func (s *editTestRunner) testNegativeEditVoteApplication() {
 	editID := createdEdit.ID.String()
 	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
 
-	s.verifyEditApplied(updatedEdit)
+	s.verifyEditRejected(updatedEdit)
 }
 
 func (s *editTestRunner) testEditVoteNotApplying() {

@@ -216,9 +216,12 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 			return err
 		}
 
-		thresholdMet, err := edit.IsVotingThresholdMet(fac, voteEdit)
-		if thresholdMet {
+		result, err := edit.ResolveVotingThreshold(fac, voteEdit)
+		if result == models.VoteStatusEnumAccepted {
 			voteEdit, err = edit.ApplyEdit(fac, editID, false)
+			return err
+		} else if result == models.VoteStatusEnumRejected {
+			voteEdit, err = edit.RejectEdit(fac, editID, false)
 			return err
 		}
 
