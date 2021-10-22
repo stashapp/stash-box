@@ -334,6 +334,10 @@ func (qb *editQueryBuilder) FindBySceneID(id uuid.UUID) ([]*models.Edit, error) 
 	return qb.findByJoin(id, editSceneTable, "scene_id")
 }
 
+// Returns pending edits that fulfill one of the criteria for being closed:
+// * The full voting period has passed
+// * The minimum voting period has passed, and the number of votes has crossed the voting threshold.
+// The latter only applies for destructive edits. Non-destructive edits get auto-applied when sufficient votes are cast.
 func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPeriod int, minimumVotes int) ([]*models.Edit, error) {
 	query := `
 		SELECT edits.* FROM edits
