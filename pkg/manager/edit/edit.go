@@ -54,11 +54,11 @@ type editApplyer interface {
 
 func validateEditPresence(edit *models.Edit) error {
 	if edit == nil {
-		return errors.New("Edit not found")
+		return errors.New("edit not found")
 	}
 
 	if edit.Applied {
-		return errors.New("Edit already applied")
+		return errors.New("edit already applied")
 	}
 
 	return nil
