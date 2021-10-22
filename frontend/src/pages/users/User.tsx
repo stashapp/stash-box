@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 
 import {
+  useConfig,
   useUser,
   useDeleteUser,
   useRescindInviteCode,
@@ -23,6 +24,7 @@ import { Icon, LoadingIndicator } from "src/components/fragments";
 
 const AddUserComponent: React.FC = () => {
   const Auth = useContext(AuthContext);
+  const { data: configData } = useConfig();
   const { name = "" } = useParams<{ name?: string }>();
   const [showDelete, setShowDelete] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
@@ -41,6 +43,7 @@ const AddUserComponent: React.FC = () => {
   const user = data.findUser;
   const isUser = () => Auth.user?.name === user.name;
   const showPrivate = isUser() || isAdmin(Auth.user);
+  const endpointURL = configData && `${configData.getConfig.host_url}/graphql`;
 
   const toggleModal = () => setShowDelete(true);
   const handleDelete = (status: boolean): void => {
@@ -168,6 +171,23 @@ const AddUserComponent: React.FC = () => {
                 </InputGroup.Append>
               </InputGroup>
             </Row>
+            {endpointURL && (
+              <Row className="my-3">
+                <span className="col-2">GraphQL Endpoint</span>
+                <InputGroup className="col-10">
+                  <Form.Control value={endpointURL} disabled />
+                  <InputGroup.Append>
+                    <Button
+                      onClick={() =>
+                        navigator.clipboard?.writeText(endpointURL)
+                      }
+                    >
+                      Copy to Clipboard
+                    </Button>
+                  </InputGroup.Append>
+                </InputGroup>
+              </Row>
+            )}
             <Row>
               <span className="col-2">Invite Tokens</span>
               <InputGroup className="col">
