@@ -17,6 +17,8 @@ type EditCron struct {
 	rfp api.RepoProvider
 }
 
+// processEdits runs at set intervals and closes edits where the voting period has ended,
+// either by applying the edit if enough positive votes have been cast, or by rejecting it.
 func (c EditCron) processEdits() {
 	if !sem.TryAcquire(1) {
 		logger.Debug("Edit cronjob failed to start, already running.")
@@ -32,19 +34,14 @@ func (c EditCron) processEdits() {
 	logger.Debugf("Edit cronjob running for %d edits", len(edits))
 	for _, e := range edits {
 		if err := c.rfp.Repo().WithTxn(func() error {
-			applyEdit := false
+			voteThreshold := 0
 			if e.Operation == models.OperationEnumDestroy.String() || e.Operation == models.OperationEnumMerge.String() {
-				if e.VoteCount > 0 {
-					applyEdit = true
-				}
-			} else {
-				if e.VoteCount >= 0 {
-					applyEdit = true
-				}
+				// Require at least +1 votes to pass destructive edits
+				voteThreshold = 1
 			}
 
 			var err error
-			if applyEdit {
+			if e.VoteCount >= voteThreshold {
 				_, err = edit.ApplyEdit(c.rfp.Repo(), e.ID, false)
 			} else {
 				_, err = edit.RejectEdit(c.rfp.Repo(), e.ID, false)
