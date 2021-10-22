@@ -229,9 +229,9 @@ func ResolveVotingThreshold(fac models.Repo, edit *models.Edit) (models.VoteStat
 	positive := 0
 	negative := 0
 	for _, vote := range votes {
-		if vote.Vote == string(models.VoteTypeEnumAccept) {
+		if vote.Vote == models.VoteTypeEnumAccept.String() {
 			positive++
-		} else if vote.Vote == string(models.VoteTypeEnumReject) {
+		} else if vote.Vote == models.VoteTypeEnumReject.String() {
 			negative++
 		}
 	}
