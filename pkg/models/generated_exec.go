@@ -246,6 +246,7 @@ type ComplexityRoot struct {
 		FindTag                      func(childComplexity int, id *string, name *string) int
 		FindTagCategory              func(childComplexity int, id string) int
 		FindUser                     func(childComplexity int, id *string, username *string) int
+		GetConfig                    func(childComplexity int) int
 		Me                           func(childComplexity int) int
 		QueryEdits                   func(childComplexity int, editFilter *EditFilterType, filter *QuerySpec) int
 		QueryPerformers              func(childComplexity int, performerFilter *PerformerFilterType, filter *QuerySpec) int
@@ -328,6 +329,17 @@ type ComplexityRoot struct {
 		RemovedUrls         func(childComplexity int) int
 		Studio              func(childComplexity int) int
 		Title               func(childComplexity int) int
+	}
+
+	StashBoxConfig struct {
+		HostURL                    func(childComplexity int) int
+		MinDestructiveVotingPeriod func(childComplexity int) int
+		RequireActivation          func(childComplexity int) int
+		RequireInvite              func(childComplexity int) int
+		VoteApplicationThreshold   func(childComplexity int) int
+		VoteCronInterval           func(childComplexity int) int
+		VotePromotionThreshold     func(childComplexity int) int
+		VotingPeriod               func(childComplexity int) int
 	}
 
 	Studio struct {
@@ -536,6 +548,7 @@ type QueryResolver interface {
 	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
 	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
 	Version(ctx context.Context) (*Version, error)
+	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 }
 type SceneResolver interface {
 	ID(ctx context.Context, obj *Scene) (string, error)
@@ -1879,6 +1892,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindUser(childComplexity, args["id"].(*string), args["username"].(*string)), true
 
+	case "Query.getConfig":
+		if e.complexity.Query.GetConfig == nil {
+			break
+		}
+
+		return e.complexity.Query.GetConfig(childComplexity), true
+
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
 			break
@@ -2309,6 +2329,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneEdit.Title(childComplexity), true
 
+	case "StashBoxConfig.host_url":
+		if e.complexity.StashBoxConfig.HostURL == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.HostURL(childComplexity), true
+
+	case "StashBoxConfig.min_destructive_voting_period":
+		if e.complexity.StashBoxConfig.MinDestructiveVotingPeriod == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.MinDestructiveVotingPeriod(childComplexity), true
+
+	case "StashBoxConfig.require_activation":
+		if e.complexity.StashBoxConfig.RequireActivation == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.RequireActivation(childComplexity), true
+
+	case "StashBoxConfig.require_invite":
+		if e.complexity.StashBoxConfig.RequireInvite == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.RequireInvite(childComplexity), true
+
+	case "StashBoxConfig.vote_application_threshold":
+		if e.complexity.StashBoxConfig.VoteApplicationThreshold == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.VoteApplicationThreshold(childComplexity), true
+
+	case "StashBoxConfig.vote_cron_interval":
+		if e.complexity.StashBoxConfig.VoteCronInterval == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.VoteCronInterval(childComplexity), true
+
+	case "StashBoxConfig.vote_promotion_threshold":
+		if e.complexity.StashBoxConfig.VotePromotionThreshold == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.VotePromotionThreshold(childComplexity), true
+
+	case "StashBoxConfig.voting_period":
+		if e.complexity.StashBoxConfig.VotingPeriod == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.VotingPeriod(childComplexity), true
+
 	case "Studio.child_studios":
 		if e.complexity.Studio.ChildStudios == nil {
 			break
@@ -2702,6 +2778,17 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "graphql/schema/types/config.graphql", Input: `type StashBoxConfig {
+  host_url: String!
+  require_invite: Boolean!
+  require_activation: Boolean!
+  vote_promotion_threshold: Int
+  vote_application_threshold: Int!
+  voting_period: Int!
+  min_destructive_voting_period: Int!
+  vote_cron_interval: String!
+}
+`, BuiltIn: false},
 	{Name: "graphql/schema/types/edit.graphql", Input: `enum OperationEnum {
     CREATE
     MODIFY
@@ -3784,6 +3871,9 @@ type Query {
 
   #### Version ####
   version: Version!
+
+  ### Instance Config ###
+  getConfig: StashBoxConfig!
 }
 
 type Mutation {
@@ -10522,6 +10612,41 @@ func (ec *executionContext) _Query_version(ctx context.Context, field graphql.Co
 	return ec.marshalNVersion2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVersion(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getConfig(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetConfig(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*StashBoxConfig)
+	fc.Result = res
+	return ec.marshalNStashBoxConfig2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStashBoxConfig(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -12065,6 +12190,283 @@ func (ec *executionContext) _SceneEdit_director(ctx context.Context, field graph
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StashBoxConfig_host_url(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HostURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StashBoxConfig_require_invite(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RequireInvite, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StashBoxConfig_require_activation(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RequireActivation, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StashBoxConfig_vote_promotion_threshold(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VotePromotionThreshold, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StashBoxConfig_vote_application_threshold(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VoteApplicationThreshold, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StashBoxConfig_voting_period(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VotingPeriod, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StashBoxConfig_min_destructive_voting_period(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MinDestructiveVotingPeriod, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StashBoxConfig_vote_cron_interval(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VoteCronInterval, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Studio_id(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
@@ -19707,6 +20109,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "getConfig":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getConfig(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -20261,6 +20677,65 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = ec._SceneEdit_duration(ctx, field, obj)
 		case "director":
 			out.Values[i] = ec._SceneEdit_director(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var stashBoxConfigImplementors = []string{"StashBoxConfig"}
+
+func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.SelectionSet, obj *StashBoxConfig) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, stashBoxConfigImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StashBoxConfig")
+		case "host_url":
+			out.Values[i] = ec._StashBoxConfig_host_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "require_invite":
+			out.Values[i] = ec._StashBoxConfig_require_invite(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "require_activation":
+			out.Values[i] = ec._StashBoxConfig_require_activation(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "vote_promotion_threshold":
+			out.Values[i] = ec._StashBoxConfig_vote_promotion_threshold(ctx, field, obj)
+		case "vote_application_threshold":
+			out.Values[i] = ec._StashBoxConfig_vote_application_threshold(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "voting_period":
+			out.Values[i] = ec._StashBoxConfig_voting_period(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "min_destructive_voting_period":
+			out.Values[i] = ec._StashBoxConfig_min_destructive_voting_period(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "vote_cron_interval":
+			out.Values[i] = ec._StashBoxConfig_vote_cron_interval(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22153,6 +22628,20 @@ func (ec *executionContext) unmarshalNSceneEditInput2githubᚗcomᚋstashappᚋs
 func (ec *executionContext) unmarshalNSceneUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneUpdateInput(ctx context.Context, v interface{}) (SceneUpdateInput, error) {
 	res, err := ec.unmarshalInputSceneUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNStashBoxConfig2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStashBoxConfig(ctx context.Context, sel ast.SelectionSet, v StashBoxConfig) graphql.Marshaler {
+	return ec._StashBoxConfig(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStashBoxConfig2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStashBoxConfig(ctx context.Context, sel ast.SelectionSet, v *StashBoxConfig) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._StashBoxConfig(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

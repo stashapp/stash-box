@@ -460,6 +460,17 @@ type SceneUpdateInput struct {
 	Director     *string                     `json:"director"`
 }
 
+type StashBoxConfig struct {
+	HostURL                    string `json:"host_url"`
+	RequireInvite              bool   `json:"require_invite"`
+	RequireActivation          bool   `json:"require_activation"`
+	VotePromotionThreshold     *int   `json:"vote_promotion_threshold"`
+	VoteApplicationThreshold   int    `json:"vote_application_threshold"`
+	VotingPeriod               int    `json:"voting_period"`
+	MinDestructiveVotingPeriod int    `json:"min_destructive_voting_period"`
+	VoteCronInterval           string `json:"vote_cron_interval"`
+}
+
 type StringCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`

@@ -14,6 +14,7 @@ import EditComment from "./EditComment";
 import EditHeader from "./EditHeader";
 import AddComment from "./AddComment";
 import VoteBar from "./VoteBar";
+import EditExpiration from "./EditExpiration";
 import Votes from "./Votes";
 
 interface EditsProps {
@@ -96,6 +97,7 @@ const EditCardComponent: React.FC<EditsProps> = ({
             <Badge className="text-uppercase" variant={editVariant}>
               {EditStatusTypes[edit.status]}
             </Badge>
+            <EditExpiration edit={edit} />
             <VoteBar edit={edit} />
           </div>
         </div>

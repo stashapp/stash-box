@@ -5,6 +5,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -76,6 +77,19 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 		Version:   version,
 		Hash:      githash,
 		BuildTime: buildstamp,
+	}, nil
+}
+
+func (r *queryResolver) GetConfig(ctx context.Context) (*models.StashBoxConfig, error) {
+	return &models.StashBoxConfig{
+		HostURL:                    config.GetHostURL(),
+		RequireInvite:              config.GetRequireInvite(),
+		RequireActivation:          config.GetRequireActivation(),
+		VotePromotionThreshold:     config.GetVotePromotionThreshold(),
+		VoteApplicationThreshold:   config.GetVoteApplicationThreshold(),
+		VotingPeriod:               config.GetVotingPeriod(),
+		MinDestructiveVotingPeriod: config.GetMinDestructiveVotingPeriod(),
+		VoteCronInterval:           config.GetVoteCronInterval(),
 	}, nil
 }
 

@@ -30,6 +30,7 @@ import { Tag, TagVariables } from "../definitions/Tag";
 import { Tags, TagsVariables } from "../definitions/Tags";
 import { User, UserVariables } from "../definitions/User";
 import { Users, UsersVariables } from "../definitions/Users";
+import { Config } from "../definitions/Config";
 
 const CategoryQuery = loader("./Category.gql");
 const CategoriesQuery = loader("./Categories.gql");
@@ -49,6 +50,7 @@ const TagQuery = loader("./Tag.gql");
 const TagsQuery = loader("./Tags.gql");
 const UserQuery = loader("./User.gql");
 const UsersQuery = loader("./Users.gql");
+const ConfigQuery = loader("./Config.gql");
 
 export const useCategory = (
   variables: CategoryVariables,
@@ -173,3 +175,5 @@ export const useUsers = (variables: UsersVariables) =>
   useQuery<Users, UsersVariables>(UsersQuery, {
     variables,
   });
+
+export const useConfig = () => useQuery<Config>(ConfigQuery);
