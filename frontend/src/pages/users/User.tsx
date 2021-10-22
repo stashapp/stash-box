@@ -21,7 +21,7 @@ import { isAdmin, createHref } from "src/utils";
 import Modal from "src/components/modal";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
-const AddUserComponent: React.FC = () => {
+const UserComponent: React.FC = () => {
   const Auth = useContext(AuthContext);
   const { name = "" } = useParams<{ name?: string }>();
   const [showDelete, setShowDelete] = useState(false);
@@ -192,7 +192,7 @@ const AddUserComponent: React.FC = () => {
               <span className="col-2">Invite Keys</span>
               <div className="col">
                 {user.active_invite_codes?.map((c) => (
-                  <InputGroup className="mb-2">
+                  <InputGroup className="mb-2" key={c}>
                     <InputGroup.Text>
                       <code>{c}</code>
                     </InputGroup.Text>
@@ -232,4 +232,4 @@ const AddUserComponent: React.FC = () => {
   );
 };
 
-export default AddUserComponent;
+export default UserComponent;
