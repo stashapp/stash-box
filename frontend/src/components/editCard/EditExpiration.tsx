@@ -2,7 +2,7 @@ import React from "react";
 import { addSeconds, formatDistance } from "date-fns";
 
 import { Tooltip } from "src/components/fragments";
-import { useConfig, OperationEnum } from "src/graphql";
+import { useConfig, OperationEnum, VoteStatusEnum } from "src/graphql";
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 
 interface Props {
@@ -26,11 +26,16 @@ const ExpirationNotification: React.FC<Props> = ({ edit }) => {
   const { data } = useConfig();
   const config = data?.getConfig;
 
-  if (!config) return <></>;
+  if (!config || edit.status !== VoteStatusEnum.PENDING) return <></>;
 
-  const created = new Date(edit.created);
-  const expirationTime = addSeconds(created, data.getConfig.voting_period);
-  const expirationDistance = formatDistance(expirationTime, created);
+  const expirationTime = addSeconds(
+    new Date(edit.created),
+    data.getConfig.voting_period
+  );
+  const expirationDistance =
+    expirationTime > new Date()
+      ? formatDistance(expirationTime, new Date())
+      : " a moment";
 
   const threshold =
     edit.operation === OperationEnum.MERGE ||
