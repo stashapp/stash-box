@@ -88,8 +88,8 @@ export const EditTargetTypes: EnumDictionary<TargetTypeEnum, string> = {
 
 export const EditStatusTypes: EnumDictionary<VoteStatusEnum, string> = {
   [VoteStatusEnum.PENDING]: "Pending",
-  [VoteStatusEnum.IMMEDIATE_ACCEPTED]: "Approved",
-  [VoteStatusEnum.IMMEDIATE_REJECTED]: "Cancelled",
+  [VoteStatusEnum.IMMEDIATE_ACCEPTED]: "Admin Accepted",
+  [VoteStatusEnum.IMMEDIATE_REJECTED]: "Admin Rejected",
   [VoteStatusEnum.ACCEPTED]: "Accepted",
   [VoteStatusEnum.REJECTED]: "Rejected",
   [VoteStatusEnum.FAILED]: "Failed",

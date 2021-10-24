@@ -55,7 +55,7 @@ const filterVotes = (voteCount: VoteCounts): VoteCount[] => {
   return sortBy(votes, (value) => value[0]);
 };
 
-const AddUserComponent: React.FC = () => {
+const UserComponent: React.FC = () => {
   const Auth = useContext(AuthContext);
   const { data: configData } = useConfig();
   const { name = "" } = useParams<{ name?: string }>();
@@ -228,12 +228,14 @@ const AddUserComponent: React.FC = () => {
               <Col xs={6}>
                 <Table>
                   <thead>
-                    <th>Edits</th>
-                    <th>Count</th>
+                    <tr>
+                      <th>Edits</th>
+                      <th>Count</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {editCount.map(([status, count]) => (
-                      <tr>
+                      <tr key={status}>
                         <td>{status}</td>
                         <td>{count}</td>
                       </tr>
@@ -244,12 +246,14 @@ const AddUserComponent: React.FC = () => {
               <Col xs={6}>
                 <Table>
                   <thead>
-                    <th>Votes</th>
-                    <th>Count</th>
+                    <tr>
+                      <th>Votes</th>
+                      <th>Count</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {voteCount.map(([vote, count]) => (
-                      <tr>
+                      <tr key={vote}>
                         <td>{vote}</td>
                         <td>{count}</td>
                       </tr>
@@ -285,7 +289,7 @@ const AddUserComponent: React.FC = () => {
                 <span className="col-2">Invite Keys</span>
                 <div className="col">
                   {user.active_invite_codes?.map((c) => (
-                    <InputGroup className="mb-2">
+                    <InputGroup className="mb-2" key={c}>
                       <InputGroup.Text>
                         <code>{c}</code>
                       </InputGroup.Text>
@@ -328,4 +332,4 @@ const AddUserComponent: React.FC = () => {
   );
 };
 
-export default AddUserComponent;
+export default UserComponent;
