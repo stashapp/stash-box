@@ -221,7 +221,7 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 			voteEdit, err = edit.ApplyEdit(fac, editID, false)
 			return err
 		} else if result == models.VoteStatusEnumRejected {
-			voteEdit, err = edit.RejectEdit(fac, editID, false)
+			voteEdit, err = edit.CloseEdit(fac, editID, models.VoteStatusEnumRejected)
 			return err
 		}
 
@@ -279,11 +279,13 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 		return nil, err
 	}
 
-	if err = validateOwner(ctx, e.UserID); err != nil {
-		return nil, err
+	if err = validateUser(ctx, e.UserID); err == nil {
+		return edit.CloseEdit(fac, editID, models.VoteStatusEnumCanceled)
+	} else if err = validateAdmin(ctx); err == nil {
+		return edit.CloseEdit(fac, editID, models.VoteStatusEnumImmediateRejected)
 	}
 
-	return edit.RejectEdit(fac, editID, true)
+	return nil, err
 }
 
 func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {

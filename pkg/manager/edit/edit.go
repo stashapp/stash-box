@@ -2,6 +2,7 @@ package edit
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -136,7 +137,7 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 	return updatedEdit, err
 }
 
-func RejectEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit, error) {
+func CloseEdit(fac models.Repo, editID uuid.UUID, status models.VoteStatusEnum) (*models.Edit, error) {
 	var updatedEdit *models.Edit
 	err := fac.WithTxn(func() error {
 		eqb := fac.Edit()
@@ -153,10 +154,15 @@ func RejectEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit
 			return err
 		}
 
-		if immediate {
+		switch status {
+		case models.VoteStatusEnumImmediateRejected:
 			edit.ImmediateReject()
-		} else {
+		case models.VoteStatusEnumRejected:
 			edit.Reject()
+		case models.VoteStatusEnumCanceled:
+			edit.Cancel()
+		default:
+			return fmt.Errorf("tried to close with invalid status: %s", status)
 		}
 
 		updatedEdit, err = eqb.Update(*edit)

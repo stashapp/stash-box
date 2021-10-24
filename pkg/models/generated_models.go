@@ -599,6 +599,16 @@ type UserDestroyInput struct {
 	ID string `json:"id"`
 }
 
+type UserEditCount struct {
+	Accepted          int `json:"accepted"`
+	Rejected          int `json:"rejected"`
+	Pending           int `json:"pending"`
+	ImmediateAccepted int `json:"immediate_accepted"`
+	ImmediateRejected int `json:"immediate_rejected"`
+	Failed            int `json:"failed"`
+	Canceled          int `json:"canceled"`
+}
+
 type UserFilterType struct {
 	// Filter to search user name - assumes like query unless quoted
 	Name *string `json:"name"`
@@ -629,6 +639,14 @@ type UserUpdateInput struct {
 	Password *string    `json:"password"`
 	Roles    []RoleEnum `json:"roles"`
 	Email    *string    `json:"email"`
+}
+
+type UserVoteCount struct {
+	Abstain         int `json:"abstain"`
+	Accept          int `json:"accept"`
+	Reject          int `json:"reject"`
+	ImmediateAccept int `json:"immediate_accept"`
+	ImmediateReject int `json:"immediate_reject"`
 }
 
 type Version struct {
@@ -1372,6 +1390,7 @@ const (
 	VoteStatusEnumImmediateAccepted VoteStatusEnum = "IMMEDIATE_ACCEPTED"
 	VoteStatusEnumImmediateRejected VoteStatusEnum = "IMMEDIATE_REJECTED"
 	VoteStatusEnumFailed            VoteStatusEnum = "FAILED"
+	VoteStatusEnumCanceled          VoteStatusEnum = "CANCELED"
 )
 
 var AllVoteStatusEnum = []VoteStatusEnum{
@@ -1381,11 +1400,12 @@ var AllVoteStatusEnum = []VoteStatusEnum{
 	VoteStatusEnumImmediateAccepted,
 	VoteStatusEnumImmediateRejected,
 	VoteStatusEnumFailed,
+	VoteStatusEnumCanceled,
 }
 
 func (e VoteStatusEnum) IsValid() bool {
 	switch e {
-	case VoteStatusEnumAccepted, VoteStatusEnumRejected, VoteStatusEnumPending, VoteStatusEnumImmediateAccepted, VoteStatusEnumImmediateRejected, VoteStatusEnumFailed:
+	case VoteStatusEnumAccepted, VoteStatusEnumRejected, VoteStatusEnumPending, VoteStatusEnumImmediateAccepted, VoteStatusEnumImmediateRejected, VoteStatusEnumFailed, VoteStatusEnumCanceled:
 		return true
 	}
 	return false

@@ -22,6 +22,7 @@ enum VoteStatusEnum {
     IMMEDIATE_ACCEPTED
     IMMEDIATE_REJECTED
     FAILED
+    CANCELED
 }
 
 type EditVote {

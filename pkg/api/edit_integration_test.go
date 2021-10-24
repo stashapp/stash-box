@@ -42,7 +42,7 @@ func (s *editTestRunner) testUnauthorisedApplyEditAdmin() {
 	}
 }
 
-func (s *editTestRunner) testCancelEdit() {
+func (s *editTestRunner) testAdminCancelEdit() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 	if err != nil {
 		return
@@ -51,11 +51,13 @@ func (s *editTestRunner) testCancelEdit() {
 	editInput := models.CancelEditInput{
 		ID: createdEdit.ID.String(),
 	}
-	cancelEdit, err := s.resolver.Mutation().CancelEdit(s.ctx, editInput)
-	s.verifyCancelEdit(cancelEdit)
+
+	pt := createEditTestRunner(s.t)
+	cancelEdit, err := s.resolver.Mutation().CancelEdit(pt.ctx, editInput)
+	s.verifyAdminCancelEdit(cancelEdit)
 }
 
-func (s *editTestRunner) verifyCancelEdit(edit *models.Edit) {
+func (s *editTestRunner) verifyAdminCancelEdit(edit *models.Edit) {
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateRejected.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumTag.String(), edit)
@@ -72,7 +74,14 @@ func (s *editTestRunner) testOwnerCancelEdit() {
 		ID: createdEdit.ID.String(),
 	}
 	cancelEdit, err := s.resolver.Mutation().CancelEdit(s.ctx, editInput)
-	s.verifyCancelEdit(cancelEdit)
+	s.verifyOwnerCancelEdit(cancelEdit)
+}
+
+func (s *editTestRunner) verifyOwnerCancelEdit(edit *models.Edit) {
+	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
+	s.verifyEditStatus(models.VoteStatusEnumCanceled.String(), edit)
+	s.verifyEditTargetType(models.TargetTypeEnumTag.String(), edit)
+	s.verifyEditApplication(false, edit)
 }
 
 func (s *editTestRunner) testEditComment() {
@@ -291,9 +300,11 @@ func TestUnauthorisedApplyEditAdmin(t *testing.T) {
 	pt.testUnauthorisedApplyEditAdmin()
 }
 
-func TestCancelEdit(t *testing.T) {
-	pt := createEditTestRunner(t)
-	pt.testCancelEdit()
+func TestAdminCancelEdit(t *testing.T) {
+	pt := &editTestRunner{
+		testRunner: *asEdit(t),
+	}
+	pt.testAdminCancelEdit()
 }
 
 func TestOwnerCancelEdit(t *testing.T) {

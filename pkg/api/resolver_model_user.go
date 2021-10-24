@@ -24,28 +24,16 @@ func (r *userResolver) Roles(ctx context.Context, user *models.User) ([]models.R
 	return roles.ToRoles(), nil
 }
 
-func (r *userResolver) SuccessfulEdits(ctx context.Context, obj *models.User) (int, error) {
+func (r *userResolver) VoteCount(ctx context.Context, obj *models.User) (*models.UserVoteCount, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
-	return qb.CountSuccessfulEdits(obj.ID)
+	return qb.CountVotesByType(obj.ID)
 }
 
-func (r *userResolver) UnsuccessfulEdits(ctx context.Context, obj *models.User) (int, error) {
+func (r *userResolver) EditCount(ctx context.Context, obj *models.User) (*models.UserEditCount, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
-	return qb.CountFailedEdits(obj.ID)
-}
-
-func (r *userResolver) SuccessfulVotes(ctx context.Context, obj *models.User) (int, error) {
-	fac := r.getRepoFactory(ctx)
-	qb := fac.User()
-	return qb.CountVotesByType(obj.ID, models.VoteTypeEnumAccept)
-}
-
-func (r *userResolver) UnsuccessfulVotes(ctx context.Context, obj *models.User) (int, error) {
-	fac := r.getRepoFactory(ctx)
-	qb := fac.User()
-	return qb.CountVotesByType(obj.ID, models.VoteTypeEnumReject)
+	return qb.CountEditsByStatus(obj.ID)
 }
 
 func (r *userResolver) InvitedBy(ctx context.Context, user *models.User) (*models.User, error) {

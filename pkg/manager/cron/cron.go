@@ -44,7 +44,7 @@ func (c EditCron) processEdits() {
 			if e.VoteCount >= voteThreshold {
 				_, err = edit.ApplyEdit(c.rfp.Repo(), e.ID, false)
 			} else {
-				_, err = edit.RejectEdit(c.rfp.Repo(), e.ID, false)
+				_, err = edit.CloseEdit(c.rfp.Repo(), e.ID, models.VoteStatusEnumRejected)
 			}
 			return err
 		}); err != nil {

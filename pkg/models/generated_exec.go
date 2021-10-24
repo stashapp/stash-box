@@ -395,16 +395,32 @@ type ComplexityRoot struct {
 		APICalls          func(childComplexity int) int
 		APIKey            func(childComplexity int) int
 		ActiveInviteCodes func(childComplexity int) int
+		EditCount         func(childComplexity int) int
 		Email             func(childComplexity int) int
 		ID                func(childComplexity int) int
 		InviteTokens      func(childComplexity int) int
 		InvitedBy         func(childComplexity int) int
 		Name              func(childComplexity int) int
 		Roles             func(childComplexity int) int
-		SuccessfulEdits   func(childComplexity int) int
-		SuccessfulVotes   func(childComplexity int) int
-		UnsuccessfulEdits func(childComplexity int) int
-		UnsuccessfulVotes func(childComplexity int) int
+		VoteCount         func(childComplexity int) int
+	}
+
+	UserEditCount struct {
+		Accepted          func(childComplexity int) int
+		Canceled          func(childComplexity int) int
+		Failed            func(childComplexity int) int
+		ImmediateAccepted func(childComplexity int) int
+		ImmediateRejected func(childComplexity int) int
+		Pending           func(childComplexity int) int
+		Rejected          func(childComplexity int) int
+	}
+
+	UserVoteCount struct {
+		Abstain         func(childComplexity int) int
+		Accept          func(childComplexity int) int
+		ImmediateAccept func(childComplexity int) int
+		ImmediateReject func(childComplexity int) int
+		Reject          func(childComplexity int) int
 	}
 
 	Version struct {
@@ -610,10 +626,8 @@ type UserResolver interface {
 
 	Roles(ctx context.Context, obj *User) ([]RoleEnum, error)
 
-	SuccessfulEdits(ctx context.Context, obj *User) (int, error)
-	UnsuccessfulEdits(ctx context.Context, obj *User) (int, error)
-	SuccessfulVotes(ctx context.Context, obj *User) (int, error)
-	UnsuccessfulVotes(ctx context.Context, obj *User) (int, error)
+	VoteCount(ctx context.Context, obj *User) (*UserVoteCount, error)
+	EditCount(ctx context.Context, obj *User) (*UserEditCount, error)
 
 	InvitedBy(ctx context.Context, obj *User) (*User, error)
 
@@ -2623,6 +2637,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ActiveInviteCodes(childComplexity), true
 
+	case "User.edit_count":
+		if e.complexity.User.EditCount == nil {
+			break
+		}
+
+		return e.complexity.User.EditCount(childComplexity), true
+
 	case "User.email":
 		if e.complexity.User.Email == nil {
 			break
@@ -2665,33 +2686,96 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Roles(childComplexity), true
 
-	case "User.successful_edits":
-		if e.complexity.User.SuccessfulEdits == nil {
+	case "User.vote_count":
+		if e.complexity.User.VoteCount == nil {
 			break
 		}
 
-		return e.complexity.User.SuccessfulEdits(childComplexity), true
+		return e.complexity.User.VoteCount(childComplexity), true
 
-	case "User.successful_votes":
-		if e.complexity.User.SuccessfulVotes == nil {
+	case "UserEditCount.accepted":
+		if e.complexity.UserEditCount.Accepted == nil {
 			break
 		}
 
-		return e.complexity.User.SuccessfulVotes(childComplexity), true
+		return e.complexity.UserEditCount.Accepted(childComplexity), true
 
-	case "User.unsuccessful_edits":
-		if e.complexity.User.UnsuccessfulEdits == nil {
+	case "UserEditCount.canceled":
+		if e.complexity.UserEditCount.Canceled == nil {
 			break
 		}
 
-		return e.complexity.User.UnsuccessfulEdits(childComplexity), true
+		return e.complexity.UserEditCount.Canceled(childComplexity), true
 
-	case "User.unsuccessful_votes":
-		if e.complexity.User.UnsuccessfulVotes == nil {
+	case "UserEditCount.failed":
+		if e.complexity.UserEditCount.Failed == nil {
 			break
 		}
 
-		return e.complexity.User.UnsuccessfulVotes(childComplexity), true
+		return e.complexity.UserEditCount.Failed(childComplexity), true
+
+	case "UserEditCount.immediate_accepted":
+		if e.complexity.UserEditCount.ImmediateAccepted == nil {
+			break
+		}
+
+		return e.complexity.UserEditCount.ImmediateAccepted(childComplexity), true
+
+	case "UserEditCount.immediate_rejected":
+		if e.complexity.UserEditCount.ImmediateRejected == nil {
+			break
+		}
+
+		return e.complexity.UserEditCount.ImmediateRejected(childComplexity), true
+
+	case "UserEditCount.pending":
+		if e.complexity.UserEditCount.Pending == nil {
+			break
+		}
+
+		return e.complexity.UserEditCount.Pending(childComplexity), true
+
+	case "UserEditCount.rejected":
+		if e.complexity.UserEditCount.Rejected == nil {
+			break
+		}
+
+		return e.complexity.UserEditCount.Rejected(childComplexity), true
+
+	case "UserVoteCount.abstain":
+		if e.complexity.UserVoteCount.Abstain == nil {
+			break
+		}
+
+		return e.complexity.UserVoteCount.Abstain(childComplexity), true
+
+	case "UserVoteCount.accept":
+		if e.complexity.UserVoteCount.Accept == nil {
+			break
+		}
+
+		return e.complexity.UserVoteCount.Accept(childComplexity), true
+
+	case "UserVoteCount.immediate_accept":
+		if e.complexity.UserVoteCount.ImmediateAccept == nil {
+			break
+		}
+
+		return e.complexity.UserVoteCount.ImmediateAccept(childComplexity), true
+
+	case "UserVoteCount.immediate_reject":
+		if e.complexity.UserVoteCount.ImmediateReject == nil {
+			break
+		}
+
+		return e.complexity.UserVoteCount.ImmediateReject(childComplexity), true
+
+	case "UserVoteCount.reject":
+		if e.complexity.UserVoteCount.Reject == nil {
+			break
+		}
+
+		return e.complexity.UserVoteCount.Reject(childComplexity), true
 
 	case "Version.build_time":
 		if e.complexity.Version.BuildTime == nil {
@@ -2813,6 +2897,7 @@ enum VoteStatusEnum {
     IMMEDIATE_ACCEPTED
     IMMEDIATE_REJECTED
     FAILED
+    CANCELED
 }
 
 type EditVote {
@@ -3694,11 +3779,12 @@ type User {
   email: String
   """Should not be visible to other users"""
   api_key: String
-  successful_edits: Int!
-  unsuccessful_edits: Int!
-  successful_votes: Int!
-  """Votes on unsuccessful edits"""
-  unsuccessful_votes: Int!
+
+  """ Vote counts by type """
+  vote_count: UserVoteCount!
+  """ Edit counts by status """
+  edit_count: UserEditCount!
+
   """Calls to the API from this user over a configurable time period"""
   api_calls: Int!
   invited_by: User
@@ -3793,6 +3879,24 @@ input UserFilterType {
   api_calls: IntCriterionInput
   """Filter by user that invited"""
   invited_by: ID
+}
+
+type UserEditCount {
+  accepted: Int!
+  rejected: Int!
+  pending: Int!
+  immediate_accepted: Int!
+  immediate_rejected: Int!
+  failed: Int!
+  canceled: Int!
+}
+
+type UserVoteCount {
+  abstain: Int!
+  accept: Int!
+  reject: Int!
+  immediate_accept: Int!
+  immediate_reject: Int!
 }
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/version.graphql", Input: `type Version {
@@ -13675,7 +13779,7 @@ func (ec *executionContext) _User_api_key(ctx context.Context, field graphql.Col
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_successful_edits(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_vote_count(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13693,7 +13797,7 @@ func (ec *executionContext) _User_successful_edits(ctx context.Context, field gr
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().SuccessfulEdits(rctx, obj)
+		return ec.resolvers.User().VoteCount(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13705,12 +13809,12 @@ func (ec *executionContext) _User_successful_edits(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*UserVoteCount)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNUserVoteCount2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVoteCount(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_unsuccessful_edits(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_edit_count(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13728,7 +13832,7 @@ func (ec *executionContext) _User_unsuccessful_edits(ctx context.Context, field 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().UnsuccessfulEdits(rctx, obj)
+		return ec.resolvers.User().EditCount(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13740,79 +13844,9 @@ func (ec *executionContext) _User_unsuccessful_edits(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*UserEditCount)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _User_successful_votes(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().SuccessfulVotes(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _User_unsuccessful_votes(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().UnsuccessfulVotes(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNUserEditCount2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserEditCount(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_api_calls(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
@@ -13944,6 +13978,426 @@ func (ec *executionContext) _User_active_invite_codes(ctx context.Context, field
 	res := resTmp.([]string)
 	fc.Result = res
 	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserEditCount_accepted(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserEditCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Accepted, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserEditCount_rejected(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserEditCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rejected, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserEditCount_pending(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserEditCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pending, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserEditCount_immediate_accepted(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserEditCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImmediateAccepted, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserEditCount_immediate_rejected(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserEditCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImmediateRejected, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserEditCount_failed(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserEditCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Failed, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserEditCount_canceled(ctx context.Context, field graphql.CollectedField, obj *UserEditCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserEditCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Canceled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserVoteCount_abstain(ctx context.Context, field graphql.CollectedField, obj *UserVoteCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserVoteCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Abstain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserVoteCount_accept(ctx context.Context, field graphql.CollectedField, obj *UserVoteCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserVoteCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Accept, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserVoteCount_reject(ctx context.Context, field graphql.CollectedField, obj *UserVoteCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserVoteCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Reject, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserVoteCount_immediate_accept(ctx context.Context, field graphql.CollectedField, obj *UserVoteCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserVoteCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImmediateAccept, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserVoteCount_immediate_reject(ctx context.Context, field graphql.CollectedField, obj *UserVoteCount) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserVoteCount",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImmediateReject, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Version_hash(ctx context.Context, field graphql.CollectedField, obj *Version) (ret graphql.Marshaler) {
@@ -21178,7 +21632,7 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_email(ctx, field, obj)
 		case "api_key":
 			out.Values[i] = ec._User_api_key(ctx, field, obj)
-		case "successful_edits":
+		case "vote_count":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -21186,13 +21640,13 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._User_successful_edits(ctx, field, obj)
+				res = ec._User_vote_count(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
-		case "unsuccessful_edits":
+		case "edit_count":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -21200,35 +21654,7 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._User_unsuccessful_edits(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "successful_votes":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_successful_votes(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "unsuccessful_votes":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_unsuccessful_votes(ctx, field, obj)
+				res = ec._User_edit_count(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -21263,6 +21689,110 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._User_active_invite_codes(ctx, field, obj)
 				return res
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var userEditCountImplementors = []string{"UserEditCount"}
+
+func (ec *executionContext) _UserEditCount(ctx context.Context, sel ast.SelectionSet, obj *UserEditCount) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userEditCountImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserEditCount")
+		case "accepted":
+			out.Values[i] = ec._UserEditCount_accepted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "rejected":
+			out.Values[i] = ec._UserEditCount_rejected(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pending":
+			out.Values[i] = ec._UserEditCount_pending(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "immediate_accepted":
+			out.Values[i] = ec._UserEditCount_immediate_accepted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "immediate_rejected":
+			out.Values[i] = ec._UserEditCount_immediate_rejected(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "failed":
+			out.Values[i] = ec._UserEditCount_failed(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "canceled":
+			out.Values[i] = ec._UserEditCount_canceled(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var userVoteCountImplementors = []string{"UserVoteCount"}
+
+func (ec *executionContext) _UserVoteCount(ctx context.Context, sel ast.SelectionSet, obj *UserVoteCount) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userVoteCountImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserVoteCount")
+		case "abstain":
+			out.Values[i] = ec._UserVoteCount_abstain(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "accept":
+			out.Values[i] = ec._UserVoteCount_accept(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "reject":
+			out.Values[i] = ec._UserVoteCount_reject(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "immediate_accept":
+			out.Values[i] = ec._UserVoteCount_immediate_accept(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "immediate_reject":
+			out.Values[i] = ec._UserVoteCount_immediate_reject(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -23104,9 +23634,37 @@ func (ec *executionContext) unmarshalNUserDestroyInput2githubᚗcomᚋstashapp�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNUserEditCount2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserEditCount(ctx context.Context, sel ast.SelectionSet, v UserEditCount) graphql.Marshaler {
+	return ec._UserEditCount(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserEditCount2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserEditCount(ctx context.Context, sel ast.SelectionSet, v *UserEditCount) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UserEditCount(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNUserUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserUpdateInput(ctx context.Context, v interface{}) (UserUpdateInput, error) {
 	res, err := ec.unmarshalInputUserUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUserVoteCount2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVoteCount(ctx context.Context, sel ast.SelectionSet, v UserVoteCount) graphql.Marshaler {
+	return ec._UserVoteCount(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserVoteCount2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVoteCount(ctx context.Context, sel ast.SelectionSet, v *UserVoteCount) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UserVoteCount(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNVersion2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVersion(ctx context.Context, sel ast.SelectionSet, v Version) graphql.Marshaler {
