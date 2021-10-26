@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useHistory } from "react-router-dom";
 
-import { useMe } from "src/graphql";
-import { RoleEnum } from "src/graphql/definitions/globalTypes";
 import SearchField, { SearchType } from "src/components/searchField";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
-import { userHref } from "src/utils";
+import { isAdmin, userHref, setCachedUser } from "src/utils";
+import { useAuth } from "src/hooks";
 import {
   ROUTE_SCENES,
   ROUTE_PERFORMERS,
@@ -19,57 +18,33 @@ import {
   ROUTE_ACTIVATE,
   ROUTE_RESET_PASSWORD,
   ROUTE_HOME,
+  ROUTE_REGISTER,
+  ROUTE_FORGOT_PASSWORD,
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
-interface User {
-  id: string;
-  name: string;
-  roles: RoleEnum[] | null;
-}
-
 const Main: React.FC = ({ children }) => {
   const history = useHistory();
-  const [user, setUser] = useState<User | null>();
-  const prevUser = useRef<User | null>();
-  const { loading } = useMe({
-    onCompleted: (data) => {
-      if (data?.me) setUser(data.me);
-    },
-    onError: () => setUser(null),
-  });
+  const { loading, user } = useAuth();
 
   useEffect(() => {
-    function noLogin() {
-      return (
-        history.location.pathname === ROUTE_ACTIVATE ||
-        history.location.pathname === ROUTE_RESET_PASSWORD
-      );
+    if (loading || user) return;
+
+    if (
+      history.location.pathname !== ROUTE_ACTIVATE &&
+      history.location.pathname !== ROUTE_REGISTER &&
+      history.location.pathname !== ROUTE_LOGIN &&
+      history.location.pathname !== ROUTE_FORGOT_PASSWORD &&
+      history.location.pathname !== ROUTE_RESET_PASSWORD
+    ) {
+      history.push(ROUTE_LOGIN);
     }
+  }, [loading, user, history]);
 
-    if (user === null) {
-      if (!noLogin()) {
-        history.push(ROUTE_LOGIN);
-      }
-    } else if (prevUser.current === null) history.push(ROUTE_HOME);
-    prevUser.current = user;
-  }, [user, history]);
-
-  if (loading) return <></>;
-
-  const isRole = (role: string) =>
-    (user?.roles ?? []).includes(role as RoleEnum);
-
-  const contextValue = user
-    ? {
-        authenticated: true,
-        user,
-        isRole,
-      }
-    : {
-        authenticated: false,
-        setUser,
-      };
+  const contextValue = {
+    authenticated: user !== undefined,
+    user,
+  };
 
   if (!contextValue.authenticated)
     return (
@@ -82,7 +57,8 @@ const Main: React.FC = ({ children }) => {
     const res = await fetch(`${getPlatformURL()}logout`, {
       credentials: getCredentialsSetting(),
     });
-    if (res.ok) window.location.href = ROUTE_HOME;
+    setCachedUser();
+    if (res.ok) window.location.href = ROUTE_LOGIN;
     return false;
   };
 
@@ -96,7 +72,7 @@ const Main: React.FC = ({ children }) => {
         >
           {contextValue!.user!.name}
         </NavLink>
-        {isRole("ADMIN") && (
+        {isAdmin(user) && (
           <NavLink exact to={ROUTE_USERS} className="nav-link">
             Users
           </NavLink>

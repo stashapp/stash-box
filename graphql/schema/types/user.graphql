@@ -14,7 +14,7 @@ type User {
   id: ID!
   name: String!
   """Should not be visible to other users"""
-  roles: [RoleEnum!]
+  roles: [RoleEnum!]!
   """Should not be visible to other users"""
   email: String
   """Should not be visible to other users"""

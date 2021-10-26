@@ -7,7 +7,7 @@ import { createHref } from "src/utils";
 import { LoadingIndicator } from "src/components/fragments";
 import { EditList } from "src/components/list";
 
-const AddUserComponent: React.FC = () => {
+const UserEditsComponent: React.FC = () => {
   const { name = "" } = useParams<{ name?: string }>();
 
   const { data, loading } = useUser({ name });
@@ -27,4 +27,4 @@ const AddUserComponent: React.FC = () => {
   );
 };
 
-export default AddUserComponent;
+export default UserEditsComponent;
