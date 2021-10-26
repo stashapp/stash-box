@@ -19,6 +19,7 @@
     "skipLibCheck": true,
     "strict": true,
     "strictFunctionTypes": true,
+    "types": ["vite/client"],
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "noEmit": true,
