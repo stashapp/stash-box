@@ -50,7 +50,7 @@
     "@fortawesome/react-fontawesome": "^0.1.15",
     "@hookform/resolvers": "2.8.1",
     "@types/apollo-upload-client": "^14.1.0",
-    "@vitejs/plugin-react": "^1.0.6",
+    "@vitejs/plugin-react": "^1.0.7",
     "apollo": "^2.33.6",
     "apollo-upload-client": "^16.0.0",
     "bootstrap": "^4.6.0",
