@@ -46,7 +46,7 @@ export interface User_findUser {
   /**
    * Should not be visible to other users
    */
-  roles: RoleEnum[] | null;
+  roles: RoleEnum[];
   /**
    * Should not be visible to other users
    */

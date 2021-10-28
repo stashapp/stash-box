@@ -3774,7 +3774,7 @@ type User {
   id: ID!
   name: String!
   """Should not be visible to other users"""
-  roles: [RoleEnum!]
+  roles: [RoleEnum!]!
   """Should not be visible to other users"""
   email: String
   """Should not be visible to other users"""
@@ -13708,11 +13708,14 @@ func (ec *executionContext) _User_roles(ctx context.Context, field graphql.Colle
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]RoleEnum)
 	fc.Result = res
-	return ec.marshalORoleEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnumᚄ(ctx, field.Selections, res)
+	return ec.marshalNRoleEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnumᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
@@ -21626,6 +21629,9 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._User_roles(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "email":
