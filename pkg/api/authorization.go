@@ -57,6 +57,10 @@ func validateEdit(ctx context.Context) error {
 	return validateRole(ctx, models.RoleEnumEdit)
 }
 
+func validateVote(ctx context.Context) error {
+	return validateRole(ctx, models.RoleEnumVote)
+}
+
 func validateInvite(ctx context.Context) error {
 	return validateRole(ctx, models.RoleEnumInvite)
 }
@@ -69,12 +73,7 @@ func validateAdmin(ctx context.Context) error {
 	return validateRole(ctx, models.RoleEnumAdmin)
 }
 
-func validateOwner(ctx context.Context, userID uuid.UUID) error {
-	err := validateAdmin(ctx)
-	if err == nil {
-		return nil
-	}
-
+func validateUser(ctx context.Context, userID uuid.UUID) error {
 	user := getCurrentUser(ctx)
 	if user != nil && user.ID == userID {
 		return nil

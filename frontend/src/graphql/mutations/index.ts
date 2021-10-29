@@ -61,6 +61,7 @@ import {
 import { EditComment, EditCommentVariables } from "../definitions/EditComment";
 import { StudioEdit, StudioEditVariables } from "../definitions/StudioEdit";
 import { SceneEdit, SceneEditVariables } from "../definitions/SceneEdit";
+import { Vote, VoteVariables } from "../definitions/Vote";
 
 import ActivateUserMutation from "./ActivateNewUser.gql";
 import AddUserMutation from "./AddUser.gql";
@@ -90,6 +91,7 @@ import GrantInviteMutation from "./GrantInvite.gql";
 import RescindInviteCodeMutation from "./RescindInviteCode.gql";
 import RevokeInviteMutation from "./RevokeInvite.gql";
 import EditCommentMutation from "./EditComment.gql";
+import VoteMutation from "./Vote.gql";
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -202,3 +204,6 @@ export const useRevokeInvite = (
 export const useEditComment = (
   options?: MutationHookOptions<EditComment, EditCommentVariables>
 ) => useMutation(EditCommentMutation, options);
+
+export const useVote = (options?: MutationHookOptions<Vote, VoteVariables>) =>
+  useMutation(VoteMutation, options);

@@ -6,7 +6,7 @@ enum OperationEnum {
 }
 
 enum VoteTypeEnum {
-    COMMENT
+    ABSTAIN
     ACCEPT
     REJECT
     """Immediately accepts the edit - bypassing the vote"""
@@ -21,13 +21,14 @@ enum VoteStatusEnum {
     PENDING
     IMMEDIATE_ACCEPTED
     IMMEDIATE_REJECTED
+    FAILED
+    CANCELED
 }
 
-type VoteComment {
-    user: User
-    date: DateTime
-    comment: String
-    type: VoteTypeEnum
+type EditVote {
+    user: User!
+    date: Time!
+    vote: VoteTypeEnum!
 }
 
 type EditComment {
@@ -62,7 +63,7 @@ type Edit {
     """Entity specific options"""
     options: PerformerEditOptions
     comments: [EditComment!]!
-    votes: [VoteComment!]!
+    votes: [EditVote!]!
     """ = Accepted - Rejected"""
     vote_count: Int!
     status: VoteStatusEnum!
@@ -84,8 +85,7 @@ input EditInput {
 
 input EditVoteInput {
     id: ID!
-    comment: String
-    type: VoteTypeEnum!
+    vote: VoteTypeEnum!
 }
 
 input EditCommentInput {

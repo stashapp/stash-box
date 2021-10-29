@@ -9,15 +9,17 @@ interface Props {
   text: string | React.ReactElement;
   placement?: PopoverProps["placement"];
   children: React.ReactElement;
+  delay?: number;
 }
 
 const Tooltip: React.FC<Props> = ({
   children,
   text,
+  delay = 200,
   placement = "bottom-end",
 }) => (
   <OverlayTrigger
-    delay={{ show: 200, hide: 0 }}
+    delay={{ show: delay, hide: 0 }}
     overlay={<BSTooltip id="tooltip">{text}</BSTooltip>}
     placement={placement}
     trigger="hover"
