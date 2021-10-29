@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
 import { faMinus, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { sortBy } from "lodash";
+import { sortBy } from "lodash-es";
 
 import {
   VoteStatusEnum,
