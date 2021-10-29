@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-graphql": "^1.0.0",
-    "@types/lodash": "^4.14.172",
+    "@types/lodash-es": "^4.17.5",
     "@types/node": "^16.6.1",
     "@types/react-router-dom": "^5.1.8",
     "@types/react-select": "^4.0.17",
@@ -61,7 +61,7 @@
     "graphql": "^15.5.1",
     "graphql-tag": "^2.12.5",
     "i18n-iso-countries": "^6.8.0",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "p-debounce": "^4.0.0",
     "query-string": "^7.0.1",
     "react": "^17.0.2",

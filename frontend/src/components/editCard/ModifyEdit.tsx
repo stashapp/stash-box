@@ -1,4 +1,5 @@
 import React from "react";
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits_details as Details,
@@ -92,7 +93,7 @@ const renderPerformerDetails = (
     {oldPerformerDetails && performerDetails.name !== oldPerformerDetails.name && (
       <div className="d-flex mb-2 align-items-center">
         <Icon
-          icon={setModifyAliases ? "check" : "times"}
+          icon={setModifyAliases ? faCheck : faTimes}
           color={setModifyAliases ? "green" : "red"}
           className="ml-auto"
         />
