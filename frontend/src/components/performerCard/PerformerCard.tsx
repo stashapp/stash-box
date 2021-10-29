@@ -10,7 +10,6 @@ import { getImage, performerHref } from "src/utils";
 
 interface PerformerCardProps {
   performer: Performer | SearchPerformer;
-  className?: string;
 }
 
 const CLASSNAME = "PerformerCard";
