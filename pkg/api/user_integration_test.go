@@ -75,7 +75,7 @@ func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *m
 }
 
 func (s *userTestRunner) testFindUserById() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -100,7 +100,7 @@ func (s *userTestRunner) testFindUserById() {
 }
 
 func (s *userTestRunner) testFindUserByName() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -125,7 +125,7 @@ func (s *userTestRunner) testFindUserByName() {
 }
 
 func (s *userTestRunner) testQueryUserByName() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -170,7 +170,7 @@ func (s *userTestRunner) testUpdateUserName() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
@@ -205,7 +205,7 @@ func (s *userTestRunner) testUpdatePassword() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
@@ -247,7 +247,7 @@ func (s *userTestRunner) verifyUpdatedUser(input models.UserUpdateInput, user *m
 }
 
 func (s *userTestRunner) testDestroyUser() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -379,7 +379,7 @@ func (s *userTestRunner) testChangePassword() {
 		Password: oldPassword,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
@@ -423,7 +423,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
@@ -471,7 +471,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 }
 
 func (s *userTestRunner) testUserEditQuery() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}

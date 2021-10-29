@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { PerformerEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import { PerformerEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: PerformerEdit
@@ -20,6 +20,19 @@ export interface PerformerEdit_performerEdit_comments {
   user: PerformerEdit_performerEdit_comments_user | null;
   date: any;
   comment: string;
+}
+
+export interface PerformerEdit_performerEdit_votes_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface PerformerEdit_performerEdit_votes {
+  __typename: "EditVote";
+  user: PerformerEdit_performerEdit_votes_user;
+  date: any;
+  vote: VoteTypeEnum;
 }
 
 export interface PerformerEdit_performerEdit_user {
@@ -1274,7 +1287,12 @@ export interface PerformerEdit_performerEdit {
   applied: boolean;
   created: any;
   updated: any;
+  /**
+   *  = Accepted - Rejected
+   */
+  vote_count: number;
   comments: PerformerEdit_performerEdit_comments[];
+  votes: PerformerEdit_performerEdit_votes[];
   user: PerformerEdit_performerEdit_user | null;
   /**
    * Object being edited - null if creating a new object

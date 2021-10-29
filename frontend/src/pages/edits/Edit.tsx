@@ -89,7 +89,7 @@ const EditComponent: React.FC = () => {
 
   return (
     <div>
-      <EditCard edit={edit} />
+      <EditCard edit={edit} showVotes />
       {buttons}
       {cancelModal}
       {applyModal}

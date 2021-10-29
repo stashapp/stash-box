@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { SceneEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import { SceneEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: SceneEdit
@@ -20,6 +20,19 @@ export interface SceneEdit_sceneEdit_comments {
   user: SceneEdit_sceneEdit_comments_user | null;
   date: any;
   comment: string;
+}
+
+export interface SceneEdit_sceneEdit_votes_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface SceneEdit_sceneEdit_votes {
+  __typename: "EditVote";
+  user: SceneEdit_sceneEdit_votes_user;
+  date: any;
+  vote: VoteTypeEnum;
 }
 
 export interface SceneEdit_sceneEdit_user {
@@ -1274,7 +1287,12 @@ export interface SceneEdit_sceneEdit {
   applied: boolean;
   created: any;
   updated: any;
+  /**
+   *  = Accepted - Rejected
+   */
+  vote_count: number;
   comments: SceneEdit_sceneEdit_comments[];
+  votes: SceneEdit_sceneEdit_votes[];
   user: SceneEdit_sceneEdit_user | null;
   /**
    * Object being edited - null if creating a new object

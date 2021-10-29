@@ -267,9 +267,21 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*model
 	return ret, nil
 }
 
-func (r *editResolver) Votes(ctx context.Context, edit *models.Edit) ([]*models.VoteComment, error) {
-	// TODO
-	return nil, nil
+func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]*models.EditVote, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
+	votes, err := qb.GetVotes(obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.EditVote
+	for _, vote := range votes {
+		ret = append(ret, vote)
+	}
+
+	return ret, nil
 }
 
 func (r *editResolver) Status(ctx context.Context, obj *models.Edit) (models.VoteStatusEnum, error) {
