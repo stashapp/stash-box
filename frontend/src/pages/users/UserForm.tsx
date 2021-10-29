@@ -29,7 +29,7 @@ const schema = yup.object({
           .join("").length >= 5
     )
     .required("Password is required"),
-  roles: yup.array().of(yup.string()),
+  roles: yup.array().of(yup.string()).ensure(),
 });
 
 type UserFormData = yup.Asserts<typeof schema>;
@@ -129,7 +129,7 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
                 options={roles}
                 placeholder="User roles"
                 onChange={(vals) => onChange(vals.map((v) => v.value) ?? [])}
-                defaultValue={value}
+                defaultValue={roles.filter((r) => value.includes(r.value))}
                 isMulti
               />
             )}

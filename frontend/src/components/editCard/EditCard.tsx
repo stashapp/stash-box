@@ -62,7 +62,7 @@ const EditCardComponent: React.FC<EditsProps> = ({
     <DestroyEdit {...edit} />
   );
   const comments = (edit.comments ?? []).map((comment) => (
-    <EditComment {...comment} key={`${comment.user}-${comment.date}`} />
+    <EditComment {...comment} key={`${comment.user?.id}-${comment.date}`} />
   ));
 
   return (

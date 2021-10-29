@@ -26,7 +26,7 @@ const Votes: React.FC<VotesProps> = ({ edit }) => (
       {edit.votes
         .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)
         .map((v) => (
-          <div>
+          <div key={`${edit.id}${v.user.id}`}>
             <Link to={userHref(v.user)}>{v.user.name}</Link>
             <span className="mx-2">&bull;</span>
             {VoteTypes[v.vote]}

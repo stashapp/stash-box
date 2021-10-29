@@ -87,9 +87,8 @@ function handleResult(
   let scenes: SearchResult[] = [];
 
   if (resultIsSearchAll(result)) {
-    const performerResults = (result?.searchPerformer?.filter(
-      (p) => p !== null
-    ) ?? []) as PerformerAllResult[];
+    const performerResults =
+      result?.searchPerformer?.filter((p) => p !== null) ?? [];
     performers = performerResults
       .filter((performer) => !excludeIDs.includes(performer.id))
       .map((performer) => ({
@@ -111,8 +110,7 @@ function handleResult(
           .join(", "),
       }));
 
-    const sceneResults = (result?.searchScene?.filter((p) => p !== null) ??
-      []) as SceneAllResult[];
+    const sceneResults = result?.searchScene?.filter((p) => p !== null) ?? [];
     scenes = sceneResults
       .filter((scene) => !excludeIDs.includes(scene.id))
       .map((scene) => ({
@@ -125,9 +123,8 @@ function handleResult(
           ${scene.performers.map((p) => p.as || p.performer.name).join(", ")}`,
       }));
   } else {
-    const performerResults = (result?.searchPerformer?.filter(
-      (p) => p !== null
-    ) ?? []) as PerformerOnlyResult[];
+    const performerResults =
+      result?.searchPerformer?.filter((p) => p !== null) ?? [];
     performers = performerResults
       .filter((performer) => !excludeIDs.includes(performer.id))
       .map((performer) => ({
