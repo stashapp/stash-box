@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Button, Form } from "react-bootstrap";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
 import AuthContext from "src/AuthContext";
@@ -60,7 +61,7 @@ const VoteBar: React.FC<Props> = ({ edit }) => {
               disabled={savingVote}
             >
               <span className="mr-2">Save</span>
-              <Icon icon="check" color="green" />
+              <Icon icon={faCheck} color="green" />
             </Button>
           )}
       </div>
