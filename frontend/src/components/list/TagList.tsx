@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Card, Form, Row } from "react-bootstrap";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import querystring from "query-string";
 
 import { useTags, SortDirectionEnum, TagFilterType } from "src/graphql";

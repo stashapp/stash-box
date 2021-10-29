@@ -1,4 +1,4 @@
-import { isEqual } from "lodash";
+import { isEqual } from "lodash-es";
 
 import { BodyModificationInput, BreastTypeEnum } from "src/graphql";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";

@@ -2,7 +2,7 @@ import React from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import querystring from "query-string";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 
 import { useUsers, SortDirectionEnum } from "src/graphql";
 import { usePagination } from "src/hooks";

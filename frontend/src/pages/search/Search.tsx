@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useHistory, useParams, Link } from "react-router-dom";
 import { Card, Col, Form, Row } from "react-bootstrap";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 
 import {
   SearchAll_searchPerformer as Performer,

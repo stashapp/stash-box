@@ -3,7 +3,7 @@ import { Link, useHistory } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
 import querystring from "query-string";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 
 import {
   usePerformers,

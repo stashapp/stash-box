@@ -8,7 +8,7 @@ import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
-import { sortBy, uniq, uniqBy } from "lodash";
+import { sortBy, uniq, uniqBy } from "lodash-es";
 
 import {
   GenderEnum,
