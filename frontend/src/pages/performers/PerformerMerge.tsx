@@ -66,7 +66,7 @@ const PerformerMerge: React.FC = () => {
         Merge performers into <em>{performer.findPerformer.name}</em>
       </h3>
       <hr />
-      <div className="row no-gutters">
+      <div className="row">
         <div className="col-6">
           {!mergeActive && (
             <>
@@ -102,7 +102,7 @@ const PerformerMerge: React.FC = () => {
                 <Row className="mt-4">
                   {mergeSources.map((source) => (
                     <Col xs={4} key={source.id}>
-                      <PerformerCard performer={source} className="col-4" />
+                      <PerformerCard performer={source} />
                     </Col>
                   ))}
                 </Row>
