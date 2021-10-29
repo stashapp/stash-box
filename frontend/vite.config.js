@@ -1,10 +1,15 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import graphqlPlugin from "@rollup/plugin-graphql";
 import analyzePlugin from "rollup-plugin-analyzer";
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const env = {
+    ...process.env,
+    ...loadEnv(mode, process.cwd(), ""),
+  };
+
   /** @type {import("vite").UserConfig} */
   const config = {
     build: {
@@ -12,6 +17,9 @@ export default defineConfig(() => {
     },
     optimizeDeps: {
       entries: "src/index.tsx",
+    },
+    server: {
+      port: Number(env.PORT) || undefined,
     },
     plugins: [
       react(),
