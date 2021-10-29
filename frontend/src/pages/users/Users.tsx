@@ -1,8 +1,9 @@
 import React from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
+import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
 import querystring from "query-string";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 
 import { useUsers, SortDirectionEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
@@ -41,7 +42,7 @@ const UsersComponent: React.FC = () => {
       <td>
         <Link to={createHref(ROUTE_USER_EDIT, user)}>
           <Button variant="secondary" className="minimal">
-            <Icon icon="user-edit" />
+            <Icon icon={faUserEdit} />
           </Button>
         </Link>
         <Link to={createHref(ROUTE_USER, user)}>

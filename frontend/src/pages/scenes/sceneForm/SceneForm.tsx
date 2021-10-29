@@ -14,6 +14,7 @@ import {
   Table,
   Tabs,
 } from "react-bootstrap";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
@@ -361,7 +362,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
             type="button"
             onClick={() => removeFingerprint(i)}
           >
-            <Icon icon="times-circle" />
+            <Icon icon={faTimesCircle} />
           </button>
         </td>
         <td>{f.algorithm}</td>

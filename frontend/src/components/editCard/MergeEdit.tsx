@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Row } from "react-bootstrap";
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits_target as Target,
@@ -79,7 +80,7 @@ const MergeEdit: React.FC<MergeEditProps> = ({
         <Row>
           <div className="offset-2 d-flex align-items-center">
             <Icon
-              icon={options?.set_merge_aliases ? "check" : "times"}
+              icon={options?.set_merge_aliases ? faCheck : faTimes}
               color={options?.set_merge_aliases ? "green" : "red"}
             />
             <span className="ml-2">Set performance aliases to old name</span>

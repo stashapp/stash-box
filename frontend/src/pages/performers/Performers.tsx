@@ -3,7 +3,11 @@ import { Link, useHistory } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
 import querystring from "query-string";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
+import {
+  faSortAmountUp,
+  faSortAmountDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 import {
   usePerformers,
@@ -125,8 +129,8 @@ const PerformersComponent: React.FC = () => {
             <Icon
               icon={
                 direction === SortDirectionEnum.DESC
-                  ? "sort-amount-down"
-                  : "sort-amount-up"
+                  ? faSortAmountDown
+                  : faSortAmountUp
               }
             />
           </Button>

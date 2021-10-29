@@ -6,7 +6,7 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
-import { groupBy, sortBy } from "lodash";
+import { groupBy, sortBy } from "lodash-es";
 
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 import { useCategories, TagEditDetailsInput } from "src/graphql";

@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
-import { Icon } from "src/components/fragments";
+import { faVideo } from "@fortawesome/free-solid-svg-icons";
 
 import { Scenes_queryScenes_scenes as Performance } from "src/graphql/definitions/Scenes";
 import { getImage, sceneHref, studioHref, formatDuration } from "src/utils";
+import { Icon } from "src/components/fragments";
 
 const CLASSNAME = "SceneCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
@@ -32,7 +33,7 @@ const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
               to={studioHref(performance.studio)}
               className="float-right text-truncate SceneCard-studio-name"
             >
-              <Icon icon="video" className="mr-1" />
+              <Icon icon={faVideo} className="mr-1" />
               {performance.studio.name}
             </Link>
           )}

@@ -4,7 +4,6 @@ import {
   QueryHookOptions,
   LazyQueryHookOptions,
 } from "@apollo/client";
-import { loader } from "graphql.macro";
 
 import { Category, CategoryVariables } from "../definitions/Category";
 import { Categories, CategoriesVariables } from "../definitions/Categories";
@@ -32,25 +31,25 @@ import { User, UserVariables } from "../definitions/User";
 import { Users, UsersVariables } from "../definitions/Users";
 import { Config } from "../definitions/Config";
 
-const CategoryQuery = loader("./Category.gql");
-const CategoriesQuery = loader("./Categories.gql");
-const EditQuery = loader("./Edit.gql");
-const EditsQuery = loader("./Edits.gql");
-const MeQuery = loader("./Me.gql");
-const PerformerQuery = loader("./Performer.gql");
-const FullPerformerQuery = loader("./FullPerformer.gql");
-const PerformersQuery = loader("./Performers.gql");
-const SceneQuery = loader("./Scene.gql");
-const ScenesQuery = loader("./Scenes.gql");
-const SearchAllQuery = loader("./SearchAll.gql");
-const SearchPerformersQuery = loader("./SearchPerformers.gql");
-const StudioQuery = loader("./Studio.gql");
-const StudiosQuery = loader("./Studios.gql");
-const TagQuery = loader("./Tag.gql");
-const TagsQuery = loader("./Tags.gql");
-const UserQuery = loader("./User.gql");
-const UsersQuery = loader("./Users.gql");
-const ConfigQuery = loader("./Config.gql");
+import CategoryQuery from "./Category.gql";
+import CategoriesQuery from "./Categories.gql";
+import EditQuery from "./Edit.gql";
+import EditsQuery from "./Edits.gql";
+import MeQuery from "./Me.gql";
+import PerformerQuery from "./Performer.gql";
+import FullPerformerQuery from "./FullPerformer.gql";
+import PerformersQuery from "./Performers.gql";
+import SceneQuery from "./Scene.gql";
+import ScenesQuery from "./Scenes.gql";
+import SearchAllQuery from "./SearchAll.gql";
+import SearchPerformersQuery from "./SearchPerformers.gql";
+import StudioQuery from "./Studio.gql";
+import StudiosQuery from "./Studios.gql";
+import TagQuery from "./Tag.gql";
+import TagsQuery from "./Tags.gql";
+import UserQuery from "./User.gql";
+import UsersQuery from "./Users.gql";
+import ConfigQuery from "./Config.gql";
 
 export const useCategory = (
   variables: CategoryVariables,
