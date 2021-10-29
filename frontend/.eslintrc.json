@@ -52,6 +52,7 @@
       "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": true }],
       "no-underscore-dangle": "off",
       "no-nested-ternary": "off",
+      "react/require-default-props": "off",
       "jsx-a11y/media-has-caption": "off"
   }
 }

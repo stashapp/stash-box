@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import Async from "react-select/async";
 import { ValueType, OptionTypeBase } from "react-select";
 import { useApolloClient } from "@apollo/client";
-import { loader } from "graphql.macro";
 import debounce from "p-debounce";
+
+import TagsQuery from "src/graphql/queries/Tags.gql";
 
 import {
   Tags_queryTags_tags as Tag,
@@ -13,8 +14,6 @@ import {
 import { SortDirectionEnum } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
-
-const TagsQuery = loader("src/graphql/queries/Tags.gql");
 
 interface TagSelectProps {
   tags: Tag[];
