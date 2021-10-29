@@ -1,6 +1,7 @@
 import React from "react";
 import { Button, OverlayTrigger, Popover } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   message: string;
@@ -20,7 +21,7 @@ const Help: React.FC<Props> = ({ message }) => {
       trigger="hover"
     >
       <Button variant="link" className="minimal">
-        <Icon icon="question-circle" />
+        <Icon icon={faQuestionCircle} />
       </Button>
     </OverlayTrigger>
   );

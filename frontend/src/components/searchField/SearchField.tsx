@@ -8,7 +8,7 @@ import {
   ValueType,
 } from "react-select";
 import Async from "react-select/async";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import { useHistory } from "react-router-dom";
 
 import SearchAllQuery from "src/graphql/queries/SearchAll.gql";

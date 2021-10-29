@@ -2,6 +2,10 @@ import React from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import queryString from "query-string";
+import {
+  faSortAmountUp,
+  faSortAmountDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 import {
   OperationEnum,
@@ -127,8 +131,8 @@ const useEditFilter = ({
               <Icon
                 icon={
                   selectedDirection === SortDirectionEnum.ASC
-                    ? "sort-amount-up"
-                    : "sort-amount-down"
+                    ? faSortAmountUp
+                    : faSortAmountDown
                 }
               />
             </Button>
