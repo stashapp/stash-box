@@ -25,11 +25,17 @@
     background: transparent;
     border: none;
     color: white;
-    opacity: 1;
+    opacity: 100%;
 
     &:hover {
-      opacity: 0.8;
+      opacity: 80%;
     }
+  }
+
+  .SearchField {
+    flex-grow: 1;
+    max-width: 400px;
+    width: auto;
   }
 
   .add-performer {
@@ -41,12 +47,6 @@
       margin-left: auto;
       padding-top: 0.5rem;
     }
-  }
-
-  .SearchField {
-    flex-grow: 1;
-    max-width: 400px;
-    width: auto;
   }
 
   .description {

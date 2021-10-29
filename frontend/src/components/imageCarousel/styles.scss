@@ -28,13 +28,21 @@
     }
   }
 
+  .prev-button {
+    padding-left: 0;
+  }
+
+  .next-button {
+    padding-right: 0;
+  }
+
   .prev-button,
   .next-button {
     z-index: 1045;
 
     .fa-icon {
       height: 4rem;
-      opacity: 0.4;
+      opacity: 40%;
       width: 2rem;
     }
 
@@ -47,16 +55,8 @@
       filter: drop-shadow(2px 2px 2px black);
 
       .fa-icon {
-        opacity: 1;
+        opacity: 100%;
       }
     }
-  }
-
-  .prev-button {
-    padding-left: 0;
-  }
-
-  .next-button {
-    padding-right: 0;
   }
 }

@@ -5,7 +5,6 @@ $muted-gray: #bfccd6;
 $success: #0f9960;
 $warning: #d9822b;
 $danger: #db3737;
-
 $theme-colors: (
   primary: #137cbd,
   secondary: $secondary,
@@ -14,17 +13,16 @@ $theme-colors: (
   danger: $danger,
   dark: #394b59,
 );
-
 $body-bg: #202b33;
 $text-muted: $muted-gray;
 $link-color: #48aff0;
 $link-hover-color: $link-color;
 $text-color: #f5f8fa;
 $pre-color: $text-color;
-$navbar-dark-color: rgb(245, 248, 250);
+$navbar-dark-color: rgb(245 248 250);
 $popover-bg: $secondary;
 $dark-text: #182026;
-$textfield-bg: rgba(16, 22, 26, 0.3);
+$textfield-bg: rgba(16 22 26 / 30%);
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -36,7 +34,7 @@ $dark-gray5: #394b59;
 
 .btn.active:not(.disabled),
 .btn.active.minimal:not(.disabled) {
-  background-color: rgba(138, 155, 168, 0.3);
+  background-color: rgba(138 155 168 / 30%);
   color: $text-color;
 }
 
@@ -48,12 +46,12 @@ button.minimal {
   transition: none;
 
   &:hover {
-    background: rgba(138, 155, 168, 0.15);
+    background: rgba(138 155 168 / 15%);
     color: $text-color;
   }
 
   &:active {
-    background: rgba(138, 155, 168, 0.3);
+    background: rgba(138 155 168 / 30%);
     color: $text-color;
   }
 }
@@ -100,10 +98,6 @@ hr {
   padding-bottom: 2rem;
 }
 
-.table-striped tr:nth-child(odd) td {
-  background: rgba(92, 112, 128, 0.15);
-}
-
 .table {
   border: none;
   color: $text-color;
@@ -122,27 +116,17 @@ hr {
     padding: 0.25rem 0.75rem;
 
     &:first-child {
-      padding-left: 0;
+      padding-left: 1rem;
     }
 
     &:last-child {
-      padding-right: 0;
+      padding-right: 1rem;
     }
-  }
-
-  td:first-child {
-    padding-left: 1rem;
-  }
-
-  td:last-child {
-    padding-right: 1rem;
   }
 }
 
-.card {
-  border: none;
-  margin: 5px;
-  overflow: hidden;
+.table-striped tr:nth-child(odd) td {
+  background: rgba(92 112 128 / 15%);
 }
 
 .form-control {
@@ -179,26 +163,38 @@ hr {
 
   .modal-body,
   .modal-footer {
-    background-color: rgb(235, 241, 245);
+    background-color: rgb(235 241 245);
   }
 }
 
 .card {
   background-color: #30404d;
+  border: none;
   border-radius: 3px;
-  box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.4), 0 0 0 rgba(16, 22, 26, 0),
-    0 0 0 rgba(16, 22, 26, 0);
+  box-shadow:
+    0 0 0 1px rgba(16 22 26 / 40%),
+    0 0 0 rgba(16 22 26 / 0%),
+    0 0 0 rgba(16 22 26 / 0%);
+  margin: 5px;
+  overflow: hidden;
   padding: 0;
 }
 
 .page-link {
   background-color: $secondary;
+  border-bottom: none;
+  border-left-color: #202b33;
+  border-right-color: #202b33;
+  border-top: none;
   color: white;
 }
 
-.page-item.disabled .page-link {
-  background-color: $secondary;
-  color: $gray-400;
+.page-link:hover,
+.page-item.active .page-link {
+  background-color: #2a3742;
+  border-color: #25313a;
+  color: white;
+  z-index: 1;
 }
 
 .page-item:first-child .page-link,
@@ -206,17 +202,7 @@ hr {
   border-color: $secondary;
 }
 
-.page-link {
-  border-bottom: none;
-  border-left-color: #202b33;
-  border-right-color: #202b33;
-  border-top: none;
-}
-
-.page-item.active .page-link,
-.page-link:hover {
-  background-color: #2a3742;
-  border-color: #25313a;
-  color: white;
-  z-index: 1;
+.page-item.disabled .page-link {
+  background-color: $secondary;
+  color: $gray-400;
 }

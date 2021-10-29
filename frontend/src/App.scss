@@ -1,22 +1,22 @@
-@import "./styles/_theme.scss";
-@import "./pages/users/styles.scss";
-@import "./pages/performers/styles.scss";
-@import "./pages/scenes/styles.scss";
-@import "./pages/scenes/sceneForm/styles.scss";
-@import "./pages/studios/styles.scss";
-@import "./pages/search/search.scss";
-@import "./components/checkboxSelect/styles.scss";
-@import "./components/editCard/styles.scss";
-@import "./components/form/styles.scss";
-@import "./components/fragments/styles.scss";
-@import "./components/imageCarousel/styles.scss";
-@import "./components/imageChangeRow/styles.scss";
-@import "./components/performerCard/styles.scss";
-@import "./components/performerSelect/styles.scss";
-@import "./components/sceneCard/styles.scss";
-@import "./components/searchField/styles.scss";
-@import "./components/tagSelect/styles.scss";
-@import "./components/editImages/styles.scss";
+@import "./styles/theme";
+@import "./pages/users/styles";
+@import "./pages/performers/styles";
+@import "./pages/scenes/styles";
+@import "./pages/scenes/sceneForm/styles";
+@import "./pages/studios/styles";
+@import "./pages/search/search";
+@import "./components/checkboxSelect/styles";
+@import "./components/editCard/styles";
+@import "./components/form/styles";
+@import "./components/fragments/styles";
+@import "./components/imageCarousel/styles";
+@import "./components/imageChangeRow/styles";
+@import "./components/performerCard/styles";
+@import "./components/performerSelect/styles";
+@import "./components/sceneCard/styles";
+@import "./components/searchField/styles";
+@import "./components/tagSelect/styles";
+@import "./components/editImages/styles";
 
 body {
   color: $text-color;
@@ -28,8 +28,6 @@ body {
 }
 
 a {
-  //color: #48aff0;
-  //color: $text-color;
   color: unset;
 
   &:hover {
@@ -37,26 +35,33 @@ a {
   }
 }
 
-.input-control,
-.text-input {
+/* stylelint-disable no-descending-specificity */
+.text-input,
+.input-control {
   border: 0;
-  box-shadow: 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0),
-    0 0 0 0 rgba(19, 124, 189, 0), inset 0 0 0 1px rgba(16, 22, 26, 0.3),
-    inset 0 1px 1px rgba(16, 22, 26, 0.4);
+  box-shadow:
+    0 0 0 0 rgba(19 124 189 / 0%),
+    0 0 0 0 rgba(19 124 189 / 0%),
+    0 0 0 0 rgba(19 124 189 / 0%),
+    inset 0 0 0 1px rgba(16 22 26 / 30%),
+    inset 0 1px 1px rgba(16 22 26 / 40%);
   color: $text-color;
 
   &:focus {
     border: 0;
-    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary,
-      0 0 0 3px rgba(19, 124, 189, 0.3), inset 0 0 0 1px rgba(16, 22, 26, 0.3),
-      inset 0 1px 1px rgba(16, 22, 26, 0.4);
+    box-shadow:
+      0 0 0 1px $primary,
+      0 0 0 1px $primary,
+      0 0 0 3px rgba(19 124 189 / 30%),
+      inset 0 0 0 1px rgba(16 22 26 / 30%),
+      inset 0 1px 1px rgba(16 22 26 / 40%);
     color: $text-color;
   }
 }
 
 .text-input,
-.text-input:focus,
-.text-input[readonly] {
+.text-input[readonly],
+.text-input:focus {
   background-color: $textfield-bg;
 }
 
@@ -64,6 +69,7 @@ a {
 .input-control:focus {
   background-color: $secondary;
 }
+/* stylelint-enable no-descending-specificity */
 
 textarea.text-input {
   line-height: 2.5ex;
