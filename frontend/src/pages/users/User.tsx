@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { faMinus, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 import {
   useUser,
@@ -174,7 +175,7 @@ const UserComponent: React.FC = () => {
                 {isAdmin(Auth.user) && (
                   <InputGroup.Prepend>
                     <Button onClick={() => handleRevokeInvite()}>
-                      <Icon icon="minus" />
+                      <Icon icon={faMinus} />
                     </Button>
                   </InputGroup.Prepend>
                 )}
@@ -182,7 +183,7 @@ const UserComponent: React.FC = () => {
                 {isAdmin(Auth.user) && (
                   <InputGroup.Append>
                     <Button onClick={() => handleGrantInvite()}>
-                      <Icon icon="plus" />
+                      <Icon icon={faPlus} />
                     </Button>
                   </InputGroup.Append>
                 )}
@@ -206,7 +207,7 @@ const UserComponent: React.FC = () => {
                         variant="danger"
                         onClick={() => setShowRescindCode(c)}
                       >
-                        <Icon icon="trash" />
+                        <Icon icon={faTrash} />
                       </Button>
                     </InputGroup.Append>
                   </InputGroup>
@@ -218,7 +219,7 @@ const UserComponent: React.FC = () => {
                       onClick={() => handleGenerateCode()}
                       disabled={user.invite_tokens === 0}
                     >
-                      <Icon icon="plus" className="mr-2" />
+                      <Icon icon={faPlus} className="mr-2" />
                       Generate Key
                     </Button>
                   )}

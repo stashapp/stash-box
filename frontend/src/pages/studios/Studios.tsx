@@ -3,7 +3,7 @@ import { Button, Card, Form } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { studioHref, createHref, canEdit } from "src/utils";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import AuthContext from "src/AuthContext";
 import querystring from "query-string";
 

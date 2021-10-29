@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Control, useFieldArray } from "react-hook-form";
+import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
 import { useAddImage } from "src/graphql";
@@ -112,7 +113,7 @@ const EditImages: React.FC<EditImagesProps> = ({
                   accept=".png,.jpg,.webp,.svg"
                 />
                 <div className={CLASSNAME_PLACEHOLDER}>
-                  <Icon icon="images" />
+                  <Icon icon={faImages} />
                   <span>Add image</span>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { flatMap } from "lodash";
+import { flatMap } from "lodash-es";
 
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 import {

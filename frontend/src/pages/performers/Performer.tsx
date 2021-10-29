@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
-import { groupBy, keyBy, sortBy } from "lodash";
+import { groupBy, keyBy, sortBy } from "lodash-es";
 
 import {
   useEdits,
