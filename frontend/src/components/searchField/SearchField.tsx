@@ -10,7 +10,9 @@ import {
 import Async from "react-select/async";
 import { debounce } from "lodash";
 import { useHistory } from "react-router-dom";
-import { loader } from "graphql.macro";
+
+import SearchAllQuery from "src/graphql/queries/SearchAll.gql";
+import SearchPerformersQuery from "src/graphql/queries/SearchPerformers.gql";
 
 import {
   SearchAll,
@@ -23,11 +25,6 @@ import {
 } from "src/graphql/definitions/SearchPerformers";
 import { formatFuzzyDate, createHref } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-
-const SearchAllQuery = loader("src/graphql/queries/SearchAll.gql");
-const SearchPerformersQuery = loader(
-  "src/graphql/queries/SearchPerformers.gql"
-);
 
 export enum SearchType {
   Performer = "performer",
