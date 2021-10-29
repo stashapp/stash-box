@@ -1,12 +1,9 @@
-/* eslint-disable no-console */
-
 import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
 import { createUploadLink } from "apollo-upload-client";
 
-const isDevEnvironment = () =>
-  !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+const isDevEnvironment = () => import.meta.env.DEV;
 
 export const getCredentialsSetting = () =>
   isDevEnvironment() ? "include" : "same-origin";
@@ -14,13 +11,8 @@ export const getCredentialsSetting = () =>
 export const getPlatformURL = () => {
   const platformUrl = new URL(window.location.origin);
 
-  if (isDevEnvironment()) {
-    platformUrl.port = process.env.REACT_APP_SERVER_PORT ?? "9998";
-
-    if (process.env.REACT_APP_HTTPS === "true") {
-      platformUrl.protocol = "https:";
-    }
-  }
+  if (isDevEnvironment())
+    platformUrl.port = import.meta.env.VITE_SERVER_PORT ?? "9998";
 
   return platformUrl;
 };
@@ -36,8 +28,8 @@ const httpLink = createUploadLink({
 const authLink = setContext((_, { headers, ...context }) => ({
   headers: {
     ...headers,
-    ...(process.env.REACT_APP_APIKEY && {
-      ApiKey: process.env.REACT_APP_APIKEY,
+    ...(import.meta.env.VITE_APIKEY && {
+      ApiKey: import.meta.env.VITE_APIKEY,
     }),
   },
   ...context,
@@ -48,6 +40,7 @@ const createClient = () =>
     link: ApolloLink.from([
       authLink,
       onError(({ graphQLErrors, networkError }) => {
+        /* eslint-disable no-console */
         if (graphQLErrors)
           graphQLErrors.forEach(({ message, locations, path }) =>
             console.log(
@@ -55,6 +48,7 @@ const createClient = () =>
             )
           );
         if (networkError) console.log(`[Network error]: ${networkError}`);
+        /* eslint-enable no-console */
       }),
       httpLink as unknown as ApolloLink,
     ]),
