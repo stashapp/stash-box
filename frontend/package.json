@@ -12,7 +12,8 @@
     "lint:css": "stylelint \"src/**/*.scss\"",
     "generate": "apollo client:codegen --target typescript --outputFlat src/graphql/definitions",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss}\"",
-    "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\""
+    "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
+    "analyze": "analyze=true vite build"
   },
   "engines": {
     "node": ">=12",
@@ -37,6 +38,7 @@
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "prettier": "2.3.2",
+    "rollup-plugin-analyzer": "^4.0.0",
     "sass": "~1.32.13",
     "stylelint": "^13.13.1",
     "stylelint-config-prettier": "^8.0.1",
