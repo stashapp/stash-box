@@ -2,6 +2,14 @@ import React, { useMemo } from "react";
 import { useHistory, useParams, Link } from "react-router-dom";
 import { Card, Col, Form, Row } from "react-bootstrap";
 import { debounce } from "lodash-es";
+import {
+  faBirthdayCake,
+  faFlag,
+  faVideo,
+  faCalendar,
+  faUsers,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons";
 
 import {
   SearchAll_searchPerformer as Performer,
@@ -53,18 +61,18 @@ const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
         <div>
           {performer.birthdate?.date && (
             <div>
-              <Icon icon="birthday-cake" />
+              <Icon icon={faBirthdayCake} />
               {formatFuzzyDate(performer.birthdate)}
             </div>
           )}
           {performer.country && (
             <div>
-              <Icon icon="flag" />
+              <Icon icon={faFlag} />
               {getCountryByISO(performer.country)}
             </div>
           )}
           <div>
-            <Icon icon="video" />
+            <Icon icon={faVideo} />
             {performer.scene_count} scene{performer.scene_count > 1 && "s"}
           </div>
         </div>
@@ -90,16 +98,16 @@ const SceneCard: React.FC<{ scene: Scene }> = ({ scene }) => (
         </h5>
         <div>
           <div>
-            <Icon icon="calendar" />
+            <Icon icon={faCalendar} />
             {scene.date}
           </div>
           <div>
-            <Icon icon="video" />
+            <Icon icon={faVideo} />
             {scene.studio?.name ?? "Unknown"}
           </div>
           {scene.performers.length > 0 && (
             <div>
-              <Icon icon="users" />
+              <Icon icon={faUsers} />
               {scene.performers.map((p) => p.as ?? p.performer.name).join(", ")}
             </div>
           )}
@@ -139,7 +147,7 @@ const Search: React.FC = () => {
   return (
     <div className={CLASSNAME}>
       <Form.Group className={CLASSNAME_INPUT}>
-        <Icon icon="search" />
+        <Icon icon={faSearch} />
         <Form.Control
           defaultValue={term}
           onChange={(e) => debouncedSearch(e.currentTarget.value)}
