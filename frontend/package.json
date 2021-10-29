@@ -4,7 +4,7 @@
   "description": "Stash-box",
   "license": "MIT",
   "scripts": {
-    "start": "vite",
+    "start": "vite --host",
     "build": "vite build",
     "validate": "yarn lint && yarn format-check && tsc --noEmit",
     "lint": "yarn lint:css && yarn lint:js",
