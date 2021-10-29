@@ -2,14 +2,13 @@ import React from "react";
 import Async from "react-select/async";
 import { Controller } from "react-hook-form";
 import { useApolloClient } from "@apollo/client";
-import { loader } from "graphql.macro";
 import debounce from "p-debounce";
+
+import StudiosQuery from "src/graphql/queries/Studios.gql";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import { Studios, StudiosVariables } from "src/graphql/definitions/Studios";
 import { SortDirectionEnum } from "src/graphql";
-
-const StudiosQuery = loader("src/graphql/queries/Studios.gql");
 
 interface StudioSelectProps {
   initialStudio?: Pick<Studio, "id" | "name"> | null;
