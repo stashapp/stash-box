@@ -150,3 +150,69 @@ func (qb *userQueryBuilder) GetRoles(id uuid.UUID) (models.UserRoles, error) {
 
 	return joins, err
 }
+
+func (qb *userQueryBuilder) CountEditsByStatus(id uuid.UUID) (*models.UserEditCount, error) {
+	rows, err := qb.dbi.queryx("SELECT status, COUNT(*) FROM edits WHERE user_id = ? GROUP BY status", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var res models.UserEditCount
+	for rows.Next() {
+		var status models.VoteStatusEnum
+		var count int
+		if err := rows.Scan(&status, &count); err != nil {
+			return nil, err
+		}
+
+		switch status {
+		case models.VoteStatusEnumAccepted:
+			res.Accepted = count
+		case models.VoteStatusEnumRejected:
+			res.Rejected = count
+		case models.VoteStatusEnumImmediateAccepted:
+			res.ImmediateAccepted = count
+		case models.VoteStatusEnumImmediateRejected:
+			res.ImmediateRejected = count
+		case models.VoteStatusEnumPending:
+			res.Pending = count
+		case models.VoteStatusEnumFailed:
+			res.Failed = count
+		case models.VoteStatusEnumCanceled:
+			res.Canceled = count
+		}
+	}
+
+	return &res, nil
+}
+
+func (qb *userQueryBuilder) CountVotesByType(id uuid.UUID) (*models.UserVoteCount, error) {
+	rows, err := qb.dbi.queryx("SELECT vote, COUNT(*) FROM edit_votes WHERE user_id = ? GROUP BY vote", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var res models.UserVoteCount
+	for rows.Next() {
+		var status models.VoteTypeEnum
+		var count int
+		if err := rows.Scan(&status, &count); err != nil {
+			return nil, err
+		}
+
+		switch status {
+		case models.VoteTypeEnumAccept:
+			res.Accept = count
+		case models.VoteTypeEnumReject:
+			res.Reject = count
+		case models.VoteTypeEnumAbstain:
+			res.Abstain = count
+		case models.VoteTypeEnumImmediateAccept:
+			res.ImmediateAccept = count
+		case models.VoteTypeEnumImmediateReject:
+			res.ImmediateReject = count
+		}
+	}
+
+	return &res, nil
+}

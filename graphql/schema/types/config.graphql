@@ -1,0 +1,10 @@
+type StashBoxConfig {
+  host_url: String!
+  require_invite: Boolean!
+  require_activation: Boolean!
+  vote_promotion_threshold: Int
+  vote_application_threshold: Int!
+  voting_period: Int!
+  min_destructive_voting_period: Int!
+  vote_cron_interval: String!
+}

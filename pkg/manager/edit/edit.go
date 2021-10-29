@@ -2,10 +2,14 @@ package edit
 
 import (
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -49,7 +53,29 @@ type editApplyer interface {
 	apply() error
 }
 
-func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
+func validateEditPresence(edit *models.Edit) error {
+	if edit == nil {
+		return errors.New("edit not found")
+	}
+
+	if edit.Applied {
+		return errors.New("edit already applied")
+	}
+
+	return nil
+}
+
+func validateEditPrerequisites(fac models.Repo, edit *models.Edit) error {
+	var status models.VoteStatusEnum
+	utils.ResolveEnumString(edit.Status, &status)
+	if status != models.VoteStatusEnumPending {
+		return errors.New("invalid vote status: " + edit.Status)
+	}
+
+	return nil
+}
+
+func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit, error) {
 	var updatedEdit *models.Edit
 	err := fac.WithTxn(func() error {
 		eqb := fac.Edit()
@@ -57,18 +83,13 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 		if err != nil {
 			return err
 		}
-		if edit == nil {
-			return errors.New("Edit not found")
-		}
 
-		if edit.Applied {
-			return errors.New("Edit already applied")
+		if err := validateEditPresence(edit); err != nil {
+			return err
 		}
-
-		var status models.VoteStatusEnum
-		utils.ResolveEnumString(edit.Status, &status)
-		if status != models.VoteStatusEnumPending {
-			return errors.New("Invalid vote status: " + edit.Status)
+		if err := validateEditPrerequisites(fac, edit); err != nil {
+			edit.Fail()
+			return err
 		}
 
 		var operation models.OperationEnum
@@ -94,21 +115,62 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID) (*models.Edit, error) {
 			return err
 		}
 
-		edit.ImmediateAccept()
+		if immediate {
+			edit.ImmediateAccept()
+		} else {
+			edit.Accept()
+		}
 		updatedEdit, err = eqb.Update(*edit)
 
 		if err != nil {
 			return err
 		}
 
-		return nil
+		userPromotionThreshold := config.GetVotePromotionThreshold()
+		if userPromotionThreshold != nil {
+			err = user.PromoteUserVoteRights(fac, updatedEdit.UserID, *userPromotionThreshold)
+		}
+
+		return err
 	})
 
-	if err != nil {
-		return nil, err
-	}
+	return updatedEdit, err
+}
 
-	return updatedEdit, nil
+func CloseEdit(fac models.Repo, editID uuid.UUID, status models.VoteStatusEnum) (*models.Edit, error) {
+	var updatedEdit *models.Edit
+	err := fac.WithTxn(func() error {
+		eqb := fac.Edit()
+		edit, err := eqb.Find(editID)
+		if err != nil {
+			return err
+		}
+
+		if err := validateEditPresence(edit); err != nil {
+			return err
+		}
+		if err := validateEditPrerequisites(fac, edit); err != nil {
+			edit.Fail()
+			return err
+		}
+
+		switch status {
+		case models.VoteStatusEnumImmediateRejected:
+			edit.ImmediateReject()
+		case models.VoteStatusEnumRejected:
+			edit.Reject()
+		case models.VoteStatusEnumCanceled:
+			edit.Cancel()
+		default:
+			return fmt.Errorf("tried to close with invalid status: %s", status)
+		}
+
+		updatedEdit, err = eqb.Update(*edit)
+
+		return err
+	})
+
+	return updatedEdit, err
 }
 
 func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.URL, missing []*models.URL) {
@@ -150,4 +212,41 @@ func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.U
 		}
 	}
 	return
+}
+
+func ResolveVotingThreshold(fac models.Repo, edit *models.Edit) (models.VoteStatusEnum, error) {
+	threshold := config.GetVoteApplicationThreshold()
+	if threshold == 0 {
+		return models.VoteStatusEnumPending, nil
+	}
+
+	// For destructive edits we check if they've been open for a minimum period before applying
+	if edit.Operation == models.OperationEnumDestroy.String() || edit.Operation == models.OperationEnumMerge.String() {
+		if time.Since(edit.CreatedAt.Timestamp).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
+			return models.VoteStatusEnumPending, nil
+		}
+	}
+
+	votes, err := fac.Edit().GetVotes(edit.ID)
+	if err != nil {
+		return models.VoteStatusEnumPending, err
+	}
+
+	positive := 0
+	negative := 0
+	for _, vote := range votes {
+		if vote.Vote == models.VoteTypeEnumAccept.String() {
+			positive++
+		} else if vote.Vote == models.VoteTypeEnumReject.String() {
+			negative++
+		}
+	}
+
+	if positive >= threshold && negative == 0 {
+		return models.VoteStatusEnumAccepted, nil
+	} else if negative >= threshold && positive == 0 {
+		return models.VoteStatusEnumRejected, nil
+	}
+
+	return models.VoteStatusEnumPending, nil
 }
