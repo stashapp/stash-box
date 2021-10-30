@@ -40,7 +40,7 @@ The API key can be set in the environment configuration. To do so, you will need
 cp .env.development.local.shadow .env.development.local
 ```
 
-Fill in the `REACT_APP_APIKEY` variable in `.env.development.local` with the API key for the user.
+Fill in the `VITE_APIKEY` variable in `.env.development.local` with the API key for the user.
 
 Run the local development server:
 
