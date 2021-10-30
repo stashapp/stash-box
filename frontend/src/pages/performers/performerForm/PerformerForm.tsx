@@ -160,7 +160,7 @@ const schema = yup.object({
     .transform(nullCheck)
     .nullable()
     .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
-  country: yup.string().trim().transform(nullCheck).nullable(),
+  country: yup.string().trim().transform(nullCheck).nullable().defined(),
   ethnicity: yup
     .string()
     .transform(nullCheck)
@@ -603,18 +603,14 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 control={control}
                 name="country"
                 defaultValue={performer.country}
-                render={({ field: { onChange } }) => (
+                render={({ field: { onChange, value } }) => (
                   <Select
                     classNamePrefix="react-select"
-                    onChange={(option) =>
-                      onChange((option as { value: string })?.value)
-                    }
+                    onChange={(option) => onChange(option?.value)}
                     options={countryObj}
-                    defaultValue={
-                      countryObj.find(
-                        (country) => country.value === performer.country
-                      ) || null
-                    }
+                    defaultValue={countryObj.find(
+                      (country) => country.value === value
+                    )}
                   />
                 )}
               />
