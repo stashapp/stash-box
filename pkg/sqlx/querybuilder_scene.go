@@ -406,16 +406,6 @@ type sceneFingerprintGroup struct {
 	UpdatedAt     models.SQLiteTimestamp      `db:"updated_at"`
 }
 
-func (fg sceneFingerprintGroup) isFingerprintUserSubmitted(userSubmissions []*models.SceneFingerprint) bool {
-	for _, sub := range userSubmissions {
-		if sub.SceneID == fg.SceneID && sub.Algorithm == fg.Algorithm.String() && sub.Hash == fg.Hash {
-			return true
-		}
-	}
-
-	return false
-}
-
 func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
 	return &models.Fingerprint{
 		Hash:          fpg.Hash,
