@@ -51,10 +51,7 @@ import UserQuery from "./User.gql";
 import UsersQuery from "./Users.gql";
 import ConfigQuery from "./Config.gql";
 
-export const useCategory = (
-  variables: CategoryVariables,
-  skip: boolean = false
-) =>
+export const useCategory = (variables: CategoryVariables, skip = false) =>
   useQuery<Category, CategoryVariables>(CategoryQuery, {
     variables,
     skip,
@@ -78,19 +75,13 @@ export const useEdits = (variables: EditsVariables) =>
 export const useMe = (options?: QueryHookOptions<Me>) =>
   useQuery<Me>(MeQuery, options);
 
-export const usePerformer = (
-  variables: PerformerVariables,
-  skip: boolean = false
-) =>
+export const usePerformer = (variables: PerformerVariables, skip = false) =>
   useQuery<Performer, PerformerVariables>(PerformerQuery, {
     variables,
     skip,
   });
 
-export const useFullPerformer = (
-  variables: PerformerVariables,
-  skip: boolean = false
-) =>
+export const useFullPerformer = (variables: PerformerVariables, skip = false) =>
   useQuery<FullPerformer, FullPerformerVariables>(FullPerformerQuery, {
     variables,
     skip,
@@ -101,22 +92,19 @@ export const usePerformers = (variables: PerformersVariables) =>
     variables,
   });
 
-export const useScene = (variables: SceneVariables, skip: boolean = false) =>
+export const useScene = (variables: SceneVariables, skip = false) =>
   useQuery<Scene, SceneVariables>(SceneQuery, {
     variables,
     skip,
   });
 
-export const useScenes = (variables: ScenesVariables, skip: boolean = false) =>
+export const useScenes = (variables: ScenesVariables, skip = false) =>
   useQuery<Scenes, ScenesVariables>(ScenesQuery, {
     variables,
     skip,
   });
 
-export const useSearchAll = (
-  variables: SearchAllVariables,
-  skip: boolean = false
-) =>
+export const useSearchAll = (variables: SearchAllVariables, skip = false) =>
   useQuery<SearchAll, SearchAllVariables>(SearchAllQuery, {
     variables,
     skip,
@@ -135,7 +123,7 @@ export const useLazySearchPerformers = (
   options?: LazyQueryHookOptions<SearchPerformers, SearchPerformersVariables>
 ) => useLazyQuery(SearchPerformersQuery, options);
 
-export const useStudio = (variables: StudioVariables, skip: boolean = false) =>
+export const useStudio = (variables: StudioVariables, skip = false) =>
   useQuery<Studio, StudioVariables>(StudioQuery, {
     variables,
     skip,
@@ -150,7 +138,7 @@ export const useLazyStudios = (
   options?: LazyQueryHookOptions<Studios, StudiosVariables>
 ) => useLazyQuery(StudiosQuery, options);
 
-export const useTag = (variables: TagVariables, skip: boolean = false) =>
+export const useTag = (variables: TagVariables, skip = false) =>
   useQuery<Tag, TagVariables>(TagQuery, {
     variables,
     skip,
@@ -164,7 +152,7 @@ export const useLazyTags = (
   options?: LazyQueryHookOptions<Tags, TagsVariables>
 ) => useLazyQuery(TagsQuery, options);
 
-export const useUser = (variables: UserVariables, skip: boolean = false) =>
+export const useUser = (variables: UserVariables, skip = false) =>
   useQuery<User, UserVariables>(UserQuery, {
     variables,
     skip,
