@@ -120,7 +120,7 @@ const schema = yup.object({
   note: yup.string().required("Edit note is required"),
 });
 
-interface SceneFormData extends yup.Asserts<typeof schema> {}
+type SceneFormData = yup.Asserts<typeof schema>;
 export type CastedSceneFormData = yup.TypeOf<typeof schema>;
 
 interface SceneProps {

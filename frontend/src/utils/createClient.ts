@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
-import { setContext } from "@apollo/client/link/context";
+import { setContext, ContextSetter } from "@apollo/client/link/context";
 import { createUploadLink } from "apollo-upload-client";
 
 const isDevEnvironment = () => import.meta.env.DEV;
@@ -25,15 +25,17 @@ const httpLink = createUploadLink({
   },
 });
 
-const authLink = setContext((_, { headers, ...context }) => ({
-  headers: {
-    ...headers,
-    ...(import.meta.env.VITE_APIKEY && {
-      ApiKey: import.meta.env.VITE_APIKEY,
-    }),
-  },
-  ...context,
-}));
+const authLink = setContext(
+  (_, { headers, ...context }): ContextSetter => ({
+    headers: {
+      ...headers,
+      ...(import.meta.env.VITE_APIKEY && {
+        ApiKey: import.meta.env.VITE_APIKEY,
+      }),
+    },
+    ...context,
+  })
+);
 
 const createClient = () =>
   new ApolloClient({

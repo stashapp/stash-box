@@ -19,9 +19,29 @@
     }
   }
 
+  &-performer {
+    &-image {
+      height: 7rem;
+      width: 4.67rem;
+    }
+  }
+
+  &-scene {
+    &-image {
+      height: 7rem;
+      width: 12.44rem;
+    }
+  }
+
   &-performer,
   &-scene {
     display: block;
+
+    .card {
+      display: flex;
+      flex-direction: row;
+      padding: 10px;
+    }
 
     &:hover {
       text-decoration: none;
@@ -29,12 +49,6 @@
       .card {
         background-color: #495b68;
       }
-    }
-
-    .card {
-      display: flex;
-      flex-direction: row;
-      padding: 10px;
     }
 
     &-image {
@@ -47,20 +61,6 @@
       &[src=""] {
         visibility: hidden;
       }
-    }
-  }
-
-  &-performer {
-    &-image {
-      height: 7rem;
-      width: 4.67rem;
-    }
-  }
-
-  &-scene {
-    &-image {
-      height: 7rem;
-      width: 12.44rem;
     }
   }
 

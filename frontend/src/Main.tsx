@@ -63,14 +63,15 @@ const Main: React.FC = ({ children }) => {
   };
 
   const renderUserNav = () =>
-    contextValue.authenticated && (
+    contextValue.authenticated &&
+    contextValue.user && (
       <>
         <span>Logged in as</span>
         <NavLink
-          to={userHref(contextValue.user!)}
+          to={userHref(contextValue.user)}
           className="nav-link ml-auto mr-2"
         >
-          {contextValue!.user!.name}
+          {contextValue.user.name}
         </NavLink>
         {isAdmin(user) && (
           <NavLink exact to={ROUTE_USERS} className="nav-link">
