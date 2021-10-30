@@ -20,16 +20,19 @@
     "yarn": ">=1.15.2"
   },
   "resolutions": {
-    "**/graphql": "^15.5.1"
+    "**/graphql": "^15.7.2"
   },
   "devDependencies": {
     "@rollup/plugin-graphql": "^1.0.0",
+    "@types/apollo-upload-client": "^14.1.0",
     "@types/lodash-es": "^4.17.5",
-    "@types/node": "^16.6.1",
+    "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
     "@types/react-router-dom": "^5.1.8",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
+    "@vitejs/plugin-react": "1.0.5",
+    "apollo": "^2.33.7",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-typescript": "^14.0.1",
     "eslint-config-prettier": "^8.3.0",
@@ -45,7 +48,9 @@
     "stylelint-config-standard": "^23.0.0",
     "stylelint-config-standard-scss": "^2.0.0",
     "stylelint-scss": "^4.0.0",
-    "typescript": "~4.4.4"
+    "typescript": "~4.4.4",
+    "vite": "^2.6.13",
+    "vite-tsconfig-paths": "^3.3.17"
   },
   "dependencies": {
     "@apollo/client": "^3.4.7",
@@ -53,14 +58,11 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.1.15",
     "@hookform/resolvers": "2.8.2",
-    "@types/apollo-upload-client": "^14.1.0",
-    "@vitejs/plugin-react": "1.0.5",
-    "apollo": "^2.33.6",
     "apollo-upload-client": "^16.0.0",
-    "bootstrap": "^4.6.0",
+    "bootstrap": "^4.6.1",
     "classnames": "^2.3.1",
     "date-fns": "^2.25.0",
-    "graphql": "^15.5.1",
+    "graphql": "^15.7.2",
     "graphql-tag": "^2.12.5",
     "i18n-iso-countries": "^6.8.0",
     "lodash-es": "^4.17.21",
@@ -77,8 +79,6 @@
     "remark-breaks": "^3.0.1",
     "remark-external-links": "^9.0.1",
     "remark-gfm": "^3.0.0",
-    "vite": "^2.6.12",
-    "vite-tsconfig-paths": "^3.3.17",
     "yup": "0.32.11"
   },
   "browserslist": {
