@@ -5,7 +5,14 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
-import { Button, Col, Form, InputGroup, Tab, Tabs } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Form,
+  InputGroup,
+  Tab,
+  Tabs,
+} from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
@@ -111,7 +118,7 @@ const schema = yup.object({
   note: yup.string().required("Edit note is required"),
 });
 
-interface SceneFormData extends yup.Asserts<typeof schema> {}
+type SceneFormData = yup.Asserts<typeof schema>;
 export type CastedSceneFormData = yup.TypeOf<typeof schema>;
 
 interface SceneProps {

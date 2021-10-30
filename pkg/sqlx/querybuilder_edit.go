@@ -10,10 +10,14 @@ import (
 )
 
 const (
-	editTable   = "edits"
-	editJoinKey = "edit_id"
-
-	//voteTable = "votes"
+	editTable          = "edits"
+	editJoinKey        = "edit_id"
+	performerEditTable = "performer_edits"
+	tagEditTable       = "tag_edits"
+	studioEditTable    = "studio_edits"
+	sceneEditTable     = "scene_edits"
+	commentTable       = "edit_comments"
+	voteTable          = "edit_votes"
 )
 
 var (
@@ -21,29 +25,29 @@ var (
 		return &models.Edit{}
 	})
 
-	editTagTable = newTableJoin(editTable, "tag_edits", editJoinKey, func() interface{} {
+	editTagTable = newTableJoin(editTable, tagEditTable, editJoinKey, func() interface{} {
 		return &models.EditTag{}
 	})
 
-	editPerformerTable = newTableJoin(editTable, "performer_edits", editJoinKey, func() interface{} {
+	editPerformerTable = newTableJoin(editTable, performerEditTable, editJoinKey, func() interface{} {
 		return &models.EditPerformer{}
 	})
 
-	editStudioTable = newTableJoin(editTable, "studio_edits", editJoinKey, func() interface{} {
+	editStudioTable = newTableJoin(editTable, studioEditTable, editJoinKey, func() interface{} {
 		return &models.EditStudio{}
 	})
 
-	editSceneTable = newTableJoin(editTable, "scene_edits", editJoinKey, func() interface{} {
+	editSceneTable = newTableJoin(editTable, sceneEditTable, editJoinKey, func() interface{} {
 		return &models.EditScene{}
 	})
 
-	editCommentTable = newTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
+	editCommentTable = newTableJoin(editTable, commentTable, editJoinKey, func() interface{} {
 		return &models.EditComment{}
 	})
 
-	// voteDBTable = database.NewTable(editTable, func() interface{} {
-	// 	return &Edit{}
-	// })
+	editVoteTable = newTableJoin(editTable, voteTable, editJoinKey, func() interface{} {
+		return &models.EditVote{}
+	})
 )
 
 type editQueryBuilder struct {
@@ -288,6 +292,21 @@ func (qb *editQueryBuilder) GetComments(id uuid.UUID) (models.EditComments, erro
 	return joins, err
 }
 
+func (qb *editQueryBuilder) CreateVote(newJoin models.EditVote) error {
+	conflictHandling := `
+		ON CONFLICT(edit_id, user_id)
+		DO UPDATE SET (vote, created_at) = (:vote, NOW())
+	`
+	return qb.dbi.InsertJoin(editVoteTable, newJoin, &conflictHandling)
+}
+
+func (qb *editQueryBuilder) GetVotes(id uuid.UUID) (models.EditVotes, error) {
+	joins := models.EditVotes{}
+	err := qb.dbi.FindJoins(editVoteTable, id, &joins)
+
+	return joins, err
+}
+
 func (qb *editQueryBuilder) findByJoin(id uuid.UUID, table tableJoin, idColumn string) ([]*models.Edit, error) {
 	query := fmt.Sprintf(`
 SELECT edits.* FROM edits
@@ -313,4 +332,25 @@ func (qb *editQueryBuilder) FindByStudioID(id uuid.UUID) ([]*models.Edit, error)
 
 func (qb *editQueryBuilder) FindBySceneID(id uuid.UUID) ([]*models.Edit, error) {
 	return qb.findByJoin(id, editSceneTable, "scene_id")
+}
+
+// Returns pending edits that fulfill one of the criteria for being closed:
+// * The full voting period has passed
+// * The minimum voting period has passed, and the number of votes has crossed the voting threshold.
+// The latter only applies for destructive edits. Non-destructive edits get auto-applied when sufficient votes are cast.
+func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPeriod int, minimumVotes int) ([]*models.Edit, error) {
+	query := `
+		SELECT edits.* FROM edits
+		WHERE status = 'PENDING'
+		AND (
+			created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))
+			OR (
+				VOTES >= $2
+				AND created_at <= (now()::timestamp - (INTERVAL '1 second' * $3))
+			)
+		)
+	`
+
+	args := []interface{}{votingPeriod, minimumVotes, minimumVotingPeriod}
+	return qb.queryEdits(query, args)
 }

@@ -84,9 +84,8 @@ type EditInput struct {
 }
 
 type EditVoteInput struct {
-	ID      string       `json:"id"`
-	Comment *string      `json:"comment"`
-	Type    VoteTypeEnum `json:"type"`
+	ID   string       `json:"id"`
+	Vote VoteTypeEnum `json:"vote"`
 }
 
 type EyeColorCriterionInput struct {
@@ -467,6 +466,17 @@ type SceneUpdateInput struct {
 	Director     *string                     `json:"director"`
 }
 
+type StashBoxConfig struct {
+	HostURL                    string `json:"host_url"`
+	RequireInvite              bool   `json:"require_invite"`
+	RequireActivation          bool   `json:"require_activation"`
+	VotePromotionThreshold     *int   `json:"vote_promotion_threshold"`
+	VoteApplicationThreshold   int    `json:"vote_application_threshold"`
+	VotingPeriod               int    `json:"voting_period"`
+	MinDestructiveVotingPeriod int    `json:"min_destructive_voting_period"`
+	VoteCronInterval           string `json:"vote_cron_interval"`
+}
+
 type StringCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -595,6 +605,16 @@ type UserDestroyInput struct {
 	ID string `json:"id"`
 }
 
+type UserEditCount struct {
+	Accepted          int `json:"accepted"`
+	Rejected          int `json:"rejected"`
+	Pending           int `json:"pending"`
+	ImmediateAccepted int `json:"immediate_accepted"`
+	ImmediateRejected int `json:"immediate_rejected"`
+	Failed            int `json:"failed"`
+	Canceled          int `json:"canceled"`
+}
+
 type UserFilterType struct {
 	// Filter to search user name - assumes like query unless quoted
 	Name *string `json:"name"`
@@ -627,17 +647,18 @@ type UserUpdateInput struct {
 	Email    *string    `json:"email"`
 }
 
+type UserVoteCount struct {
+	Abstain         int `json:"abstain"`
+	Accept          int `json:"accept"`
+	Reject          int `json:"reject"`
+	ImmediateAccept int `json:"immediate_accept"`
+	ImmediateReject int `json:"immediate_reject"`
+}
+
 type Version struct {
 	Hash      string `json:"hash"`
 	BuildTime string `json:"build_time"`
 	Version   string `json:"version"`
-}
-
-type VoteComment struct {
-	User    *User         `json:"user"`
-	Date    *string       `json:"date"`
-	Comment *string       `json:"comment"`
-	Type    *VoteTypeEnum `json:"type"`
 }
 
 type BreastTypeEnum string
@@ -1374,6 +1395,8 @@ const (
 	VoteStatusEnumPending           VoteStatusEnum = "PENDING"
 	VoteStatusEnumImmediateAccepted VoteStatusEnum = "IMMEDIATE_ACCEPTED"
 	VoteStatusEnumImmediateRejected VoteStatusEnum = "IMMEDIATE_REJECTED"
+	VoteStatusEnumFailed            VoteStatusEnum = "FAILED"
+	VoteStatusEnumCanceled          VoteStatusEnum = "CANCELED"
 )
 
 var AllVoteStatusEnum = []VoteStatusEnum{
@@ -1382,11 +1405,13 @@ var AllVoteStatusEnum = []VoteStatusEnum{
 	VoteStatusEnumPending,
 	VoteStatusEnumImmediateAccepted,
 	VoteStatusEnumImmediateRejected,
+	VoteStatusEnumFailed,
+	VoteStatusEnumCanceled,
 }
 
 func (e VoteStatusEnum) IsValid() bool {
 	switch e {
-	case VoteStatusEnumAccepted, VoteStatusEnumRejected, VoteStatusEnumPending, VoteStatusEnumImmediateAccepted, VoteStatusEnumImmediateRejected:
+	case VoteStatusEnumAccepted, VoteStatusEnumRejected, VoteStatusEnumPending, VoteStatusEnumImmediateAccepted, VoteStatusEnumImmediateRejected, VoteStatusEnumFailed, VoteStatusEnumCanceled:
 		return true
 	}
 	return false
@@ -1416,7 +1441,7 @@ func (e VoteStatusEnum) MarshalGQL(w io.Writer) {
 type VoteTypeEnum string
 
 const (
-	VoteTypeEnumComment VoteTypeEnum = "COMMENT"
+	VoteTypeEnumAbstain VoteTypeEnum = "ABSTAIN"
 	VoteTypeEnumAccept  VoteTypeEnum = "ACCEPT"
 	VoteTypeEnumReject  VoteTypeEnum = "REJECT"
 	// Immediately accepts the edit - bypassing the vote
@@ -1426,7 +1451,7 @@ const (
 )
 
 var AllVoteTypeEnum = []VoteTypeEnum{
-	VoteTypeEnumComment,
+	VoteTypeEnumAbstain,
 	VoteTypeEnumAccept,
 	VoteTypeEnumReject,
 	VoteTypeEnumImmediateAccept,
@@ -1435,7 +1460,7 @@ var AllVoteTypeEnum = []VoteTypeEnum{
 
 func (e VoteTypeEnum) IsValid() bool {
 	switch e {
-	case VoteTypeEnumComment, VoteTypeEnumAccept, VoteTypeEnumReject, VoteTypeEnumImmediateAccept, VoteTypeEnumImmediateReject:
+	case VoteTypeEnumAbstain, VoteTypeEnumAccept, VoteTypeEnumReject, VoteTypeEnumImmediateAccept, VoteTypeEnumImmediateReject:
 		return true
 	}
 	return false

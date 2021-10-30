@@ -5,6 +5,7 @@ import (
 )
 
 var appSchemaVersion uint = 17
+
 var databaseProviders map[string]databaseProvider
 
 type databaseProvider interface {

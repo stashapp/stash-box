@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card } from "react-bootstrap";
-import { sortBy, groupBy } from "lodash";
+import { sortBy, groupBy } from "lodash-es";
 
 import { useCategories } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";

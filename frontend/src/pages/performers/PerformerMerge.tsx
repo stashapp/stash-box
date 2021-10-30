@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { flatMap } from "lodash";
+import { flatMap } from "lodash-es";
 
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 import {
@@ -66,7 +66,7 @@ const PerformerMerge: React.FC = () => {
         Merge performers into <em>{performer.findPerformer.name}</em>
       </h3>
       <hr />
-      <div className="row no-gutters">
+      <div className="row">
         <div className="col-6">
           {!mergeActive && (
             <>
@@ -102,7 +102,7 @@ const PerformerMerge: React.FC = () => {
                 <Row className="mt-4">
                   {mergeSources.map((source) => (
                     <Col xs={4} key={source.id}>
-                      <PerformerCard performer={source} className="col-4" />
+                      <PerformerCard performer={source} />
                     </Col>
                   ))}
                 </Row>

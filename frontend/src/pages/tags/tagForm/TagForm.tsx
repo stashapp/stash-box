@@ -6,7 +6,7 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
-import { groupBy, sortBy } from "lodash";
+import { groupBy, sortBy } from "lodash-es";
 
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 import { useCategories, TagEditDetailsInput } from "src/graphql";
@@ -21,7 +21,7 @@ const schema = yup.object({
   name: yup.string().required("Name is required"),
   description: yup.string(),
   aliases: yup.array().of(yup.string().required()),
-  categoryId: yup.string().nullable(),
+  categoryId: yup.string().defined(),
   note: yup.string().required("Edit note is required"),
 });
 
@@ -115,8 +115,8 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
         <Controller
           name="categoryId"
           control={control}
-          defaultValue={tag.category?.id ?? null}
-          render={({ field: { onChange } }) => (
+          defaultValue={tag.category?.id || null}
+          render={({ field: { onChange, value } }) => (
             <Select
               classNamePrefix="react-select"
               className={cx({ "is-invalid": errors.categoryId })}
@@ -125,11 +125,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
               options={categoryObj}
               isClearable
               placeholder="Category"
-              defaultValue={
-                tag?.category?.id
-                  ? categories.find((s) => s.value === tag.category?.id)
-                  : null
-              }
+              defaultValue={categories.find((s) => s.value === value)}
             />
           )}
         />

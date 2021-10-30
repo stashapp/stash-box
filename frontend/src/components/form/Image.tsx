@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "react-bootstrap";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import { Icon } from "src/components/fragments";
 import { Image } from "src/utils/transforms";
@@ -20,7 +21,7 @@ const ImageInput: React.FC<ImageProps> = ({ image, onRemove }) => (
       className={CLASSNAME_REMOVE}
       onClick={() => onRemove()}
     >
-      <Icon icon="times" />
+      <Icon icon={faTimes} />
     </Button>
     <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
   </div>

@@ -15,6 +15,26 @@ export interface User_findUser_invited_by {
   name: string;
 }
 
+export interface User_findUser_vote_count {
+  __typename: "UserVoteCount";
+  accept: number;
+  reject: number;
+  immediate_accept: number;
+  immediate_reject: number;
+  abstain: number;
+}
+
+export interface User_findUser_edit_count {
+  __typename: "UserEditCount";
+  immediate_accepted: number;
+  immediate_rejected: number;
+  accepted: number;
+  rejected: number;
+  failed: number;
+  canceled: number;
+  pending: number;
+}
+
 export interface User_findUser {
   __typename: "User";
   id: string;
@@ -26,7 +46,7 @@ export interface User_findUser {
   /**
    * Should not be visible to other users
    */
-  roles: RoleEnum[] | null;
+  roles: RoleEnum[];
   /**
    * Should not be visible to other users
    */
@@ -38,6 +58,14 @@ export interface User_findUser {
   invited_by: User_findUser_invited_by | null;
   invite_tokens: number | null;
   active_invite_codes: string[] | null;
+  /**
+   *  Vote counts by type 
+   */
+  vote_count: User_findUser_vote_count;
+  /**
+   *  Edit counts by status 
+   */
+  edit_count: User_findUser_edit_count;
 }
 
 export interface User {

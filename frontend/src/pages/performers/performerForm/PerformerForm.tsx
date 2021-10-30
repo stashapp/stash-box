@@ -8,7 +8,7 @@ import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
-import { sortBy, uniq, uniqBy } from "lodash";
+import { sortBy, uniq, uniqBy } from "lodash-es";
 
 import {
   GenderEnum,
@@ -160,7 +160,7 @@ const schema = yup.object({
     .transform(nullCheck)
     .nullable()
     .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
-  country: yup.string().trim().transform(nullCheck).nullable(),
+  country: yup.string().trim().transform(nullCheck).nullable().defined(),
   ethnicity: yup
     .string()
     .transform(nullCheck)
@@ -301,13 +301,13 @@ const PerformerForm: React.FC<PerformerProps> = ({
       hip: data.hipSize ?? null,
     };
     if (data.braSize != null) {
-      const band = data.braSize.match(/^\d+/)?.[0];
+      const band = /^\d+/.exec(data.braSize)?.[0];
       const bandSize = band ? Number.parseInt(band, 10) : null;
       const cup = bandSize
         ? data.braSize.replace(bandSize.toString(), "")
         : null;
       const braSize = cup
-        ? cup.match(/^[a-zA-Z]+/)?.[0]?.toUpperCase() ?? null
+        ? /^[a-zA-Z]+/.exec(cup)?.[0]?.toUpperCase() ?? null
         : null;
       performerData.measurements.cup_size = braSize;
       performerData.measurements.band_size = bandSize ?? 0;
@@ -344,7 +344,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
       Object.keys(CountryList).map((name: string) => {
         const countryName: string = Array.isArray(CountryList[name])
           ? CountryList[name][0]
-          : (CountryList[name] as string);
+          : CountryList[name];
         return {
           label: countryName,
           value: Countries.getAlpha2Code(countryName, "en"),
@@ -603,18 +603,14 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 control={control}
                 name="country"
                 defaultValue={performer.country}
-                render={({ field: { onChange } }) => (
+                render={({ field: { onChange, value } }) => (
                   <Select
                     classNamePrefix="react-select"
-                    onChange={(option) =>
-                      onChange((option as { value: string })?.value)
-                    }
+                    onChange={(option) => onChange(option?.value)}
                     options={countryObj}
-                    defaultValue={
-                      countryObj.find(
-                        (country) => country.value === performer.country
-                      ) || null
-                    }
+                    defaultValue={countryObj.find(
+                      (country) => country.value === value
+                    )}
                   />
                 )}
               />
@@ -704,7 +700,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
             type="invalid"
           >
             {errors?.tattoos?.map((mod, idx) => (
-              <div>
+              <div key={idx}>
                 Tattoo {idx + 1}: {mod?.location?.message}
               </div>
             ))}
@@ -722,7 +718,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
             type="invalid"
           >
             {errors?.piercings?.map((mod, idx) => (
-              <div>
+              <div key={idx}>
                 Piercing {idx + 1}: {mod?.location?.message}
               </div>
             ))}
@@ -787,7 +783,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
           )}
           {changes.length === 0 && <h6>No changes.</h6>}
           {changes.map((c) => (
-            <ChangeRow {...c} />
+            <ChangeRow {...c} key={c.name} />
           ))}
           <Form.Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>

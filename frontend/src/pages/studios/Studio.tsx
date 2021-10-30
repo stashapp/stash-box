@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
-import { sortBy } from "lodash";
+import { sortBy } from "lodash-es";
 
 import {
   TargetTypeEnum,

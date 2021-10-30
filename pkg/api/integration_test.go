@@ -416,8 +416,15 @@ func (s *testRunner) generateUserName() string {
 	return "user-" + strconv.Itoa(userSuffix)
 }
 
-func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User, error) {
+func (s *testRunner) createTestUser(input *models.UserCreateInput, roles []models.RoleEnum) (*models.User, error) {
 	s.t.Helper()
+
+	userRoles := roles
+	if roles == nil {
+		userRoles = []models.RoleEnum{
+			models.RoleEnumAdmin,
+		}
+	}
 
 	if input == nil {
 		name := s.generateUserName()
@@ -425,9 +432,7 @@ func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User
 			Name:     name,
 			Email:    name + "@example.com",
 			Password: "password" + name,
-			Roles: []models.RoleEnum{
-				models.RoleEnumAdmin,
-			},
+			Roles:    userRoles,
 		}
 	}
 

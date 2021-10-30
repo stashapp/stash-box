@@ -25,6 +25,10 @@ func validateEdit(ctx context.Context) error {
 	return user.ValidateRole(ctx, models.RoleEnumEdit)
 }
 
+func validateVote(ctx context.Context) error {
+	return validateRole(ctx, models.RoleEnumVote)
+}
+
 func validateInvite(ctx context.Context) error {
 	return user.ValidateRole(ctx, models.RoleEnumInvite)
 }
@@ -37,6 +41,6 @@ func validateAdmin(ctx context.Context) error {
 	return user.ValidateRole(ctx, models.RoleEnumAdmin)
 }
 
-func validateOwner(ctx context.Context, userID uuid.UUID) error {
+func validateUser(ctx context.Context, userID uuid.UUID) error {
 	return user.ValidateOwner(ctx, userID)
 }

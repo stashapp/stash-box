@@ -135,10 +135,20 @@ export enum TargetTypeEnum {
 
 export enum VoteStatusEnum {
   ACCEPTED = "ACCEPTED",
+  CANCELED = "CANCELED",
+  FAILED = "FAILED",
   IMMEDIATE_ACCEPTED = "IMMEDIATE_ACCEPTED",
   IMMEDIATE_REJECTED = "IMMEDIATE_REJECTED",
   PENDING = "PENDING",
   REJECTED = "REJECTED",
+}
+
+export enum VoteTypeEnum {
+  ABSTAIN = "ABSTAIN",
+  ACCEPT = "ACCEPT",
+  IMMEDIATE_ACCEPT = "IMMEDIATE_ACCEPT",
+  IMMEDIATE_REJECT = "IMMEDIATE_REJECT",
+  REJECT = "REJECT",
 }
 
 export interface ActivateNewUserInput {
@@ -198,6 +208,11 @@ export interface EditInput {
   edit_id?: string | null;
   merge_source_ids?: string[] | null;
   comment?: string | null;
+}
+
+export interface EditVoteInput {
+  id: string;
+  vote: VoteTypeEnum;
 }
 
 export interface EyeColorCriterionInput {

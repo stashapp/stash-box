@@ -82,11 +82,6 @@ func ValidateAdmin(ctx context.Context) error {
 }
 
 func ValidateOwner(ctx context.Context, userID uuid.UUID) error {
-	err := ValidateAdmin(ctx)
-	if err == nil {
-		return nil
-	}
-
 	user := GetCurrentUser(ctx)
 	if user != nil && user.ID == userID {
 		return nil

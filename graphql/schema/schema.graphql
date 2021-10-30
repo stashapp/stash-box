@@ -69,6 +69,9 @@ type Query {
 
   #### Version ####
   version: Version!
+
+  ### Instance Config ###
+  getConfig: StashBoxConfig!
 }
 
 type Mutation {

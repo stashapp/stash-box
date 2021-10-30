@@ -12,8 +12,17 @@ fragment EditFragment on Edit {
   applied
   created
   updated
+  vote_count
   comments {
     ...CommentFragment
+  }
+  votes {
+    user {
+      id
+      name
+    }
+    date
+    vote
   }
   user {
     id
