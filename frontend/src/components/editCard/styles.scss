@@ -24,6 +24,11 @@
     margin-right: 20px;
   }
 
+  .form-control {
+    margin: auto;
+    width: 16px;
+  }
+
   .form-group {
     margin-bottom: 0;
     margin-right: 8px;
@@ -38,11 +43,6 @@
     .form-control:focus {
       box-shadow: none;
     }
-  }
-
-  .form-control {
-    margin: auto;
-    width: 16px;
   }
 }
 

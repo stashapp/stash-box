@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import Select, {
-  ValueType,
-  OptionTypeBase,
-  FormatOptionLabelMeta,
-} from "react-select";
+import Select, { OnChangeValue } from "react-select";
 import { Form } from "react-bootstrap";
 
 interface MultiSelectProps {
@@ -13,7 +9,7 @@ interface MultiSelectProps {
   plural?: string;
 }
 
-interface IOptionType extends OptionTypeBase {
+interface IOptionType {
   label: string;
   value: string;
   subValues: string[] | null;
@@ -27,7 +23,7 @@ const CheckboxSelect: React.FC<MultiSelectProps> = ({
 }) => {
   const [unselected, setUnselected] = useState<string[]>([]);
 
-  const handleChange = (vals: ValueType<IOptionType, true>) => {
+  const handleChange = (vals: OnChangeValue<IOptionType, true>) => {
     const selected = vals.map((v) => [v.value, ...(v.subValues ?? [])]).flat();
 
     setUnselected(selected);
@@ -36,7 +32,7 @@ const CheckboxSelect: React.FC<MultiSelectProps> = ({
 
   const formatLabel = (
     option: IOptionType,
-    meta: FormatOptionLabelMeta<IOptionType, true>
+    meta: { context: "menu" | "value" }
   ) => {
     if (meta.context === "menu")
       return option.subValues === null ? (

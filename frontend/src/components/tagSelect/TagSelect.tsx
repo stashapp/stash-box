@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Async from "react-select/async";
-import { ValueType, OptionTypeBase } from "react-select";
+import { OnChangeValue } from "react-select";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
@@ -22,7 +22,7 @@ interface TagSelectProps {
   excludeTags?: string[];
 }
 
-interface SearchResult extends OptionTypeBase {
+interface SearchResult {
   value: Tag;
   label: string;
   subLabel: string;
@@ -43,7 +43,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
   const [tags, setTags] = useState(initialTags);
   const excluded = [...excludeTags, ...tags.map((t) => t.id)];
 
-  const handleChange = (result: ValueType<SearchResult, false>) => {
+  const handleChange = (result: OnChangeValue<SearchResult, false>) => {
     if (result?.value) {
       const newTags = [...tags, result.value];
       setTags(newTags);

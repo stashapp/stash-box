@@ -6,12 +6,14 @@ export const formatCareer = (
 ): string | undefined =>
   start || end ? `Active ${start ?? "????"}\u2013${end ?? ""}` : undefined;
 
-export const formatMeasurements = (val?: Measurements): string | undefined =>
-  (val?.cup_size && val.band_size) || val?.hip || val?.waist
-    ? `${val.cup_size && val.band_size ? val.band_size + val.cup_size : "??"}-${
-        val.waist ?? "??"
-      }-${val.hip ?? "??"}`
-    : undefined;
+export const formatMeasurements = (val?: Measurements): string | undefined => {
+  if ((val?.cup_size && val.band_size) || val?.hip || val?.waist) {
+    const bust =
+      val.cup_size && val.band_size ? `${val.band_size}${val.cup_size}` : "??";
+    return `${bust}-${val.waist ?? ""}-${val.hip ?? ""}`;
+  }
+  return undefined;
+};
 
 export const getBraSize = (measurements: Measurements): string | undefined =>
   (measurements.cup_size &&

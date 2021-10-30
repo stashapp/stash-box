@@ -34,8 +34,8 @@ export const performerHref = (
   route: string = ROUTE_PERFORMER
 ) => generatePath(route, obj);
 
-export const createHref = (route: string, params: Object = {}) =>
+export const createHref = (route: string, params: unknown = {}) =>
   generatePath(
     route,
-    params as Record<string, string | number | undefined | boolean>
+    params as Record<string, string | number | boolean | undefined>
   );

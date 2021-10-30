@@ -111,7 +111,9 @@ const PerformersComponent: React.FC = () => {
           defaultValue={sort ?? "name"}
         >
           {sortOptions.map((s) => (
-            <option value={s.value}>{s.label}</option>
+            <option value={s.value} key={s.value}>
+              {s.label}
+            </option>
           ))}
         </Form.Control>
         <InputGroup.Append>
