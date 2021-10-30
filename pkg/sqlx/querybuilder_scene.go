@@ -396,13 +396,14 @@ func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}) (mode
 }
 
 type sceneFingerprintGroup struct {
-	SceneID     uuid.UUID                   `db:"scene_id" json:"scene_id"`
-	Hash        string                      `db:"hash" json:"hash"`
-	Algorithm   models.FingerprintAlgorithm `db:"algorithm" json:"algorithm"`
-	Duration    float64                     `db:"duration" json:"duration"`
-	Submissions int                         `db:"submissions" json:"submissions"`
-	CreatedAt   models.SQLiteTimestamp      `db:"created_at" json:"created_at"`
-	UpdatedAt   models.SQLiteTimestamp      `db:"updated_at" json:"updated_at"`
+	SceneID       uuid.UUID                   `db:"scene_id"`
+	Hash          string                      `db:"hash"`
+	Algorithm     models.FingerprintAlgorithm `db:"algorithm"`
+	Duration      float64                     `db:"duration"`
+	Submissions   int                         `db:"submissions"`
+	UserSubmitted bool                        `db:"user_submitted"`
+	CreatedAt     models.SQLiteTimestamp      `db:"created_at"`
+	UpdatedAt     models.SQLiteTimestamp      `db:"updated_at"`
 }
 
 func (fg sceneFingerprintGroup) isFingerprintUserSubmitted(userSubmissions []*models.SceneFingerprint) bool {
@@ -417,12 +418,13 @@ func (fg sceneFingerprintGroup) isFingerprintUserSubmitted(userSubmissions []*mo
 
 func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
 	return &models.Fingerprint{
-		Hash:        fpg.Hash,
-		Algorithm:   fpg.Algorithm,
-		Duration:    int(fpg.Duration),
-		Submissions: fpg.Submissions,
-		Created:     fpg.CreatedAt.Timestamp,
-		Updated:     fpg.UpdatedAt.Timestamp,
+		Hash:          fpg.Hash,
+		Algorithm:     fpg.Algorithm,
+		Duration:      int(fpg.Duration),
+		Submissions:   fpg.Submissions,
+		UserSubmitted: fpg.UserSubmitted,
+		Created:       fpg.CreatedAt.Timestamp,
+		Updated:       fpg.UpdatedAt.Timestamp,
 	}
 }
 
@@ -433,20 +435,37 @@ func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) (models.SceneFingerpr
 }
 
 func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
-	userFPs, err := qb.getFingerprintUserSubmissions(currentUserID, ids)
-	if err != nil {
-		return nil, utils.DuplicateError(err, len(ids))
-	}
-
 	query := `
-		SELECT f.scene_id, f.hash, f.algorithm, mode() WITHIN GROUP (ORDER BY f.duration) as duration, COUNT(f.hash) as submissions, MIN(created_at) as created_at, MAX(created_at) as updated_at FROM scene_fingerprints f
-        WHERE f.scene_id IN (?)
+		SELECT
+			f.scene_id,
+			f.hash,
+			f.algorithm,
+			mode() WITHIN GROUP (ORDER BY f.duration) as duration,
+			COUNT(f.hash) as submissions,
+			MIN(created_at) as created_at,
+			MAX(created_at) as updated_at,
+			bool_or(f.user_id = :userid) as user_submitted
+		FROM scene_fingerprints f
+		WHERE f.scene_id IN (:sceneids)
 		GROUP BY f.scene_id, f.algorithm, f.hash
 		ORDER BY submissions DESC`
 
 	m := make(map[uuid.UUID][]*models.Fingerprint)
 
-	query, args, _ := sqlx.In(query, ids)
+	arg := map[string]interface{}{
+		"userid":   currentUserID,
+		"sceneids": ids,
+	}
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
 	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
 		var fg sceneFingerprintGroup
 
@@ -455,9 +474,6 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 		}
 
 		fp := fingerprintGroupToFingerprint(fg)
-		if fg.isFingerprintUserSubmitted(userFPs) {
-			fp.UserSubmitted = true
-		}
 
 		m[fg.SceneID] = append(m[fg.SceneID], fp)
 		return nil
@@ -470,32 +486,6 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 		result[i] = m[id]
 	}
 	return result, nil
-}
-
-func (qb *sceneQueryBuilder) getFingerprintUserSubmissions(currentUserID uuid.UUID, ids []uuid.UUID) ([]*models.SceneFingerprint, error) {
-	query := `
-		SELECT f.scene_id, f.hash, f.algorithm FROM scene_fingerprints f
-		WHERE f.scene_id IN (?) AND f.user_id = ?`
-
-	query, args, _ := sqlx.In(query, ids, currentUserID)
-
-	var ret []*models.SceneFingerprint
-
-	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
-		var fp models.SceneFingerprint
-
-		if err := rows.StructScan(&fp); err != nil {
-			return err
-		}
-
-		ret = append(ret, &fp)
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
 }
 
 func (qb *sceneQueryBuilder) GetPerformers(id uuid.UUID) (models.PerformersScenes, error) {

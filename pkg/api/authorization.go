@@ -26,7 +26,7 @@ func validateEdit(ctx context.Context) error {
 }
 
 func validateVote(ctx context.Context) error {
-	return validateRole(ctx, models.RoleEnumVote)
+	return user.ValidateRole(ctx, models.RoleEnumVote)
 }
 
 func validateInvite(ctx context.Context) error {
