@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { Link, useParams, useHistory } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 import {
   useScene,
@@ -84,7 +85,7 @@ const SceneComponent: React.FC = () => {
     if (fingerprint.user_submitted) {
       return (
         <span className="user-submitted" title="Submitted by you">
-          <Icon icon="check-circle" />
+          <Icon icon={faCheckCircle} />
         </span>
       );
     }

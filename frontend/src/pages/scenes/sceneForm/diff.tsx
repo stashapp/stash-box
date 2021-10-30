@@ -1,7 +1,7 @@
 import { SceneDetails as SceneDet } from "src/components/editCard/ModifyEdit";
 
 import { SceneFragment } from "src/graphql";
-import { fingerprintAlgorithm, genderEnum, parseDuration } from "src/utils";
+import { genderEnum, parseDuration } from "src/utils";
 
 import { CastedSceneFormData } from "./SceneForm";
 
@@ -74,23 +74,6 @@ const selectSceneDetails = (
     (i) => i.id
   );
 
-  const [addedFingerprints, removedFingerprints] = diffArray(
-    (data.fingerprints ?? []).flatMap((f) => {
-      const algorithm = fingerprintAlgorithm(f.algorithm);
-      if (!algorithm || !f.hash || !f.duration) return [];
-
-      return [
-        {
-          hash: f.hash,
-          algorithm,
-          duration: f.duration,
-        },
-      ];
-    }),
-    original.fingerprints,
-    (f) => `${f.hash}${f.algorithm}`
-  );
-
   const [addedUrls, removedUrls] = diffArray(
     data.studioURL
       ? [
@@ -147,8 +130,6 @@ const selectSceneDetails = (
       removed_tags: removedTags,
       added_images: addedImages,
       removed_images: removedImages,
-      added_fingerprints: addedFingerprints,
-      removed_fingerprints: removedFingerprints,
     },
   ];
 };

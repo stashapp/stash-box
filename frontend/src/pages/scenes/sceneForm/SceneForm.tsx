@@ -1,26 +1,14 @@
-/* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useState, useMemo } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
-import {
-  Button,
-  Col,
-  Form,
-  InputGroup,
-  Tab,
-  Tabs,
-} from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Tab, Tabs } from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import {
-  FingerprintAlgorithm,
-  GenderEnum,
-  SceneEditDetailsInput,
-} from "src/graphql";
+import { GenderEnum, SceneEditDetailsInput } from "src/graphql";
 import { getUrlByType, formatDuration, parseDuration } from "src/utils";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -79,22 +67,6 @@ const schema = yup.object({
           deleted: yup.bool().required(),
         })
         .required()
-    )
-    .ensure(),
-  fingerprints: yup
-    .array()
-    .of(
-      yup.object({
-        algorithm: yup
-          .string()
-          .oneOf(Object.keys(FingerprintAlgorithm))
-          .required(),
-        hash: yup.string().required(),
-        duration: yup.number().min(1).required(),
-        submissions: yup.number().default(1).required(),
-        created: yup.string().required(),
-        updated: yup.string().required(),
-      })
     )
     .ensure(),
   tags: yup
