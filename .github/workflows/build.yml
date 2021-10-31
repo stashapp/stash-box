@@ -64,9 +64,11 @@ jobs:
     - name: Cache go build
       uses: actions/cache@v2
       env:
-        cache-name: cache-go-cache-1
+        cache-name: cache-go-cache-2
       with:
-        path: .go-cache
+        path: |
+          .go-cache
+          vendor
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.mod', '**/go.sum') }}
 
     - name: Pre-install
