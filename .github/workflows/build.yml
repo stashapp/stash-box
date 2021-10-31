@@ -59,15 +59,16 @@ jobs:
         cache-name: cache-ui
       with:
         path: frontend/build
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock', 'frontend/public/**', 'frontend/src/**', 'graphql/**/*.graphql') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock', 'frontend/src/**', 'graphql/**/*.graphql') }}
 
     - name: Cache go build
       uses: actions/cache@v2
       env:
-        cache-name: cache-go-cache-b
+        cache-name: cache-go-cache-2
       with:
         path: |
           ~/go/pkg/mod
+          .go-cache
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.mod', '**/go.sum') }}
 
     - name: Pre-install
