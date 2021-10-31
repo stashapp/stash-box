@@ -1,12 +1,12 @@
 import React from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Button, Col, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { usePerformerEdit, usePerformer, OperationEnum } from "src/graphql";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
+import { usePerformerEdit, OperationEnum } from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 
@@ -16,13 +16,12 @@ const schema = yup.object({
 });
 export type FormData = yup.Asserts<typeof schema>;
 
-const PerformerDelete: React.FC = () => {
+interface Props {
+  performer: Performer;
+}
+
+const PerformerDelete: React.FC<Props> = ({ performer }) => {
   const history = useHistory();
-  const { id } = useParams<{ id?: string }>();
-  const { data: performer, loading: loadingPerformer } = usePerformer(
-    { id: id ?? "" },
-    !id
-  );
   const {
     register,
     handleSubmit,
@@ -50,11 +49,6 @@ const PerformerDelete: React.FC = () => {
       },
     });
 
-  if (!id) return <ErrorMessage error="Performer ID is missing" />;
-  if (loadingPerformer)
-    return <LoadingIndicator message="Loading performer..." />;
-  if (!performer) return <ErrorMessage error="Performer not found." />;
-
   return (
     <>
       <Form
@@ -63,10 +57,10 @@ const PerformerDelete: React.FC = () => {
       >
         <Form.Row>
           <h4>
-            Delete performer <em>{performer.findPerformer?.name}</em>
+            Delete performer <em>{performer.name}</em>
           </h4>
         </Form.Row>
-        <Form.Control type="hidden" value={id} {...register("id")} />
+        <Form.Control type="hidden" value={performer.id} {...register("id")} />
         <Form.Row className="my-4">
           <Col md={6}>
             <EditNote register={register} error={errors.note} />

@@ -22,6 +22,7 @@ import {
   LoadingIndicator,
   PerformerName,
 } from "src/components/fragments";
+import Title from "src/components/title";
 import {
   formatFuzzyDate,
   getImage,
@@ -146,6 +147,7 @@ const Search: React.FC = () => {
 
   return (
     <div className={CLASSNAME}>
+      <Title page={term} />
       <Form.Group className={CLASSNAME_INPUT}>
         <Icon icon={faSearch} />
         <Form.Control

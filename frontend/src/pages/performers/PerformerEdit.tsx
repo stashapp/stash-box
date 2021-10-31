@@ -1,21 +1,22 @@
 import React from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
+import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import {
-  usePerformer,
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
 } from "src/graphql";
 
-import { LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 
-const PerformerModify: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  performer: Performer;
+}
+
+const PerformerModify: React.FC<Props> = ({ performer }) => {
   const history = useHistory();
-  const { loading, data } = usePerformer({ id });
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (editData) => {
       if (editData.performerEdit.id)
@@ -32,7 +33,7 @@ const PerformerModify: React.FC = () => {
       variables: {
         performerData: {
           edit: {
-            id,
+            id: performer.id,
             operation: OperationEnum.MODIFY,
             comment: editNote,
           },
@@ -45,20 +46,17 @@ const PerformerModify: React.FC = () => {
     });
   };
 
-  if (loading) return <LoadingIndicator message="Loading performer..." />;
-  if (!data?.findPerformer) return <div>Performer not found!</div>;
-
   return (
     <>
       <h3>
         Edit performer{" "}
         <i>
-          <b>{data.findPerformer.name}</b>
+          <b>{performer.name}</b>
         </i>
       </h3>
       <hr />
       <PerformerForm
-        performer={data.findPerformer}
+        performer={performer}
         callback={doUpdate}
         changeType="modify"
         saving={saving}

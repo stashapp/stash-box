@@ -7,6 +7,7 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Form } from "react-bootstrap";
 
+import Title from "src/components/title";
 import { useChangePassword } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
@@ -58,6 +59,7 @@ const ResetPassword: React.FC = () => {
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
+      <Title page="Reset Password" />
       <form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}

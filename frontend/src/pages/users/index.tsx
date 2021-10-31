@@ -1,6 +1,8 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, useParams } from "react-router-dom";
 
+import { useUser } from "src/graphql";
+import Title from "src/components/title";
 import {
   ROUTE_USERS,
   ROUTE_USER,
@@ -9,6 +11,7 @@ import {
   ROUTE_USER_PASSWORD,
   ROUTE_USER_EDITS,
 } from "src/constants/route";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 
 import Users from "./Users";
 import User from "./User";
@@ -17,25 +20,63 @@ import UserEdit from "./UserEdit";
 import UserPassword from "./UserPassword";
 import UserEdits from "./UserEdits";
 
+const UserLoader: React.FC = () => {
+  const { name } = useParams<{ name: string }>();
+  const { data, loading, refetch } = useUser({ name: name ?? "" });
+
+  if (!name) return <ErrorMessage error="Tag ID is missing" />;
+
+  if (loading) return <LoadingIndicator message="Loading user..." />;
+
+  const user = data?.findUser;
+  if (!user) return <ErrorMessage error="User not found." />;
+
+  return (
+    <Switch>
+      <Route exact path={ROUTE_USER}>
+        <>
+          <Title page={user.name} />
+          <User user={user} refetch={refetch} />
+        </>
+      </Route>
+      <Route exact path={ROUTE_USER_EDIT}>
+        <>
+          <Title page={`Edit ${user.name}`} />
+          <UserEdit user={user} />
+        </>
+      </Route>
+      <Route exact path={ROUTE_USER_EDITS}>
+        <>
+          <Title page={`Edits by ${user.name}`} />
+          <UserEdits user={user} />
+        </>
+      </Route>
+    </Switch>
+  );
+};
+
 const UserRoutes: React.FC = () => (
   <Switch>
     <Route exact path={ROUTE_USERS}>
-      <Users />
+      <>
+        <Title page="Users" />
+        <Users />
+      </>
     </Route>
     <Route exact path={ROUTE_USER_ADD}>
-      <UserAdd />
+      <>
+        <Title page="Add User" />
+        <UserAdd />
+      </>
     </Route>
     <Route exact path={ROUTE_USER_PASSWORD}>
-      <UserPassword />
+      <>
+        <Title page="Change Password" />
+        <UserPassword />
+      </>
     </Route>
-    <Route exact path={ROUTE_USER}>
-      <User />
-    </Route>
-    <Route exact path={ROUTE_USER_EDIT}>
-      <UserEdit />
-    </Route>
-    <Route exact path={ROUTE_USER_EDITS}>
-      <UserEdits />
+    <Route path={ROUTE_USER}>
+      <UserLoader />
     </Route>
   </Switch>
 );

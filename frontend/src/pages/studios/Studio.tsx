@@ -1,16 +1,15 @@
 import React, { useContext } from "react";
-import { Link, useHistory, useParams } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { sortBy } from "lodash-es";
 
+import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import {
   TargetTypeEnum,
   useEdits,
-  useStudio,
   VoteStatusEnum,
   CriterionModifier,
 } from "src/graphql";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { EditList, SceneList } from "src/components/list";
 
 import {
@@ -26,10 +25,12 @@ import AuthContext from "src/AuthContext";
 
 const DEFAULT_TAB = "scenes";
 
-const StudioComponent: React.FC = () => {
+interface Props {
+  studio: Studio;
+}
+
+const StudioComponent: React.FC<Props> = ({ studio }) => {
   const auth = useContext(AuthContext);
-  const { id = "" } = useParams<{ id?: string }>();
-  const { loading, data } = useStudio({ id }, id === "");
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
 
@@ -39,16 +40,10 @@ const StudioComponent: React.FC = () => {
     },
     editFilter: {
       target_type: TargetTypeEnum.STUDIO,
-      target_id: id,
+      target_id: studio.id,
       status: VoteStatusEnum.PENDING,
     },
   });
-
-  if (loading) return <LoadingIndicator message="Loading studio..." />;
-  if (id === "" || !data?.findStudio)
-    return <ErrorMessage error="Studio not found." />;
-
-  const studio = data.findStudio;
 
   const studioImage = getImage(studio.images, "landscape");
 
@@ -101,7 +96,7 @@ const StudioComponent: React.FC = () => {
         <div>
           {canEdit(auth.user) && !studio.deleted && (
             <>
-              <Link to={createHref(ROUTE_STUDIO_EDIT, { id })} className="ml-2">
+              <Link to={createHref(ROUTE_STUDIO_EDIT, studio)} className="ml-2">
                 <Button>Edit</Button>
               </Link>
               <Link
@@ -127,13 +122,16 @@ const StudioComponent: React.FC = () => {
           eventKey="scenes"
           title={subStudios.length > 0 ? "All Scenes" : "Scenes"}
         >
-          <SceneList filter={{ parentStudio: id }} />
+          <SceneList filter={{ parentStudio: studio.id }} />
         </Tab>
         {subStudios.length > 0 && (
           <Tab eventKey="studio-scenes" title="Studio Scenes">
             <SceneList
               filter={{
-                studios: { value: [id], modifier: CriterionModifier.INCLUDES },
+                studios: {
+                  value: [studio.id],
+                  modifier: CriterionModifier.INCLUDES,
+                },
               }}
             />
           </Tab>

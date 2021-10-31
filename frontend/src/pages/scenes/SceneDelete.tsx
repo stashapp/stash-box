@@ -1,13 +1,13 @@
 import React from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Button, Col, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { OperationEnum, useScene, useSceneEdit } from "src/graphql";
+import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
+import { OperationEnum, useSceneEdit } from "src/graphql";
 import { EditNote } from "src/components/form";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 
 const schema = yup.object({
@@ -16,13 +16,12 @@ const schema = yup.object({
 });
 export type FormData = yup.Asserts<typeof schema>;
 
-const SceneDelete: React.FC = () => {
+interface Props {
+  scene: Scene;
+}
+
+const SceneDelete: React.FC<Props> = ({ scene }) => {
   const history = useHistory();
-  const { id } = useParams<{ id?: string }>();
-  const { data: scene, loading: loadingScene } = useScene(
-    { id: id ?? "" },
-    !id
-  );
   const {
     register,
     handleSubmit,
@@ -50,20 +49,15 @@ const SceneDelete: React.FC = () => {
       },
     });
 
-  if (!id) return <ErrorMessage error="Scene ID is missing" />;
-  if (loadingScene) return <LoadingIndicator message="Loading scene..." />;
-  if (!scene) return <ErrorMessage error="Scene not found." />;
-
   return (
     <>
       <Form className="SceneDeleteForm" onSubmit={handleSubmit(handleDelete)}>
         <Form.Row>
           <h4>
-            Delete scene{" "}
-            <em>{scene.findScene?.title ?? scene.findScene?.id}</em>
+            Delete scene <em>{scene.title}</em>
           </h4>
         </Form.Row>
-        <Form.Control type="hidden" value={id} {...register("id")} />
+        <Form.Control type="hidden" value={scene.id} {...register("id")} />
         <Form.Row className="my-4">
           <Col md={6}>
             <EditNote register={register} error={errors.note} />

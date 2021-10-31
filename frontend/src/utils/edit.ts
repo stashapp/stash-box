@@ -104,3 +104,18 @@ export const getEditTargetName = (target: Target): string => {
 
   return target.name;
 };
+
+export const getEditTargetEntity = (target: Target) => {
+  if (isTag(target)) {
+    return "Tag";
+  }
+  if (isPerformer(target)) {
+    return "Performer";
+  }
+  if (isStudio(target)) {
+    return "Studio";
+  }
+  if (isScene(target)) {
+    return "Scene";
+  }
+};
