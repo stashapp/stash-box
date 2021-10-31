@@ -33,7 +33,6 @@ import (
 var version = "0.0.0"
 var buildstamp string
 var githash string
-var index string
 
 const APIKeyHeader = "ApiKey"
 
@@ -282,6 +281,8 @@ func getIndex(ui embed.FS) []byte {
 	tmpl := template.Must(template.New("index").Parse(string(indexFile)))
 	title := template.HTMLEscapeString(config.GetTitle())
 	output := new(strings.Builder)
-	tmpl.Execute(output, template.HTML(title))
+	if err := tmpl.Execute(output, template.HTML(title)); err != nil {
+		panic(error.Error(err))
+	}
 	return []byte(output.String())
 }
