@@ -11,7 +11,14 @@ import { useActivateUser } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
 const schema = yup.object({
-  name: yup.string().required("Username is required"),
+  name: yup
+    .string()
+    .required("Username is required")
+    .test(
+      "excludeEmail",
+      "The username is public and should not be the same as your email",
+      (value, { parent }) => value?.trim() !== parent.email
+    ),
   email: yup.string().email().required("Email is required"),
   activationKey: yup.string().required("Activation Key is required"),
   password: yup.string().required("Password is required"),
@@ -84,7 +91,7 @@ const ActivateNewUserPage: React.FC = () => {
             placeholder="Username"
             {...register("name")}
           />
-          <div className="invalid-feedback">{errors?.name?.message}</div>
+          <div className="col invalid-feedback">{errors?.name?.message}</div>
         </label>
 
         <label className="row" htmlFor="password">
@@ -95,7 +102,9 @@ const ActivateNewUserPage: React.FC = () => {
             placeholder="Password"
             {...register("password")}
           />
-          <div className="invalid-feedback">{errors?.password?.message}</div>
+          <div className="col invalid-feedback">
+            {errors?.password?.message}
+          </div>
         </label>
         <div className="row">
           <div className="col-3 offset-9 d-flex justify-content-end pr-0">
