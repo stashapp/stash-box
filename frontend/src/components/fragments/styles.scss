@@ -1,3 +1,12 @@
+@keyframes FadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .LoadingIndicator {
   align-items: center;
   display: flex;
@@ -5,6 +14,10 @@
   height: 70vh;
   justify-content: center;
   width: 100%;
+
+  animation-name: FadeIn;
+  animation-duration: 1s;
+  transition-timing-function: linear;
 
   &-message {
     margin-top: 1rem;
