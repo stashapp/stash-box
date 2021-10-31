@@ -1,22 +1,19 @@
 import React, { useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
-import { useUser, useUpdateUser } from "src/graphql";
-import { LoadingIndicator } from "src/components/fragments";
+import { useUpdateUser } from "src/graphql";
+import { User_findUser as User } from "src/graphql/definitions/User";
 import { userHref } from "src/utils";
 import UserEditForm, { UserEditData } from "./UserEditForm";
 
-const EditUserComponent: React.FC = () => {
-  const { name = "" } = useParams<{ name?: string }>();
+interface Props {
+  user: User;
+}
+
+const EditUserComponent: React.FC<Props> = ({ user }) => {
   const [queryError, setQueryError] = useState();
   const history = useHistory();
-  const { data, loading } = useUser({ name });
   const [updateUser] = useUpdateUser();
-
-  if (loading) return <LoadingIndicator />;
-  if (name === "" || !data?.findUser) return <div>User not found!</div>;
-
-  const user = data.findUser;
 
   const doUpdate = (userData: UserEditData) => {
     updateUser({ variables: { userData } })

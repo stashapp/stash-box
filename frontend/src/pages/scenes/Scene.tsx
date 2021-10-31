@@ -1,14 +1,13 @@
 import React, { useContext } from "react";
-import { Link, useParams, useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  useScene,
-  useEdits,
-  TargetTypeEnum,
-  VoteStatusEnum,
-} from "src/graphql";
+  Scene_findScene as Scene,
+  Scene_findScene_fingerprints as Fingerprint,
+} from "src/graphql/definitions/Scene";
+import { useEdits, TargetTypeEnum, VoteStatusEnum } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   canEdit,
@@ -29,21 +28,21 @@ import {
 } from "src/constants/route";
 import {
   GenderIcon,
-  LoadingIndicator,
   TagLink,
   PerformerName,
   Icon,
 } from "src/components/fragments";
 import { EditList } from "src/components/list";
-import { Scene_findScene_fingerprints } from "src/graphql/definitions/Scene";
 
 const DEFAULT_TAB = "description";
 
-const SceneComponent: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  scene: Scene;
+}
+
+const SceneComponent: React.FC<Props> = ({ scene }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
-  const { loading, data } = useScene({ id });
   const auth = useContext(AuthContext);
 
   const { data: editData } = useEdits({
@@ -52,7 +51,7 @@ const SceneComponent: React.FC = () => {
     },
     editFilter: {
       target_type: TargetTypeEnum.SCENE,
-      target_id: id,
+      target_id: scene.id,
       status: VoteStatusEnum.PENDING,
     },
   });
@@ -61,11 +60,7 @@ const SceneComponent: React.FC = () => {
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
-  if (loading) return <LoadingIndicator message="Loading scene..." />;
-  if (!data?.findScene) return <div>Scene not found!</div>;
-  const scene = data.findScene;
-
-  const performers = data.findScene.performers
+  const performers = scene.performers
     .map((performance) => {
       const { performer } = performance;
       return (
@@ -81,7 +76,7 @@ const SceneComponent: React.FC = () => {
     })
     .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
 
-  function maybeRenderSubmitted(fingerprint: Scene_findScene_fingerprints) {
+  function maybeRenderSubmitted(fingerprint: Fingerprint) {
     if (fingerprint.user_submitted) {
       return (
         <span className="user-submitted" title="Submitted by you">
@@ -133,11 +128,11 @@ const SceneComponent: React.FC = () => {
           <div className="float-right">
             {canEdit(auth.user) && !scene.deleted && (
               <>
-                <Link to={createHref(ROUTE_SCENE_EDIT, { id })}>
+                <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
                   <Button>Edit</Button>
                 </Link>
                 <Link
-                  to={createHref(ROUTE_SCENE_DELETE, { id })}
+                  to={createHref(ROUTE_SCENE_DELETE, { id: scene.id })}
                   className="ml-2"
                 >
                   <Button variant="danger">Delete</Button>
@@ -249,7 +244,7 @@ const SceneComponent: React.FC = () => {
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
           tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
-          <EditList type={TargetTypeEnum.SCENE} id={id} />
+          <EditList type={TargetTypeEnum.SCENE} id={scene.id} />
         </Tab>
       </Tabs>
     </>

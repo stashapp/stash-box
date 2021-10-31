@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import cx from "classnames";
 
+import Title from "src/components/title";
 import { useNewUser } from "src/graphql";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
@@ -70,6 +71,7 @@ const Register: React.FC = () => {
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
+      <Title page="Register Account" />
       <form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}

@@ -1,16 +1,16 @@
 import React, { useContext } from "react";
-import { Link, useHistory, useParams } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 
 import {
   useScenes,
-  useTag,
   useEdits,
   SortDirectionEnum,
   CriterionModifier,
   TargetTypeEnum,
   VoteStatusEnum,
 } from "src/graphql";
+import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 
 import AuthContext from "src/AuthContext";
 import { usePagination } from "src/hooks";
@@ -33,14 +33,15 @@ import {
 const PER_PAGE = 20;
 const DEFAULT_TAB = "scenes";
 
-const TagComponent: React.FC = () => {
+interface Props {
+  tag: Tag;
+}
+
+const TagComponent: React.FC<Props> = ({ tag }) => {
   const auth = useContext(AuthContext);
-  const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { page, setPage } = usePagination();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
-  const { data, loading: loadingTag } = useTag({ id });
-  const tag = data?.findTag;
 
   const { data: sceneData, loading: loadingScenes } = useScenes(
     {
@@ -66,7 +67,7 @@ const TagComponent: React.FC = () => {
     },
     editFilter: {
       target_type: TargetTypeEnum.TAG,
-      target_id: id,
+      target_id: tag.id,
       status: VoteStatusEnum.PENDING,
     },
   });
@@ -75,14 +76,7 @@ const TagComponent: React.FC = () => {
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
-  if (loadingTag || loadingScenes)
-    return <LoadingIndicator message="Loading..." />;
-
-  if (!tag?.id) return <div>Tag not found!</div>;
-  if (!sceneData?.queryScenes)
-    return <ErrorMessage error="Scene data not found." />;
-
-  const scenes = sceneData.queryScenes.scenes.map((scene) => (
+  const scenes = sceneData?.queryScenes.scenes.map((scene) => (
     <SceneCard key={scene.id} performance={scene} />
   ));
 
@@ -138,24 +132,32 @@ const TagComponent: React.FC = () => {
       <hr className="my-2" />
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
         <Tab eventKey="scenes" title="Scenes">
-          <div className="row no-gutters">
-            <Pagination
-              onClick={setPage}
-              perPage={PER_PAGE}
-              active={page}
-              count={sceneData.queryScenes.count}
-              showCount
-            />
-          </div>
-          <div className="performers row">{scenes}</div>
-          <div className="row no-gutters">
-            <Pagination
-              onClick={setPage}
-              perPage={PER_PAGE}
-              active={page}
-              count={sceneData.queryScenes.count}
-            />
-          </div>
+          {loadingScenes && <LoadingIndicator message="Loading..." />}
+          {!loadingScenes && !sceneData?.queryScenes && (
+            <ErrorMessage error="Scene data not found." />
+          )}
+          {!loadingScenes && sceneData?.queryScenes && (
+            <>
+              <div className="row no-gutters">
+                <Pagination
+                  onClick={setPage}
+                  perPage={PER_PAGE}
+                  active={page}
+                  count={sceneData.queryScenes.count}
+                  showCount
+                />
+              </div>
+              <div className="performers row">{scenes}</div>
+              <div className="row no-gutters">
+                <Pagination
+                  onClick={setPage}
+                  perPage={PER_PAGE}
+                  active={page}
+                  count={sceneData.queryScenes.count}
+                />
+              </div>
+            </>
+          )}
         </Tab>
         <Tab
           eventKey="edits"

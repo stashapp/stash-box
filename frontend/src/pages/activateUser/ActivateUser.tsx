@@ -9,6 +9,7 @@ import cx from "classnames";
 
 import { useActivateUser } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
+import Title from "src/components/title";
 
 const schema = yup.object({
   name: yup
@@ -68,6 +69,7 @@ const ActivateNewUserPage: React.FC = () => {
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
+      <Title page="Active User" />
       <form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}

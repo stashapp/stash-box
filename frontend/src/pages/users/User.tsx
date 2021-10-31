@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
 import { faMinus, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { sortBy } from "lodash-es";
@@ -8,7 +8,6 @@ import {
   VoteStatusEnum,
   VoteTypeEnum,
   useConfig,
-  useUser,
   useDeleteUser,
   useRescindInviteCode,
   useGenerateInviteCode,
@@ -16,6 +15,7 @@ import {
   useRevokeInvite,
 } from "src/graphql";
 import {
+  User_findUser as User,
   User_findUser_edit_count as EditCounts,
   User_findUser_vote_count as VoteCounts,
 } from "src/graphql/definitions/User";
@@ -27,7 +27,7 @@ import {
   ROUTE_USER_EDITS,
 } from "src/constants/route";
 import Modal from "src/components/modal";
-import { Icon, LoadingIndicator } from "src/components/fragments";
+import { Icon } from "src/components/fragments";
 import { isAdmin, createHref } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 
@@ -56,10 +56,14 @@ const filterVotes = (voteCount: VoteCounts): VoteCount[] => {
   return sortBy(votes, (value) => value[0]);
 };
 
-const UserComponent: React.FC = () => {
+interface Props {
+  user: User;
+  refetch: () => void;
+}
+
+const UserComponent: React.FC<Props> = ({ user, refetch }) => {
   const Auth = useContext(AuthContext);
   const { data: configData } = useConfig();
-  const { name = "" } = useParams<{ name?: string }>();
   const [showDelete, setShowDelete] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
 
@@ -69,12 +73,6 @@ const UserComponent: React.FC = () => {
   const [grantInvite] = useGrantInvite();
   const [revokeInvite] = useRevokeInvite();
 
-  const { data, loading, refetch } = useUser({ name }, name === "");
-
-  if (loading) return <LoadingIndicator />;
-  if (name === "" || !data?.findUser) return <div>No user found!</div>;
-
-  const user = data.findUser;
   const isUser = () => Auth.user?.name === user.name;
   const showPrivate = isUser() || isAdmin(Auth.user);
   const endpointURL = configData && `${configData.getConfig.host_url}/graphql`;
@@ -151,7 +149,7 @@ const UserComponent: React.FC = () => {
     <Row className="justify-content-center">
       <Col lg={10}>
         <div className="d-flex">
-          <h3>{name}</h3>
+          <h3>{user.name}</h3>
           {deleteModal}
           {rescindCodeModal}
           <div className="ml-auto">
