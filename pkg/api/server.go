@@ -74,10 +74,10 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			user, roles, err := getUserAndRoles(getRepo(ctx), userID)
+			u, roles, err := getUserAndRoles(getRepo(ctx), userID)
 
 			// ensure api key of the user matches the passed one
-			if apiKey != "" && user != nil && user.APIKey != apiKey {
+			if apiKey != "" && u != nil && u.APIKey != apiKey {
 				w.WriteHeader(http.StatusUnauthorized)
 				_, _ = w.Write([]byte(err.Error()))
 				return
@@ -85,8 +85,8 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			// TODO - increment api key counters
 
-			ctx = context.WithValue(ctx, ContextUser, user)
-			ctx = context.WithValue(ctx, ContextRoles, roles)
+			ctx = context.WithValue(ctx, user.ContextUser, u)
+			ctx = context.WithValue(ctx, user.ContextRoles, roles)
 
 			r = r.WithContext(ctx)
 

@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type tagCategoryTestRunner struct {
@@ -159,30 +159,30 @@ func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 func (s *tagCategoryTestRunner) testUnauthorisedTagCategoryModify() {
 	// test each api interface - all require admin so all should fail
 	_, err := s.resolver.Mutation().TagCategoryCreate(s.ctx, models.TagCategoryCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCategoryCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCategoryCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().TagCategoryUpdate(s.ctx, models.TagCategoryUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCategoryUpdate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCategoryUpdate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().TagCategoryDestroy(s.ctx, models.TagCategoryDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCategoryDestroy: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCategoryDestroy: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
 func (s *tagTestRunner) testUnauthorisedTagCategoryQuery() {
 	_, err := s.resolver.Query().FindTagCategory(s.ctx, "")
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("FindTagCategory: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("FindTagCategory: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Query().QueryTagCategories(s.ctx, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("QueryTagCategories: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("QueryTagCategories: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 

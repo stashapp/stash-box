@@ -81,7 +81,7 @@ func (s *performerEditTestRunner) testModifyPerformerEdit() {
 	}
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	id := createdPerformer.ID.String()
+	id := createdPerformer.ID
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,
@@ -92,7 +92,7 @@ func (s *performerEditTestRunner) testModifyPerformerEdit() {
 	s.verifyUpdatedPerformerEdit(createdPerformer, *performerEditDetailsInput, createdUpdateEdit)
 }
 
-func (s *performerEditTestRunner) verifyUpdatedPerformerEdit(originalPerformer *models.Performer, input models.PerformerEditDetailsInput, edit *models.Edit) {
+func (s *performerEditTestRunner) verifyUpdatedPerformerEdit(originalPerformer *performerOutput, input models.PerformerEditDetailsInput, edit *models.Edit) {
 	s.verifyEditOperation(models.OperationEnumModify.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
@@ -379,7 +379,7 @@ func (s *performerEditTestRunner) testDestroyPerformerEdit() {
 		return
 	}
 
-	performerID := createdPerformer.ID.String()
+	performerID := createdPerformer.ID
 
 	performerEditDetailsInput := models.PerformerEditDetailsInput{}
 	editInput := models.EditInput{
@@ -419,8 +419,8 @@ func (s *performerEditTestRunner) testMergePerformerEdit() {
 	createdMergePerformer, err := s.createTestPerformer(nil)
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	id := createdPrimaryPerformer.ID.String()
-	mergeSources := []string{createdMergePerformer.ID.String()}
+	id := createdPrimaryPerformer.ID
+	mergeSources := []string{createdMergePerformer.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -432,7 +432,7 @@ func (s *performerEditTestRunner) testMergePerformerEdit() {
 	s.verifyMergePerformerEdit(createdPrimaryPerformer, *performerEditDetailsInput, createdMergeEdit, mergeSources)
 }
 
-func (s *performerEditTestRunner) verifyMergePerformerEdit(originalPerformer *models.Performer, input models.PerformerEditDetailsInput, edit *models.Edit, inputMergeSources []string) {
+func (s *performerEditTestRunner) verifyMergePerformerEdit(originalPerformer *performerOutput, input models.PerformerEditDetailsInput, edit *models.Edit, inputMergeSources []string) {
 	s.verifyEditOperation(models.OperationEnumMerge.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
@@ -505,7 +505,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 
 	// Create edit that replaces all metadata for the performer
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	id := createdPerformer.ID.String()
+	id := createdPerformer.ID
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,
@@ -540,7 +540,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	}
 
 	sceneAppearance := models.PerformerAppearanceInput{
-		PerformerID: createdPerformer.ID.String(),
+		PerformerID: createdPerformer.ID,
 	}
 
 	sceneInput := models.SceneCreateInput{
@@ -554,7 +554,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	}
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	id := createdPerformer.ID.String()
+	id := createdPerformer.ID
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,
@@ -569,7 +569,19 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 		return
 	}
 
+	scene, err = s.client.findScene(scene.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+
 	s.verifyPerformanceAlias(scene, nil)
+
+	performer, err := s.client.findPerformer(id)
+	if err != nil {
+		s.t.Errorf("Error finding performer")
+		return
+	}
 
 	performerEditDetailsInput = s.createPerformerEditDetailsInput()
 	editInput = models.EditInput{
@@ -591,7 +603,14 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 		return
 	}
 
-	s.verifyPerformanceAlias(scene, nil)
+	scene, err = s.client.findScene(scene.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+
+	// set modify aliases was set to true - this should be set to the old name
+	s.verifyPerformanceAlias(scene, &performer.Name)
 }
 
 func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
@@ -601,7 +620,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	}
 
 	sceneAppearance := models.PerformerAppearanceInput{
-		PerformerID: createdPerformer.ID.String(),
+		PerformerID: createdPerformer.ID,
 	}
 
 	sceneInput := models.SceneCreateInput{
@@ -615,7 +634,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	}
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	id := createdPerformer.ID.String()
+	id := createdPerformer.ID
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,
@@ -635,6 +654,12 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 		return
 	}
 
+	scene, err = s.client.findScene(scene.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+
 	s.verifyPerformanceAlias(scene, &createdPerformer.Name)
 }
 
@@ -644,7 +669,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 	if err != nil {
 		return
 	}
-	id := createdPerformer.ID.String()
+	id := createdPerformer.ID
 
 	measurements := models.MeasurementsInput{}
 	performerUnsetInput := models.PerformerEditDetailsInput{
@@ -679,7 +704,7 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 		return
 	}
 
-	performerID := createdPerformer.ID.String()
+	performerID := createdPerformer.ID
 	appearance := models.PerformerAppearanceInput{
 		PerformerID: performerID,
 	}
@@ -700,10 +725,17 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 	appliedEdit, err := s.applyEdit(destroyEdit.ID.String())
 
 	destroyedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, performerID)
+
+	scene, err = s.client.findScene(scene.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+
 	s.verifyApplyDestroyPerformerEdit(destroyedPerformer, appliedEdit, scene)
 }
 
-func (s *performerEditTestRunner) verifyApplyDestroyPerformerEdit(destroyedPerformer *models.Performer, edit *models.Edit, scene *models.Scene) {
+func (s *performerEditTestRunner) verifyApplyDestroyPerformerEdit(destroyedPerformer *models.Performer, edit *models.Edit, scene *sceneOutput) {
 	s.verifyEditOperation(models.OperationEnumDestroy.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
@@ -713,7 +745,7 @@ func (s *performerEditTestRunner) verifyApplyDestroyPerformerEdit(destroyedPerfo
 		s.fieldMismatch(destroyedPerformer.Deleted, true, "Deleted")
 	}
 
-	scenePerformers, _ := s.resolver.Scene().Performers(s.ctx, scene)
+	scenePerformers := scene.Performers
 	if len(scenePerformers) > 0 {
 		s.fieldMismatch(len(scenePerformers), 0, "Scene performer count")
 	}
@@ -734,13 +766,13 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	}
 
 	mergeSource1Appearance := models.PerformerAppearanceInput{
-		PerformerID: mergeSource1.ID.String(),
+		PerformerID: mergeSource1.ID,
 	}
 	mergeSource2Appearance := models.PerformerAppearanceInput{
-		PerformerID: mergeSource2.ID.String(),
+		PerformerID: mergeSource2.ID,
 	}
 	mergeTargetAppearance := models.PerformerAppearanceInput{
-		PerformerID: mergeTarget.ID.String(),
+		PerformerID: mergeTarget.ID,
 	}
 	// Scene with performer from both source and target, should not cause db unique error
 	sceneInput := models.SceneCreateInput{
@@ -766,8 +798,8 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	}
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	id := mergeTarget.ID.String()
-	mergeSources := []string{mergeSource1.ID.String(), mergeSource2.ID.String()}
+	id := mergeTarget.ID
+	mergeSources := []string{mergeSource1.ID, mergeSource2.ID}
 	setMergeAliases := true
 	options := models.PerformerEditOptionsInput{
 		SetMergeAliases: &setMergeAliases,
@@ -789,13 +821,24 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 		return
 	}
 
+	scene1, err = s.client.findScene(scene1.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+	scene2, err = s.client.findScene(scene2.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+
 	s.verifyAppliedMergePerformerEdit(*performerEditDetailsInput, appliedMerge, scene1, scene2)
 	// Target already attached, so should not get alias
 	s.verifyPerformanceAlias(scene1, nil)
 	s.verifyPerformanceAlias(scene2, &mergeSource1.Name)
 }
 
-func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.PerformerEditDetailsInput, edit *models.Edit, scene1 *models.Scene, scene2 *models.Scene) {
+func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.PerformerEditDetailsInput, edit *models.Edit, scene1 *sceneOutput, scene2 *sceneOutput) {
 	s.verifyEditOperation(models.OperationEnumMerge.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
@@ -812,31 +855,31 @@ func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.P
 	}
 
 	editTarget := s.getEditPerformerTarget(edit)
-	scene1Performers, _ := s.resolver.Scene().Performers(s.ctx, scene1)
+	scene1Performers := scene1.Performers
 	if len(scene1Performers) > 1 {
 		s.fieldMismatch(len(scene1Performers), 1, "Scene 1 performer count")
 	}
-	if scene1Performers[0].Performer.ID != editTarget.ID {
+	if scene1Performers[0].Performer.ID != editTarget.ID.String() {
 		s.fieldMismatch(scene1Performers[0].Performer.ID, editTarget.ID, "Scene 1 performer ID")
 	}
 
-	scene2Performers, _ := s.resolver.Scene().Performers(s.ctx, scene2)
+	scene2Performers := scene2.Performers
 	if len(scene2Performers) > 1 {
 		s.fieldMismatch(len(scene2Performers), 1, "Scene 2 performer count")
 	}
-	if scene2Performers[0].Performer.ID != editTarget.ID {
+	if scene2Performers[0].Performer.ID != editTarget.ID.String() {
 		s.fieldMismatch(scene2Performers[0].Performer.ID, editTarget.ID, "Scene 2 performer ID")
 	}
 }
 
-func (s *performerEditTestRunner) verifyPerformanceAlias(scene *models.Scene, alias *string) {
-	scenePerformers, _ := s.resolver.Scene().Performers(s.ctx, scene)
+func (s *performerEditTestRunner) verifyPerformanceAlias(scene *sceneOutput, alias *string) {
+	scenePerformers := scene.Performers
 	if len(scenePerformers) > 1 {
 		s.fieldMismatch(len(scenePerformers), 1, "Scene performer count")
 	}
 	if alias == nil {
-		if scenePerformers[0].As != nil {
-			s.fieldMismatch(scenePerformers[0].As, *alias, "Scene appearance alias")
+		if len(scenePerformers) > 0 && scenePerformers[0].As != nil {
+			s.fieldMismatch(*scenePerformers[0].As, alias, "Scene appearance alias")
 		}
 	} else if scenePerformers[0].As == nil {
 		s.fieldMismatch(scenePerformers[0].As, *alias, "Scene appearance alias")
@@ -856,7 +899,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	}
 
 	mergeSourceAppearance := models.PerformerAppearanceInput{
-		PerformerID: mergeSource.ID.String(),
+		PerformerID: mergeSource.ID,
 	}
 
 	sceneInput := models.SceneCreateInput{
@@ -870,8 +913,8 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	}
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
-	id := mergeTarget.ID.String()
-	mergeSources := []string{mergeSource.ID.String()}
+	id := mergeTarget.ID
+	mergeSources := []string{mergeSource.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -885,6 +928,12 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 
 	_, err = s.applyEdit(mergeEdit.ID.String())
 	if err != nil {
+		return
+	}
+
+	scene, err = s.client.findScene(scene.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
 	}
 

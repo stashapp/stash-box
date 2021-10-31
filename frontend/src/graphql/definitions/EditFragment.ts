@@ -206,6 +206,7 @@ export interface EditFragment_target_Scene_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }
@@ -658,26 +659,6 @@ export interface EditFragment_details_SceneEdit_removed_images {
   height: number;
 }
 
-export interface EditFragment_details_SceneEdit_added_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
-export interface EditFragment_details_SceneEdit_removed_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
 export interface EditFragment_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -695,8 +676,6 @@ export interface EditFragment_details_SceneEdit {
   removed_tags: EditFragment_details_SceneEdit_removed_tags[] | null;
   added_images: EditFragment_details_SceneEdit_added_images[] | null;
   removed_images: EditFragment_details_SceneEdit_removed_images[] | null;
-  added_fingerprints: EditFragment_details_SceneEdit_added_fingerprints[] | null;
-  removed_fingerprints: EditFragment_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }
@@ -1026,26 +1005,6 @@ export interface EditFragment_old_details_SceneEdit_removed_images {
   height: number;
 }
 
-export interface EditFragment_old_details_SceneEdit_added_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
-export interface EditFragment_old_details_SceneEdit_removed_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
 export interface EditFragment_old_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -1063,8 +1022,6 @@ export interface EditFragment_old_details_SceneEdit {
   removed_tags: EditFragment_old_details_SceneEdit_removed_tags[] | null;
   added_images: EditFragment_old_details_SceneEdit_added_images[] | null;
   removed_images: EditFragment_old_details_SceneEdit_removed_images[] | null;
-  added_fingerprints: EditFragment_old_details_SceneEdit_added_fingerprints[] | null;
-  removed_fingerprints: EditFragment_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }
@@ -1236,6 +1193,7 @@ export interface EditFragment_merge_sources_Scene_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }

@@ -7,8 +7,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type editTestRunner struct {
@@ -24,21 +24,21 @@ func createEditTestRunner(t *testing.T) *editTestRunner {
 func (s *editTestRunner) testUnauthorisedEditEdit() {
 	// requires edit so should fail
 	_, err := s.resolver.Mutation().TagEdit(s.ctx, models.TagEditInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
 func (s *editTestRunner) testUnauthorisedApplyEditAdmin() {
 	// both require admin so should fail
 	_, err := s.resolver.Mutation().ApplyEdit(s.ctx, models.ApplyEditInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().CancelEdit(s.ctx, models.CancelEditInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
@@ -117,12 +117,12 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 	}
 
 	for i := 1; i <= 10; i++ {
-		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 		if err != nil {
 			return
 		}
-		s.ctx = context.WithValue(s.ctx, api.ContextUser, userDB.adminRoles)
+		s.ctx = context.WithValue(s.ctx, user.ContextUser, userDB.adminRoles)
 		_, err = s.applyEdit(createdEdit.ID.String())
 		if err != nil {
 			return
@@ -166,7 +166,7 @@ func (s *editTestRunner) testPositiveEditVoteApplication() {
 		if err != nil {
 			return
 		}
-		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID.String(),
 			Vote: models.VoteTypeEnumAccept,
@@ -198,7 +198,7 @@ func (s *editTestRunner) testNegativeEditVoteApplication() {
 		if err != nil {
 			return
 		}
-		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID.String(),
 			Vote: models.VoteTypeEnumReject,
@@ -222,7 +222,7 @@ func (s *editTestRunner) testEditVoteNotApplying() {
 		if err != nil {
 			return
 		}
-		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 
 		vote := models.VoteTypeEnumAccept
 		if i == 3 {
@@ -249,7 +249,7 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	if err != nil {
 		return
 	}
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 	input := models.EditInput{
 		ID:        &tagID,
 		Operation: models.OperationEnumDestroy,
@@ -264,7 +264,7 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 		if err != nil {
 			return
 		}
-		s.ctx = context.WithValue(s.ctx, api.ContextUser, createdUser)
+		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID.String(),
 			Vote: models.VoteTypeEnumAccept,
@@ -288,8 +288,8 @@ func (s *editTestRunner) testVoteOwnedEditsDisallowed() {
 		Vote: models.VoteTypeEnumAccept,
 	})
 
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("Voting: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("Voting: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
