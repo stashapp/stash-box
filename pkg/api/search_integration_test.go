@@ -6,8 +6,8 @@ package api_test
 import (
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type searchTestRunner struct {
@@ -39,7 +39,7 @@ func (s *searchTestRunner) testSearchPerformerByTerm() {
 	}
 
 	// ensure values were set
-	if createdPerformer.ID != performers[0].ID {
+	if createdPerformer.ID != performers[0].ID.String() {
 		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
 	}
 }
@@ -50,7 +50,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 		return
 	}
 
-	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID.String(), nil)
+	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -63,7 +63,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 	}
 
 	// ensure values were set
-	if createdPerformer.ID != performers[0].ID {
+	if createdPerformer.ID != performers[0].ID.String() {
 		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
 	}
 }
@@ -73,7 +73,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	if err != nil {
 		return
 	}
-	studioID := createdStudio.ID.String()
+	studioID := createdStudio.ID
 
 	title := "scene search title"
 	date := "2019-02-03"
@@ -87,7 +87,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 		return
 	}
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, createdScene.Title.String+" "+createdScene.Date.String, nil)
+	scenes, err := s.resolver.Query().SearchScene(s.ctx, *createdScene.Title+" "+*createdScene.Date, nil)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -100,7 +100,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	}
 
 	// ensure correct scene
-	if createdScene.ID != scenes[0].ID {
+	if createdScene.ID != scenes[0].ID.String() {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }
@@ -111,7 +111,7 @@ func (s *searchTestRunner) testSearchSceneByID() {
 		return
 	}
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID.String(), nil)
+	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -124,20 +124,20 @@ func (s *searchTestRunner) testSearchSceneByID() {
 	}
 
 	// ensure correct scene
-	if createdScene.ID != scenes[0].ID {
+	if createdScene.ID != scenes[0].ID.String() {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }
 func (s *searchTestRunner) testUnauthorisedSearch() {
 	// test each api interface - all require read so all should fail
 	_, err := s.resolver.Query().SearchPerformer(s.ctx, "", nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("SearchPerformer: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("SearchPerformer: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Query().SearchScene(s.ctx, "", nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("SearchScene: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("SearchScene: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 

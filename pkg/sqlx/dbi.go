@@ -109,34 +109,44 @@ func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 	return q.db().Queryx(query, args...)
 }
 
+func (q dbi) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
+	rows, err := q.queryx(query, args...)
+
+	if err != nil && err != sql.ErrNoRows {
+		// TODO - log error instead of returning SQL
+		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
+		return err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	for rows.Next() {
+		if err := f(rows); err != nil {
+			return err
+		}
+	}
+
+	return rows.Err()
+}
+
 // Find returns the row object with the provided id, or returns nil if not
 // found.
 func (q dbi) Find(id uuid.UUID, t table) (interface{}, error) {
 	query := selectStatement(t) + " WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 
-	var rows *sqlx.Rows
-	var err error
-	rows, err = q.queryx(query, args...)
+	var output interface{}
 
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	output := t.NewObject()
-	if rows.Next() {
+	// just get the first row
+	if err := q.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		output = t.NewObject()
 		if err := rows.StructScan(output); err != nil {
-			return nil, err
+			return err
 		}
-	} else {
-		// not found
-		return nil, nil
-	}
 
-	if err := rows.Err(); err != nil {
+		return rows.Close()
+	}); err != nil {
 		return nil, err
 	}
 
@@ -221,30 +231,15 @@ func (q dbi) FindAllJoins(tj tableJoin, ids []uuid.UUID, output Joins) error {
 // RawQuery performs a query on the provided table using the query string
 // and argument slice. It outputs the results to the output slice.
 func (q dbi) RawQuery(t table, query string, args []interface{}, output Models) error {
-	var rows *sqlx.Rows
-	var err error
-
-	rows, err = q.queryx(query, args...)
-
-	if err != nil && err != sql.ErrNoRows {
-		// TODO - log error instead of returning SQL
-		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
-		return err
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	for rows.Next() {
+	return q.queryFunc(query, args, func(rows *sqlx.Rows) error {
 		o := t.NewObject()
 		if err := rows.StructScan(o); err != nil {
 			return err
 		}
 
 		output.Add(o)
-	}
-
-	return rows.Err()
+		return nil
+	})
 }
 
 // RawExec performs a query on the provided table using the query string

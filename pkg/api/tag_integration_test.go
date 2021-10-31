@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type tagTestRunner struct {
@@ -63,7 +63,7 @@ func (s *tagTestRunner) testFindTagById() {
 		return
 	}
 
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 	tag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding tag: %s", err.Error())
@@ -114,7 +114,7 @@ func (s *tagTestRunner) testUpdateTag() {
 		return
 	}
 
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 
 	newDescription := "newDescription"
 
@@ -152,7 +152,7 @@ func (s *tagTestRunner) testDestroyTag() {
 		return
 	}
 
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 
 	destroyed, err := s.resolver.Mutation().TagDestroy(s.ctx, models.TagDestroyInput{
 		ID: tagID,
@@ -184,31 +184,31 @@ func (s *tagTestRunner) testDestroyTag() {
 func (s *tagTestRunner) testUnauthorisedTagModify() {
 	// test each api interface - all require modify so all should fail
 	_, err := s.resolver.Mutation().TagCreate(s.ctx, models.TagCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().TagUpdate(s.ctx, models.TagUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagUpdate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagUpdate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().TagDestroy(s.ctx, models.TagDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagDestroy: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("TagDestroy: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
 func (s *tagTestRunner) testUnauthorisedTagQuery() {
 	// test each api interface - all require read so all should fail
 	_, err := s.resolver.Query().FindTag(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("FindTag: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("FindTag: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Query().QueryTags(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("QueryTags: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("QueryTags: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 

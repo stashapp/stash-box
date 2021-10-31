@@ -144,6 +144,7 @@ type Mutation {
   """Cancel edit without voting"""
   cancelEdit(input: CancelEditInput!): Edit!
 
+  """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean!
 }
 

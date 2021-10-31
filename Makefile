@@ -69,6 +69,10 @@ pre-ui:
 ui:
 	cd frontend && yarn build
 
+.PHONY: ui-fmt
+ui-fmt:
+	cd frontend && yarn format
+
 # runs tests and checks on the UI and builds it
 .PHONY: ui-validate
 ui-validate:
