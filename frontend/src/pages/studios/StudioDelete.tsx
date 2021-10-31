@@ -1,13 +1,13 @@
 import React from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Button, Col, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { OperationEnum, useStudio, useStudioEdit } from "src/graphql";
+import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
+import { OperationEnum, useStudioEdit } from "src/graphql";
 import { EditNote } from "src/components/form";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 
 const schema = yup.object({
@@ -16,13 +16,12 @@ const schema = yup.object({
 });
 export type FormData = yup.Asserts<typeof schema>;
 
-const StudioDelete: React.FC = () => {
+interface Props {
+  studio: Studio;
+}
+
+const StudioDelete: React.FC<Props> = ({ studio }) => {
   const history = useHistory();
-  const { id } = useParams<{ id?: string }>();
-  const { data: studio, loading: loadingTag } = useStudio(
-    { id: id ?? "" },
-    !id
-  );
   const {
     register,
     handleSubmit,
@@ -50,19 +49,15 @@ const StudioDelete: React.FC = () => {
       },
     });
 
-  if (!id) return <ErrorMessage error="Studio ID is missing" />;
-  if (loadingTag) return <LoadingIndicator message="Loading studio..." />;
-  if (!studio) return <ErrorMessage error="Studio not found." />;
-
   return (
     <>
       <Form className="StudioDeleteForm" onSubmit={handleSubmit(handleDelete)}>
         <Form.Row>
           <h4>
-            Delete studio <em>{studio.findStudio?.name}</em>
+            Delete studio <em>{studio.name}</em>
           </h4>
         </Form.Row>
-        <Form.Control type="hidden" value={id} {...register("id")} />
+        <Form.Control type="hidden" value={studio.id} {...register("id")} />
         <Form.Row className="my-4">
           <Col md={6}>
             <EditNote register={register} error={errors.note} />

@@ -1,40 +1,38 @@
 import React, { useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
+import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import {
-  useScene,
   useSceneEdit,
   SceneEditDetailsInput,
   OperationEnum,
 } from "src/graphql";
-import { LoadingIndicator } from "src/components/fragments";
 import { createHref } from "src/utils";
 import { ROUTE_EDIT } from "src/constants";
 import SceneForm from "./sceneForm";
 
-const SceneEdit: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  scene: Scene;
+}
+
+const SceneEdit: React.FC<Props> = ({ scene }) => {
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
-  const { loading, data: scene } = useScene({ id });
   const [insertSceneEdit, { loading: saving }] = useSceneEdit({
-    onCompleted: (data) => {
+    onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
-      if (data.sceneEdit.id)
-        history.push(createHref(ROUTE_EDIT, data.sceneEdit));
+      if (result.sceneEdit.id)
+        history.push(createHref(ROUTE_EDIT, result.sceneEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });
-
-  if (loading) return <LoadingIndicator message="Loading studio..." />;
-  if (!scene?.findScene) return <div>Scene not found!</div>;
 
   const doUpdate = (updateData: SceneEditDetailsInput, editNote: string) => {
     insertSceneEdit({
       variables: {
         sceneData: {
           edit: {
-            id: scene.findScene?.id,
+            id: scene.id,
             operation: OperationEnum.MODIFY,
             comment: editNote,
           },
@@ -46,9 +44,9 @@ const SceneEdit: React.FC = () => {
 
   return (
     <div>
-      <h3>Edit “{scene.findScene.title}”</h3>
+      <h3>Edit “{scene.title}”</h3>
       <hr />
-      <SceneForm scene={scene.findScene} callback={doUpdate} saving={saving} />
+      <SceneForm scene={scene} callback={doUpdate} saving={saving} />
       {submissionError && (
         <div className="text-danger text-right col-9">
           Error: {submissionError}

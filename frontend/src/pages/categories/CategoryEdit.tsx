@@ -1,19 +1,17 @@
 import React from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
-import {
-  useCategory,
-  useUpdateCategory,
-  TagCategoryCreateInput,
-} from "src/graphql";
-import { LoadingIndicator } from "src/components/fragments";
+import { useUpdateCategory, TagCategoryCreateInput } from "src/graphql";
+import { Category_findTagCategory as Category } from "src/graphql/definitions/Category";
 import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
-const UpdateCategory: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  category: Category;
+}
+
+const UpdateCategory: React.FC<Props> = ({ category }) => {
   const history = useHistory();
-  const { data, loading } = useCategory({ id });
   const [updateCategory] = useUpdateCategory({
     onCompleted: (result) => {
       if (result?.tagCategoryUpdate?.id)
@@ -25,17 +23,12 @@ const UpdateCategory: React.FC = () => {
     updateCategory({
       variables: {
         categoryData: {
-          id,
+          id: category.id,
           ...insertData,
         },
       },
     });
   };
-
-  if (loading) return <LoadingIndicator message="Loading category..." />;
-  if (!data?.findTagCategory?.id) return <div>Category not found</div>;
-
-  const category = data.findTagCategory;
 
   return (
     <div>
@@ -43,7 +36,7 @@ const UpdateCategory: React.FC = () => {
         Update <em>{category.name}</em>
       </h3>
       <hr />
-      <CategoryForm callback={doUpdate} category={category} id={id} />
+      <CategoryForm callback={doUpdate} category={category} id={category.id} />
     </div>
   );
 };

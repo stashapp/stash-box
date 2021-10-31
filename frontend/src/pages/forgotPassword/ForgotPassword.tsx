@@ -6,6 +6,7 @@ import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
 
+import Title from "src/components/title";
 import { useResetPassword } from "src/graphql";
 import { ROUTE_HOME } from "src/constants/route";
 
@@ -64,6 +65,7 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
+      <Title page="Forgot Password" />
       <form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}

@@ -73,6 +73,8 @@ type config struct {
 	}
 
 	PHashDistance int `mapstructure:"phash_distance"`
+
+	Title string `mapstructure:"title"`
 }
 
 var JWTSignKey = "jwt_secret_key"
@@ -327,4 +329,11 @@ func GetMinDestructiveVotingPeriod() int {
 
 func GetVoteCronInterval() string {
 	return C.VoteCronInterval
+}
+
+func GetTitle() string {
+	if C.Title == "" {
+		return "Stash-Box"
+	}
+	return C.Title
 }
