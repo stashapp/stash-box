@@ -194,7 +194,7 @@ func (qb *editQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edits.id FROM edits"), nil)
 }
 
-func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter *models.QuerySpec) ([]*models.Edit, int) {
+func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter *models.QuerySpec) ([]*models.Edit, int, error) {
 	if editFilter == nil {
 		editFilter = &models.EditFilterType{}
 	}
@@ -208,33 +208,31 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 		query.Eq(editDBTable.Name()+".user_id", *q)
 	}
 
-	if q := editFilter.TargetID; q != nil && *q != "" {
+	if q := editFilter.TargetID; q != nil {
+		targetID, err := uuid.FromString(*q)
+		if err != nil {
+			return nil, 0, err
+		}
 		if editFilter.TargetType == nil || *editFilter.TargetType == "" {
-			panic("TargetType is required when TargetID filter is used")
+			return nil, 0, errors.New("TargetType is required when TargetID filter is used")
 		}
 		if *editFilter.TargetType == models.TargetTypeEnumTag {
 			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-			jsonID, _ := json.Marshal(*q)
-			query.AddArg(*q, jsonID)
 		} else if *editFilter.TargetType == models.TargetTypeEnumPerformer {
 			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-			jsonID, _ := json.Marshal(*q)
-			query.AddArg(*q, jsonID)
 		} else if *editFilter.TargetType == models.TargetTypeEnumStudio {
 			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-			jsonID, _ := json.Marshal(*q)
-			query.AddArg(*q, jsonID)
 		} else if *editFilter.TargetType == models.TargetTypeEnumScene {
 			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-			jsonID, _ := json.Marshal(*q)
-			query.AddArg(*q, jsonID)
 		} else {
-			panic("TargetType is not yet supported: " + *editFilter.TargetType)
+			return nil, 0, fmt.Errorf("TargetType is not yet supported: %s", *editFilter.TargetType)
 		}
+		jsonID, _ := json.Marshal(targetID)
+		query.AddArg(targetID, jsonID)
 	} else if q := editFilter.TargetType; q != nil && *q != "" {
 		query.Eq("target_type", q.String())
 	}
@@ -254,12 +252,7 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 	var edits models.Edits
 	countResult, err := qb.dbi.Query(*query, &edits)
 
-	if err != nil {
-		// TODO
-		panic(err)
-	}
-
-	return edits, countResult
+	return edits, countResult, err
 }
 
 func (qb *editQueryBuilder) getEditSort(findFilter *models.QuerySpec) string {
