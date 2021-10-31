@@ -65,10 +65,16 @@ const PerformerLoader: React.FC = () => {
 const PerformerRoutes: React.FC = () => (
   <Switch>
     <Route exact path={ROUTE_PERFORMERS}>
-      <Performers />
+      <>
+        <Title page="Performers" />
+        <Performers />
+      </>
     </Route>
     <Route exact path={ROUTE_PERFORMER_ADD}>
-      <PerformerAdd />
+      <>
+        <Title page="Add Performer" />
+        <PerformerAdd />
+      </>
     </Route>
     <Route path={ROUTE_PERFORMER}>
       <PerformerLoader />

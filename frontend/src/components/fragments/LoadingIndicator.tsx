@@ -9,7 +9,10 @@ interface LoadingProps {
 const CLASSNAME = "LoadingIndicator";
 const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
 
-const LoadingIndicator: React.FC<LoadingProps> = ({ message, delay = 1000 }) => {
+const LoadingIndicator: React.FC<LoadingProps> = ({
+  message,
+  delay = 1000,
+}) => {
   const [delayed, setDelayed] = useState(delay > 0);
   useEffect(() => {
     if (delayed && delay > 0) {
@@ -17,8 +20,7 @@ const LoadingIndicator: React.FC<LoadingProps> = ({ message, delay = 1000 }) => 
     }
   }, [delayed, delay]);
 
-  if (delayed)
-    return <></>;
+  if (delayed) return <></>;
 
   return (
     <div className={CLASSNAME}>
@@ -28,6 +30,6 @@ const LoadingIndicator: React.FC<LoadingProps> = ({ message, delay = 1000 }) => 
       <h4 className={CLASSNAME_MESSAGE}>{message ?? "Loading..."}</h4>
     </div>
   );
-}
+};
 
 export default LoadingIndicator;

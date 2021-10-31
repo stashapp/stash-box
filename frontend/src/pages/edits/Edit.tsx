@@ -98,9 +98,9 @@ const EditComponent: React.FC = () => {
   return (
     <div>
       <Title
-        page={`${EditOperationTypes[edit.operation]} ${getEditTargetEntity(edit.target)} "${getEditTargetName(
+        page={`${EditOperationTypes[edit.operation]} ${getEditTargetEntity(
           edit.target
-        )}"`}
+        )} "${getEditTargetName(edit.target)}"`}
       />
       <EditCard edit={edit} showVotes />
       {buttons}
