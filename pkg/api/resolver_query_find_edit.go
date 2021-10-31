@@ -26,9 +26,9 @@ func (r *queryResolver) QueryEdits(ctx context.Context, editFilter *models.EditF
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Edit()
 
-	edits, count := qb.Query(editFilter, filter)
+	edits, count, err := qb.Query(editFilter, filter)
 	return &models.QueryEditsResultType{
 		Edits: edits,
 		Count: count,
-	}, nil
+	}, err
 }
