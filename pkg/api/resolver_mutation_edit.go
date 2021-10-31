@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/manager/edit"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
@@ -202,8 +203,8 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 			return err
 		}
 
-		if voteEdit.UserID == currentUser.ID {
-			return ErrUnauthorized
+		if err := user.ValidateOwner(ctx, voteEdit.UserID); err == nil {
+			return user.ErrUnauthorized
 		}
 
 		vote := models.NewEditVote(currentUser, voteEdit, input.Vote)

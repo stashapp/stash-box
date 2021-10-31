@@ -54,6 +54,7 @@ export interface Scene_findScene_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }

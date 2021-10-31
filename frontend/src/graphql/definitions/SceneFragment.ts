@@ -54,6 +54,7 @@ export interface SceneFragment_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }

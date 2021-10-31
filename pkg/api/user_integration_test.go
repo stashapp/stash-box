@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type userTestRunner struct {
@@ -282,18 +282,18 @@ func (s *userTestRunner) testDestroyUser() {
 func (s *userTestRunner) testUnauthorisedUserMutate() {
 	// test each api interface - all require admin so all should fail
 	_, err := s.resolver.Mutation().UserCreate(s.ctx, models.UserCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("UserCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().UserUpdate(s.ctx, models.UserUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserUpdate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("UserUpdate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserDestroy: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("UserDestroy: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
@@ -365,8 +365,8 @@ func (s *userTestRunner) testUnauthorisedUserQuery() {
 	}
 
 	_, err := s.resolver.Query().QueryUsers(s.ctx, &userFilter, &filter)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserUpdate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("UserUpdate: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
@@ -386,7 +386,7 @@ func (s *userTestRunner) testChangePassword() {
 
 	// change password as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
 	updatedPassword := name + "newpassword"
 	existingPassword := "incorrect password"
@@ -432,7 +432,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	// regenerate as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
 	adminID := userDB.admin.ID.String()
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)

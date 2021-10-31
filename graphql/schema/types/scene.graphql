@@ -23,21 +23,29 @@ type Fingerprint {
   submissions: Int!
   created: Time!
   updated: Time!
+  user_submitted: Boolean!
 }
 
 input FingerprintInput {
+  """assumes current user if omitted. Ignored for non-modify Users"""
+  user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
 
 input FingerprintEditInput {
+  user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
-  submissions: Int!
   created: Time!
-  updated: Time!
+  # v0.14.0 of gqlgen does not allow deprecated on input fields
+  # https://github.com/99designs/gqlgen/issues/1636
+  """@deprecated(reason: "unused")"""
+  submissions: Int 
+  """@deprecated(reason: "unused")"""
+  updated: Time 
 }
 
 input FingerprintQueryInput {
@@ -48,6 +56,7 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
+  unmatch: Boolean
 }
 
 type Scene {
@@ -109,7 +118,6 @@ input SceneEditDetailsInput {
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
   image_ids: [ID!]
-  fingerprints: [FingerprintEditInput!]
   duration: Int
   director: String
 }
@@ -135,8 +143,6 @@ type SceneEdit {
   removed_tags: [Tag!]
   added_images: [Image!]
   removed_images: [Image!]
-  added_fingerprints: [Fingerprint!]
-  removed_fingerprints: [Fingerprint!]
   duration: Int
   director: String
 }

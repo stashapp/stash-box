@@ -5,7 +5,5 @@ package api
 type key int
 
 const (
-	ContextUser key = iota
-	ContextRoles
-	ContextRepo
+	ContextRepo key = iota
 )

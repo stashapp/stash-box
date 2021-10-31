@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 func (r *queryResolver) FindUser(ctx context.Context, id *string, username *string) (*models.User, error) {
@@ -57,7 +58,7 @@ func (r *queryResolver) QueryUsers(ctx context.Context, userFilter *models.UserF
 func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 	currentUser := getCurrentUser(ctx)
 	if currentUser == nil {
-		return nil, ErrUnauthorized
+		return nil, user.ErrUnauthorized
 	}
 
 	return currentUser, nil

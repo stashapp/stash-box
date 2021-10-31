@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { Link, useParams, useHistory } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 import {
   useScene,
@@ -31,8 +32,10 @@ import {
   LoadingIndicator,
   TagLink,
   PerformerName,
+  Icon,
 } from "src/components/fragments";
 import { EditList } from "src/components/list";
+import { Scene_findScene_fingerprints } from "src/graphql/definitions/Scene";
 
 const DEFAULT_TAB = "description";
 
@@ -78,6 +81,16 @@ const SceneComponent: React.FC = () => {
     })
     .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
 
+  function maybeRenderSubmitted(fingerprint: Scene_findScene_fingerprints) {
+    if (fingerprint.user_submitted) {
+      return (
+        <span className="user-submitted" title="Submitted by you">
+          <Icon icon={faCheckCircle} />
+        </span>
+      );
+    }
+  }
+
   const fingerprints = scene.fingerprints.map((fingerprint) => (
     <tr key={fingerprint.hash}>
       <td>{fingerprint.algorithm}</td>
@@ -93,7 +106,10 @@ const SceneComponent: React.FC = () => {
           {formatDuration(fingerprint.duration)}
         </span>
       </td>
-      <td>{fingerprint.submissions}</td>
+      <td>
+        {fingerprint.submissions}
+        {maybeRenderSubmitted(fingerprint)}
+      </td>
       <td>{formatDateTime(fingerprint.created)}</td>
       <td>{formatDateTime(fingerprint.updated)}</td>
     </tr>

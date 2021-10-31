@@ -94,24 +94,30 @@ type EyeColorCriterionInput struct {
 }
 
 type Fingerprint struct {
-	Hash        string               `json:"hash"`
-	Algorithm   FingerprintAlgorithm `json:"algorithm"`
-	Duration    int                  `json:"duration"`
-	Submissions int                  `json:"submissions"`
-	Created     time.Time            `json:"created"`
-	Updated     time.Time            `json:"updated"`
+	Hash          string               `json:"hash"`
+	Algorithm     FingerprintAlgorithm `json:"algorithm"`
+	Duration      int                  `json:"duration"`
+	Submissions   int                  `json:"submissions"`
+	Created       time.Time            `json:"created"`
+	Updated       time.Time            `json:"updated"`
+	UserSubmitted bool                 `json:"user_submitted"`
 }
 
 type FingerprintEditInput struct {
-	Hash        string               `json:"hash"`
-	Algorithm   FingerprintAlgorithm `json:"algorithm"`
-	Duration    int                  `json:"duration"`
-	Submissions int                  `json:"submissions"`
-	Created     time.Time            `json:"created"`
-	Updated     time.Time            `json:"updated"`
+	UserIds   []string             `json:"user_ids"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+	Created   time.Time            `json:"created"`
+	// @deprecated(reason: "unused")
+	Submissions *int `json:"submissions"`
+	// @deprecated(reason: "unused")
+	Updated *time.Time `json:"updated"`
 }
 
 type FingerprintInput struct {
+	// assumes current user if omitted. Ignored for non-modify Users
+	UserIds   []string             `json:"user_ids"`
 	Hash      string               `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
@@ -125,6 +131,7 @@ type FingerprintQueryInput struct {
 type FingerprintSubmission struct {
 	SceneID     string            `json:"scene_id"`
 	Fingerprint *FingerprintInput `json:"fingerprint"`
+	Unmatch     *bool             `json:"unmatch"`
 }
 
 type FuzzyDate struct {
@@ -402,17 +409,16 @@ type SceneDestroyInput struct {
 }
 
 type SceneEditDetailsInput struct {
-	Title        *string                     `json:"title"`
-	Details      *string                     `json:"details"`
-	Urls         []*URL                      `json:"urls"`
-	Date         *string                     `json:"date"`
-	StudioID     *string                     `json:"studio_id"`
-	Performers   []*PerformerAppearanceInput `json:"performers"`
-	TagIds       []string                    `json:"tag_ids"`
-	ImageIds     []string                    `json:"image_ids"`
-	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
-	Duration     *int                        `json:"duration"`
-	Director     *string                     `json:"director"`
+	Title      *string                     `json:"title"`
+	Details    *string                     `json:"details"`
+	Urls       []*URL                      `json:"urls"`
+	Date       *string                     `json:"date"`
+	StudioID   *string                     `json:"studio_id"`
+	Performers []*PerformerAppearanceInput `json:"performers"`
+	TagIds     []string                    `json:"tag_ids"`
+	ImageIds   []string                    `json:"image_ids"`
+	Duration   *int                        `json:"duration"`
+	Director   *string                     `json:"director"`
 }
 
 type SceneEditInput struct {
