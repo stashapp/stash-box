@@ -5,6 +5,7 @@ import { BrowserRouter, Route } from "react-router-dom";
 import Main from "src/Main";
 import createClient from "src/utils/createClient";
 import Pages from "src/pages";
+import Title from "src/components/title";
 
 import "./App.scss";
 
@@ -15,6 +16,7 @@ const App: React.FC = () => (
     <BrowserRouter>
       <Route path="/">
         <Main>
+          <Title />
           <Pages />
         </Main>
       </Route>

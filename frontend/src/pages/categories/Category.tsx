@@ -1,21 +1,22 @@
 import React, { useContext } from "react";
-import { Link, useHistory, useParams } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
-import { useCategory, useDeleteCategory } from "src/graphql";
+import { Category_findTagCategory as Category } from "src/graphql/definitions/Category";
+import { useDeleteCategory } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import { canEdit, isAdmin, createHref } from "src/utils";
-import { LoadingIndicator } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
 
-const TagComponent: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  category: Category;
+}
+
+const CategoryComponent: React.FC<Props> = ({ category }) => {
   const history = useHistory();
   const auth = useContext(AuthContext);
-
-  const { data, loading } = useCategory({ id });
 
   const [deleteCategory, { loading: deleting }] = useDeleteCategory({
     onCompleted: (result) => {
@@ -26,16 +27,10 @@ const TagComponent: React.FC = () => {
   const handleDelete = () => {
     deleteCategory({
       variables: {
-        input: { id: data?.findTagCategory?.id ?? "" },
+        input: { id: category.id },
       },
     });
   };
-
-  if (loading) return <LoadingIndicator message="Loading..." />;
-
-  if (!data?.findTagCategory?.id) return <div>Category not found!</div>;
-
-  const category = data.findTagCategory;
 
   return (
     <>
@@ -71,4 +66,4 @@ const TagComponent: React.FC = () => {
   );
 };
 
-export default TagComponent;
+export default CategoryComponent;
