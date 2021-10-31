@@ -13,6 +13,7 @@ import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
 import Title from "src/components/title";
+import { EditOperationTypes } from "src/constants";
 import {
   isAdmin,
   getEditTargetRoute,
@@ -97,7 +98,7 @@ const EditComponent: React.FC = () => {
   return (
     <div>
       <Title
-        page={`Edit ${getEditTargetEntity(edit.target)} "${getEditTargetName(
+        page={`${EditOperationTypes[edit.operation]} ${getEditTargetEntity(edit.target)} "${getEditTargetName(
           edit.target
         )}"`}
       />

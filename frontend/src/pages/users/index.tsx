@@ -34,13 +34,22 @@ const UserLoader: React.FC = () => {
   return (
     <Switch>
       <Route exact path={ROUTE_USER}>
-        <User user={user} refetch={refetch} />
+        <>
+          <Title page={user.name} />
+          <User user={user} refetch={refetch} />
+        </>
       </Route>
       <Route exact path={ROUTE_USER_EDIT}>
-        <UserEdit user={user} />
+        <>
+          <Title page={`Edit ${user.name}`} />
+          <UserEdit user={user} />
+        </>
       </Route>
       <Route exact path={ROUTE_USER_EDITS}>
-        <UserEdits user={user} />
+        <>
+          <Title page={`Edits by ${user.name}`} />
+          <UserEdits user={user} />
+        </>
       </Route>
     </Switch>
   );
@@ -62,7 +71,7 @@ const UserRoutes: React.FC = () => (
     </Route>
     <Route exact path={ROUTE_USER_PASSWORD}>
       <>
-        <Title page="Change User" />
+        <Title page="Change Password" />
         <UserPassword />
       </>
     </Route>

@@ -46,7 +46,7 @@ const SceneLoader: React.FC = () => {
       </Route>
       <Route exact path={ROUTE_SCENE}>
         <>
-          <Title page={`"${scene.title}`} />
+          <Title page={`"${scene.title}"`} />
           <Scene scene={scene} />
         </>
       </Route>
