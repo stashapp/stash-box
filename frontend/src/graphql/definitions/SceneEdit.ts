@@ -30,7 +30,7 @@ export interface SceneEdit_sceneEdit_votes_user {
 
 export interface SceneEdit_sceneEdit_votes {
   __typename: "EditVote";
-  user: SceneEdit_sceneEdit_votes_user;
+  user: SceneEdit_sceneEdit_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }

@@ -26,7 +26,7 @@ enum VoteStatusEnum {
 }
 
 type EditVote {
-    user: User!
+    user: User
     date: Time!
     vote: VoteTypeEnum!
 }

@@ -30,7 +30,7 @@ export interface TagEdit_tagEdit_votes_user {
 
 export interface TagEdit_tagEdit_votes {
   __typename: "EditVote";
-  user: TagEdit_tagEdit_votes_user;
+  user: TagEdit_tagEdit_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }

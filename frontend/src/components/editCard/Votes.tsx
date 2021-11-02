@@ -25,13 +25,16 @@ const Votes: React.FC<VotesProps> = ({ edit }) => (
       </div>
       {edit.votes
         .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)
-        .map((v) => (
-          <div key={`${edit.id}${v.user.id}`}>
-            <Link to={userHref(v.user)}>{v.user.name}</Link>
-            <span className="mx-2">&bull;</span>
-            {VoteTypes[v.vote]}
-          </div>
-        ))}
+        .map(
+          (v) =>
+            v.user && (
+              <div key={`${edit.id}${v.user.id}`}>
+                <Link to={userHref(v.user)}>{v.user.name}</Link>
+                <span className="mx-2">&bull;</span>
+                {VoteTypes[v.vote]}
+              </div>
+            )
+        )}
     </div>
   </>
 );

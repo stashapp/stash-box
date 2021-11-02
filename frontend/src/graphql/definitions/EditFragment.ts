@@ -30,7 +30,7 @@ export interface EditFragment_votes_user {
 
 export interface EditFragment_votes {
   __typename: "EditVote";
-  user: EditFragment_votes_user;
+  user: EditFragment_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }

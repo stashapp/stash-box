@@ -30,7 +30,7 @@ export interface PerformerEdit_performerEdit_votes_user {
 
 export interface PerformerEdit_performerEdit_votes {
   __typename: "EditVote";
-  user: PerformerEdit_performerEdit_votes_user;
+  user: PerformerEdit_performerEdit_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }

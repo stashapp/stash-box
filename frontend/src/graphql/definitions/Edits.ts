@@ -30,7 +30,7 @@ export interface Edits_queryEdits_edits_votes_user {
 
 export interface Edits_queryEdits_edits_votes {
   __typename: "EditVote";
-  user: Edits_queryEdits_edits_votes_user;
+  user: Edits_queryEdits_edits_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }

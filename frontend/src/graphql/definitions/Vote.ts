@@ -30,7 +30,7 @@ export interface Vote_editVote_votes_user {
 
 export interface Vote_editVote_votes {
   __typename: "EditVote";
-  user: Vote_editVote_votes_user;
+  user: Vote_editVote_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }
@@ -206,6 +206,7 @@ export interface Vote_editVote_target_Scene_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }
@@ -658,26 +659,6 @@ export interface Vote_editVote_details_SceneEdit_removed_images {
   height: number;
 }
 
-export interface Vote_editVote_details_SceneEdit_added_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
-export interface Vote_editVote_details_SceneEdit_removed_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
 export interface Vote_editVote_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -695,8 +676,6 @@ export interface Vote_editVote_details_SceneEdit {
   removed_tags: Vote_editVote_details_SceneEdit_removed_tags[] | null;
   added_images: Vote_editVote_details_SceneEdit_added_images[] | null;
   removed_images: Vote_editVote_details_SceneEdit_removed_images[] | null;
-  added_fingerprints: Vote_editVote_details_SceneEdit_added_fingerprints[] | null;
-  removed_fingerprints: Vote_editVote_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }
@@ -1026,26 +1005,6 @@ export interface Vote_editVote_old_details_SceneEdit_removed_images {
   height: number;
 }
 
-export interface Vote_editVote_old_details_SceneEdit_added_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
-export interface Vote_editVote_old_details_SceneEdit_removed_fingerprints {
-  __typename: "Fingerprint";
-  hash: string;
-  algorithm: FingerprintAlgorithm;
-  duration: number;
-  submissions: number;
-  created: any;
-  updated: any;
-}
-
 export interface Vote_editVote_old_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -1063,8 +1022,6 @@ export interface Vote_editVote_old_details_SceneEdit {
   removed_tags: Vote_editVote_old_details_SceneEdit_removed_tags[] | null;
   added_images: Vote_editVote_old_details_SceneEdit_added_images[] | null;
   removed_images: Vote_editVote_old_details_SceneEdit_removed_images[] | null;
-  added_fingerprints: Vote_editVote_old_details_SceneEdit_added_fingerprints[] | null;
-  removed_fingerprints: Vote_editVote_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }
@@ -1236,6 +1193,7 @@ export interface Vote_editVote_merge_sources_Scene_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }
