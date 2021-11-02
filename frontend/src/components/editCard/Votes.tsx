@@ -18,10 +18,10 @@ const Votes: React.FC<VotesProps> = ({ edit }) => (
       <h5>Votes:</h5>
       <div>
         <b className="mr-2">Vote Tally:</b>
-        <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length}</b>
-        <span className="mx-1">no &mdash;</span>
         <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length}</b>
-        <span className="ml-1">yes</span>
+        <span className="mx-1">yes</span>
+        <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length}</b>
+        <span className="ml-1">no &mdash;</span>
       </div>
       {edit.votes
         .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)
