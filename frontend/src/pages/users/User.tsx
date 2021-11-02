@@ -180,17 +180,15 @@ const UserComponent: React.FC<Props> = ({ user, refetch }) => {
         </div>
         <hr />
         {showPrivate && (
-          <Row>
-            <span className="col-2">Email</span>
-            <span className="col">{user?.email}</span>
-          </Row>
-        )}
-        <Row>
-          <span className="col-2">Roles</span>
-          <span className="col">{(user?.roles ?? []).join(", ")}</span>
-        </Row>
-        {showPrivate && (
           <>
+            <Row>
+              <span className="col-2">Email</span>
+              <span className="col">{user?.email}</span>
+            </Row>
+            <Row>
+              <span className="col-2">Roles</span>
+              <span className="col">{(user?.roles ?? []).join(", ")}</span>
+            </Row>
             <Row className="my-3">
               <span className="col-2">API key</span>
               <InputGroup className="col-10">

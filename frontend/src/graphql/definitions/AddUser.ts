@@ -20,7 +20,7 @@ export interface AddUser_userCreate {
   /**
    * Should not be visible to other users
    */
-  roles: RoleEnum[];
+  roles: RoleEnum[] | null;
 }
 
 export interface AddUser {

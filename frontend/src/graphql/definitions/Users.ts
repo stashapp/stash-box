@@ -26,7 +26,7 @@ export interface Users_queryUsers_users {
   /**
    * Should not be visible to other users
    */
-  roles: RoleEnum[];
+  roles: RoleEnum[] | null;
   /**
    * Should not be visible to other users
    */
