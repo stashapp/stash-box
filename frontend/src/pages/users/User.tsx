@@ -180,17 +180,15 @@ const UserComponent: React.FC<Props> = ({ user, refetch }) => {
         </div>
         <hr />
         {showPrivate && (
-          <Row>
-            <span className="col-2">Email</span>
-            <span className="col">{user?.email}</span>
-          </Row>
-        )}
-        <Row>
-          <span className="col-2">Roles</span>
-          <span className="col">{(user?.roles ?? []).join(", ")}</span>
-        </Row>
-        {showPrivate && (
           <>
+            <Row>
+              <span className="col-2">Email</span>
+              <span className="col">{user?.email}</span>
+            </Row>
+            <Row>
+              <span className="col-2">Roles</span>
+              <span className="col">{(user?.roles ?? []).join(", ")}</span>
+            </Row>
             <Row className="my-3">
               <span className="col-2">API key</span>
               <InputGroup className="col-10">
@@ -223,109 +221,109 @@ const UserComponent: React.FC<Props> = ({ user, refetch }) => {
                 </InputGroup>
               </Row>
             )}
-            <Row>
-              <Col xs={6}>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>Edits</th>
-                      <th>Count</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {editCount.map(([status, count]) => (
-                      <tr key={status}>
-                        <td>{status}</td>
-                        <td>{count}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </Col>
-              <Col xs={6}>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>Votes</th>
-                      <th>Count</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {voteCount.map(([vote, count]) => (
-                      <tr key={vote}>
-                        <td>{vote}</td>
-                        <td>{count}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </Col>
-            </Row>
-            {(isAdmin(Auth.user) || user.id === Auth.user?.id) && (
-              <Row>
-                <span className="col-2">Invite Tokens</span>
-                <InputGroup className="col">
-                  {isAdmin(Auth.user) && (
-                    <InputGroup.Prepend>
-                      <Button onClick={() => handleRevokeInvite()}>
-                        <Icon icon={faMinus} />
-                      </Button>
-                    </InputGroup.Prepend>
-                  )}
-                  <InputGroup.Text>{user?.invite_tokens ?? 0}</InputGroup.Text>
-                  {isAdmin(Auth.user) && (
-                    <InputGroup.Append>
-                      <Button onClick={() => handleGrantInvite()}>
-                        <Icon icon={faPlus} />
-                      </Button>
-                    </InputGroup.Append>
-                  )}
-                </InputGroup>
-              </Row>
-            )}
-            {user.id === Auth.user?.id && (
-              <Row className="my-2">
-                <span className="col-2">Invite Keys</span>
-                <div className="col">
-                  {user.active_invite_codes?.map((c) => (
-                    <InputGroup className="mb-2" key={c}>
-                      <InputGroup.Text>
-                        <code>{c}</code>
-                      </InputGroup.Text>
-                      <InputGroup.Append>
-                        <Button
-                          onClick={() => navigator.clipboard?.writeText(c)}
-                        >
-                          Copy
-                        </Button>
-                      </InputGroup.Append>
-                      <InputGroup.Append>
-                        <Button
-                          variant="danger"
-                          onClick={() => setShowRescindCode(c)}
-                        >
-                          <Icon icon={faTrash} />
-                        </Button>
-                      </InputGroup.Append>
-                    </InputGroup>
-                  ))}
-                  <div>
-                    {isUser() && (
-                      <Button
-                        variant="link"
-                        onClick={() => handleGenerateCode()}
-                        disabled={user.invite_tokens === 0}
-                      >
-                        <Icon icon={faPlus} className="mr-2" />
-                        Generate Key
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </Row>
-            )}
           </>
         )}
+        <>
+          <Row>
+            <Col xs={6}>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Edits</th>
+                    <th>Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {editCount.map(([status, count]) => (
+                    <tr key={status}>
+                      <td>{status}</td>
+                      <td>{count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Col>
+            <Col xs={6}>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Votes</th>
+                    <th>Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {voteCount.map(([vote, count]) => (
+                    <tr key={vote}>
+                      <td>{vote}</td>
+                      <td>{count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+          {(isAdmin(Auth.user) || user.id === Auth.user?.id) && (
+            <Row>
+              <span className="col-2">Invite Tokens</span>
+              <InputGroup className="col">
+                {isAdmin(Auth.user) && (
+                  <InputGroup.Prepend>
+                    <Button onClick={() => handleRevokeInvite()}>
+                      <Icon icon={faMinus} />
+                    </Button>
+                  </InputGroup.Prepend>
+                )}
+                <InputGroup.Text>{user?.invite_tokens ?? 0}</InputGroup.Text>
+                {isAdmin(Auth.user) && (
+                  <InputGroup.Append>
+                    <Button onClick={() => handleGrantInvite()}>
+                      <Icon icon={faPlus} />
+                    </Button>
+                  </InputGroup.Append>
+                )}
+              </InputGroup>
+            </Row>
+          )}
+          {user.id === Auth.user?.id && (
+            <Row className="my-2">
+              <span className="col-2">Invite Keys</span>
+              <div className="col">
+                {user.active_invite_codes?.map((c) => (
+                  <InputGroup className="mb-2" key={c}>
+                    <InputGroup.Text>
+                      <code>{c}</code>
+                    </InputGroup.Text>
+                    <InputGroup.Append>
+                      <Button onClick={() => navigator.clipboard?.writeText(c)}>
+                        Copy
+                      </Button>
+                    </InputGroup.Append>
+                    <InputGroup.Append>
+                      <Button
+                        variant="danger"
+                        onClick={() => setShowRescindCode(c)}
+                      >
+                        <Icon icon={faTrash} />
+                      </Button>
+                    </InputGroup.Append>
+                  </InputGroup>
+                ))}
+                <div>
+                  {isUser() && (
+                    <Button
+                      variant="link"
+                      onClick={() => handleGenerateCode()}
+                      disabled={user.invite_tokens === 0}
+                    >
+                      <Icon icon={faPlus} className="mr-2" />
+                      Generate Key
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Row>
+          )}
+        </>
       </Col>
     </Row>
   );

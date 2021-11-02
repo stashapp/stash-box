@@ -24,7 +24,7 @@ const List: React.FC<Props> = ({
   children,
   entityName = "data",
 }) => {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(listCount ?? 0);
 
   useEffect(() => {
     if (!loading && listCount !== undefined) setCount(listCount);

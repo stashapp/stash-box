@@ -20,7 +20,7 @@ export interface UpdateUser_userUpdate {
   /**
    * Should not be visible to other users
    */
-  roles: RoleEnum[];
+  roles: RoleEnum[] | null;
 }
 
 export interface UpdateUser {
