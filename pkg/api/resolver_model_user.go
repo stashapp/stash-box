@@ -14,6 +14,11 @@ func (r *userResolver) ID(ctx context.Context, user *models.User) (string, error
 }
 
 func (r *userResolver) Roles(ctx context.Context, user *models.User) ([]models.RoleEnum, error) {
+	// Limit user role visibility to admins and user themself
+	if validateUserOrAdmin(ctx, user.ID) != nil {
+		return nil, nil
+	}
+
 	qb := r.getRepoFactory(ctx).User()
 	roles, err := qb.GetRoles(user.ID)
 
