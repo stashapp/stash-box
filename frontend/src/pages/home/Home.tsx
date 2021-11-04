@@ -1,56 +1,67 @@
 import React from "react";
-import { Col } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
-import { useScenes, usePerformers, SortDirectionEnum } from "src/graphql";
+import { useScenes } from "src/graphql";
 
-import PerformerCard from "src/components/performerCard";
 import SceneCard from "src/components/sceneCard";
-import { LoadingIndicator } from "src/components/fragments";
+import { LoadingIndicator, MarkdownDoc } from "src/components/fragments";
+import { ROUTE_SCENES } from "src/constants";
+import News from "docs/news.md";
+import Intro from "docs/intro.md";
+
+const CLASSNAME = 'HomePage';
+const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;
 
 const ScenesComponent: React.FC = () => {
   const { loading: loadingScenes, data: sceneData } = useScenes({
     filter: {
-      page: 0,
-      per_page: 8,
-      sort: "DATE",
-      direction: SortDirectionEnum.DESC,
+      page: 1,
+      per_page: 20,
+      sort: "created_at",
     },
   });
-  const { loading: loadingPerformers, data: performerData } = usePerformers({
+  const { data: trendingData } = useScenes({
     filter: {
-      page: 0,
-      per_page: 4,
-      sort: "BIRTHDATE",
-      direction: SortDirectionEnum.DESC,
+      page: 1,
+      per_page: 20,
+      sort: "trending",
     },
   });
 
-  if (loadingScenes && loadingPerformers)
+  if (loadingScenes)
     return <LoadingIndicator message="Loading..." />;
 
   const scenes = (sceneData?.queryScenes?.scenes ?? []).map((scene) => (
-    <SceneCard key={scene.id} performance={scene} />
+    <Col key={scene.id}>
+      <SceneCard performance={scene} />
+    </Col>
+  ));
+  const trendingScenes = (trendingData?.queryScenes?.scenes ?? []).map((scene) => (
+    <Col key={scene.id}>
+      <SceneCard performance={scene} />
+    </Col>
   ));
 
-  const performers = (performerData?.queryPerformers?.performers ?? []).map(
-    (performer) => (
-      <Col xs={3} key={performer.id}>
-        <PerformerCard performer={performer} />
-      </Col>
-    )
-  );
-
   return (
-    <>
-      <div className="scenes">
-        <h4>New scenes:</h4>
-        <div className="row">{scenes}</div>
-      </div>
-      <div className="performers">
-        <h4>New performers:</h4>
-        <div className="row">{performers}</div>
-      </div>
-    </>
+    <div className={CLASSNAME}>
+			<Row>
+        <Col xs={6}>
+          <MarkdownDoc doc={News} />
+        </Col>
+        <Col xs={6}>
+          <MarkdownDoc doc={Intro} />
+        </Col>
+      </Row>
+      <h4>
+        <Link to={`${ROUTE_SCENES}?sort=trending`}>Trending scenes</Link>
+      </h4>
+      <Row className={CLASSNAME_SCENES}>{trendingScenes}</Row>
+      <h4>
+        <Link to={`${ROUTE_SCENES}?sort=created_at`}>Recently added scenes</Link>
+      </h4>
+      <Row className={CLASSNAME_SCENES}>{scenes}</Row>
+    </div>
   );
 };
 

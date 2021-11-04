@@ -1,3 +1,6 @@
+declare module "*.md" {
+  export default string;
+}
 declare module "*.gql" {
   import { DocumentNode } from "graphql";
 

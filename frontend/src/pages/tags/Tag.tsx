@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { Button, Tab, Tabs } from "react-bootstrap";
+import { Button, Col, Row, Tab, Tabs } from "react-bootstrap";
 
 import {
   useScenes,
@@ -77,12 +77,14 @@ const TagComponent: React.FC<Props> = ({ tag }) => {
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   const scenes = sceneData?.queryScenes.scenes.map((scene) => (
-    <SceneCard key={scene.id} performance={scene} />
+    <Col xs={3} key={scene.id}>
+      <SceneCard performance={scene} />
+    </Col>
   ));
 
   return (
     <>
-      <div className="row no-gutters">
+      <Row noGutters>
         <h3>
           <span className="mr-2">Tag:</span>
           {tag.deleted ? <del>{tag.name}</del> : <em>{tag.name}</em>}
@@ -108,26 +110,26 @@ const TagComponent: React.FC<Props> = ({ tag }) => {
             </Link>
           </div>
         )}
-      </div>
+      </Row>
       {tag.description && (
-        <div className="row no-gutters">
+        <Row noGutters>
           <b className="mr-2">Description:</b>
           <span>{tag.description}</span>
-        </div>
+        </Row>
       )}
       {tag.category && (
-        <div className="row no-gutters">
+        <Row noGutters>
           <b className="mr-2">Category:</b>
           <Link to={createHref(ROUTE_CATEGORY, tag.category)}>
             {tag.category.name}
           </Link>
-        </div>
+        </Row>
       )}
       {tag.aliases.length > 0 && (
-        <div className="row no-gutters">
+        <Row noGutters>
           <b className="mr-2">Aliases:</b>
           <span>{tag.aliases.join(", ")}</span>
-        </div>
+        </Row>
       )}
       <hr className="my-2" />
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
@@ -138,7 +140,7 @@ const TagComponent: React.FC<Props> = ({ tag }) => {
           )}
           {!loadingScenes && sceneData?.queryScenes && (
             <>
-              <div className="row no-gutters">
+              <Row noGutters>
                 <Pagination
                   onClick={setPage}
                   perPage={PER_PAGE}
@@ -146,16 +148,16 @@ const TagComponent: React.FC<Props> = ({ tag }) => {
                   count={sceneData.queryScenes.count}
                   showCount
                 />
-              </div>
-              <div className="performers row">{scenes}</div>
-              <div className="row no-gutters">
+              </Row>
+              <Row className="performers">{scenes}</Row>
+              <Row noGutters>
                 <Pagination
                   onClick={setPage}
                   perPage={PER_PAGE}
                   active={page}
                   count={sceneData.queryScenes.count}
                 />
-              </div>
+              </Row>
             </>
           )}
         </Tab>

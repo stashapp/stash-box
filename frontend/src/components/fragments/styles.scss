@@ -9,15 +9,18 @@
 }
 
 .LoadingIndicator {
-  animation-name: fade-in;
-  animation-duration: 1s;
-  transition-timing-function: linear;
   align-items: center;
   display: flex;
   flex-direction: column;
   height: 70vh;
   justify-content: center;
   width: 100%;
+  opacity: 1;
+  transition: opacity 1s linear;
+
+  &-delayed {
+    opacity: 0;
+  }
 
   &-message {
     margin-top: 1rem;

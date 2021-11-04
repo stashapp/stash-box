@@ -8,6 +8,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "target": "ES2020",
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "lib": [
@@ -25,6 +27,7 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "docs/**/*"
   ]
 }

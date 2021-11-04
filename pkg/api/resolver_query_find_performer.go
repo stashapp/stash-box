@@ -27,9 +27,9 @@ func (r *queryResolver) QueryPerformers(ctx context.Context, performerFilter *mo
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
 
-	performers, count := qb.Query(performerFilter, filter)
+	performers, count, err := qb.Query(performerFilter, filter)
 	return &models.QueryPerformersResultType{
 		Performers: performers,
 		Count:      count,
-	}, nil
+	}, err
 }

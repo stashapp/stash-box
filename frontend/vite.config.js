@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: Number(env.PORT) || undefined,
     },
+    assetsInclude: ['**/*.md'],
     plugins: [
       react(),
       tsconfigPaths(),

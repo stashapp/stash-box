@@ -18,7 +18,7 @@ type PerformerRepo interface {
 	Find(id uuid.UUID) (*Performer, error)
 	FindByIds(ids []uuid.UUID) ([]*Performer, []error)
 	Count() (int, error)
-	Query(performerFilter *PerformerFilterType, findFilter *QuerySpec) ([]*Performer, int)
+	Query(performerFilter *PerformerFilterType, findFilter *QuerySpec) ([]*Performer, int, error)
 	GetAliases(id uuid.UUID) (PerformerAliases, error)
 	GetImages(id uuid.UUID) (PerformersImages, error)
 	GetAllAliases(ids []uuid.UUID) ([][]string, []error)

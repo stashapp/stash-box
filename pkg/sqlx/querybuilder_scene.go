@@ -239,7 +239,7 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, int) {
+func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, int, error) {
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
 	}
@@ -337,17 +337,25 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	// TODO - other filters
 
-	query.SortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
+	if findFilter != nil && findFilter.GetSort("") == "trending" {
+		query.Body += `
+			JOIN (
+				SELECT scene_id, COUNT(*) AS count
+				FROM scene_fingerprints
+				WHERE created_at >= (now()::DATE - 31)
+				GROUP BY scene_id
+				ORDER BY count
+			) T ON scenes.id = T.scene_id
+		`
+		query.SortAndPagination = "ORDER BY T.count DESC  " + getPagination(findFilter)
+	} else {
+		query.SortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
+	}
 
 	var scenes models.Scenes
 	countResult, err := qb.dbi.Query(*query, &scenes)
 
-	if err != nil {
-		// TODO
-		panic(err)
-	}
-
-	return scenes, countResult
+	return scenes, countResult, err
 }
 
 func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string) {

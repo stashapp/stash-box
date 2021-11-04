@@ -13,20 +13,20 @@ const CLASSNAME_TITLE = `${CLASSNAME}-title`;
 const CLASSNAME_BODY = `${CLASSNAME}-body`;
 
 const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
-  <div className={`col-3 ${CLASSNAME}`}>
+  <Link className={CLASSNAME} to={sceneHref(performance)}>
     <Card>
       <Card.Body className={CLASSNAME_BODY}>
-        <Link to={sceneHref(performance)} className={CLASSNAME_IMAGE}>
+        <div className={CLASSNAME_IMAGE}>
           <img alt="" src={getImage(performance.images, "landscape")} />
-        </Link>
+        </div>
       </Card.Body>
       <Card.Footer>
-        <Link to={sceneHref(performance)} className="d-flex">
+        <div className="d-flex">
           <h6 className={CLASSNAME_TITLE}>{performance.title}</h6>
           <span className="text-muted">
             {performance.duration ? formatDuration(performance.duration) : ""}
           </span>
-        </Link>
+        </div>
         <div className="text-muted">
           {performance.studio && (
             <Link
@@ -41,7 +41,7 @@ const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
         </div>
       </Card.Footer>
     </Card>
-  </div>
+  </Link>
 );
 
 export default SceneCard;
