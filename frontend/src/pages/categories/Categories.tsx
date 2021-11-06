@@ -1,6 +1,6 @@
 import { FC, useContext } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card, Row } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { sortBy, groupBy } from "lodash-es";
 
 import { useCategories } from "src/graphql";

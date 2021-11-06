@@ -9,7 +9,6 @@ $dark: #394b59;
 $text-color: #f5f8fa;
 $muted-gray: #bfccd6;
 $text-muted: $muted-gray;
-
 $theme-colors: (
   "primary": $primary,
   "secondary": $secondary,
@@ -34,6 +33,7 @@ $theme-colors: (
 
 .table {
   color: #f5f8fa;
+
   --bs-table-bg: transparent;
   --bs-table-striped-bg: rgba(92 112 128 / 15%);
   --bs-table-striped-color: #f5f8fa;
@@ -41,6 +41,7 @@ $theme-colors: (
   td {
     border: none;
     padding: 0.25rem 0.75rem;
+    vertical-align: middle;
 
     &:first-child {
       padding-left: 1rem;
@@ -98,20 +99,6 @@ hr {
   content: none;
 }
 
-.navbar-dark .navbar-nav .nav-link {
-  color: $text-color;
-}
-
-.nav-link {
-  &:hover {
-    text-decoration: none;
-  }
-}
-
-.tab-content {
-  padding-bottom: 2rem;
-}
-
 .nav-tabs {
   border: none;
   margin: auto;
@@ -139,8 +126,16 @@ hr {
   }
 }
 
-td {
-  vertical-align: middle;
+.navbar-dark .navbar-nav .nav-link {
+  color: $text-color;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.tab-content {
+  padding-bottom: 2rem;
 }
 
 .form-floating {
