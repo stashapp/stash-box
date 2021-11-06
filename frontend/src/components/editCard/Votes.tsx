@@ -19,9 +19,9 @@ const Votes: React.FC<VotesProps> = ({ edit }) => (
       <div>
         <b className="mr-2">Vote Tally:</b>
         <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length}</b>
-        <span className="mx-1">yes</span>
+        <span className="mx-1">yes &mdash;</span>
         <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length}</b>
-        <span className="ml-1">no &mdash;</span>
+        <span className="ml-1">no</span>
       </div>
       {edit.votes
         .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)
