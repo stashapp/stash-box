@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import Async from "react-select/async";
 import { Controller } from "react-hook-form";
 import { useApolloClient } from "@apollo/client";
@@ -22,7 +22,7 @@ interface StudioSelectProps {
 const CLASSNAME = "StudioSelect";
 const CLASSNAME_SELECT = `${CLASSNAME}-select`;
 
-const StudioSelect: React.FC<StudioSelectProps> = ({
+const StudioSelect: FC<StudioSelectProps> = ({
   initialStudio,
   excludeStudio,
   control,

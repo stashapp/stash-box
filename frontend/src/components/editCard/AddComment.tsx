@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { GraphQLError } from "graphql";
 import { useEditComment } from "src/graphql";
@@ -12,7 +12,7 @@ interface IProps {
   editID: string;
 }
 
-const AddComment: React.FC<IProps> = ({ editID }) => {
+const AddComment: FC<IProps> = ({ editID }) => {
   const auth = useContext(AuthContext);
   const [showInput, setShowInput] = useState(false);
   const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
@@ -24,7 +24,7 @@ const AddComment: React.FC<IProps> = ({ editID }) => {
       <div className="d-flex">
         {!showInput && canEdit(auth.user) && (
           <Button
-            className="ml-auto minimal"
+            className="ms-auto minimal"
             variant="link"
             onClick={() => setShowInput(true)}
           >
@@ -49,25 +49,25 @@ const AddComment: React.FC<IProps> = ({ editID }) => {
   };
 
   return (
-    <Form.Group>
+    <Form.Group className="mb-3">
       <NoteInput
         className={cx({ "is-invalid": errors.length > 0 })}
         onChange={(text) => setComment(text)}
       />
-      <Form.Control.Feedback type="invalid" className="text-right">
+      <Form.Control.Feedback type="invalid" className="text-end">
         {errors?.[0]?.message}
       </Form.Control.Feedback>
       <div className="d-flex mt-2">
         <Button
           variant="secondary"
-          className="ml-auto"
+          className="ms-auto"
           onClick={() => setShowInput(false)}
         >
           Cancel
         </Button>
         <Button
           variant="primary"
-          className="ml-2"
+          className="ms-2"
           disabled={saving || !comment.trim()}
           onClick={handleSaveComment}
         >

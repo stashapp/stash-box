@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
@@ -15,7 +15,7 @@ interface Props {
   studio: Studio;
 }
 
-const StudioEdit: React.FC<Props> = ({ studio }) => {
+const StudioEdit: FC<Props> = ({ studio }) => {
   const history = useHistory();
   const [insertStudioEdit, { loading: saving }] = useStudioEdit({
     onCompleted: (data) => {
@@ -43,7 +43,7 @@ const StudioEdit: React.FC<Props> = ({ studio }) => {
     <div>
       <h3>
         Edit
-        <strong className="ml-2">{studio.name}</strong>
+        <strong className="ms-2">{studio.name}</strong>
       </h3>
       <hr />
       <StudioForm

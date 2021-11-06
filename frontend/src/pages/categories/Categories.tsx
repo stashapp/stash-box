@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card } from "react-bootstrap";
+import { Button, Card, Row } from "react-bootstrap";
 import { sortBy, groupBy } from "lodash-es";
 
 import { useCategories } from "src/graphql";
@@ -9,7 +9,7 @@ import { isAdmin, createHref } from "src/utils";
 import { ROUTE_CATEGORY, ROUTE_CATEGORY_ADD } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
-const CategoryList: React.FC = () => {
+const CategoryList: FC = () => {
   const auth = useContext(AuthContext);
   const { loading, data } = useCategories();
 
@@ -28,9 +28,9 @@ const CategoryList: React.FC = () => {
               {category.name}
             </Link>
             {category.description && (
-              <span className="ml-2">
+              <span className="ms-2">
                 &bull;
-                <small className="ml-2">{category.description}</small>
+                <small className="ms-2">{category.description}</small>
               </span>
             )}
           </li>
@@ -41,10 +41,10 @@ const CategoryList: React.FC = () => {
 
   return (
     <>
-      <div className="row no-gutters">
-        <h3 className="mr-4">Categories</h3>
+      <div className="d-flex">
+        <h3 className="me-4">Categories</h3>
         {isAdmin(auth.user) && (
-          <Link to={ROUTE_CATEGORY_ADD} className="ml-auto">
+          <Link to={ROUTE_CATEGORY_ADD} className="ms-auto">
             <Button>Create</Button>
           </Link>
         )}

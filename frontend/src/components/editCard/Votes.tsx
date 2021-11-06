@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
@@ -12,16 +12,16 @@ interface VotesProps {
   edit: Edit;
 }
 
-const Votes: React.FC<VotesProps> = ({ edit }) => (
+const Votes: FC<VotesProps> = ({ edit }) => (
   <>
     <div className={CLASSNAME}>
       <h5>Votes:</h5>
       <div>
-        <b className="mr-2">Vote Tally:</b>
+        <b className="me-2">Vote Tally:</b>
         <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length}</b>
         <span className="mx-1">yes</span>
         <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length}</b>
-        <span className="ml-1">no &mdash;</span>
+        <span className="ms-1">no &mdash;</span>
       </div>
       {edit.votes
         .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)

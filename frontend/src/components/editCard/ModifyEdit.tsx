@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -95,9 +95,9 @@ const renderPerformerDetails = (
         <Icon
           icon={setModifyAliases ? faCheck : faTimes}
           color={setModifyAliases ? "green" : "red"}
-          className="ml-auto"
+          className="ms-auto"
         />
-        <span className="ml-2">Set performance aliases to old name</span>
+        <span className="ms-2">Set performance aliases to old name</span>
       </div>
     )}
     <ChangeRow
@@ -430,11 +430,7 @@ interface ModifyEditProps {
   options?: Options;
 }
 
-const ModifyEdit: React.FC<ModifyEditProps> = ({
-  details,
-  oldDetails,
-  options,
-}) => {
+const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
   if (!details) return null;
 
   const showDiff = !!oldDetails;

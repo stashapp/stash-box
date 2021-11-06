@@ -1,41 +1,73 @@
 /* Blueprint dark theme */
 
+$primary: #137cbd;
 $secondary: #394b59;
-$muted-gray: #bfccd6;
 $success: #0f9960;
 $warning: #d9822b;
 $danger: #db3737;
-$theme-colors: (
-  primary: #137cbd,
-  secondary: $secondary,
-  success: $success,
-  warning: $warning,
-  danger: $danger,
-  dark: #394b59,
-);
-$body-bg: #202b33;
-$text-muted: $muted-gray;
-$link-color: #48aff0;
-$link-hover-color: $link-color;
+$dark: #394b59;
 $text-color: #f5f8fa;
-$pre-color: $text-color;
-$navbar-dark-color: rgb(245 248 250);
-$popover-bg: $secondary;
-$dark-text: #182026;
-$textfield-bg: rgba(16 22 26 / 30%);
+$muted-gray: #bfccd6;
+$text-muted: $muted-gray;
+
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "success": $success,
+  "warning": $warning,
+  "danger": $danger,
+  "dark": $dark,
+);
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
-$red1: #a82a2a;
-$orange1: #a66321;
-$sepia1: #63411e;
-$dark-gray2: #202b33;
-$dark-gray5: #394b59;
+:root {
+  --bs-primary: #137cbd;
+  --bs-secondary: #394b59;
+  --bs-success: #0f9960;
+  --bs-warning: #d9822b;
+  --bs-danger: #db3737;
+  --bs-body-bg: #202b33;
+  --bs-dark: #394b59;
+  --bs-dark-rgb: 57, 75, 89;
+}
+
+.table {
+  color: #f5f8fa;
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(92 112 128 / 15%);
+  --bs-table-striped-color: #f5f8fa;
+
+  td {
+    border: none;
+    padding: 0.25rem 0.75rem;
+
+    &:first-child {
+      padding-left: 1rem;
+    }
+  }
+}
+
+$link-color: #48aff0;
+$link-hover-color: $link-color;
+$pre-color: $text-color;
+$popover-bg: var(--bs-secondary);
+$dark-text: #182026;
+$textfield-bg: rgba(16 22 26 / 30%);
 
 .btn.active:not(.disabled),
 .btn.active.minimal:not(.disabled) {
   background-color: rgba(138 155 168 / 30%);
   color: $text-color;
+}
+
+a,
+.btn-link {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 a.minimal,
@@ -58,14 +90,26 @@ button.minimal {
 
 hr {
   margin: 5px 0;
+  background-color: rgba(0 0 0 / 10%);
+  opacity: 100%;
 }
 
 .dropdown-toggle::after {
   content: none;
 }
 
-.nav-link {
+.navbar-dark .navbar-nav .nav-link {
   color: $text-color;
+}
+
+.nav-link {
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.tab-content {
+  padding-bottom: 2rem;
 }
 
 .nav-tabs {
@@ -79,6 +123,7 @@ hr {
     padding: 8px;
 
     &.active {
+      background-color: transparent;
       border-bottom: 2px solid;
       color: $link-color;
 
@@ -94,39 +139,14 @@ hr {
   }
 }
 
-.tab-content {
-  padding-bottom: 2rem;
+td {
+  vertical-align: middle;
 }
 
-.table {
-  border: none;
-  color: $text-color;
-
-  thead {
-    th {
-      border-bottom: 1px solid #414c53;
-      border-right: none;
-      border-top: none;
-    }
+.form-floating {
+  .form-label {
+    color: var(--bs-body-color);
   }
-
-  td {
-    border: none;
-    border-color: #414c53;
-    padding: 0.25rem 0.75rem;
-
-    &:first-child {
-      padding-left: 1rem;
-    }
-
-    &:last-child {
-      padding-right: 1rem;
-    }
-  }
-}
-
-.table-striped tr:nth-child(odd) td {
-  background: rgba(92 112 128 / 15%);
 }
 
 .form-control {
@@ -179,10 +199,10 @@ hr {
 }
 
 .page-link {
-  background-color: $secondary;
+  background-color: var(--bs-secondary);
   border-bottom: none;
-  border-left-color: #202b33;
-  border-right-color: #202b33;
+  border-left-color: var(--bs-body-bg);
+  border-right-color: var(--bs-body-bg);
   border-top: none;
   color: white;
 }
@@ -197,10 +217,10 @@ hr {
 
 .page-item:first-child .page-link,
 .page-item:last-child .page-link {
-  border-color: $secondary;
+  border-color: var(--bs-secondary);
 }
 
 .page-item.disabled .page-link {
-  background-color: $secondary;
+  background-color: var(--bs-secondary);
   color: $gray-400;
 }

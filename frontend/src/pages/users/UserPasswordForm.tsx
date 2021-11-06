@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
@@ -42,7 +42,7 @@ interface UserProps {
   callback: (data: UserPasswordData) => void;
 }
 
-const UserForm: React.FC<UserProps> = ({ callback, error }) => {
+const UserForm: FC<UserProps> = ({ callback, error }) => {
   const history = useHistory();
   const {
     register,
@@ -62,7 +62,7 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="existingPassword">
+      <Form.Group controlId="existingPassword" className="mb-3">
         <Form.Control
           className={cx({ "is-invalid": errors.existingPassword })}
           type="password"
@@ -73,7 +73,7 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
           {errors?.existingPassword?.message}
         </div>
       </Form.Group>
-      <Form.Group controlId="newPassword">
+      <Form.Group controlId="newPassword" className="mb-3">
         <Form.Control
           className={cx({ "is-invalid": errors.newPassword })}
           type="password"
@@ -82,7 +82,7 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
         />
         <div className="invalid-feedback">{errors?.newPassword?.message}</div>
       </Form.Group>
-      <Form.Group controlId="confirmNewPassword">
+      <Form.Group controlId="confirmNewPassword" className="mb-3">
         <Form.Control
           className={cx({ "is-invalid": errors.confirmNewPassword })}
           type="password"
@@ -97,7 +97,7 @@ const UserForm: React.FC<UserProps> = ({ callback, error }) => {
         <Button type="submit">Save</Button>
         <Button
           variant="secondary"
-          className="ml-2"
+          className="ms-2"
           onClick={() => history.goBack()}
         >
           Cancel

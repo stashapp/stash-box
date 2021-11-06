@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Row } from "react-bootstrap";
 
 import { useScenes, SortDirectionEnum, SceneFilterType } from "src/graphql";
@@ -14,7 +14,7 @@ interface Props {
   filter?: SceneFilterType;
 }
 
-const SceneList: React.FC<Props> = ({ perPage = PER_PAGE, filter = {} }) => {
+const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter = {} }) => {
   const { page, setPage } = usePagination();
   const { loading, data } = useScenes({
     filter: {

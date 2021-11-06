@@ -14,6 +14,7 @@
     "plugin:import/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:react/jsx-runtime",
     "prettier",
     "prettier/prettier"
   ],

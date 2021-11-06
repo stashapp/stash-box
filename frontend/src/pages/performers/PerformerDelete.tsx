@@ -1,6 +1,6 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
-import { Button, Col, Form } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -20,7 +20,7 @@ interface Props {
   performer: Performer;
 }
 
-const PerformerDelete: React.FC<Props> = ({ performer }) => {
+const PerformerDelete: FC<Props> = ({ performer }) => {
   const history = useHistory();
   const {
     register,
@@ -55,21 +55,21 @@ const PerformerDelete: React.FC<Props> = ({ performer }) => {
         className="PerformerDeleteForm"
         onSubmit={handleSubmit(handleDelete)}
       >
-        <Form.Row>
+        <Row>
           <h4>
             Delete performer <em>{performer.name}</em>
           </h4>
-        </Form.Row>
+        </Row>
         <Form.Control type="hidden" value={performer.id} {...register("id")} />
-        <Form.Row className="my-4">
+        <Row className="my-4">
           <Col md={6}>
             <EditNote register={register} error={errors.note} />
           </Col>
-        </Form.Row>
-        <Form.Row className="mt-2">
+        </Row>
+        <Row className="mt-2">
           <Button
             variant="danger"
-            className="ml-auto mr-2"
+            className="ms-auto me-2"
             onClick={() => history.goBack()}
           >
             Cancel
@@ -83,7 +83,7 @@ const PerformerDelete: React.FC<Props> = ({ performer }) => {
           <Button type="submit" disabled={deleting}>
             Submit Edit
           </Button>
-        </Form.Row>
+        </Row>
       </Form>
     </>
   );

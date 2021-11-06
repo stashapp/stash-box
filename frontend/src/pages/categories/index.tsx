@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useParams, Route, Switch } from "react-router-dom";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
@@ -16,7 +16,7 @@ import Categories from "./Categories";
 import CategoryAdd from "./CategoryAdd";
 import CategoryEdit from "./CategoryEdit";
 
-const CategoryLoader: React.FC = () => {
+const CategoryLoader: FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data, loading } = useCategory({ id });
 
@@ -43,7 +43,7 @@ const CategoryLoader: React.FC = () => {
   );
 };
 
-const CategoryRoutes: React.FC = () => (
+const CategoryRoutes: FC = () => (
   <Switch>
     <Route exact path={ROUTE_CATEGORIES}>
       <>

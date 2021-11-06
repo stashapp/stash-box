@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useUpdateUser } from "src/graphql";
@@ -10,7 +10,7 @@ interface Props {
   user: User;
 }
 
-const EditUserComponent: React.FC<Props> = ({ user }) => {
+const EditUserComponent: FC<Props> = ({ user }) => {
   const [queryError, setQueryError] = useState();
   const history = useHistory();
   const [updateUser] = useUpdateUser();

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Route, Switch } from "react-router-dom";
 
 import {
@@ -33,7 +33,7 @@ import ForgotPassword from "src/pages/forgotPassword";
 import ResetPassword from "src/pages/resetPassword";
 import Search from "src/pages/search";
 
-const Pages: React.FC = () => (
+const Pages: FC = () => (
   <Switch>
     <Route exact path={ROUTE_HOME}>
       <Home />

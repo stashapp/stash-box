@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { flatMap } from "lodash-es";
@@ -22,7 +22,7 @@ interface Props {
   performer: Performer;
 }
 
-const PerformerMerge: React.FC<Props> = ({ performer }) => {
+const PerformerMerge: FC<Props> = ({ performer }) => {
   const history = useHistory();
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
@@ -79,7 +79,7 @@ const PerformerMerge: React.FC<Props> = ({ performer }) => {
               {mergeSources.length > 0 && (
                 <Button
                   onClick={() => setMergeActive(true)}
-                  className="ml-auto"
+                  className="ms-auto"
                 >
                   Continue
                 </Button>

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Modal, Button } from "react-bootstrap";
 
 interface ModalProps {
@@ -8,7 +8,7 @@ interface ModalProps {
   acceptTerm?: string;
 }
 
-const ModalComponent: React.FC<ModalProps> = ({
+const ModalComponent: FC<ModalProps> = ({
   message,
   callback,
   cancelTerm = "Cancel",

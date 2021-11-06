@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, ChangeEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Control, useFieldArray } from "react-hook-form";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
@@ -22,7 +22,7 @@ interface EditImagesProps {
   maxImages?: number;
 }
 
-const EditImages: React.FC<EditImagesProps> = ({
+const EditImages: FC<EditImagesProps> = ({
   control,
   maxImages,
   file,
@@ -72,7 +72,7 @@ const EditImages: React.FC<EditImagesProps> = ({
     setImageData("");
   };
 
-  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.validity.valid && event.target.files?.[0]) {
       setFile(event.target.files[0]);
 
@@ -88,14 +88,14 @@ const EditImages: React.FC<EditImagesProps> = ({
   const isDisabled = maxImages !== undefined && images.length >= maxImages;
 
   return (
-    <Form.Row className={`${CLASSNAME} w-100`}>
+    <Row className={`${CLASSNAME} w-100`}>
       <Col xs={7} className="d-flex flex-wrap justify-content-between">
         {images.map((i, index) => (
           <ImageInput image={i} onRemove={() => remove(index)} key={i.id} />
         ))}
       </Col>
       <Col xs={5}>
-        <Row>
+        <div className="d-flex">
           {file ? (
             <div
               className={cx(CLASSNAME_IMAGE, {
@@ -108,7 +108,8 @@ const EditImages: React.FC<EditImagesProps> = ({
           ) : (
             !isDisabled && (
               <div className={CLASSNAME_DROP}>
-                <Form.File
+                <Form.Control
+                  type="file"
                   onChange={onFileChange}
                   accept=".png,.jpg,.webp,.svg"
                 />
@@ -119,30 +120,28 @@ const EditImages: React.FC<EditImagesProps> = ({
               </div>
             )
           )}
-        </Row>
-        <Row className="mt-1">
-          {file && (
-            <>
-              <Button
-                variant="danger"
-                onClick={() => removeImage()}
-                disabled={!file || uploading}
-                className="ml-auto"
-              >
-                Remove
-              </Button>
-              <Button
-                onClick={() => handleAddImage()}
-                disabled={!file || uploading}
-                className="ml-2 mr-auto"
-              >
-                Upload
-              </Button>
-            </>
-          )}
-        </Row>
+        </div>
+        {file && (
+          <>
+            <Button
+              variant="danger"
+              onClick={() => removeImage()}
+              disabled={!file || uploading}
+              className="ms-auto"
+            >
+              Remove
+            </Button>
+            <Button
+              onClick={() => handleAddImage()}
+              disabled={!file || uploading}
+              className="ms-2 me-auto"
+            >
+              Upload
+            </Button>
+          </>
+        )}
       </Col>
-    </Form.Row>
+    </Row>
   );
 };
 

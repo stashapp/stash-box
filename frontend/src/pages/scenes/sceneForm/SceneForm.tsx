@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from "react";
+import { FC, useState, useMemo } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
-import { Button, Col, Form, InputGroup, Tab, Tabs } from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
@@ -99,7 +99,7 @@ interface SceneProps {
   saving: boolean;
 }
 
-const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
+const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
   const history = useHistory();
   const {
     register,
@@ -206,7 +206,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
   };
 
   const performerList = performerFields.map((p, index) => (
-    <Form.Row className="performer-item d-flex" key={p.performerId}>
+    <Row className="performer-item d-flex g-0" key={p.performerId}>
       <Form.Control
         type="hidden"
         defaultValue={p.performerId}
@@ -215,12 +215,10 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
 
       <Col xs={6}>
         <InputGroup className="flex-nowrap">
-          <InputGroup.Prepend>
-            <Button variant="danger" onClick={() => removePerformer(index)}>
-              Remove
-            </Button>
-          </InputGroup.Prepend>
-          <InputGroup.Prepend>
+          <Button variant="danger" onClick={() => removePerformer(index)}>
+            Remove
+          </Button>
+          <>
             {isChanging === index ? (
               <Button variant="primary" onClick={() => setChange(undefined)}>
                 Cancel
@@ -230,8 +228,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
                 Change
               </Button>
             )}
-          </InputGroup.Prepend>
-          <InputGroup.Append className="flex-grow-1">
+          </>
+          <span className="flex-grow-1">
             {isChanging === index ? (
               <SearchField
                 onClick={(res) =>
@@ -240,25 +238,23 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
                 searchType={SearchType.Performer}
               />
             ) : (
-              <InputGroup.Text className="flex-grow-1 text-left text-truncate">
+              <InputGroup.Text className="flex-grow-1 text-start text-truncate">
                 <GenderIcon gender={p.gender} />
                 <span className="performer-name text-truncate">
                   <b>{p.name}</b>
                   {p.disambiguation && (
-                    <small className="ml-1">({p.disambiguation})</small>
+                    <small className="ms-1">({p.disambiguation})</small>
                   )}
                 </span>
               </InputGroup.Text>
             )}
-          </InputGroup.Append>
+          </span>
         </InputGroup>
       </Col>
 
       <Col xs={{ span: 5, offset: 1 }}>
         <InputGroup>
-          <InputGroup.Prepend>
-            <InputGroup.Text>Scene Alias</InputGroup.Text>
-          </InputGroup.Prepend>
+          <InputGroup.Text>Scene Alias</InputGroup.Text>
           <Form.Control
             className="performer-alias"
             defaultValue={p.alias ?? ""}
@@ -267,19 +263,15 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
           />
         </InputGroup>
       </Col>
-    </Form.Row>
+    </Row>
   ));
 
   return (
     <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
-      <Tabs
-        activeKey={activeTab}
-        onSelect={(key) => key && setActiveTab(key)}
-        className="row"
-      >
+      <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
         <Tab eventKey="details" title="Details" className="col-xl-9">
-          <Form.Row>
-            <Form.Group controlId="title" className="col-8">
+          <Row>
+            <Form.Group controlId="title" className="col-8 mb-3">
               <Form.Label>Title</Form.Label>
               <Form.Control
                 as="input"
@@ -294,7 +286,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="date" className="col-2">
+            <Form.Group controlId="date" className="col-2 mb-3">
               <Form.Label>Date</Form.Label>
               <Form.Control
                 as="input"
@@ -309,7 +301,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="duration" className="col-2">
+            <Form.Group controlId="duration" className="col-2 mb-3">
               <Form.Label>Duration</Form.Label>
               <Form.Control
                 as="input"
@@ -322,10 +314,10 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
                 {errors?.duration?.message}
               </Form.Control.Feedback>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
-            <Form.Group className="col">
+          <Row>
+            <Form.Group className="col mb-3">
               <Form.Label>Performers</Form.Label>
               {performerList}
               <div className="add-performer">
@@ -338,10 +330,13 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
                 />
               </div>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
-            <Form.Group controlId="studioId" className="studio-select col-6">
+          <Row>
+            <Form.Group
+              controlId="studioId"
+              className="studio-select col-6 mb-3"
+            >
               <Form.Label>Studio</Form.Label>
               <StudioSelect
                 initialStudio={scene.studio}
@@ -354,7 +349,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="studioURL" className="col-6">
+            <Form.Group controlId="studioURL" className="col-6 mb-3">
               <Form.Label>Studio URL</Form.Label>
               <Form.Control
                 as="input"
@@ -367,10 +362,10 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
                 {errors?.studioURL?.message}
               </Form.Control.Feedback>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
-            <Form.Group controlId="details" className="col">
+          <Row>
+            <Form.Group controlId="details" className="col mb-3">
               <Form.Label>Details</Form.Label>
               <Form.Control
                 as="textarea"
@@ -380,10 +375,10 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
                 {...register("details")}
               />
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
-            <Form.Group controlId="director" className="col-4">
+          <Row>
+            <Form.Group controlId="director" className="col-4 mb-3">
               <Form.Label>Director</Form.Label>
               <Form.Control
                 as="input"
@@ -398,73 +393,71 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group className="col-8" />
-          </Form.Row>
+            <Form.Group className="col-8 mb-3" />
+          </Row>
 
-          <Form.Group>
+          <Form.Group className="mb-3">
             <Form.Label>Tags</Form.Label>
             <TagSelect tags={scene.tags} onChange={onTagChange} />
           </Form.Group>
 
-          <Form.Row className="mt-1">
+          <div className="d-flex mt-1">
             <Button
               variant="danger"
-              className="ml-auto mr-2"
+              className="ms-auto me-2"
               onClick={() => history.goBack()}
             >
               Cancel
             </Button>
-            <Button className="mr-1" onClick={() => setActiveTab("images")}>
+            <Button className="me-1" onClick={() => setActiveTab("images")}>
               Next
             </Button>
-          </Form.Row>
+          </div>
         </Tab>
         <Tab eventKey="images" title="Images">
-          <Form.Row>
-            <EditImages
-              control={control}
-              file={file}
-              setFile={(f) => setFile(f)}
-            />
-          </Form.Row>
+          <EditImages
+            control={control}
+            file={file}
+            setFile={(f) => setFile(f)}
+          />
 
-          <Form.Row className="mt-1">
+          <div className="d-flex mt-1">
             <Button
               variant="danger"
-              className="ml-auto mr-2"
+              className="ms-auto me-2"
               onClick={() => history.goBack()}
             >
               Cancel
             </Button>
             <Button
-              className="mr-1"
+              className="me-1"
               disabled={!!file}
               onClick={() => setActiveTab("confirm")}
             >
               Next
             </Button>
-          </Form.Row>
-          <Form.Row>
+          </div>
+          <div className="d-flex">
             {/* dummy element for feedback */}
-            <div className="ml-auto">
+            <div className="ms-auto">
               <span className={file ? "is-invalid" : ""} />
               <Form.Control.Feedback type="invalid">
                 Upload or remove image to continue.
               </Form.Control.Feedback>
             </div>
-          </Form.Row>
+          </div>
         </Tab>
         <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
           {renderSceneDetails(newSceneChanges, oldSceneChanges, true)}
-          <Form.Row className="my-4">
+          <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>
               <EditNote register={register} error={errors.note} />
             </Col>
-          </Form.Row>
-          <Form.Row className="mt-2">
+          </Row>
+          <div className="d-flex mt-2">
             <Button
               variant="danger"
-              className="ml-auto mr-2"
+              className="ms-auto me-2"
               onClick={() => history.goBack()}
             >
               Cancel
@@ -478,7 +471,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback, saving }) => {
             <Button type="submit" disabled={saving}>
               Submit Edit
             </Button>
-          </Form.Row>
+          </div>
         </Tab>
       </Tabs>
     </Form>

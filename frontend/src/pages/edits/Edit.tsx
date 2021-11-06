@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { FC, useState, useContext } from "react";
 import { Button } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 
@@ -21,7 +21,7 @@ import {
   getEditTargetEntity,
 } from "src/utils";
 
-const EditComponent: React.FC = () => {
+const EditComponent: FC = () => {
   const auth = useContext(AuthContext);
   const { id } = useParams<{ id: string }>();
   const [showApply, setShowApply] = useState(false);
@@ -77,7 +77,7 @@ const EditComponent: React.FC = () => {
       <div className="d-flex justify-content-end">
         <Button
           variant="danger"
-          className="mr-2"
+          className="me-2"
           disabled={showCancel || mutating}
           onClick={toggleCancelModal}
         >

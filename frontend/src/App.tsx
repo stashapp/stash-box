@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { ApolloProvider } from "@apollo/client";
 import { BrowserRouter, Route } from "react-router-dom";
 
@@ -11,7 +11,7 @@ import "./App.scss";
 
 const client = createClient();
 
-const App: React.FC = () => (
+const App: FC = () => (
   <ApolloProvider client={client}>
     <BrowserRouter>
       <Route path="/">
