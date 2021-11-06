@@ -31,6 +31,19 @@ $theme-colors: (
   --bs-dark-rgb: 57, 75, 89;
 }
 
+body {
+  color: $text-color;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-width: 1210px;
+}
+
+.StashDBContent {
+  margin: auto;
+  max-width: 1200px;
+  padding-top: 2rem;
+}
+
 .table {
   color: #f5f8fa;
 
@@ -62,11 +75,20 @@ $textfield-bg: rgba(16 22 26 / 30%);
   color: $text-color;
 }
 
-a,
 .btn-link {
   text-decoration: none;
 
   &:hover {
+    text-decoration: underline;
+  }
+}
+
+a {
+  color: unset;
+  text-decoration: none;
+
+  &:hover {
+    color: unset;
     text-decoration: underline;
   }
 }
@@ -86,6 +108,16 @@ button.minimal {
   &:active {
     background: rgba(138 155 168 / 30%);
     color: $text-color;
+  }
+}
+
+a[aria-current] {
+  font-weight: bold;
+}
+
+label.is-invalid {
+  .error-message {
+    color: red;
   }
 }
 
@@ -188,9 +220,15 @@ hr {
   border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(16 22 26 / 40%), 0 0 0 rgba(16 22 26 / 0%),
     0 0 0 rgba(16 22 26 / 0%);
-  margin: 5px;
   overflow: hidden;
   padding: 0;
+  margin: calc(var(--bs-gutter-x) * 0.5) 0;
+
+  &-footer,
+  &-header {
+    background-color: transparent;
+    border: none;
+  }
 }
 
 .page-link {
@@ -218,4 +256,40 @@ hr {
 .page-item.disabled .page-link {
   background-color: var(--bs-secondary);
   color: $gray-400;
+}
+
+.text-input,
+.input-control {
+  border: 0;
+  box-shadow: 0 0 0 0 rgba(19 124 189 / 0%), 0 0 0 0 rgba(19 124 189 / 0%),
+    0 0 0 0 rgba(19 124 189 / 0%), inset 0 0 0 1px rgba(16 22 26 / 30%),
+    inset 0 1px 1px rgba(16 22 26 / 40%);
+  color: $text-color;
+
+  &:focus {
+    border: 0;
+    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary,
+      0 0 0 3px rgba(19 124 189 / 30%), inset 0 0 0 1px rgba(16 22 26 / 30%),
+      inset 0 1px 1px rgba(16 22 26 / 40%);
+    color: $text-color;
+  }
+}
+
+/* stylelint-disable no-descending-specificity */
+.text-input,
+.text-input[readonly],
+.text-input:focus {
+  background-color: $textfield-bg;
+}
+
+.input-control,
+.input-control:focus {
+  background-color: $secondary;
+}
+/* stylelint-enable no-descending-specificity */
+
+textarea.text-input {
+  line-height: 2.5ex;
+  min-height: 12ex;
+  overflow-y: scroll;
 }

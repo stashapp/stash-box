@@ -189,7 +189,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               <span className="col-2">Roles</span>
               <span className="col">{(user?.roles ?? []).join(", ")}</span>
             </Row>
-            <Row className="my-3">
+            <Row className="my-3 align-items-baseline">
               <Col xs={2}>API key</Col>
               <Col xs={10}>
                 <InputGroup>
@@ -205,7 +205,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </Col>
             </Row>
             {endpointURL && (
-              <Row className="my-3">
+              <Row className="my-3 align-items-baseline">
                 <Col xs={2}>GraphQL Endpoint</Col>
                 <Col xs={10}>
                   <InputGroup>

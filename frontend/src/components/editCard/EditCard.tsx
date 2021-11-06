@@ -63,7 +63,7 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   ));
 
   return (
-    <Card>
+    <Card className="mb-3">
       <Card.Header className="row">
         <div className="flex-column col-4">
           <Link to={editHref(edit)}>
