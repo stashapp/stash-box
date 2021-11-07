@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import cx from 'classnames';
+import cx from "classnames";
 
 interface LoadingProps {
   message?: string;
@@ -20,7 +20,7 @@ const LoadingIndicator: FC<LoadingProps> = ({ message, delay = 1000 }) => {
   }, [delayed, delay]);
 
   return (
-    <div className={cx(CLASSNAME, { [CLASSNAME_DELAYED]: delayed }) }>
+    <div className={cx(CLASSNAME, { [CLASSNAME_DELAYED]: delayed })}>
       <Spinner animation="border" role="status">
         <span className="sr-only">Loading...</span>
       </Spinner>
