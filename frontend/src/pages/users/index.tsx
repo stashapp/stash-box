@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Route, Switch, useParams } from "react-router-dom";
 
 import { useUser } from "src/graphql";
@@ -20,7 +20,7 @@ import UserEdit from "./UserEdit";
 import UserPassword from "./UserPassword";
 import UserEdits from "./UserEdits";
 
-const UserLoader: React.FC = () => {
+const UserLoader: FC = () => {
   const { name } = useParams<{ name: string }>();
   const { data, loading, refetch } = useUser({ name: name ?? "" });
 
@@ -55,7 +55,7 @@ const UserLoader: React.FC = () => {
   );
 };
 
-const UserRoutes: React.FC = () => (
+const UserRoutes: FC = () => (
   <Switch>
     <Route exact path={ROUTE_USERS}>
       <>

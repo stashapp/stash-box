@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { FC, ChangeEvent, useContext, useState } from "react";
 import { Form, Tabs, Tab } from "react-bootstrap";
 import cx from "classnames";
 
@@ -14,7 +14,7 @@ interface IProps {
   hasError?: boolean;
 }
 
-const NoteInput: React.FC<IProps> = ({
+const NoteInput: FC<IProps> = ({
   onChange,
   className,
   register,
@@ -23,7 +23,7 @@ const NoteInput: React.FC<IProps> = ({
   const auth = useContext(AuthContext);
   const [comment, setComment] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.currentTarget.value);
     onChange?.(e.currentTarget.value);
   };

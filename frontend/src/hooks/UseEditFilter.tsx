@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import queryString from "query-string";
@@ -32,8 +31,6 @@ function resolveParam<T>(
 const sortOptions = [
   { value: "", label: "Date created" },
   { value: "updated_at", label: "Date updated" },
-  // { value: "comment_count", label: "Comment count" },
-  // { value: "vote_count", label: "Vote count" },
 ];
 const defaultSort = "created_at";
 
@@ -99,15 +96,13 @@ const useEditFilter = ({
     ));
 
   const editFilter = (
-    <Form className="d-flex align-items-center font-weight-bold mx-0">
-      <Form.Group className="mr-2 d-flex flex-column align-items-left">
+    <Form className="d-flex fw-bold mx-0">
+      <Form.Group className="me-2 mb-3 d-flex flex-column">
         <Form.Label>Order</Form.Label>
-        <div className="d-flex">
+        <InputGroup>
           <Form.Control
             as="select"
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              handleChange("sort", e.currentTarget.value)
-            }
+            onChange={(e) => handleChange("sort", e.currentTarget.value)}
             defaultValue={selectedSort ?? defaultSort}
           >
             {sortOptions.map((s) => (
@@ -116,36 +111,32 @@ const useEditFilter = ({
               </option>
             ))}
           </Form.Control>
-          <InputGroup.Append>
-            <Button
-              variant="secondary"
-              onClick={() =>
-                handleChange(
-                  "dir",
-                  selectedDirection === SortDirectionEnum.DESC
-                    ? SortDirectionEnum.ASC
-                    : undefined
-                )
+          <Button
+            variant="secondary"
+            onClick={() =>
+              handleChange(
+                "dir",
+                selectedDirection === SortDirectionEnum.DESC
+                  ? SortDirectionEnum.ASC
+                  : undefined
+              )
+            }
+          >
+            <Icon
+              icon={
+                selectedDirection === SortDirectionEnum.ASC
+                  ? faSortAmountUp
+                  : faSortAmountDown
               }
-            >
-              <Icon
-                icon={
-                  selectedDirection === SortDirectionEnum.ASC
-                    ? faSortAmountUp
-                    : faSortAmountDown
-                }
-              />
-            </Button>
-          </InputGroup.Append>
-        </div>
+            />
+          </Button>
+        </InputGroup>
       </Form.Group>
-      <Form.Group className="mx-2 d-flex flex-column align-items-left">
+      <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Type</Form.Label>
         <Form.Control
           as="select"
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            handleChange("type", e.currentTarget.value)
-          }
+          onChange={(e) => handleChange("type", e.currentTarget.value)}
           value={selectedType}
           disabled={!!fixedType}
         >
@@ -155,13 +146,11 @@ const useEditFilter = ({
           {enumToOptions(EditTargetTypes)}
         </Form.Control>
       </Form.Group>
-      <Form.Group className="mx-2 d-flex flex-column align-items-left">
+      <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Status</Form.Label>
         <Form.Control
           as="select"
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            handleChange("status", e.currentTarget.value)
-          }
+          onChange={(e) => handleChange("status", e.currentTarget.value)}
           value={selectedStatus}
           disabled={!!fixedStatus}
         >
@@ -171,13 +160,11 @@ const useEditFilter = ({
           {enumToOptions(EditStatusTypes)}
         </Form.Control>
       </Form.Group>
-      <Form.Group className="mx-2 d-flex flex-column align-items-left">
+      <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Operation</Form.Label>
         <Form.Control
           as="select"
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            handleChange("operation", e.currentTarget.value)
-          }
+          onChange={(e) => handleChange("operation", e.currentTarget.value)}
           value={selectedOperation}
           disabled={!!fixedOperation}
         >

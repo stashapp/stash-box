@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Route, Switch, useParams } from "react-router-dom";
 
 import { useTag } from "src/graphql";
@@ -20,7 +20,7 @@ import TagEdit from "./TagEdit";
 import TagMerge from "./TagMerge";
 import TagDelete from "./TagDelete";
 
-const TagLoader: React.FC = () => {
+const TagLoader: FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data, loading } = useTag({ id });
 
@@ -61,7 +61,7 @@ const TagLoader: React.FC = () => {
   );
 };
 
-const TagRoutes: React.FC = () => (
+const TagRoutes: FC = () => (
   <Switch>
     <Route exact path={ROUTE_TAGS}>
       <>

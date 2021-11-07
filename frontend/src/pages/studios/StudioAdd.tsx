@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import {
@@ -11,7 +11,7 @@ import { editHref } from "src/utils";
 
 import StudioForm from "./studioForm";
 
-const StudioAdd: React.FC = () => {
+const StudioAdd: FC = () => {
   const history = useHistory();
   const [insertStudioEdit, { loading: saving }] = useStudioEdit({
     onCompleted: (data) => {

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Row } from "react-bootstrap";
 
 import { ImageFragment as Image } from "src/graphql/definitions/ImageFragment";
@@ -12,7 +12,7 @@ export interface ImageChangeRowProps {
   showDiff?: boolean;
 }
 
-const Images: React.FC<{
+const Images: FC<{
   images: (Pick<Image, "id" | "url"> | null)[] | null | undefined;
 }> = ({ images }) => (
   <>
@@ -26,14 +26,14 @@ const Images: React.FC<{
   </>
 );
 
-const ImageChangeRow: React.FC<ImageChangeRowProps> = ({
+const ImageChangeRow: FC<ImageChangeRowProps> = ({
   newImages,
   oldImages,
   showDiff = false,
 }) =>
   (newImages ?? []).length > 0 || (oldImages ?? []).length > 0 ? (
     <Row className={CLASSNAME}>
-      <b className="col-2 text-right">Images</b>
+      <b className="col-2 text-end">Images</b>
       {showDiff && (
         <div className="col-5">
           {(oldImages ?? []).length > 0 && (

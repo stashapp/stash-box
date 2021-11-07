@@ -1,11 +1,21 @@
 .image-carousel {
+  height: 100%;
+  width: 100%;
+
   .image-container {
     align-items: center;
     display: flex;
     flex-direction: row;
     height: 100%;
     justify-content: center;
+    position: relative;
     width: 100%;
+
+    .delete-image-overlay {
+      left: 5px;
+      position: absolute;
+      top: 5px;
+    }
   }
 
   &-img {
@@ -26,6 +36,26 @@
       object-fit: contain;
       object-position: center;
     }
+  }
+
+  .carousel {
+    height: 80%;
+    width: inherit;
+
+    .slide {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+    }
+
+    .slider img {
+      width: inherit;
+    }
+  }
+
+  .slider-wrapper,
+  .slider {
+    height: 100%;
   }
 
   .prev-button {

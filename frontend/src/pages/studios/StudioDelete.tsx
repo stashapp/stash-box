@@ -1,6 +1,6 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
-import { Button, Col, Form } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -20,7 +20,7 @@ interface Props {
   studio: Studio;
 }
 
-const StudioDelete: React.FC<Props> = ({ studio }) => {
+const StudioDelete: FC<Props> = ({ studio }) => {
   const history = useHistory();
   const {
     register,
@@ -52,21 +52,21 @@ const StudioDelete: React.FC<Props> = ({ studio }) => {
   return (
     <>
       <Form className="StudioDeleteForm" onSubmit={handleSubmit(handleDelete)}>
-        <Form.Row>
+        <Row>
           <h4>
             Delete studio <em>{studio.name}</em>
           </h4>
-        </Form.Row>
+        </Row>
         <Form.Control type="hidden" value={studio.id} {...register("id")} />
-        <Form.Row className="my-4">
+        <Row className="my-4">
           <Col md={6}>
             <EditNote register={register} error={errors.note} />
           </Col>
-        </Form.Row>
-        <Form.Row className="mt-2">
+        </Row>
+        <Row className="mt-2">
           <Button
             variant="danger"
-            className="ml-auto mr-2"
+            className="ms-auto me-2"
             onClick={() => history.goBack()}
           >
             Cancel
@@ -80,7 +80,7 @@ const StudioDelete: React.FC<Props> = ({ studio }) => {
           <Button type="submit" disabled={deleting}>
             Submit Edit
           </Button>
-        </Form.Row>
+        </Row>
       </Form>
     </>
   );

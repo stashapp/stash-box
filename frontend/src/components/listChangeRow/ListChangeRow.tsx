@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import { PropsWithChildren } from "react";
 
 import { Row } from "react-bootstrap";
 
@@ -18,7 +18,7 @@ const ListChangeRow = <T extends unknown>(
 ) =>
   (props.added ?? []).length > 0 || (props.removed ?? []).length > 0 ? (
     <Row className={CLASSNAME}>
-      <b className="col-2 text-right">{props.name}</b>
+      <b className="col-2 text-end">{props.name}</b>
       {props.showDiff && (
         <div className="col-5">
           {(props.removed ?? []).length > 0 && (

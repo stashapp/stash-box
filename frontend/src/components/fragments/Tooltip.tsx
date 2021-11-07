@@ -1,4 +1,4 @@
-import React from "react";
+import { FC, ReactElement } from "react";
 import {
   OverlayTrigger,
   Tooltip as BSTooltip,
@@ -6,13 +6,13 @@ import {
 } from "react-bootstrap";
 
 interface Props {
-  text: string | React.ReactElement;
+  text: string | ReactElement;
   placement?: PopoverProps["placement"];
-  children: React.ReactElement;
+  children: ReactElement;
   delay?: number;
 }
 
-const Tooltip: React.FC<Props> = ({
+const Tooltip: FC<Props> = ({
   children,
   text,
   delay = 200,

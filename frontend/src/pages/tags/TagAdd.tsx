@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
@@ -7,7 +7,7 @@ import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
 import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 
-const TagAddComponent: React.FC = () => {
+const TagAddComponent: FC = () => {
   const history = useHistory();
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -221,7 +221,7 @@ interface PerformerProps {
   saving: boolean;
 }
 
-const PerformerForm: React.FC<PerformerProps> = ({
+const PerformerForm: FC<PerformerProps> = ({
   performer,
   callback,
   initialAliases = [],
@@ -360,15 +360,15 @@ const PerformerForm: React.FC<PerformerProps> = ({
       <Tabs
         activeKey={activeTab}
         onSelect={(key) => key && setActiveTab(key)}
-        className="row"
+        className="d-flex"
       >
         <Tab
           eventKey="personal"
           title="Personal Information"
           className="col-xl-9"
         >
-          <Form.Row>
-            <Form.Group controlId="name" className="col-6">
+          <Row>
+            <Form.Group controlId="name" className="col-6 mb-3">
               <Form.Label>Name</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.name })}
@@ -380,7 +380,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
               </Form.Control.Feedback>
               <Form.Text>The primary name used by the performer.</Form.Text>
             </Form.Group>
-            <Form.Group controlId="disambiguation" className="col-6">
+            <Form.Group controlId="disambiguation" className="col-6 mb-3">
               <Form.Label>Disambiguation</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.disambiguation })}
@@ -392,13 +392,13 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 {errors?.disambiguation?.message}
               </Form.Control.Feedback>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
           {performer.id &&
             fieldData.name !== undefined &&
             performer.name !== fieldData.name && (
-              <Form.Row>
-                <Form.Group className="col">
+              <Row>
+                <Form.Group className="col mb-3">
                   <Form.Check
                     id="update-modify-aliases"
                     checked={updateAliases}
@@ -408,11 +408,11 @@ const PerformerForm: React.FC<PerformerProps> = ({
                   />
                   <Help message={UPDATE_ALIAS_MESSAGE} />
                 </Form.Group>
-              </Form.Row>
+              </Row>
             )}
 
-          <Form.Row>
-            <Form.Group controlId="aliases" className="col">
+          <Row>
+            <Form.Group controlId="aliases" className="col mb-3">
               <Form.Label>Aliases</Form.Label>
               <Controller
                 control={control}
@@ -430,10 +430,10 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 Any names used by the performer different from the primary name.
               </Form.Text>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
-            <Form.Group controlId="gender" className="col-6">
+          <Row>
+            <Form.Group controlId="gender" className="col-6 mb-3">
               <Form.Label>Gender</Form.Label>
               <Form.Control
                 as="select"
@@ -448,7 +448,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="birthdate" className="col-6">
+            <Form.Group controlId="birthdate" className="col-6 mb-3">
               <Form.Label>Birthdate</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.birthdate })}
@@ -468,10 +468,10 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 omitted.
               </Form.Text>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
-            <Form.Group controlId="eye_color" className="col-6">
+          <Row>
+            <Form.Group controlId="eye_color" className="col-6 mb-3">
               <Form.Label>Eye Color</Form.Label>
               <Form.Control
                 as="select"
@@ -490,7 +490,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="hair_color" className="col-6">
+            <Form.Group controlId="hair_color" className="col-6 mb-3">
               <Form.Label>Hair Color</Form.Label>
               <Form.Control
                 as="select"
@@ -508,10 +508,10 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 {errors?.hair_color?.message}
               </Form.Control.Feedback>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
-            <Form.Group controlId="height" className="col-6">
+          <Row>
+            <Form.Group controlId="height" className="col-6 mb-3">
               <Form.Label>Height</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.height })}
@@ -527,7 +527,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
 
             {fieldData.gender !== "MALE" &&
               fieldData.gender !== "TRANSGENDER_MALE" && (
-                <Form.Group controlId="boobJob" className="col-6">
+                <Form.Group controlId="boobJob" className="col-6 mb-3">
                   <Form.Label>Breast type</Form.Label>
                   <Form.Control
                     as="select"
@@ -546,12 +546,12 @@ const PerformerForm: React.FC<PerformerProps> = ({
                   </Form.Control.Feedback>
                 </Form.Group>
               )}
-          </Form.Row>
+          </Row>
 
           {fieldData.gender !== GenderEnum.MALE &&
             fieldData.gender !== GenderEnum.TRANSGENDER_MALE && (
-              <Form.Row>
-                <Form.Group controlId="braSize" className="col-4">
+              <Row>
+                <Form.Group controlId="braSize" className="col-4 mb-3">
                   <Form.Label>Bra size</Form.Label>
                   <Form.Control
                     className={cx({ "is-invalid": errors.braSize })}
@@ -566,7 +566,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
                   <Form.Text>US Bra Size</Form.Text>
                 </Form.Group>
 
-                <Form.Group controlId="waistSize" className="col-4">
+                <Form.Group controlId="waistSize" className="col-4 mb-3">
                   <Form.Label>Waist size</Form.Label>
                   <Form.Control
                     className={cx({ "is-invalid": errors.waistSize })}
@@ -580,7 +580,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
                   <Form.Text>Waist circumference in inches</Form.Text>
                 </Form.Group>
 
-                <Form.Group controlId="hipSize" className="col-4">
+                <Form.Group controlId="hipSize" className="col-4 mb-3">
                   <Form.Label>Hip size</Form.Label>
                   <Form.Control
                     className={cx({ "is-invalid": errors.hipSize })}
@@ -593,11 +593,11 @@ const PerformerForm: React.FC<PerformerProps> = ({
                   </Form.Control.Feedback>
                   <Form.Text>Hip circumference in inches</Form.Text>
                 </Form.Group>
-              </Form.Row>
+              </Row>
             )}
 
-          <Form.Row>
-            <Form.Group controlId="country" className="col-6">
+          <Row>
+            <Form.Group controlId="country" className="col-6 mb-3">
               <Form.Label>Nationality</Form.Label>
               <Controller
                 control={control}
@@ -619,7 +619,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="ethnicity" className="col-6">
+            <Form.Group controlId="ethnicity" className="col-6 mb-3">
               <Form.Label>Ethnicity</Form.Label>
               <Form.Control
                 as="select"
@@ -637,10 +637,10 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 {errors?.ethnicity?.message}
               </Form.Control.Feedback>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
-            <Form.Group controlId="career_start_year" className="col-6">
+          <Row>
+            <Form.Group controlId="career_start_year" className="col-6 mb-3">
               <Form.Label>Career Start</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.career_start_year })}
@@ -654,7 +654,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="career_end_year" className="col-6">
+            <Form.Group controlId="career_end_year" className="col-6 mb-3">
               <Form.Label>Career End</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.career_end_year })}
@@ -667,20 +667,20 @@ const PerformerForm: React.FC<PerformerProps> = ({
                 {errors?.career_end_year?.message}
               </Form.Control.Feedback>
             </Form.Group>
-          </Form.Row>
+          </Row>
 
-          <Form.Row>
+          <div className="d-flex">
             <Button
               variant="danger"
-              className="ml-auto mr-2"
+              className="ms-auto me-2"
               onClick={() => history.goBack()}
             >
               Cancel
             </Button>
-            <Button className="mr-1" onClick={() => setActiveTab("bodymod")}>
+            <Button className="me-1" onClick={() => setActiveTab("bodymod")}>
               Next
             </Button>
-          </Form.Row>
+          </div>
         </Tab>
 
         <Tab
@@ -724,54 +724,52 @@ const PerformerForm: React.FC<PerformerProps> = ({
             ))}
           </Form.Control.Feedback>
 
-          <Form.Row className="mt-3">
+          <div className="d-flex mt-3">
             <Button
               variant="danger"
-              className="ml-auto mr-2"
+              className="ms-auto me-2"
               onClick={() => history.goBack()}
             >
               Cancel
             </Button>
-            <Button className="mr-1" onClick={() => setActiveTab("images")}>
+            <Button className="me-1" onClick={() => setActiveTab("images")}>
               Next
             </Button>
-          </Form.Row>
+          </div>
         </Tab>
 
         <Tab eventKey="images" title="Images">
-          <Form.Row>
-            <EditImages
-              control={control}
-              file={file}
-              setFile={(f) => setFile(f)}
-            />
-          </Form.Row>
+          <EditImages
+            control={control}
+            file={file}
+            setFile={(f) => setFile(f)}
+          />
 
-          <Form.Row className="mt-1">
+          <div className="d-flex mt-1">
             <Button
               variant="danger"
-              className="ml-auto mr-2"
+              className="ms-auto me-2"
               onClick={() => history.goBack()}
             >
               Cancel
             </Button>
             <Button
-              className="mr-1"
+              className="me-1"
               disabled={!!file}
               onClick={() => setActiveTab("confirm")}
             >
               Next
             </Button>
-          </Form.Row>
-          <Form.Row>
+          </div>
+          <div className="d-flex">
             {/* dummy element for feedback */}
-            <div className="ml-auto">
+            <div className="ms-auto">
               <span className={file ? "is-invalid" : ""} />
               <Form.Control.Feedback type="invalid">
                 Upload or remove image to continue.
               </Form.Control.Feedback>
             </div>
-          </Form.Row>
+          </div>
         </Tab>
 
         <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
@@ -785,15 +783,15 @@ const PerformerForm: React.FC<PerformerProps> = ({
           {changes.map((c) => (
             <ChangeRow {...c} key={c.name} />
           ))}
-          <Form.Row className="my-4">
+          <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>
               <EditNote register={register} error={errors.note} />
             </Col>
-          </Form.Row>
-          <Form.Row className="mt-2">
+          </Row>
+          <div className="d-flex mt-2">
             <Button
               variant="danger"
-              className="ml-auto mr-2"
+              className="ms-auto me-2"
               onClick={() => history.goBack()}
             >
               Cancel
@@ -812,7 +810,7 @@ const PerformerForm: React.FC<PerformerProps> = ({
             >
               Submit Edit
             </Button>
-          </Form.Row>
+          </div>
         </Tab>
       </Tabs>
     </Form>

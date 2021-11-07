@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { sortBy } from "lodash-es";
@@ -29,7 +29,7 @@ interface Props {
   studio: Studio;
 }
 
-const StudioComponent: React.FC<Props> = ({ studio }) => {
+const StudioComponent: FC<Props> = ({ studio }) => {
   const auth = useContext(AuthContext);
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
@@ -61,9 +61,9 @@ const StudioComponent: React.FC<Props> = ({ studio }) => {
   return (
     <>
       <div className="d-flex">
-        <div className="studio-title mr-auto">
+        <div className="studio-title me-auto">
           <h3>
-            <span className="mr-2">Studio:</span>
+            <span className="me-2">Studio:</span>
             {studio.deleted ? (
               <del>{studio.name}</del>
             ) : (
@@ -96,12 +96,12 @@ const StudioComponent: React.FC<Props> = ({ studio }) => {
         <div>
           {canEdit(auth.user) && !studio.deleted && (
             <>
-              <Link to={createHref(ROUTE_STUDIO_EDIT, studio)} className="ml-2">
+              <Link to={createHref(ROUTE_STUDIO_EDIT, studio)} className="ms-2">
                 <Button>Edit</Button>
               </Link>
               <Link
                 to={createHref(ROUTE_STUDIO_DELETE, studio)}
-                className="ml-2"
+                className="ms-2"
               >
                 <Button variant="danger">Delete</Button>
               </Link>

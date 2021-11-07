@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Row } from "react-bootstrap";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -16,17 +16,13 @@ interface MergeEditProps {
   options?: Options;
 }
 
-const MergeEdit: React.FC<MergeEditProps> = ({
-  merges = [],
-  target,
-  options,
-}) => {
+const MergeEdit: FC<MergeEditProps> = ({ merges = [], target, options }) => {
   if (!merges || merges.length === 0) return null;
 
   return (
     <div className="mb-4">
-      <div className="row">
-        <b className="col-2 text-right">Merge</b>
+      <Row>
+        <b className="col-2 text-end">Merge</b>
         <div>
           {merges?.map((source) => {
             if (isTag(source)) {
@@ -42,7 +38,7 @@ const MergeEdit: React.FC<MergeEditProps> = ({
                   <Link to={performerHref(source)}>
                     {source.name}
                     {source.disambiguation && (
-                      <small className="text-muted ml-1">
+                      <small className="text-muted ms-1">
                         ({source.disambiguation})
                       </small>
                     )}
@@ -53,9 +49,9 @@ const MergeEdit: React.FC<MergeEditProps> = ({
             return null;
           })}
         </div>
-      </div>
-      <div className="row">
-        <b className="col-2 text-right">Into</b>
+      </Row>
+      <Row>
+        <b className="col-2 text-end">Into</b>
         <div>
           {isTag(target) && (
             <div>
@@ -67,7 +63,7 @@ const MergeEdit: React.FC<MergeEditProps> = ({
               <Link to={performerHref(target)}>
                 {target.name}
                 {target.disambiguation && (
-                  <small className="text-muted ml-1">
+                  <small className="text-muted ms-1">
                     ({target.disambiguation})
                   </small>
                 )}
@@ -75,7 +71,7 @@ const MergeEdit: React.FC<MergeEditProps> = ({
             </div>
           )}
         </div>
-      </div>
+      </Row>
       {isPerformer(target) && (
         <Row>
           <div className="offset-2 d-flex align-items-center">
@@ -83,7 +79,7 @@ const MergeEdit: React.FC<MergeEditProps> = ({
               icon={options?.set_merge_aliases ? faCheck : faTimes}
               color={options?.set_merge_aliases ? "green" : "red"}
             />
-            <span className="ml-2">Set performance aliases to old name</span>
+            <span className="ms-2">Set performance aliases to old name</span>
           </div>
         </Row>
       )}

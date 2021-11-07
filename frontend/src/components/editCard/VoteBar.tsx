@@ -1,5 +1,5 @@
-import React, { useContext, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { FC, useContext, useState } from "react";
+import { Button, Form, Row } from "react-bootstrap";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
@@ -17,7 +17,7 @@ interface Props {
   edit: Edit;
 }
 
-const VoteBar: React.FC<Props> = ({ edit }) => {
+const VoteBar: FC<Props> = ({ edit }) => {
   const auth = useContext(AuthContext);
   const userVote = (edit.votes ?? []).find((v) => v.user.id === auth.user?.id);
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
@@ -44,10 +44,10 @@ const VoteBar: React.FC<Props> = ({ edit }) => {
   };
 
   return (
-    <Form.Row className={CLASSNAME}>
+    <Row className={CLASSNAME}>
       <div className={CLASSNAME_SAVE}>
         <h6>
-          <span className="mr-2">Current Vote:</span>
+          <span className="me-2">Current Vote:</span>
           <span>{`${edit.vote_count > 0 ? "+" : ""}${
             edit.vote_count === 0 ? "-" : edit.vote_count
           }`}</span>
@@ -60,14 +60,14 @@ const VoteBar: React.FC<Props> = ({ edit }) => {
               onClick={handleSave}
               disabled={savingVote}
             >
-              <span className="mr-2">Save</span>
+              <span className="me-2">Save</span>
               <Icon icon={faCheck} color="green" />
             </Button>
           )}
       </div>
       <Form.Group
         controlId="vote-yes"
-        className={cx({
+        className={cx("mb-3", {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.ACCEPT,
           "bg-success": vote === VoteTypeEnum.ACCEPT,
         })}
@@ -82,7 +82,7 @@ const VoteBar: React.FC<Props> = ({ edit }) => {
       </Form.Group>
       <Form.Group
         controlId="vote-no"
-        className={cx({
+        className={cx("mb-3", {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.REJECT,
           "bg-danger": vote === VoteTypeEnum.REJECT,
         })}
@@ -97,7 +97,7 @@ const VoteBar: React.FC<Props> = ({ edit }) => {
       </Form.Group>
       <Form.Group
         controlId="vote-abstain"
-        className={cx({
+        className={cx("mb-3", {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.ABSTAIN,
           "bg-warning": vote === VoteTypeEnum.ABSTAIN,
         })}
@@ -110,7 +110,7 @@ const VoteBar: React.FC<Props> = ({ edit }) => {
         />
         <Form.Label>Abstain</Form.Label>
       </Form.Group>
-    </Form.Row>
+    </Row>
   );
 };
 

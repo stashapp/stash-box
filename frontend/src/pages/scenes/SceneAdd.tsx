@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
@@ -11,7 +11,7 @@ import { editHref } from "src/utils";
 
 import SceneForm from "./sceneForm";
 
-const SceneAdd: React.FC = () => {
+const SceneAdd: FC = () => {
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
   const [submitSceneEdit, { loading: saving }] = useSceneEdit({
@@ -59,7 +59,7 @@ const SceneAdd: React.FC = () => {
       <hr />
       <SceneForm scene={emptyScene} callback={doInsert} saving={saving} />
       {submissionError && (
-        <div className="text-danger text-right col-9">
+        <div className="text-danger text-end col-9">
           Error: {submissionError}
         </div>
       )}
