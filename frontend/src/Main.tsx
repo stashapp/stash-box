@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { FC, useEffect } from "react";
 import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useHistory } from "react-router-dom";
 
@@ -23,7 +23,7 @@ import {
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
-const Main: React.FC = ({ children }) => {
+const Main: FC = ({ children }) => {
   const history = useHistory();
   const { loading, user } = useAuth();
 
@@ -69,7 +69,7 @@ const Main: React.FC = ({ children }) => {
         <span>Logged in as</span>
         <NavLink
           to={userHref(contextValue.user)}
-          className="nav-link ml-auto mr-2"
+          className="nav-link ms-auto me-2"
         >
           {contextValue.user.name}
         </NavLink>
@@ -81,7 +81,7 @@ const Main: React.FC = ({ children }) => {
         <NavLink
           to={ROUTE_LOGOUT}
           onClick={handleLogout}
-          className="nav-link mr-4"
+          className="nav-link me-4"
         >
           Logout
         </NavLink>
@@ -91,7 +91,7 @@ const Main: React.FC = ({ children }) => {
   return (
     <div>
       <Navbar bg="dark" variant="dark" className="px-4">
-        <Nav className="row mr-auto">
+        <Nav className="me-auto">
           <NavLink exact to={ROUTE_HOME} className="nav-link">
             Home
           </NavLink>

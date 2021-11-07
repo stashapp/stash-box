@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useAddUser } from "src/graphql";
 import { ROUTE_USERS } from "src/constants/route";
 import UserForm, { UserData } from "./UserForm";
 
-const AddUserComponent: React.FC = () => {
+const AddUserComponent: FC = () => {
   const [queryError, setQueryError] = useState();
   const history = useHistory();
   const [insertUser] = useAddUser({

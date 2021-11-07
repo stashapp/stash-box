@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Button } from "react-bootstrap";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
@@ -14,7 +14,7 @@ const CLASSNAME = "ImageInput";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_REMOVE = `${CLASSNAME}-remove`;
 
-const ImageInput: React.FC<ImageProps> = ({ image, onRemove }) => (
+const ImageInput: FC<ImageProps> = ({ image, onRemove }) => (
   <div className={CLASSNAME}>
     <Button
       variant="danger"

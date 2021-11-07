@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import ReactMarkdown from "react-markdown";
 import RemarkGFM from "remark-gfm";
 import RemarkBreaks from "remark-breaks";
@@ -8,7 +8,7 @@ interface Props {
   text: string | null | undefined;
 }
 
-export const Markdown: React.FC<Props> = ({ text }) =>
+export const Markdown: FC<Props> = ({ text }) =>
   text ? (
     <ReactMarkdown
       remarkPlugins={[RemarkGFM, RemarkBreaks, RemarkExternalLinks]}

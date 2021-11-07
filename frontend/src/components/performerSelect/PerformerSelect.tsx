@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 
 import { TagLink } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
@@ -17,7 +17,7 @@ const CLASSNAME = "PerformerSelect";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
 const CLASSNAME_CONTAINER = `${CLASSNAME}-container`;
 
-const PerformerSelect: React.FC<PerformerSelectProps> = ({
+const PerformerSelect: FC<PerformerSelectProps> = ({
   performers: initialPerformers,
   onChange,
   message = "Add performer:",

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 
 import { User_findUser as User } from "src/graphql/definitions/User";
@@ -10,7 +10,7 @@ interface Props {
   user: User;
 }
 
-const UserEditsComponent: React.FC<Props> = ({ user }) => (
+const UserEditsComponent: FC<Props> = ({ user }) => (
   <>
     <h3>
       Edits by <Link to={createHref(ROUTE_USER, user)}>{user.name}</Link>

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Route, Switch, useParams } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
@@ -19,7 +19,7 @@ import SceneEdit from "./SceneEdit";
 import SceneAdd from "./SceneAdd";
 import SceneDelete from "./SceneDelete";
 
-const SceneLoader: React.FC = () => {
+const SceneLoader: FC = () => {
   const { id } = useParams<{ id: string }>();
   const { loading, data } = useScene({ id });
 
@@ -54,7 +54,7 @@ const SceneLoader: React.FC = () => {
   );
 };
 
-const SceneRoutes: React.FC = () => (
+const SceneRoutes: FC = () => (
   <Switch>
     <Route exact path={ROUTE_SCENE_ADD}>
       <>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import Async from "react-select/async";
 import { OnChangeValue } from "react-select";
 import { useApolloClient } from "@apollo/client";
@@ -33,7 +33,7 @@ const CLASSNAME_LIST = `${CLASSNAME}-list`;
 const CLASSNAME_SELECT = `${CLASSNAME}-select`;
 const CLASSNAME_CONTAINER = `${CLASSNAME}-container`;
 
-const TagSelect: React.FC<TagSelectProps> = ({
+const TagSelect: FC<TagSelectProps> = ({
   tags: initialTags,
   onChange,
   message = "Add tag:",

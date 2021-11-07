@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
@@ -12,7 +12,7 @@ interface Props {
   tag: Tag;
 }
 
-const TagEdit: React.FC<Props> = ({ tag }) => {
+const TagEdit: FC<Props> = ({ tag }) => {
   const history = useHistory();
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {

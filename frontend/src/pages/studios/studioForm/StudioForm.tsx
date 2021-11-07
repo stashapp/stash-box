@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
@@ -47,7 +47,7 @@ interface StudioProps {
   saving: boolean;
 }
 
-const StudioForm: React.FC<StudioProps> = ({
+const StudioForm: FC<StudioProps> = ({
   studio,
   callback,
   showNetworkSelect = true,
@@ -84,7 +84,7 @@ const StudioForm: React.FC<StudioProps> = ({
 
   return (
     <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name">
+      <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
         <Form.Control
           className={cx({ "is-invalid": errors.title })}
@@ -97,7 +97,7 @@ const StudioForm: React.FC<StudioProps> = ({
         </Form.Control.Feedback>
       </Form.Group>
 
-      <Form.Group controlId="url">
+      <Form.Group controlId="url" className="mb-3">
         <Form.Label>URL</Form.Label>
         <Form.Control
           className={cx({ "is-invalid": errors.url })}
@@ -111,7 +111,7 @@ const StudioForm: React.FC<StudioProps> = ({
       </Form.Group>
 
       {showNetworkSelect && (
-        <Form.Group controlId="network">
+        <Form.Group controlId="network" className="mb-3">
           <Form.Label>Network</Form.Label>
           <StudioSelect
             excludeStudio={studio.id}
@@ -123,7 +123,7 @@ const StudioForm: React.FC<StudioProps> = ({
         </Form.Group>
       )}
 
-      <Form.Group>
+      <Form.Group className="mb-3">
         <Form.Label>Images</Form.Label>
         <EditImages
           control={control}
@@ -135,12 +135,12 @@ const StudioForm: React.FC<StudioProps> = ({
 
       <EditNote register={register} error={errors.note} />
 
-      <Form.Group>
+      <Form.Group className="mb-3">
         <div className="d-flex">
           <Button className="col-2" type="submit" disabled={!!file || saving}>
             Save
           </Button>
-          <Button type="reset" variant="secondary" className="ml-auto mr-2">
+          <Button type="reset" variant="secondary" className="ms-auto me-2">
             Reset
           </Button>
           <Link

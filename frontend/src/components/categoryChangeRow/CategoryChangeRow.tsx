@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 
 import { useCategory } from "src/graphql";
 import ChangeRow from "src/components/changeRow";
@@ -9,7 +9,7 @@ interface CategoryChangeRowProps {
   showDiff?: boolean;
 }
 
-const CategoryChangeRow: React.FC<CategoryChangeRowProps> = ({
+const CategoryChangeRow: FC<CategoryChangeRowProps> = ({
   newCategoryID,
   oldCategoryID,
   showDiff = false,

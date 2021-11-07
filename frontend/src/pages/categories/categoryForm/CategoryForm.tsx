@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -27,7 +27,7 @@ interface TagProps {
   callback: (data: TagCategoryCreateInput) => void;
 }
 
-const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
+const TagForm: FC<TagProps> = ({ id, category, callback }) => {
   const history = useHistory();
   const {
     register,
@@ -48,7 +48,7 @@ const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
 
   return (
     <Form className="TagForm col-6" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name">
+      <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
         <input
           type="text"
@@ -60,7 +60,7 @@ const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
         <div className="invalid-feedback">{errors?.name?.message}</div>
       </Form.Group>
 
-      <Form.Group controlId="description">
+      <Form.Group controlId="description" className="mb-3">
         <Form.Label>Description</Form.Label>
         <Form.Control
           placeholder="Description"
@@ -69,7 +69,7 @@ const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
         />
       </Form.Group>
 
-      <Form.Group>
+      <Form.Group className="mb-3">
         <Form.Label>Group</Form.Label>
         <Form.Control
           as="select"
@@ -84,11 +84,11 @@ const TagForm: React.FC<TagProps> = ({ id, category, callback }) => {
         </Form.Control>
       </Form.Group>
 
-      <Form.Group className="d-flex">
+      <Form.Group className="d-flex mb-3">
         <Button type="submit" className="col-2">
           Save
         </Button>
-        <Button type="reset" className="ml-auto mr-2">
+        <Button type="reset" className="ms-auto me-2">
           Reset
         </Button>
         <Link to={createHref(id ? ROUTE_CATEGORY : ROUTE_CATEGORIES, { id })}>
