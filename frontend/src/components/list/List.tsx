@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect, useState } from "react";
+import { FC, ReactNode } from "react";
 import { LoadingIndicator } from "src/components/fragments";
 import Pagination from "src/components/pagination";
 
@@ -23,42 +23,36 @@ const List: FC<Props> = ({
   filters,
   children,
   entityName = "data",
-}) => {
-  const [count, setCount] = useState(listCount ?? 0);
-
-  useEffect(() => {
-    if (!loading && listCount !== undefined) setCount(listCount);
-  }, [loading, listCount]);
-
-  return (
-    <>
-      <div className="d-flex mt-2 align-items-start">
-        {filters}
-        <Pagination
-          onClick={setPage}
-          count={count}
-          active={page}
-          perPage={perPage}
-          showCount
-        />
-      </div>
-      {loading ? (
-        <LoadingIndicator message={`Loading ${entityName}...`} />
-      ) : count > 0 ? (
-        children
-      ) : (
-        <h4 className="m-4 p-4 text-center">No results</h4>
-      )}
-      <div className="d-flex">
-        <Pagination
-          onClick={setPage}
-          count={count}
-          perPage={perPage}
-          active={page}
-        />
-      </div>
-    </>
-  );
-};
+}) => (
+  <>
+    <div className="d-flex mt-2 align-items-start">
+      {filters}
+      <Pagination
+        onClick={setPage}
+        count={listCount ?? 0}
+        active={page}
+        perPage={perPage}
+        showCount
+      />
+    </div>
+    {loading ? (
+      <LoadingIndicator message={`Loading ${entityName}...`} />
+    ) : listCount && listCount > 0 ? (
+      children
+    ) : listCount === 0 ? (
+      <h4 className="m-4 p-4 text-center">No results</h4>
+    ) : (
+      <></>
+    )}
+    <div className="d-flex">
+      <Pagination
+        onClick={setPage}
+        count={listCount ?? 0}
+        perPage={perPage}
+        active={page}
+      />
+    </div>
+  </>
+);
 
 export default List;
