@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -23,7 +23,7 @@ const MergeEdit: FC<MergeEditProps> = ({ merges = [], target, options }) => {
     <div className="mb-4">
       <Row>
         <b className="col-2 text-end">Merge</b>
-        <div>
+        <Col xs={10}>
           {merges?.map((source) => {
             if (isTag(source)) {
               return (
@@ -48,11 +48,11 @@ const MergeEdit: FC<MergeEditProps> = ({ merges = [], target, options }) => {
             }
             return null;
           })}
-        </div>
+        </Col>
       </Row>
       <Row>
         <b className="col-2 text-end">Into</b>
-        <div>
+        <Col xs={10}>
           {isTag(target) && (
             <div>
               <Link to={tagHref(target)}>{target.name}</Link>
@@ -70,7 +70,7 @@ const MergeEdit: FC<MergeEditProps> = ({ merges = [], target, options }) => {
               </Link>
             </div>
           )}
-        </div>
+        </Col>
       </Row>
       {isPerformer(target) && (
         <Row>
