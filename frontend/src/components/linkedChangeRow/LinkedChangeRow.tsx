@@ -1,6 +1,6 @@
-import React from "react";
-
+import { FC } from "react";
 import { Link } from "react-router-dom";
+import { Row } from "react-bootstrap";
 import cx from "classnames";
 
 interface Change {
@@ -15,7 +15,7 @@ interface LinkedChangeRowProps {
   showDiff?: boolean;
 }
 
-const LinkedChangeRow: React.FC<LinkedChangeRowProps> = ({
+const LinkedChangeRow: FC<LinkedChangeRowProps> = ({
   name,
   newEntity,
   oldEntity,
@@ -36,10 +36,10 @@ const LinkedChangeRow: React.FC<LinkedChangeRowProps> = ({
   if (!newEntity?.link && !oldEntity?.link) return null;
 
   return (
-    <div className="row mb-2">
-      <b className="col-2 text-right">{name}</b>
+    <Row className="mb-2">
+      <b className="col-2 text-end">{name}</b>
       {showDiff && (
-        <span className="col-5 ml-auto mt-2" key={oldEntity?.name}>
+        <span className="col-5 ms-auto mt-2" key={oldEntity?.name}>
           <div className="EditDiff bg-danger">{getValue(oldEntity)}</div>
         </span>
       )}
@@ -48,7 +48,7 @@ const LinkedChangeRow: React.FC<LinkedChangeRowProps> = ({
           {getValue(newEntity)}
         </div>
       </span>
-    </div>
+    </Row>
   );
 };
 

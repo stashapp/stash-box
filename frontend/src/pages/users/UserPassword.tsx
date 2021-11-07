@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useChangePassword } from "src/graphql";
@@ -6,7 +6,7 @@ import AuthContext from "src/AuthContext";
 import { userHref } from "src/utils";
 import UserPassword, { UserPasswordData } from "./UserPasswordForm";
 
-const ChangePasswordComponent: React.FC = () => {
+const ChangePasswordComponent: FC = () => {
   const Auth = useContext(AuthContext);
   const [queryError, setQueryError] = useState();
   const history = useHistory();

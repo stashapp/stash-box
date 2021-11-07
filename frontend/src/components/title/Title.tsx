@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Helmet } from "react-helmet";
 
 // Title is only injected in production, so default to Stash-Box in dev
@@ -9,7 +9,7 @@ interface Props {
   page?: string;
 }
 
-const Title: React.FC<Props> = ({ page }) => (
+const Title: FC<Props> = ({ page }) => (
   <Helmet>
     <title>{page ? `${page} | ${INSTANCE_TITLE}` : INSTANCE_TITLE}</title>
   </Helmet>

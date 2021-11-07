@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import { groupBy, keyBy, sortBy } from "lodash-es";
@@ -22,7 +22,7 @@ interface Props {
   performer: Performer;
 }
 
-const PerformerComponent: React.FC<Props> = ({ performer }) => {
+const PerformerComponent: FC<Props> = ({ performer }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const [studioFilter, setStudioFilter] = useState<string[] | null>(null);

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Route, Switch, useParams } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
@@ -21,7 +21,7 @@ import PerformerEdit from "./PerformerEdit";
 import PerformerMerge from "./PerformerMerge";
 import PerformerDelete from "./PerformerDelete";
 
-const PerformerLoader: React.FC = () => {
+const PerformerLoader: FC = () => {
   const { id } = useParams<{ id: string }>();
   const { loading, data } = useFullPerformer({ id });
 
@@ -62,7 +62,7 @@ const PerformerLoader: React.FC = () => {
   );
 };
 
-const PerformerRoutes: React.FC = () => (
+const PerformerRoutes: FC = () => (
   <Switch>
     <Route exact path={ROUTE_PERFORMERS}>
       <>

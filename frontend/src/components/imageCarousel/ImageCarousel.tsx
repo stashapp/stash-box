@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import { Button } from "react-bootstrap";
 import cx from "classnames";
 import {
@@ -16,7 +16,7 @@ interface ImageCarouselProps {
   onDeleteImage?: (toDelete: Image) => void;
 }
 
-const ImageCarousel: React.FC<ImageCarouselProps> = ({
+const ImageCarousel: FC<ImageCarouselProps> = ({
   images,
   orientation,
   onDeleteImage,

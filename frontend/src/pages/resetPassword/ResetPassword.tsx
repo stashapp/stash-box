@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory, useLocation } from "react-router-dom";
@@ -22,7 +22,7 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-const ResetPassword: React.FC = () => {
+const ResetPassword: FC = () => {
   const history = useHistory();
   const query = useQuery();
   const Auth = useContext<ContextType>(AuthContext);

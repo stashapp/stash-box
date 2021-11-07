@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Button, Card, Form } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { studioHref, createHref, canEdit } from "src/utils";
@@ -13,7 +13,7 @@ import { List } from "src/components/list";
 
 const PER_PAGE = 40;
 
-const StudiosComponent: React.FC = () => {
+const StudiosComponent: FC = () => {
   const history = useHistory();
   const auth = useContext(AuthContext);
   const queries = querystring.parse(history.location.search);
@@ -31,7 +31,7 @@ const StudiosComponent: React.FC = () => {
   });
 
   const studioList = data?.queryStudios.studios.map((s) => (
-    <li key={s.id} className={s.parent === null ? "font-weight-bold" : ""}>
+    <li key={s.id} className={s.parent === null ? "fw-bold" : ""}>
       <Link to={studioHref(s)}>{s.name}</Link>
       {s.parent && (
         <small className="bullet-separator text-muted">
@@ -63,10 +63,10 @@ const StudiosComponent: React.FC = () => {
   return (
     <>
       <div className="d-flex">
-        <h3 className="mr-4">Studios</h3>
+        <h3 className="me-4">Studios</h3>
         {canEdit(auth.user) && (
-          <Link to={createHref(ROUTE_STUDIO_ADD)} className="ml-auto">
-            <Button className="mr-auto">Create</Button>
+          <Link to={createHref(ROUTE_STUDIO_ADD)} className="ms-auto">
+            <Button className="me-auto">Create</Button>
           </Link>
         )}
       </div>

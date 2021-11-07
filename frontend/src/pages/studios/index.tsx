@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Route, Switch, useParams } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
@@ -19,7 +19,7 @@ import StudioEdit from "./StudioEdit";
 import StudioAdd from "./StudioAdd";
 import StudioDelete from "./StudioDelete";
 
-const StudioLoader: React.FC = () => {
+const StudioLoader: FC = () => {
   const { id } = useParams<{ id: string }>();
   const { loading, data } = useStudio({ id });
 
@@ -54,7 +54,7 @@ const StudioLoader: React.FC = () => {
   );
 };
 
-const SceneRoutes: React.FC = () => (
+const SceneRoutes: FC = () => (
   <Switch>
     <Route exact path={ROUTE_STUDIO_ADD}>
       <>

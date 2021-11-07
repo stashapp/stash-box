@@ -1,11 +1,11 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useAddCategory, TagCategoryCreateInput } from "src/graphql";
 import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
-const AddCategory: React.FC = () => {
+const AddCategory: FC = () => {
   const history = useHistory();
   const [createCategory] = useAddCategory({
     onCompleted: (data) => {

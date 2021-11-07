@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Col } from "react-bootstrap";
 
 import { useScenes, usePerformers, SortDirectionEnum } from "src/graphql";
@@ -7,7 +7,7 @@ import PerformerCard from "src/components/performerCard";
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
 
-const ScenesComponent: React.FC = () => {
+const ScenesComponent: FC = () => {
   const { loading: loadingScenes, data: sceneData } = useScenes({
     filter: {
       page: 0,

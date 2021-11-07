@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
@@ -15,7 +15,7 @@ interface Props {
   performer: Performer;
 }
 
-const PerformerModify: React.FC<Props> = ({ performer }) => {
+const PerformerModify: FC<Props> = ({ performer }) => {
   const history = useHistory();
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (editData) => {

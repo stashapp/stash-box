@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { addSeconds, formatDistance } from "date-fns";
 
 import { Tooltip } from "src/components/fragments";
@@ -9,10 +9,7 @@ interface Props {
   edit: Edit;
 }
 
-const TooltipMessage: React.FC<{ pass: boolean; time: Date }> = ({
-  pass,
-  time,
-}) => (
+const TooltipMessage: FC<{ pass: boolean; time: Date }> = ({ pass, time }) => (
   <span>
     If no other votes are cast the edit will{" "}
     <b className={pass ? "text-success" : "text-danger"}>
@@ -22,7 +19,7 @@ const TooltipMessage: React.FC<{ pass: boolean; time: Date }> = ({
   </span>
 );
 
-const ExpirationNotification: React.FC<Props> = ({ edit }) => {
+const ExpirationNotification: FC<Props> = ({ edit }) => {
   const { data } = useConfig();
   const config = data?.getConfig;
 

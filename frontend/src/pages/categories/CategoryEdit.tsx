@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useUpdateCategory, TagCategoryCreateInput } from "src/graphql";
@@ -10,7 +10,7 @@ interface Props {
   category: Category;
 }
 
-const UpdateCategory: React.FC<Props> = ({ category }) => {
+const UpdateCategory: FC<Props> = ({ category }) => {
   const history = useHistory();
   const [updateCategory] = useUpdateCategory({
     onCompleted: (result) => {

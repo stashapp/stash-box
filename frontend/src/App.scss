@@ -18,59 +18,6 @@
 @import "./components/tagSelect/styles";
 @import "./components/editImages/styles";
 
-body {
-  color: $text-color;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  margin: 0;
-  min-width: 1210px;
-  padding: 0;
-}
-
-a {
-  color: unset;
-
-  &:hover {
-    color: unset;
-  }
-}
-
-/* stylelint-disable no-descending-specificity */
-.text-input,
-.input-control {
-  border: 0;
-  box-shadow: 0 0 0 0 rgba(19 124 189 / 0%), 0 0 0 0 rgba(19 124 189 / 0%),
-    0 0 0 0 rgba(19 124 189 / 0%), inset 0 0 0 1px rgba(16 22 26 / 30%),
-    inset 0 1px 1px rgba(16 22 26 / 40%);
-  color: $text-color;
-
-  &:focus {
-    border: 0;
-    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary,
-      0 0 0 3px rgba(19 124 189 / 30%), inset 0 0 0 1px rgba(16 22 26 / 30%),
-      inset 0 1px 1px rgba(16 22 26 / 40%);
-    color: $text-color;
-  }
-}
-
-.text-input,
-.text-input[readonly],
-.text-input:focus {
-  background-color: $textfield-bg;
-}
-
-.input-control,
-.input-control:focus {
-  background-color: $secondary;
-}
-/* stylelint-enable no-descending-specificity */
-
-textarea.text-input {
-  line-height: 2.5ex;
-  min-height: 12ex;
-  overflow-y: scroll;
-}
-
 /* this is a bit of a hack, because we can't supply direct class names
    to the react-select controls */
 /* stylelint-disable selector-class-pattern */
@@ -106,79 +53,12 @@ div.react-select__menu {
   }
 }
 
-.StashDBContent {
-  margin: auto;
-  max-width: 1200px;
-  padding-top: 2rem;
-}
-
-.user-nav {
-  margin-right: 2rem;
-  padding: 0.5 1rem;
-}
-
-.card {
-  margin: 0;
-  margin-bottom: 1rem;
-}
-
-.card-footer,
-.card-header {
-  background-color: transparent;
-  border: none;
-}
-
-a[aria-current] {
-  font-weight: bold;
-}
-
-label.is-invalid {
-  .error-message {
-    color: red;
-  }
-}
-
 .LoginPrompt {
   height: 70vh;
   width: 960px;
 
   a {
     color: $link-color;
-  }
-}
-
-.image-carousel {
-  height: 100%;
-  width: 100%;
-
-  .carousel {
-    height: 80%;
-    width: inherit;
-
-    .slide {
-      align-items: center;
-      display: flex;
-      justify-content: center;
-    }
-
-    .slider img {
-      width: inherit;
-    }
-  }
-
-  .slider-wrapper,
-  .slider {
-    height: 100%;
-  }
-}
-
-.image-container {
-  position: relative;
-
-  .delete-image-overlay {
-    left: 5px;
-    position: absolute;
-    top: 5px;
   }
 }
 
@@ -189,8 +69,6 @@ label.is-invalid {
   }
 }
 
-/* stylelint-disable */
 .PendingEditTab {
   color: $warning !important;
 }
-/* stylelint-enable */

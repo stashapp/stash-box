@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
@@ -13,12 +13,12 @@ interface Props {
   user?: Pick<User, "name"> | null;
 }
 
-const EditComment: React.FC<Props> = ({ comment, date, user }) => (
+const EditComment: FC<Props> = ({ comment, date, user }) => (
   <Card className={CLASSNAME}>
     <Card.Body className="pb-0">
       <Markdown text={comment} />
     </Card.Body>
-    <Card.Footer className="text-right">
+    <Card.Footer className="text-end">
       {user ? (
         <Link to={userHref(user)}>{user.name}</Link>
       ) : (
