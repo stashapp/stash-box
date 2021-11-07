@@ -10,7 +10,7 @@ import { ROUTE_SCENES } from "src/constants";
 import News from "docs/news.md";
 import Intro from "docs/intro.md";
 
-const CLASSNAME = 'HomePage';
+const CLASSNAME = "HomePage";
 const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;
 
 const ScenesComponent: FC = () => {
@@ -29,23 +29,24 @@ const ScenesComponent: FC = () => {
     },
   });
 
-  if (loadingScenes)
-    return <LoadingIndicator message="Loading..." />;
+  if (loadingScenes) return <LoadingIndicator message="Loading..." />;
 
   const scenes = (sceneData?.queryScenes?.scenes ?? []).map((scene) => (
     <Col key={scene.id}>
       <SceneCard performance={scene} />
     </Col>
   ));
-  const trendingScenes = (trendingData?.queryScenes?.scenes ?? []).map((scene) => (
-    <Col key={scene.id}>
-      <SceneCard performance={scene} />
-    </Col>
-  ));
+  const trendingScenes = (trendingData?.queryScenes?.scenes ?? []).map(
+    (scene) => (
+      <Col key={scene.id}>
+        <SceneCard performance={scene} />
+      </Col>
+    )
+  );
 
   return (
     <div className={CLASSNAME}>
-			<Row>
+      <Row>
         <Col xs={6}>
           <MarkdownDoc doc={News} />
         </Col>
@@ -58,7 +59,9 @@ const ScenesComponent: FC = () => {
       </h4>
       <Row className={CLASSNAME_SCENES}>{trendingScenes}</Row>
       <h4>
-        <Link to={`${ROUTE_SCENES}?sort=created_at`}>Recently added scenes</Link>
+        <Link to={`${ROUTE_SCENES}?sort=created_at`}>
+          Recently added scenes
+        </Link>
       </h4>
       <Row className={CLASSNAME_SCENES}>{scenes}</Row>
     </div>
