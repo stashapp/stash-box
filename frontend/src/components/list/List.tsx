@@ -1,4 +1,4 @@
-import { FC, ReactNode} from "react";
+import { FC, ReactNode } from "react";
 import { LoadingIndicator } from "src/components/fragments";
 import Pagination from "src/components/pagination";
 
@@ -41,7 +41,9 @@ const List: FC<Props> = ({
       children
     ) : listCount === 0 ? (
       <h4 className="m-4 p-4 text-center">No results</h4>
-    ) : <></>}
+    ) : (
+      <></>
+    )}
     <div className="d-flex">
       <Pagination
         onClick={setPage}
