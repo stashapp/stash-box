@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits_details_SceneEdit_added_performers as Appearance } from "src/graphql/definitions/Edits";

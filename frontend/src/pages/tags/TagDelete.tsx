@@ -1,6 +1,6 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
-import { Button, Col, Form } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -20,7 +20,7 @@ interface Props {
   tag: Tag;
 }
 
-const TagDelete: React.FC<Props> = ({ tag }) => {
+const TagDelete: FC<Props> = ({ tag }) => {
   const history = useHistory();
   const {
     register,
@@ -51,21 +51,21 @@ const TagDelete: React.FC<Props> = ({ tag }) => {
 
   return (
     <Form className="TagDeleteForm" onSubmit={handleSubmit(handleDelete)}>
-      <Form.Row>
+      <Row>
         <h4>
           Delete tag <em>{tag.name}</em>
         </h4>
-      </Form.Row>
+      </Row>
       <Form.Control type="hidden" value={tag.id} {...register("id")} />
-      <Form.Row className="my-4">
+      <Row className="my-4">
         <Col md={6}>
           <EditNote register={register} error={errors.note} />
         </Col>
-      </Form.Row>
-      <Form.Row className="mt-2">
+      </Row>
+      <Row className="mt-2">
         <Button
           variant="danger"
-          className="ml-auto mr-2"
+          className="ms-auto me-2"
           onClick={() => history.goBack()}
         >
           Cancel
@@ -74,7 +74,7 @@ const TagDelete: React.FC<Props> = ({ tag }) => {
         <Button type="submit" disabled={deleting}>
           Submit Edit
         </Button>
-      </Form.Row>
+      </Row>
     </Form>
   );
 };

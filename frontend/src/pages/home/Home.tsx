@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
@@ -13,7 +13,7 @@ import Intro from "docs/intro.md";
 const CLASSNAME = 'HomePage';
 const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;
 
-const ScenesComponent: React.FC = () => {
+const ScenesComponent: FC = () => {
   const { loading: loadingScenes, data: sceneData } = useScenes({
     filter: {
       page: 1,

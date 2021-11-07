@@ -1,4 +1,4 @@
-import React from "react";
+import { FC, ReactNode} from "react";
 import { LoadingIndicator } from "src/components/fragments";
 import Pagination from "src/components/pagination";
 
@@ -10,11 +10,11 @@ interface Props {
   perPage?: number;
   listCount?: number;
   loading: boolean;
-  filters?: React.ReactNode;
+  filters?: ReactNode;
   entityName?: string;
 }
 
-const List: React.FC<Props> = ({
+const List: FC<Props> = ({
   page,
   setPage,
   perPage = PER_PAGE,

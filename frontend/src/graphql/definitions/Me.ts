@@ -16,7 +16,7 @@ export interface Me_me {
   /**
    * Should not be visible to other users
    */
-  roles: RoleEnum[];
+  roles: RoleEnum[] | null;
 }
 
 export interface Me {

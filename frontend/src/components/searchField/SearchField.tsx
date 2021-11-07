@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { FC, KeyboardEvent, useRef, useState } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { components, Options, OptionProps, OnChangeValue } from "react-select";
 import Async from "react-select/async";
@@ -150,7 +150,7 @@ function handleResult(
   ]);
 }
 
-const SearchField: React.FC<SearchFieldProps> = ({
+const SearchField: FC<SearchFieldProps> = ({
   onClick,
   onClickPerformer,
   searchType = SearchType.Performer,
@@ -212,7 +212,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
     setSelected(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current) {
       history.push(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
     }

@@ -1,41 +1,140 @@
-/* Blueprint dark theme */
+// 1. Include functions first (so you can manipulate colors, SVGs, calc, etc)
+@import "bootstrap/scss/functions";
 
+// 2. Include any default variable overrides here
+$primary: #137cbd;
 $secondary: #394b59;
-$muted-gray: #bfccd6;
 $success: #0f9960;
 $warning: #d9822b;
 $danger: #db3737;
-$theme-colors: (
-  primary: #137cbd,
-  secondary: $secondary,
-  success: $success,
-  warning: $warning,
-  danger: $danger,
-  dark: #394b59,
-);
-$body-bg: #202b33;
+$dark: #394b59;
+$text-color: #f5f8fa;
+$muted-gray: #bfccd6;
 $text-muted: $muted-gray;
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "success": $success,
+  "warning": $warning,
+  "danger": $danger,
+  "dark": $dark,
+);
+
+// 3. Include remainder of required Bootstrap stylesheets
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
+// 4. Include any optional Bootstrap components as you like
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities";
+@import "bootstrap/scss/utilities/api";
+
+// Layout & components
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/pagination";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/modal";
+@import "bootstrap/scss/tooltip";
+@import "bootstrap/scss/popover";
+@import "bootstrap/scss/spinners";
+
+/*
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/button-group";
+@import "bootstrap/scss/accordion";
+@import "bootstrap/scss/breadcrumb";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/toasts";
+@import "bootstrap/scss/carousel";
+@import "bootstrap/scss/offcanvas";
+*/
+
+:root {
+  --bs-primary: #137cbd;
+  --bs-secondary: #394b59;
+  --bs-success: #0f9960;
+  --bs-warning: #d9822b;
+  --bs-danger: #db3737;
+  --bs-body-bg: #202b33;
+  --bs-dark: #394b59;
+  --bs-dark-rgb: 57, 75, 89;
+}
+
+body {
+  color: $text-color;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-width: 1210px;
+}
+
+.StashDBContent {
+  margin: auto;
+  max-width: 1200px;
+  padding-top: 2rem;
+}
+
+.table {
+  color: #f5f8fa;
+
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(92 112 128 / 15%);
+  --bs-table-striped-color: #f5f8fa;
+
+  td {
+    border: none;
+    padding: 0.25rem 0.75rem;
+    vertical-align: middle;
+
+    &:first-child {
+      padding-left: 1rem;
+    }
+  }
+}
+
 $link-color: #48aff0;
 $link-hover-color: $link-color;
-$text-color: #f5f8fa;
 $pre-color: $text-color;
-$navbar-dark-color: rgb(245 248 250);
-$popover-bg: $secondary;
+$popover-bg: var(--bs-secondary);
 $dark-text: #182026;
 $textfield-bg: rgba(16 22 26 / 30%);
-
-@import "node_modules/bootstrap/scss/bootstrap";
-
-$red1: #a82a2a;
-$orange1: #a66321;
-$sepia1: #63411e;
-$dark-gray2: #202b33;
-$dark-gray5: #394b59;
 
 .btn.active:not(.disabled),
 .btn.active.minimal:not(.disabled) {
   background-color: rgba(138 155 168 / 30%);
   color: $text-color;
+}
+
+.btn-link {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+a {
+  color: unset;
+  text-decoration: none;
+
+  &:hover {
+    color: unset;
+    text-decoration: underline;
+  }
 }
 
 a.minimal,
@@ -56,16 +155,24 @@ button.minimal {
   }
 }
 
+a[aria-current] {
+  font-weight: bold;
+}
+
+label.is-invalid {
+  .error-message {
+    color: red;
+  }
+}
+
 hr {
   margin: 5px 0;
+  background-color: rgba(0 0 0 / 10%);
+  opacity: 100%;
 }
 
 .dropdown-toggle::after {
   content: none;
-}
-
-.nav-link {
-  color: $text-color;
 }
 
 .nav-tabs {
@@ -79,6 +186,7 @@ hr {
     padding: 8px;
 
     &.active {
+      background-color: transparent;
       border-bottom: 2px solid;
       color: $link-color;
 
@@ -94,39 +202,22 @@ hr {
   }
 }
 
+.navbar-dark .navbar-nav .nav-link {
+  color: $text-color;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
 .tab-content {
   padding-bottom: 2rem;
 }
 
-.table {
-  border: none;
-  color: $text-color;
-
-  thead {
-    th {
-      border-bottom: 1px solid #414c53;
-      border-right: none;
-      border-top: none;
-    }
+.form-floating {
+  .form-label {
+    color: var(--bs-body-color);
   }
-
-  td {
-    border: none;
-    border-color: #414c53;
-    padding: 0.25rem 0.75rem;
-
-    &:first-child {
-      padding-left: 1rem;
-    }
-
-    &:last-child {
-      padding-right: 1rem;
-    }
-  }
-}
-
-.table-striped tr:nth-child(odd) td {
-  background: rgba(92 112 128 / 15%);
 }
 
 .form-control {
@@ -173,16 +264,22 @@ hr {
   border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(16 22 26 / 40%), 0 0 0 rgba(16 22 26 / 0%),
     0 0 0 rgba(16 22 26 / 0%);
-  margin: 5px;
   overflow: hidden;
   padding: 0;
+  margin: calc(var(--bs-gutter-x) * 0.5) 0;
+
+  &-footer,
+  &-header {
+    background-color: transparent;
+    border: none;
+  }
 }
 
 .page-link {
-  background-color: $secondary;
+  background-color: var(--bs-secondary);
   border-bottom: none;
-  border-left-color: #202b33;
-  border-right-color: #202b33;
+  border-left-color: var(--bs-body-bg);
+  border-right-color: var(--bs-body-bg);
   border-top: none;
   color: white;
 }
@@ -197,10 +294,46 @@ hr {
 
 .page-item:first-child .page-link,
 .page-item:last-child .page-link {
-  border-color: $secondary;
+  border-color: var(--bs-secondary);
 }
 
 .page-item.disabled .page-link {
-  background-color: $secondary;
+  background-color: var(--bs-secondary);
   color: $gray-400;
+}
+
+.text-input,
+.input-control {
+  border: 0;
+  box-shadow: 0 0 0 0 rgba(19 124 189 / 0%), 0 0 0 0 rgba(19 124 189 / 0%),
+    0 0 0 0 rgba(19 124 189 / 0%), inset 0 0 0 1px rgba(16 22 26 / 30%),
+    inset 0 1px 1px rgba(16 22 26 / 40%);
+  color: $text-color;
+
+  &:focus {
+    border: 0;
+    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary,
+      0 0 0 3px rgba(19 124 189 / 30%), inset 0 0 0 1px rgba(16 22 26 / 30%),
+      inset 0 1px 1px rgba(16 22 26 / 40%);
+    color: $text-color;
+  }
+}
+
+/* stylelint-disable no-descending-specificity */
+.text-input,
+.text-input[readonly],
+.text-input:focus {
+  background-color: $textfield-bg;
+}
+
+.input-control,
+.input-control:focus {
+  background-color: $secondary;
+}
+/* stylelint-enable no-descending-specificity */
+
+textarea.text-input {
+  line-height: 2.5ex;
+  min-height: 12ex;
+  overflow-y: scroll;
 }

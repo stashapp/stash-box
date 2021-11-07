@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
@@ -40,7 +40,7 @@ interface Props {
   scene: Scene;
 }
 
-const SceneComponent: React.FC<Props> = ({ scene }) => {
+const SceneComponent: FC<Props> = ({ scene }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const auth = useContext(AuthContext);
@@ -125,7 +125,7 @@ const SceneComponent: React.FC<Props> = ({ scene }) => {
     <>
       <Card className="scene-info">
         <Card.Header>
-          <div className="float-right">
+          <div className="float-end">
             {canEdit(auth.user) && !scene.deleted && (
               <>
                 <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
@@ -133,7 +133,7 @@ const SceneComponent: React.FC<Props> = ({ scene }) => {
                 </Link>
                 <Link
                   to={createHref(ROUTE_SCENE_DELETE, { id: scene.id })}
-                  className="ml-2"
+                  className="ms-2"
                 >
                   <Button variant="danger">Delete</Button>
                 </Link>
@@ -164,15 +164,15 @@ const SceneComponent: React.FC<Props> = ({ scene }) => {
             className="scene-photo-element"
           />
         </Card.Body>
-        <Card.Footer className="row mx-1">
-          <div className="scene-performers mr-auto">{performers}</div>
+        <Card.Footer className="d-flex mx-1">
+          <div className="scene-performers me-auto">{performers}</div>
           {scene.duration && (
             <div title={`${scene.duration} seconds`}>
               Duration: <b>{formatDuration(scene.duration)}</b>
             </div>
           )}
           {scene.director && (
-            <div className="ml-3">
+            <div className="ms-3">
               Director: <strong>{scene.director}</strong>
             </div>
           )}
@@ -194,7 +194,7 @@ const SceneComponent: React.FC<Props> = ({ scene }) => {
             </div>
             <hr />
             <div>
-              <strong className="mr-2">Studio URL: </strong>
+              <strong className="me-2">Studio URL: </strong>
               <a
                 href={getUrlByType(scene.urls, "STUDIO")}
                 target="_blank"
@@ -211,7 +211,7 @@ const SceneComponent: React.FC<Props> = ({ scene }) => {
             {fingerprints.length === 0 ? (
               <h6>No fingerprints found for this scene.</h6>
             ) : (
-              <Table striped bordered size="sm">
+              <Table striped variant="dark">
                 <thead>
                   <tr>
                     <td>

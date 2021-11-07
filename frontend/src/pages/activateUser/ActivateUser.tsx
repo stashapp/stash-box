@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory, useLocation } from "react-router-dom";
@@ -30,7 +30,7 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-const ActivateNewUserPage: React.FC = () => {
+const ActivateNewUserPage: FC = () => {
   const query = useQuery();
   const history = useHistory();
   const Auth = useContext<ContextType>(AuthContext);

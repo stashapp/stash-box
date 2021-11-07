@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import CreatableSelect from "react-select/creatable";
 import { OnChangeValue } from "react-select";
 
@@ -13,7 +13,7 @@ interface IOptionType {
   value: string;
 }
 
-const MultiSelect: React.FC<MultiSelectProps> = ({
+const MultiSelect: FC<MultiSelectProps> = ({
   values: initialValues,
   onChange,
   placeholder = "Select...",

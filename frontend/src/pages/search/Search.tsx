@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { FC, useMemo } from "react";
 import { useHistory, useParams, Link } from "react-router-dom";
 import { Card, Col, Form, Row } from "react-bootstrap";
 import { debounce } from "lodash-es";
@@ -10,6 +10,7 @@ import {
   faUsers,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 
 import {
   SearchAll_searchPerformer as Performer,
@@ -41,7 +42,7 @@ const CLASSNAME_PERFORMER_IMAGE = `${CLASSNAME_PERFORMER}-image`;
 const CLASSNAME_SCENE = `${CLASSNAME}-scene`;
 const CLASSNAME_SCENE_IMAGE = `${CLASSNAME_SCENE}-image`;
 
-const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
+const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
   <Link to={performerHref(performer)} className={CLASSNAME_PERFORMER}>
     <Card>
       <img
@@ -49,7 +50,7 @@ const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
         className={CLASSNAME_PERFORMER_IMAGE}
         alt=""
       />
-      <div className="ml-3">
+      <div className="ms-3">
         <h4>
           <GenderIcon gender={performer?.gender} />
           <PerformerName performer={performer} />
@@ -82,7 +83,7 @@ const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
   </Link>
 );
 
-const SceneCard: React.FC<{ scene: Scene }> = ({ scene }) => (
+const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
   <Link to={sceneHref(scene)} className={CLASSNAME_SCENE}>
     <Card>
       <img
@@ -90,10 +91,10 @@ const SceneCard: React.FC<{ scene: Scene }> = ({ scene }) => (
         className={CLASSNAME_SCENE_IMAGE}
         alt=""
       />
-      <div className="ml-3 w-100">
+      <div className="ms-3 w-100">
         <h5>
           {scene.title}
-          <small className="text-muted ml-2">
+          <small className="text-muted ms-2">
             {formatDuration(scene.duration)}
           </small>
         </h5>
@@ -122,7 +123,7 @@ interface IParams {
   term?: string;
 }
 
-const Search: React.FC = () => {
+const Search: FC = () => {
   const { term } = useParams<IParams>();
   const history = useHistory();
   const { loading, data } = useSearchAll(
@@ -148,7 +149,7 @@ const Search: React.FC = () => {
   return (
     <div className={CLASSNAME}>
       <Title page={term} />
-      <Form.Group className={CLASSNAME_INPUT}>
+      <Form.Group className={cx(CLASSNAME_INPUT, "mb-3")}>
         <Icon icon={faSearch} />
         <Form.Control
           defaultValue={term}

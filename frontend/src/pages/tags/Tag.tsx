@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Col, Row, Tab, Tabs } from "react-bootstrap";
 
@@ -37,7 +37,7 @@ interface Props {
   tag: Tag;
 }
 
-const TagComponent: React.FC<Props> = ({ tag }) => {
+const TagComponent: FC<Props> = ({ tag }) => {
   const auth = useContext(AuthContext);
   const history = useHistory();
   const { page, setPage } = usePagination();
@@ -84,17 +84,17 @@ const TagComponent: React.FC<Props> = ({ tag }) => {
 
   return (
     <>
-      <Row noGutters>
+      <div className="d-flex">
         <h3>
-          <span className="mr-2">Tag:</span>
+          <span className="me-2">Tag:</span>
           {tag.deleted ? <del>{tag.name}</del> : <em>{tag.name}</em>}
         </h3>
         {canEdit(auth.user) && !tag.deleted && (
-          <div className="ml-auto">
-            <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="ml-2">
+          <div className="ms-auto">
+            <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="ms-2">
               <Button>Edit</Button>
             </Link>
-            <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="ml-2">
+            <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="ms-2">
               <Tooltip
                 text={
                   <>
@@ -105,31 +105,31 @@ const TagComponent: React.FC<Props> = ({ tag }) => {
                 <Button>Merge</Button>
               </Tooltip>
             </Link>
-            <Link to={createHref(ROUTE_TAG_DELETE, tag)} className="ml-2">
+            <Link to={createHref(ROUTE_TAG_DELETE, tag)} className="ms-2">
               <Button variant="danger">Delete</Button>
             </Link>
           </div>
         )}
-      </Row>
+      </div>
       {tag.description && (
-        <Row noGutters>
-          <b className="mr-2">Description:</b>
+        <div className="d-flex">
+          <b className="me-2">Description:</b>
           <span>{tag.description}</span>
-        </Row>
+        </div>
       )}
       {tag.category && (
-        <Row noGutters>
-          <b className="mr-2">Category:</b>
+        <div className="d-flex">
+          <b className="me-2">Category:</b>
           <Link to={createHref(ROUTE_CATEGORY, tag.category)}>
             {tag.category.name}
           </Link>
-        </Row>
+        </div>
       )}
       {tag.aliases.length > 0 && (
-        <Row noGutters>
-          <b className="mr-2">Aliases:</b>
+        <div className="d-flex">
+          <b className="me-2">Aliases:</b>
           <span>{tag.aliases.join(", ")}</span>
-        </Row>
+        </div>
       )}
       <hr className="my-2" />
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
@@ -140,7 +140,7 @@ const TagComponent: React.FC<Props> = ({ tag }) => {
           )}
           {!loadingScenes && sceneData?.queryScenes && (
             <>
-              <Row noGutters>
+              <div className="d-flex">
                 <Pagination
                   onClick={setPage}
                   perPage={PER_PAGE}
@@ -148,16 +148,16 @@ const TagComponent: React.FC<Props> = ({ tag }) => {
                   count={sceneData.queryScenes.count}
                   showCount
                 />
-              </Row>
+              </div>
               <Row className="performers">{scenes}</Row>
-              <Row noGutters>
+              <div className="d-flex">
                 <Pagination
                   onClick={setPage}
                   perPage={PER_PAGE}
                   active={page}
                   count={sceneData.queryScenes.count}
                 />
-              </Row>
+              </div>
             </>
           )}
         </Tab>

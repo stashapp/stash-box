@@ -128,9 +128,11 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 			return
 		}
 	}
+	s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 
 	userID := createdUser.ID.String()
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
+
 	s.verifyUserRolePromotion(user)
 }
 

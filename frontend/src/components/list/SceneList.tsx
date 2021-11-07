@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import querystring from "query-string";
 import { useHistory } from "react-router-dom";
@@ -23,7 +23,7 @@ const sortOptions = [
   { value: "updated_at", label: "Updated At" },
 ];
 
-const SceneList: React.FC<Props> = ({ perPage = PER_PAGE, filter }) => {
+const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
   const history = useHistory();
   const queries = querystring.parse(history.location.search);
   const sort = Array.isArray(queries.sort) ? queries.sort[0] : queries.sort;

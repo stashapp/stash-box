@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import cx from 'classnames';
 
@@ -11,15 +11,12 @@ const CLASSNAME = "LoadingIndicator";
 const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
 const CLASSNAME_DELAYED = `${CLASSNAME}-delayed`;
 
-const LoadingIndicator: React.FC<LoadingProps> = ({
-  message,
-  delay = 1000,
-}) => {
+const LoadingIndicator: FC<LoadingProps> = ({ message, delay = 1000 }) => {
   const [delayed, setDelayed] = useState(delay > 0);
   useEffect(() => {
-    if (delayed && delay > 0) {
-      setTimeout(() => setDelayed(false), delay);
-    }
+    if (!delayed || delay === 0) return;
+    const timeout = setTimeout(() => setDelayed(false), delay);
+    return () => clearTimeout(timeout);
   }, [delayed, delay]);
 
   return (

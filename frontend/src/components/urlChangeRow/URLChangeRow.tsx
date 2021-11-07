@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Row } from "react-bootstrap";
 
 const CLASSNAME = "URLChangeRow";
@@ -14,14 +14,10 @@ interface URLChangeRowProps {
   showDiff?: boolean;
 }
 
-const URLChangeRow: React.FC<URLChangeRowProps> = ({
-  newURLs,
-  oldURLs,
-  showDiff,
-}) =>
+const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
   (newURLs ?? []).length > 0 || (oldURLs ?? []).length > 0 ? (
     <Row className={CLASSNAME}>
-      <b className="col-2 text-right">URLs</b>
+      <b className="col-2 text-end">URLs</b>
       {showDiff && (
         <div className="col-5">
           {(oldURLs ?? []).length > 0 && (

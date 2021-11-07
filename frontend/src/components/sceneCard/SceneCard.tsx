@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
@@ -12,7 +12,7 @@ const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_TITLE = `${CLASSNAME}-title`;
 const CLASSNAME_BODY = `${CLASSNAME}-body`;
 
-const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
+const SceneCard: FC<{ performance: Performance }> = ({ performance }) => (
   <Link className={CLASSNAME} to={sceneHref(performance)}>
     <Card>
       <Card.Body className={CLASSNAME_BODY}>
@@ -31,9 +31,9 @@ const SceneCard: React.FC<{ performance: Performance }> = ({ performance }) => (
           {performance.studio && (
             <Link
               to={studioHref(performance.studio)}
-              className="float-right text-truncate SceneCard-studio-name"
+              className="float-end text-truncate SceneCard-studio-name"
             >
-              <Icon icon={faVideo} className="mr-1" />
+              <Icon icon={faVideo} className="me-1" />
               {performance.studio.name}
             </Link>
           )}

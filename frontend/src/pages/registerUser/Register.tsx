@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
@@ -17,7 +17,7 @@ const schema = yup.object({
 });
 type RegisterFormData = yup.Asserts<typeof schema>;
 
-const Register: React.FC = () => {
+const Register: FC = () => {
   const history = useHistory();
   const [awaitingActivation, setAwaitingActivation] = useState(false);
   const Auth = useContext<ContextType>(AuthContext);
@@ -84,7 +84,7 @@ const Register: React.FC = () => {
             placeholder="Email"
             {...register("email")}
           />
-          <div className="invalid-feedback text-right">
+          <div className="invalid-feedback text-end">
             {errors?.email?.message}
           </div>
         </label>
@@ -96,7 +96,7 @@ const Register: React.FC = () => {
             placeholder="Invite Key"
             {...register("inviteKey")}
           />
-          <div className="invalid-feedback text-right">
+          <div className="invalid-feedback text-end">
             {errors?.inviteKey?.message}
           </div>
         </label>
@@ -110,7 +110,7 @@ const Register: React.FC = () => {
           </div>
         </div>
         <div className="row">
-          <p className="col text-danger text-right">{submitError}</p>
+          <p className="col text-danger text-end">{submitError}</p>
         </div>
       </form>
     </div>

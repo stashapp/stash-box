@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import Select, { OnChangeValue } from "react-select";
 import { Form } from "react-bootstrap";
 
@@ -15,7 +15,7 @@ interface IOptionType {
   subValues: string[] | null;
 }
 
-const CheckboxSelect: React.FC<MultiSelectProps> = ({
+const CheckboxSelect: FC<MultiSelectProps> = ({
   values,
   onChange,
   placeholder = "Select...",
@@ -36,7 +36,7 @@ const CheckboxSelect: React.FC<MultiSelectProps> = ({
   ) => {
     if (meta.context === "menu")
       return option.subValues === null ? (
-        <div className="d-flex ml-3">
+        <div className="d-flex ms-3">
           <Form.Check checked={unselected.includes(option.value)} />
           {option.label}
         </div>

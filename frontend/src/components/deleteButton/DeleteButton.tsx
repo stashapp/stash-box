@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { FC, useState, useContext } from "react";
 import { Button } from "react-bootstrap";
 
 import AuthContext from "src/AuthContext";
@@ -13,7 +13,7 @@ interface DeleteButtonProps {
   className?: string;
 }
 
-const DeleteButton: React.FC<DeleteButtonProps> = ({
+const DeleteButton: FC<DeleteButtonProps> = ({
   message,
   onClick,
   disabled = false,

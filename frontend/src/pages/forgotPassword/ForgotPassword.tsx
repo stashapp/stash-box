@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
@@ -15,7 +15,7 @@ const schema = yup.object({
 });
 type ResetPasswordFormData = yup.Asserts<typeof schema>;
 
-const ForgotPassword: React.FC = () => {
+const ForgotPassword: FC = () => {
   const history = useHistory();
   const [resetEmail, setResetEmail] = useState("");
   const Auth = useContext<ContextType>(AuthContext);
