@@ -98,12 +98,12 @@ export const getEditTargetRoute = (target: Target): string => {
   return ROUTE_HOME;
 };
 
-export const getEditTargetName = (target: Target): string => {
+export const getEditTargetName = (target: Target | null): string => {
   if (isScene(target)) {
     return target.title ?? target.id;
   }
 
-  return target.name;
+  return target?.name ?? target?.id ?? "-";
 };
 
 export const getEditTargetEntity = (target: Target) => {
@@ -121,10 +121,10 @@ export const getEditTargetEntity = (target: Target) => {
   }
 };
 
-export const getEditDetailsName = (details: Details): string => {
+export const getEditDetailsName = (details: Details | null): string => {
   if (isSceneDetails(details)) {
-    return details.title!;
+    return details.title ?? "-";
   }
 
-  return details.name!;
+  return details?.name ?? "-";
 };

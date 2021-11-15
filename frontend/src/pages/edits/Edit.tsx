@@ -34,7 +34,7 @@ const EditComponent: FC = () => {
   if (loading) return <LoadingIndicator message="Loading..." />;
 
   const edit = data?.findEdit;
-  if (!edit?.id) return <ErrorMessage error="Failed to load edit." />;
+  if (!edit) return <ErrorMessage error="Failed to load edit." />;
 
   const toggleCancelModal = () => setShowCancel(true);
   const toggleApplyModal = () => setShowApply(true);
@@ -97,8 +97,8 @@ const EditComponent: FC = () => {
 
   const targetName =
     edit.operation === OperationEnum.CREATE
-      ? getEditDetailsName(edit.details!)
-      : getEditTargetName(edit.target!);
+      ? getEditDetailsName(edit.details)
+      : getEditTargetName(edit.target);
 
   return (
     <div>
