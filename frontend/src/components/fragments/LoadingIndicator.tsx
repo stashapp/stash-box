@@ -11,7 +11,7 @@ const CLASSNAME = "LoadingIndicator";
 const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
 const CLASSNAME_DELAYED = `${CLASSNAME}-delayed`;
 
-const LoadingIndicator: FC<LoadingProps> = ({ message, delay = 1000 }) => {
+const LoadingIndicator: FC<LoadingProps> = ({ message, delay = 100 }) => {
   const [delayed, setDelayed] = useState(delay > 0);
   useEffect(() => {
     if (!delayed || delay === 0) return;
