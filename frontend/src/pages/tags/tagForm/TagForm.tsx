@@ -21,7 +21,7 @@ const schema = yup.object({
   name: yup.string().required("Name is required"),
   description: yup.string(),
   aliases: yup.array().of(yup.string().required()),
-  categoryId: yup.string().defined(),
+  categoryId: yup.string().nullable().defined(),
   note: yup.string().required("Edit note is required"),
 });
 
@@ -86,9 +86,9 @@ const TagForm: FC<TagProps> = ({ tag, callback, saving }) => {
     <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
-        <input
+        <Form.Control
           type="text"
-          className={cx("form-control", { "is-invalid": errors.name })}
+          className={cx({ "is-invalid": errors.name })}
           placeholder="Name"
           defaultValue={tag.name}
           {...register("name", { required: true })}

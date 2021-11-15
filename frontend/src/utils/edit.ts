@@ -1,4 +1,5 @@
 import {
+  Edits_queryEdits_edits_details as Details,
   Edits_queryEdits_edits_details_TagEdit as TagEdit,
   Edits_queryEdits_edits_details_PerformerEdit as PerformerEdit,
   Edits_queryEdits_edits_details_StudioEdit as StudioEdit,
@@ -97,12 +98,12 @@ export const getEditTargetRoute = (target: Target): string => {
   return ROUTE_HOME;
 };
 
-export const getEditTargetName = (target: Target): string => {
+export const getEditTargetName = (target: Target | null): string => {
   if (isScene(target)) {
     return target.title ?? target.id;
   }
 
-  return target.name;
+  return target?.name ?? target?.id ?? "-";
 };
 
 export const getEditTargetEntity = (target: Target) => {
@@ -118,4 +119,12 @@ export const getEditTargetEntity = (target: Target) => {
   if (isScene(target)) {
     return "Scene";
   }
+};
+
+export const getEditDetailsName = (details: Details | null): string => {
+  if (isSceneDetails(details)) {
+    return details.title ?? "-";
+  }
+
+  return details?.name ?? "-";
 };

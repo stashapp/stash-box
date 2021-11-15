@@ -75,7 +75,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
             loadOptions={debouncedLoad}
             placeholder="Search for studio"
             noOptionsMessage={({ inputValue }) =>
-              inputValue === "" ? null : `No studios found for "${inputValue}`
+              inputValue === "" ? null : `No studios found for "${inputValue}"`
             }
             isClearable={isClearable}
           />

@@ -105,8 +105,7 @@ const PerformersComponent: FC = () => {
         className="performer-filter ms-2"
       />
       <InputGroup className="performer-sort ms-2">
-        <Form.Control
-          as="select"
+        <Form.Select
           onChange={(e) => handleQuery("sort", e.currentTarget.value)}
           defaultValue={sort ?? "name"}
         >
@@ -115,7 +114,7 @@ const PerformersComponent: FC = () => {
               {s.label}
             </option>
           ))}
-        </Form.Control>
+        </Form.Select>
         <Button
           variant="secondary"
           onClick={() =>
