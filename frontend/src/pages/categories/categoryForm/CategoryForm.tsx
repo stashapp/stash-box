@@ -50,9 +50,9 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
     <Form className="TagForm col-6" onSubmit={handleSubmit(onSubmit)}>
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
-        <input
+        <Form.Control
           type="text"
-          className={cx("form-control", { "is-invalid": errors.name })}
+          className={cx({ "is-invalid": errors.name })}
           placeholder="Name"
           {...register("name")}
           defaultValue={category?.name ?? ""}
