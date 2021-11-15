@@ -7,14 +7,19 @@ END$$;
 
 ALTER TABLE "scene_fingerprints" ADD COLUMN user_id uuid references "users"("id") ON DELETE CASCADE;
 
--- create a user to assign existing fingerprints to
-WITH "rows" AS (
-  INSERT INTO "users" 
-    ("id", "name", "password_hash", "email", "api_key", "last_api_call", "created_at", "updated_at")
-    VALUES
-    (gen_random_uuid(), '_legacy_submissions', '', 'N/A', '', LOCALTIMESTAMP, LOCALTIMESTAMP, LOCALTIMESTAMP)
-    RETURNING "id"
-) UPDATE "scene_fingerprints" SET "user_id" = (SELECT "id" FROM "rows");
+-- if there are existing fingerprints, create a user to assign them to it
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM "scene_fingerprints") THEN
+    WITH "rows" AS (
+      INSERT INTO "users" 
+        ("id", "name", "password_hash", "email", "api_key", "last_api_call", "created_at", "updated_at")
+        VALUES
+        (gen_random_uuid(), '_legacy_submissions', '', 'N/A', '', LOCALTIMESTAMP, LOCALTIMESTAMP, LOCALTIMESTAMP)
+        RETURNING "id"
+    ) UPDATE "scene_fingerprints" SET "user_id" = (SELECT "id" FROM "rows");
+  END IF;
+END$$;
 
 ALTER TABLE "scene_fingerprints" ALTER COLUMN "user_id" SET NOT NULL;
 
