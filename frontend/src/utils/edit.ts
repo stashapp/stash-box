@@ -1,4 +1,5 @@
 import {
+  Edits_queryEdits_edits_details as Details,
   Edits_queryEdits_edits_details_TagEdit as TagEdit,
   Edits_queryEdits_edits_details_PerformerEdit as PerformerEdit,
   Edits_queryEdits_edits_details_StudioEdit as StudioEdit,
@@ -118,4 +119,12 @@ export const getEditTargetEntity = (target: Target) => {
   if (isScene(target)) {
     return "Scene";
   }
+};
+
+export const getEditDetailsName = (details: Details): string => {
+  if (isSceneDetails(details)) {
+    return details.title!;
+  }
+
+  return details.name!;
 };
