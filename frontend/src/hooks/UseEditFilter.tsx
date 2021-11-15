@@ -100,8 +100,7 @@ const useEditFilter = ({
       <Form.Group className="me-2 mb-3 d-flex flex-column">
         <Form.Label>Order</Form.Label>
         <InputGroup>
-          <Form.Control
-            as="select"
+          <Form.Select
             onChange={(e) => handleChange("sort", e.currentTarget.value)}
             defaultValue={selectedSort ?? defaultSort}
           >
@@ -110,7 +109,7 @@ const useEditFilter = ({
                 {s.label}
               </option>
             ))}
-          </Form.Control>
+          </Form.Select>
           <Button
             variant="secondary"
             onClick={() =>
@@ -134,8 +133,7 @@ const useEditFilter = ({
       </Form.Group>
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Type</Form.Label>
-        <Form.Control
-          as="select"
+        <Form.Select
           onChange={(e) => handleChange("type", e.currentTarget.value)}
           value={selectedType}
           disabled={!!fixedType}
@@ -144,12 +142,11 @@ const useEditFilter = ({
             All
           </option>
           {enumToOptions(EditTargetTypes)}
-        </Form.Control>
+        </Form.Select>
       </Form.Group>
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Status</Form.Label>
-        <Form.Control
-          as="select"
+        <Form.Select
           onChange={(e) => handleChange("status", e.currentTarget.value)}
           value={selectedStatus}
           disabled={!!fixedStatus}
@@ -158,12 +155,11 @@ const useEditFilter = ({
             All
           </option>
           {enumToOptions(EditStatusTypes)}
-        </Form.Control>
+        </Form.Select>
       </Form.Group>
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Operation</Form.Label>
-        <Form.Control
-          as="select"
+        <Form.Select
           onChange={(e) => handleChange("operation", e.currentTarget.value)}
           value={selectedOperation}
           disabled={!!fixedOperation}
@@ -172,7 +168,7 @@ const useEditFilter = ({
             All
           </option>
           {enumToOptions(EditOperationTypes)}
-        </Form.Control>
+        </Form.Select>
       </Form.Group>
     </Form>
   );

@@ -71,8 +71,7 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
 
       <Form.Group className="mb-3">
         <Form.Label>Group</Form.Label>
-        <Form.Control
-          as="select"
+        <Form.Select
           defaultValue={category?.group ?? TagGroupEnum.ACTION}
           {...register("group")}
         >
@@ -81,7 +80,7 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
               .toLowerCase()
               .slice(1)}`}</option>
           ))}
-        </Form.Control>
+        </Form.Select>
       </Form.Group>
 
       <Form.Group className="d-flex mb-3">
