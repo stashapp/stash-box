@@ -22,7 +22,7 @@ const LoadingIndicator: FC<LoadingProps> = ({ message, delay = 100 }) => {
   return (
     <div className={cx(CLASSNAME, { [CLASSNAME_DELAYED]: delayed })}>
       <Spinner animation="border" role="status">
-        <span className="sr-only">Loading...</span>
+        <span className="visually-hidden">Loading...</span>
       </Spinner>
       <h4 className={CLASSNAME_MESSAGE}>{message ?? "Loading..."}</h4>
     </div>
