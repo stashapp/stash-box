@@ -21,7 +21,7 @@ const schema = yup.object({
   name: yup.string().required("Name is required"),
   description: yup.string(),
   aliases: yup.array().of(yup.string().required()),
-  categoryId: yup.string().defined(),
+  categoryId: yup.string().nullable().defined(),
   note: yup.string().required("Edit note is required"),
 });
 
