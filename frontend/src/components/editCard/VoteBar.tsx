@@ -1,5 +1,5 @@
 import { FC, useContext, useState } from "react";
-import { Button, Form, Row } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
@@ -10,6 +10,7 @@ import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 import { canVote } from "src/utils";
 
 const CLASSNAME = "VoteBar";
+const CLASSNAME_BUTTON = `${CLASSNAME}-button`;
 const CLASSNAME_VOTED = `${CLASSNAME}-voted`;
 const CLASSNAME_SAVE = `${CLASSNAME}-save`;
 
@@ -44,7 +45,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
   };
 
   return (
-    <Row className={CLASSNAME}>
+    <div className={CLASSNAME}>
       <div className={CLASSNAME_SAVE}>
         <h6>
           <span className="me-2">Current Vote:</span>
@@ -67,50 +68,56 @@ const VoteBar: FC<Props> = ({ edit }) => {
       </div>
       <Form.Group
         controlId="vote-yes"
-        className={cx("mb-3", {
+        className={cx(CLASSNAME_BUTTON, {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.ACCEPT,
           "bg-success": vote === VoteTypeEnum.ACCEPT,
         })}
         onChange={() => setVote(VoteTypeEnum.ACCEPT)}
       >
-        <Form.Control
-          type="radio"
-          name={`${edit.id}-vote`}
-          defaultChecked={userVote?.vote === VoteTypeEnum.ACCEPT}
-        />
-        <Form.Label>Yes</Form.Label>
+        <Form.Label>
+          <Form.Check
+            type="radio"
+            name={`${edit.id}-vote`}
+            defaultChecked={userVote?.vote === VoteTypeEnum.ACCEPT}
+          />
+          <span>Yes</span>
+        </Form.Label>
       </Form.Group>
       <Form.Group
         controlId="vote-no"
-        className={cx("mb-3", {
+        className={cx(CLASSNAME_BUTTON, {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.REJECT,
           "bg-danger": vote === VoteTypeEnum.REJECT,
         })}
         onChange={() => setVote(VoteTypeEnum.REJECT)}
       >
-        <Form.Control
-          type="radio"
-          name={`${edit.id}-vote`}
-          defaultChecked={userVote?.vote === VoteTypeEnum.REJECT}
-        />
-        <Form.Label>No</Form.Label>
+        <Form.Label>
+          <Form.Check
+            type="radio"
+            name={`${edit.id}-vote`}
+            defaultChecked={userVote?.vote === VoteTypeEnum.REJECT}
+          />
+          <span>No</span>
+        </Form.Label>
       </Form.Group>
       <Form.Group
         controlId="vote-abstain"
-        className={cx("mb-3", {
+        className={cx(CLASSNAME_BUTTON, {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.ABSTAIN,
           "bg-warning": vote === VoteTypeEnum.ABSTAIN,
         })}
         onChange={() => setVote(VoteTypeEnum.ABSTAIN)}
       >
-        <Form.Control
-          type="radio"
-          name={`${edit.id}-vote`}
-          defaultChecked={userVote?.vote === VoteTypeEnum.ABSTAIN}
-        />
-        <Form.Label>Abstain</Form.Label>
+        <Form.Label>
+          <Form.Check
+            type="radio"
+            name={`${edit.id}-vote`}
+            defaultChecked={userVote?.vote === VoteTypeEnum.ABSTAIN}
+          />
+          <span>Abstain</span>
+        </Form.Label>
       </Form.Group>
-    </Row>
+    </div>
   );
 };
 
