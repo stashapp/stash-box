@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -19,58 +19,40 @@ interface MergeEditProps {
 const MergeEdit: FC<MergeEditProps> = ({ merges = [], target, options }) => {
   if (!merges || merges.length === 0) return null;
 
+  const renderObject = (obj: Target | null) => {
+    if (isTag(obj)) {
+      return (
+        <div key={obj.id}>
+          <Link to={tagHref(obj)}>{obj.name}</Link>
+        </div>
+      );
+    }
+
+    if (isPerformer(obj)) {
+      return (
+        <div key={obj.id}>
+          <Link to={performerHref(obj)}>
+            {obj.name}
+            {obj.disambiguation && (
+              <small className="text-muted ms-1">({obj.disambiguation})</small>
+            )}
+          </Link>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="mb-4">
       <Row>
         <b className="col-2 text-end">Merge</b>
-        <div>
-          {merges?.map((source) => {
-            if (isTag(source)) {
-              return (
-                <div key={source.id}>
-                  <Link to={tagHref(source)}>{source.name}</Link>
-                </div>
-              );
-            }
-            if (isPerformer(source)) {
-              return (
-                <div key={source.id}>
-                  <Link to={performerHref(source)}>
-                    {source.name}
-                    {source.disambiguation && (
-                      <small className="text-muted ms-1">
-                        ({source.disambiguation})
-                      </small>
-                    )}
-                  </Link>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
+        <Col xs={10}>{merges?.map(renderObject)}</Col>
       </Row>
       <Row>
         <b className="col-2 text-end">Into</b>
-        <div>
-          {isTag(target) && (
-            <div>
-              <Link to={tagHref(target)}>{target.name}</Link>
-            </div>
-          )}
-          {isPerformer(target) && (
-            <div>
-              <Link to={performerHref(target)}>
-                {target.name}
-                {target.disambiguation && (
-                  <small className="text-muted ms-1">
-                    ({target.disambiguation})
-                  </small>
-                )}
-              </Link>
-            </div>
-          )}
-        </div>
+        <Col xs={10}>{renderObject(target)}</Col>
       </Row>
       {isPerformer(target) && (
         <Row>
