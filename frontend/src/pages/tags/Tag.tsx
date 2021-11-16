@@ -1,6 +1,6 @@
 import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { Button, Row, Tab, Tabs } from "react-bootstrap";
+import { Button, Col, Row, Tab, Tabs } from "react-bootstrap";
 
 import {
   useScenes,
@@ -77,7 +77,9 @@ const TagComponent: FC<Props> = ({ tag }) => {
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   const scenes = sceneData?.queryScenes.scenes.map((scene) => (
-    <SceneCard key={scene.id} performance={scene} />
+    <Col xs={3} key={scene.id}>
+      <SceneCard performance={scene} />
+    </Col>
   ));
 
   return (
