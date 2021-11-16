@@ -12,14 +12,14 @@ const CLASSNAME = "HomePage";
 const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;
 
 const ScenesComponent: FC = () => {
-  const { loading: loadingScenes, data: sceneData } = useScenes({
+  const { data: sceneData, loading: loadingRecent } = useScenes({
     filter: {
       page: 1,
       per_page: 20,
       sort: "created_at",
     },
   });
-  const { data: trendingData } = useScenes({
+  const { data: trendingData, loading: loadingTrending } = useScenes({
     filter: {
       page: 1,
       per_page: 20,
@@ -27,7 +27,7 @@ const ScenesComponent: FC = () => {
     },
   });
 
-  if (loadingScenes) return <LoadingIndicator message="Loading..." />;
+  if (loadingTrending) return <LoadingIndicator message="Loading..." />;
 
   const scenes = (sceneData?.queryScenes?.scenes ?? []).map((scene) => (
     <Col key={scene.id}>
@@ -44,16 +44,24 @@ const ScenesComponent: FC = () => {
 
   return (
     <div className={CLASSNAME}>
-      <h4>
-        <Link to={`${ROUTE_SCENES}?sort=trending`}>Trending scenes</Link>
-      </h4>
-      <Row className={CLASSNAME_SCENES}>{trendingScenes}</Row>
-      <h4>
-        <Link to={`${ROUTE_SCENES}?sort=created_at`}>
-          Recently added scenes
-        </Link>
-      </h4>
-      <Row className={CLASSNAME_SCENES}>{scenes}</Row>
+      {trendingScenes.length > 0 && (
+        <>
+          <h4>
+            <Link to={`${ROUTE_SCENES}?sort=trending`}>Trending scenes</Link>
+          </h4>
+          <Row className={CLASSNAME_SCENES}>{trendingScenes}</Row>
+        </>
+      )}
+      {!loadingRecent && (
+        <>
+          <h4>
+            <Link to={`${ROUTE_SCENES}?sort=created_at`}>
+              Recently added scenes
+            </Link>
+          </h4>
+          <Row className={CLASSNAME_SCENES}>{scenes}</Row>
+        </>
+      )}
     </div>
   );
 };
