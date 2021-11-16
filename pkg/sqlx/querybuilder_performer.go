@@ -201,7 +201,7 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, int) {
+func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, int, error) {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
 	}
@@ -278,12 +278,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	var performers models.Performers
 	countResult, err := qb.dbi.Query(*query, &performers)
 
-	if err != nil {
-		// TODO
-		panic(err)
-	}
-
-	return performers, countResult
+	return performers, countResult, err
 }
 
 func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {
