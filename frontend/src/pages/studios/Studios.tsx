@@ -80,7 +80,9 @@ const StudiosComponent: FC = () => {
         listCount={data?.queryStudios.count}
       >
         <Card>
-          <Card.Body>{studioList}</Card.Body>
+          <Card.Body>
+            <ul>{studioList}</ul>
+          </Card.Body>
         </Card>
       </List>
     </>

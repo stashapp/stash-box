@@ -435,14 +435,13 @@ const PerformerForm: FC<PerformerProps> = ({
           <Row>
             <Form.Group controlId="gender" className="col-6 mb-3">
               <Form.Label>Gender</Form.Label>
-              <Form.Control
-                as="select"
+              <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
                 defaultValue={performer?.gender ?? ""}
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
-              </Form.Control>
+              </Form.Select>
               <Form.Control.Feedback type="invalid">
                 {errors?.gender?.message}
               </Form.Control.Feedback>
@@ -473,8 +472,7 @@ const PerformerForm: FC<PerformerProps> = ({
           <Row>
             <Form.Group controlId="eye_color" className="col-6 mb-3">
               <Form.Label>Eye Color</Form.Label>
-              <Form.Control
-                as="select"
+              <Form.Select
                 className={cx({ "is-invalid": errors.eye_color })}
                 defaultValue={
                   performer.eye_color
@@ -484,7 +482,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 {...register("eye_color")}
               >
                 {enumOptions(EYE)}
-              </Form.Control>
+              </Form.Select>
               <Form.Control.Feedback>
                 {errors?.eye_color?.message}
               </Form.Control.Feedback>
@@ -492,8 +490,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
             <Form.Group controlId="hair_color" className="col-6 mb-3">
               <Form.Label>Hair Color</Form.Label>
-              <Form.Control
-                as="select"
+              <Form.Select
                 className={cx({ "is-invalid": errors.hair_color })}
                 defaultValue={
                   performer.hair_color
@@ -503,7 +500,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 {...register("hair_color")}
               >
                 {enumOptions(HAIR)}
-              </Form.Control>
+              </Form.Select>
               <Form.Control.Feedback>
                 {errors?.hair_color?.message}
               </Form.Control.Feedback>
@@ -529,8 +526,7 @@ const PerformerForm: FC<PerformerProps> = ({
               fieldData.gender !== "TRANSGENDER_MALE" && (
                 <Form.Group controlId="boobJob" className="col-6 mb-3">
                   <Form.Label>Breast type</Form.Label>
-                  <Form.Control
-                    as="select"
+                  <Form.Select
                     className={cx({ "is-invalid": errors.boobJob })}
                     defaultValue={
                       performer.breast_type
@@ -540,7 +536,7 @@ const PerformerForm: FC<PerformerProps> = ({
                     {...register("boobJob")}
                   >
                     {enumOptions(BREAST)}
-                  </Form.Control>
+                  </Form.Select>
                   <Form.Control.Feedback type="invalid">
                     {errors?.boobJob?.message}
                   </Form.Control.Feedback>
@@ -621,8 +617,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
             <Form.Group controlId="ethnicity" className="col-6 mb-3">
               <Form.Label>Ethnicity</Form.Label>
-              <Form.Control
-                as="select"
+              <Form.Select
                 className={cx({ "is-invalid": errors.ethnicity })}
                 defaultValue={
                   performer.ethnicity
@@ -632,7 +627,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 {...register("ethnicity")}
               >
                 {enumOptions(ETHNICITY)}
-              </Form.Control>
+              </Form.Select>
               <Form.Control.Feedback type="invalid">
                 {errors?.ethnicity?.message}
               </Form.Control.Feedback>

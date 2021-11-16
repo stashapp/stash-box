@@ -266,7 +266,7 @@ hr {
     0 0 0 rgba(16 22 26 / 0%);
   overflow: hidden;
   padding: 0;
-  margin: calc(var(--bs-gutter-x) * 0.5) 0;
+  margin: calc($grid-gutter-width * 0.5) 0;
 
   &-footer,
   &-header {

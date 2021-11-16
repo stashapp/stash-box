@@ -16,7 +16,7 @@ const ChangeRow: FC<ChangeRowProps> = ({
 }) =>
   name && (newValue || oldValue) ? (
     <div className="row mb-2">
-      <b className="col-2 text-end">{name}</b>
+      <b className="col-2 text-end pt-1">{name}</b>
       {showDiff && (
         <span className="col-5">
           <div className="EditDiff bg-danger">{oldValue}</div>

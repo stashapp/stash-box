@@ -50,9 +50,9 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
     <Form className="TagForm col-6" onSubmit={handleSubmit(onSubmit)}>
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
-        <input
+        <Form.Control
           type="text"
-          className={cx("form-control", { "is-invalid": errors.name })}
+          className={cx({ "is-invalid": errors.name })}
           placeholder="Name"
           {...register("name")}
           defaultValue={category?.name ?? ""}
@@ -71,8 +71,7 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
 
       <Form.Group className="mb-3">
         <Form.Label>Group</Form.Label>
-        <Form.Control
-          as="select"
+        <Form.Select
           defaultValue={category?.group ?? TagGroupEnum.ACTION}
           {...register("group")}
         >
@@ -81,7 +80,7 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
               .toLowerCase()
               .slice(1)}`}</option>
           ))}
-        </Form.Control>
+        </Form.Select>
       </Form.Group>
 
       <Form.Group className="d-flex mb-3">

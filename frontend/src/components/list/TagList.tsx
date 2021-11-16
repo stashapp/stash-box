@@ -67,8 +67,7 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
     />
   );
 
-  if (!loading && !data)
-    return <ErrorMessage error="Failed to load performers" />;
+  if (!loading && !data) return <ErrorMessage error="Failed to load tags." />;
 
   return (
     <List

@@ -39,7 +39,7 @@ const UsersComponent: FC = () => {
 
   const users = data?.queryUsers.users.map((user) => (
     <tr key={user.id}>
-      <td>
+      <td className="text-nowrap">
         <Link to={createHref(ROUTE_USER_EDIT, user)}>
           <Button variant="secondary" className="minimal">
             <Icon icon={faUserEdit} />
