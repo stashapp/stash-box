@@ -1,4 +1,11 @@
 .SceneCard {
+  &-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+
   &:hover {
     text-decoration: none;
 
@@ -32,13 +39,6 @@
       object-position: top;
       width: 100%;
     }
-  }
-
-  &-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
   }
 
   .card-footer {
