@@ -50,9 +50,8 @@ const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
   };
 
   const filters = (
-    <Form.Control
+    <Form.Select
       className="w-25"
-      as="select"
       onChange={(e) => handleQuery("sort", e.currentTarget.value)}
       defaultValue={sort ?? "name"}
     >
