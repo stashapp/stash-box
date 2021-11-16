@@ -164,7 +164,7 @@ const SearchField: FC<SearchFieldProps> = ({
   const [searchCallback, setCallback] =
     useState<(result: (SearchGroup | SearchResult)[]) => void>();
   const searchTerm = useRef("");
-  const [search] = useLazyQuery(
+  const [search] = useLazyQuery<SearchPerformers | SearchAll>(
     searchType === SearchType.Performer
       ? SearchPerformersQuery
       : SearchAllQuery,
@@ -198,15 +198,14 @@ const SearchField: FC<SearchFieldProps> = ({
   };
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {
-    const option = Array.isArray(result) ? result[0] : result;
-    if (option) {
-      if (valueIsPerformer(option.value)) onClickPerformer?.(option.value);
-      if (option.type === "ALL")
+    if (result?.value) {
+      if (valueIsPerformer(result.value)) onClickPerformer?.(result.value);
+      if (result.type === "ALL")
         return history.push(
           createHref(ROUTE_SEARCH, { term: searchTerm.current })
         );
-      onClick?.(option.value);
-      if (navigate) history.push(`/${option.type}s/${option.value.id}`);
+      onClick?.(result.value);
+      if (navigate) history.push(`/${result.type}s/${result.value.id}`);
     }
 
     setSelected(null);

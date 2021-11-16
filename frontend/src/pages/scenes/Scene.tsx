@@ -105,8 +105,8 @@ const SceneComponent: FC<Props> = ({ scene }) => {
         {fingerprint.submissions}
         {maybeRenderSubmitted(fingerprint)}
       </td>
-      <td>{formatDateTime(fingerprint.created)}</td>
-      <td>{formatDateTime(fingerprint.updated)}</td>
+      <td>{formatDateTime(fingerprint.created as string)}</td>
+      <td>{formatDateTime(fingerprint.updated as string)}</td>
     </tr>
   ));
   const tags = [...scene.tags]
