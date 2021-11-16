@@ -13,6 +13,7 @@ interface ListChangeRowProps<T> {
 
 const CLASSNAME = "ListChangeRow";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 const ListChangeRow = <T extends unknown>(
   props: PropsWithChildren<ListChangeRowProps<T>>
 ) =>

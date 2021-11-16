@@ -1,5 +1,6 @@
 import { FC, useContext, useState } from "react";
 import { useHistory } from "react-router-dom";
+import { isApolloError } from "@apollo/client";
 
 import { useChangePassword } from "src/graphql";
 import AuthContext from "src/AuthContext";
@@ -8,7 +9,7 @@ import UserPassword, { UserPasswordData } from "./UserPasswordForm";
 
 const ChangePasswordComponent: FC = () => {
   const Auth = useContext(AuthContext);
-  const [queryError, setQueryError] = useState();
+  const [queryError, setQueryError] = useState<string>();
   const history = useHistory();
   const [changePassword] = useChangePassword();
 
@@ -19,7 +20,12 @@ const ChangePasswordComponent: FC = () => {
     };
     changePassword({ variables: { userData } })
       .then(() => Auth.user && history.push(userHref(Auth.user)))
-      .catch((res) => setQueryError(res.message));
+      .catch(
+        (error: unknown) =>
+          error instanceof Error &&
+          isApolloError(error) &&
+          setQueryError(error.message)
+      );
   };
 
   return (
