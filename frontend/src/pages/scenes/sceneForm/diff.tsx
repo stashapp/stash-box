@@ -5,6 +5,7 @@ import { genderEnum, parseDuration } from "src/utils";
 
 import { CastedSceneFormData } from "./SceneForm";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 const diffArray = <T extends unknown>(
   a: T[],
   b: T[],
@@ -14,6 +15,7 @@ const diffArray = <T extends unknown>(
   b.filter((x) => !a.some((val) => getKey(val) === getKey(x))),
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 const diffValue = <T extends unknown>(
   a: T | undefined | null,
   b: T | undefined | null

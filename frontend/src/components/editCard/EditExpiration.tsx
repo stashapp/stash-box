@@ -26,7 +26,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   if (!config || edit.status !== VoteStatusEnum.PENDING) return <></>;
 
   const expirationTime = addSeconds(
-    new Date(edit.created),
+    new Date(edit.created as string),
     data.getConfig.voting_period
   );
   const expirationDistance =

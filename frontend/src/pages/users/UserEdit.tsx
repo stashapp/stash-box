@@ -1,5 +1,6 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
+import { isApolloError } from "@apollo/client";
 
 import { useUpdateUser } from "src/graphql";
 import { User_findUser as User } from "src/graphql/definitions/User";
@@ -11,14 +12,19 @@ interface Props {
 }
 
 const EditUserComponent: FC<Props> = ({ user }) => {
-  const [queryError, setQueryError] = useState();
+  const [queryError, setQueryError] = useState<string>();
   const history = useHistory();
   const [updateUser] = useUpdateUser();
 
   const doUpdate = (userData: UserEditData) => {
     updateUser({ variables: { userData } })
       .then((res) => history.push(userHref(res.data?.userUpdate ?? user)))
-      .catch((res) => setQueryError(res.message));
+      .catch(
+        (error: unknown) =>
+          error instanceof Error &&
+          isApolloError(error) &&
+          setQueryError(error.message)
+      );
   };
 
   return (

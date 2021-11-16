@@ -24,8 +24,8 @@ interface Props {
 
 const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
-  const created = new Date(edit.created);
-  const updated = new Date(edit.updated);
+  const created = new Date(edit.created as string);
+  const updated = new Date(edit.updated as string);
   let editVariant: BadgeProps["bg"] = "warning";
   if (
     edit.status === VoteStatusEnum.REJECTED ||

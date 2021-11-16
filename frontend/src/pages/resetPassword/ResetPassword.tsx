@@ -1,6 +1,7 @@
 import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { isApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
@@ -50,11 +51,12 @@ const ResetPassword: FC = () => {
       .then(() => {
         history.push(`${ROUTE_LOGIN}?msg=password-reset`);
       })
-      .catch((err) => {
-        if (err && err.message) {
-          setSubmitError(err.message);
-        }
-      });
+      .catch(
+        (error: unknown) =>
+          error instanceof Error &&
+          isApolloError(error) &&
+          setSubmitError(error.message)
+      );
   };
 
   return (
