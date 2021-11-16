@@ -5,10 +5,8 @@ import { Link } from "react-router-dom";
 import { useScenes } from "src/graphql";
 
 import SceneCard from "src/components/sceneCard";
-import { LoadingIndicator, MarkdownDoc } from "src/components/fragments";
+import { LoadingIndicator } from "src/components/fragments";
 import { ROUTE_SCENES } from "src/constants";
-import News from "docs/news.md";
-import Intro from "docs/intro.md";
 
 const CLASSNAME = "HomePage";
 const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;
@@ -46,14 +44,6 @@ const ScenesComponent: FC = () => {
 
   return (
     <div className={CLASSNAME}>
-      <Row>
-        <Col xs={6}>
-          <MarkdownDoc doc={News} />
-        </Col>
-        <Col xs={6}>
-          <MarkdownDoc doc={Intro} />
-        </Col>
-      </Row>
       <h4>
         <Link to={`${ROUTE_SCENES}?sort=trending`}>Trending scenes</Link>
       </h4>
