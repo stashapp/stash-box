@@ -60,7 +60,7 @@ const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
           {s.label}
         </option>
       ))}
-    </Form.Control>
+    </Form.Select>
   );
 
   const scenes = (data?.queryScenes.scenes ?? []).map((scene) => (
