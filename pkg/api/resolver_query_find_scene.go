@@ -79,9 +79,9 @@ func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.Sce
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
 
-	scenes, count := qb.Query(sceneFilter, filter)
+	scenes, count, err := qb.Query(sceneFilter, filter)
 	return &models.QueryScenesResultType{
 		Scenes: scenes,
 		Count:  count,
-	}, nil
+	}, err
 }
