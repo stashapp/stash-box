@@ -19,6 +19,7 @@ $theme-colors: (
   "danger": $danger,
   "dark": $dark,
 );
+$popover-bg: $secondary;
 
 // 3. Include remainder of required Bootstrap stylesheets
 @import "bootstrap/scss/variables";
@@ -103,7 +104,6 @@ body {
 $link-color: #48aff0;
 $link-hover-color: $link-color;
 $pre-color: $text-color;
-$popover-bg: var(--bs-secondary);
 $dark-text: #182026;
 $textfield-bg: rgba(16 22 26 / 30%);
 
