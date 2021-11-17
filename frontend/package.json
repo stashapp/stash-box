@@ -20,7 +20,6 @@
     "yarn": ">=1.15.2"
   },
   "resolutions": {
-    "@apollo/client": "^3.4.17",
     "**/graphql": "^15.7.2"
   },
   "devDependencies": {
