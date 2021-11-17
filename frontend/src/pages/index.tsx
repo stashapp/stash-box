@@ -38,44 +38,50 @@ const Pages: FC = () => (
     <Route exact path={ROUTE_HOME}>
       <Home />
     </Route>
-    <Route exact path={ROUTE_LOGIN}>
-      <Login />
-    </Route>
-    <Route path={ROUTE_USERS}>
-      <Users />
-    </Route>
-    <Route path={ROUTE_PERFORMERS}>
-      <Performers />
-    </Route>
-    <Route path={ROUTE_SCENES}>
-      <Scenes />
-    </Route>
-    <Route path={ROUTE_STUDIOS}>
-      <Studios />
-    </Route>
-    <Route path={ROUTE_TAGS}>
-      <Tags />
-    </Route>
-    <Route path={ROUTE_EDITS}>
-      <Edits />
-    </Route>
-    <Route path={ROUTE_CATEGORIES}>
-      <Categories />
-    </Route>
-    <Route exact path={ROUTE_REGISTER}>
-      <RegisterUser />
-    </Route>
-    <Route exact path={ROUTE_ACTIVATE}>
-      <ActivateUser />
-    </Route>
-    <Route exact path={ROUTE_FORGOT_PASSWORD}>
-      <ForgotPassword />
-    </Route>
-    <Route exact path={ROUTE_RESET_PASSWORD}>
-      <ResetPassword />
-    </Route>
-    <Route exact path={ROUTE_SEARCH}>
-      <Search />
+    <Route>
+      <div className="NarrowPage">
+        <Switch>
+          <Route exact path={ROUTE_LOGIN}>
+            <Login />
+          </Route>
+          <Route path={ROUTE_USERS}>
+            <Users />
+          </Route>
+          <Route path={ROUTE_PERFORMERS}>
+            <Performers />
+          </Route>
+          <Route path={ROUTE_SCENES}>
+            <Scenes />
+          </Route>
+          <Route path={ROUTE_STUDIOS}>
+            <Studios />
+          </Route>
+          <Route path={ROUTE_TAGS}>
+            <Tags />
+          </Route>
+          <Route path={ROUTE_EDITS}>
+            <Edits />
+          </Route>
+          <Route path={ROUTE_CATEGORIES}>
+            <Categories />
+          </Route>
+          <Route exact path={ROUTE_REGISTER}>
+            <RegisterUser />
+          </Route>
+          <Route exact path={ROUTE_ACTIVATE}>
+            <ActivateUser />
+          </Route>
+          <Route exact path={ROUTE_FORGOT_PASSWORD}>
+            <ForgotPassword />
+          </Route>
+          <Route exact path={ROUTE_RESET_PASSWORD}>
+            <ResetPassword />
+          </Route>
+          <Route exact path={ROUTE_SEARCH}>
+            <Search />
+          </Route>
+        </Switch>
+      </div>
     </Route>
   </Switch>
 );

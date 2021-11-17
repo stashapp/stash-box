@@ -116,11 +116,9 @@ const Main: FC = ({ children }) => {
           <SearchField searchType={SearchType.Combined} navigate showAllLink />
         </Nav>
       </Navbar>
-      <div className="StashDBContent container-fluid">
-        <AuthContext.Provider value={contextValue}>
-          {children}
-        </AuthContext.Provider>
-      </div>
+      <AuthContext.Provider value={contextValue}>
+        <main className="MainContent container-fluid">{children}</main>
+      </AuthContext.Provider>
     </div>
   );
 };
