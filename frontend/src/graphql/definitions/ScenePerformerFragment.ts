@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: ScenePerformerFragment
 // ====================================================
+
 
 export interface ScenePerformerFragment {
   __typename: "Performer";

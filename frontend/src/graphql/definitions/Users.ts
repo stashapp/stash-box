@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { UserFilterType, QuerySpec, RoleEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Users
 // ====================================================
+
 
 export interface Users_queryUsers_users_invited_by {
   __typename: "User";

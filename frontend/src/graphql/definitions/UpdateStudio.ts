@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { StudioUpdateInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateStudio
 // ====================================================
+
 
 export interface UpdateStudio_studioUpdate_child_studios {
   __typename: "Studio";
