@@ -3,9 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 // ====================================================
 // GraphQL query operation: Config
 // ====================================================
+
 
 export interface Config_getConfig {
   __typename: "StashBoxConfig";

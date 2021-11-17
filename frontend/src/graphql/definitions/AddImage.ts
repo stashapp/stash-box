@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { ImageCreateInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddImage
 // ====================================================
+
 
 export interface AddImage_imageCreate {
   __typename: "Image";

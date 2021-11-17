@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { RevokeInviteInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: RevokeInvite
 // ====================================================
+
 
 export interface RevokeInvite {
   /**

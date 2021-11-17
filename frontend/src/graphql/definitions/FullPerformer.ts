@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: FullPerformer
 // ====================================================
+
 
 export interface FullPerformer_findPerformer_birthdate {
   __typename: "FuzzyDate";

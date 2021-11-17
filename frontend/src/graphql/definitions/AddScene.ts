@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { SceneCreateInput, GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddScene
 // ====================================================
+
 
 export interface AddScene_sceneCreate_urls {
   __typename: "URL";

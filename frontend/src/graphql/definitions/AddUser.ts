@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { UserCreateInput, RoleEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddUser
 // ====================================================
+
 
 export interface AddUser_userCreate {
   __typename: "User";

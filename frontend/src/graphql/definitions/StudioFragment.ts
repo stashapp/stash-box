@@ -3,9 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 // ====================================================
 // GraphQL fragment: StudioFragment
 // ====================================================
+
 
 export interface StudioFragment_child_studios {
   __typename: "Studio";
