@@ -53,9 +53,10 @@ const StudiosComponent: FC = () => {
 
   const filters = (
     <Form.Control
-      id="tag-query"
+      id="studio-query"
       onChange={(e) => debouncedHandler(e.currentTarget.value)}
       placeholder="Filter studio name"
+      defaultValue={query ?? ""}
       className="w-25"
     />
   );
