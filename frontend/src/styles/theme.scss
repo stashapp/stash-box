@@ -19,7 +19,14 @@ $theme-colors: (
   "danger": $danger,
   "dark": $dark,
 );
+$link-color: #48aff0;
+$link-hover-color: $link-color;
+$pre-color: $text-color;
 $popover-bg: $secondary;
+
+// Custom variables
+$dark-text: #182026;
+$textfield-bg: rgba(16 22 26 / 30%);
 
 // 3. Include remainder of required Bootstrap stylesheets
 @import "bootstrap/scss/variables";
@@ -100,12 +107,6 @@ body {
     }
   }
 }
-
-$link-color: #48aff0;
-$link-hover-color: $link-color;
-$pre-color: $text-color;
-$dark-text: #182026;
-$textfield-bg: rgba(16 22 26 / 30%);
 
 .btn.active:not(.disabled),
 .btn.active.minimal:not(.disabled) {
