@@ -239,9 +239,10 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, int, error) {
-	if sceneFilter == nil {
-		sceneFilter = &models.SceneFilterType{}
+func (qb *sceneQueryBuilder) Query(sceneFilterInput *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, int, error) {
+	sceneFilter := &models.SceneFilterType{}
+	if sceneFilterInput != nil {
+		sceneFilter = sceneFilterInput
 	}
 	if findFilter == nil {
 		findFilter = &models.QuerySpec{}
@@ -337,14 +338,21 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	// TODO - other filters
 
-	if findFilter != nil && findFilter.GetSort("") == "trending" {
+	if findFilter.GetSort("") == "trending" {
+		limit := ""
+		if sceneFilterInput == nil {
+			// If no other filters are applied we can optimize query
+			// by sorting and limiting fingerprint count directly
+			limit = "ORDER BY count DESC " + getPagination(findFilter)
+		}
+
 		query.Body += `
 			JOIN (
 				SELECT scene_id, COUNT(*) AS count
 				FROM scene_fingerprints
-				WHERE created_at >= (now()::DATE - 31)
+				WHERE created_at >= (now()::DATE - 7)
 				GROUP BY scene_id
-				ORDER BY count
+				` + limit + `
 			) T ON scenes.id = T.scene_id
 		`
 		query.SortAndPagination = "ORDER BY T.count DESC  " + getPagination(findFilter)
