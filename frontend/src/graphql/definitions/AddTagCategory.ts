@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { TagCategoryCreateInput, TagGroupEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddTagCategory
 // ====================================================
+
 
 export interface AddTagCategory_tagCategoryCreate {
   __typename: "TagCategory";
