@@ -174,6 +174,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 func (qb *studioQueryBuilder) getStudioSort(findFilter *models.QuerySpec) string {
 	var sort string
 	var direction string
+	var secondary *string
 	if findFilter == nil {
 		sort = "name"
 		direction = "ASC"
@@ -181,7 +182,11 @@ func (qb *studioQueryBuilder) getStudioSort(findFilter *models.QuerySpec) string
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(qb.dbi.txn.dialect, sort, direction, "studios", nil)
+	if sort != "id" {
+		field := "id"
+		secondary = &field
+	}
+	return getSort(qb.dbi.txn.dialect, sort, direction, "studios", secondary)
 }
 
 func (qb *studioQueryBuilder) queryStudios(query string, args []interface{}) (models.Studios, error) {
