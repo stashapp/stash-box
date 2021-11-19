@@ -50,7 +50,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
       });
 
       const studio = data?.findStudio;
-      if (!studio) {
+      if (!studio || (networkSelect && studio.parent !== null)) {
         return [];
       }
 
