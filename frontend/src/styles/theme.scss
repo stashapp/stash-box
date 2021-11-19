@@ -73,13 +73,13 @@ $textfield-bg: rgba(16 22 26 / 30%);
 */
 
 :root {
-  --bs-primary: #137cbd;
-  --bs-secondary: #394b59;
-  --bs-success: #0f9960;
-  --bs-warning: #d9822b;
-  --bs-danger: #db3737;
+  --bs-primary: #{$primary};
+  --bs-secondary: #{$secondary};
+  --bs-success: #{$success};
+  --bs-warning: #{$warning};
+  --bs-danger: #{$danger};
   --bs-body-bg: #202b33;
-  --bs-dark: #394b59;
+  --bs-dark: #{$dark};
   --bs-dark-rgb: 57, 75, 89;
 }
 
