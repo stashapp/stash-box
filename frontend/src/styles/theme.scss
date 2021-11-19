@@ -287,6 +287,11 @@ hr {
   z-index: 1;
 }
 
+.page-link:focus {
+  background-color: var(--bs-secondary);
+  color: white;
+}
+
 .page-item:first-child .page-link,
 .page-item:last-child .page-link {
   border-color: var(--bs-secondary);
