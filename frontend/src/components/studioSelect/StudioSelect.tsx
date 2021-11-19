@@ -7,7 +7,11 @@ import debounce from "p-debounce";
 import StudiosQuery from "src/graphql/queries/Studios.gql";
 import StudioQuery from "src/graphql/queries/Studio.gql";
 
-import { Studio_findStudio, Studio, StudioVariables } from "src/graphql/definitions/Studio";
+import {
+  Studio_findStudio,
+  Studio,
+  StudioVariables,
+} from "src/graphql/definitions/Studio";
 import { Studios, StudiosVariables } from "src/graphql/definitions/Studios";
 import { SortDirectionEnum } from "src/graphql";
 import { isUUID } from "src/utils";
@@ -34,14 +38,15 @@ const StudioSelect: FC<StudioSelectProps> = ({
   const client = useApolloClient();
 
   const fetchStudios = async (term: string) => {
-    if (isUUID(term)) {
-      if (term === excludeStudio) {
+    const value = term.trim();
+    if (isUUID(value)) {
+      if (value === excludeStudio) {
         return [];
       }
 
       const { data } = await client.query<Studio, StudioVariables>({
         query: StudioQuery,
-        variables: { id: term },
+        variables: { id: value },
       });
 
       const studio = data?.findStudio;
