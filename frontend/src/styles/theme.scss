@@ -279,17 +279,17 @@ hr {
   color: white;
 }
 
+.page-link:focus {
+  background-color: var(--bs-secondary);
+  color: white;
+}
+
 .page-link:hover,
 .page-item.active .page-link {
   background-color: #2a3742;
   border-color: #25313a;
   color: white;
   z-index: 1;
-}
-
-.page-link:focus {
-  background-color: var(--bs-secondary);
-  color: white;
 }
 
 .page-item:first-child .page-link,
