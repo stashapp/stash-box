@@ -1,7 +1,12 @@
 import { FC, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
-import { faMinus, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMinus,
+  faPlus,
+  faSyncAlt,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { sortBy } from "lodash-es";
 
 import {
@@ -9,6 +14,7 @@ import {
   VoteTypeEnum,
   useConfig,
   useDeleteUser,
+  useRegenerateAPIKey,
   useRescindInviteCode,
   useGenerateInviteCode,
   useGrantInvite,
@@ -28,7 +34,7 @@ import {
   ROUTE_USER_EDITS,
 } from "src/constants/route";
 import Modal from "src/components/modal";
-import { Icon } from "src/components/fragments";
+import { Icon, Tooltip } from "src/components/fragments";
 import { isAdmin, isPrivateUser, createHref } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 
@@ -66,9 +72,11 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const Auth = useContext(AuthContext);
   const { data: configData } = useConfig();
   const [showDelete, setShowDelete] = useState(false);
+  const [showRegenerateAPIKey, setShowRegenerateAPIKey] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
 
   const [deleteUser, { loading: deleting }] = useDeleteUser();
+  const [regenerateAPIKey] = useRegenerateAPIKey();
   const [rescindInviteCode] = useRescindInviteCode();
   const [generateInviteCode] = useGenerateInviteCode();
   const [grantInvite] = useGrantInvite();
@@ -90,6 +98,22 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
     <Modal
       message={`Are you sure you want to delete '${user.name}'? This operation cannot be undone.`}
       callback={handleDelete}
+    />
+  );
+
+  const handleRegenerateAPIKey = (status: boolean): void => {
+    if (status) {
+      const userID = user.id === Auth.user?.id ? null : user.id;
+      regenerateAPIKey({ variables: { user_id: userID } }).then(() => {
+        refetch();
+      });
+    }
+    setShowRegenerateAPIKey(false);
+  };
+  const regenerateAPIKeyModal = showRegenerateAPIKey && (
+    <Modal
+      message="Are you sure you want to regenerate the API key? This operation cannot be undone."
+      callback={handleRegenerateAPIKey}
     />
   );
 
@@ -152,6 +176,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
         <div className="d-flex">
           <h3>{user.name}</h3>
           {deleteModal}
+          {regenerateAPIKeyModal}
           {rescindCodeModal}
           <div className="ms-auto">
             <Link to={createHref(ROUTE_USER_EDITS, user)} className="ms-2">
@@ -202,6 +227,15 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                   >
                     Copy to Clipboard
                   </Button>
+                  <Tooltip text="Regenerate API Key" placement="top-end">
+                    <Button
+                      variant="danger"
+                      disabled={showRegenerateAPIKey}
+                      onClick={() => setShowRegenerateAPIKey(true)}
+                    >
+                      <Icon icon={faSyncAlt} />
+                    </Button>
+                  </Tooltip>
                 </InputGroup>
               </Col>
             </Row>
