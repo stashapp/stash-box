@@ -18,7 +18,8 @@ type queryBuilder struct {
 	havingClauses []string
 	args          []interface{}
 
-	SortAndPagination string
+	Sort       string
+	Pagination string
 }
 
 func newQueryBuilder(t table) *queryBuilder {
@@ -45,9 +46,11 @@ func newDeleteQueryBuilder(t table) *queryBuilder {
 	return ret
 }
 
-func (qb *queryBuilder) AddJoin(jt table, on string) {
+func (qb *queryBuilder) AddJoin(jt table, on string, isOneToMany bool) {
 	qb.Body += " JOIN " + jt.Name() + " ON " + on
-	qb.Distinct = true
+	if isOneToMany {
+		qb.Distinct = true
+	}
 }
 
 func (qb *queryBuilder) AddWhere(clauses ...string) {
@@ -89,11 +92,14 @@ func (qb queryBuilder) buildBody() string {
 	if len(qb.whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(qb.whereClauses, " AND ") // TODO handle AND or OR
 	}
-	if qb.Distinct {
-		body = body + " GROUP BY " + qb.Table.Name() + ".id "
-	}
 	if len(qb.havingClauses) > 0 {
 		body = body + " HAVING " + strings.Join(qb.havingClauses, " AND ") // TODO handle AND or OR
+	}
+
+	body = body + qb.Sort
+
+	if qb.Distinct {
+		body = "SELECT DISTINCT ON (query.id) query.* FROM (" + body + ") query"
 	}
 
 	return body
@@ -104,7 +110,7 @@ func (qb queryBuilder) buildCountQuery() string {
 }
 
 func (qb queryBuilder) buildQuery() string {
-	return qb.buildBody() + qb.SortAndPagination
+	return qb.buildBody() + qb.Pagination
 }
 
 type optionalValue interface {
