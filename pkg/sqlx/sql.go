@@ -93,7 +93,7 @@ func (qb queryBuilder) buildBody() string {
 		body = body + " WHERE " + strings.Join(qb.whereClauses, " AND ") // TODO handle AND or OR
 	}
 	if len(qb.havingClauses) > 0 {
-		body = body + " HAVING " + strings.Join(qb.havingClauses, " AND ") // TODO handle AND or OR
+		body = body + " GROUP BY " + qb.Table.Name() + ".id HAVING " + strings.Join(qb.havingClauses, " AND ") // TODO handle AND or OR
 	}
 
 	body = body + qb.Sort
