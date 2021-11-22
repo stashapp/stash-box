@@ -532,12 +532,19 @@ func (qb *performerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*models.B
 
 func (qb *performerQueryBuilder) SearchPerformers(term string, limit int) (models.Performers, error) {
 	query := `
-        SELECT * FROM performers
-        WHERE name % $1
-        AND similarity(name, $1) > 0.5
-        AND deleted = FALSE
-        ORDER BY similarity(name, $1) DESC
-        LIMIT $2`
+		SELECT P.* FROM performers P
+		LEFT JOIN (
+			SELECT performer_id, string_agg(alias, ' ') aliases
+			FROM performer_aliases
+			GROUP BY performer_id
+		) PA on PA.performer_id = P.id
+		WHERE (
+			to_tsvector('english', coalesce(P.name, '')) ||
+			to_tsvector('english', coalesce(P.disambiguation, '')) ||
+			to_tsvector('english', coalesce(PA.aliases, ''))
+		) @@ plainto_tsquery($1)
+		AND P.deleted = FALSE
+		LIMIT $2`
 	args := []interface{}{term, limit}
 	return qb.queryPerformers(query, args)
 }
