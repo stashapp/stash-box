@@ -18,17 +18,28 @@ func (r *queryResolver) FindEdit(ctx context.Context, id *string) (*models.Edit,
 	idUUID, _ := uuid.FromString(*id)
 	return qb.Find(idUUID)
 }
-func (r *queryResolver) QueryEdits(ctx context.Context, editFilter *models.EditFilterType, filter *models.QuerySpec) (*models.QueryEditsResultType, error) {
+
+func (r *queryResolver) QueryEdits(ctx context.Context, editFilter *models.EditFilterType, filter *models.QuerySpec) (*models.EditQuery, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err
 	}
 
+	return &models.EditQuery{
+		EditFilter: editFilter,
+		Filter:     filter,
+	}, nil
+}
+
+type queryEditResolver struct{ *Resolver }
+
+func (r *queryEditResolver) Count(ctx context.Context, obj *models.EditQuery) (int, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Edit()
+	return qb.QueryCount(obj.EditFilter, obj.Filter)
+}
 
-	edits, count, err := qb.Query(editFilter, filter)
-	return &models.QueryEditsResultType{
-		Edits: edits,
-		Count: count,
-	}, err
+func (r *queryEditResolver) Edits(ctx context.Context, obj *models.EditQuery) ([]*models.Edit, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
+	return qb.QueryEdits(obj.EditFilter, obj.Filter)
 }

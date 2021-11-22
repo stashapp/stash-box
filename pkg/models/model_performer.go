@@ -430,3 +430,8 @@ func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
 
 	return v.err
 }
+
+type PerformerQuery struct {
+	PerformerFilter *PerformerFilterType
+	Filter          *QuerySpec
+}

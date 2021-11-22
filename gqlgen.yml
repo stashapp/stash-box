@@ -22,3 +22,24 @@ models:
     fields:
       url:
         resolver: true
+  QueryPerformersResultType:
+    model: github.com/stashapp/stash-box/pkg/models.PerformerQuery
+    fields:
+      count:
+        resolver: true
+      performers:
+        resolver: true
+  QueryEditsResultType:
+    model: github.com/stashapp/stash-box/pkg/models.EditQuery
+    fields:
+      count:
+        resolver: true
+      performers:
+        resolver: true
+  QueryScenesResultType:
+    model: github.com/stashapp/stash-box/pkg/models.SceneQuery
+    fields:
+      count:
+        resolver: true
+      performers:
+        resolver: true

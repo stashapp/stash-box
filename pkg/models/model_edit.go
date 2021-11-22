@@ -389,3 +389,8 @@ func (p EditVotes) Each(fn func(interface{})) {
 func (p *EditVotes) Add(o interface{}) {
 	*p = append(*p, o.(*EditVote))
 }
+
+type EditQuery struct {
+	EditFilter *EditFilterType
+	Filter     *QuerySpec
+}

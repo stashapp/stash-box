@@ -65,6 +65,15 @@ func (r *Resolver) User() models.UserResolver {
 func (r *Resolver) Query() models.QueryResolver {
 	return &queryResolver{r}
 }
+func (r *Resolver) QueryPerformersResultType() models.QueryPerformersResultTypeResolver {
+	return &queryPerformerResolver{r}
+}
+func (r *Resolver) QueryScenesResultType() models.QueryScenesResultTypeResolver {
+	return &querySceneResolver{r}
+}
+func (r *Resolver) QueryEditsResultType() models.QueryEditsResultTypeResolver {
+	return &queryEditResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 
