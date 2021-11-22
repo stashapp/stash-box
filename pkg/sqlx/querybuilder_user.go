@@ -113,10 +113,11 @@ func (qb *userQueryBuilder) Query(userFilter *models.UserFilterType, findFilter 
 		query.AddArg(thisArgs...)
 	}
 
-	query.SortAndPagination = qb.getUserSort(findFilter) + getPagination(findFilter)
+	query.Sort = qb.getUserSort(findFilter)
+	query.Pagination = getPagination(findFilter)
+
 	var studios models.Users
 	countResult, err := qb.dbi.Query(*query, &studios)
-
 	if err != nil {
 		// TODO
 		panic(err)

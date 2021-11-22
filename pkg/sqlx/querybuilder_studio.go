@@ -159,10 +159,11 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		}
 	}
 
-	query.SortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
+	query.Sort = qb.getStudioSort(findFilter)
+	query.Pagination = getPagination(findFilter)
+
 	var studios models.Studios
 	countResult, err := qb.dbi.Query(*query, &studios)
-
 	if err != nil {
 		// TODO
 		panic(err)
