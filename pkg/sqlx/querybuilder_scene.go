@@ -304,7 +304,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilterInput *models.SceneFilterType, fin
 	}
 
 	if q := sceneFilter.Performers; q != nil && len(q.Value) > 0 {
-		query.AddJoin(scenePerformerTable.table, scenePerformerTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(scenePerformerTable.table, scenePerformerTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
 		whereClause, havingClause := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -315,7 +315,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilterInput *models.SceneFilterType, fin
 	}
 
 	if q := sceneFilter.Tags; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneTagTable.table, sceneTagTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(sceneTagTable.table, sceneTagTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
 		whereClause, havingClause := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -326,7 +326,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilterInput *models.SceneFilterType, fin
 	}
 
 	if q := sceneFilter.Fingerprints; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id")
+		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
 		whereClause, havingClause := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
@@ -355,10 +355,12 @@ func (qb *sceneQueryBuilder) Query(sceneFilterInput *models.SceneFilterType, fin
 				` + limit + `
 			) T ON scenes.id = T.scene_id
 		`
-		query.SortAndPagination = "ORDER BY T.count DESC  " + getPagination(findFilter)
+		query.Sort = " ORDER BY T.count DESC "
 	} else {
-		query.SortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
+		query.Sort = qb.getSceneSort(findFilter)
 	}
+
+	query.Pagination = getPagination(findFilter)
 
 	var scenes models.Scenes
 	countResult, err := qb.dbi.Query(*query, &scenes)

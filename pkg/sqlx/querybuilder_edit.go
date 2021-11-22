@@ -217,16 +217,16 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 			return nil, 0, errors.New("TargetType is required when TargetID filter is used")
 		}
 		if *editFilter.TargetType == models.TargetTypeEnumTag {
-			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
+			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		} else if *editFilter.TargetType == models.TargetTypeEnumPerformer {
-			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
+			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		} else if *editFilter.TargetType == models.TargetTypeEnumStudio {
-			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id")
+			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		} else if *editFilter.TargetType == models.TargetTypeEnumScene {
-			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id")
+			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		} else {
 			return nil, 0, fmt.Errorf("TargetType is not yet supported: %s", *editFilter.TargetType)
@@ -247,7 +247,8 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 		query.Eq("applied", *q)
 	}
 
-	query.SortAndPagination = qb.getEditSort(findFilter) + getPagination(findFilter)
+	query.Sort = qb.getEditSort(findFilter)
+	query.Pagination = getPagination(findFilter)
 
 	var edits models.Edits
 	countResult, err := qb.dbi.Query(*query, &edits)

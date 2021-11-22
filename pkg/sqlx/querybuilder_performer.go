@@ -263,17 +263,19 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
-		query.SortAndPagination = "ORDER BY debut " + direction + ", name " + direction + getPagination(findFilter)
+		query.Sort = "ORDER BY debut " + direction + ", name " + direction
 	} else if findFilter != nil && findFilter.GetSort("") == "scene_count" {
 		query.Body += `
 			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
-		query.SortAndPagination = " ORDER BY scene_count " + direction + ", name " + direction + getPagination(findFilter)
+		query.Sort = " ORDER BY scene_count " + direction + ", name " + direction
 	} else {
-		query.SortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+		query.Sort = qb.getPerformerSort(findFilter)
 	}
+
+	query.Pagination = getPagination(findFilter)
 
 	var performers models.Performers
 	countResult, err := qb.dbi.Query(*query, &performers)
