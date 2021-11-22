@@ -822,7 +822,8 @@ func (s *sceneTestRunner) verifyInvalidModifier(filter models.SceneFilterType) {
 			s.t.Error("Expected error for invalid modifier")
 		}
 	}()
-	s.resolver.Query().QueryScenes(s.ctx, &filter, &querySpec)
+	resolver, _ := s.resolver.Query().QueryScenes(s.ctx, &filter, &querySpec)
+	s.resolver.QueryScenesResultType().Scenes(s.ctx, resolver)
 }
 
 func (s *sceneTestRunner) testQueryScenesByStudio() {
