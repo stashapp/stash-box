@@ -255,11 +255,11 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 		query.Eq("tags.category_id", catID)
 	}
 
-	query.SortAndPagination = qb.getTagSort(findFilter) + getPagination(findFilter)
+	query.Sort = qb.getTagSort(findFilter)
+	query.Pagination = getPagination(findFilter)
+
 	var tags models.Tags
-
 	countResult, err := qb.dbi.Query(*query, &tags)
-
 	if err != nil {
 		return nil, 0, err
 	}
