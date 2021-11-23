@@ -292,9 +292,11 @@ hr {
   z-index: 1;
 }
 
-.page-item:first-child .page-link,
+.page-item:first-child .page-link {
+  border-left-color: var(--bs-secondary);
+}
 .page-item:last-child .page-link {
-  border-color: var(--bs-secondary);
+  border-right-color: var(--bs-secondary);
 }
 
 .page-item.disabled .page-link {
