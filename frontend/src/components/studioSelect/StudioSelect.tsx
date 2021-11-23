@@ -5,13 +5,19 @@ import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
 import StudiosQuery from "src/graphql/queries/Studios.gql";
+import StudioQuery from "src/graphql/queries/Studio.gql";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
+import {
+  Studio_findStudio,
+  Studio,
+  StudioVariables,
+} from "src/graphql/definitions/Studio";
 import { Studios, StudiosVariables } from "src/graphql/definitions/Studios";
 import { SortDirectionEnum } from "src/graphql";
+import { isUUID } from "src/utils";
 
 interface StudioSelectProps {
-  initialStudio?: Pick<Studio, "id" | "name"> | null;
+  initialStudio?: Pick<Studio_findStudio, "id" | "name"> | null;
   excludeStudio?: string;
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   control: any;
@@ -32,6 +38,25 @@ const StudioSelect: FC<StudioSelectProps> = ({
   const client = useApolloClient();
 
   const fetchStudios = async (term: string) => {
+    const value = term.trim();
+    if (isUUID(value)) {
+      if (value === excludeStudio) {
+        return [];
+      }
+
+      const { data } = await client.query<Studio, StudioVariables>({
+        query: StudioQuery,
+        variables: { id: value },
+      });
+
+      const studio = data?.findStudio;
+      if (!studio || (networkSelect && studio.parent !== null)) {
+        return [];
+      }
+
+      return [{ value: studio.id, label: studio.name }];
+    }
+
     const { data } = await client.query<Studios, StudiosVariables>({
       query: StudiosQuery,
       variables: {
