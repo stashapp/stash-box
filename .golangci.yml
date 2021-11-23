@@ -23,6 +23,9 @@ linters:
     - errorlint
     - exportloopref
     - gocritic
+    - misspell
+    - noctx
+    - rowserrcheck
 
 linters-settings:
   revive:
