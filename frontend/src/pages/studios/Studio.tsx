@@ -117,7 +117,12 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           </div>
         </>
       )}
-      <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
+      <Tabs
+        activeKey={activeTab}
+        id="studio-tabs"
+        mountOnEnter
+        onSelect={setTab}
+      >
         <Tab
           eventKey="scenes"
           title={subStudios.length > 0 ? "All Scenes" : "Scenes"}

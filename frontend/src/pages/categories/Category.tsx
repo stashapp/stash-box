@@ -5,7 +5,7 @@ import { Button, Row } from "react-bootstrap";
 import { Category_findTagCategory as Category } from "src/graphql/definitions/Category";
 import { useDeleteCategory } from "src/graphql";
 import AuthContext from "src/AuthContext";
-import { canEdit, isAdmin, createHref } from "src/utils";
+import { isAdmin, createHref } from "src/utils";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
@@ -41,18 +41,23 @@ const CategoryComponent: FC<Props> = ({ category }) => {
         <h3 className="me-auto">
           <em>{category.name}</em>
         </h3>
-        {canEdit(auth.user) && (
-          <Link to={createHref(ROUTE_CATEGORY_EDIT, category)} className="me-2">
-            <Button>Edit</Button>
-          </Link>
-        )}
-        {isAdmin(auth.user) && (
-          <DeleteButton
-            onClick={handleDelete}
-            disabled={deleting}
-            message="Do you want to delete category? This is only possible if no tags are attached."
-          />
-        )}
+        <div className="ms-auto">
+          {isAdmin(auth.user) && (
+            <>
+              <Link
+                to={createHref(ROUTE_CATEGORY_EDIT, category)}
+                className="me-2"
+              >
+                <Button>Edit</Button>
+              </Link>
+              <DeleteButton
+                onClick={handleDelete}
+                disabled={deleting}
+                message="Do you want to delete category? This is only possible if no tags are attached."
+              />
+            </>
+          )}
+        </div>
       </div>
       {category.description && (
         <Row className="g-0">
