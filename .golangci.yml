@@ -5,9 +5,22 @@ run:
 
 linters:
   enable:
+    # Default
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    # additional
     - gofmt
     - revive
-    - staticcheck
+    - dogsled
+    - errorlint
 
 linters-settings:
   revive:

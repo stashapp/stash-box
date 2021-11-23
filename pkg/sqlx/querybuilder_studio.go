@@ -255,7 +255,7 @@ func (qb *studioQueryBuilder) CountByPerformer(performerID uuid.UUID) ([]*models
 			GROUP BY studio_id
 		) C ON S.id = C.studio_id`
 	query = qb.dbi.db().Rebind(query)
-	if err := qb.dbi.db().Select(&results, query, performerID); err != nil && err != sql.ErrNoRows {
+	if err := qb.dbi.db().Select(&results, query, performerID); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 

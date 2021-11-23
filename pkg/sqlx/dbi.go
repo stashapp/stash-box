@@ -112,7 +112,7 @@ func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 func (q dbi) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
 	rows, err := q.queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		// TODO - log error instead of returning SQL
 		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
 		return err
@@ -250,7 +250,7 @@ func (q dbi) RawExec(query string, args []interface{}) error {
 
 	rows, err = q.queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		// TODO - log error instead of returning SQL
 		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
 		return err
@@ -275,7 +275,7 @@ func (q dbi) Count(query queryBuilder) (int, error) {
 	rawQuery = q.db().Rebind(rawQuery)
 	err = q.db().Get(&result, rawQuery, query.args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		// TODO - log error instead of returning SQL
 		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", rawQuery, query.args))
 		return 0, err

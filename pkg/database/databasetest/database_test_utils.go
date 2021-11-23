@@ -2,6 +2,7 @@ package databasetest
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -30,7 +31,7 @@ func pgDropAll(conn *sqlx.DB) {
 	// the schema
 	rows, err := conn.Queryx(`select 'drop table if exists "' || tablename || '" cascade;' from pg_tables`)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		panic("Error dropping tables: " + err.Error())
 	}
 	defer func() {

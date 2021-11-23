@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
@@ -33,7 +34,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	// authenticate the user
 	userID, err := user.Authenticate(fac, username, password)
 
-	if err == user.ErrAccessDenied {
+	if errors.Is(err, user.ErrAccessDenied) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	} else if err != nil {

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -146,7 +147,7 @@ func runCountQuery(db db, query string, args []interface{}) (int, error) {
 	}{0}
 
 	query = db.Rebind(query)
-	if err := db.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
+	if err := db.Get(&result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return 0, err
 	}
 

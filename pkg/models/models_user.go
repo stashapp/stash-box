@@ -108,7 +108,7 @@ func (p *User) CopyFromCreateInput(input UserCreateInput) error {
 	err := p.SetPasswordHash(input.Password)
 
 	if err != nil {
-		return fmt.Errorf("Error setting password: %s", err.Error())
+		return fmt.Errorf("Error setting password: %w", err)
 	}
 
 	return nil
@@ -121,7 +121,7 @@ func (p *User) CopyFromUpdateInput(input UserUpdateInput) error {
 	if input.Password != nil {
 		err := p.SetPasswordHash(*input.Password)
 		if err != nil {
-			return fmt.Errorf("Error setting password: %s", err.Error())
+			return fmt.Errorf("Error setting password: %w", err)
 		}
 	}
 
