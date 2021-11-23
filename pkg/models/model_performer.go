@@ -86,7 +86,7 @@ func (p PerformerAliases) ToAliases() []string {
 
 func (p *PerformerAliases) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -174,7 +174,7 @@ func (p *PerformerURLs) Add(o interface{}) {
 
 func (p *PerformerURLs) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -244,7 +244,7 @@ func (p *PerformerBodyMods) Add(o interface{}) {
 
 func (p *PerformerBodyMods) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break

@@ -64,7 +64,7 @@ func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*in
 	thisYear := now.Year()
 	age := thisYear - birthYear
 	if now.YearDay() < birthdate.YearDay() {
-		age = age - 1
+		age--
 	}
 
 	return &age, nil

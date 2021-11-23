@@ -74,11 +74,12 @@ func SetLogLevel(level string) {
 func logLevelFromString(level string) logrus.Level {
 	ret := logrus.InfoLevel
 
-	if level == "Debug" {
+	switch level {
+	case "Debug":
 		ret = logrus.DebugLevel
-	} else if level == "Warning" {
+	case "Warning":
 		ret = logrus.WarnLevel
-	} else if level == "Error" {
+	case "Error":
 		ret = logrus.ErrorLevel
 	}
 
@@ -278,7 +279,3 @@ func Userf(user string, action string, format string, args ...interface{}) {
 	prefix := fmt.Sprintf("%s: %s - ", user, action)
 	userLogger.Infof(prefix+format, args...)
 }
-
-//func WithRequest(req *http.Request) *logrus.Entry {
-//	return logger.WithFields(RequestFields(req))
-//}

@@ -274,25 +274,27 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 
 	if q := sceneFilter.Studios; q != nil && len(q.Value) > 0 {
 		column := "scenes.studio_id"
-		if q.Modifier == models.CriterionModifierEquals {
+
+		switch q.Modifier {
+		case models.CriterionModifierEquals:
 			query.Eq(column, q.Value[0])
-		} else if q.Modifier == models.CriterionModifierNotEquals {
+		case models.CriterionModifierNotEquals:
 			query.NotEq(column, q.Value[0])
-		} else if q.Modifier == models.CriterionModifierIsNull {
+		case models.CriterionModifierIsNull:
 			query.IsNull(column)
-		} else if q.Modifier == models.CriterionModifierNotNull {
+		case models.CriterionModifierNotNull:
 			query.IsNotNull(column)
-		} else if q.Modifier == models.CriterionModifierIncludes {
+		case models.CriterionModifierIncludes:
 			query.AddWhere(column + " IN " + getInBinding(len(q.Value)))
 			for _, studioID := range q.Value {
 				query.AddArg(studioID)
 			}
-		} else if q.Modifier == models.CriterionModifierExcludes {
+		case models.CriterionModifierExcludes:
 			query.AddWhere(column + " NOT IN " + getInBinding(len(q.Value)))
 			for _, studioID := range q.Value {
 				query.AddArg(studioID)
 			}
-		} else {
+		default:
 			panic("unsupported modifier " + q.Modifier + " for scnes.studio_id")
 		}
 	}
@@ -382,17 +384,19 @@ func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criteri
 	joinTableName := joinTable.Name()
 	whereClause := ""
 	havingClause := ""
-	if criterion.Modifier == models.CriterionModifierIncludes {
+
+	switch criterion.Modifier {
+	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
 		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
-	} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
 		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
 		havingClause = "count(distinct " + joinTableName + "." + joinTableField + ") = " + strconv.Itoa(len(criterion.Value))
-	} else if criterion.Modifier == models.CriterionModifierExcludes {
+	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids
 		whereClause = "not exists (select " + joinTableName + ".scene_id from " + joinTableName + " where " + joinTableName + ".scene_id = scenes.id and " + joinTableName + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
-	} else {
+	default:
 		panic("unsupported modifier " + criterion.Modifier + " for scenes.studio_id")
 	}
 

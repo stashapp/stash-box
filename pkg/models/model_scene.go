@@ -73,7 +73,7 @@ func (u *SceneURLs) Add(o interface{}) {
 
 func (u *SceneURLs) Remove(id string) {
 	for i, v := range *u {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*u)[i] = (*u)[len(*u)-1]
 			*u = (*u)[:len(*u)-1]
 			break

@@ -21,6 +21,8 @@ linters:
     - revive
     - dogsled
     - errorlint
+    - exportloopref
+    - gocritic
 
 linters-settings:
   revive:
