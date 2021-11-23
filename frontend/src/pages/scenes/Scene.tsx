@@ -205,7 +205,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             </div>
           </div>
         </Tab>
-        <Tab eventKey="fingerprints" title="Fingerprints">
+        <Tab eventKey="fingerprints" title="Fingerprints" mountOnEnter={false}>
           <div className="scene-fingerprints my-4">
             <h4>Fingerprints:</h4>
             {fingerprints.length === 0 ? (

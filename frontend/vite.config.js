@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
   const config = {
     build: {
       outDir: "build",
+      sourcemap: mode === "production",
     },
     optimizeDeps: {
       entries: "src/index.tsx",

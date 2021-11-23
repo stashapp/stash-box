@@ -19,6 +19,14 @@ $theme-colors: (
   "danger": $danger,
   "dark": $dark,
 );
+$link-color: #48aff0;
+$link-hover-color: $link-color;
+$pre-color: $text-color;
+$popover-bg: $secondary;
+
+// Custom variables
+$dark-text: #182026;
+$textfield-bg: rgba(16 22 26 / 30%);
 
 // 3. Include remainder of required Bootstrap stylesheets
 @import "bootstrap/scss/variables";
@@ -47,6 +55,7 @@ $theme-colors: (
 @import "bootstrap/scss/tooltip";
 @import "bootstrap/scss/popover";
 @import "bootstrap/scss/spinners";
+@import "bootstrap/scss/close";
 
 /*
 @import "bootstrap/scss/images";
@@ -58,20 +67,19 @@ $theme-colors: (
 @import "bootstrap/scss/alert";
 @import "bootstrap/scss/progress";
 @import "bootstrap/scss/list-group";
-@import "bootstrap/scss/close";
 @import "bootstrap/scss/toasts";
 @import "bootstrap/scss/carousel";
 @import "bootstrap/scss/offcanvas";
 */
 
 :root {
-  --bs-primary: #137cbd;
-  --bs-secondary: #394b59;
-  --bs-success: #0f9960;
-  --bs-warning: #d9822b;
-  --bs-danger: #db3737;
+  --bs-primary: #{$primary};
+  --bs-secondary: #{$secondary};
+  --bs-success: #{$success};
+  --bs-warning: #{$warning};
+  --bs-danger: #{$danger};
   --bs-body-bg: #202b33;
-  --bs-dark: #394b59;
+  --bs-dark: #{$dark};
   --bs-dark-rgb: 57, 75, 89;
 }
 
@@ -99,13 +107,6 @@ body {
     }
   }
 }
-
-$link-color: #48aff0;
-$link-hover-color: $link-color;
-$pre-color: $text-color;
-$popover-bg: var(--bs-secondary);
-$dark-text: #182026;
-$textfield-bg: rgba(16 22 26 / 30%);
 
 .btn.active:not(.disabled),
 .btn.active.minimal:not(.disabled) {
@@ -278,6 +279,11 @@ hr {
   color: white;
 }
 
+.page-link:focus {
+  background-color: var(--bs-secondary);
+  color: white;
+}
+
 .page-link:hover,
 .page-item.active .page-link {
   background-color: #2a3742;
@@ -286,9 +292,12 @@ hr {
   z-index: 1;
 }
 
-.page-item:first-child .page-link,
+.page-item:first-child .page-link {
+  border-left-color: var(--bs-secondary);
+}
+
 .page-item:last-child .page-link {
-  border-color: var(--bs-secondary);
+  border-right-color: var(--bs-secondary);
 }
 
 .page-item.disabled .page-link {

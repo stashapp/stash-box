@@ -63,6 +63,7 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
       id="tag-query"
       onChange={(e) => debouncedHandler(e.currentTarget.value)}
       placeholder="Filter tag name"
+      defaultValue={query ?? ""}
       className="w-25"
     />
   );

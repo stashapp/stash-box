@@ -50,42 +50,37 @@ const PerformerDelete: FC<Props> = ({ performer }) => {
     });
 
   return (
-    <>
-      <Form
-        className="PerformerDeleteForm"
-        onSubmit={handleSubmit(handleDelete)}
-      >
-        <Row>
-          <h4>
-            Delete performer <em>{performer.name}</em>
-          </h4>
-        </Row>
-        <Form.Control type="hidden" value={performer.id} {...register("id")} />
-        <Row className="my-4">
-          <Col md={6}>
-            <EditNote register={register} error={errors.note} />
-          </Col>
-        </Row>
-        <Row className="mt-2">
-          <Button
-            variant="danger"
-            className="ms-auto me-2"
-            onClick={() => history.goBack()}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled
-            className="d-none"
-            aria-hidden="true"
-          />
-          <Button type="submit" disabled={deleting}>
-            Submit Edit
-          </Button>
-        </Row>
-      </Form>
-    </>
+    <Form className="PerformerDeleteForm" onSubmit={handleSubmit(handleDelete)}>
+      <Row>
+        <h4>
+          Delete performer <em>{performer.name}</em>
+        </h4>
+      </Row>
+      <Form.Control type="hidden" value={performer.id} {...register("id")} />
+      <Row className="my-4">
+        <Col md={6}>
+          <EditNote register={register} error={errors.note} />
+          <div className="d-flex mt-2">
+            <Button
+              variant="danger"
+              className="ms-auto me-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled
+              className="d-none"
+              aria-hidden="true"
+            />
+            <Button type="submit" disabled={deleting}>
+              Submit Edit
+            </Button>
+          </div>
+        </Col>
+      </Row>
+    </Form>
   );
 };
 

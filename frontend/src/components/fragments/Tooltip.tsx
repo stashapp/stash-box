@@ -22,7 +22,7 @@ const Tooltip: FC<Props> = ({
     delay={{ show: delay, hide: 0 }}
     overlay={<BSTooltip id="tooltip">{text}</BSTooltip>}
     placement={placement}
-    trigger="hover"
+    trigger={["hover", "focus"]}
   >
     {children}
   </OverlayTrigger>
