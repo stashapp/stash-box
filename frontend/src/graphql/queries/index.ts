@@ -18,6 +18,10 @@ import {
 import { Performers, PerformersVariables } from "../definitions/Performers";
 import { Scene, SceneVariables } from "../definitions/Scene";
 import { Scenes, ScenesVariables } from "../definitions/Scenes";
+import {
+  ScenesWithoutCount,
+  ScenesWithoutCountVariables,
+} from "../definitions/ScenesWithoutCount";
 import { SearchAll, SearchAllVariables } from "../definitions/SearchAll";
 import {
   SearchPerformers,
@@ -41,6 +45,7 @@ import FullPerformerQuery from "./FullPerformer.gql";
 import PerformersQuery from "./Performers.gql";
 import SceneQuery from "./Scene.gql";
 import ScenesQuery from "./Scenes.gql";
+import ScenesWithoutCountQuery from "./ScenesWithoutCount.gql";
 import SearchAllQuery from "./SearchAll.gql";
 import SearchPerformersQuery from "./SearchPerformers.gql";
 import StudioQuery from "./Studio.gql";
@@ -103,6 +108,18 @@ export const useScenes = (variables: ScenesVariables, skip = false) =>
     variables,
     skip,
   });
+
+export const useScenesWithoutCount = (
+  variables: ScenesVariables,
+  skip = false
+) =>
+  useQuery<ScenesWithoutCount, ScenesWithoutCountVariables>(
+    ScenesWithoutCountQuery,
+    {
+      variables,
+      skip,
+    }
+  );
 
 export const useSearchAll = (variables: SearchAllVariables, skip = false) =>
   useQuery<SearchAll, SearchAllVariables>(SearchAllQuery, {
