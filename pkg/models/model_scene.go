@@ -260,3 +260,8 @@ func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
 
 	return nil
 }
+
+type SceneQuery struct {
+	SceneFilter *SceneFilterType
+	Filter      *QuerySpec
+}

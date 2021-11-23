@@ -334,21 +334,6 @@ type PerformerUpdateInput struct {
 	ImageIds        []string            `json:"image_ids"`
 }
 
-type QueryEditsResultType struct {
-	Count int     `json:"count"`
-	Edits []*Edit `json:"edits"`
-}
-
-type QueryPerformersResultType struct {
-	Count      int          `json:"count"`
-	Performers []*Performer `json:"performers"`
-}
-
-type QueryScenesResultType struct {
-	Count  int      `json:"count"`
-	Scenes []*Scene `json:"scenes"`
-}
-
 type QuerySpec struct {
 	Page      *int               `json:"page"`
 	PerPage   *int               `json:"per_page"`

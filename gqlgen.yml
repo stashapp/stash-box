@@ -22,3 +22,9 @@ models:
     fields:
       url:
         resolver: true
+  QueryPerformersResultType:
+    model: github.com/stashapp/stash-box/pkg/models.PerformerQuery
+  QueryEditsResultType:
+    model: github.com/stashapp/stash-box/pkg/models.EditQuery
+  QueryScenesResultType:
+    model: github.com/stashapp/stash-box/pkg/models.SceneQuery
