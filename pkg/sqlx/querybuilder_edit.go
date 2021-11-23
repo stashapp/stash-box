@@ -194,7 +194,7 @@ func (qb *editQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edits.id FROM edits"), nil)
 }
 
-func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter *models.QuerySpec) ([]*models.Edit, int, error) {
+func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFilter *models.QuerySpec) (*queryBuilder, error) {
 	if editFilter == nil {
 		editFilter = &models.EditFilterType{}
 	}
@@ -211,10 +211,10 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 	if q := editFilter.TargetID; q != nil {
 		targetID, err := uuid.FromString(*q)
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 		if editFilter.TargetType == nil || *editFilter.TargetType == "" {
-			return nil, 0, errors.New("TargetType is required when TargetID filter is used")
+			return nil, errors.New("TargetType is required when TargetID filter is used")
 		}
 		if *editFilter.TargetType == models.TargetTypeEnumTag {
 			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id", false)
@@ -229,7 +229,7 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		} else {
-			return nil, 0, fmt.Errorf("TargetType is not yet supported: %s", *editFilter.TargetType)
+			return nil, fmt.Errorf("TargetType is not yet supported: %s", *editFilter.TargetType)
 		}
 		jsonID, _ := json.Marshal(targetID)
 		query.AddArg(targetID, jsonID)
@@ -248,12 +248,29 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 	}
 
 	query.Sort = qb.getEditSort(findFilter)
+
+	return query, nil
+}
+
+func (qb *editQueryBuilder) QueryEdits(editFilter *models.EditFilterType, findFilter *models.QuerySpec) ([]*models.Edit, error) {
+	query, err := qb.buildQuery(editFilter, findFilter)
+	if err != nil {
+		return nil, err
+	}
 	query.Pagination = getPagination(findFilter)
 
 	var edits models.Edits
-	countResult, err := qb.dbi.Query(*query, &edits)
+	err = qb.dbi.QueryOnly(*query, &edits)
 
-	return edits, countResult, err
+	return edits, err
+}
+
+func (qb *editQueryBuilder) QueryCount(editFilter *models.EditFilterType, findFilter *models.QuerySpec) (int, error) {
+	query, err := qb.buildQuery(editFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+	return qb.dbi.CountOnly(*query)
 }
 
 func (qb *editQueryBuilder) getEditSort(findFilter *models.QuerySpec) string {

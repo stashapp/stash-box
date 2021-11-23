@@ -239,7 +239,7 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *sceneQueryBuilder) Query(sceneFilterInput *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, int, error) {
+func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType, findFilter *models.QuerySpec) *queryBuilder {
 	sceneFilter := &models.SceneFilterType{}
 	if sceneFilterInput != nil {
 		sceneFilter = sceneFilterInput
@@ -360,12 +360,22 @@ func (qb *sceneQueryBuilder) Query(sceneFilterInput *models.SceneFilterType, fin
 		query.Sort = qb.getSceneSort(findFilter)
 	}
 
+	return query
+}
+
+func (qb *sceneQueryBuilder) QueryScenes(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, error) {
+	query := qb.buildQuery(sceneFilter, findFilter)
 	query.Pagination = getPagination(findFilter)
 
 	var scenes models.Scenes
-	countResult, err := qb.dbi.Query(*query, &scenes)
+	err := qb.dbi.QueryOnly(*query, &scenes)
 
-	return scenes, countResult, err
+	return scenes, err
+}
+
+func (qb *sceneQueryBuilder) QueryCount(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) (int, error) {
+	query := qb.buildQuery(sceneFilter, findFilter)
+	return qb.dbi.CountOnly(*query)
 }
 
 func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string) {

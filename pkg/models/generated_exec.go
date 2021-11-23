@@ -44,6 +44,9 @@ type ResolverRoot interface {
 	Performer() PerformerResolver
 	PerformerEdit() PerformerEditResolver
 	Query() QueryResolver
+	QueryEditsResultType() QueryEditsResultTypeResolver
+	QueryPerformersResultType() QueryPerformersResultTypeResolver
+	QueryScenesResultType() QueryScenesResultTypeResolver
 	Scene() SceneResolver
 	SceneEdit() SceneEditResolver
 	Studio() StudioResolver
@@ -543,7 +546,7 @@ type PerformerEditResolver interface {
 }
 type QueryResolver interface {
 	FindPerformer(ctx context.Context, id string) (*Performer, error)
-	QueryPerformers(ctx context.Context, performerFilter *PerformerFilterType, filter *QuerySpec) (*QueryPerformersResultType, error)
+	QueryPerformers(ctx context.Context, performerFilter *PerformerFilterType, filter *QuerySpec) (*PerformerQuery, error)
 	FindStudio(ctx context.Context, id *string, name *string) (*Studio, error)
 	QueryStudios(ctx context.Context, studioFilter *StudioFilterType, filter *QuerySpec) (*QueryStudiosResultType, error)
 	FindTag(ctx context.Context, id *string, name *string) (*Tag, error)
@@ -554,9 +557,9 @@ type QueryResolver interface {
 	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]*Scene, error)
 	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*Scene, error)
 	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput) ([]*Scene, error)
-	QueryScenes(ctx context.Context, sceneFilter *SceneFilterType, filter *QuerySpec) (*QueryScenesResultType, error)
+	QueryScenes(ctx context.Context, sceneFilter *SceneFilterType, filter *QuerySpec) (*SceneQuery, error)
 	FindEdit(ctx context.Context, id *string) (*Edit, error)
-	QueryEdits(ctx context.Context, editFilter *EditFilterType, filter *QuerySpec) (*QueryEditsResultType, error)
+	QueryEdits(ctx context.Context, editFilter *EditFilterType, filter *QuerySpec) (*EditQuery, error)
 	FindUser(ctx context.Context, id *string, username *string) (*User, error)
 	QueryUsers(ctx context.Context, userFilter *UserFilterType, filter *QuerySpec) (*QueryUsersResultType, error)
 	Me(ctx context.Context) (*User, error)
@@ -564,6 +567,18 @@ type QueryResolver interface {
 	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
 	Version(ctx context.Context) (*Version, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
+}
+type QueryEditsResultTypeResolver interface {
+	Count(ctx context.Context, obj *EditQuery) (int, error)
+	Edits(ctx context.Context, obj *EditQuery) ([]*Edit, error)
+}
+type QueryPerformersResultTypeResolver interface {
+	Count(ctx context.Context, obj *PerformerQuery) (int, error)
+	Performers(ctx context.Context, obj *PerformerQuery) ([]*Performer, error)
+}
+type QueryScenesResultTypeResolver interface {
+	Count(ctx context.Context, obj *SceneQuery) (int, error)
+	Scenes(ctx context.Context, obj *SceneQuery) ([]*Scene, error)
 }
 type SceneResolver interface {
 	ID(ctx context.Context, obj *Scene) (string, error)
@@ -9980,9 +9995,9 @@ func (ec *executionContext) _Query_queryPerformers(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*QueryPerformersResultType)
+	res := resTmp.(*PerformerQuery)
 	fc.Result = res
-	return ec.marshalNQueryPerformersResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryPerformersResultType(ctx, field.Selections, res)
+	return ec.marshalNQueryPerformersResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQuery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_findStudio(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10430,9 +10445,9 @@ func (ec *executionContext) _Query_queryScenes(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*QueryScenesResultType)
+	res := resTmp.(*SceneQuery)
 	fc.Result = res
-	return ec.marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryScenesResultType(ctx, field.Selections, res)
+	return ec.marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneQuery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_findEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10511,9 +10526,9 @@ func (ec *executionContext) _Query_queryEdits(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*QueryEditsResultType)
+	res := resTmp.(*EditQuery)
 	fc.Result = res
-	return ec.marshalNQueryEditsResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryEditsResultType(ctx, field.Selections, res)
+	return ec.marshalNQueryEditsResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditQuery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_findUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10854,7 +10869,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _QueryEditsResultType_count(ctx context.Context, field graphql.CollectedField, obj *QueryEditsResultType) (ret graphql.Marshaler) {
+func (ec *executionContext) _QueryEditsResultType_count(ctx context.Context, field graphql.CollectedField, obj *EditQuery) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10865,14 +10880,14 @@ func (ec *executionContext) _QueryEditsResultType_count(ctx context.Context, fie
 		Object:     "QueryEditsResultType",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Count, nil
+		return ec.resolvers.QueryEditsResultType().Count(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10889,7 +10904,7 @@ func (ec *executionContext) _QueryEditsResultType_count(ctx context.Context, fie
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _QueryEditsResultType_edits(ctx context.Context, field graphql.CollectedField, obj *QueryEditsResultType) (ret graphql.Marshaler) {
+func (ec *executionContext) _QueryEditsResultType_edits(ctx context.Context, field graphql.CollectedField, obj *EditQuery) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10900,14 +10915,14 @@ func (ec *executionContext) _QueryEditsResultType_edits(ctx context.Context, fie
 		Object:     "QueryEditsResultType",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Edits, nil
+		return ec.resolvers.QueryEditsResultType().Edits(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10924,7 +10939,7 @@ func (ec *executionContext) _QueryEditsResultType_edits(ctx context.Context, fie
 	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _QueryPerformersResultType_count(ctx context.Context, field graphql.CollectedField, obj *QueryPerformersResultType) (ret graphql.Marshaler) {
+func (ec *executionContext) _QueryPerformersResultType_count(ctx context.Context, field graphql.CollectedField, obj *PerformerQuery) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10935,14 +10950,14 @@ func (ec *executionContext) _QueryPerformersResultType_count(ctx context.Context
 		Object:     "QueryPerformersResultType",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Count, nil
+		return ec.resolvers.QueryPerformersResultType().Count(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10959,7 +10974,7 @@ func (ec *executionContext) _QueryPerformersResultType_count(ctx context.Context
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _QueryPerformersResultType_performers(ctx context.Context, field graphql.CollectedField, obj *QueryPerformersResultType) (ret graphql.Marshaler) {
+func (ec *executionContext) _QueryPerformersResultType_performers(ctx context.Context, field graphql.CollectedField, obj *PerformerQuery) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10970,14 +10985,14 @@ func (ec *executionContext) _QueryPerformersResultType_performers(ctx context.Co
 		Object:     "QueryPerformersResultType",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Performers, nil
+		return ec.resolvers.QueryPerformersResultType().Performers(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10994,7 +11009,7 @@ func (ec *executionContext) _QueryPerformersResultType_performers(ctx context.Co
 	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _QueryScenesResultType_count(ctx context.Context, field graphql.CollectedField, obj *QueryScenesResultType) (ret graphql.Marshaler) {
+func (ec *executionContext) _QueryScenesResultType_count(ctx context.Context, field graphql.CollectedField, obj *SceneQuery) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11005,14 +11020,14 @@ func (ec *executionContext) _QueryScenesResultType_count(ctx context.Context, fi
 		Object:     "QueryScenesResultType",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Count, nil
+		return ec.resolvers.QueryScenesResultType().Count(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11029,7 +11044,7 @@ func (ec *executionContext) _QueryScenesResultType_count(ctx context.Context, fi
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _QueryScenesResultType_scenes(ctx context.Context, field graphql.CollectedField, obj *QueryScenesResultType) (ret graphql.Marshaler) {
+func (ec *executionContext) _QueryScenesResultType_scenes(ctx context.Context, field graphql.CollectedField, obj *SceneQuery) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11040,14 +11055,14 @@ func (ec *executionContext) _QueryScenesResultType_scenes(ctx context.Context, f
 		Object:     "QueryScenesResultType",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Scenes, nil
+		return ec.resolvers.QueryScenesResultType().Scenes(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -20583,7 +20598,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var queryEditsResultTypeImplementors = []string{"QueryEditsResultType"}
 
-func (ec *executionContext) _QueryEditsResultType(ctx context.Context, sel ast.SelectionSet, obj *QueryEditsResultType) graphql.Marshaler {
+func (ec *executionContext) _QueryEditsResultType(ctx context.Context, sel ast.SelectionSet, obj *EditQuery) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, queryEditsResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -20593,15 +20608,33 @@ func (ec *executionContext) _QueryEditsResultType(ctx context.Context, sel ast.S
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("QueryEditsResultType")
 		case "count":
-			out.Values[i] = ec._QueryEditsResultType_count(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryEditsResultType_count(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "edits":
-			out.Values[i] = ec._QueryEditsResultType_edits(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryEditsResultType_edits(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20615,7 +20648,7 @@ func (ec *executionContext) _QueryEditsResultType(ctx context.Context, sel ast.S
 
 var queryPerformersResultTypeImplementors = []string{"QueryPerformersResultType"}
 
-func (ec *executionContext) _QueryPerformersResultType(ctx context.Context, sel ast.SelectionSet, obj *QueryPerformersResultType) graphql.Marshaler {
+func (ec *executionContext) _QueryPerformersResultType(ctx context.Context, sel ast.SelectionSet, obj *PerformerQuery) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, queryPerformersResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -20625,15 +20658,33 @@ func (ec *executionContext) _QueryPerformersResultType(ctx context.Context, sel 
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("QueryPerformersResultType")
 		case "count":
-			out.Values[i] = ec._QueryPerformersResultType_count(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryPerformersResultType_count(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "performers":
-			out.Values[i] = ec._QueryPerformersResultType_performers(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryPerformersResultType_performers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20647,7 +20698,7 @@ func (ec *executionContext) _QueryPerformersResultType(ctx context.Context, sel 
 
 var queryScenesResultTypeImplementors = []string{"QueryScenesResultType"}
 
-func (ec *executionContext) _QueryScenesResultType(ctx context.Context, sel ast.SelectionSet, obj *QueryScenesResultType) graphql.Marshaler {
+func (ec *executionContext) _QueryScenesResultType(ctx context.Context, sel ast.SelectionSet, obj *SceneQuery) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, queryScenesResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -20657,15 +20708,33 @@ func (ec *executionContext) _QueryScenesResultType(ctx context.Context, sel ast.
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("QueryScenesResultType")
 		case "count":
-			out.Values[i] = ec._QueryScenesResultType_count(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryScenesResultType_count(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "scenes":
-			out.Values[i] = ec._QueryScenesResultType_scenes(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryScenesResultType_scenes(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22870,11 +22939,11 @@ func (ec *executionContext) unmarshalNPerformerUpdateInput2githubᚗcomᚋstasha
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNQueryEditsResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryEditsResultType(ctx context.Context, sel ast.SelectionSet, v QueryEditsResultType) graphql.Marshaler {
+func (ec *executionContext) marshalNQueryEditsResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditQuery(ctx context.Context, sel ast.SelectionSet, v EditQuery) graphql.Marshaler {
 	return ec._QueryEditsResultType(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNQueryEditsResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryEditsResultType(ctx context.Context, sel ast.SelectionSet, v *QueryEditsResultType) graphql.Marshaler {
+func (ec *executionContext) marshalNQueryEditsResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditQuery(ctx context.Context, sel ast.SelectionSet, v *EditQuery) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -22884,11 +22953,11 @@ func (ec *executionContext) marshalNQueryEditsResultType2ᚖgithubᚗcomᚋstash
 	return ec._QueryEditsResultType(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNQueryPerformersResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryPerformersResultType(ctx context.Context, sel ast.SelectionSet, v QueryPerformersResultType) graphql.Marshaler {
+func (ec *executionContext) marshalNQueryPerformersResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQuery(ctx context.Context, sel ast.SelectionSet, v PerformerQuery) graphql.Marshaler {
 	return ec._QueryPerformersResultType(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNQueryPerformersResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryPerformersResultType(ctx context.Context, sel ast.SelectionSet, v *QueryPerformersResultType) graphql.Marshaler {
+func (ec *executionContext) marshalNQueryPerformersResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQuery(ctx context.Context, sel ast.SelectionSet, v *PerformerQuery) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -22898,11 +22967,11 @@ func (ec *executionContext) marshalNQueryPerformersResultType2ᚖgithubᚗcomᚋ
 	return ec._QueryPerformersResultType(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNQueryScenesResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryScenesResultType(ctx context.Context, sel ast.SelectionSet, v QueryScenesResultType) graphql.Marshaler {
+func (ec *executionContext) marshalNQueryScenesResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneQuery(ctx context.Context, sel ast.SelectionSet, v SceneQuery) graphql.Marshaler {
 	return ec._QueryScenesResultType(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryScenesResultType(ctx context.Context, sel ast.SelectionSet, v *QueryScenesResultType) graphql.Marshaler {
+func (ec *executionContext) marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneQuery(ctx context.Context, sel ast.SelectionSet, v *SceneQuery) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

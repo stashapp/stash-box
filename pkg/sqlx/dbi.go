@@ -299,6 +299,14 @@ func (q dbi) Query(query queryBuilder, output Models) (int, error) {
 	return count, err
 }
 
+func (q dbi) CountOnly(query queryBuilder) (int, error) {
+	return q.Count(query)
+}
+
+func (q dbi) QueryOnly(query queryBuilder, output Models) error {
+	return q.RawQuery(query.Table, query.buildQuery(), query.args, output)
+}
+
 // DeleteQuery deletes table rows that match the query provided.
 func (q dbi) DeleteQuery(query queryBuilder) error {
 	ensureTx(q.txn)

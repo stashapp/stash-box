@@ -201,7 +201,7 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, int, error) {
+func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) *queryBuilder {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
 	}
@@ -275,12 +275,21 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 		query.Sort = qb.getPerformerSort(findFilter)
 	}
 
+	return query
+}
+
+func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, error) {
+	query := qb.buildQuery(performerFilter, findFilter)
 	query.Pagination = getPagination(findFilter)
 
 	var performers models.Performers
-	countResult, err := qb.dbi.Query(*query, &performers)
+	err := qb.dbi.QueryOnly(*query, &performers)
+	return performers, err
+}
 
-	return performers, countResult, err
+func (qb *performerQueryBuilder) QueryCount(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) (int, error) {
+	query := qb.buildQuery(performerFilter, findFilter)
+	return qb.dbi.CountOnly(*query)
 }
 
 func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {

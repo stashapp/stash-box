@@ -86,7 +86,7 @@ func (qb *queryBuilder) AddArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
 }
 
-func (qb queryBuilder) buildBody() string {
+func (qb queryBuilder) buildBody(isCount bool) string {
 	body := qb.Body
 
 	if len(qb.whereClauses) > 0 {
@@ -96,7 +96,9 @@ func (qb queryBuilder) buildBody() string {
 		body = body + " GROUP BY " + qb.Table.Name() + ".id HAVING " + strings.Join(qb.havingClauses, " AND ") // TODO handle AND or OR
 	}
 
-	body = body + qb.Sort
+	if !isCount {
+		body = body + qb.Sort
+	}
 
 	if qb.Distinct {
 		body = "SELECT DISTINCT ON (query.id) query.* FROM (" + body + ") query"
@@ -106,11 +108,11 @@ func (qb queryBuilder) buildBody() string {
 }
 
 func (qb queryBuilder) buildCountQuery() string {
-	return "SELECT COUNT(*) as count FROM (" + qb.buildBody() + ") as temp"
+	return "SELECT COUNT(*) as count FROM (" + qb.buildBody(true) + ") as temp"
 }
 
 func (qb queryBuilder) buildQuery() string {
-	return qb.buildBody() + qb.Pagination
+	return qb.buildBody(false) + qb.Pagination
 }
 
 type optionalValue interface {
