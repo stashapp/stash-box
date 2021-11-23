@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 
 import { ImageFragment as Image } from "src/graphql/definitions/ImageFragment";
 
@@ -16,11 +16,16 @@ const Images: FC<{
   images: (Pick<Image, "id" | "url"> | null)[] | null | undefined;
 }> = ({ images }) => (
   <>
-    {(images ?? []).map((image) =>
+    {(images ?? []).map((image, i) =>
       image === null ? (
-        <img className={CLASSNAME_IMAGE} alt="Deleted" />
+        <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
       ) : (
-        <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
+        <img
+          src={image.url}
+          className={CLASSNAME_IMAGE}
+          alt=""
+          key={image.id}
+        />
       )
     )}
   </>
@@ -35,7 +40,7 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
     <Row className={CLASSNAME}>
       <b className="col-2 text-end">Images</b>
       {showDiff && (
-        <div className="col-5">
+        <Col xs={5}>
           {(oldImages ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
@@ -44,9 +49,9 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
               </div>
             </>
           )}
-        </div>
+        </Col>
       )}
-      <span className="col-5">
+      <Col xs={5}>
         {(newImages ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
@@ -55,7 +60,7 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
             </div>
           </>
         )}
-      </span>
+      </Col>
     </Row>
   ) : (
     <></>

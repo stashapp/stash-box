@@ -37,12 +37,18 @@ const CheckboxSelect: FC<MultiSelectProps> = ({
     if (meta.context === "menu")
       return option.subValues === null ? (
         <div className="d-flex ms-3">
-          <Form.Check checked={unselected.includes(option.value)} />
+          <Form.Check
+            className="me-2"
+            checked={unselected.includes(option.value)}
+          />
           {option.label}
         </div>
       ) : (
         <div className="d-flex">
-          <Form.Check checked={unselected.includes(option.value)} />
+          <Form.Check
+            className="me-2"
+            checked={unselected.includes(option.value)}
+          />
           <span className="text-muted">{option.label}</span>
         </div>
       );

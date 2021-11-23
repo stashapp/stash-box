@@ -1,20 +1,5 @@
 .SceneCard {
-  &-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
-  }
-
-  &:hover {
-    text-decoration: none;
-
-    .SceneCard-title {
-      text-decoration: underline;
-    }
-  }
-
-  .card {
+  &.card {
     box-shadow: none;
     border-radius: 0;
     background-color: transparent;

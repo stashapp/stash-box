@@ -10,7 +10,7 @@ export const formatMeasurements = (val?: Measurements): string | undefined => {
   if ((val?.cup_size && val.band_size) || val?.hip || val?.waist) {
     const bust =
       val.cup_size && val.band_size ? `${val.band_size}${val.cup_size}` : "??";
-    return `${bust}-${val.waist ?? ""}-${val.hip ?? ""}`;
+    return `${bust}-${val.waist ?? "??"}-${val.hip ?? "??"}`;
   }
   return undefined;
 };
