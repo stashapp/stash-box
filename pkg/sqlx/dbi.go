@@ -195,9 +195,7 @@ func (q dbi) InsertJoinsWithConflictHandling(tj tableJoin, joins Joins, conflict
 // ReplaceJoins replaces table join objects with the provided primary table
 // id value with the provided join objects.
 func (q dbi) ReplaceJoins(tj tableJoin, id uuid.UUID, joins Joins) error {
-	err := q.DeleteJoins(tj, id)
-
-	if err != nil {
+	if err := q.DeleteJoins(tj, id); err != nil {
 		return err
 	}
 

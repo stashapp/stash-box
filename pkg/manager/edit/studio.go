@@ -163,11 +163,7 @@ func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput, inputSpe
 	studioID, _ := uuid.FromString(*input.Edit.ID)
 	_, err := tqb.Find(studioID)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (m *StudioEditProcessor) CreateJoin(input models.StudioEditInput) error {

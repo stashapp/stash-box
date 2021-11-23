@@ -283,11 +283,7 @@ func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputSpeci
 	sceneID, _ := uuid.FromString(*input.Edit.ID)
 	_, err := tqb.Find(sceneID)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (m *SceneEditProcessor) CreateJoin(input models.SceneEditInput) error {
