@@ -3,7 +3,7 @@ import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
-import { useScenes } from "src/graphql";
+import { useScenesWithoutCount } from "src/graphql";
 
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
@@ -13,20 +13,21 @@ const CLASSNAME = "HomePage";
 const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;
 
 const ScenesComponent: FC = () => {
-  const { data: sceneData, loading: loadingRecent } = useScenes({
+  const { data: sceneData, loading: loadingRecent } = useScenesWithoutCount({
     filter: {
       page: 1,
       per_page: 20,
       sort: "created_at",
     },
   });
-  const { data: trendingData, loading: loadingTrending } = useScenes({
-    filter: {
-      page: 1,
-      per_page: 20,
-      sort: "trending",
-    },
-  });
+  const { data: trendingData, loading: loadingTrending } =
+    useScenesWithoutCount({
+      filter: {
+        page: 1,
+        per_page: 20,
+        sort: "trending",
+      },
+    });
 
   if (loadingTrending) return <LoadingIndicator message="Loading..." />;
 
