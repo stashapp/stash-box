@@ -4,7 +4,6 @@
 #import "../fragments/SceneFragment.gql"
 #import "../fragments/TagFragment.gql"
 #import "../fragments/CommentFragment.gql"
-#import "../fragments/PublicUserFragment.gql"
 fragment EditFragment on Edit {
   id
   target_type
@@ -26,7 +25,8 @@ fragment EditFragment on Edit {
     vote
   }
   user {
-    ...PublicUserFragment
+    id
+    name
   }
   target {
     ... on Tag {
