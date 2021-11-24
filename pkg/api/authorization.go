@@ -70,15 +70,17 @@ func validateAdmin(ctx context.Context) error {
 }
 
 func validateOwner(ctx context.Context, userID uuid.UUID) error {
-	err := validateAdmin(ctx)
-	if err == nil {
-		return nil
-	}
-
 	user := getCurrentUser(ctx)
 	if user != nil && user.ID == userID {
 		return nil
 	}
 
 	return ErrUnauthorized
+}
+
+func validateUserOrAdmin(ctx context.Context, userID uuid.UUID) error {
+	if err := validateOwner(ctx, userID); err == nil {
+		return nil
+	}
+	return validateRole(ctx, models.RoleEnumAdmin)
 }
