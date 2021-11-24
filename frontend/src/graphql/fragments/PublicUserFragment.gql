@@ -1,0 +1,4 @@
+fragment PublicUserFragment on User {
+  id
+  name
+}
