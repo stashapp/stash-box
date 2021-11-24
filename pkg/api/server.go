@@ -30,7 +30,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-var version = "0.0.0"
+var version string
 var buildstamp string
 var githash string
 
@@ -216,7 +216,11 @@ func Start(rfp RepoProvider, ui embed.FS) {
 }
 
 func printVersion() {
-	fmt.Printf("stash-box version: %s (%s)\n", githash, buildstamp)
+	versionString := githash
+	if version != "" {
+		versionString = version + " (" + versionString + ")"
+	}
+	fmt.Printf("stash-box version: %s - %s\n", versionString, buildstamp)
 }
 
 func GetVersion() (string, string, string) {
