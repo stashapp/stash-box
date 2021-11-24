@@ -1,0 +1,8 @@
+fragment ScenePerformerFragment on Performer {
+  id
+  name
+  disambiguation
+  deleted
+  gender
+  aliases
+}

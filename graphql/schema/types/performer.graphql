@@ -1,0 +1,310 @@
+enum GenderEnum {
+  MALE
+  FEMALE
+  TRANSGENDER_MALE
+  TRANSGENDER_FEMALE
+  INTERSEX
+}
+
+enum GenderFilterEnum {
+  UNKNOWN
+  MALE
+  FEMALE
+  TRANSGENDER_MALE
+  TRANSGENDER_FEMALE
+  INTERSEX
+}
+
+enum BreastTypeEnum {
+  NATURAL
+  FAKE
+  NA
+}
+
+type Measurements {
+  cup_size: String
+  band_size: Int
+  waist: Int
+  hip: Int
+}
+
+input MeasurementsInput {
+  cup_size: String
+  band_size: Int
+  waist: Int
+  hip: Int
+}
+
+enum EthnicityEnum {
+  CAUCASIAN
+  BLACK
+  ASIAN
+  INDIAN
+  LATIN
+  MIDDLE_EASTERN
+  MIXED
+  OTHER
+}
+enum EthnicityFilterEnum {
+  UNKNOWN
+  CAUCASIAN
+  BLACK
+  ASIAN
+  INDIAN
+  LATIN
+  MIDDLE_EASTERN
+  MIXED
+  OTHER
+}
+
+enum EyeColorEnum {
+  BLUE
+  BROWN
+  GREY
+  GREEN
+  HAZEL
+  RED
+}
+
+enum HairColorEnum {
+  BLONDE
+  BRUNETTE
+  BLACK
+  RED
+  AUBURN
+  GREY
+  BALD
+  VARIOUS
+  OTHER
+}
+
+type BodyModification {
+  location: String!
+  description: String
+}
+
+input BodyModificationInput {
+  location: String!
+  description: String
+}
+
+type Performer {
+  id: ID!
+  name: String!
+  disambiguation: String
+  aliases: [String!]!
+  gender: GenderEnum
+  urls: [URL!]!
+  birthdate: FuzzyDate
+  age: Int # resolver
+  ethnicity: EthnicityEnum
+  country: String
+  eye_color: EyeColorEnum
+  hair_color: HairColorEnum
+  """Height in cm"""
+  height: Int
+  measurements: Measurements!
+  breast_type: BreastTypeEnum
+  career_start_year: Int
+  career_end_year: Int
+  tattoos: [BodyModification!]
+  piercings: [BodyModification!]
+  images: [Image!]!
+  deleted: Boolean!
+  edits: [Edit!]!
+  scene_count: Int!
+  merged_ids: [ID!]!
+  studios: [PerformerStudio!]!
+}
+
+type PerformerStudio {
+  studio: Studio!
+  scene_count: Int!
+}
+
+input PerformerCreateInput {
+  name: String!
+  disambiguation: String
+  aliases: [String!]
+  gender: GenderEnum
+  urls: [URLInput!]
+  birthdate: FuzzyDateInput
+  ethnicity: EthnicityEnum
+  country: String
+  eye_color: EyeColorEnum
+  hair_color: HairColorEnum
+  height: Int
+  measurements: MeasurementsInput
+  breast_type: BreastTypeEnum
+  career_start_year: Int
+  career_end_year: Int
+  tattoos: [BodyModificationInput!]
+  piercings: [BodyModificationInput!]
+  image_ids: [ID!]
+}
+
+input PerformerUpdateInput {
+  id: ID!
+  name: String
+  disambiguation: String
+  aliases: [String!]
+  gender: GenderEnum
+  urls: [URLInput!]
+  birthdate: FuzzyDateInput
+  ethnicity: EthnicityEnum
+  country: String
+  eye_color: EyeColorEnum
+  hair_color: HairColorEnum
+  height: Int
+  measurements: MeasurementsInput
+  breast_type: BreastTypeEnum
+  career_start_year: Int
+  career_end_year: Int
+  tattoos: [BodyModificationInput!]
+  piercings: [BodyModificationInput!]
+  image_ids: [ID!]
+}
+
+input PerformerDestroyInput {
+  id: ID!
+}
+
+input PerformerEditDetailsInput {
+  name: String
+  disambiguation: String
+  aliases: [String!]
+  gender: GenderEnum
+  urls: [URLInput!]
+  birthdate: FuzzyDateInput
+  ethnicity: EthnicityEnum
+  country: String
+  eye_color: EyeColorEnum
+  hair_color: HairColorEnum
+  height: Int
+  measurements: MeasurementsInput
+  breast_type: BreastTypeEnum
+  career_start_year: Int
+  career_end_year: Int
+  tattoos: [BodyModificationInput!]
+  piercings: [BodyModificationInput!]
+  image_ids: [ID!]
+}
+
+input PerformerEditOptionsInput {
+  """Set performer alias on scenes without alias to old name if name is changed"""
+  set_modify_aliases: Boolean = false
+  """Set performer alias on scenes attached to merge sources to old name"""
+  set_merge_aliases: Boolean = true
+}
+
+input PerformerEditInput {
+  edit: EditInput!
+  """Not required for destroy type"""
+  details: PerformerEditDetailsInput
+  """Controls aliases modification for merges and name modifications"""
+  options: PerformerEditOptionsInput
+}
+
+type PerformerEdit {
+  name: String
+  disambiguation: String
+  added_aliases: [String!]
+  removed_aliases: [String!]
+  gender: GenderEnum
+  added_urls: [URL!]
+  removed_urls: [URL!]
+  birthdate: String
+  birthdate_accuracy: String
+  ethnicity: EthnicityEnum
+  country: String
+  eye_color: EyeColorEnum
+  hair_color: HairColorEnum
+  """Height in cm"""
+  height: Int
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
+  breast_type: BreastTypeEnum
+  career_start_year: Int
+  career_end_year: Int
+  added_tattoos: [BodyModification!]
+  removed_tattoos: [BodyModification!]
+  added_piercings: [BodyModification!]
+  removed_piercings: [BodyModification!]
+  added_images: [Image]
+  removed_images: [Image]
+}
+
+type PerformerEditOptions {
+  """Set performer alias on scenes without alias to old name if name is changed"""
+  set_modify_aliases: Boolean!
+  """Set performer alias on scenes attached to merge sources to old name"""
+  set_merge_aliases: Boolean!
+}
+
+type QueryPerformersResultType {
+  count: Int!
+  performers: [Performer!]!
+}
+
+input BreastTypeCriterionInput {
+  value: BreastTypeEnum
+  modifier: CriterionModifier!
+}
+
+input EyeColorCriterionInput {
+  value: EyeColorEnum
+  modifier: CriterionModifier!
+}
+
+input HairColorCriterionInput {
+  value: HairColorEnum
+  modifier: CriterionModifier!
+}
+
+input BodyModificationCriterionInput {
+  location: String
+  description: String
+  modifier: CriterionModifier!
+}
+
+input PerformerFilterType {
+  """Searches name and aliases - assumes like query unless quoted"""
+  names: String
+
+  """Searches name only - assumes like query unless quoted"""
+  name: String
+
+  """Search aliases only - assumes like query unless quoted"""
+  alias: String
+
+  disambiguation: StringCriterionInput
+
+  gender: GenderFilterEnum
+  
+  """Filter to search urls - assumes like query unless quoted"""
+  url: String
+
+  birthdate: DateCriterionInput
+  birth_year: IntCriterionInput
+  age: IntCriterionInput
+
+  ethnicity: EthnicityFilterEnum
+  country: StringCriterionInput
+  eye_color: EyeColorCriterionInput
+  hair_color: HairColorCriterionInput
+  height: IntCriterionInput
+
+  cup_size: StringCriterionInput
+  band_size: IntCriterionInput
+  waist_size: IntCriterionInput
+  hip_size: IntCriterionInput
+
+  breast_type: BreastTypeCriterionInput
+
+  career_start_year: IntCriterionInput
+  career_end_year: IntCriterionInput
+  tattoos: BodyModificationCriterionInput
+  piercings: BodyModificationCriterionInput
+}

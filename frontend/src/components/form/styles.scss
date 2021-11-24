@@ -1,0 +1,74 @@
+.BodyModification {
+  &-remove {
+    background: transparent;
+    border: none;
+    color: rgba(0, 0, 0, 0.5);
+    width: 10%;
+
+    &:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+  }
+
+  &-select {
+    width: 100%;
+  }
+
+  &-label {
+    width: 90%;
+  }
+
+  &-location {
+    display: inline-block;
+    margin-right: 5%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: 30%;
+  }
+
+  .form-control {
+    display: inline;
+    width: 65%;
+  }
+
+  h6 {
+    text-transform: capitalize;
+  }
+}
+
+.ImageInput {
+  margin: 0.5rem;
+  position: relative;
+
+  &-image {
+    border-radius: 3px;
+    flex-shrink: 0;
+    max-height: 200px;
+    min-height: 100px;
+    min-width: 100px;
+  }
+
+  &-remove {
+    left: 5px;
+    opacity: 0.6;
+    padding: 0 5px;
+    position: absolute;
+    top: 5px;
+  }
+
+  &:hover &-remove {
+    opacity: 1;
+  }
+}
+
+.NoteInput {
+  .tab-content {
+    padding-bottom: 0;
+  }
+
+  .EditComment {
+    margin-bottom: 0;
+  }
+}

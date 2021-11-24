@@ -1,0 +1,291 @@
+package config
+
+import (
+	"errors"
+	"time"
+
+	"github.com/spf13/viper"
+
+	"github.com/stashapp/stash-box/pkg/manager/paths"
+	"github.com/stashapp/stash-box/pkg/utils"
+)
+
+type S3Config struct {
+	BaseURL      string `mapstructure:"base_url"`
+	Endpoint     string `mapstructure:"endpoint"`
+	Bucket       string `mapstructure:"bucket"`
+	AccessKey    string `mapstructure:"access_key"`
+	Secret       string `mapstructure:"secret"`
+	MaxDimension int64  `mapstructure:"max_dimension"`
+}
+
+type config struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	Database string `mapstructure:"database"`
+
+	HTTPUpgrade  bool `mapstructure:"http_upgrade"`
+	IsProduction bool `mapstructure:"is_production"`
+
+	// Key used to sign JWT tokens
+	JWTSignKey string `mapstructure:"jwt_secret_key"`
+	// Key used for session store
+	SessionStoreKey string `mapstructure:"session_store_key"`
+
+	// Invite settings
+	RequireInvite     bool     `mapstructure:"require_invite"`
+	RequireActivation bool     `mapstructure:"require_activation"`
+	ActivationExpiry  int      `mapstructure:"activation_expiry"`
+	EmailCooldown     int      `mapstructure:"email_cooldown"`
+	DefaultUserRoles  []string `mapstructure:"default_user_roles"`
+
+	// Email settings
+	EmailHost string `mapstructure:"email_host"`
+	EmailPort int    `mapstructure:"email_port"`
+	EmailUser string `mapstructure:"email_user"`
+	EmailPW   string `mapstructure:"email_password"`
+	EmailFrom string `mapstructure:"email_from"`
+	HostURL   string `mapstructure:"host_url"`
+
+	// Image storage settings
+	ImageLocation string `mapstructure:"image_location"`
+	ImageBackend  string `mapstructure:"image_backend"`
+
+	// Logging options
+	LogFile     string `mapstructure:"logFile"`
+	UserLogFile string `mapstructure:"userLogFile"`
+	LogOut      bool   `mapstructure:"logOut"`
+	LogLevel    string `mapstructure:"logLevel"`
+
+	S3 struct {
+		S3Config `mapstructure:",squash"`
+	}
+
+	PHashDistance int `mapstructure:"phash_distance"`
+}
+
+var JWTSignKey = "jwt_secret_key"
+var SessionStoreKey = "session_store_key"
+var Database = "database"
+
+type ImageBackendType string
+
+const (
+	FileBackend ImageBackendType = "file"
+	S3Backend   ImageBackendType = "s3"
+)
+
+var defaultUserRoles = []string{"READ", "VOTE", "EDIT"}
+var C = &config{
+	RequireInvite:     true,
+	RequireActivation: true,
+	ActivationExpiry:  2 * 60 * 60,
+	EmailCooldown:     5 * 60,
+	EmailPort:         25,
+	ImageBackend:      string(FileBackend),
+	PHashDistance:     0,
+}
+
+func GetDatabasePath() string {
+	return C.Database
+}
+
+func GetHost() string {
+	return C.Host
+}
+
+func GetPort() int {
+	return C.Port
+}
+
+func GetJWTSignKey() []byte {
+	return []byte(C.JWTSignKey)
+}
+
+func GetSessionStoreKey() []byte {
+	return []byte(C.SessionStoreKey)
+}
+
+func GetHTTPUpgrade() bool {
+	return C.HTTPUpgrade
+}
+
+func GetIsProduction() bool {
+	return C.IsProduction
+}
+
+// GetRequireInvite returns true if new users cannot register without an invite
+// key.
+func GetRequireInvite() bool {
+	return C.RequireInvite
+}
+
+// GetRequireActivation returns true if new users must validate their email address
+// via activation to create an account.
+func GetRequireActivation() bool {
+	return C.RequireActivation
+}
+
+// GetActivationExpiry returns the duration before an activation email expires.
+func GetActivationExpiry() time.Duration {
+	return time.Duration(C.ActivationExpiry * int(time.Second))
+}
+
+// GetActivationExpireTime returns the time at which activation emails expire,
+// using the current time as the basis.
+func GetActivationExpireTime() time.Time {
+	expiry := GetActivationExpiry()
+	currentTime := time.Now()
+
+	return currentTime.Add(-expiry)
+}
+
+// GetEmailCooldown returns the duration before a second activation email may
+// be generated.
+func GetEmailCooldown() time.Duration {
+	return time.Duration(C.EmailCooldown * int(time.Second))
+}
+
+// GetDefaultUserRoles returns the default roles assigned to a new user
+// when created via registration.
+func GetDefaultUserRoles() []string {
+	if len(C.DefaultUserRoles) == 0 {
+		return defaultUserRoles
+	}
+	return C.DefaultUserRoles
+}
+
+func GetEmailHost() string {
+	return C.EmailHost
+}
+
+func GetEmailPort() int {
+	return C.EmailPort
+}
+
+func GetEmailUser() string {
+	return C.EmailUser
+}
+
+func GetEmailPassword() string {
+	return C.EmailPW
+}
+
+func GetEmailFrom() string {
+	return C.EmailFrom
+}
+
+func GetHostURL() string {
+	return C.HostURL
+}
+
+// GetImageLocation returns the path of where to locally store images.
+func GetImageLocation() string {
+	return C.ImageLocation
+}
+
+// GetImageBackend returns the backend used to store images.
+func GetImageBackend() ImageBackendType {
+	return ImageBackendType(C.ImageBackend)
+}
+
+func GetS3Config() *S3Config {
+	return &C.S3.S3Config
+}
+
+// ValidateImageLocation returns an error is image_location is not set.
+func ValidateImageLocation() error {
+	if C.ImageLocation == "" {
+		return errors.New("ImageLocation not set")
+	}
+
+	return nil
+}
+
+// GetLogFile returns the filename of the file to output logs to.
+// An empty string means that file logging will be disabled.
+func GetLogFile() string {
+	return C.LogFile
+}
+
+// GetUserLogFile returns the filename of the file to output user operation
+// logs to.
+// An empty string means that user operation logging will be output to stderr.
+func GetUserLogFile() string {
+	return C.UserLogFile
+}
+
+// GetLogOut returns true if logging should be output to the terminal
+// in addition to writing to a log file. Logging will be output to the
+// terminal if file logging is disabled. Defaults to true.
+func GetLogOut() bool {
+	return C.LogOut
+}
+
+// GetLogLevel returns the lowest log level to write to the log.
+// Should be one of "Debug", "Info", "Warning", "Error"
+func GetLogLevel() string {
+	const defaultValue = "Info"
+
+	value := C.LogLevel
+	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" {
+		value = defaultValue
+	}
+
+	return value
+}
+
+func GetPHashDistance() int {
+	return C.PHashDistance
+}
+
+func InitializeDefaults() error {
+	// generate some api keys
+	const apiKeyLength = 32
+
+	if viper.GetString(JWTSignKey) == "" {
+		signKey, err := utils.GenerateRandomKey(apiKeyLength)
+		if err != nil {
+			return err
+		}
+		viper.Set(JWTSignKey, signKey)
+	}
+
+	if viper.GetString(SessionStoreKey) == "" {
+		sessionStoreKey, err := utils.GenerateRandomKey(apiKeyLength)
+		if err != nil {
+			return err
+		}
+		viper.Set(SessionStoreKey, sessionStoreKey)
+	}
+
+	if viper.GetString(Database) == "" {
+		viper.Set(Database, paths.GetDefaultDatabaseFilePath())
+	}
+
+	return viper.WriteConfig()
+}
+
+// Unmarshal config
+func Initialize() error {
+	return viper.Unmarshal(&C)
+}
+
+func GetMissingEmailSettings() []string {
+	if !GetRequireActivation() {
+		return nil
+	}
+
+	missing := []string{}
+	if GetEmailFrom() == "" {
+		missing = append(missing, "EmailFrom")
+	}
+	if GetEmailHost() == "" {
+		missing = append(missing, "EmailHost")
+	}
+	if GetHostURL() == "" {
+		missing = append(missing, "HostURL")
+	}
+
+	return missing
+}

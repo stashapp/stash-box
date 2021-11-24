@@ -1,0 +1,6 @@
+#import "../fragments/StudioFragment.gql"
+mutation UpdateStudio($input: StudioUpdateInput!) {
+  studioUpdate(input: $input) {
+    ...StudioFragment
+  }
+}

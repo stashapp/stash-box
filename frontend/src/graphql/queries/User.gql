@@ -1,0 +1,16 @@
+query User($name: String!) {
+  findUser(username: $name) {
+    id
+    name
+    email
+    roles
+    api_key
+    api_calls
+    invited_by {
+      id
+      name
+    }
+    invite_tokens
+    active_invite_codes
+  }
+}

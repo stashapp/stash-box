@@ -1,0 +1,17 @@
+#import "../fragments/PerformerFragment.gql"
+query FullPerformer($id: ID!) {
+  findPerformer(id: $id) {
+    ...PerformerFragment
+    studios {
+      scene_count
+      studio {
+        id
+        name
+        parent {
+          id
+          name
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+#import "../fragments/PerformerFragment.gql"
+query Performer($id: ID!) {
+  findPerformer(id: $id) {
+    ...PerformerFragment
+  }
+}

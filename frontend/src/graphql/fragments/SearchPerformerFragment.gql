@@ -1,0 +1,24 @@
+#import "../fragments/ImageFragment.gql"
+fragment SearchPerformerFragment on Performer {
+  id
+  name
+  disambiguation
+  deleted
+  gender
+  aliases
+  country
+  career_start_year
+  career_end_year
+  scene_count
+  birthdate {
+    date
+    accuracy
+  }
+  urls {
+    url
+    type
+  }
+  images {
+    ... ImageFragment
+  }
+}
