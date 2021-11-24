@@ -13,6 +13,10 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
+var InvalidVoteStatus = errors.New("invalid vote status")
+var EditNotFound = errors.New("edit not found")
+var EditAlreadyApplied = errors.New("edit already applied")
+
 // InputSpecifiedFunc is function that returns true if the qualified field name
 // was specified in the input. Used to distinguish between nil/empty fields and
 // unspecified fields
@@ -55,11 +59,11 @@ type editApplyer interface {
 
 func validateEditPresence(edit *models.Edit) error {
 	if edit == nil {
-		return errors.New("edit not found")
+		return EditNotFound
 	}
 
 	if edit.Applied {
-		return errors.New("edit already applied")
+		return EditAlreadyApplied
 	}
 
 	return nil
@@ -69,7 +73,7 @@ func validateEditPrerequisites(fac models.Repo, edit *models.Edit) error {
 	var status models.VoteStatusEnum
 	utils.ResolveEnumString(edit.Status, &status)
 	if status != models.VoteStatusEnumPending {
-		return errors.New("invalid vote status: " + edit.Status)
+		return fmt.Errorf("%w: %s", InvalidVoteStatus, edit.Status)
 	}
 
 	return nil
