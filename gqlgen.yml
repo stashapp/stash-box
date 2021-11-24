@@ -1,0 +1,24 @@
+# Refer to https://gqlgen.com/config/ for detailed .gqlgen.yml documentation.
+
+schema:
+  - "graphql/schema/types/*.graphql"
+  - "graphql/schema/*.graphql"
+exec:
+  filename: pkg/models/generated_exec.go
+model:
+  filename: pkg/models/generated_models.go
+resolver:
+  filename: pkg/api/resolver.go
+  type: Resolver
+
+struct_tag: gqlgen
+
+autobind:
+  - "github.com/stashapp/stash-box/pkg/models"
+
+models:
+  Image:
+    model: github.com/stashapp/stash-box/pkg/models.Image
+    fields:
+      url:
+        resolver: true

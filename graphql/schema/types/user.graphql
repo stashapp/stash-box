@@ -1,0 +1,124 @@
+directive @isAdmin on FIELD_DEFINITION
+directive @isOwner on FIELD_DEFINITION
+
+enum RoleEnum {
+  READ
+  VOTE
+  EDIT
+  MODIFY
+  ADMIN
+  """May generate invites without tokens"""
+  INVITE
+  """May grant and rescind invite tokens and resind invite keys"""
+  MANAGE_INVITES
+}
+
+type User {
+  id: ID!
+  name: String!
+  """Should not be visible to other users"""
+  roles: [RoleEnum!] @isOwner
+  """Should not be visible to other users"""
+  email: String @isOwner
+  """Should not be visible to other users"""
+  api_key: String @isOwner
+  successful_edits: Int!
+  unsuccessful_edits: Int!
+  successful_votes: Int!
+  """Votes on unsuccessful edits"""
+  unsuccessful_votes: Int!
+  """Calls to the API from this user over a configurable time period"""
+  api_calls: Int! @isOwner
+  invited_by: User @isOwner
+  invite_tokens: Int @isOwner
+  active_invite_codes: [String!] @isOwner
+}
+
+input UserCreateInput {
+  name: String!
+  """Password in plain text"""
+  password: String!
+  roles: [RoleEnum!]!
+  email: String!
+  invited_by_id: ID
+}
+
+input UserUpdateInput {
+  id: ID!
+  name: String
+  """Password in plain text"""
+  password: String
+  roles: [RoleEnum!]
+  email: String
+}
+
+input NewUserInput {
+  email: String!
+  invite_key: String
+}
+
+input ActivateNewUserInput {
+  name: String!
+  email: String!
+  activation_key: String!
+  password: String!
+}
+
+input ResetPasswordInput {
+  email: String!
+}
+
+input UserChangePasswordInput {
+  """Password in plain text"""
+  existing_password: String
+  new_password: String!
+  reset_key: String
+}
+
+input UserDestroyInput {
+    id: ID!
+}
+
+input GrantInviteInput {
+  user_id: ID!
+  amount: Int!
+}
+
+input RevokeInviteInput {
+  user_id: ID!
+  amount: Int!
+}
+
+type QueryUsersResultType {
+  count: Int!
+  users: [User!]!
+}
+
+input RoleCriterionInput {
+  value: [RoleEnum!]!
+  modifier: CriterionModifier!
+}
+
+input UserFilterType {
+  """Filter to search user name - assumes like query unless quoted"""
+  name: String
+  """Filter to search email - assumes like query unless quoted"""
+  email: String
+  """Filter by roles"""
+  roles: RoleCriterionInput
+  """Filter by api key"""
+  apiKey: String
+
+  """Filter by successful edits"""
+  successful_edits: IntCriterionInput
+  """Filter by unsuccessful edits"""
+  unsuccessful_edits: IntCriterionInput
+  """Filter by votes on successful edits"""
+  successful_votes: IntCriterionInput
+  """Filter by votes on unsuccessful edits"""
+  unsuccessful_votes: IntCriterionInput
+  """Filter by number of API calls"""
+  api_calls: IntCriterionInput
+  """Filter by user that invited"""
+  invited_by: ID
+}

@@ -1,0 +1,9 @@
+#import "../fragments/EditFragment.gql"
+query Edits($filter: QuerySpec, $editFilter: EditFilterType) {
+  queryEdits(filter: $filter, edit_filter: $editFilter) {
+    count
+    edits {
+      ...EditFragment
+    }
+  }
+}

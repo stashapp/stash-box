@@ -1,0 +1,139 @@
+#import "../fragments/PerformerFragment.gql"
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/CommentFragment.gql"
+fragment EditFragment on Edit {
+  id
+  target_type
+  operation
+  status
+  applied
+  created
+  updated
+  comments {
+    ...CommentFragment
+  }
+  user {
+    id
+    name
+  }
+  target {
+    ... on Tag {
+      id
+      name
+      description
+      deleted
+      category {
+        id
+        name
+      }
+    }
+    ... on Performer {
+      ...PerformerFragment
+    }
+  }
+  details {
+    ... on TagEdit {
+      name
+      description
+      added_aliases
+      removed_aliases
+      category_id
+    }
+    ... on PerformerEdit {
+      name
+      disambiguation
+      added_aliases
+      removed_aliases
+      gender
+      added_urls {
+        url
+        type
+      }
+      removed_urls {
+        url
+        type
+      }
+      birthdate
+      birthdate_accuracy
+      ethnicity
+      country
+      eye_color
+      hair_color
+      height
+      cup_size
+      band_size
+      waist_size
+      hip_size
+      breast_type
+      career_start_year
+      career_end_year
+      added_tattoos {
+        location
+        description
+      }
+      removed_tattoos {
+        location
+        description
+      }
+      added_piercings {
+        location
+        description
+      }
+      removed_piercings {
+        location
+        description
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+    }
+  }
+  old_details {
+    ... on TagEdit {
+      name
+      description
+      category_id
+    }
+    ... on PerformerEdit {
+      name
+      disambiguation
+      gender
+      birthdate
+      birthdate_accuracy
+      ethnicity
+      country
+      eye_color
+      hair_color
+      height
+      cup_size
+      band_size
+      waist_size
+      hip_size
+      breast_type
+      career_start_year
+      career_end_year
+    }
+  }
+  merge_sources {
+    ... on Tag {
+      id
+      name
+      description
+      deleted
+      category {
+        id
+        name
+      }
+    }
+    ... on Performer {
+      ...PerformerFragment
+    }
+  }
+  options {
+    set_modify_aliases
+    set_merge_aliases
+  }
+}

@@ -1,0 +1,6 @@
+#import "../fragments/StudioFragment.gql"
+query Studio($id: ID!) {
+  findStudio(id : $id) {
+    ...StudioFragment
+  }
+}

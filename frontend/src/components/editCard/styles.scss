@@ -1,0 +1,15 @@
+.EditComment {
+  background-color: $textfield-bg;
+  margin-top: 1rem;
+
+  .card-body a {
+    color: $link-color;
+  }
+}
+
+.EditDiff {
+  border-radius: 0.25rem;
+  height: 100%;
+  padding: 0.25rem 0.5rem;
+  white-space: pre-wrap;
+}

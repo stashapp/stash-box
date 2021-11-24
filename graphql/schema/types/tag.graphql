@@ -1,0 +1,100 @@
+enum TagGroupEnum {
+  PEOPLE
+  SCENE
+  ACTION
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  description: String
+  aliases: [String!]!
+  deleted: Boolean!
+  edits: [Edit!]!
+  category: TagCategory
+}
+
+input TagCreateInput {
+  name: String!
+  description: String
+  aliases: [String!]
+  category_id: ID
+}
+
+input TagUpdateInput {
+  id: ID!
+  name: String
+  description: String
+  aliases: [String!]
+  category_id: ID
+}
+
+input TagDestroyInput {
+  id: ID!
+}
+
+input TagEditDetailsInput {
+  name: String
+  description: String
+  aliases: [String!]
+  category_id: ID
+}
+
+input TagEditInput {
+  edit: EditInput!
+  """Not required for destroy type"""
+  details: TagEditDetailsInput
+}
+
+type TagEdit {
+  name: String
+  description: String
+  added_aliases: [String!]
+  removed_aliases: [String!]
+  category_id: ID
+}
+
+type QueryTagsResultType {
+  count: Int!
+  tags: [Tag!]!
+}
+
+type QueryTagCategoriesResultType {
+  count: Int!
+  tag_categories: [TagCategory!]!
+}
+
+input TagFilterType {
+  """Filter to search name, aliases and description - assumes like query unless quoted"""
+  text: String
+  """Searches name and aliases - assumes like query unless quoted"""
+  names: String
+  """Filter to search name - assumes like query unless quoted"""
+  name: String
+  """Filter to category ID"""
+  category_id: ID
+}
+
+type TagCategory {
+  id: ID!
+  name: String!
+  group:  TagGroupEnum!
+  description: String
+}
+
+input TagCategoryCreateInput {
+  name: String!
+  group:  TagGroupEnum!
+  description: String
+}
+
+input TagCategoryUpdateInput {
+  id: ID!
+  name: String
+  group:  TagGroupEnum
+  description: String
+}
+
+input TagCategoryDestroyInput {
+  id: ID!
+}

@@ -1,0 +1,3 @@
+mutation RevokeInvite($input: RevokeInviteInput!) {
+    revokeInvite(input: $input)
+}
