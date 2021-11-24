@@ -13,7 +13,7 @@ ifndef GITHASH
 endif
 
 ifndef STASH_BOX_VERSION
-	$(eval STASH_BOX_VERSION := $(shell git describe --tags --exclude latest-develop))
+	$(eval STASH_BOX_VERSION := $(shell git describe --tags --abbrev=0 --exclude latest-develop))
 endif
 
 build: pre-build
