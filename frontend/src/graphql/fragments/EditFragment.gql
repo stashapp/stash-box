@@ -1,6 +1,7 @@
 #import "../fragments/PerformerFragment.gql"
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/CommentFragment.gql"
+#import "../fragments/PublicUserFragment.gql"
 fragment EditFragment on Edit {
   id
   target_type
@@ -13,8 +14,7 @@ fragment EditFragment on Edit {
     ...CommentFragment
   }
   user {
-    id
-    name
+    ...PublicUserFragment
   }
   target {
     ... on Tag {

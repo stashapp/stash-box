@@ -10,6 +10,8 @@ import {
   useGrantInvite,
   useRevokeInvite,
 } from "src/graphql";
+import { User_findUser as User } from 'src/graphql/definitions/User';
+import { PublicUser_findUser as PublicUser } from 'src/graphql/definitions/PublicUser';
 import AuthContext from "src/AuthContext";
 import {
   ROUTE_USER_EDIT,
@@ -20,6 +22,10 @@ import {
 import { isAdmin, createHref } from "src/utils";
 import Modal from "src/components/modal";
 import { Icon, LoadingIndicator } from "src/components/fragments";
+
+const isPrivate = (user: PublicUser | User): user is User => (
+  !!(user as User).email
+);
 
 const AddUserComponent: React.FC = () => {
   const Auth = useContext(AuthContext);
@@ -39,8 +45,7 @@ const AddUserComponent: React.FC = () => {
   if (name === "" || !data?.findUser) return <div>No user found!</div>;
 
   const user = data.findUser;
-  const isUser = () => Auth.user?.name === user.name;
-  const showPrivate = isUser() || isAdmin(Auth.user);
+  const showPrivate = isPrivate(user);
 
   const toggleModal = () => setShowDelete(true);
   const handleDelete = (status: boolean): void => {
@@ -118,7 +123,7 @@ const AddUserComponent: React.FC = () => {
             <Link to={createHref(ROUTE_USER_EDITS, user)} className="ml-2">
               <Button variant="secondary">User Edits</Button>
             </Link>
-            {isUser() && (
+            {showPrivate && (
               <Link to={ROUTE_USER_PASSWORD} className="ml-2">
                 <Button>Change Password</Button>
               </Link>
@@ -141,18 +146,16 @@ const AddUserComponent: React.FC = () => {
           </div>
         </div>
         <hr />
-        {showPrivate && (
-          <Row>
-            <span className="col-2">Email</span>
-            <span className="col">{user?.email}</span>
-          </Row>
-        )}
-        <Row>
-          <span className="col-2">Roles</span>
-          <span className="col">{(user?.roles ?? []).join(", ")}</span>
-        </Row>
-        {showPrivate && (
+        {isPrivate(user) && (
           <>
+            <Row>
+              <span className="col-2">Email</span>
+              <span className="col">{user.email}</span>
+            </Row>
+            <Row>
+              <span className="col-2">Roles</span>
+              <span className="col">{(user.roles ?? []).join(", ")}</span>
+            </Row>
             <Row className="my-3">
               <span className="col-2">API key</span>
               <InputGroup className="col-10">
@@ -212,7 +215,7 @@ const AddUserComponent: React.FC = () => {
                   </InputGroup>
                 ))}
                 <div>
-                  {isUser() && (
+                  {showPrivate && (
                     <Button
                       variant="link"
                       onClick={() => handleGenerateCode()}
