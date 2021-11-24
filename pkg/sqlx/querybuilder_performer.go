@@ -39,10 +39,10 @@ var (
 	})
 
 	performerSourceRedirectTable = newTableJoin(performerTable, "performer_redirects", "source_id", func() interface{} {
-		return &models.PerformerRedirect{}
+		return &models.Redirect{}
 	})
 	performerTargetRedirectTable = newTableJoin(performerTable, "performer_redirects", "target_id", func() interface{} {
-		return &models.PerformerRedirect{}
+		return &models.Redirect{}
 	})
 )
 
@@ -201,7 +201,7 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, int) {
+func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) *queryBuilder {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
 	}
@@ -263,27 +263,33 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
-		query.SortAndPagination = "ORDER BY debut " + direction + ", name " + direction + getPagination(findFilter)
+		query.Sort = "ORDER BY debut " + direction + ", name " + direction
 	} else if findFilter != nil && findFilter.GetSort("") == "scene_count" {
 		query.Body += `
 			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
-		query.SortAndPagination = " ORDER BY scene_count " + direction + ", name " + direction + getPagination(findFilter)
+		query.Sort = " ORDER BY scene_count " + direction + ", name " + direction
 	} else {
-		query.SortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+		query.Sort = qb.getPerformerSort(findFilter)
 	}
+
+	return query
+}
+
+func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, error) {
+	query := qb.buildQuery(performerFilter, findFilter)
+	query.Pagination = getPagination(findFilter)
 
 	var performers models.Performers
-	countResult, err := qb.dbi.Query(*query, &performers)
+	err := qb.dbi.QueryOnly(*query, &performers)
+	return performers, err
+}
 
-	if err != nil {
-		// TODO
-		panic(err)
-	}
-
-	return performers, countResult
+func (qb *performerQueryBuilder) QueryCount(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) (int, error) {
+	query := qb.buildQuery(performerFilter, findFilter)
+	return qb.dbi.CountOnly(*query)
 }
 
 func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {
@@ -560,7 +566,7 @@ func (qb *performerQueryBuilder) SoftDelete(performer models.Performer) (*models
 	return qb.toModel(ret), err
 }
 
-func (qb *performerQueryBuilder) CreateRedirect(newJoin models.PerformerRedirect) error {
+func (qb *performerQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
 	return qb.dbi.InsertJoin(performerSourceRedirectTable, newJoin, nil)
 }
 
@@ -608,7 +614,7 @@ func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID
 	return nil
 }
 
-func (qb *performerQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID, setAliases bool) error {
+func (qb *performerQueryBuilder) mergeInto(sourceID uuid.UUID, targetID uuid.UUID, setAliases bool) error {
 	performer, err := qb.Find(sourceID)
 	if err != nil {
 		return err
@@ -629,7 +635,7 @@ func (qb *performerQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUI
 	if err := qb.UpdateScenePerformers(performer, targetID, setAliases); err != nil {
 		return err
 	}
-	redirect := models.PerformerRedirect{SourceID: sourceID, TargetID: targetID}
+	redirect := models.Redirect{SourceID: sourceID, TargetID: targetID}
 	return qb.CreateRedirect(redirect)
 }
 
@@ -708,16 +714,16 @@ func (qb *performerQueryBuilder) ApplyEdit(edit models.Edit, operation models.Op
 
 		return updatedPerformer, err
 	case models.OperationEnumModify:
-		return qb.ApplyModifyEdit(performer, data)
+		return qb.applyModifyEdit(performer, data)
 	case models.OperationEnumMerge:
-		updatedPerformer, err := qb.ApplyModifyEdit(performer, data)
+		updatedPerformer, err := qb.applyModifyEdit(performer, data)
 		if err != nil {
 			return nil, err
 		}
 
 		for _, v := range data.MergeSources {
 			sourceUUID, _ := uuid.FromString(v)
-			if err := qb.MergeInto(sourceUUID, performer.ID, data.SetMergeAliases); err != nil {
+			if err := qb.mergeInto(sourceUUID, performer.ID, data.SetMergeAliases); err != nil {
 				return nil, err
 			}
 		}
@@ -728,7 +734,7 @@ func (qb *performerQueryBuilder) ApplyEdit(edit models.Edit, operation models.Op
 	}
 }
 
-func (qb *performerQueryBuilder) ApplyModifyEdit(performer *models.Performer, data *models.PerformerEditData) (*models.Performer, error) {
+func (qb *performerQueryBuilder) applyModifyEdit(performer *models.Performer, data *models.PerformerEditData) (*models.Performer, error) {
 	if err := performer.ValidateModifyEdit(*data); err != nil {
 		return nil, err
 	}
@@ -821,7 +827,7 @@ func (qb *performerQueryBuilder) ApplyModifyEdit(performer *models.Performer, da
 }
 
 func (qb *performerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	redirects := models.PerformerRedirects{}
+	redirects := models.Redirects{}
 	err := qb.dbi.FindAllJoins(performerTargetRedirectTable, ids, &redirects)
 
 	if err != nil {

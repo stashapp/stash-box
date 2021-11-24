@@ -1,35 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { FC, useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
-import { groupBy, keyBy, sortBy } from "lodash";
+import { groupBy, keyBy, sortBy } from "lodash-es";
 
+import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import {
   useEdits,
-  useFullPerformer,
   CriterionModifier,
   TargetTypeEnum,
   VoteStatusEnum,
 } from "src/graphql";
 
 import { formatPendingEdits } from "src/utils";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { EditList, SceneList } from "src/components/list";
 import CheckboxSelect from "src/components/checkboxSelect";
 import PerformerInfo from "./performerInfo";
 
 const DEFAULT_TAB = "scenes";
 
-const PerformerComponent: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  performer: Performer;
+}
+
+const PerformerComponent: FC<Props> = ({ performer }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
-  const { loading, data } = useFullPerformer({ id });
   const [studioFilter, setStudioFilter] = useState<string[] | null>(null);
 
   // Clear studio filter on performer change
   useEffect(() => {
     setStudioFilter(null);
-  }, [id]);
+  }, [performer.id]);
 
   const { data: editData } = useEdits({
     filter: {
@@ -37,7 +38,7 @@ const PerformerComponent: React.FC = () => {
     },
     editFilter: {
       target_type: TargetTypeEnum.PERFORMER,
-      target_id: id,
+      target_id: performer.id,
       status: VoteStatusEnum.PENDING,
     },
   });
@@ -46,13 +47,9 @@ const PerformerComponent: React.FC = () => {
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
-  if (loading) return <LoadingIndicator message="Loading performer..." />;
-  if (!data?.findPerformer)
-    return <ErrorMessage error="Failed to load performer." />;
-
-  const studios = keyBy(data.findPerformer.studios, (s) => s.studio.id);
+  const studios = keyBy(performer.studios, (s) => s.studio.id);
   const studioGroups = groupBy(
-    data.findPerformer.studios,
+    performer.studios,
     (s) => s.studio.parent?.id ?? "none"
   );
   const obj = sortBy(
@@ -102,22 +99,30 @@ const PerformerComponent: React.FC = () => {
   return (
     <>
       <div className="performer-info">
-        <PerformerInfo performer={data.findPerformer} />
+        <PerformerInfo performer={performer} />
       </div>
       <hr className="my-2" />
-      <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
+      <Tabs
+        activeKey={activeTab}
+        id="performer-tabs"
+        mountOnEnter
+        onSelect={setTab}
+      >
         <Tab eventKey="scenes" title="Scenes" className="PerformerScenes">
           <CheckboxSelect
             values={obj}
             onChange={handleStudioSelect}
             placeholder="Filter by studios"
             plural="studios"
-            key={`performer-${id}-studio-select`}
+            key={`performer-${performer.id}-studio-select`}
           />
           <SceneList
             perPage={40}
             filter={{
-              performers: { value: [id], modifier: CriterionModifier.INCLUDES },
+              performers: {
+                value: [performer.id],
+                modifier: CriterionModifier.INCLUDES,
+              },
               ...(studioFilter
                 ? {
                     studios: {
@@ -134,7 +139,7 @@ const PerformerComponent: React.FC = () => {
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
           tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
-          <EditList type={TargetTypeEnum.PERFORMER} id={id} />
+          <EditList type={TargetTypeEnum.PERFORMER} id={performer.id} />
         </Tab>
       </Tabs>
     </>

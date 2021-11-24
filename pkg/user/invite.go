@@ -11,17 +11,17 @@ import (
 
 var ErrNoInviteTokens = errors.New("no invite tokens available")
 
-type UserFinder interface {
+type Finder interface {
 	Find(id uuid.UUID) (*models.User, error)
 }
 
-type UserFinderUpdater interface {
-	UserFinder
+type FinderUpdater interface {
+	Finder
 	UpdateFull(updatedUser models.User) (*models.User, error)
 }
 
 // GrantInviteTokens increments the invite token count for a user by up to 10.
-func GrantInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int, error) {
+func GrantInviteTokens(uf FinderUpdater, userID uuid.UUID, tokens int) (int, error) {
 	u, err := uf.Find(userID)
 
 	if err != nil {
@@ -54,7 +54,7 @@ func GrantInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int,
 
 // RepealInviteTokens decrements a user's invite token count by the provided
 // amount. Invite tokens are constrained to a minimum of 0.
-func RepealInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int, error) {
+func RepealInviteTokens(uf FinderUpdater, userID uuid.UUID, tokens int) (int, error) {
 	u, err := uf.Find(userID)
 
 	if err != nil {
@@ -89,7 +89,7 @@ func RepealInviteTokens(uf UserFinderUpdater, userID uuid.UUID, tokens int) (int
 // GenerateInviteKey creates and returns an invite key, using a token if
 // required. If useToken is true and the user has no invite tokens, then
 // an error is returned.
-func GenerateInviteKey(uf UserFinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, useToken bool) (string, error) {
+func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, useToken bool) (string, error) {
 	if useToken {
 		u, err := uf.Find(userID)
 		if err != nil {
@@ -133,7 +133,7 @@ func GenerateInviteKey(uf UserFinderUpdater, ic models.InviteKeyCreator, userID 
 
 // RescindInviteKey makes an invite key invalid, refunding the invite token if
 // required. Returns an error if the invite key is already in use.
-func RescindInviteKey(uf UserFinderUpdater, ikd models.InviteKeyDestroyer, key uuid.UUID, userID uuid.UUID, refundToken bool) error {
+func RescindInviteKey(uf FinderUpdater, ikd models.InviteKeyDestroyer, key uuid.UUID, userID uuid.UUID, refundToken bool) error {
 	// ensure userID matches that of the invite key
 	k, err := ikd.Find(key)
 	if err != nil {

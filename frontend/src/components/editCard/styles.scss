@@ -13,3 +13,49 @@
   padding: 0.25rem 0.5rem;
   white-space: pre-wrap;
 }
+
+.VoteBar {
+  display: flex;
+
+  &-voted {
+    font-weight: bold;
+  }
+
+  &-save {
+    margin-left: auto;
+    margin-right: 20px;
+  }
+
+  &-button {
+    margin-right: 8px;
+    margin-top: 8px;
+    min-width: 34px;
+    text-align: center;
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    .form-label {
+      padding: 0.5rem;
+      margin-bottom: 0;
+    }
+
+    .form-check-input {
+      margin: auto;
+      width: 16px;
+    }
+
+    .form-label,
+    .form-check-input {
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.EditVotes {
+  margin-bottom: 20px;
+  text-align: right;
+}

@@ -6,6 +6,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"html/template"
 	"io/fs"
 	"io/ioutil"
 	"net/http"
@@ -74,10 +75,10 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			user, roles, err := getUserAndRoles(getRepo(ctx), userID)
+			u, roles, err := getUserAndRoles(getRepo(ctx), userID)
 
 			// ensure api key of the user matches the passed one
-			if apiKey != "" && user != nil && user.APIKey != apiKey {
+			if apiKey != "" && u != nil && u.APIKey != apiKey {
 				w.WriteHeader(http.StatusUnauthorized)
 				_, _ = w.Write([]byte(err.Error()))
 				return
@@ -85,8 +86,8 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			// TODO - increment api key counters
 
-			ctx = context.WithValue(ctx, ContextUser, user)
-			ctx = context.WithValue(ctx, ContextRoles, roles)
+			ctx = context.WithValue(ctx, user.ContextUser, u)
+			ctx = context.WithValue(ctx, user.ContextRoles, roles)
 
 			r = r.WithContext(ctx)
 
@@ -155,14 +156,12 @@ func Start(rfp RepoProvider, ui embed.FS) {
 		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 	}
 
+	index := getIndex(ui)
+
 	// session handlers
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			data, err := ui.ReadFile("frontend/build/index.html")
-			if err != nil {
-				panic(error.Error(err))
-			}
-			_, _ = w.Write(data)
+			_, _ = w.Write(index)
 			return
 		}
 
@@ -176,11 +175,7 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data, err := ui.ReadFile("frontend/build/index.html")
-			if err != nil {
-				panic(error.Error(err))
-			}
-			_, _ = w.Write(data)
+			_, _ = w.Write(index)
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
@@ -283,4 +278,18 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
+}
+
+func getIndex(ui embed.FS) []byte {
+	indexFile, err := ui.ReadFile("frontend/build/index.html")
+	if err != nil {
+		panic(error.Error(err))
+	}
+	tmpl := template.Must(template.New("index").Parse(string(indexFile)))
+	title := template.HTMLEscapeString(config.GetTitle())
+	output := new(strings.Builder)
+	if err := tmpl.Execute(output, template.HTML(title)); err != nil {
+		panic(error.Error(err))
+	}
+	return []byte(output.String())
 }

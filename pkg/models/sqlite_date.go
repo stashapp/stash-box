@@ -33,6 +33,10 @@ func (t *SQLiteDate) Scan(value interface{}) error {
 
 // Value implements the driver Valuer interface.
 func (t SQLiteDate) Value() (driver.Value, error) {
+	if !t.Valid || t.String == "" {
+		return nil, nil
+	}
+
 	result, err := utils.ParseDateStringAsFormat(t.String, "2006-01-02")
 	if err != nil {
 		logger.Debugf("sqlite date conversion error: %s", err.Error())

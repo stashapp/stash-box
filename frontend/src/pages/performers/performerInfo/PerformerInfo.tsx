@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 
@@ -28,10 +28,10 @@ import {
   ROUTE_PERFORMER_DELETE,
 } from "src/constants/route";
 
-import { GenderIcon, PerformerName } from "src/components/fragments";
+import { GenderIcon, PerformerName, Tooltip } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 
-const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
+const PerformerInfo: FC<{ performer: Performer }> = ({ performer }) => {
   const auth = useContext(AuthContext);
 
   return (
@@ -44,19 +44,27 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
               <PerformerName performer={performer} />
             </h3>
             {canEdit(auth?.user) && !performer.deleted && (
-              <div className="ml-auto flex-shrink-0">
+              <div className="ms-auto flex-shrink-0">
                 <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
                   <Button>Edit</Button>
                 </Link>
                 <Link
                   to={createHref(ROUTE_PERFORMER_MERGE, performer)}
-                  className="ml-2"
+                  className="ms-2"
                 >
-                  <Button>Merge into</Button>
+                  <Tooltip
+                    text={
+                      <>
+                        Merge other performers into <b>{performer.name}</b>
+                      </>
+                    }
+                  >
+                    <Button>Merge</Button>
+                  </Tooltip>
                 </Link>
                 <Link
                   to={createHref(ROUTE_PERFORMER_DELETE, performer)}
-                  className="ml-2"
+                  className="ms-2"
                 >
                   <Button variant="danger">Delete</Button>
                 </Link>

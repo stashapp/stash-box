@@ -1,9 +1,9 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Button, Card, Form } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
-import { isAdmin, studioHref, createHref } from "src/utils";
+import { studioHref, createHref, canEdit } from "src/utils";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import AuthContext from "src/AuthContext";
 import querystring from "query-string";
 
@@ -13,7 +13,7 @@ import { List } from "src/components/list";
 
 const PER_PAGE = 40;
 
-const StudiosComponent: React.FC = () => {
+const StudiosComponent: FC = () => {
   const history = useHistory();
   const auth = useContext(AuthContext);
   const queries = querystring.parse(history.location.search);
@@ -31,7 +31,7 @@ const StudiosComponent: React.FC = () => {
   });
 
   const studioList = data?.queryStudios.studios.map((s) => (
-    <li key={s.id} className={s.parent === null ? "font-weight-bold" : ""}>
+    <li key={s.id} className={s.parent === null ? "fw-bold" : ""}>
       <Link to={studioHref(s)}>{s.name}</Link>
       {s.parent && (
         <small className="bullet-separator text-muted">
@@ -53,9 +53,10 @@ const StudiosComponent: React.FC = () => {
 
   const filters = (
     <Form.Control
-      id="tag-query"
+      id="studio-query"
       onChange={(e) => debouncedHandler(e.currentTarget.value)}
       placeholder="Filter studio name"
+      defaultValue={query ?? ""}
       className="w-25"
     />
   );
@@ -63,10 +64,10 @@ const StudiosComponent: React.FC = () => {
   return (
     <>
       <div className="d-flex">
-        <h3 className="mr-4">Studios</h3>
-        {isAdmin(auth.user) && (
-          <Link to={createHref(ROUTE_STUDIO_ADD)} className="ml-auto">
-            <Button className="mr-auto">Create</Button>
+        <h3 className="me-4">Studios</h3>
+        {canEdit(auth.user) && (
+          <Link to={createHref(ROUTE_STUDIO_ADD)} className="ms-auto">
+            <Button className="me-auto">Create</Button>
           </Link>
         )}
       </div>
@@ -80,7 +81,9 @@ const StudiosComponent: React.FC = () => {
         listCount={data?.queryStudios.count}
       >
         <Card>
-          <Card.Body>{studioList}</Card.Body>
+          <Card.Body>
+            <ul>{studioList}</ul>
+          </Card.Body>
         </Card>
       </List>
     </>

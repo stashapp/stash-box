@@ -1,6 +1,7 @@
-import React from "react";
+import { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import cx from "classnames";
 
 import { Performers_queryPerformers_performers as Performer } from "src/graphql/definitions/Performers";
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
@@ -16,8 +17,8 @@ interface PerformerCardProps {
 const CLASSNAME = "PerformerCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 
-const PerformerCard: React.FC<PerformerCardProps> = ({ performer }) => (
-  <Card className={CLASSNAME}>
+const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
+  <Card className={cx(CLASSNAME, className)}>
     <Link to={performerHref(performer)}>
       <div className={CLASSNAME_IMAGE}>
         <img

@@ -5,9 +5,9 @@ package api_test
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/stashapp/stash-box/pkg/api"
 	dbtest "github.com/stashapp/stash-box/pkg/database/databasetest"
@@ -15,7 +15,9 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 
+	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/99designs/gqlgen/graphql/handler"
 )
 
 // we need to create some users to test the api with, otherwise all calls
@@ -136,11 +138,13 @@ func TestMain(m *testing.M) {
 
 type testRunner struct {
 	t        *testing.T
+	client   *graphqlClient
 	resolver api.Resolver
 	ctx      context.Context
 	err      error
 }
 
+var sceneSuffix int
 var performerSuffix int
 var studioSuffix int
 var tagSuffix int
@@ -148,22 +152,40 @@ var sceneChecksumSuffix int
 var userSuffix int
 var categorySuffix int
 
-func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) *testRunner {
+func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *testRunner {
 	repoFn := func(context.Context) models.Repo {
 		return dbtest.Repo()
 	}
 
 	resolver := api.NewResolver(repoFn)
 
+	gqlHandler := handler.NewDefaultServer(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
+	var handlerFunc http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		// re-create context for each request
+		ctx := context.TODO()
+		ctx = context.WithValue(ctx, user.ContextUser, u)
+		ctx = context.WithValue(ctx, user.ContextRoles, roles)
+		ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, dbtest.Repo()))
+		ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
+
+		r = r.WithContext(ctx)
+		gqlHandler.ServeHTTP(w, r)
+	}
+
+	c := client.New(handlerFunc)
+
 	// replicate what the server.go code does
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, user)
-	ctx = context.WithValue(ctx, api.ContextRoles, roles)
-	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(dbtest.Repo()))
+	ctx = context.WithValue(ctx, user.ContextUser, u)
+	ctx = context.WithValue(ctx, user.ContextRoles, roles)
+	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders(ctx, dbtest.Repo()))
 	ctx = graphql.WithOperationContext(ctx, &graphql.OperationContext{})
 
 	return &testRunner{
-		t:        t,
+		t: t,
+		client: &graphqlClient{
+			c,
+		},
 		resolver: *resolver,
 		ctx:      ctx,
 	}
@@ -219,7 +241,7 @@ func (s *testRunner) generatePerformerName() string {
 	return "performer-" + strconv.Itoa(performerSuffix)
 }
 
-func (s *testRunner) createTestPerformer(input *models.PerformerCreateInput) (*models.Performer, error) {
+func (s *testRunner) createTestPerformer(input *models.PerformerCreateInput) (*performerOutput, error) {
 	s.t.Helper()
 	if input == nil {
 		input = &models.PerformerCreateInput{
@@ -227,7 +249,7 @@ func (s *testRunner) createTestPerformer(input *models.PerformerCreateInput) (*m
 		}
 	}
 
-	createdPerformer, err := s.resolver.Mutation().PerformerCreate(s.ctx, *input)
+	createdPerformer, err := s.client.createPerformer(*input)
 
 	if err != nil {
 		s.t.Errorf("Error creating performer: %s", err.Error())
@@ -303,7 +325,7 @@ func (s *testRunner) generateStudioName() string {
 	return "studio-" + strconv.Itoa(studioSuffix)
 }
 
-func (s *testRunner) createTestStudio(input *models.StudioCreateInput) (*models.Studio, error) {
+func (s *testRunner) createTestStudio(input *models.StudioCreateInput) (*studioOutput, error) {
 	s.t.Helper()
 	if input == nil {
 		input = &models.StudioCreateInput{
@@ -311,7 +333,7 @@ func (s *testRunner) createTestStudio(input *models.StudioCreateInput) (*models.
 		}
 	}
 
-	createdStudio, err := s.resolver.Mutation().StudioCreate(s.ctx, *input)
+	createdStudio, err := s.client.createStudio(*input)
 
 	if err != nil {
 		s.t.Errorf("Error creating studio: %s", err.Error())
@@ -326,7 +348,7 @@ func (s *testRunner) generateTagName() string {
 	return "tag-" + strconv.Itoa(tagSuffix)
 }
 
-func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, error) {
+func (s *testRunner) createTestTag(input *models.TagCreateInput) (*tagOutput, error) {
 	s.t.Helper()
 	if input == nil {
 		input = &models.TagCreateInput{
@@ -334,7 +356,7 @@ func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, e
 		}
 	}
 
-	createdTag, err := s.resolver.Mutation().TagCreate(s.ctx, *input)
+	createdTag, err := s.client.createTag(*input)
 
 	if err != nil {
 		s.t.Errorf("Error creating tag: %s", err.Error())
@@ -344,19 +366,28 @@ func (s *testRunner) createTestTag(input *models.TagCreateInput) (*models.Tag, e
 	return createdTag, nil
 }
 
-func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Scene, error) {
+func (s *testRunner) generateSceneName() string {
+	sceneSuffix += 1
+	return "scene-" + strconv.Itoa(sceneSuffix)
+}
+
+func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutput, error) {
 	s.t.Helper()
 	if input == nil {
-		title := "title"
+		title := s.generateSceneName()
 		input = &models.SceneCreateInput{
 			Title: &title,
 			Fingerprints: []*models.FingerprintEditInput{
-				s.generateSceneFingerprint(),
+				s.generateSceneFingerprint(nil),
 			},
 		}
 	}
 
-	createdScene, err := s.resolver.Mutation().SceneCreate(s.ctx, *input)
+	if input.Fingerprints == nil {
+		input.Fingerprints = []*models.FingerprintEditInput{}
+	}
+
+	createdScene, err := s.client.createScene(*input)
 
 	if err != nil {
 		s.t.Errorf("Error creating scene: %s", err.Error())
@@ -366,15 +397,17 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*models.Sc
 	return createdScene, nil
 }
 
-func (s *testRunner) generateSceneFingerprint() *models.FingerprintEditInput {
+func (s *testRunner) generateSceneFingerprint(userIDs []string) *models.FingerprintEditInput {
+	if userIDs == nil {
+		userIDs = []string{}
+	}
+
 	sceneChecksumSuffix += 1
 	return &models.FingerprintEditInput{
-		Algorithm:   "MD5",
-		Hash:        "scene-" + strconv.Itoa(sceneChecksumSuffix),
-		Duration:    1234,
-		Submissions: 1,
-		Created:     time.Now(),
-		Updated:     time.Now(),
+		Algorithm: "MD5",
+		Hash:      "scene-" + strconv.Itoa(sceneChecksumSuffix),
+		Duration:  1234,
+		UserIds:   userIDs,
 	}
 }
 
@@ -383,8 +416,15 @@ func (s *testRunner) generateUserName() string {
 	return "user-" + strconv.Itoa(userSuffix)
 }
 
-func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User, error) {
+func (s *testRunner) createTestUser(input *models.UserCreateInput, roles []models.RoleEnum) (*models.User, error) {
 	s.t.Helper()
+
+	userRoles := roles
+	if roles == nil {
+		userRoles = []models.RoleEnum{
+			models.RoleEnumAdmin,
+		}
+	}
 
 	if input == nil {
 		name := s.generateUserName()
@@ -392,9 +432,7 @@ func (s *testRunner) createTestUser(input *models.UserCreateInput) (*models.User
 			Name:     name,
 			Email:    name + "@example.com",
 			Password: "password" + name,
-			Roles: []models.RoleEnum{
-				models.RoleEnumAdmin,
-			},
+			Roles:    userRoles,
 		}
 	}
 
@@ -469,6 +507,39 @@ func (s *testRunner) createTestTagEdit(operation models.OperationEnum, detailsIn
 	return createdEdit, nil
 }
 
+func (s *testRunner) createTestStudioEdit(operation models.OperationEnum, detailsInput *models.StudioEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+	s.t.Helper()
+
+	if editInput == nil {
+		input := models.EditInput{
+			Operation: operation,
+		}
+		editInput = &input
+	}
+
+	if detailsInput == nil {
+		name := s.generateStudioName()
+		input := models.StudioEditDetailsInput{
+			Name: &name,
+		}
+		detailsInput = &input
+	}
+
+	studioEditInput := models.StudioEditInput{
+		Edit:    editInput,
+		Details: detailsInput,
+	}
+
+	createdEdit, err := s.resolver.Mutation().StudioEdit(s.ctx, studioEditInput)
+
+	if err != nil {
+		s.t.Errorf("Error creating edit: %s", err.Error())
+		return nil, err
+	}
+
+	return createdEdit, nil
+}
+
 func (s *testRunner) applyEdit(id string) (*models.Edit, error) {
 	s.t.Helper()
 
@@ -500,6 +571,24 @@ func (s *testRunner) getEditTagTarget(input *models.Edit) *models.Tag {
 
 	target, _ := r.Target(s.ctx, input)
 	tagTarget := target.(*models.Tag)
+	return tagTarget
+}
+
+func (s *testRunner) getEditStudioDetails(input *models.Edit) *models.StudioEdit {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	details, _ := r.Details(s.ctx, input)
+	tagDetails := details.(*models.StudioEdit)
+	return tagDetails
+}
+
+func (s *testRunner) getEditStudioTarget(input *models.Edit) *models.Studio {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	target, _ := r.Target(s.ctx, input)
+	tagTarget := target.(*models.Studio)
 	return tagTarget
 }
 
@@ -660,4 +749,145 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 			},
 		},
 	}
+}
+
+func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
+	title := s.generateSceneName()
+	details := "Details"
+	date := "2000-02-03"
+	duration := 123
+	director := "Director"
+
+	return &models.SceneCreateInput{
+		Title:   &title,
+		Details: &details,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Date: &date,
+		Fingerprints: []*models.FingerprintEditInput{
+			s.generateSceneFingerprint(nil),
+		},
+		Duration: &duration,
+		Director: &director,
+	}
+}
+
+func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput {
+	title := s.generateSceneName()
+	details := "Details"
+	date := "2000-02-03"
+	duration := 123
+	director := "Director"
+
+	return &models.SceneEditDetailsInput{
+		Title:   &title,
+		Details: &details,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Date:     &date,
+		Duration: &duration,
+		Director: &director,
+	}
+}
+
+func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsInput {
+	createdPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		s.t.Errorf("Error creating performer: %s", err.Error())
+		return nil
+	}
+	createdTag, err := s.createTestTag(nil)
+	if err != nil {
+		s.t.Errorf("Error creating tag: %s", err.Error())
+		return nil
+	}
+
+	title := s.generateSceneName()
+	details := "Details"
+	date := "2000-02-03"
+	duration := 123
+	director := "Director"
+	as := "Alias"
+
+	return &models.SceneEditDetailsInput{
+		Title:   &title,
+		Details: &details,
+		Urls: []*models.URL{
+			{
+				URL:  "http://example.org",
+				Type: "someurl",
+			},
+		},
+		Date: &date,
+		Performers: []*models.PerformerAppearanceInput{
+			{
+				PerformerID: createdPerformer.ID,
+				As:          &as,
+			},
+		},
+		TagIds: []string{
+			createdTag.ID,
+		},
+		Duration: &duration,
+		Director: &director,
+	}
+}
+
+func (s *testRunner) createTestSceneEdit(operation models.OperationEnum, detailsInput *models.SceneEditDetailsInput, editInput *models.EditInput) (*models.Edit, error) {
+	s.t.Helper()
+
+	if editInput == nil {
+		input := models.EditInput{
+			Operation: operation,
+		}
+		editInput = &input
+	}
+
+	if detailsInput == nil {
+		title := s.generateSceneName()
+		input := models.SceneEditDetailsInput{
+			Title: &title,
+		}
+		detailsInput = &input
+	}
+
+	sceneEditInput := models.SceneEditInput{
+		Edit:    editInput,
+		Details: detailsInput,
+	}
+
+	createdEdit, err := s.resolver.Mutation().SceneEdit(s.ctx, sceneEditInput)
+
+	if err != nil {
+		s.t.Errorf("Error creating edit: %s", err.Error())
+		return nil, err
+	}
+
+	return createdEdit, nil
+}
+
+func (s *testRunner) getEditSceneDetails(input *models.Edit) *models.SceneEdit {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	details, _ := r.Details(s.ctx, input)
+	sceneDetails := details.(*models.SceneEdit)
+	return sceneDetails
+}
+
+func (s *testRunner) getEditSceneTarget(input *models.Edit) *models.Scene {
+	s.t.Helper()
+	r := s.resolver.Edit()
+
+	target, _ := r.Target(s.ctx, input)
+	sceneTarget := target.(*models.Scene)
+	return sceneTarget
 }

@@ -463,3 +463,42 @@ func getDefaultUserRoles() []models.RoleEnum {
 
 	return ret
 }
+
+func PromoteUserVoteRights(fac models.Repo, userID uuid.UUID, threshold int) error {
+	qb := fac.User()
+
+	user, err := qb.Find(userID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		// nil user is valid so no need to return error
+		return nil
+	}
+
+	roles, err := qb.GetRoles(userID)
+	if err != nil {
+		return err
+	}
+
+	hasVote := false
+	for _, role := range roles.ToRoles() {
+		if role.Implies(models.RoleEnumVote) {
+			hasVote = true
+		}
+	}
+
+	if !hasVote {
+		editCount, err := qb.CountEditsByStatus(userID)
+		if err != nil {
+			return nil
+		}
+
+		if (editCount.Accepted + editCount.ImmediateAccepted) >= threshold {
+			userRoles := models.CreateUserRoles(userID, []models.RoleEnum{models.RoleEnumVote})
+			return qb.CreateRoles(userRoles)
+		}
+	}
+
+	return nil
+}

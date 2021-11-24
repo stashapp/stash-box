@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import Async from "react-select/async";
-import { ValueType, OptionTypeBase } from "react-select";
+import { OnChangeValue } from "react-select";
 import { useApolloClient } from "@apollo/client";
-import { loader } from "graphql.macro";
 import debounce from "p-debounce";
+
+import TagsQuery from "src/graphql/queries/Tags.gql";
 
 import {
   Tags_queryTags_tags as Tag,
@@ -14,8 +15,6 @@ import { SortDirectionEnum } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 
-const TagsQuery = loader("src/graphql/queries/Tags.gql");
-
 interface TagSelectProps {
   tags: Tag[];
   onChange: (tags: Tag[]) => void;
@@ -23,7 +22,7 @@ interface TagSelectProps {
   excludeTags?: string[];
 }
 
-interface SearchResult extends OptionTypeBase {
+interface SearchResult {
   value: Tag;
   label: string;
   subLabel: string;
@@ -34,7 +33,7 @@ const CLASSNAME_LIST = `${CLASSNAME}-list`;
 const CLASSNAME_SELECT = `${CLASSNAME}-select`;
 const CLASSNAME_CONTAINER = `${CLASSNAME}-container`;
 
-const TagSelect: React.FC<TagSelectProps> = ({
+const TagSelect: FC<TagSelectProps> = ({
   tags: initialTags,
   onChange,
   message = "Add tag:",
@@ -44,7 +43,7 @@ const TagSelect: React.FC<TagSelectProps> = ({
   const [tags, setTags] = useState(initialTags);
   const excluded = [...excludeTags, ...tags.map((t) => t.id)];
 
-  const handleChange = (result: ValueType<SearchResult, false>) => {
+  const handleChange = (result: OnChangeValue<SearchResult, false>) => {
     if (result?.value) {
       const newTags = [...tags, result.value];
       setTags(newTags);

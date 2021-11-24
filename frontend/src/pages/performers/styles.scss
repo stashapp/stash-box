@@ -1,10 +1,4 @@
 .PerformerMerge {
-  .TargetCard {
-    .PerformerCard-image {
-      border: 2px solid white;
-    }
-  }
-
   .PerformerCard {
     &-image {
       height: 8rem;
@@ -12,6 +6,12 @@
 
     .card-footer {
       display: none;
+    }
+  }
+
+  .TargetCard {
+    .PerformerCard-image {
+      border: 2px solid white;
     }
   }
 }
@@ -35,6 +35,7 @@
 
 .PerformerScenes {
   .CheckboxSelect {
-    position: absolute;
+    float: left;
+    margin-right: 0.5rem;
   }
 }

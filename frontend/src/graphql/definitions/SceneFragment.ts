@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: SceneFragment
 // ====================================================
+
 
 export interface SceneFragment_urls {
   __typename: "URL";
@@ -54,6 +56,7 @@ export interface SceneFragment_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }
@@ -70,6 +73,7 @@ export interface SceneFragment {
   id: string;
   date: any | null;
   title: string | null;
+  deleted: boolean;
   details: string | null;
   director: string | null;
   duration: number | null;

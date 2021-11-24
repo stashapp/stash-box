@@ -3,9 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 //==============================================================
 // START Enums and Input Objects
 //==============================================================
+
 
 export enum BreastTypeEnum {
   FAKE = "FAKE",
@@ -135,10 +137,20 @@ export enum TargetTypeEnum {
 
 export enum VoteStatusEnum {
   ACCEPTED = "ACCEPTED",
+  CANCELED = "CANCELED",
+  FAILED = "FAILED",
   IMMEDIATE_ACCEPTED = "IMMEDIATE_ACCEPTED",
   IMMEDIATE_REJECTED = "IMMEDIATE_REJECTED",
   PENDING = "PENDING",
   REJECTED = "REJECTED",
+}
+
+export enum VoteTypeEnum {
+  ABSTAIN = "ABSTAIN",
+  ACCEPT = "ACCEPT",
+  IMMEDIATE_ACCEPT = "IMMEDIATE_ACCEPT",
+  IMMEDIATE_REJECT = "IMMEDIATE_REJECT",
+  REJECT = "REJECT",
 }
 
 export interface ActivateNewUserInput {
@@ -200,18 +212,24 @@ export interface EditInput {
   comment?: string | null;
 }
 
+export interface EditVoteInput {
+  id: string;
+  vote: VoteTypeEnum;
+}
+
 export interface EyeColorCriterionInput {
   value?: EyeColorEnum | null;
   modifier: CriterionModifier;
 }
 
 export interface FingerprintEditInput {
+  user_ids?: string[] | null;
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
-  submissions: number;
   created: any;
-  updated: any;
+  submissions?: number | null;
+  updated?: any | null;
 }
 
 export interface FuzzyDateInput {
@@ -363,6 +381,25 @@ export interface SceneDestroyInput {
   id: string;
 }
 
+export interface SceneEditDetailsInput {
+  title?: string | null;
+  details?: string | null;
+  urls?: URLInput[] | null;
+  date?: any | null;
+  studio_id?: string | null;
+  performers?: PerformerAppearanceInput[] | null;
+  tag_ids?: string[] | null;
+  image_ids?: string[] | null;
+  duration?: number | null;
+  director?: string | null;
+}
+
+export interface SceneEditInput {
+  edit: EditInput;
+  details?: SceneEditDetailsInput | null;
+  duration?: number | null;
+}
+
 export interface SceneFilterType {
   text?: string | null;
   title?: string | null;
@@ -400,12 +437,23 @@ export interface StudioCreateInput {
   name: string;
   urls?: URLInput[] | null;
   parent_id?: string | null;
-  child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
 }
 
 export interface StudioDestroyInput {
   id: string;
+}
+
+export interface StudioEditDetailsInput {
+  name?: string | null;
+  urls?: URLInput[] | null;
+  parent_id?: string | null;
+  image_ids?: string[] | null;
+}
+
+export interface StudioEditInput {
+  edit: EditInput;
+  details?: StudioEditDetailsInput | null;
 }
 
 export interface StudioFilterType {
@@ -421,7 +469,6 @@ export interface StudioUpdateInput {
   name?: string | null;
   urls?: URLInput[] | null;
   parent_id?: string | null;
-  child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
 }
 
@@ -508,3 +555,4 @@ export interface UserUpdateInput {
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
+

@@ -1,22 +1,36 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useAddStudio, StudioCreateInput } from "src/graphql";
+import {
+  useStudioEdit,
+  OperationEnum,
+  StudioEditDetailsInput,
+} from "src/graphql";
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { studioHref } from "src/utils";
+import { editHref } from "src/utils";
 
 import StudioForm from "./studioForm";
 
-const StudioAdd: React.FC = () => {
+const StudioAdd: FC = () => {
   const history = useHistory();
-  const [insertStudio] = useAddStudio({
+  const [insertStudioEdit, { loading: saving }] = useStudioEdit({
     onCompleted: (data) => {
-      if (data.studioCreate?.id) history.push(studioHref(data.studioCreate));
+      if (data.studioEdit.id) history.push(editHref(data.studioEdit));
     },
   });
 
-  const doInsert = (insertData: StudioCreateInput) => {
-    insertStudio({ variables: { studioData: insertData } });
+  const doInsert = (insertData: StudioEditDetailsInput, editNote: string) => {
+    insertStudioEdit({
+      variables: {
+        studioData: {
+          edit: {
+            operation: OperationEnum.CREATE,
+            comment: editNote,
+          },
+          details: insertData,
+        },
+      },
+    });
   };
 
   const emptyStudio: Studio = {
@@ -26,6 +40,7 @@ const StudioAdd: React.FC = () => {
     images: [],
     parent: null,
     child_studios: [],
+    deleted: false,
     __typename: "Studio",
   };
 
@@ -33,7 +48,7 @@ const StudioAdd: React.FC = () => {
     <div>
       <h3>Add new studio</h3>
       <hr />
-      <StudioForm studio={emptyStudio} callback={doInsert} />
+      <StudioForm studio={emptyStudio} callback={doInsert} saving={saving} />
     </div>
   );
 };

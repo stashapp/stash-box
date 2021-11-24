@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { GenderEnum, DateAccuracyEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: SearchPerformerFragment
 // ====================================================
+
 
 export interface SearchPerformerFragment_birthdate {
   __typename: "FuzzyDate";

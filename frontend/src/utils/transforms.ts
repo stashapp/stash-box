@@ -6,12 +6,14 @@ export const formatCareer = (
 ): string | undefined =>
   start || end ? `Active ${start ?? "????"}\u2013${end ?? ""}` : undefined;
 
-export const formatMeasurements = (val?: Measurements): string | undefined =>
-  (val?.cup_size && val.band_size) || val?.hip || val?.waist
-    ? `${val.cup_size && val.band_size ? val.band_size + val.cup_size : "??"}-${
-        val.waist ?? "??"
-      }-${val.hip ?? "??"}`
-    : undefined;
+export const formatMeasurements = (val?: Measurements): string | undefined => {
+  if ((val?.cup_size && val.band_size) || val?.hip || val?.waist) {
+    const bust =
+      val.cup_size && val.band_size ? `${val.band_size}${val.cup_size}` : "??";
+    return `${bust}-${val.waist ?? "??"}-${val.hip ?? "??"}`;
+  }
+  return undefined;
+};
 
 export const getBraSize = (measurements: Measurements): string | undefined =>
   (measurements.cup_size &&
@@ -99,4 +101,22 @@ export const formatDuration = (dur?: number | null) => {
   ];
   if (hour) res.unshift(hour.toString());
   return res.join(":");
+};
+
+export const parseDuration = (
+  dur: string | null | undefined
+): number | null => {
+  if (!dur) return null;
+
+  const regex = /^((?<hours>\d+:)?(?<minutes>[0-5]?\d):)?(?<seconds>[0-5]?\d)$/;
+  const matches = regex.exec(dur);
+  const hours = matches?.groups?.hours ?? "0";
+  const minutes = matches?.groups?.minutes ?? "0";
+  const seconds = matches?.groups?.seconds ?? "0";
+
+  const duration =
+    Number.parseInt(seconds, 10) +
+    Number.parseInt(minutes, 10) * 60 +
+    Number.parseInt(hours, 10) * 3600;
+  return duration > 0 ? duration : null;
 };

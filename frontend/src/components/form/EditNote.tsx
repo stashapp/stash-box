@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Form } from "react-bootstrap";
 import cx from "classnames";
 import { FieldError, UseFormRegister } from "react-hook-form";
@@ -11,8 +11,8 @@ interface Props {
   error?: FieldError;
 }
 
-const EditNote: React.FC<Props> = ({ register, error }) => (
-  <Form.Group>
+const EditNote: FC<Props> = ({ register, error }) => (
+  <div className="mb-3">
     <Form.Label>Edit Note</Form.Label>
     <NoteInput
       className={cx({ "is-invalid": error })}
@@ -26,7 +26,7 @@ const EditNote: React.FC<Props> = ({ register, error }) => (
     <Form.Control.Feedback type="invalid">
       {error?.message}
     </Form.Control.Feedback>
-  </Form.Group>
+  </div>
 );
 
 export default EditNote;

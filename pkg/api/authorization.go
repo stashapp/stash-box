@@ -2,85 +2,48 @@ package api
 
 import (
 	"context"
-	"errors"
 
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
-var ErrUnauthorized = errors.New("Not authorized")
-
 func getCurrentUser(ctx context.Context) *models.User {
-	userCtxVal := ctx.Value(ContextUser)
-	if userCtxVal != nil {
-		currentUser := userCtxVal.(*models.User)
-		return currentUser
-	}
-
-	return nil
-}
-
-func validateRole(ctx context.Context, requiredRole models.RoleEnum) error {
-	var roles []models.RoleEnum
-
-	roleCtxVal := ctx.Value(ContextRoles)
-	if roleCtxVal != nil {
-		roles = roleCtxVal.([]models.RoleEnum)
-	}
-
-	valid := false
-
-	for _, role := range roles {
-		if role.Implies(requiredRole) {
-			valid = true
-			break
-		}
-	}
-
-	if !valid {
-		return ErrUnauthorized
-	}
-
-	return nil
+	return user.GetCurrentUser(ctx)
 }
 
 func validateRead(ctx context.Context) error {
-	return validateRole(ctx, models.RoleEnumRead)
+	return user.ValidateRole(ctx, models.RoleEnumRead)
 }
 
 func validateModify(ctx context.Context) error {
-	return validateRole(ctx, models.RoleEnumModify)
+	return user.ValidateRole(ctx, models.RoleEnumModify)
 }
 
 func validateEdit(ctx context.Context) error {
-	return validateRole(ctx, models.RoleEnumEdit)
+	return user.ValidateRole(ctx, models.RoleEnumEdit)
+}
+
+func validateVote(ctx context.Context) error {
+	return user.ValidateRole(ctx, models.RoleEnumVote)
 }
 
 func validateInvite(ctx context.Context) error {
-	return validateRole(ctx, models.RoleEnumInvite)
+	return user.ValidateRole(ctx, models.RoleEnumInvite)
 }
 
 func validateManageInvites(ctx context.Context) error {
-	return validateRole(ctx, models.RoleEnumManageInvites)
+	return user.ValidateRole(ctx, models.RoleEnumManageInvites)
 }
 
 func validateAdmin(ctx context.Context) error {
-	return validateRole(ctx, models.RoleEnumAdmin)
-}
-
-func validateOwner(ctx context.Context, userID uuid.UUID) error {
-	user := getCurrentUser(ctx)
-	if user != nil && user.ID == userID {
-		return nil
-	}
-
-	return ErrUnauthorized
+	return user.ValidateRole(ctx, models.RoleEnumAdmin)
 }
 
 func validateUserOrAdmin(ctx context.Context, userID uuid.UUID) error {
-	if err := validateOwner(ctx, userID); err == nil {
+	if err := user.ValidateOwner(ctx, userID); err == nil {
 		return nil
 	}
-	return validateRole(ctx, models.RoleEnumAdmin)
+	return user.ValidateRole(ctx, models.RoleEnumAdmin)
 }

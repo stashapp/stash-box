@@ -1,7 +1,3 @@
-LINTERS := \
-	github.com/kisielk/errcheck \
-	honnef.co/go/tools/cmd/staticcheck@latest
-
 LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
@@ -61,25 +57,10 @@ it:
 fmt:
 	go fmt ./...
 
-# Runs go vet on the project's source code.
-.PHONY: vet
-vet:
-	go vet ./...
-
-.PHONY: linterdeps
-linterdeps:
-	go get -v $(LINTERS)
-
-.PHONY: errcheck
-errcheck: linterdeps
-	errcheck -ignore 'fmt:[FS]?[Pp]rint*' ./...
-
-.PHONY: staticcheck
-staticcheck: linterdeps
-	staticcheck ./...
-
+# Runs all configured linuters. golangci-lint needs to be installed locally first.
 .PHONY: lint
-lint: vet staticcheck errcheck
+lint:
+	golangci-lint run
 
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile
@@ -87,6 +68,10 @@ pre-ui:
 .PHONY: ui
 ui:
 	cd frontend && yarn build
+
+.PHONY: ui-fmt
+ui-fmt:
+	cd frontend && yarn format
 
 # runs tests and checks on the UI and builds it
 .PHONY: ui-validate

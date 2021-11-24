@@ -1,3 +1,13 @@
+@keyframes fade-in {
+  0% {
+    opacity: 0%;
+  }
+
+  100% {
+    opacity: 100%;
+  }
+}
+
 .LoadingIndicator {
   align-items: center;
   display: flex;
@@ -5,6 +15,12 @@
   height: 70vh;
   justify-content: center;
   width: 100%;
+  opacity: 100%;
+  transition: opacity 1s linear;
+
+  &-delayed {
+    opacity: 0%;
+  }
 
   &-message {
     margin-top: 1rem;

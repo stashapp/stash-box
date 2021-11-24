@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { GenderEnum, DateAccuracyEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchAll
 // ====================================================
+
 
 export interface SearchAll_searchPerformer_birthdate {
   __typename: "FuzzyDate";

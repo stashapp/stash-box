@@ -22,11 +22,12 @@ type User {
   email: String @isOwner
   """Should not be visible to other users"""
   api_key: String @isOwner
-  successful_edits: Int!
-  unsuccessful_edits: Int!
-  successful_votes: Int!
-  """Votes on unsuccessful edits"""
-  unsuccessful_votes: Int!
+
+  """ Vote counts by type """
+  vote_count: UserVoteCount!
+  """ Edit counts by status """
+  edit_count: UserEditCount!
+
   """Calls to the API from this user over a configurable time period"""
   api_calls: Int! @isOwner
   invited_by: User @isOwner
@@ -121,4 +122,22 @@ input UserFilterType {
   api_calls: IntCriterionInput
   """Filter by user that invited"""
   invited_by: ID
+}
+
+type UserEditCount {
+  accepted: Int!
+  rejected: Int!
+  pending: Int!
+  immediate_accepted: Int!
+  immediate_rejected: Int!
+  failed: Int!
+  canceled: Int!
+}
+
+type UserVoteCount {
+  abstain: Int!
+  accept: Int!
+  reject: Int!
+  immediate_accept: Int!
+  immediate_reject: Int!
 }

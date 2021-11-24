@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { LoadingIndicator } from "src/components/fragments";
 import Pagination from "src/components/pagination";
 
@@ -10,11 +10,11 @@ interface Props {
   perPage?: number;
   listCount?: number;
   loading: boolean;
-  filters?: React.ReactNode;
+  filters?: ReactNode;
   entityName?: string;
 }
 
-const List: React.FC<Props> = ({
+const List: FC<Props> = ({
   page,
   setPage,
   perPage = PER_PAGE,
@@ -24,11 +24,13 @@ const List: React.FC<Props> = ({
   children,
   entityName = "data",
 }) => {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState<number | undefined>(listCount);
 
   useEffect(() => {
     if (!loading && listCount !== undefined) setCount(listCount);
   }, [loading, listCount]);
+
+  const currentCount = count ?? listCount;
 
   return (
     <>
@@ -36,7 +38,7 @@ const List: React.FC<Props> = ({
         {filters}
         <Pagination
           onClick={setPage}
-          count={count}
+          count={currentCount ?? 0}
           active={page}
           perPage={perPage}
           showCount
@@ -44,15 +46,17 @@ const List: React.FC<Props> = ({
       </div>
       {loading ? (
         <LoadingIndicator message={`Loading ${entityName}...`} />
-      ) : count > 0 ? (
+      ) : currentCount && currentCount > 0 ? (
         children
-      ) : (
+      ) : currentCount === 0 ? (
         <h4 className="m-4 p-4 text-center">No results</h4>
+      ) : (
+        <></>
       )}
       <div className="d-flex">
         <Pagination
           onClick={setPage}
-          count={count}
+          count={currentCount ?? 0}
           perPage={perPage}
           active={page}
         />

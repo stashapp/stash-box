@@ -5,7 +5,6 @@ import {
   QueryHookOptions,
   LazyQueryHookOptions,
 } from "@apollo/client";
-import { loader } from "graphql.macro";
 
 import AuthContext from "src/AuthContext";
 import { isAdmin } from "src/utils";
@@ -23,6 +22,10 @@ import {
 import { Performers, PerformersVariables } from "../definitions/Performers";
 import { Scene, SceneVariables } from "../definitions/Scene";
 import { Scenes, ScenesVariables } from "../definitions/Scenes";
+import {
+  ScenesWithoutCount,
+  ScenesWithoutCountVariables,
+} from "../definitions/ScenesWithoutCount";
 import { SearchAll, SearchAllVariables } from "../definitions/SearchAll";
 import {
   SearchPerformers,
@@ -35,31 +38,31 @@ import { Tags, TagsVariables } from "../definitions/Tags";
 import { User, UserVariables } from "../definitions/User";
 import { Users, UsersVariables } from "../definitions/Users";
 import { PublicUser, PublicUserVariables } from "../definitions/PublicUser";
+import { Config } from "../definitions/Config";
 
-const CategoryQuery = loader("./Category.gql");
-const CategoriesQuery = loader("./Categories.gql");
-const EditQuery = loader("./Edit.gql");
-const EditsQuery = loader("./Edits.gql");
-const MeQuery = loader("./Me.gql");
-const PerformerQuery = loader("./Performer.gql");
-const FullPerformerQuery = loader("./FullPerformer.gql");
-const PerformersQuery = loader("./Performers.gql");
-const SceneQuery = loader("./Scene.gql");
-const ScenesQuery = loader("./Scenes.gql");
-const SearchAllQuery = loader("./SearchAll.gql");
-const SearchPerformersQuery = loader("./SearchPerformers.gql");
-const StudioQuery = loader("./Studio.gql");
-const StudiosQuery = loader("./Studios.gql");
-const TagQuery = loader("./Tag.gql");
-const TagsQuery = loader("./Tags.gql");
-const UserQuery = loader("./User.gql");
-const UsersQuery = loader("./Users.gql");
-const PublicUserQuery = loader("./PublicUser.gql");
+import CategoryQuery from "./Category.gql";
+import CategoriesQuery from "./Categories.gql";
+import EditQuery from "./Edit.gql";
+import EditsQuery from "./Edits.gql";
+import MeQuery from "./Me.gql";
+import PerformerQuery from "./Performer.gql";
+import FullPerformerQuery from "./FullPerformer.gql";
+import PerformersQuery from "./Performers.gql";
+import SceneQuery from "./Scene.gql";
+import ScenesQuery from "./Scenes.gql";
+import ScenesWithoutCountQuery from "./ScenesWithoutCount.gql";
+import SearchAllQuery from "./SearchAll.gql";
+import SearchPerformersQuery from "./SearchPerformers.gql";
+import StudioQuery from "./Studio.gql";
+import StudiosQuery from "./Studios.gql";
+import TagQuery from "./Tag.gql";
+import TagsQuery from "./Tags.gql";
+import UserQuery from "./User.gql";
+import UsersQuery from "./Users.gql";
+import PublicUserQuery from "./PublicUser.gql";
+import ConfigQuery from "./Config.gql";
 
-export const useCategory = (
-  variables: CategoryVariables,
-  skip: boolean = false
-) =>
+export const useCategory = (variables: CategoryVariables, skip = false) =>
   useQuery<Category, CategoryVariables>(CategoryQuery, {
     variables,
     skip,
@@ -83,19 +86,13 @@ export const useEdits = (variables: EditsVariables) =>
 export const useMe = (options?: QueryHookOptions<Me>) =>
   useQuery<Me>(MeQuery, options);
 
-export const usePerformer = (
-  variables: PerformerVariables,
-  skip: boolean = false
-) =>
+export const usePerformer = (variables: PerformerVariables, skip = false) =>
   useQuery<Performer, PerformerVariables>(PerformerQuery, {
     variables,
     skip,
   });
 
-export const useFullPerformer = (
-  variables: PerformerVariables,
-  skip: boolean = false
-) =>
+export const useFullPerformer = (variables: PerformerVariables, skip = false) =>
   useQuery<FullPerformer, FullPerformerVariables>(FullPerformerQuery, {
     variables,
     skip,
@@ -106,21 +103,31 @@ export const usePerformers = (variables: PerformersVariables) =>
     variables,
   });
 
-export const useScene = (variables: SceneVariables) =>
+export const useScene = (variables: SceneVariables, skip = false) =>
   useQuery<Scene, SceneVariables>(SceneQuery, {
     variables,
+    skip,
   });
 
-export const useScenes = (variables: ScenesVariables, skip: boolean = false) =>
+export const useScenes = (variables: ScenesVariables, skip = false) =>
   useQuery<Scenes, ScenesVariables>(ScenesQuery, {
     variables,
     skip,
   });
 
-export const useSearchAll = (
-  variables: SearchAllVariables,
-  skip: boolean = false
+export const useScenesWithoutCount = (
+  variables: ScenesVariables,
+  skip = false
 ) =>
+  useQuery<ScenesWithoutCount, ScenesWithoutCountVariables>(
+    ScenesWithoutCountQuery,
+    {
+      variables,
+      skip,
+    }
+  );
+
+export const useSearchAll = (variables: SearchAllVariables, skip = false) =>
   useQuery<SearchAll, SearchAllVariables>(SearchAllQuery, {
     variables,
     skip,
@@ -139,7 +146,7 @@ export const useLazySearchPerformers = (
   options?: LazyQueryHookOptions<SearchPerformers, SearchPerformersVariables>
 ) => useLazyQuery(SearchPerformersQuery, options);
 
-export const useStudio = (variables: StudioVariables, skip: boolean = false) =>
+export const useStudio = (variables: StudioVariables, skip = false) =>
   useQuery<Studio, StudioVariables>(StudioQuery, {
     variables,
     skip,
@@ -154,7 +161,7 @@ export const useLazyStudios = (
   options?: LazyQueryHookOptions<Studios, StudiosVariables>
 ) => useLazyQuery(StudiosQuery, options);
 
-export const useTag = (variables: TagVariables, skip: boolean = false) =>
+export const useTag = (variables: TagVariables, skip = false) =>
   useQuery<Tag, TagVariables>(TagQuery, {
     variables,
     skip,
@@ -200,3 +207,5 @@ export const useUsers = (variables: UsersVariables) =>
   useQuery<Users, UsersVariables>(UsersQuery, {
     variables,
   });
+
+export const useConfig = () => useQuery<Config>(ConfigQuery);

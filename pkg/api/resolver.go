@@ -5,6 +5,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -28,11 +29,20 @@ func (r *Resolver) Edit() models.EditResolver {
 func (r *Resolver) EditComment() models.EditCommentResolver {
 	return &editCommentResolver{r}
 }
+func (r *Resolver) EditVote() models.EditVoteResolver {
+	return &editVoteResolver{r}
+}
 func (r *Resolver) Performer() models.PerformerResolver {
 	return &performerResolver{r}
 }
 func (r *Resolver) PerformerEdit() models.PerformerEditResolver {
 	return &performerEditResolver{r}
+}
+func (r *Resolver) StudioEdit() models.StudioEditResolver {
+	return &studioEditResolver{r}
+}
+func (r *Resolver) SceneEdit() models.SceneEditResolver {
+	return &sceneEditResolver{r}
 }
 func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
@@ -55,6 +65,15 @@ func (r *Resolver) User() models.UserResolver {
 func (r *Resolver) Query() models.QueryResolver {
 	return &queryResolver{r}
 }
+func (r *Resolver) QueryPerformersResultType() models.QueryPerformersResultTypeResolver {
+	return &queryPerformerResolver{r}
+}
+func (r *Resolver) QueryScenesResultType() models.QueryScenesResultTypeResolver {
+	return &querySceneResolver{r}
+}
+func (r *Resolver) QueryEditsResultType() models.QueryEditsResultTypeResolver {
+	return &queryEditResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 
@@ -67,6 +86,19 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 		Version:   version,
 		Hash:      githash,
 		BuildTime: buildstamp,
+	}, nil
+}
+
+func (r *queryResolver) GetConfig(ctx context.Context) (*models.StashBoxConfig, error) {
+	return &models.StashBoxConfig{
+		HostURL:                    config.GetHostURL(),
+		RequireInvite:              config.GetRequireInvite(),
+		RequireActivation:          config.GetRequireActivation(),
+		VotePromotionThreshold:     config.GetVotePromotionThreshold(),
+		VoteApplicationThreshold:   config.GetVoteApplicationThreshold(),
+		VotingPeriod:               config.GetVotingPeriod(),
+		MinDestructiveVotingPeriod: config.GetMinDestructiveVotingPeriod(),
+		VoteCronInterval:           config.GetVoteCronInterval(),
 	}, nil
 }
 

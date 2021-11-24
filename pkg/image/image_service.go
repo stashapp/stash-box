@@ -6,17 +6,17 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-type ImageService interface {
+type BackendService interface {
 	Create(input models.ImageCreateInput) (*models.Image, error)
 	Destroy(input models.ImageDestroyInput) error
 	DestroyUnusedImages() error
 	DestroyUnusedImage(imageID uuid.UUID) error
 }
 
-func GetService(repo models.ImageRepo) ImageService {
+func GetService(repo models.ImageRepo) BackendService {
 	imageBackend := config.GetImageBackend()
 
-	var backend ImageBackend
+	var backend Backend
 	if imageBackend == config.FileBackend {
 		backend = &FileBackend{}
 	} else if imageBackend == config.S3Backend {

@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type userTestRunner struct {
@@ -75,7 +75,7 @@ func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *m
 }
 
 func (s *userTestRunner) testFindUserById() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -100,7 +100,7 @@ func (s *userTestRunner) testFindUserById() {
 }
 
 func (s *userTestRunner) testFindUserByName() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -125,7 +125,7 @@ func (s *userTestRunner) testFindUserByName() {
 }
 
 func (s *userTestRunner) testQueryUserByName() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -170,7 +170,7 @@ func (s *userTestRunner) testUpdateUserName() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
@@ -205,7 +205,7 @@ func (s *userTestRunner) testUpdatePassword() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
@@ -247,7 +247,7 @@ func (s *userTestRunner) verifyUpdatedUser(input models.UserUpdateInput, user *m
 }
 
 func (s *userTestRunner) testDestroyUser() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -282,18 +282,18 @@ func (s *userTestRunner) testDestroyUser() {
 func (s *userTestRunner) testUnauthorisedUserMutate() {
 	// test each api interface - all require admin so all should fail
 	_, err := s.resolver.Mutation().UserCreate(s.ctx, models.UserCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserCreate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("UserCreate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().UserUpdate(s.ctx, models.UserUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserUpdate: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("UserUpdate: got %v want %v", err, user.ErrUnauthorized)
 	}
 
 	_, err = s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserDestroy: got %v want %v", err, api.ErrUnauthorized)
+	if err != user.ErrUnauthorized {
+		s.t.Errorf("UserDestroy: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
@@ -331,14 +331,14 @@ func (s *userTestRunner) testChangePassword() {
 		Password: oldPassword,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
 
 	// change password as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
 	updatedPassword := name + "newpassword"
 	existingPassword := "incorrect password"
@@ -375,7 +375,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
@@ -384,7 +384,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	// regenerate as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
 	adminID := userDB.admin.ID.String()
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
@@ -423,7 +423,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 }
 
 func (s *userTestRunner) testUserEditQuery() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}

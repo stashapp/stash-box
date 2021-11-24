@@ -30,6 +30,13 @@ type EditComment struct {
 	Text      string          `db:"text" json:"text"`
 }
 
+type EditVote struct {
+	EditID    uuid.UUID       `db:"edit_id" json:"edit_id"`
+	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
+	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
+	Vote      string          `db:"vote" json:"vote"`
+}
+
 func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
 	currentTime := time.Now()
 
@@ -64,6 +71,25 @@ func (e Edit) GetID() uuid.UUID {
 	return e.ID
 }
 
+func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
+	currentTime := time.Now()
+
+	ret := &EditVote{
+		EditID:    edit.ID,
+		UserID:    user.ID,
+		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		Vote:      vote.String(),
+	}
+
+	return ret
+}
+
+func (e *Edit) Accept() {
+	e.Status = VoteStatusEnumAccepted.String()
+	e.Applied = true
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
 func (e *Edit) ImmediateAccept() {
 	e.Status = VoteStatusEnumImmediateAccepted.String()
 	e.Applied = true
@@ -72,6 +98,21 @@ func (e *Edit) ImmediateAccept() {
 
 func (e *Edit) ImmediateReject() {
 	e.Status = VoteStatusEnumImmediateRejected.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
+func (e *Edit) Reject() {
+	e.Status = VoteStatusEnumRejected.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
+func (e *Edit) Fail() {
+	e.Status = VoteStatusEnumFailed.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
+func (e *Edit) Cancel() {
+	e.Status = VoteStatusEnumCanceled.String()
 	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
@@ -108,6 +149,18 @@ func (e *Edit) GetPerformerData() (*PerformerEditData, error) {
 	return &data, nil
 }
 
+func (e *Edit) GetStudioData() (*StudioEditData, error) {
+	data := StudioEditData{}
+	_ = json.Unmarshal(e.Data, &data)
+	return &data, nil
+}
+
+func (e *Edit) GetSceneData() (*SceneEditData, error) {
+	data := SceneEditData{}
+	_ = json.Unmarshal(e.Data, &data)
+	return &data, nil
+}
+
 type Edits []*Edit
 
 func (p Edits) Each(fn func(interface{})) {
@@ -118,6 +171,23 @@ func (p Edits) Each(fn func(interface{})) {
 
 func (p *Edits) Add(o interface{}) {
 	*p = append(*p, o.(*Edit))
+}
+
+type Redirect struct {
+	SourceID uuid.UUID `db:"source_id" json:"source_id"`
+	TargetID uuid.UUID `db:"target_id" json:"target_id"`
+}
+
+type Redirects []*Redirect
+
+func (p *Redirects) Add(o interface{}) {
+	*p = append(*p, o.(*Redirect))
+}
+
+func (p Redirects) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
 }
 
 type EditTag struct {
@@ -154,30 +224,39 @@ func (p *EditPerformers) Add(o interface{}) {
 	*p = append(*p, o.(*EditPerformer))
 }
 
-// type VoteComment struct {
-// 	ID      uuid.UUID      `db:"id" json:"id"`
-// 	EditID  uuid.UUID      `db:"edit_id" json:"edit_id"`
-// 	UserID  uuid.UUID      `db:"user_id" json:"user_id"`
-// 	Date    SQLiteDate     `db:"date" json:"date"`
-// 	Comment sql.NullString `db:"comment" json:"comment"`
-// 	Type    string         `db:"type" json:"type"`
-// }
+type EditStudio struct {
+	EditID   uuid.UUID `db:"edit_id" json:"edit_id"`
+	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+}
 
-// func (p *Scene) CopyFromCreateInput(input SceneCreateInput) {
-// 	CopyFull(p, input)
+type EditStudios []*EditStudio
 
-// 	if input.Date != nil {
-// 		p.setDate(*input.Date)
-// 	}
-// }
+func (p EditStudios) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
 
-// func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) {
-// 	CopyFull(p, input)
+func (p *EditStudios) Add(o interface{}) {
+	*p = append(*p, o.(*EditStudio))
+}
 
-// 	if input.Date != nil {
-// 		p.setDate(*input.Date)
-// 	}
-// }
+type EditScene struct {
+	EditID  uuid.UUID `db:"edit_id" json:"edit_id"`
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+type EditScenes []*EditScene
+
+func (p EditScenes) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditScenes) Add(o interface{}) {
+	*p = append(*p, o.(*EditScene))
+}
 
 type TagEdit struct {
 	Name           *string  `json:"name,omitempty"`
@@ -235,6 +314,52 @@ type PerformerEditData struct {
 	SetMergeAliases  bool           `json:"merge_aliases,omitempty"`
 }
 
+type StudioEdit struct {
+	Name *string `json:"name"`
+	// Added and modified URLs
+	AddedUrls     []*URL   `json:"added_urls,omitempty"`
+	RemovedUrls   []*URL   `json:"removed_urls,omitempty"`
+	ParentID      *string  `json:"parent_id,omitempty"`
+	AddedImages   []string `json:"added_images,omitempty"`
+	RemovedImages []string `json:"removed_images,omitempty"`
+}
+
+func (StudioEdit) IsEditDetails() {}
+
+type StudioEditData struct {
+	New          *StudioEdit `json:"new_data,omitempty"`
+	Old          *StudioEdit `json:"old_data,omitempty"`
+	MergeSources []string    `json:"merge_sources,omitempty"`
+}
+
+type SceneEdit struct {
+	Title       *string `json:"title,omitempty"`
+	Details     *string `json:"details,omitempty"`
+	AddedUrls   []*URL  `json:"added_urls,omitempty"`
+	RemovedUrls []*URL  `json:"removed_urls,omitempty"`
+	Date        *string `json:"date,omitempty"`
+	StudioID    *string `json:"studio_id,omitempty"`
+	// Added or modified performer appearance entries
+	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
+	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`
+	AddedTags           []string                    `json:"added_tags,omitempty"`
+	RemovedTags         []string                    `json:"removed_tags,omitempty"`
+	AddedImages         []string                    `json:"added_images,omitempty"`
+	RemovedImages       []string                    `json:"removed_images,omitempty"`
+	AddedFingerprints   []*FingerprintEditInput     `json:"added_fingerprints,omitempty"`
+	RemovedFingerprints []*FingerprintEditInput     `json:"removed_fingerprints,omitempty"`
+	Duration            *int64                      `json:"duration,omitempty"`
+	Director            *string                     `json:"director,omitempty"`
+}
+
+func (SceneEdit) IsEditDetails() {}
+
+type SceneEditData struct {
+	New          *SceneEdit `json:"new_data,omitempty"`
+	Old          *SceneEdit `json:"old_data,omitempty"`
+	MergeSources []string   `json:"merge_sources,omitempty"`
+}
+
 type EditData struct {
 	New          *json.RawMessage `json:"new_data,omitempty"`
 	Old          *json.RawMessage `json:"old_data,omitempty"`
@@ -251,4 +376,21 @@ func (p EditComments) Each(fn func(interface{})) {
 
 func (p *EditComments) Add(o interface{}) {
 	*p = append(*p, o.(*EditComment))
+}
+
+type EditVotes []*EditVote
+
+func (p EditVotes) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditVotes) Add(o interface{}) {
+	*p = append(*p, o.(*EditVote))
+}
+
+type EditQuery struct {
+	EditFilter *EditFilterType
+	Filter     *QuerySpec
 }

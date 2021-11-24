@@ -1,9 +1,13 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
 import querystring from "query-string";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
+import {
+  faSortAmountUp,
+  faSortAmountDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 import {
   usePerformers,
@@ -33,7 +37,7 @@ const sortOptions = [
   { value: "created_at", label: "Created At" },
 ];
 
-const PerformersComponent: React.FC = () => {
+const PerformersComponent: FC = () => {
   const history = useHistory();
   const auth = useContext(AuthContext);
   const queries = querystring.parse(history.location.search);
@@ -98,39 +102,38 @@ const PerformersComponent: React.FC = () => {
         isClearable
         onChange={(e) => handleQuery("gender", e?.value ?? undefined)}
         classNamePrefix="react-select"
-        className="performer-filter ml-2"
+        className="performer-filter ms-2"
       />
-      <InputGroup className="performer-sort ml-2">
-        <Form.Control
-          as="select"
+      <InputGroup className="performer-sort ms-2">
+        <Form.Select
           onChange={(e) => handleQuery("sort", e.currentTarget.value)}
           defaultValue={sort ?? "name"}
         >
           {sortOptions.map((s) => (
-            <option value={s.value}>{s.label}</option>
+            <option value={s.value} key={s.value}>
+              {s.label}
+            </option>
           ))}
-        </Form.Control>
-        <InputGroup.Append>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              handleQuery(
-                "dir",
-                direction === SortDirectionEnum.ASC
-                  ? SortDirectionEnum.DESC
-                  : undefined
-              )
+        </Form.Select>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            handleQuery(
+              "dir",
+              direction === SortDirectionEnum.ASC
+                ? SortDirectionEnum.DESC
+                : undefined
+            )
+          }
+        >
+          <Icon
+            icon={
+              direction === SortDirectionEnum.DESC
+                ? faSortAmountDown
+                : faSortAmountUp
             }
-          >
-            <Icon
-              icon={
-                direction === SortDirectionEnum.DESC
-                  ? "sort-amount-down"
-                  : "sort-amount-up"
-              }
-            />
-          </Button>
-        </InputGroup.Append>
+          />
+        </Button>
       </InputGroup>
     </>
   );
@@ -138,9 +141,9 @@ const PerformersComponent: React.FC = () => {
   return (
     <>
       <div className="d-flex">
-        <h3 className="mr-4">Performers</h3>
+        <h3 className="me-4">Performers</h3>
         {canEdit(auth.user) && (
-          <Link to={ROUTE_PERFORMER_ADD} className="ml-auto">
+          <Link to={ROUTE_PERFORMER_ADD} className="ms-auto">
             <Button>Create</Button>
           </Link>
         )}

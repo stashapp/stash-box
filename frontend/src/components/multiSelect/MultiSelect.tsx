@@ -1,6 +1,6 @@
-import React from "react";
+import { FC } from "react";
 import CreatableSelect from "react-select/creatable";
-import { ValueType, OptionTypeBase } from "react-select";
+import { OnChangeValue } from "react-select";
 
 interface MultiSelectProps {
   values: string[];
@@ -8,12 +8,12 @@ interface MultiSelectProps {
   placeholder?: string;
 }
 
-interface IOptionType extends OptionTypeBase {
+interface IOptionType {
   label: string;
   value: string;
 }
 
-const MultiSelect: React.FC<MultiSelectProps> = ({
+const MultiSelect: FC<MultiSelectProps> = ({
   values: initialValues,
   onChange,
   placeholder = "Select...",
@@ -23,7 +23,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     value,
   }));
 
-  const handleChange = (values: ValueType<IOptionType, true>) => {
+  const handleChange = (values: OnChangeValue<IOptionType, true>) => {
     if (!values) {
       onChange([]);
       return;
@@ -35,7 +35,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   /** Allow creating a new option with a different casing. */
   const isValidNewOption = (
     inputValue: string,
-    selectValue: ValueType<IOptionType, true>
+    selectValue: OnChangeValue<IOptionType, true>
   ): boolean =>
     !!inputValue &&
     !selectValue.some(

@@ -1,37 +1,31 @@
-import React from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { FC } from "react";
+import { useHistory } from "react-router-dom";
 
-import {
-  useTag,
-  useTagEdit,
-  OperationEnum,
-  TagEditDetailsInput,
-} from "src/graphql";
+import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
+import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 
-import { LoadingIndicator } from "src/components/fragments";
 import { ROUTE_EDIT } from "src/constants/route";
 import { createHref } from "src/utils/route";
 import TagForm from "./tagForm";
 
-const TagAddComponent: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  tag: Tag;
+}
+
+const TagEdit: FC<Props> = ({ tag }) => {
   const history = useHistory();
-  const { data: tag, loading: loadingTag } = useTag({ id });
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (data.tagEdit.id) history.push(createHref(ROUTE_EDIT, data.tagEdit));
     },
   });
 
-  if (loadingTag) return <LoadingIndicator message="Loading tag..." />;
-  if (!tag?.findTag?.id) return <div>Tag not found</div>;
-
   const doUpdate = (insertData: TagEditDetailsInput, editNote: string) => {
     insertTagEdit({
       variables: {
         tagData: {
           edit: {
-            id: tag.findTag?.id,
+            id: tag.id,
             operation: OperationEnum.MODIFY,
             comment: editNote,
           },
@@ -45,9 +39,9 @@ const TagAddComponent: React.FC = () => {
     <div>
       <h3>Edit tag</h3>
       <hr />
-      <TagForm tag={tag.findTag} callback={doUpdate} saving={saving} />
+      <TagForm tag={tag} callback={doUpdate} saving={saving} />
     </div>
   );
 };
 
-export default TagAddComponent;
+export default TagEdit;

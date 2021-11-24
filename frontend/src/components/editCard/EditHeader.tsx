@@ -1,27 +1,31 @@
-import React from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 import { OperationEnum } from "src/graphql";
-import { isPerformer, isTag, tagHref, performerHref } from "src/utils";
+import {
+  isValidEditTarget,
+  getEditTargetRoute,
+  getEditTargetName,
+} from "src/utils";
 
 interface EditHeaderProps {
   edit: Edit;
 }
 
-const EditHeader: React.FC<EditHeaderProps> = ({ edit }) => {
-  if (!edit.target || (!isTag(edit.target) && !isPerformer(edit.target)))
-    return <></>;
-  let route = "";
-  if (isTag(edit.target)) route = tagHref(edit.target);
-  else if (isPerformer(edit.target)) route = performerHref(edit.target);
+const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
+  if (!isValidEditTarget(edit.target)) return <></>;
+
+  const route = getEditTargetRoute(edit.target);
 
   if (edit.operation === OperationEnum.MODIFY) {
     return (
       <h6 className="row mb-4">
-        <span className="col-2 text-right">
+        <span className="col-2 text-end">
           Modifying {edit.target_type.toLowerCase()}:
         </span>
-        <Link to={route}>{edit.target.name}</Link>
+        <Link className="col" to={route}>
+          {getEditTargetName(edit.target)}
+        </Link>
       </h6>
     );
   }
@@ -29,10 +33,12 @@ const EditHeader: React.FC<EditHeaderProps> = ({ edit }) => {
   if (edit.applied && edit.operation === OperationEnum.CREATE) {
     return (
       <h6 className="row mb-4">
-        <span className="col-2 text-right">
+        <span className="col-2 text-end">
           Created {edit.target_type.toLowerCase()}:
         </span>
-        <Link to={route}>{edit.target.name}</Link>
+        <Link className="col" to={route}>
+          {getEditTargetName(edit.target)}
+        </Link>
       </h6>
     );
   }

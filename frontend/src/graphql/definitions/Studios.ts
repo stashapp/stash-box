@@ -3,11 +3,13 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 import { QuerySpec, StudioFilterType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Studios
 // ====================================================
+
 
 export interface Studios_queryStudios_studios_parent {
   __typename: "Studio";
@@ -34,7 +36,7 @@ export interface Studios_queryStudios_studios {
   id: string;
   name: string;
   parent: Studios_queryStudios_studios_parent | null;
-  urls: (Studios_queryStudios_studios_urls | null)[];
+  urls: Studios_queryStudios_studios_urls[];
   images: Studios_queryStudios_studios_images[];
 }
 

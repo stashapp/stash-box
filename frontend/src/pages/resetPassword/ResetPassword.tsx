@@ -1,12 +1,14 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { isApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
 import { Form } from "react-bootstrap";
 
+import Title from "src/components/title";
 import { useChangePassword } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
@@ -21,7 +23,7 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-const ResetPassword: React.FC = () => {
+const ResetPassword: FC = () => {
   const history = useHistory();
   const query = useQuery();
   const Auth = useContext<ContextType>(AuthContext);
@@ -49,15 +51,17 @@ const ResetPassword: React.FC = () => {
       .then(() => {
         history.push(`${ROUTE_LOGIN}?msg=password-reset`);
       })
-      .catch((err) => {
-        if (err && err.message) {
-          setSubmitError(err.message);
-        }
-      });
+      .catch(
+        (error: unknown) =>
+          error instanceof Error &&
+          isApolloError(error) &&
+          setSubmitError(error.message)
+      );
   };
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
+      <Title page="Reset Password" />
       <form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}

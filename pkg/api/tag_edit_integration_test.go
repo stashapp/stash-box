@@ -126,7 +126,7 @@ func (s *tagEditTestRunner) testModifyTagEdit() {
 		Aliases:     []string{newAlias},
 		CategoryID:  &newCategoryID,
 	}
-	id := createdTag.ID.String()
+	id := createdTag.ID
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,
@@ -137,7 +137,7 @@ func (s *tagEditTestRunner) testModifyTagEdit() {
 	s.verifyUpdatedTagEdit(createdTag, tagEditDetailsInput, createdUpdateEdit)
 }
 
-func (s *tagEditTestRunner) verifyUpdatedTagEdit(originalTag *models.Tag, input models.TagEditDetailsInput, edit *models.Edit) {
+func (s *tagEditTestRunner) verifyUpdatedTagEdit(originalTag *tagOutput, input models.TagEditDetailsInput, edit *models.Edit) {
 	tagDetails := s.getEditTagDetails(edit)
 
 	s.verifyEditOperation(models.OperationEnumModify.String(), edit)
@@ -154,7 +154,7 @@ func (s *tagEditTestRunner) verifyUpdatedTagEdit(originalTag *models.Tag, input 
 		s.fieldMismatch(input.Description, tagDetails.Description, "Description")
 	}
 
-	tagAliases, _ := s.resolver.Tag().Aliases(s.ctx, originalTag)
+	tagAliases := originalTag.Aliases
 	if !reflect.DeepEqual(tagAliases, tagDetails.RemovedAliases) {
 		s.fieldMismatch(tagAliases, tagDetails.RemovedAliases, "RemovedAliases")
 	}
@@ -174,7 +174,7 @@ func (s *tagEditTestRunner) testDestroyTagEdit() {
 		return
 	}
 
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 
 	tagEditDetailsInput := models.TagEditDetailsInput{}
 	editInput := models.EditInput{
@@ -221,8 +221,8 @@ func (s *tagEditTestRunner) testMergeTagEdit() {
 		Description: &newDescription,
 		Aliases:     []string{newAlias},
 	}
-	id := createdPrimaryTag.ID.String()
-	mergeSources := []string{createdMergeTag.ID.String()}
+	id := createdPrimaryTag.ID
+	mergeSources := []string{createdMergeTag.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -234,7 +234,7 @@ func (s *tagEditTestRunner) testMergeTagEdit() {
 	s.verifyMergeTagEdit(createdPrimaryTag, tagEditDetailsInput, createdMergeEdit, mergeSources)
 }
 
-func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *models.Tag, input models.TagEditDetailsInput, edit *models.Edit, inputMergeSources []string) {
+func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *tagOutput, input models.TagEditDetailsInput, edit *models.Edit, inputMergeSources []string) {
 	tagDetails := s.getEditTagDetails(edit)
 
 	s.verifyEditOperation(models.OperationEnumMerge.String(), edit)
@@ -251,7 +251,7 @@ func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *models.Tag, input mo
 		s.fieldMismatch(input.Description, tagDetails.Description, "Description")
 	}
 
-	tagAliases, _ := s.resolver.Tag().Aliases(s.ctx, originalTag)
+	tagAliases := originalTag.Aliases
 	if !reflect.DeepEqual(tagAliases, tagDetails.RemovedAliases) {
 		s.fieldMismatch(tagAliases, tagDetails.RemovedAliases, "RemovedAliases")
 	}
@@ -353,7 +353,7 @@ func (s *tagEditTestRunner) testApplyModifyTagEdit() {
 		Aliases:     []string{newAlias},
 		CategoryID:  &newCategoryID,
 	}
-	id := createdTag.ID.String()
+	id := createdTag.ID
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,
@@ -404,7 +404,7 @@ func (s *tagEditTestRunner) testApplyDestroyTagEdit() {
 		return
 	}
 
-	tagID := createdTag.ID.String()
+	tagID := createdTag.ID
 	sceneInput := models.SceneCreateInput{
 		TagIds: []string{tagID},
 	}
@@ -422,10 +422,16 @@ func (s *tagEditTestRunner) testApplyDestroyTagEdit() {
 	appliedEdit, err := s.applyEdit(destroyEdit.ID.String())
 
 	destroyedTag, _ := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
+
+	scene, err = s.client.findScene(scene.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
 	s.verifyApplyDestroyTagEdit(destroyedTag, appliedEdit, scene)
 }
 
-func (s *tagEditTestRunner) verifyApplyDestroyTagEdit(destroyedTag *models.Tag, edit *models.Edit, scene *models.Scene) {
+func (s *tagEditTestRunner) verifyApplyDestroyTagEdit(destroyedTag *models.Tag, edit *models.Edit, scene *sceneOutput) {
 	s.verifyEditOperation(models.OperationEnumDestroy.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumTag.String(), edit)
@@ -435,7 +441,7 @@ func (s *tagEditTestRunner) verifyApplyDestroyTagEdit(destroyedTag *models.Tag, 
 		s.fieldMismatch(destroyedTag.Deleted, true, "Deleted")
 	}
 
-	sceneTags, _ := s.resolver.Scene().Tags(s.ctx, scene)
+	sceneTags := scene.Tags
 	if len(sceneTags) > 0 {
 		s.fieldMismatch(len(sceneTags), 0, "Scene tag count")
 	}
@@ -457,7 +463,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 
 	// Scene with tag from both source and target, should not cause db unique error
 	sceneInput := models.SceneCreateInput{
-		TagIds: []string{mergeSource2.ID.String(), mergeTarget.ID.String()},
+		TagIds: []string{mergeSource2.ID, mergeTarget.ID},
 	}
 	scene1, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -465,7 +471,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 	}
 
 	sceneInput = models.SceneCreateInput{
-		TagIds: []string{mergeSource1.ID.String(), mergeSource2.ID.String()},
+		TagIds: []string{mergeSource1.ID, mergeSource2.ID},
 	}
 	scene2, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -480,8 +486,8 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 		Description: &newDescription,
 		Aliases:     []string{newAlias},
 	}
-	id := mergeTarget.ID.String()
-	mergeSources := []string{mergeSource1.ID.String(), mergeSource2.ID.String()}
+	id := mergeTarget.ID
+	mergeSources := []string{mergeSource1.ID, mergeSource2.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -498,10 +504,21 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 		return
 	}
 
+	scene1, err = s.client.findScene(scene1.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+	scene2, err = s.client.findScene(scene2.ID)
+	if err != nil {
+		s.t.Errorf("Error finding scene: %s", err.Error())
+		return
+	}
+
 	s.verifyAppliedMergeTagEdit(tagEditDetailsInput, appliedMerge, scene1, scene2)
 }
 
-func (s *tagEditTestRunner) verifyAppliedMergeTagEdit(input models.TagEditDetailsInput, edit *models.Edit, scene1 *models.Scene, scene2 *models.Scene) {
+func (s *tagEditTestRunner) verifyAppliedMergeTagEdit(input models.TagEditDetailsInput, edit *models.Edit, scene1, scene2 *sceneOutput) {
 	s.verifyEditOperation(models.OperationEnumMerge.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumTag.String(), edit)
@@ -529,19 +546,19 @@ func (s *tagEditTestRunner) verifyAppliedMergeTagEdit(input models.TagEditDetail
 	}
 
 	editTarget := s.getEditTagTarget(edit)
-	scene1Tags, _ := s.resolver.Scene().Tags(s.ctx, scene1)
+	scene1Tags := scene1.Tags
 	if len(scene1Tags) > 1 {
 		s.fieldMismatch(len(scene1Tags), 1, "Scene 1 tag count")
 	}
-	if scene1Tags[0].ID != editTarget.ID {
+	if scene1Tags[0].ID != editTarget.ID.String() {
 		s.fieldMismatch(scene1Tags[0].ID, editTarget.ID, "Scene 1 tag ID")
 	}
 
-	scene2Tags, _ := s.resolver.Scene().Tags(s.ctx, scene2)
+	scene2Tags := scene2.Tags
 	if len(scene2Tags) > 1 {
 		s.fieldMismatch(len(scene2Tags), 1, "Scene 2 tag count")
 	}
-	if scene2Tags[0].ID != editTarget.ID {
+	if scene2Tags[0].ID != editTarget.ID.String() {
 		s.fieldMismatch(scene2Tags[0].ID, editTarget.ID, "Scene 2 tag ID")
 	}
 }

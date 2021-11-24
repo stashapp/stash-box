@@ -1,5 +1,8 @@
 #import "../fragments/PerformerFragment.gql"
+#import "../fragments/StudioFragment.gql"
 #import "../fragments/ImageFragment.gql"
+#import "../fragments/SceneFragment.gql"
+#import "../fragments/TagFragment.gql"
 #import "../fragments/CommentFragment.gql"
 #import "../fragments/PublicUserFragment.gql"
 fragment EditFragment on Edit {
@@ -10,8 +13,17 @@ fragment EditFragment on Edit {
   applied
   created
   updated
+  vote_count
   comments {
     ...CommentFragment
+  }
+  votes {
+    user {
+      id
+      name
+    }
+    date
+    vote
   }
   user {
     ...PublicUserFragment
@@ -29,6 +41,12 @@ fragment EditFragment on Edit {
     }
     ... on Performer {
       ...PerformerFragment
+    }
+    ... on Studio {
+      ...StudioFragment
+    }
+    ... on Scene {
+      ...SceneFragment
     }
   }
   details {
@@ -90,6 +108,68 @@ fragment EditFragment on Edit {
         ...ImageFragment
       }
     }
+    ... on StudioEdit {
+      name
+      added_urls {
+        url
+        type
+      }
+      removed_urls {
+        url
+        type
+      }
+      parent {
+        ...StudioFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+    }
+    ... on SceneEdit {
+      title
+      details
+      added_urls {
+        url
+        type
+      }
+      removed_urls {
+        url
+        type
+      }
+      date
+      studio {
+        ...StudioFragment
+      }
+      added_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      removed_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      added_tags {
+        ...TagFragment
+      }
+      removed_tags {
+        ...TagFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+      duration
+      director
+    }
   }
   old_details {
     ... on TagEdit {
@@ -116,6 +196,54 @@ fragment EditFragment on Edit {
       career_start_year
       career_end_year
     }
+    ... on StudioEdit {
+      name
+      parent {
+        ...StudioFragment
+      }
+    }
+    ... on SceneEdit {
+      title
+      details
+      added_urls {
+        url
+        type
+      }
+      removed_urls {
+        url
+        type
+      }
+      date
+      studio {
+        ...StudioFragment
+      }
+      added_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      removed_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      added_tags {
+        ...TagFragment
+      }
+      removed_tags {
+        ...TagFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+      duration
+      director
+    }
   }
   merge_sources {
     ... on Tag {
@@ -130,6 +258,12 @@ fragment EditFragment on Edit {
     }
     ... on Performer {
       ...PerformerFragment
+    }
+    ... on Studio {
+      ...StudioFragment
+    }
+    ... on Scene {
+      ...SceneFragment
     }
   }
   options {

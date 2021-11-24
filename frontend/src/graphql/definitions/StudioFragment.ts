@@ -3,9 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+
 // ====================================================
 // GraphQL fragment: StudioFragment
 // ====================================================
+
 
 export interface StudioFragment_child_studios {
   __typename: "Studio";
@@ -39,6 +41,7 @@ export interface StudioFragment {
   name: string;
   child_studios: StudioFragment_child_studios[];
   parent: StudioFragment_parent | null;
-  urls: (StudioFragment_urls | null)[];
+  urls: StudioFragment_urls[];
   images: StudioFragment_images[];
+  deleted: boolean;
 }

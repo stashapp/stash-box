@@ -1,6 +1,7 @@
-import React from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
-import { Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits_target as Target,
@@ -15,74 +16,52 @@ interface MergeEditProps {
   options?: Options;
 }
 
-const MergeEdit: React.FC<MergeEditProps> = ({
-  merges = [],
-  target,
-  options,
-}) => {
+const MergeEdit: FC<MergeEditProps> = ({ merges = [], target, options }) => {
   if (!merges || merges.length === 0) return null;
+
+  const renderObject = (obj: Target | null) => {
+    if (isTag(obj)) {
+      return (
+        <div key={obj.id}>
+          <Link to={tagHref(obj)}>{obj.name}</Link>
+        </div>
+      );
+    }
+
+    if (isPerformer(obj)) {
+      return (
+        <div key={obj.id}>
+          <Link to={performerHref(obj)}>
+            {obj.name}
+            {obj.disambiguation && (
+              <small className="text-muted ms-1">({obj.disambiguation})</small>
+            )}
+          </Link>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="mb-4">
-      <div className="row">
-        <b className="col-2 text-right">Merge</b>
-        <div>
-          {merges?.map((source) => {
-            if (isTag(source)) {
-              return (
-                <div key={source.id}>
-                  <Link to={tagHref(source)}>{source.name}</Link>
-                </div>
-              );
-            }
-            if (isPerformer(source)) {
-              return (
-                <div key={source.id}>
-                  <Link to={performerHref(source)}>
-                    {source.name}
-                    {source.disambiguation && (
-                      <small className="text-muted ml-1">
-                        ({source.disambiguation})
-                      </small>
-                    )}
-                  </Link>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-      </div>
-      <div className="row">
-        <b className="col-2 text-right">Into</b>
-        <div>
-          {isTag(target) && (
-            <div>
-              <Link to={tagHref(target)}>{target.name}</Link>
-            </div>
-          )}
-          {isPerformer(target) && (
-            <div>
-              <Link to={performerHref(target)}>
-                {target.name}
-                {target.disambiguation && (
-                  <small className="text-muted ml-1">
-                    ({target.disambiguation})
-                  </small>
-                )}
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
+      <Row>
+        <b className="col-2 text-end">Merge</b>
+        <Col xs={10}>{merges?.map(renderObject)}</Col>
+      </Row>
+      <Row>
+        <b className="col-2 text-end">Into</b>
+        <Col xs={10}>{renderObject(target)}</Col>
+      </Row>
       {isPerformer(target) && (
         <Row>
           <div className="offset-2 d-flex align-items-center">
             <Icon
-              icon={options?.set_merge_aliases ? "check" : "times"}
+              icon={options?.set_merge_aliases ? faCheck : faTimes}
               color={options?.set_merge_aliases ? "green" : "red"}
             />
-            <span className="ml-2">Set performance aliases to old name</span>
+            <span className="ms-2">Set performance aliases to old name</span>
           </div>
         </Row>
       )}

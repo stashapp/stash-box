@@ -1,11 +1,16 @@
-import React, { useContext } from "react";
-import { Link, useHistory, useParams } from "react-router-dom";
+import { FC, useContext } from "react";
+import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
-import { useScene, useDeleteScene } from "src/graphql";
+import {
+  Scene_findScene as Scene,
+  Scene_findScene_fingerprints as Fingerprint,
+} from "src/graphql/definitions/Scene";
+import { useEdits, TargetTypeEnum, VoteStatusEnum } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
-  isAdmin,
+  canEdit,
   getImage,
   getUrlByType,
   tagHref,
@@ -14,34 +19,48 @@ import {
   createHref,
   formatDuration,
   formatDateTime,
+  formatPendingEdits,
 } from "src/utils";
-import { ROUTE_SCENE_EDIT, ROUTE_SCENES } from "src/constants/route";
+import {
+  ROUTE_SCENE_EDIT,
+  ROUTE_SCENES,
+  ROUTE_SCENE_DELETE,
+} from "src/constants/route";
 import {
   GenderIcon,
-  LoadingIndicator,
   TagLink,
   PerformerName,
+  Icon,
 } from "src/components/fragments";
-import DeleteButton from "src/components/deleteButton";
+import { EditList } from "src/components/list";
 
-const SceneComponent: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+const DEFAULT_TAB = "description";
+
+interface Props {
+  scene: Scene;
+}
+
+const SceneComponent: FC<Props> = ({ scene }) => {
   const history = useHistory();
-  const { loading, data } = useScene({ id });
-  const [deleteScene, { loading: deleting }] = useDeleteScene();
+  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const auth = useContext(AuthContext);
 
-  if (loading) return <LoadingIndicator message="Loading scene..." />;
-  if (!data?.findScene) return <div>Scene not found!</div>;
-  const scene = data.findScene;
+  const { data: editData } = useEdits({
+    filter: {
+      per_page: 1,
+    },
+    editFilter: {
+      target_type: TargetTypeEnum.SCENE,
+      target_id: scene.id,
+      status: VoteStatusEnum.PENDING,
+    },
+  });
+  const pendingEditCount = editData?.queryEdits.count;
 
-  const handleDelete = (): void => {
-    deleteScene({ variables: { input: { id: scene.id } } }).then(() =>
-      history.push(ROUTE_SCENES)
-    );
-  };
+  const setTab = (tab: string | null) =>
+    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
-  const performers = data.findScene.performers
+  const performers = scene.performers
     .map((performance) => {
       const { performer } = performance;
       return (
@@ -57,6 +76,16 @@ const SceneComponent: React.FC = () => {
     })
     .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
 
+  function maybeRenderSubmitted(fingerprint: Fingerprint) {
+    if (fingerprint.user_submitted) {
+      return (
+        <span className="user-submitted" title="Submitted by you">
+          <Icon icon={faCheckCircle} />
+        </span>
+      );
+    }
+  }
+
   const fingerprints = scene.fingerprints.map((fingerprint) => (
     <tr key={fingerprint.hash}>
       <td>{fingerprint.algorithm}</td>
@@ -68,13 +97,16 @@ const SceneComponent: React.FC = () => {
         </Link>
       </td>
       <td>
-        <span title={formatDuration(fingerprint.duration)}>
-          {fingerprint.duration}
+        <span title={`${fingerprint.duration}s`}>
+          {formatDuration(fingerprint.duration)}
         </span>
       </td>
-      <td>{fingerprint.submissions}</td>
-      <td>{formatDateTime(fingerprint.created)}</td>
-      <td>{formatDateTime(fingerprint.updated)}</td>
+      <td>
+        {fingerprint.submissions}
+        {maybeRenderSubmitted(fingerprint)}
+      </td>
+      <td>{formatDateTime(fingerprint.created as string)}</td>
+      <td>{formatDateTime(fingerprint.updated as string)}</td>
     </tr>
   ));
   const tags = [...scene.tags]
@@ -93,22 +125,28 @@ const SceneComponent: React.FC = () => {
     <>
       <Card className="scene-info">
         <Card.Header>
-          <div className="float-right">
-            {isAdmin(auth.user) && (
+          <div className="float-end">
+            {canEdit(auth.user) && !scene.deleted && (
               <>
-                <Link to={createHref(ROUTE_SCENE_EDIT, { id })}>
+                <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
                   <Button>Edit</Button>
                 </Link>
-                <DeleteButton
-                  onClick={handleDelete}
-                  className="ml-2"
-                  disabled={deleting}
-                  message="Do you want to delete scene? This cannot be undone."
-                />
+                <Link
+                  to={createHref(ROUTE_SCENE_DELETE, { id: scene.id })}
+                  className="ms-2"
+                >
+                  <Button variant="danger">Delete</Button>
+                </Link>
               </>
             )}
           </div>
-          <h3>{scene.title}</h3>
+          <h3>
+            {scene.deleted ? (
+              <del>{scene.title}</del>
+            ) : (
+              <span>{scene.title}</span>
+            )}
+          </h3>
           <h6>
             {scene.studio && (
               <>
@@ -126,21 +164,26 @@ const SceneComponent: React.FC = () => {
             className="scene-photo-element"
           />
         </Card.Body>
-        <Card.Footer className="row mx-1">
-          <div className="scene-performers mr-auto">{performers}</div>
+        <Card.Footer className="d-flex mx-1">
+          <div className="scene-performers me-auto">{performers}</div>
           {scene.duration && (
             <div title={`${scene.duration} seconds`}>
               Duration: <b>{formatDuration(scene.duration)}</b>
             </div>
           )}
           {scene.director && (
-            <div className="ml-3">
+            <div className="ms-3">
               Director: <strong>{scene.director}</strong>
             </div>
           )}
         </Card.Footer>
       </Card>
-      <Tabs defaultActiveKey="description" id="scene-tab">
+      <Tabs
+        activeKey={activeTab}
+        id="scene-tabs"
+        mountOnEnter
+        onSelect={setTab}
+      >
         <Tab eventKey="description" title="Description">
           <div className="scene-description my-4">
             <h4>Description:</h4>
@@ -151,7 +194,7 @@ const SceneComponent: React.FC = () => {
             </div>
             <hr />
             <div>
-              <strong className="mr-2">Studio URL: </strong>
+              <strong className="me-2">Studio URL: </strong>
               <a
                 href={getUrlByType(scene.urls, "STUDIO")}
                 target="_blank"
@@ -162,13 +205,13 @@ const SceneComponent: React.FC = () => {
             </div>
           </div>
         </Tab>
-        <Tab eventKey="fingerprints" title="Fingerprints">
+        <Tab eventKey="fingerprints" title="Fingerprints" mountOnEnter={false}>
           <div className="scene-fingerprints my-4">
             <h4>Fingerprints:</h4>
             {fingerprints.length === 0 ? (
               <h6>No fingerprints found for this scene.</h6>
             ) : (
-              <Table striped bordered size="sm">
+              <Table striped variant="dark">
                 <thead>
                   <tr>
                     <td>
@@ -195,6 +238,13 @@ const SceneComponent: React.FC = () => {
               </Table>
             )}
           </div>
+        </Tab>
+        <Tab
+          eventKey="edits"
+          title={`Edits${formatPendingEdits(pendingEditCount)}`}
+          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
+        >
+          <EditList type={TargetTypeEnum.SCENE} id={scene.id} />
         </Tab>
       </Tabs>
     </>
