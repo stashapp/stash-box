@@ -134,7 +134,14 @@ func Start(rfp RepoProvider, ui embed.FS) {
 		return errors.New(message)
 	}
 
-	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: NewResolver(getRepo)}))
+	gqlConfig := models.Config{
+		Resolvers: NewResolver(getRepo),
+		Directives: models.DirectiveRoot{
+			IsOwner: isOwnerDirective,
+			IsAdmin: isAdminDirective,
+		},
+	}
+	gqlSrv := gqlHandler.New(models.NewExecutableSchema(gqlConfig))
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Options{})
 	gqlSrv.AddTransport(gqlTransport.GET{})

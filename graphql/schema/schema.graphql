@@ -58,7 +58,7 @@ type Query {
   """Find user by ID or username"""
   findUser(id: ID, username: String): User
 
-  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType!
+  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @isAdmin
 
   """Returns currently authenticated user"""
   me: User

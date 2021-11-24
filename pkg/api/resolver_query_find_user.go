@@ -25,29 +25,14 @@ func (r *queryResolver) FindUser(ctx context.Context, id *string, username *stri
 		ret, err = qb.FindByName(*username)
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	// if not admin and user is not the current, then remove sensitive details
-	users := models.Users{
-		ret,
-	}
-	removeSensitiveUserDetails(ctx, users)
-
-	return ret, nil
+	return ret, err
 }
 
 func (r *queryResolver) QueryUsers(ctx context.Context, userFilter *models.UserFilterType, filter *models.QuerySpec) (*models.QueryUsersResultType, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
 
 	users, count := qb.Query(userFilter, filter)
-	removeSensitiveUserDetails(ctx, users)
 	return &models.QueryUsersResultType{
 		Users: users,
 		Count: count,
@@ -61,25 +46,4 @@ func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 	}
 
 	return currentUser, nil
-}
-
-func removeSensitiveUserDetails(ctx context.Context, users models.Users) {
-	// don't need to remove details if we're admin
-	if validateAdmin(ctx) == nil {
-		return
-	}
-
-	// remove sensitive details for users that are not the current user
-	userID := ""
-
-	currentUser := getCurrentUser(ctx)
-	if currentUser != nil {
-		userID = currentUser.ID.String()
-	}
-
-	for _, u := range users {
-		if u != nil && u.ID.String() != userID {
-			u.RemoveSensitiveFields()
-		}
-	}
 }

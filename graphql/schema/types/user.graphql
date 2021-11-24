@@ -1,3 +1,6 @@
+directive @isAdmin on FIELD_DEFINITION
+directive @isOwner on FIELD_DEFINITION
+
 enum RoleEnum {
   READ
   VOTE
@@ -14,21 +17,21 @@ type User {
   id: ID!
   name: String!
   """Should not be visible to other users"""
-  roles: [RoleEnum!]
+  roles: [RoleEnum!] @isOwner
   """Should not be visible to other users"""
-  email: String
+  email: String @isOwner
   """Should not be visible to other users"""
-  api_key: String
+  api_key: String @isOwner
   successful_edits: Int!
   unsuccessful_edits: Int!
   successful_votes: Int!
   """Votes on unsuccessful edits"""
   unsuccessful_votes: Int!
   """Calls to the API from this user over a configurable time period"""
-  api_calls: Int!
-  invited_by: User
-  invite_tokens: Int
-  active_invite_codes: [String!]
+  api_calls: Int! @isOwner
+  invited_by: User @isOwner
+  invite_tokens: Int @isOwner
+  active_invite_codes: [String!] @isOwner
 }
 
 input UserCreateInput {
