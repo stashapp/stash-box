@@ -13,7 +13,7 @@ ifndef GITHASH
 endif
 
 ifndef STASH_BOX_VERSION
-	$(eval STASH_BOX_VERSION := 0.0.0)
+	$(eval STASH_BOX_VERSION := $(shell git describe --tags --abbrev=0 --exclude latest-develop))
 endif
 
 build: pre-build
@@ -79,12 +79,13 @@ ui-validate:
 	cd frontend && yarn run validate
 
 .PHONY: cross-compile
-cross-compile:
+cross-compile: pre-build
 ifdef CI
 	$(eval CI_ARGS := -v $(PWD)/.go-cache:/root/.cache/go-build)
 endif
 	docker run --rm --privileged $(CI_ARGS) \
 				-v $(PWD):/go/src/github.com/stashapp/stash-box \
 				-v /var/run/docker.sock:/var/run/docker.sock \
+				-e GORELEASER_CURRENT_TAG=$(STASH_BOX_VERSION) \
 				-w /go/src/github.com/stashapp/stash-box \
 				ghcr.io/gythialy/golang-cross:latest --snapshot --rm-dist
