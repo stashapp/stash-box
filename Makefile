@@ -86,6 +86,6 @@ endif
 	docker run --rm --privileged $(CI_ARGS) \
 				-v $(PWD):/go/src/github.com/stashapp/stash-box \
 				-v /var/run/docker.sock:/var/run/docker.sock \
-				-e GORELEASER_CURRENT_TAG=$(STASH_BOX_VERSION)
+				-e GORELEASER_CURRENT_TAG=$(STASH_BOX_VERSION) \
 				-w /go/src/github.com/stashapp/stash-box \
 				ghcr.io/gythialy/golang-cross:latest --snapshot --rm-dist
