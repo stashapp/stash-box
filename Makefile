@@ -79,7 +79,7 @@ ui-validate:
 	cd frontend && yarn run validate
 
 .PHONY: cross-compile
-cross-compile:
+cross-compile: pre-build
 ifdef CI
 	$(eval CI_ARGS := -v $(PWD)/.go-cache:/root/.cache/go-build)
 endif
