@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext } from "react";
 import {
   useQuery,
   useLazyQuery,
@@ -168,12 +168,18 @@ export const useLazyTags = (
   options?: LazyQueryHookOptions<Tags, TagsVariables>
 ) => useLazyQuery(TagsQuery, options);
 
-export const usePrivateUser = (variables: UserVariables, skip: boolean = false) =>
+export const usePrivateUser = (
+  variables: UserVariables,
+  skip: boolean = false
+) =>
   useQuery<User, UserVariables>(UserQuery, {
     variables,
     skip,
   });
-export const usePublicUser = (variables: PublicUserVariables, skip: boolean = false) =>
+export const usePublicUser = (
+  variables: PublicUserVariables,
+  skip: boolean = false
+) =>
   useQuery<PublicUser, PublicUserVariables>(PublicUserQuery, {
     variables,
     skip,
@@ -188,10 +194,9 @@ export const useUser = (variables: UserVariables, skip: boolean = false) => {
   const publicUser = usePublicUser(variables, skip || showPrivate);
 
   return showPrivate ? privateUser : publicUser;
-}
+};
 
 export const useUsers = (variables: UsersVariables) =>
   useQuery<Users, UsersVariables>(UsersQuery, {
     variables,
   });
-
