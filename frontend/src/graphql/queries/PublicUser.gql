@@ -1,0 +1,6 @@
+#import "../fragments/PublicUserFragment.gql"
+query PublicUser($name: String!) {
+  findUser(username: $name) {
+    ...PublicUserFragment
+  }
+}
