@@ -1,0 +1,6 @@
+#import "../fragments/SearchPerformerFragment.gql"
+query SearchPerformers($term: String!, $limit: Int = 5) {
+  searchPerformer(term: $term, limit: $limit) {
+    ...SearchPerformerFragment
+  }
+}

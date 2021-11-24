@@ -1,0 +1,30 @@
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/ScenePerformerFragment.gql"
+query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
+  queryScenes(filter: $filter, scene_filter: $sceneFilter) {
+    count
+    scenes {
+      id
+      date
+      title
+      duration
+      urls {
+        url
+        type
+      }
+      images {
+        ...ImageFragment
+      }
+      studio {
+        id
+        name
+      }
+      performers {
+        as
+        performer {
+          ...ScenePerformerFragment
+        }
+      }
+    }
+  }
+}

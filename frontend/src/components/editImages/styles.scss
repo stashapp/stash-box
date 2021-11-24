@@ -1,0 +1,73 @@
+.EditImages {
+  &-drop {
+    align-items: center;
+    border: 3px dashed $text-color;
+    border-radius: 10px;
+    display: flex;
+    height: 400px;
+    justify-content: center;
+    margin: auto;
+    position: relative;
+    width: 400px;
+
+    &:hover {
+      background-color: #394b59;
+    }
+  }
+
+  &-placeholder {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    font-size: 2rem;
+    text-align: center;
+
+    .fa-images {
+      font-size: 4rem;
+    }
+  }
+
+  &-image {
+    margin: auto;
+    max-height: 600px;
+    max-width: 100%;
+    padding-bottom: 1rem;
+    position: relative;
+
+    img {
+      max-height: 600px;
+      max-width: 100%;
+      min-height: 200px;
+      min-width: 200px;
+    }
+
+    .LoadingIndicator {
+      display: none;
+      position: absolute;
+      text-align: center;
+      text-shadow: 2px 2px black;
+      top: 40%;
+    }
+
+    &-uploading {
+      img {
+        opacity: 0.5;
+      }
+
+      .LoadingIndicator {
+        display: block;
+        opacity: 1;
+      }
+    }
+  }
+
+  .form-control-file {
+    cursor: pointer;
+    height: 100%;
+    left: 0;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+}

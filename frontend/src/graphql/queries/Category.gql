@@ -1,0 +1,8 @@
+query Category($id: ID!) {
+  findTagCategory(id: $id) {
+    id
+    name
+    description
+    group
+  }
+}

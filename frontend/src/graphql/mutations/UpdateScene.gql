@@ -1,0 +1,36 @@
+mutation UpdateScene($updateData: SceneUpdateInput!) {
+  sceneUpdate(input: $updateData) {
+      id
+      date
+      details
+      director
+      duration
+      title
+      urls {
+        url
+        type
+      }
+      studio {
+        id
+        name
+      }
+      performers {
+        performer {
+          name
+          id
+		  gender
+		  aliases
+        }
+      }
+      fingerprints {
+        hash
+        algorithm
+        duration
+      }
+      tags {
+          id
+          name
+          description
+      }
+    }
+}

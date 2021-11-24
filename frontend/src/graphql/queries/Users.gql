@@ -1,0 +1,18 @@
+query Users($userFilter: UserFilterType, $filter: QuerySpec) {
+  queryUsers(user_filter: $userFilter, filter: $filter) {
+    count
+    users {
+      id
+      name
+      email
+      roles
+      api_key
+      api_calls
+      invited_by {
+        id
+        name
+      }
+      invite_tokens
+    }
+  }
+}

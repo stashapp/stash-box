@@ -1,0 +1,8 @@
+mutation AddImage($imageData: ImageCreateInput!) {
+  imageCreate(input: $imageData) {
+    id
+    url
+    width
+    height
+  }
+}

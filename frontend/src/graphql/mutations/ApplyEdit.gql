@@ -1,0 +1,6 @@
+#import "../fragments/EditFragment.gql"
+mutation ApplyEdit($input: ApplyEditInput!) {
+  applyEdit(input: $input) {
+    ...EditFragment
+  }
+}
