@@ -10,8 +10,8 @@ import {
   useGrantInvite,
   useRevokeInvite,
 } from "src/graphql";
-import { User_findUser as User } from 'src/graphql/definitions/User';
-import { PublicUser_findUser as PublicUser } from 'src/graphql/definitions/PublicUser';
+import { User_findUser as User } from "src/graphql/definitions/User";
+import { PublicUser_findUser as PublicUser } from "src/graphql/definitions/PublicUser";
 import AuthContext from "src/AuthContext";
 import {
   ROUTE_USER_EDIT,
@@ -23,9 +23,8 @@ import { isAdmin, createHref } from "src/utils";
 import Modal from "src/components/modal";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
-const isPrivate = (user: PublicUser | User): user is User => (
-  !!(user as User).email
-);
+const isPrivate = (user: PublicUser | User): user is User =>
+  !!(user as User).email;
 
 const AddUserComponent: React.FC = () => {
   const Auth = useContext(AuthContext);
