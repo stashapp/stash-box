@@ -4,17 +4,21 @@ import { isApolloError } from "@apollo/client";
 
 import { useUpdateUser } from "src/graphql";
 import { User_findUser as User } from "src/graphql/definitions/User";
-import { userHref } from "src/utils";
+import { PublicUser_findUser as PublicUser } from "src/graphql/definitions/PublicUser";
+import { userHref, isPrivateUser } from "src/utils";
 import UserEditForm, { UserEditData } from "./UserEditForm";
+import { ErrorMessage } from "src/components/fragments";
 
 interface Props {
-  user: User;
+  user: User | PublicUser;
 }
 
 const EditUserComponent: FC<Props> = ({ user }) => {
   const [queryError, setQueryError] = useState<string>();
   const history = useHistory();
   const [updateUser] = useUpdateUser();
+
+  if (!isPrivateUser(user)) return <ErrorMessage error="Access Denied" />;
 
   const doUpdate = (userData: UserEditData) => {
     updateUser({ variables: { userData } })

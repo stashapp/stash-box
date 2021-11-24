@@ -175,24 +175,18 @@ export const useLazyTags = (
   options?: LazyQueryHookOptions<Tags, TagsVariables>
 ) => useLazyQuery(TagsQuery, options);
 
-export const usePrivateUser = (
-  variables: UserVariables,
-  skip: boolean = false
-) =>
+export const usePrivateUser = (variables: UserVariables, skip = false) =>
   useQuery<User, UserVariables>(UserQuery, {
     variables,
     skip,
   });
-export const usePublicUser = (
-  variables: PublicUserVariables,
-  skip: boolean = false
-) =>
+export const usePublicUser = (variables: PublicUserVariables, skip = false) =>
   useQuery<PublicUser, PublicUserVariables>(PublicUserQuery, {
     variables,
     skip,
   });
 
-export const useUser = (variables: UserVariables, skip: boolean = false) => {
+export const useUser = (variables: UserVariables, skip = false) => {
   const Auth = useContext(AuthContext);
   const isUser = () => Auth.user?.name === variables.name;
   const showPrivate = isUser() || isAdmin(Auth.user);

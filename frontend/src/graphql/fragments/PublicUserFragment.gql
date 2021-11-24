@@ -1,4 +1,20 @@
 fragment PublicUserFragment on User {
   id
   name
+  vote_count {
+    accept
+    reject
+    immediate_accept
+    immediate_reject
+    abstain
+  }
+  edit_count {
+    immediate_accepted
+    immediate_rejected
+    accepted
+    rejected
+    failed
+    canceled
+    pending
+  }
 }

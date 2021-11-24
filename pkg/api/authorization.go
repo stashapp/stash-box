@@ -41,6 +41,10 @@ func validateAdmin(ctx context.Context) error {
 	return user.ValidateRole(ctx, models.RoleEnumAdmin)
 }
 
+func validateUser(ctx context.Context, userID uuid.UUID) error {
+	return user.ValidateOwner(ctx, userID)
+}
+
 func validateUserOrAdmin(ctx context.Context, userID uuid.UUID) error {
 	if err := user.ValidateOwner(ctx, userID); err == nil {
 		return nil

@@ -37,10 +37,38 @@ export interface StudioEdit_studioEdit_votes {
   vote: VoteTypeEnum;
 }
 
+export interface StudioEdit_studioEdit_user_vote_count {
+  __typename: "UserVoteCount";
+  accept: number;
+  reject: number;
+  immediate_accept: number;
+  immediate_reject: number;
+  abstain: number;
+}
+
+export interface StudioEdit_studioEdit_user_edit_count {
+  __typename: "UserEditCount";
+  immediate_accepted: number;
+  immediate_rejected: number;
+  accepted: number;
+  rejected: number;
+  failed: number;
+  canceled: number;
+  pending: number;
+}
+
 export interface StudioEdit_studioEdit_user {
   __typename: "User";
   id: string;
   name: string;
+  /**
+   *  Vote counts by type 
+   */
+  vote_count: StudioEdit_studioEdit_user_vote_count;
+  /**
+   *  Edit counts by status 
+   */
+  edit_count: StudioEdit_studioEdit_user_edit_count;
 }
 
 export interface StudioEdit_studioEdit_target_Tag_category {

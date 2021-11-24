@@ -19,7 +19,7 @@ import {
   User_findUser_edit_count as EditCounts,
   User_findUser_vote_count as VoteCounts,
 } from "src/graphql/definitions/User";
-import { PublicUser_findUser as PublicUser } from 'src/graphql/definitions/PublicUser';
+import { PublicUser_findUser as PublicUser } from "src/graphql/definitions/PublicUser";
 import AuthContext from "src/AuthContext";
 import {
   ROUTE_USER_EDIT,
@@ -29,12 +29,8 @@ import {
 } from "src/constants/route";
 import Modal from "src/components/modal";
 import { Icon } from "src/components/fragments";
-import { isAdmin, createHref } from "src/utils";
+import { isAdmin, isPrivateUser, createHref } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
-
-const isPrivate = (user: PublicUser | User): user is User => (
-  !!(user as User).email
-);
 
 type EditCount = [VoteStatusEnum, number];
 const filterEdits = (editCount: EditCounts): EditCount[] => {
@@ -78,7 +74,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [grantInvite] = useGrantInvite();
   const [revokeInvite] = useRevokeInvite();
 
-  const showPrivate = isPrivate(user);
+  const showPrivate = isPrivateUser(user);
 
   const endpointURL = configData && `${configData.getConfig.host_url}/graphql`;
 
@@ -184,7 +180,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           </div>
         </div>
         <hr />
-        {isPrivate(user) && (
+        {isPrivateUser(user) && (
           <>
             <Row>
               <span className="col-2">Email</span>
@@ -267,7 +263,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </Table>
             </Col>
           </Row>
-          {isPrivate(user) && (
+          {isPrivateUser(user) && (
             <Row>
               <span className="col-2">Invite Tokens</span>
               <InputGroup className="col">
@@ -285,7 +281,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </InputGroup>
             </Row>
           )}
-          {isPrivate(user) && user.id === Auth.user?.id && (
+          {isPrivateUser(user) && user.id === Auth.user?.id && (
             <Row className="my-2">
               <span className="col-2">Invite Keys</span>
               <div className="col">
