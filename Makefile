@@ -16,8 +16,18 @@ ifndef STASH_BOX_VERSION
 	$(eval STASH_BOX_VERSION := $(shell git describe --tags --abbrev=0 --exclude latest-develop))
 endif
 
+ifndef BUILD_TYPE
+	$(eval BUILD_TYPE := LOCAL)
+endif
+
+ifeq ($(BUILD_TYPE),OFFICIAL)
+	$(eval SNAPSHOT :=)
+else
+	$(eval SNAPSHOT := --snapshot)
+endif
+
 build: pre-build
-	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)'"
+	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)'"
 
 # Regenerates GraphQL files
 .PHONY: generate
@@ -87,5 +97,6 @@ endif
 				-v $(PWD):/go/src/github.com/stashapp/stash-box \
 				-v /var/run/docker.sock:/var/run/docker.sock \
 				-e GORELEASER_CURRENT_TAG=$(STASH_BOX_VERSION) \
+				-e STASH_BOX_BUILD_TYPE=$(BUILD_TYPE) \
 				-w /go/src/github.com/stashapp/stash-box \
-				ghcr.io/gythialy/golang-cross:latest --snapshot --rm-dist
+				ghcr.io/gythialy/golang-cross:latest $(SNAPSHOT) --rm-dist
