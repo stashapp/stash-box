@@ -53,6 +53,8 @@ func (p *PostgresProvider) runMigrations(databasePath string) {
 		panic(err.Error())
 	}
 
+	m.Log = &migrateLogger{}
+
 	databaseSchemaVersion, _, _ := m.Version()
 	stepNumber := appSchemaVersion - databaseSchemaVersion
 	if stepNumber != 0 {
@@ -63,4 +65,18 @@ func (p *PostgresProvider) runMigrations(databasePath string) {
 	}
 
 	_, _ = m.Close()
+}
+
+type migrateLogger struct {
+	migrate.Logger
+}
+
+// Printf is like fmt.Printf
+func (*migrateLogger) Printf(format string, v ...interface{}) {
+	logger.Debugf("Migration: "+format, v...)
+}
+
+// Verbose should return true when verbose logging output is wanted
+func (*migrateLogger) Verbose() bool {
+	return true
 }
