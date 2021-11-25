@@ -239,7 +239,7 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType, findFilter *models.QuerySpec) *queryBuilder {
+func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType, findFilter *models.QuerySpec, isCount bool) *queryBuilder {
 	sceneFilter := &models.SceneFilterType{}
 	if sceneFilterInput != nil {
 		sceneFilter = sceneFilterInput
@@ -340,17 +340,19 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 
 	if findFilter.GetSort("") == "trending" {
 		limit := ""
-		if sceneFilterInput == nil {
+		if sceneFilterInput == nil && !isCount {
 			// If no other filters are applied we can optimize query
 			// by sorting and limiting fingerprint count directly
 			limit = "ORDER BY count DESC " + getPagination(findFilter)
+		} else {
+			query.Pagination = getPagination(findFilter)
 		}
 
 		query.Body += `
 			JOIN (
 				SELECT scene_id, COUNT(*) AS count
 				FROM scene_fingerprints
-				WHERE created_at >= (now()::DATE - 7)
+				WHERE created_at >= (now()::DATE - 180)
 				GROUP BY scene_id
 				` + limit + `
 			) T ON scenes.id = T.scene_id
@@ -358,14 +360,14 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 		query.Sort = " ORDER BY T.count DESC "
 	} else {
 		query.Sort = qb.getSceneSort(findFilter)
+		query.Pagination = getPagination(findFilter)
 	}
 
 	return query
 }
 
 func (qb *sceneQueryBuilder) QueryScenes(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, error) {
-	query := qb.buildQuery(sceneFilter, findFilter)
-	query.Pagination = getPagination(findFilter)
+	query := qb.buildQuery(sceneFilter, findFilter, false)
 
 	var scenes models.Scenes
 	err := qb.dbi.QueryOnly(*query, &scenes)
@@ -374,7 +376,7 @@ func (qb *sceneQueryBuilder) QueryScenes(sceneFilter *models.SceneFilterType, fi
 }
 
 func (qb *sceneQueryBuilder) QueryCount(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) (int, error) {
-	query := qb.buildQuery(sceneFilter, findFilter)
+	query := qb.buildQuery(sceneFilter, findFilter, true)
 	return qb.dbi.CountOnly(*query)
 }
 
