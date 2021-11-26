@@ -57,6 +57,8 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
+	IsAdmin func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	IsOwner func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -3777,7 +3779,10 @@ input TagCategoryDestroyInput {
   id: ID!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/user.graphql", Input: `enum RoleEnum {
+	{Name: "graphql/schema/types/user.graphql", Input: `directive @isAdmin on FIELD_DEFINITION
+directive @isOwner on FIELD_DEFINITION
+
+enum RoleEnum {
   READ
   VOTE
   EDIT
@@ -3793,11 +3798,11 @@ type User {
   id: ID!
   name: String!
   """Should not be visible to other users"""
-  roles: [RoleEnum!]
+  roles: [RoleEnum!] @isOwner
   """Should not be visible to other users"""
-  email: String
+  email: String @isOwner
   """Should not be visible to other users"""
-  api_key: String
+  api_key: String @isOwner
 
   """ Vote counts by type """
   vote_count: UserVoteCount!
@@ -3805,10 +3810,10 @@ type User {
   edit_count: UserEditCount!
 
   """Calls to the API from this user over a configurable time period"""
-  api_calls: Int!
-  invited_by: User
-  invite_tokens: Int
-  active_invite_codes: [String!]
+  api_calls: Int! @isOwner
+  invited_by: User @isOwner
+  invite_tokens: Int @isOwner
+  active_invite_codes: [String!] @isOwner
 }
 
 input UserCreateInput {
@@ -3985,7 +3990,7 @@ type Query {
   """Find user by ID or username"""
   findUser(id: ID, username: String): User
 
-  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType!
+  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @isAdmin
 
   """Returns currently authenticated user"""
   me: User
@@ -10604,8 +10609,28 @@ func (ec *executionContext) _Query_queryUsers(ctx context.Context, field graphql
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().QueryUsers(rctx, args["user_filter"].(*UserFilterType), args["filter"].(*QuerySpec))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryUsers(rctx, args["user_filter"].(*UserFilterType), args["filter"].(*QuerySpec))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAdmin == nil {
+				return nil, errors.New("directive isAdmin is not implemented")
+			}
+			return ec.directives.IsAdmin(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QueryUsersResultType); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryUsersResultType`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13693,8 +13718,28 @@ func (ec *executionContext) _User_roles(ctx context.Context, field graphql.Colle
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().Roles(rctx, obj)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().Roles(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsOwner == nil {
+				return nil, errors.New("directive isOwner is not implemented")
+			}
+			return ec.directives.IsOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]RoleEnum); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.RoleEnum`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13725,8 +13770,28 @@ func (ec *executionContext) _User_email(ctx context.Context, field graphql.Colle
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Email, nil
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.Email, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsOwner == nil {
+				return nil, errors.New("directive isOwner is not implemented")
+			}
+			return ec.directives.IsOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13757,8 +13822,28 @@ func (ec *executionContext) _User_api_key(ctx context.Context, field graphql.Col
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.APIKey, nil
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.APIKey, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsOwner == nil {
+				return nil, errors.New("directive isOwner is not implemented")
+			}
+			return ec.directives.IsOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13859,8 +13944,28 @@ func (ec *executionContext) _User_api_calls(ctx context.Context, field graphql.C
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.APICalls, nil
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.APICalls, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsOwner == nil {
+				return nil, errors.New("directive isOwner is not implemented")
+			}
+			return ec.directives.IsOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(int); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be int`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13894,8 +13999,28 @@ func (ec *executionContext) _User_invited_by(ctx context.Context, field graphql.
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().InvitedBy(rctx, obj)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().InvitedBy(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsOwner == nil {
+				return nil, errors.New("directive isOwner is not implemented")
+			}
+			return ec.directives.IsOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.User`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13926,8 +14051,28 @@ func (ec *executionContext) _User_invite_tokens(ctx context.Context, field graph
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.InviteTokens, nil
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.InviteTokens, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsOwner == nil {
+				return nil, errors.New("directive isOwner is not implemented")
+			}
+			return ec.directives.IsOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(int); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be int`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13958,8 +14103,28 @@ func (ec *executionContext) _User_active_invite_codes(ctx context.Context, field
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().ActiveInviteCodes(rctx, obj)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().ActiveInviteCodes(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsOwner == nil {
+				return nil, errors.New("directive isOwner is not implemented")
+			}
+			return ec.directives.IsOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)

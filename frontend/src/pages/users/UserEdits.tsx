@@ -7,7 +7,7 @@ import { createHref } from "src/utils";
 import { EditList } from "src/components/list";
 
 interface Props {
-  user: User;
+  user: Pick<User, "id" | "name">;
 }
 
 const UserEditsComponent: FC<Props> = ({ user }) => (
