@@ -1,5 +1,6 @@
 type Version {
   hash: String!
   build_time: String!
+  build_type: String!
   version: String!
 }

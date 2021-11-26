@@ -643,6 +643,7 @@ type UserVoteCount struct {
 type Version struct {
 	Hash      string `json:"hash"`
 	BuildTime string `json:"build_time"`
+	BuildType string `json:"build_type"`
 	Version   string `json:"version"`
 }
 

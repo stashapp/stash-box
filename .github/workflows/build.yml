@@ -91,15 +91,26 @@ jobs:
         POSTGRES_DB: postgres:postgres@localhost/postgres?sslmode=disable
       run: make it
 
+    - name: Set PR version
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      run: echo "BUILD_TYPE=PR" >> $GITHUB_ENV
+    - name: Set Official version
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest-develop' }}
+      run: echo "BUILD_TYPE=OFFICIAL" >> $GITHUB_ENV
+    - name: Set Development version
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      run: echo "BUILD_TYPE=DEVELOPMENT" >> $GITHUB_ENV
+
     - name: Crosscompile binaries
       run: make cross-compile
+      env: 
+        BUILD_TYPE: "${{ env.BUILD_TYPE }}"
 
     - name: Generate checksums
       run: |
         git describe --tags --exclude latest-develop | tee CHECKSUMS_SHA1
         sha1sum dist/*/stash-box-* | sed 's/dist\/.*\///g' | tee -a CHECKSUMS_SHA1
         echo "STASH_BOX_VERSION=$(git describe --tags --exclude latest-develop)" >> $GITHUB_ENV
-        echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
 
     - name: Upload Windows binary
       # only upload binaries for pull requests

@@ -34,6 +34,7 @@ import { Tags, TagsVariables } from "../definitions/Tags";
 import { User, UserVariables } from "../definitions/User";
 import { Users, UsersVariables } from "../definitions/Users";
 import { Config } from "../definitions/Config";
+import { Version } from "../definitions/Version";
 
 import CategoryQuery from "./Category.gql";
 import CategoriesQuery from "./Categories.gql";
@@ -55,6 +56,7 @@ import TagsQuery from "./Tags.gql";
 import UserQuery from "./User.gql";
 import UsersQuery from "./Users.gql";
 import ConfigQuery from "./Config.gql";
+import VersionQuery from "./Version.gql";
 
 export const useCategory = (variables: CategoryVariables, skip = false) =>
   useQuery<Category, CategoryVariables>(CategoryQuery, {
@@ -181,3 +183,5 @@ export const useUsers = (variables: UsersVariables) =>
   });
 
 export const useConfig = () => useQuery<Config>(ConfigQuery);
+
+export const useVersion = () => useQuery<Version>(VersionQuery);
