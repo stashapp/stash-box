@@ -36,7 +36,7 @@ func (p *PerformersScenes) Add(o interface{}) {
 
 func (p *PerformersScenes) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -73,7 +73,7 @@ func (p *ScenesTags) Add(o interface{}) {
 
 func (p *ScenesTags) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -110,7 +110,7 @@ func (p *ScenesImages) Add(o interface{}) {
 
 func (p *ScenesImages) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -147,7 +147,7 @@ func (p PerformersImages) EachPtr(fn func(interface{})) {
 
 func (p *PerformersImages) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -184,7 +184,7 @@ func (p *StudiosImages) Add(o interface{}) {
 
 func (p *StudiosImages) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break

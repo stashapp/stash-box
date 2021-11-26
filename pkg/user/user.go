@@ -229,7 +229,7 @@ func Create(fac models.Repo, input models.UserCreateInput) (*models.User, error)
 
 	apiKey, err := GenerateAPIKey(newUser.ID.String())
 	if err != nil {
-		return nil, fmt.Errorf("Error generating APIKey: %s", err.Error())
+		return nil, fmt.Errorf("Error generating APIKey: %w", err)
 	}
 
 	newUser.APIKey = apiKey
@@ -313,14 +313,14 @@ func CreateRoot(fac models.Repo) {
 
 		count, err := qb.Count()
 		if err != nil {
-			panic(fmt.Errorf("Error getting user count: %s", err.Error()))
+			panic(fmt.Errorf("Error getting user count: %w", err))
 		}
 
 		if count == 0 {
 			const passwordLength = 16
 			password, err = utils.GenerateRandomPassword(passwordLength)
 			if err != nil {
-				panic(fmt.Errorf("Error creating root user: %s", err.Error()))
+				panic(fmt.Errorf("Error creating root user: %w", err))
 			}
 			newUser := models.UserCreateInput{
 				Name:     "root",
@@ -339,7 +339,7 @@ func CreateRoot(fac models.Repo) {
 	})
 
 	if err != nil {
-		panic(fmt.Errorf("Error creating root user: %s", err.Error()))
+		panic(fmt.Errorf("Error creating root user: %w", err))
 	}
 
 	if createdUser != nil {
@@ -362,7 +362,7 @@ func GetRoles(fac models.Repo, id string) ([]models.RoleEnum, error) {
 	roles, err := qb.GetRoles(userID)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error getting user roles: %s", err.Error())
+		return nil, fmt.Errorf("Error getting user roles: %w", err)
 	}
 
 	return roles.ToRoles(), nil
@@ -397,7 +397,7 @@ func RegenerateAPIKey(fac models.Repo, userID string) (string, error) {
 	user, err := qb.Find(userUUID)
 
 	if err != nil {
-		return "", fmt.Errorf("error finding user: %s", err.Error())
+		return "", fmt.Errorf("error finding user: %w", err)
 	}
 
 	if user == nil {
@@ -406,7 +406,7 @@ func RegenerateAPIKey(fac models.Repo, userID string) (string, error) {
 
 	user.APIKey, err = GenerateAPIKey(user.ID.String())
 	if err != nil {
-		return "", fmt.Errorf("Error generating APIKey: %s", err.Error())
+		return "", fmt.Errorf("Error generating APIKey: %w", err)
 	}
 
 	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
@@ -425,7 +425,7 @@ func ChangePassword(fac models.Repo, userID string, currentPassword string, newP
 	user, err := qb.Find(userUUID)
 
 	if err != nil {
-		return fmt.Errorf("error finding user: %s", err.Error())
+		return fmt.Errorf("error finding user: %w", err)
 	}
 
 	if user == nil {

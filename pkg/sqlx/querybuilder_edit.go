@@ -216,19 +216,20 @@ func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFi
 		if editFilter.TargetType == nil || *editFilter.TargetType == "" {
 			return nil, errors.New("TargetType is required when TargetID filter is used")
 		}
-		if *editFilter.TargetType == models.TargetTypeEnumTag {
+		switch *editFilter.TargetType {
+		case models.TargetTypeEnumTag:
 			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-		} else if *editFilter.TargetType == models.TargetTypeEnumPerformer {
+		case models.TargetTypeEnumPerformer:
 			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-		} else if *editFilter.TargetType == models.TargetTypeEnumStudio {
+		case models.TargetTypeEnumStudio:
 			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-		} else if *editFilter.TargetType == models.TargetTypeEnumScene {
+		case models.TargetTypeEnumScene:
 			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-		} else {
+		default:
 			return nil, fmt.Errorf("TargetType is not yet supported: %s", *editFilter.TargetType)
 		}
 		jsonID, _ := json.Marshal(targetID)
