@@ -97,7 +97,7 @@ func (qb queryBuilder) buildBody(isCount bool) string {
 	}
 
 	if !isCount {
-		body = body + qb.Sort
+		body += qb.Sort
 	}
 
 	if qb.Distinct {
@@ -198,7 +198,7 @@ func sqlGenKeysCreate(dialect Dialect, i interface{}) (string, string) {
 
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
+		// get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		switch t := v.Field(i).Interface().(type) {
@@ -260,7 +260,7 @@ func sqlGenKeys(dialect Dialect, i interface{}, partial bool) string {
 
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
+		// get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		if key == "id" {

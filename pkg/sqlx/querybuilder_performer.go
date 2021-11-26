@@ -248,30 +248,33 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 	}
 
 	handleStringCriterion("country", performerFilter.Country, query)
-	//handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
-	//handleStringCriterion("height", performerFilter.Height, &query)
-	//handleStringCriterion("measurements", performerFilter.Measurements, &query)
-	//handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
-	//handleStringCriterion("career_length", performerFilter.CareerLength, &query)
-	//handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
-	//handleStringCriterion("piercings", performerFilter.Piercings, &query)
-	//handleStringCriterion("aliases", performerFilter.Aliases, &query)
+	/*
+		handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
+		handleStringCriterion("height", performerFilter.Height, &query)
+		handleStringCriterion("measurements", performerFilter.Measurements, &query)
+		handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
+		handleStringCriterion("career_length", performerFilter.CareerLength, &query)
+		handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
+		handleStringCriterion("piercings", performerFilter.Piercings, &query)
+		handleStringCriterion("aliases", performerFilter.Aliases, &query)
+	*/
 
-	if findFilter != nil && findFilter.GetSort("") == "debut" {
+	switch {
+	case findFilter != nil && findFilter.GetSort("") == "debut":
 		query.Body += `
 			JOIN (SELECT performer_id, MIN(date) as debut FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
 		query.Sort = "ORDER BY debut " + direction + ", name " + direction
-	} else if findFilter != nil && findFilter.GetSort("") == "scene_count" {
+	case findFilter != nil && findFilter.GetSort("") == "scene_count":
 		query.Body += `
 			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
 		query.Sort = " ORDER BY scene_count " + direction + ", name " + direction
-	} else {
+	default:
 		query.Sort = qb.getPerformerSort(findFilter)
 	}
 

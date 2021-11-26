@@ -37,11 +37,11 @@ type EditVote struct {
 	Vote      string          `db:"vote" json:"vote"`
 }
 
-func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
+func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
 	currentTime := time.Now()
 
 	ret := &Edit{
-		ID:         UUID,
+		ID:         uuid,
 		UserID:     user.ID,
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
@@ -53,11 +53,11 @@ func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditI
 	return ret
 }
 
-func NewEditComment(UUID uuid.UUID, user *User, edit *Edit, text string) *EditComment {
+func NewEditComment(uuid uuid.UUID, user *User, edit *Edit, text string) *EditComment {
 	currentTime := time.Now()
 
 	ret := &EditComment{
-		ID:        UUID,
+		ID:        uuid,
 		EditID:    edit.ID,
 		UserID:    user.ID,
 		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},

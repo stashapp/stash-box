@@ -146,11 +146,7 @@ func (m *TagEditProcessor) destroyEdit(input models.TagEditInput, inputSpecified
 	tagID, _ := uuid.FromString(*input.Edit.ID)
 	_, err := tqb.Find(tagID)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (m *TagEditProcessor) CreateJoin(input models.TagEditInput) error {

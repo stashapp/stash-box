@@ -1,6 +1,7 @@
 package user_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stashapp/stash-box/pkg/models"
@@ -74,7 +75,7 @@ func TestValidateUserNameCreate(t *testing.T) {
 
 		err := user.ValidateCreate(input)
 
-		if err != v.err {
+		if !errors.Is(err, v.err) {
 			t.Errorf("name: %s - got %v; want %v", v.username, err, v.err)
 		}
 	}
@@ -87,7 +88,7 @@ func TestValidateUserEmailCreate(t *testing.T) {
 
 		err := user.ValidateCreate(input)
 
-		if err != v.err {
+		if !errors.Is(err, v.err) {
 			t.Errorf("email: %s - got %v; want %v", v.email, err, v.err)
 		}
 	}
@@ -100,7 +101,7 @@ func TestValidatePasswordCreate(t *testing.T) {
 
 		err := user.ValidateCreate(input)
 
-		if err != v.err {
+		if !errors.Is(err, v.err) {
 			t.Errorf("password: %s - got %v; want %v", v.password, err, v.err)
 		}
 	}
@@ -126,7 +127,7 @@ func TestValidateUserNameUpdate(t *testing.T) {
 
 		err := user.ValidateUpdate(input, makeValidUser())
 
-		if err != v.err {
+		if !errors.Is(err, v.err) {
 			t.Errorf("name: %s - got %v; want %v", v.username, err, v.err)
 		}
 	}
@@ -139,7 +140,7 @@ func TestValidateUserEmailUpdate(t *testing.T) {
 
 		err := user.ValidateUpdate(input, makeValidUser())
 
-		if err != v.err {
+		if !errors.Is(err, v.err) {
 			t.Errorf("email: %s - got %v; want %v", v.email, err, v.err)
 		}
 	}
@@ -152,7 +153,7 @@ func TestValidatePasswordUpdate(t *testing.T) {
 
 		err := user.ValidateUpdate(input, makeValidUser())
 
-		if err != v.err {
+		if !errors.Is(err, v.err) {
 			t.Errorf("password: %s - got %v; want %v", v.email, err, v.err)
 		}
 	}
@@ -167,7 +168,7 @@ func TestChangeRootUsername(t *testing.T) {
 	rootUser.Name = "root"
 	err := user.ValidateUpdate(input, rootUser)
 
-	if err != user.ErrChangeRootName {
+	if !errors.Is(err, user.ErrChangeRootName) {
 		t.Errorf("change root username: got %v; want %v", err, user.ErrChangeRootName)
 	}
 }
@@ -182,7 +183,7 @@ func TestChangeRootRoles(t *testing.T) {
 	rootUser.Name = "root"
 	err := user.ValidateUpdate(input, rootUser)
 
-	if err != user.ErrChangeRootRoles {
+	if !errors.Is(err, user.ErrChangeRootRoles) {
 		t.Errorf("change root roles: got %v; want %v", err, user.ErrChangeRootRoles)
 	}
 }
@@ -200,7 +201,7 @@ func TestDestroyUser(t *testing.T) {
 
 		err := user.ValidateDestroy(u)
 
-		if err != v.err {
+		if !errors.Is(err, v.err) {
 			t.Errorf("username: %s - got %v; want %v", v.username, err, v.err)
 		}
 	}

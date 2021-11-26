@@ -55,7 +55,7 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 		current, err := qb.Find(userID)
 
 		if err != nil {
-			return fmt.Errorf("error finding user: %s", err.Error())
+			return fmt.Errorf("error finding user: %w", err)
 		}
 
 		if current == nil {
@@ -100,7 +100,7 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 		u, err := qb.Find(userID)
 
 		if err != nil {
-			return fmt.Errorf("error finding user: %s", err.Error())
+			return fmt.Errorf("error finding user: %w", err)
 		}
 
 		if u == nil {
