@@ -32,7 +32,7 @@ export interface ApplyEdit_applyEdit_votes_user {
 
 export interface ApplyEdit_applyEdit_votes {
   __typename: "EditVote";
-  user: ApplyEdit_applyEdit_votes_user;
+  user: ApplyEdit_applyEdit_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }

@@ -32,7 +32,7 @@ export interface StudioEdit_studioEdit_votes_user {
 
 export interface StudioEdit_studioEdit_votes {
   __typename: "EditVote";
-  user: StudioEdit_studioEdit_votes_user;
+  user: StudioEdit_studioEdit_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }
