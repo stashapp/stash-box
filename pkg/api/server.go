@@ -33,6 +33,7 @@ import (
 var version string
 var buildstamp string
 var githash string
+var buildtype string
 
 const APIKeyHeader = "ApiKey"
 
@@ -216,9 +217,9 @@ func Start(rfp RepoProvider, ui embed.FS) {
 }
 
 func printVersion() {
-	versionString := githash
-	if version != "" {
-		versionString = version + " (" + versionString + ")"
+	versionString := version
+	if buildtype != "OFFICIAL" {
+		versionString += " (" + githash + ")"
 	}
 	fmt.Printf("stash-box version: %s - %s\n", versionString, buildstamp)
 }

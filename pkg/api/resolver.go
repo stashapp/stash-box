@@ -86,6 +86,7 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 		Version:   version,
 		Hash:      githash,
 		BuildTime: buildstamp,
+		BuildType: buildtype,
 	}, nil
 }
 
