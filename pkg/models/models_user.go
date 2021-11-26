@@ -25,14 +25,6 @@ func (p User) GetID() uuid.UUID {
 	return p.ID
 }
 
-func (p *User) RemoveSensitiveFields() {
-	p.PasswordHash = ""
-	p.Email = ""
-	p.APIKey = ""
-	p.APICalls = -1
-	p.InviteTokens = -1
-}
-
 type Users []*User
 
 func (p Users) Each(fn func(interface{})) {

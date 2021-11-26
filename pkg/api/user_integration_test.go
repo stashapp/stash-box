@@ -297,35 +297,6 @@ func (s *userTestRunner) testUnauthorisedUserMutate() {
 	}
 }
 
-func (s *userTestRunner) ensureDetailsRemoved(user *models.User) {
-	s.t.Helper()
-
-	if user.APIKey != "" {
-		s.t.Error("API key shown for unauthorised user")
-	}
-
-	if user.Email != "" {
-		s.t.Error("Email shown for unauthorised user")
-	}
-}
-
-func (s *userTestRunner) testUnauthorisedUserFind() {
-	// find different user
-	userID := userDB.admin.ID.String()
-	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
-	if err != nil {
-		s.t.Errorf("FindUser: got %v want %v", err, nil)
-		return
-	}
-
-	if user == nil {
-		s.t.Error("FindUser: admin user not found")
-		return
-	}
-
-	s.ensureDetailsRemoved(user)
-}
-
 func (s *userTestRunner) testUserQuery() {
 	userName := userDB.admin.Name
 
@@ -348,25 +319,6 @@ func (s *userTestRunner) testUserQuery() {
 	if len(users.Users) != 1 {
 		s.t.Error("QueryUsers: admin user not found")
 		return
-	}
-}
-
-func (s *userTestRunner) testUnauthorisedUserQuery() {
-	userName := userDB.admin.Name
-
-	userFilter := models.UserFilterType{
-		Name: &userName,
-	}
-	page := 1
-	perPage := 1
-	filter := models.QuerySpec{
-		Page:    &page,
-		PerPage: &perPage,
-	}
-
-	_, err := s.resolver.Query().QueryUsers(s.ctx, &userFilter, &filter)
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("UserUpdate: got %v want %v", err, user.ErrUnauthorized)
 	}
 }
 
@@ -531,23 +483,9 @@ func TestUnauthorisedUserMutate(t *testing.T) {
 	pt.testUnauthorisedUserMutate()
 }
 
-func TestUnauthorisedUserFind(t *testing.T) {
-	pt := &userTestRunner{
-		testRunner: *asModify(t),
-	}
-	pt.testUnauthorisedUserFind()
-}
-
 func TestUserQuery(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testUserQuery()
-}
-
-func TestUnauthorisedUserQuery(t *testing.T) {
-	pt := &userTestRunner{
-		testRunner: *asModify(t),
-	}
-	pt.testUnauthorisedUserQuery()
 }
 
 func TestChangePassword(t *testing.T) {
