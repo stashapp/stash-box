@@ -1,9 +1,13 @@
+import { useContext } from "react";
 import {
   useQuery,
   useLazyQuery,
   QueryHookOptions,
   LazyQueryHookOptions,
 } from "@apollo/client";
+
+import AuthContext from "src/AuthContext";
+import { isAdmin } from "src/utils";
 
 import { Category, CategoryVariables } from "../definitions/Category";
 import { Categories, CategoriesVariables } from "../definitions/Categories";
@@ -33,6 +37,7 @@ import { Tag, TagVariables } from "../definitions/Tag";
 import { Tags, TagsVariables } from "../definitions/Tags";
 import { User, UserVariables } from "../definitions/User";
 import { Users, UsersVariables } from "../definitions/Users";
+import { PublicUser, PublicUserVariables } from "../definitions/PublicUser";
 import { Config } from "../definitions/Config";
 import { Version } from "../definitions/Version";
 
@@ -55,6 +60,7 @@ import TagQuery from "./Tag.gql";
 import TagsQuery from "./Tags.gql";
 import UserQuery from "./User.gql";
 import UsersQuery from "./Users.gql";
+import PublicUserQuery from "./PublicUser.gql";
 import ConfigQuery from "./Config.gql";
 import VersionQuery from "./Version.gql";
 
@@ -171,11 +177,27 @@ export const useLazyTags = (
   options?: LazyQueryHookOptions<Tags, TagsVariables>
 ) => useLazyQuery(TagsQuery, options);
 
-export const useUser = (variables: UserVariables, skip = false) =>
+export const usePrivateUser = (variables: UserVariables, skip = false) =>
   useQuery<User, UserVariables>(UserQuery, {
     variables,
     skip,
   });
+export const usePublicUser = (variables: PublicUserVariables, skip = false) =>
+  useQuery<PublicUser, PublicUserVariables>(PublicUserQuery, {
+    variables,
+    skip,
+  });
+
+export const useUser = (variables: UserVariables, skip = false) => {
+  const Auth = useContext(AuthContext);
+  const isUser = () => Auth.user?.name === variables.name;
+  const showPrivate = isUser() || isAdmin(Auth.user);
+
+  const privateUser = usePrivateUser(variables, skip || !showPrivate);
+  const publicUser = usePublicUser(variables, skip || showPrivate);
+
+  return showPrivate ? privateUser : publicUser;
+};
 
 export const useUsers = (variables: UsersVariables) =>
   useQuery<Users, UsersVariables>(UsersQuery, {

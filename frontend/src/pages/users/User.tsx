@@ -19,6 +19,7 @@ import {
   User_findUser_edit_count as EditCounts,
   User_findUser_vote_count as VoteCounts,
 } from "src/graphql/definitions/User";
+import { PublicUser_findUser as PublicUser } from "src/graphql/definitions/PublicUser";
 import AuthContext from "src/AuthContext";
 import {
   ROUTE_USER_EDIT,
@@ -28,7 +29,7 @@ import {
 } from "src/constants/route";
 import Modal from "src/components/modal";
 import { Icon } from "src/components/fragments";
-import { isAdmin, createHref } from "src/utils";
+import { isAdmin, isPrivateUser, createHref } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 
 type EditCount = [VoteStatusEnum, number];
@@ -57,7 +58,7 @@ const filterVotes = (voteCount: VoteCounts): VoteCount[] => {
 };
 
 interface Props {
-  user: User;
+  user: User | PublicUser;
   refetch: () => void;
 }
 
@@ -73,8 +74,8 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [grantInvite] = useGrantInvite();
   const [revokeInvite] = useRevokeInvite();
 
-  const isUser = () => Auth.user?.name === user.name;
-  const showPrivate = isUser() || isAdmin(Auth.user);
+  const showPrivate = isPrivateUser(user);
+
   const endpointURL = configData && `${configData.getConfig.host_url}/graphql`;
 
   const toggleModal = () => setShowDelete(true);
@@ -156,7 +157,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
             <Link to={createHref(ROUTE_USER_EDITS, user)} className="ms-2">
               <Button variant="secondary">User Edits</Button>
             </Link>
-            {isUser() && (
+            {showPrivate && (
               <Link to={ROUTE_USER_PASSWORD} className="ms-2">
                 <Button>Change Password</Button>
               </Link>
@@ -179,7 +180,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           </div>
         </div>
         <hr />
-        {showPrivate && (
+        {isPrivateUser(user) && (
           <>
             <Row>
               <span className="col-2">Email</span>
@@ -262,7 +263,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </Table>
             </Col>
           </Row>
-          {(isAdmin(Auth.user) || user.id === Auth.user?.id) && (
+          {isPrivateUser(user) && (
             <Row>
               <span className="col-2">Invite Tokens</span>
               <InputGroup className="col">
@@ -280,7 +281,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </InputGroup>
             </Row>
           )}
-          {user.id === Auth.user?.id && (
+          {isPrivateUser(user) && user.id === Auth.user?.id && (
             <Row className="my-2">
               <span className="col-2">Invite Keys</span>
               <div className="col">
@@ -301,7 +302,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                   </InputGroup>
                 ))}
                 <div>
-                  {isUser() && (
+                  {showPrivate && (
                     <Button
                       variant="link"
                       onClick={() => handleGenerateCode()}
