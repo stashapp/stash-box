@@ -23,6 +23,11 @@ func (r *editVoteResolver) Date(ctx context.Context, obj *models.EditVote) (*tim
 }
 
 func (r *editVoteResolver) User(ctx context.Context, obj *models.EditVote) (*models.User, error) {
+	// User votes only available to users with vote permission
+	if err := validateVote(ctx); err != nil {
+		return nil, nil
+	}
+
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
 	user, err := qb.Find(obj.UserID)

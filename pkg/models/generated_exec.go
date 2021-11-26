@@ -2916,7 +2916,7 @@ enum VoteStatusEnum {
 }
 
 type EditVote {
-    user: User!
+    user: User
     date: Time!
     vote: VoteTypeEnum!
 }
@@ -5823,14 +5823,11 @@ func (ec *executionContext) _EditVote_user(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EditVote_date(ctx context.Context, field graphql.CollectedField, obj *EditVote) (ret graphql.Marshaler) {
@@ -19554,9 +19551,6 @@ func (ec *executionContext) _EditVote(ctx context.Context, sel ast.SelectionSet,
 					}
 				}()
 				res = ec._EditVote_user(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			})
 		case "date":
@@ -23810,10 +23804,6 @@ func (ec *executionContext) marshalNURL2ᚖgithubᚗcomᚋstashappᚋstashᚑbox
 func (ec *executionContext) unmarshalNURLInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx context.Context, v interface{}) (*URL, error) {
 	res, err := ec.unmarshalInputURLInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNUser2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
-	return ec._User(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {
