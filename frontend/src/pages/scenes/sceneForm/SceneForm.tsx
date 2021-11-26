@@ -192,6 +192,12 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
     });
   };
 
+  const handleRemove = (index: number) => {
+    if (isChanging && isChanging > index) setChange(isChanging - 1);
+    else if (isChanging === index) setChange(undefined);
+    removePerformer(index);
+  };
+
   const handleChange = (result: PerformerResult, index: number) => {
     setChange(undefined);
     const alias = performerFields[index].alias || performerFields[index].name;
@@ -217,7 +223,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
 
       <Col xs={6}>
         <InputGroup className="flex-nowrap">
-          <Button variant="danger" onClick={() => removePerformer(index)}>
+          <Button variant="danger" onClick={() => handleRemove(index)}>
             Remove
           </Button>
           <>
