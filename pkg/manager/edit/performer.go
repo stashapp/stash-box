@@ -2,6 +2,8 @@ package edit
 
 import (
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -33,8 +35,6 @@ func (m *PerformerEditProcessor) Edit(input models.PerformerEditInput, inputSpec
 		err = m.destroyEdit(input, inputSpecified)
 	case models.OperationEnumCreate:
 		err = m.createEdit(input, inputSpecified)
-	default:
-		panic("not implemented")
 	}
 
 	return err
@@ -257,10 +257,10 @@ func (m *PerformerEditProcessor) apply() error {
 			return err
 		}
 		if performer == nil {
-			return errors.New("Performer not found: " + performerID.String())
+			return fmt.Errorf("%w: performer %s", ErrEntityNotFound, performerID.String())
 		}
 	}
-	newPerformer, err := pqb.ApplyEdit(*m.edit, operation, performer)
+	newPerformer, err := m.applyEdit(performer)
 	if err != nil {
 		return err
 	}
@@ -278,6 +278,102 @@ func (m *PerformerEditProcessor) apply() error {
 	}
 
 	return nil
+}
+
+func (m *PerformerEditProcessor) applyEdit(performer *models.Performer) (*models.Performer, error) {
+	data, err := m.edit.GetPerformerData()
+	if err != nil {
+		return nil, err
+	}
+
+	operation := m.operation()
+
+	switch operation {
+	case models.OperationEnumCreate:
+		return m.applyCreate(data)
+	case models.OperationEnumDestroy:
+		return m.applyDestroy(performer)
+	case models.OperationEnumModify:
+		return m.applyModify(performer, data)
+	case models.OperationEnumMerge:
+		return m.applyMerge(performer, data)
+	}
+	return nil, nil
+}
+
+func (m *PerformerEditProcessor) applyCreate(data *models.PerformerEditData) (*models.Performer, error) {
+	now := time.Now()
+	UUID, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+	newPerformer := &models.Performer{
+		ID:        UUID,
+		CreatedAt: models.SQLiteTimestamp{Timestamp: now},
+		UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
+	}
+
+	qb := m.fac.Performer()
+
+	return qb.ApplyEdit(newPerformer, true, data)
+}
+
+func (m *PerformerEditProcessor) applyModify(performer *models.Performer, data *models.PerformerEditData) (*models.Performer, error) {
+	if err := performer.ValidateModifyEdit(*data); err != nil {
+		return nil, err
+	}
+
+	qb := m.fac.Performer()
+	return qb.ApplyEdit(performer, false, data)
+}
+
+func (m *PerformerEditProcessor) applyDestroy(performer *models.Performer) (*models.Performer, error) {
+	qb := m.fac.Performer()
+	updatedPerformer, err := qb.SoftDelete(*performer)
+	if err != nil {
+		return nil, err
+	}
+
+	err = qb.DeleteScenePerformers(performer.ID)
+
+	return updatedPerformer, err
+}
+
+func (m *PerformerEditProcessor) applyMerge(performer *models.Performer, data *models.PerformerEditData) (*models.Performer, error) {
+	updatedPerformer, err := m.applyModify(performer, data)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range data.MergeSources {
+		sourceUUID, _ := uuid.FromString(v)
+		if err := m.mergeInto(sourceUUID, performer.ID, data.SetMergeAliases); err != nil {
+			return nil, err
+		}
+	}
+
+	return updatedPerformer, nil
+}
+
+func (m *PerformerEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID, setAliases bool) error {
+	qb := m.fac.Performer()
+	performer, err := qb.Find(sourceID)
+	if err != nil {
+		return err
+	}
+	if performer == nil {
+		return fmt.Errorf("%w: source performer %s", ErrEntityNotFound, sourceID.String())
+	}
+
+	target, err := qb.Find(targetID)
+	if err != nil {
+		return err
+	}
+	if target == nil {
+		return fmt.Errorf("%w: target performer %s", ErrEntityNotFound, targetID.String())
+	}
+
+	return qb.MergeInto(performer, target, setAliases)
 }
 
 func bodyModCompare(subject []*models.BodyModification, against []*models.BodyModification) (added []*models.BodyModification, missing []*models.BodyModification) {

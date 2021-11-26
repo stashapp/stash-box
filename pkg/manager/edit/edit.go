@@ -13,9 +13,14 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-var InvalidVoteStatus = errors.New("invalid vote status")
-var EditNotFound = errors.New("edit not found")
-var EditAlreadyApplied = errors.New("edit already applied")
+var ErrInvalidVoteStatus = errors.New("invalid vote status")
+var ErrEditNotFound = errors.New("edit not found")
+var ErrEditAlreadyApplied = errors.New("edit already applied")
+var ErrNoChanges = errors.New("edit contains no changes")
+var ErrMergeIDMissing = errors.New("merge target ID is required")
+var ErrEntityNotFound = errors.New("entity not found")
+var ErrMergeTargetIsSource = errors.New("merge target cannot be used as source")
+var ErrNoMergeSources = errors.New("no merge sources found")
 
 // InputSpecifiedFunc is function that returns true if the qualified field name
 // was specified in the input. Used to distinguish between nil/empty fields and
@@ -59,11 +64,11 @@ type editApplyer interface {
 
 func validateEditPresence(edit *models.Edit) error {
 	if edit == nil {
-		return EditNotFound
+		return ErrEditNotFound
 	}
 
 	if edit.Applied {
-		return EditAlreadyApplied
+		return ErrEditAlreadyApplied
 	}
 
 	return nil
@@ -73,7 +78,7 @@ func validateEditPrerequisites(fac models.Repo, edit *models.Edit) error {
 	var status models.VoteStatusEnum
 	utils.ResolveEnumString(edit.Status, &status)
 	if status != models.VoteStatusEnumPending {
-		return fmt.Errorf("%w: %s", InvalidVoteStatus, edit.Status)
+		return fmt.Errorf("%w: %s", ErrInvalidVoteStatus, edit.Status)
 	}
 
 	return nil
@@ -111,8 +116,6 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 			applyer = Studio(fac, edit)
 		case models.TargetTypeEnumScene:
 			applyer = Scene(fac, edit)
-		default:
-			return errors.New("Not implemented: " + edit.TargetType)
 		}
 
 		if err := applyer.apply(); err != nil {

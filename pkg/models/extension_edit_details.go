@@ -1,7 +1,7 @@
 package models
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 )
@@ -163,7 +163,7 @@ type EditSlice interface {
 	Remove(v string)
 }
 
-func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice) error {
+func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityType string) error {
 	idMap := map[string]bool{}
 	current.Each(func(v interface{}) {
 		idMap[v.(EditSliceValue).ID()] = true
@@ -174,7 +174,7 @@ func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice) error {
 	removed.Each(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
 		if !idMap[id] {
-			err = errors.New("Invalid removal. ID does not exist: '" + id + "'")
+			err = fmt.Errorf("%w: unable to remove %s, ID does not exist: %s", ErrEditPrerequisiteFailed, entityType, id)
 		}
 		current.Remove(id)
 		idMap[id] = false
@@ -183,7 +183,7 @@ func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice) error {
 	added.EachPtr(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
 		if idMap[id] {
-			err = errors.New("Invalid addition. ID already exists '" + id + "'")
+			err = fmt.Errorf("%w: unable to add %s, ID already exists: %s", ErrEditPrerequisiteFailed, entityType, id)
 		}
 		current.Add(v)
 		idMap[id] = true

@@ -2,11 +2,14 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/gofrs/uuid"
 )
+
+var ErrEditPrerequisiteFailed = errors.New("prerequisite failed")
 
 // fromEdit translates edit object fields into entity fields
 type fromEdit struct {
