@@ -427,6 +427,7 @@ type ComplexityRoot struct {
 
 	Version struct {
 		BuildTime func(childComplexity int) int
+		BuildType func(childComplexity int) int
 		Hash      func(childComplexity int) int
 		Version   func(childComplexity int) int
 	}
@@ -2789,6 +2790,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Version.BuildTime(childComplexity), true
 
+	case "Version.build_type":
+		if e.complexity.Version.BuildType == nil {
+			break
+		}
+
+		return e.complexity.Version.BuildType(childComplexity), true
+
 	case "Version.hash":
 		if e.complexity.Version.Hash == nil {
 			break
@@ -3913,8 +3921,10 @@ type UserVoteCount {
 	{Name: "graphql/schema/types/version.graphql", Input: `type Version {
   hash: String!
   build_time: String!
+  build_type: String!
   version: String!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "graphql/schema/schema.graphql", Input: `"""The query root for this schema"""
 type Query {
   #### Performers ####
@@ -14453,6 +14463,41 @@ func (ec *executionContext) _Version_build_time(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Version_build_type(ctx context.Context, field graphql.CollectedField, obj *Version) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Version",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BuildType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Version_version(ctx context.Context, field graphql.CollectedField, obj *Version) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -21858,6 +21903,11 @@ func (ec *executionContext) _Version(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "build_time":
 			out.Values[i] = ec._Version_build_time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "build_type":
+			out.Values[i] = ec._Version_build_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
