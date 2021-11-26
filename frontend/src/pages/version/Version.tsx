@@ -29,6 +29,8 @@ const Version: FC = () => {
       </dd>
       <dt>Build Type</dt>
       <dd>{data.version.build_type}</dd>
+      <dt>Build Hash</dt>
+      <dd>{data.version.hash}</dd>
       <dt>Build Time</dt>
       <dd>{data.version.build_time}</dd>
     </dl>
