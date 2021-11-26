@@ -157,6 +157,9 @@ func (qb *userQueryBuilder) CountEditsByStatus(id uuid.UUID) (*models.UserEditCo
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res models.UserEditCount
 	for rows.Next() {
@@ -192,6 +195,9 @@ func (qb *userQueryBuilder) CountVotesByType(id uuid.UUID) (*models.UserVoteCoun
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var res models.UserVoteCount
 	for rows.Next() {

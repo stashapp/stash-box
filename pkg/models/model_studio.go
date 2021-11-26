@@ -72,7 +72,7 @@ func (s *StudioURLs) Add(o interface{}) {
 
 func (s *StudioURLs) Remove(id string) {
 	for i, v := range *s {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*s)[i] = (*s)[len(*s)-1]
 			*s = (*s)[:len(*s)-1]
 			break

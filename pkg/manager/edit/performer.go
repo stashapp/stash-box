@@ -222,11 +222,7 @@ func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput, in
 	performerID, _ := uuid.FromString(*input.Edit.ID)
 	_, err := pqb.Find(performerID)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (m *PerformerEditProcessor) CreateJoin(input models.PerformerEditInput) error {

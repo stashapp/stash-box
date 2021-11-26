@@ -53,8 +53,7 @@ func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 	}
 
 	// if height is longer then resize by height instead of width
-	dim := srcImage.Bounds().Max
-	if dim.Y > dim.X {
+	if dim := srcImage.Bounds().Max; dim.Y > dim.X {
 		resizedImage = imaging.Resize(srcImage, 0, int(maxDimension), imaging.Box)
 	} else {
 		resizedImage = imaging.Resize(srcImage, int(maxDimension), 0, imaging.Box)

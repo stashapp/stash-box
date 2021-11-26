@@ -45,10 +45,11 @@ func CopyFull(target interface{}, source interface{}) {
 		sourceFieldValue := sourceValue.FieldByName(field.Name)
 		targetFieldValue := targetValue.Elem().FieldByName(field.Name)
 
-		if field.Type == sourceField.Type {
+		switch {
+		case field.Type == sourceField.Type:
 			// direct copy
 			targetFieldValue.Set(sourceFieldValue)
-		} else if reflect.PtrTo(field.Type) == sourceField.Type {
+		case reflect.PtrTo(field.Type) == sourceField.Type:
 			// source field is pointer, target field is value
 			// if nil, then set to zero value, otherwise copy
 			if sourceFieldValue.IsNil() {
@@ -56,7 +57,7 @@ func CopyFull(target interface{}, source interface{}) {
 			} else {
 				targetFieldValue.Set(sourceFieldValue.Elem())
 			}
-		} else {
+		default:
 			// perform translation for limited number of fields
 			translateField(targetFieldValue, sourceFieldValue)
 		}

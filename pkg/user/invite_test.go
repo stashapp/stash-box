@@ -76,7 +76,7 @@ func TestGrantInviteTokens(t *testing.T) {
 
 		tokens, err := GrantInviteTokens(uf, userID, v.toAdd)
 
-		if err != v.expectedErr {
+		if !errors.Is(err, v.expectedErr) {
 			t.Errorf("scenario: %v+ - (error) got %v; want %v", v, err, v.expectedErr)
 			continue
 		}
@@ -129,7 +129,7 @@ func TestRepealInviteTokens(t *testing.T) {
 
 		tokens, err := RepealInviteTokens(uf, userID, v.toAdd)
 
-		if err != v.expectedErr {
+		if !errors.Is(err, v.expectedErr) {
 			t.Errorf("scenario: %v+ - (error) got %v; want %v", v, err, v.expectedErr)
 			continue
 		}

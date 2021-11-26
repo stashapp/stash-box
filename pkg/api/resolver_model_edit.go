@@ -51,7 +51,9 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(obj.TargetType, &targetType)
-	if targetType == models.TargetTypeEnumTag {
+
+	switch targetType {
+	case models.TargetTypeEnumTag:
 		tagID, err := eqb.FindTagID(obj.ID)
 		if err != nil {
 			return nil, err
@@ -64,7 +66,7 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 
 		return target, nil
-	} else if targetType == models.TargetTypeEnumPerformer {
+	case models.TargetTypeEnumPerformer:
 		performerID, err := eqb.FindPerformerID(obj.ID)
 		if err != nil {
 			return nil, err
@@ -77,7 +79,7 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 
 		return target, nil
-	} else if targetType == models.TargetTypeEnumStudio {
+	case models.TargetTypeEnumStudio:
 		studioID, err := eqb.FindStudioID(obj.ID)
 		if err != nil {
 			return nil, err
@@ -90,7 +92,7 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 
 		return target, nil
-	} else if targetType == models.TargetTypeEnumScene {
+	case models.TargetTypeEnumScene:
 		sceneID, err := eqb.FindSceneID(obj.ID)
 		if err != nil {
 			return nil, err
@@ -103,7 +105,7 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 
 		return target, nil
-	} else {
+	default:
 		return nil, errors.New("not implemented")
 	}
 }
@@ -128,7 +130,9 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 		fac := r.getRepoFactory(ctx)
 		var ret models.TargetTypeEnum
 		utils.ResolveEnumString(obj.TargetType, &ret)
-		if ret == models.TargetTypeEnumTag {
+
+		switch ret {
+		case models.TargetTypeEnumTag:
 			tqb := fac.Tag()
 			for _, tagStringID := range editData.MergeSources {
 				tagID, _ := uuid.FromString(tagStringID)
@@ -137,7 +141,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 					mergeSources = append(mergeSources, tag)
 				}
 			}
-		} else if ret == models.TargetTypeEnumPerformer {
+		case models.TargetTypeEnumPerformer:
 			pqb := fac.Performer()
 			for _, performerStringID := range editData.MergeSources {
 				performerID, _ := uuid.FromString(performerStringID)
@@ -146,7 +150,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 					mergeSources = append(mergeSources, performer)
 				}
 			}
-		} else if ret == models.TargetTypeEnumStudio {
+		case models.TargetTypeEnumStudio:
 			pqb := fac.Studio()
 			for _, studioStringID := range editData.MergeSources {
 				studioID, _ := uuid.FromString(studioStringID)
@@ -155,7 +159,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 					mergeSources = append(mergeSources, studio)
 				}
 			}
-		} else if ret == models.TargetTypeEnumScene {
+		case models.TargetTypeEnumScene:
 			qb := fac.Scene()
 			for _, sceneStringID := range editData.MergeSources {
 				sceneID, _ := uuid.FromString(sceneStringID)
@@ -164,7 +168,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 					mergeSources = append(mergeSources, scene)
 				}
 			}
-		} else {
+		default:
 			return nil, errors.New("not implemented")
 		}
 	}
@@ -184,25 +188,27 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 	var ret models.EditDetails
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(obj.TargetType, &targetType)
-	if targetType == models.TargetTypeEnumTag {
+
+	switch targetType {
+	case models.TargetTypeEnumTag:
 		tagData, err := obj.GetTagData()
 		if err != nil {
 			return nil, err
 		}
 		ret = tagData.New
-	} else if targetType == models.TargetTypeEnumPerformer {
+	case models.TargetTypeEnumPerformer:
 		performerData, err := obj.GetPerformerData()
 		if err != nil {
 			return nil, err
 		}
 		ret = performerData.New
-	} else if targetType == models.TargetTypeEnumStudio {
+	case models.TargetTypeEnumStudio:
 		studioData, err := obj.GetStudioData()
 		if err != nil {
 			return nil, err
 		}
 		ret = studioData.New
-	} else if targetType == models.TargetTypeEnumScene {
+	case models.TargetTypeEnumScene:
 		sceneData, err := obj.GetSceneData()
 		if err != nil {
 			return nil, err
@@ -217,25 +223,27 @@ func (r *editResolver) OldDetails(ctx context.Context, obj *models.Edit) (models
 	var ret models.EditDetails
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(obj.TargetType, &targetType)
-	if targetType == models.TargetTypeEnumTag {
+
+	switch targetType {
+	case models.TargetTypeEnumTag:
 		tagData, err := obj.GetTagData()
 		if err != nil {
 			return nil, err
 		}
 		ret = tagData.Old
-	} else if targetType == models.TargetTypeEnumPerformer {
+	case models.TargetTypeEnumPerformer:
 		performerData, err := obj.GetPerformerData()
 		if err != nil {
 			return nil, err
 		}
 		ret = performerData.Old
-	} else if targetType == models.TargetTypeEnumStudio {
+	case models.TargetTypeEnumStudio:
 		studioData, err := obj.GetStudioData()
 		if err != nil {
 			return nil, err
 		}
 		ret = studioData.Old
-	} else if targetType == models.TargetTypeEnumScene {
+	case models.TargetTypeEnumScene:
 		sceneData, err := obj.GetSceneData()
 		if err != nil {
 			return nil, err

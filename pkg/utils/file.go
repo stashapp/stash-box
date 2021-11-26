@@ -7,11 +7,12 @@ import (
 // FileExists returns true if the given path exists
 func FileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
-	if err == nil {
+	switch {
+	case err == nil:
 		return true, nil
-	} else if os.IsNotExist(err) {
+	case os.IsNotExist(err):
 		return false, err
-	} else {
+	default:
 		panic(err)
 	}
 }
