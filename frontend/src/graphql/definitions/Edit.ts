@@ -32,7 +32,7 @@ export interface Edit_findEdit_votes_user {
 
 export interface Edit_findEdit_votes {
   __typename: "EditVote";
-  user: Edit_findEdit_votes_user;
+  user: Edit_findEdit_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }

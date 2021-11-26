@@ -32,7 +32,7 @@ export interface Vote_editVote_votes_user {
 
 export interface Vote_editVote_votes {
   __typename: "EditVote";
-  user: Vote_editVote_votes_user;
+  user: Vote_editVote_votes_user | null;
   date: any;
   vote: VoteTypeEnum;
 }
