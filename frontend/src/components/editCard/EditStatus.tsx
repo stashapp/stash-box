@@ -27,17 +27,18 @@ const EditStatus: FC<Props> = ({ status }) => {
   let tooltip = "";
   switch (status) {
     case VoteStatusEnum.REJECTED:
-    tooltip = "Edit did not get sufficient votes to pass.";
-    break;
+      tooltip = "Edit did not get sufficient votes to pass.";
+      break;
     case VoteStatusEnum.CANCELED:
-    tooltip = "Edit was cancelled by the editor.";
-    break;
+      tooltip = "Edit was cancelled by the editor.";
+      break;
     case VoteStatusEnum.IMMEDIATE_REJECTED:
-    tooltip = "Edit was cancelled by an admin.";
-    break;
+      tooltip = "Edit was cancelled by an admin.";
+      break;
     case VoteStatusEnum.FAILED:
-    tooltip = "Edit application failed due to an error. See edit note for more details.";
-    break;
+      tooltip =
+        "Edit application failed due to an error. See edit note for more details.";
+      break;
   }
 
   return (
@@ -47,7 +48,6 @@ const EditStatus: FC<Props> = ({ status }) => {
       </Badge>
     </Tooltip>
   );
-
-}
+};
 
 export default EditStatus;
