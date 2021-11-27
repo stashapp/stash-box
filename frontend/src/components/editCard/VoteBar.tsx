@@ -69,7 +69,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
           )}
       </div>
       <Form.Group
-        controlId="vote-yes"
+        controlId={`${edit.id}-vote-yes`}
         className={cx(CLASSNAME_BUTTON, {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.ACCEPT,
           "bg-success": vote === VoteTypeEnum.ACCEPT,
@@ -86,7 +86,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
         </Form.Label>
       </Form.Group>
       <Form.Group
-        controlId="vote-no"
+        controlId={`${edit.id}-vote-no`}
         className={cx(CLASSNAME_BUTTON, {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.REJECT,
           "bg-danger": vote === VoteTypeEnum.REJECT,
@@ -103,7 +103,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
         </Form.Label>
       </Form.Group>
       <Form.Group
-        controlId="vote-abstain"
+        controlId={`${edit.id}-vote-abstain`}
         className={cx(CLASSNAME_BUTTON, {
           [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.ABSTAIN,
           "bg-warning": vote === VoteTypeEnum.ABSTAIN,
