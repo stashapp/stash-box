@@ -61,8 +61,8 @@ func (qb *userQueryBuilder) CreateRoles(newJoins models.UserRoles) error {
 	return qb.dbi.InsertJoins(userRolesTable, &newJoins)
 }
 
-func (qb *userQueryBuilder) UpdateRoles(studioID uuid.UUID, updatedJoins models.UserRoles) error {
-	return qb.dbi.ReplaceJoins(userRolesTable, studioID, &updatedJoins)
+func (qb *userQueryBuilder) UpdateRoles(userID uuid.UUID, updatedJoins models.UserRoles) error {
+	return qb.dbi.ReplaceJoins(userRolesTable, userID, &updatedJoins)
 }
 
 func (qb *userQueryBuilder) Find(id uuid.UUID) (*models.User, error) {
