@@ -35,8 +35,6 @@ func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputSpecified In
 		err = m.destroyEdit(input, inputSpecified)
 	case models.OperationEnumCreate:
 		err = m.createEdit(input, inputSpecified)
-	default:
-		panic("not implemented")
 	}
 
 	return err

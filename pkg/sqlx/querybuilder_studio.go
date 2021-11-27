@@ -124,7 +124,7 @@ func (qb *studioQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.QuerySpec) (models.Studios, int) {
+func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.QuerySpec) (models.Studios, int, error) {
 	if studioFilter == nil {
 		studioFilter = &models.StudioFilterType{}
 	}
@@ -164,12 +164,8 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 
 	var studios models.Studios
 	countResult, err := qb.dbi.Query(*query, &studios)
-	if err != nil {
-		// TODO
-		panic(err)
-	}
 
-	return studios, countResult
+	return studios, countResult, err
 }
 
 func (qb *studioQueryBuilder) getStudioSort(findFilter *models.QuerySpec) string {

@@ -239,7 +239,7 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType, findFilter *models.QuerySpec, isCount bool) *queryBuilder {
+func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType, findFilter *models.QuerySpec, isCount bool) (*queryBuilder, error) {
 	sceneFilter := &models.SceneFilterType{}
 	if sceneFilterInput != nil {
 		sceneFilter = sceneFilterInput
@@ -294,8 +294,12 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 			for _, studioID := range q.Value {
 				query.AddArg(studioID)
 			}
-		default:
-			panic("unsupported modifier " + q.Modifier + " for scnes.studio_id")
+		case models.CriterionModifierGreaterThan:
+			fallthrough
+		case models.CriterionModifierIncludesAll:
+			fallthrough
+		case models.CriterionModifierLessThan:
+			return nil, fmt.Errorf("unsupported modifier %s for scenes.studio_id", q.Modifier)
 		}
 	}
 
@@ -307,7 +311,10 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 
 	if q := sceneFilter.Performers; q != nil && len(q.Value) > 0 {
 		query.AddJoin(scenePerformerTable.table, scenePerformerTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
-		whereClause, havingClause := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
+		whereClause, havingClause, err := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
+		if err != nil {
+			return nil, err
+		}
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
 
@@ -318,7 +325,10 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 
 	if q := sceneFilter.Tags; q != nil && len(q.Value) > 0 {
 		query.AddJoin(sceneTagTable.table, sceneTagTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
-		whereClause, havingClause := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
+		whereClause, havingClause, err := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
+		if err != nil {
+			return nil, err
+		}
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
 
@@ -329,7 +339,10 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 
 	if q := sceneFilter.Fingerprints; q != nil && len(q.Value) > 0 {
 		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
-		whereClause, havingClause := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
+		whereClause, havingClause, err := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
+		if err != nil {
+			return nil, err
+		}
 		query.AddWhere(whereClause)
 		query.AddHaving(havingClause)
 
@@ -365,24 +378,30 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 		query.Pagination = getPagination(findFilter)
 	}
 
-	return query
+	return query, nil
 }
 
 func (qb *sceneQueryBuilder) QueryScenes(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, error) {
-	query := qb.buildQuery(sceneFilter, findFilter, false)
+	query, err := qb.buildQuery(sceneFilter, findFilter, false)
+	if err != nil {
+		return nil, err
+	}
 
 	var scenes models.Scenes
-	err := qb.dbi.QueryOnly(*query, &scenes)
+	err = qb.dbi.QueryOnly(*query, &scenes)
 
 	return scenes, err
 }
 
 func (qb *sceneQueryBuilder) QueryCount(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) (int, error) {
-	query := qb.buildQuery(sceneFilter, findFilter, true)
+	query, err := qb.buildQuery(sceneFilter, findFilter, true)
+	if err != nil {
+		return 0, err
+	}
 	return qb.dbi.CountOnly(*query)
 }
 
-func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string) {
+func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string, error) {
 	joinTableName := joinTable.Name()
 	whereClause := ""
 	havingClause := ""
@@ -399,10 +418,10 @@ func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criteri
 		// excludes all of the provided ids
 		whereClause = "not exists (select " + joinTableName + ".scene_id from " + joinTableName + " where " + joinTableName + ".scene_id = scenes.id and " + joinTableName + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
 	default:
-		panic("unsupported modifier " + criterion.Modifier + " for scenes.studio_id")
+		return "", "", fmt.Errorf("unsupported modifier %s for scenes.studio_id", criterion.Modifier)
 	}
 
-	return whereClause, havingClause
+	return whereClause, havingClause, nil
 }
 
 func (qb *sceneQueryBuilder) getSceneSort(findFilter *models.QuerySpec) string {

@@ -815,15 +815,12 @@ func (s *sceneTestRunner) verifyInvalidModifier(filter models.SceneFilterType) {
 		PerPage: &pageSize,
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			// success
-		} else {
-			s.t.Error("Expected error for invalid modifier")
-		}
-	}()
 	resolver, _ := s.resolver.Query().QueryScenes(s.ctx, &filter, &querySpec)
-	s.resolver.QueryScenesResultType().Scenes(s.ctx, resolver)
+	_, err := s.resolver.QueryScenesResultType().Scenes(s.ctx, resolver)
+
+	if err == nil {
+		s.t.Error("Expected error for invalid modifier")
+	}
 }
 
 func (s *sceneTestRunner) testQueryScenesByStudio() {

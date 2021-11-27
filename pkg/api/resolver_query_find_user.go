@@ -33,11 +33,11 @@ func (r *queryResolver) QueryUsers(ctx context.Context, userFilter *models.UserF
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
 
-	users, count := qb.Query(userFilter, filter)
+	users, count, err := qb.Query(userFilter, filter)
 	return &models.QueryUsersResultType{
 		Users: users,
 		Count: count,
-	}, nil
+	}, err
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {

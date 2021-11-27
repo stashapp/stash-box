@@ -33,8 +33,6 @@ func (m *PerformerEditProcessor) Edit(input models.PerformerEditInput, inputSpec
 		err = m.destroyEdit(input, inputSpecified)
 	case models.OperationEnumCreate:
 		err = m.createEdit(input, inputSpecified)
-	default:
-		panic("not implemented")
 	}
 
 	return err
