@@ -22,13 +22,11 @@ First create a local apollo config file.
 ```shell
 cp apollo.config.js.shadow apollo.config.js
 ```
-Change the server url in your new apollo.config.js file if the stash-box instance runs on another server.
 
 If any queries/mutations or the schema on the server is updated, the types can be updated with: 
 ```shell
 yarn generate
 ```
-**Note:** In order to generate, the server that its url was set in `apollo.config.js` must be running.
 
 ## Running
 
