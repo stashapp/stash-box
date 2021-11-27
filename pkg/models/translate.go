@@ -2,14 +2,21 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/gofrs/uuid"
 )
 
-var ErrEditPrerequisiteFailed = errors.New("prerequisite failed")
+type ErrEditPrerequisiteFailed struct {
+	field    string
+	expected interface{}
+	actual   interface{}
+}
+
+func (e *ErrEditPrerequisiteFailed) Error() string {
+	return fmt.Sprintf("Expected %s to be “**%v**”, but was “**%v**”.", e.field, e.expected, e.actual)
+}
 
 // fromEdit translates edit object fields into entity fields
 type fromEdit struct {
@@ -179,7 +186,7 @@ type editValidator struct {
 }
 
 func (v *editValidator) error(field string, expected interface{}, actual interface{}) error {
-	return fmt.Errorf("Invalid %s. Expected '%v' but was '%v'", field, expected, actual)
+	return &ErrEditPrerequisiteFailed{field, expected, actual}
 }
 
 func (v *editValidator) string(field string, old *string, current string) {

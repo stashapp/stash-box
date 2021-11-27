@@ -133,7 +133,7 @@ func (s *Studio) ValidateModifyEdit(edit StudioEditData) error {
 	v.string("name", edit.Old.Name, s.Name)
 	v.uuid("ParentID", edit.Old.ParentID, s.ParentStudioID)
 
-	return nil
+	return v.err
 }
 
 func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudiosImages {

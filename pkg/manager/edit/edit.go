@@ -118,27 +118,44 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 			applyer = Scene(fac, edit)
 		}
 
+		success := true
 		if err := applyer.apply(); err != nil {
-			return err
+			success = false
+			commentID, _ := uuid.NewV4()
+			text := "###### Edit application failed: ######\n"
+			if prereqErr := (*models.ErrEditPrerequisiteFailed)(nil); errors.As(err, &prereqErr) {
+				text = fmt.Sprintf("%sPrerequisite failed: %v", text, err)
+			} else {
+				text = fmt.Sprintf("%sUnknown Error: %v", text, err)
+			}
+			modUser := user.GetModUser(fac)
+			comment := models.NewEditComment(commentID, modUser, edit, text)
+			if err := eqb.CreateComment(*comment); err != nil {
+				return err
+			}
 		}
 
-		if immediate {
+		switch {
+		case !success:
+			edit.Fail()
+		case immediate:
 			edit.ImmediateAccept()
-		} else {
+		default:
 			edit.Accept()
 		}
 		updatedEdit, err = eqb.Update(*edit)
-
 		if err != nil {
 			return err
 		}
 
-		userPromotionThreshold := config.GetVotePromotionThreshold()
-		if userPromotionThreshold != nil {
-			err = user.PromoteUserVoteRights(fac, updatedEdit.UserID, *userPromotionThreshold)
+		if success {
+			userPromotionThreshold := config.GetVotePromotionThreshold()
+			if userPromotionThreshold != nil {
+				return user.PromoteUserVoteRights(fac, updatedEdit.UserID, *userPromotionThreshold)
+			}
 		}
 
-		return err
+		return nil
 	})
 
 	return updatedEdit, err

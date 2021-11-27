@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/gofrs/uuid"
 )
 
@@ -173,20 +171,18 @@ func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityT
 
 	removed.Each(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
-		if !idMap[id] {
-			err = fmt.Errorf("%w: unable to remove %s, ID does not exist: %s", ErrEditPrerequisiteFailed, entityType, id)
+		if idMap[id] {
+			current.Remove(id)
+			idMap[id] = false
 		}
-		current.Remove(id)
-		idMap[id] = false
 	})
 
 	added.EachPtr(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
 		if idMap[id] {
-			err = fmt.Errorf("%w: unable to add %s, ID already exists: %s", ErrEditPrerequisiteFailed, entityType, id)
+			current.Add(v)
+			idMap[id] = true
 		}
-		current.Add(v)
-		idMap[id] = true
 	})
 
 	return err

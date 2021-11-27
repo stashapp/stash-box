@@ -1203,6 +1203,7 @@ const (
 	RoleEnumInvite RoleEnum = "INVITE"
 	// May grant and rescind invite tokens and resind invite keys
 	RoleEnumManageInvites RoleEnum = "MANAGE_INVITES"
+	RoleEnumBot           RoleEnum = "BOT"
 )
 
 var AllRoleEnum = []RoleEnum{
@@ -1213,11 +1214,12 @@ var AllRoleEnum = []RoleEnum{
 	RoleEnumAdmin,
 	RoleEnumInvite,
 	RoleEnumManageInvites,
+	RoleEnumBot,
 }
 
 func (e RoleEnum) IsValid() bool {
 	switch e {
-	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites:
+	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites, RoleEnumBot:
 		return true
 	}
 	return false
