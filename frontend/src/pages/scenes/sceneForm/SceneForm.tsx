@@ -192,6 +192,12 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
     });
   };
 
+  const handleRemove = (index: number) => {
+    if (isChanging && isChanging > index) setChange(isChanging - 1);
+    else if (isChanging === index) setChange(undefined);
+    removePerformer(index);
+  };
+
   const handleChange = (result: PerformerResult, index: number) => {
     setChange(undefined);
     const alias = performerFields[index].alias || performerFields[index].name;
@@ -205,6 +211,8 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
     });
   };
 
+  const currentPerformerIds = performerFields.map((p) => p.performerId);
+
   const performerList = performerFields.map((p, index) => (
     <Row className="performer-item d-flex g-0" key={p.performerId}>
       <Form.Control
@@ -215,7 +223,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
 
       <Col xs={6}>
         <InputGroup className="flex-nowrap">
-          <Button variant="danger" onClick={() => removePerformer(index)}>
+          <Button variant="danger" onClick={() => handleRemove(index)}>
             Remove
           </Button>
           <>
@@ -235,6 +243,9 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
                 onClick={(res) =>
                   res.__typename === "Performer" && handleChange(res, index)
                 }
+                excludeIDs={currentPerformerIds.filter(
+                  (id) => id !== p.performerId
+                )}
                 searchType={SearchType.Performer}
               />
             ) : (
@@ -326,6 +337,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
                   onClick={(res) =>
                     res.__typename === "Performer" && addPerformer(res)
                   }
+                  excludeIDs={currentPerformerIds}
                   searchType={SearchType.Performer}
                 />
               </div>
