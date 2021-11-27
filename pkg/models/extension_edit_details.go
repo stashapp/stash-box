@@ -179,7 +179,7 @@ func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityT
 
 	added.EachPtr(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
-		if idMap[id] {
+		if !idMap[id] {
 			current.Add(v)
 			idMap[id] = true
 		}
