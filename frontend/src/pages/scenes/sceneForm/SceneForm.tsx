@@ -211,7 +211,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
     });
   };
 
-  const currentPerformerIds = () => performerFields.map((p) => p.performerId);
+  const currentPerformerIds = performerFields.map((p) => p.performerId);
 
   const performerList = performerFields.map((p, index) => (
     <Row className="performer-item d-flex g-0" key={p.performerId}>
@@ -243,7 +243,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
                 onClick={(res) =>
                   res.__typename === "Performer" && handleChange(res, index)
                 }
-                excludeIDs={currentPerformerIds().filter(
+                excludeIDs={currentPerformerIds.filter(
                   (id) => id !== p.performerId
                 )}
                 searchType={SearchType.Performer}
@@ -337,7 +337,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
                   onClick={(res) =>
                     res.__typename === "Performer" && addPerformer(res)
                   }
-                  excludeIDs={currentPerformerIds()}
+                  excludeIDs={currentPerformerIds}
                   searchType={SearchType.Performer}
                 />
               </div>
