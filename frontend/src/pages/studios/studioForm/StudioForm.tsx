@@ -138,7 +138,7 @@ const StudioForm: FC<StudioProps> = ({
       <Form.Group className="mb-3">
         <div className="d-flex">
           <Button className="col-2" type="submit" disabled={!!file || saving}>
-            Save
+            Submit Edit
           </Button>
           <Button type="reset" variant="secondary" className="ms-auto me-2">
             Reset
