@@ -44,7 +44,7 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 	sqb := m.fac.Scene()
 
 	// get the existing scene
-	sceneID, _ := uuid.FromString(*input.Edit.ID)
+	sceneID := *input.Edit.ID
 	scene, err := sqb.Find(sceneID)
 
 	if err != nil {
@@ -124,7 +124,7 @@ func (m *SceneEditProcessor) diffPerformers(sceneEdit *models.SceneEditData, sce
 
 func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, against models.PerformersScenes) (added []*models.PerformerAppearanceInput, missing []*models.PerformerAppearanceInput) {
 	eq := func(s *models.PerformerAppearanceInput, a *models.PerformerScene) bool {
-		if s.PerformerID == a.PerformerID.String() {
+		if s.PerformerID == a.PerformerID {
 			sAs := ""
 			if s.As != nil {
 				sAs = *s.As
@@ -191,7 +191,7 @@ func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, agai
 			}
 
 			missing = append(missing, &models.PerformerAppearanceInput{
-				PerformerID: s.PerformerID.String(),
+				PerformerID: s.PerformerID,
 				As:          as,
 			})
 		}
@@ -199,18 +199,18 @@ func performerAppearanceCompare(subject []*models.PerformerAppearanceInput, agai
 	return
 }
 
-func (m *SceneEditProcessor) diffImages(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newImageIds []string) error {
+func (m *SceneEditProcessor) diffImages(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newImageIds []uuid.UUID) error {
 	iqb := m.fac.Image()
 	images, err := iqb.FindBySceneID(sceneID)
 	if err != nil {
 		return err
 	}
 
-	existingImages := []string{}
+	var existingImages []uuid.UUID
 	for _, image := range images {
-		existingImages = append(existingImages, image.ID.String())
+		existingImages = append(existingImages, image.ID)
 	}
-	sceneEdit.New.AddedImages, sceneEdit.New.RemovedImages = utils.StrSliceCompare(newImageIds, existingImages)
+	sceneEdit.New.AddedImages, sceneEdit.New.RemovedImages = utils.UUIDSliceCompare(newImageIds, existingImages)
 	return nil
 }
 
@@ -222,7 +222,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 		return ErrMergeIDMissing
 	}
 
-	sceneID, _ := uuid.FromString(*input.Edit.ID)
+	sceneID := *input.Edit.ID
 	scene, err := sqb.Find(sceneID)
 
 	if err != nil {

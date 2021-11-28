@@ -124,14 +124,14 @@ func (d *editDiff) nullInt64(old sql.NullInt64, new *int) (oldOut *int64, newOut
 	return
 }
 
-func (d *editDiff) nullUUID(old uuid.NullUUID, new *string) (oldOut *string, newOut *string) {
-	oldStr := old.UUID.String()
-	if old.Valid && (new == nil || *new != oldStr) {
-		oldOut = &oldStr
+func (d *editDiff) nullUUID(old uuid.NullUUID, new *uuid.UUID) (oldOut *string, newOut *string) {
+	if old.Valid && (new == nil || *new != old.UUID) {
+		oldVal := old.UUID.String()
+		oldOut = &oldVal
 	}
 
-	if new != nil && (!old.Valid || *new != oldStr) {
-		newVal := *new
+	if new != nil && (!old.Valid || *new != old.UUID) {
+		newVal := new.String()
 		newOut = &newVal
 	}
 

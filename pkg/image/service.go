@@ -99,17 +99,12 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 func (s *Service) Destroy(input models.ImageDestroyInput) error {
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
-	imageID, err := uuid.FromString(input.ID)
+	image, err := s.Repository.Find(input.ID)
 	if err != nil {
 		return err
 	}
 
-	image, err := s.Repository.Find(imageID)
-	if err != nil {
-		return err
-	}
-
-	if err = s.Repository.Destroy(imageID); err != nil {
+	if err = s.Repository.Destroy(input.ID); err != nil {
 		return err
 	}
 
@@ -130,7 +125,7 @@ func (s *Service) DestroyUnusedImages() error {
 	for len(unused) > 0 {
 		for _, i := range unused {
 			err = s.Destroy(models.ImageDestroyInput{
-				ID: i.ID.String(),
+				ID: i.ID,
 			})
 			if err != nil {
 				return err
@@ -156,7 +151,7 @@ func (s *Service) DestroyUnusedImage(imageID uuid.UUID) error {
 
 	if unused {
 		err = s.Destroy(models.ImageDestroyInput{
-			ID: imageID.String(),
+			ID: imageID,
 		})
 		if err != nil {
 			return err

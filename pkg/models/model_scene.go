@@ -130,8 +130,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditI
 
 	for _, fingerprint := range fingerprints {
 		if fingerprint.Duration > 0 {
-			for _, user := range fingerprint.UserIds {
-				userID, _ := uuid.FromString(user)
+			for _, userID := range fingerprint.UserIds {
 				ret = append(ret, &SceneFingerprint{
 					SceneID:   sceneID,
 					UserID:    userID,
@@ -152,8 +151,7 @@ func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*Fingerp
 
 	for _, fingerprint := range fingerprints {
 		if fingerprint.Duration > 0 {
-			for _, user := range fingerprint.UserIds {
-				userID, _ := uuid.FromString(user)
+			for _, userID := range fingerprint.UserIds {
 				ret = append(ret, &SceneFingerprint{
 					SceneID:   sceneID,
 					UserID:    userID,
@@ -199,10 +197,9 @@ func CreateSceneImages(sceneID uuid.UUID, imageIds []string) ScenesImages {
 func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearanceInput) PerformersScenes {
 	var performerJoins PerformersScenes
 	for _, a := range appearances {
-		performerID, _ := uuid.FromString(a.PerformerID)
 		performerJoin := &PerformerScene{
 			SceneID:     sceneID,
-			PerformerID: performerID,
+			PerformerID: a.PerformerID,
 		}
 
 		if a.As != nil {

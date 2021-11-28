@@ -33,8 +33,7 @@ func (r *sceneEditResolver) performerAppearanceList(ctx context.Context, perform
 
 	var uuids []uuid.UUID
 	for _, p := range performers {
-		performerID, _ := uuid.FromString(p.PerformerID)
-		uuids = append(uuids, performerID)
+		uuids = append(uuids, p.PerformerID)
 	}
 	loadedPerformers, errors := dataloader.For(ctx).PerformerByID.LoadAll(uuids)
 	for _, err := range errors {

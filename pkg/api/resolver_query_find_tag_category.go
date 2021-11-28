@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) FindTagCategory(ctx context.Context, id string) (*models.TagCategory, error) {
+func (r *queryResolver) FindTagCategory(ctx context.Context, id uuid.UUID) (*models.TagCategory, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err
 	}
@@ -16,8 +16,7 @@ func (r *queryResolver) FindTagCategory(ctx context.Context, id string) (*models
 	fac := r.getRepoFactory(ctx)
 	qb := fac.TagCategory()
 
-	UUID, _ := uuid.FromString(id)
-	return qb.Find(UUID)
+	return qb.Find(id)
 }
 
 func (r *queryResolver) QueryTagCategories(ctx context.Context, filter *models.QuerySpec) (*models.QueryTagCategoriesResultType, error) {

@@ -70,8 +70,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		iqb := fac.Image()
 
 		// Get the existing studio and modify it
-		studioID, _ := uuid.FromString(input.ID)
-		updatedStudio, err := qb.Find(studioID)
+		updatedStudio, err := qb.Find(input.ID)
+
 		if err != nil {
 			return err
 		}
@@ -124,25 +124,20 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		return false, err
 	}
 
-	studioID, err := uuid.FromString(input.ID)
-	if err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
-	err = fac.WithTxn(func() error {
+	err := fac.WithTxn(func() error {
 		qb := fac.Studio()
 		iqb := fac.Image()
 
-		existingImages, err := iqb.FindByStudioID(studioID)
+		existingImages, err := iqb.FindByStudioID(input.ID)
 		if err != nil {
 			return err
 		}
 
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly
-		if err = qb.Destroy(studioID); err != nil {
+		if err = qb.Destroy(input.ID); err != nil {
 			return err
 		}
 
