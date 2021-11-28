@@ -1,12 +1,11 @@
 import { FC } from "react";
-import { Badge, BadgeProps, Card, Col, Row } from "react-bootstrap";
+import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
-import { OperationEnum, VoteStatusEnum } from "src/graphql";
+import { OperationEnum } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
-import { EditStatusTypes } from "src/constants/enums";
 import ModifyEdit from "./ModifyEdit";
 import DestroyEdit from "./DestroyEdit";
 import MergeEdit from "./MergeEdit";
@@ -15,6 +14,7 @@ import EditHeader from "./EditHeader";
 import AddComment from "./AddComment";
 import VoteBar from "./VoteBar";
 import EditExpiration from "./EditExpiration";
+import EditStatus from "./EditStatus";
 import Votes from "./Votes";
 
 interface Props {
@@ -26,17 +26,6 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
   const created = new Date(edit.created as string);
   const updated = new Date(edit.updated as string);
-  let editVariant: BadgeProps["bg"] = "warning";
-  if (
-    edit.status === VoteStatusEnum.REJECTED ||
-    edit.status === VoteStatusEnum.IMMEDIATE_REJECTED
-  )
-    editVariant = "danger";
-  else if (
-    edit.status === VoteStatusEnum.ACCEPTED ||
-    edit.status === VoteStatusEnum.IMMEDIATE_ACCEPTED
-  )
-    editVariant = "success";
 
   const merges = edit.operation === OperationEnum.MERGE && (
     <MergeEdit
@@ -91,9 +80,7 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
         <div className="flex-column col-4 ms-auto text-end">
           <div>
             <b className="me-2">Status:</b>
-            <Badge className="text-uppercase" bg={editVariant}>
-              {EditStatusTypes[edit.status]}
-            </Badge>
+            <EditStatus {...edit} />
             <EditExpiration edit={edit} />
             <VoteBar edit={edit} />
           </div>

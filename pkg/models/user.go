@@ -12,7 +12,7 @@ type UserRepo interface {
 	UpdateFull(updatedUser User) (*User, error)
 	Destroy(id uuid.UUID) error
 	CreateRoles(newJoins UserRoles) error
-	UpdateRoles(studioID uuid.UUID, updatedJoins UserRoles) error
+	UpdateRoles(userID uuid.UUID, updatedJoins UserRoles) error
 
 	Count() (int, error)
 	Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int)
