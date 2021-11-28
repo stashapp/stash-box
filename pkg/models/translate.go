@@ -8,6 +8,24 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+type ErrEditPrerequisiteFailed struct {
+	field    string
+	expected interface{}
+	actual   interface{}
+}
+
+func (e *ErrEditPrerequisiteFailed) Error() string {
+	expected := "_blank_"
+	if e.expected != "" {
+		expected = fmt.Sprintf("“**%s**”", e.expected)
+	}
+	actual := "_blank_"
+	if e.actual != "" {
+		actual = fmt.Sprintf("“**%s**”", e.actual)
+	}
+	return fmt.Sprintf("Expected %s to be %s, but was %s.", e.field, expected, actual)
+}
+
 // fromEdit translates edit object fields into entity fields
 type fromEdit struct {
 }
@@ -176,7 +194,7 @@ type editValidator struct {
 }
 
 func (v *editValidator) error(field string, expected interface{}, actual interface{}) error {
-	return fmt.Errorf("Invalid %s. Expected '%v' but was '%v'", field, expected, actual)
+	return &ErrEditPrerequisiteFailed{field, expected, actual}
 }
 
 func (v *editValidator) string(field string, old *string, current string) {

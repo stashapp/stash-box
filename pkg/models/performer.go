@@ -30,6 +30,9 @@ type PerformerRepo interface {
 	GetPiercings(id uuid.UUID) (PerformerBodyMods, error)
 	GetAllPiercings(ids []uuid.UUID) ([][]*BodyModification, []error)
 	SearchPerformers(term string, limit int) (Performers, error)
-	ApplyEdit(edit Edit, operation OperationEnum, performer *Performer) (*Performer, error)
+	ApplyEdit(performer *Performer, create bool, data *PerformerEditData) (*Performer, error)
 	FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error)
+	SoftDelete(performer Performer) (*Performer, error)
+	MergeInto(source *Performer, target *Performer, setAlias bool) error
+	DeleteScenePerformers(id uuid.UUID) error
 }

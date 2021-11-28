@@ -353,7 +353,7 @@ func (qb *studioQueryBuilder) applyModifyEdit(studio *models.Studio, data *model
 	newUrls := models.CreateStudioURLs(updatedStudio.ID, data.New.AddedUrls)
 	oldUrls := models.CreateStudioURLs(updatedStudio.ID, data.New.RemovedUrls)
 
-	if err := models.ProcessSlice(&currentUrls, &newUrls, &oldUrls); err != nil {
+	if err := models.ProcessSlice(&currentUrls, &newUrls, &oldUrls, "URL"); err != nil {
 		return nil, err
 	}
 
@@ -368,7 +368,7 @@ func (qb *studioQueryBuilder) applyModifyEdit(studio *models.Studio, data *model
 	newImages := models.CreateStudioImages(updatedStudio.ID, data.New.AddedImages)
 	oldImages := models.CreateStudioImages(updatedStudio.ID, data.New.RemovedImages)
 
-	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages); err != nil {
+	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages, "image"); err != nil {
 		return nil, err
 	}
 

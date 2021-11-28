@@ -24,7 +24,7 @@ func main() {
 	const databaseProvider = "postgres"
 	db := database.Initialize(databaseProvider, config.GetDatabasePath())
 	txnMgr := sqlx.NewTxnMgr(db, &postgres.Dialect{})
-	user.CreateRoot(txnMgr.Repo())
+	user.CreateSystemUsers(txnMgr.Repo())
 	api.Start(txnMgr, ui)
 	cron.Init(txnMgr)
 	blockForever()

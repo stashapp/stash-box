@@ -189,7 +189,7 @@ func TestChangeRootRoles(t *testing.T) {
 }
 
 var destroyUserScenarios = []userNameTest{
-	{"root", user.ErrDeleteRoot},
+	{"root", user.ErrDeleteSystemUser},
 	{"user", nil},
 }
 

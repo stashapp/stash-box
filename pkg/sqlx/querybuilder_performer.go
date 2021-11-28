@@ -1,7 +1,7 @@
 package sqlx
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -617,206 +617,63 @@ func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID
 	return nil
 }
 
-func (qb *performerQueryBuilder) mergeInto(sourceID uuid.UUID, targetID uuid.UUID, setAliases bool) error {
-	performer, err := qb.Find(sourceID)
-	if err != nil {
+func (qb *performerQueryBuilder) MergeInto(source *models.Performer, target *models.Performer, setAliases bool) error {
+	if source.Deleted {
+		return fmt.Errorf("merge source performer is deleted: %s", source.ID.String())
+	}
+	if target.Deleted {
+		return fmt.Errorf("merge target performer is deleted: %s", target.ID.String())
+	}
+
+	if _, err := qb.SoftDelete(*source); err != nil {
 		return err
 	}
-	if performer == nil {
-		return errors.New("Merge source performer not found: " + sourceID.String())
-	}
-	if performer.Deleted {
-		return errors.New("Merge source performer is deleted: " + sourceID.String())
-	}
-	_, err = qb.SoftDelete(*performer)
-	if err != nil {
+
+	if err := qb.UpdateRedirects(source.ID, target.ID); err != nil {
 		return err
 	}
-	if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
+	if err := qb.UpdateScenePerformers(source, target.ID, setAliases); err != nil {
 		return err
 	}
-	if err := qb.UpdateScenePerformers(performer, targetID, setAliases); err != nil {
-		return err
-	}
-	redirect := models.Redirect{SourceID: sourceID, TargetID: targetID}
+	redirect := models.Redirect{SourceID: source.ID, TargetID: target.ID}
 	return qb.CreateRedirect(redirect)
 }
 
-func (qb *performerQueryBuilder) ApplyEdit(edit models.Edit, operation models.OperationEnum, performer *models.Performer) (*models.Performer, error) {
-	data, err := edit.GetPerformerData()
+func (qb *performerQueryBuilder) ApplyEdit(performer *models.Performer, create bool, data *models.PerformerEditData) (*models.Performer, error) {
+	old := data.Old
+	if old == nil {
+		old = &models.PerformerEdit{}
+	}
+	performer.CopyFromPerformerEdit(*data.New, *old)
+
+	var updatedPerformer *models.Performer
+	var err error
+	if create {
+		updatedPerformer, err = qb.Create(*performer)
+	} else {
+		updatedPerformer, err = qb.Update(*performer)
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	switch operation {
-	case models.OperationEnumCreate:
-		now := time.Now()
-		UUID, err := uuid.NewV4()
-		if err != nil {
-			return nil, err
-		}
-		newPerformer := models.Performer{
-			ID:        UUID,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-		}
-		if data.New.Name == nil {
-			return nil, errors.New("Missing performer name")
-		}
-
-		newPerformer.CopyFromPerformerEdit(*data.New, models.PerformerEdit{})
-
-		performer, err = qb.Create(newPerformer)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(data.New.AddedAliases) > 0 {
-			aliases := models.CreatePerformerAliases(UUID, data.New.AddedAliases)
-			if err := qb.CreateAliases(aliases); err != nil {
-				return nil, err
-			}
-		}
-
-		if len(data.New.AddedTattoos) > 0 {
-			tattoos := models.CreatePerformerBodyMods(UUID, data.New.AddedTattoos)
-			if err := qb.CreateTattoos(tattoos); err != nil {
-				return nil, err
-			}
-		}
-
-		if len(data.New.AddedPiercings) > 0 {
-			piercings := models.CreatePerformerBodyMods(UUID, data.New.AddedPiercings)
-			if err := qb.CreatePiercings(piercings); err != nil {
-				return nil, err
-			}
-		}
-
-		if len(data.New.AddedUrls) > 0 {
-			urls := models.CreatePerformerURLs(UUID, data.New.AddedUrls)
-			if err := qb.CreateUrls(urls); err != nil {
-				return nil, err
-			}
-		}
-
-		if len(data.New.AddedImages) > 0 {
-			images := models.CreatePerformerImages(UUID, data.New.AddedImages)
-			if err := qb.CreateImages(images); err != nil {
-				return nil, err
-			}
-		}
-
-		return performer, nil
-	case models.OperationEnumDestroy:
-		updatedPerformer, err := qb.SoftDelete(*performer)
-		if err != nil {
-			return nil, err
-		}
-		err = qb.DeleteScenePerformers(performer.ID)
-
-		// TODO: Delete images
-
-		return updatedPerformer, err
-	case models.OperationEnumModify:
-		return qb.applyModifyEdit(performer, data)
-	case models.OperationEnumMerge:
-		updatedPerformer, err := qb.applyModifyEdit(performer, data)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, v := range data.MergeSources {
-			sourceUUID, _ := uuid.FromString(v)
-			if err := qb.mergeInto(sourceUUID, performer.ID, data.SetMergeAliases); err != nil {
-				return nil, err
-			}
-		}
-
-		return updatedPerformer, nil
-	default:
-		return nil, errors.New("Unsupported operation: " + operation.String())
-	}
-}
-
-func (qb *performerQueryBuilder) applyModifyEdit(performer *models.Performer, data *models.PerformerEditData) (*models.Performer, error) {
-	if err := performer.ValidateModifyEdit(*data); err != nil {
+	if err := qb.updateAliasesFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
-	performer.CopyFromPerformerEdit(*data.New, *data.Old)
-	updatedPerformer, err := qb.Update(*performer)
-	if err != nil {
+	if err := qb.updateTattoosFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
-	currentAliases, err := qb.GetAliases(updatedPerformer.ID)
-	if err != nil {
-		return nil, err
-	}
-	newAliases := models.CreatePerformerAliases(updatedPerformer.ID, data.New.AddedAliases)
-	oldAliases := models.CreatePerformerAliases(updatedPerformer.ID, data.New.RemovedAliases)
-	if err := models.ProcessSlice(&currentAliases, &newAliases, &oldAliases); err != nil {
-		return nil, err
-	}
-	if err := qb.UpdateAliases(updatedPerformer.ID, currentAliases); err != nil {
+	if err := qb.updatePiercingsFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
-	currentTattoos, err := qb.GetTattoos(updatedPerformer.ID)
-	if err != nil {
-		return nil, err
-	}
-	newTattoos := models.CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedTattoos)
-	oldTattoos := models.CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedTattoos)
-
-	if err := models.ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos); err != nil {
-		return nil, err
-	}
-	if err := qb.UpdateTattoos(updatedPerformer.ID, currentTattoos); err != nil {
+	if err := qb.updateURLsFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
-	currentPiercings, err := qb.GetPiercings(updatedPerformer.ID)
-	if err != nil {
-		return nil, err
-	}
-	newPiercings := models.CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedPiercings)
-	oldPiercings := models.CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedPiercings)
-
-	if err := models.ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings); err != nil {
-		return nil, err
-	}
-	if err := qb.UpdatePiercings(updatedPerformer.ID, currentPiercings); err != nil {
-		return nil, err
-	}
-
-	urls, err := qb.GetURLs(updatedPerformer.ID)
-	currentUrls := models.CreatePerformerURLs(updatedPerformer.ID, urls)
-	if err != nil {
-		return nil, err
-	}
-	newUrls := models.CreatePerformerURLs(updatedPerformer.ID, data.New.AddedUrls)
-	oldUrls := models.CreatePerformerURLs(updatedPerformer.ID, data.New.RemovedUrls)
-
-	if err := models.ProcessSlice(&currentUrls, &newUrls, &oldUrls); err != nil {
-		return nil, err
-	}
-
-	if err := qb.UpdateUrls(updatedPerformer.ID, currentUrls); err != nil {
-		return nil, err
-	}
-
-	currentImages, err := qb.GetImages(updatedPerformer.ID)
-	if err != nil {
-		return nil, err
-	}
-	newImages := models.CreatePerformerImages(updatedPerformer.ID, data.New.AddedImages)
-	oldImages := models.CreatePerformerImages(updatedPerformer.ID, data.New.RemovedImages)
-
-	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages); err != nil {
-		return nil, err
-	}
-
-	if err := qb.UpdateImages(updatedPerformer.ID, currentImages); err != nil {
+	if err := qb.updateImagesFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
@@ -827,6 +684,80 @@ func (qb *performerQueryBuilder) applyModifyEdit(performer *models.Performer, da
 	}
 
 	return updatedPerformer, err
+}
+
+func (qb *performerQueryBuilder) updateAliasesFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	currentAliases, err := qb.GetAliases(performer.ID)
+	if err != nil {
+		return err
+	}
+
+	newAliases := models.CreatePerformerAliases(performer.ID, data.New.AddedAliases)
+	oldAliases := models.CreatePerformerAliases(performer.ID, data.New.RemovedAliases)
+	if err := models.ProcessSlice(&currentAliases, &newAliases, &oldAliases, "alias"); err != nil {
+		return err
+	}
+
+	return qb.UpdateAliases(performer.ID, currentAliases)
+}
+
+func (qb *performerQueryBuilder) updateTattoosFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	currentTattoos, err := qb.GetTattoos(performer.ID)
+	if err != nil {
+		return err
+	}
+	newTattoos := models.CreatePerformerBodyMods(performer.ID, data.New.AddedTattoos)
+	oldTattoos := models.CreatePerformerBodyMods(performer.ID, data.New.RemovedTattoos)
+
+	if err := models.ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos, "tattoo"); err != nil {
+		return err
+	}
+	return qb.UpdateTattoos(performer.ID, currentTattoos)
+}
+
+func (qb *performerQueryBuilder) updatePiercingsFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	currentPiercings, err := qb.GetPiercings(performer.ID)
+	if err != nil {
+		return err
+	}
+	newPiercings := models.CreatePerformerBodyMods(performer.ID, data.New.AddedPiercings)
+	oldPiercings := models.CreatePerformerBodyMods(performer.ID, data.New.RemovedPiercings)
+
+	if err := models.ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings, "piercing"); err != nil {
+		return err
+	}
+	return qb.UpdatePiercings(performer.ID, currentPiercings)
+}
+
+func (qb *performerQueryBuilder) updateURLsFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	urls, err := qb.GetURLs(performer.ID)
+	currentUrls := models.CreatePerformerURLs(performer.ID, urls)
+	if err != nil {
+		return err
+	}
+	newUrls := models.CreatePerformerURLs(performer.ID, data.New.AddedUrls)
+	oldUrls := models.CreatePerformerURLs(performer.ID, data.New.RemovedUrls)
+
+	if err := models.ProcessSlice(&currentUrls, &newUrls, &oldUrls, "URL"); err != nil {
+		return err
+	}
+
+	return qb.UpdateUrls(performer.ID, currentUrls)
+}
+
+func (qb *performerQueryBuilder) updateImagesFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	currentImages, err := qb.GetImages(performer.ID)
+	if err != nil {
+		return err
+	}
+	newImages := models.CreatePerformerImages(performer.ID, data.New.AddedImages)
+	oldImages := models.CreatePerformerImages(performer.ID, data.New.RemovedImages)
+
+	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages, "image"); err != nil {
+		return err
+	}
+
+	return qb.UpdateImages(performer.ID, currentImages)
 }
 
 func (qb *performerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error) {
