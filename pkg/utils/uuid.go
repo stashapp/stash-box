@@ -2,7 +2,7 @@ package utils
 
 import "github.com/gofrs/uuid"
 
-// StrSliceCompare returns a slice of strings that are present in subject but
+// UUIDSliceCompare returns a slice of UUIDs that are present in subject but
 // not in against - in the added slice - and a slice of strings that are not
 // present in subject, and are in against - in the missing slice.
 func UUIDSliceCompare(subject []uuid.UUID, against []uuid.UUID) (added []uuid.UUID, missing []uuid.UUID) {
