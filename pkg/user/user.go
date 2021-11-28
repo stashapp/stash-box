@@ -539,7 +539,7 @@ func PromoteUserVoteRights(fac models.Repo, userID uuid.UUID, threshold int) err
 
 func GetModUser(fac models.Repo) *models.User {
 	if modUser == nil {
-		user, err := fac.User().FindByName("StashBot")
+		user, err := fac.User().FindByName(modUserName)
 		if err != nil {
 			// If StashBot is not found it's a runtime exception
 			panic(err)
