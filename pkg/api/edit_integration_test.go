@@ -122,7 +122,7 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 		if err != nil {
 			return
 		}
-		s.ctx = context.WithValue(s.ctx, user.ContextUser, userDB.adminRoles)
+		s.ctx = context.WithValue(s.ctx, user.ContextRoles, userDB.adminRoles)
 		_, err = s.applyEdit(createdEdit.ID.String())
 		if err != nil {
 			return
