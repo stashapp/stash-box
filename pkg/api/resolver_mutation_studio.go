@@ -11,10 +11,6 @@ import (
 )
 
 func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -57,10 +53,6 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 }
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	var studio *models.Studio
@@ -120,10 +112,6 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
-		return false, err
-	}
-
 	studioID, err := uuid.FromString(input.ID)
 	if err != nil {
 		return false, err

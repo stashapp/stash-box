@@ -9,10 +9,6 @@ import (
 )
 
 func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (*models.Tag, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Tag()
 
@@ -27,10 +23,6 @@ func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (
 }
 
 func (r *queryResolver) QueryTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.QuerySpec) (*models.QueryTagsResultType, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Tag()
 

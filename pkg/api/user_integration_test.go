@@ -279,24 +279,6 @@ func (s *userTestRunner) testDestroyUser() {
 	}
 }
 
-func (s *userTestRunner) testUnauthorisedUserMutate() {
-	// test each api interface - all require admin so all should fail
-	_, err := s.resolver.Mutation().UserCreate(s.ctx, models.UserCreateInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("UserCreate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().UserUpdate(s.ctx, models.UserUpdateInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("UserUpdate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("UserDestroy: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
 func (s *userTestRunner) testUserQuery() {
 	userName := userDB.admin.Name
 
@@ -474,13 +456,6 @@ func TestUpdateUserPassword(t *testing.T) {
 func TestDestroyUser(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testDestroyUser()
-}
-
-func TestUnauthorisedUserMutate(t *testing.T) {
-	pt := &userTestRunner{
-		testRunner: *asModify(t),
-	}
-	pt.testUnauthorisedUserMutate()
 }
 
 func TestUserQuery(t *testing.T) {

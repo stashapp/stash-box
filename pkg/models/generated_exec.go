@@ -57,8 +57,12 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	IsAdmin func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
-	IsOwner func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	IsAdmin  func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	IsEdit   func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	IsModify func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	IsOwner  func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	IsRead   func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	IsVote   func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -3781,6 +3785,10 @@ input TagCategoryDestroyInput {
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/user.graphql", Input: `directive @isAdmin on FIELD_DEFINITION
 directive @isOwner on FIELD_DEFINITION
+directive @isRead on FIELD_DEFINITION
+directive @isModify on FIELD_DEFINITION
+directive @isEdit on FIELD_DEFINITION
+directive @isVote on FIELD_DEFINITION
 
 enum RoleEnum {
   READ
@@ -3937,100 +3945,90 @@ type Query {
 
   # performer names may not be unique
   """Find a performer by ID"""
-  findPerformer(id: ID!): Performer
-
-  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType!
-
+  findPerformer(id: ID!): Performer @isRead
+  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType! @isRead
 
   #### Studios ####
 
   # studio names should be unique
   """Find a studio by ID or name"""
-  findStudio(id: ID, name: String): Studio
-
-  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType!
-
+  findStudio(id: ID, name: String): Studio @isRead
+  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType! @isRead
 
   #### Tags ####
 
   # tag names will be unique
   """Find a tag by ID or name, or aliases"""
-  findTag(id: ID, name: String): Tag
-
-  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType!
+  findTag(id: ID, name: String): Tag @isRead
+  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType! @isRead
 
   """Find a tag cateogry by ID"""
-  findTagCategory(id: ID!): TagCategory
-
-  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType!
+  findTagCategory(id: ID!): TagCategory @isRead
+  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType! @isRead
 
   #### Scenes ####
 
   # ids should be unique
   """Find a scene by ID"""
-  findScene(id: ID!): Scene
+  findScene(id: ID!): Scene @isRead
 
   """Finds a scene by an algorithm-specific checksum"""
-  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]!
+  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]! @isRead
   """Finds scenes that match a list of hashes"""
-  findScenesByFingerprints(fingerprints: [String!]!): [Scene!]!
-  findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]!
+  findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @isRead
+  findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @isRead
 
-  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType!
-
+  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType! @isRead
 
   #### Edits ####
 
-  findEdit(id: ID): Edit
-
-  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType!
-
+  findEdit(id: ID): Edit @isRead
+  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @isRead
 
   #### Users ####
 
   """Find user by ID or username"""
-  findUser(id: ID, username: String): User
-
+  findUser(id: ID, username: String): User @isRead
   queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @isAdmin
 
   """Returns currently authenticated user"""
   me: User
 
   ### Full text search ###
-  searchPerformer(term: String!, limit: Int): [Performer!]!
-  searchScene(term: String!, limit: Int): [Scene!]!
+  searchPerformer(term: String!, limit: Int): [Performer!]! @isRead
+  searchScene(term: String!, limit: Int): [Scene!]! @isRead
 
   #### Version ####
-  version: Version!
+  version: Version! @isRead
 
   ### Instance Config ###
-  getConfig: StashBoxConfig!
+  getConfig: StashBoxConfig! @isRead
 }
 
 type Mutation {
   # Admin-only interface
-  sceneCreate(input: SceneCreateInput!): Scene
-  sceneUpdate(input: SceneUpdateInput!): Scene
-  sceneDestroy(input: SceneDestroyInput!): Boolean!
+  sceneCreate(input: SceneCreateInput!): Scene @isModify
+  sceneUpdate(input: SceneUpdateInput!): Scene @isModify
+  sceneDestroy(input: SceneDestroyInput!): Boolean! @isModify
 
-  performerCreate(input: PerformerCreateInput!): Performer
-  performerUpdate(input: PerformerUpdateInput!): Performer
-  performerDestroy(input: PerformerDestroyInput!): Boolean!
+  performerCreate(input: PerformerCreateInput!): Performer @isModify
+  performerUpdate(input: PerformerUpdateInput!): Performer @isModify
+  performerDestroy(input: PerformerDestroyInput!): Boolean! @isModify
 
-  studioCreate(input: StudioCreateInput!): Studio
-  studioUpdate(input: StudioUpdateInput!): Studio
-  studioDestroy(input: StudioDestroyInput!): Boolean!
+  studioCreate(input: StudioCreateInput!): Studio @isModify
+  studioUpdate(input: StudioUpdateInput!): Studio @isModify
+  studioDestroy(input: StudioDestroyInput!): Boolean! @isModify
 
-  tagCreate(input: TagCreateInput!): Tag
-  tagUpdate(input: TagUpdateInput!): Tag
-  tagDestroy(input: TagDestroyInput!): Boolean!
+  tagCreate(input: TagCreateInput!): Tag @isModify
+  tagUpdate(input: TagUpdateInput!): Tag @isModify
+  tagDestroy(input: TagDestroyInput!): Boolean! @isModify
 
-  userCreate(input: UserCreateInput!): User
-  userUpdate(input: UserUpdateInput!): User
-  userDestroy(input: UserDestroyInput!): Boolean!
+  userCreate(input: UserCreateInput!): User @isAdmin
+  userUpdate(input: UserUpdateInput!): User @isAdmin
+  userDestroy(input: UserDestroyInput!): Boolean! @isAdmin
 
-  imageCreate(input: ImageCreateInput!): Image
-  imageDestroy(input: ImageDestroyInput!): Boolean!
+  imageCreate(input: ImageCreateInput!): Image @isEdit
+  imageDestroy(input: ImageDestroyInput!): Boolean! @isModify
 
   """User interface for registering"""
   newUser(input: NewUserInput!): String
@@ -4045,9 +4043,9 @@ type Mutation {
   """Removes invite tokens from a user"""
   revokeInvite(input: RevokeInviteInput!): Int!
 
-  tagCategoryCreate(input: TagCategoryCreateInput!): TagCategory
-  tagCategoryUpdate(input: TagCategoryUpdateInput!): TagCategory
-  tagCategoryDestroy(input: TagCategoryDestroyInput!): Boolean!
+  tagCategoryCreate(input: TagCategoryCreateInput!): TagCategory @isAdmin
+  tagCategoryUpdate(input: TagCategoryUpdateInput!): TagCategory @isAdmin
+  tagCategoryDestroy(input: TagCategoryDestroyInput!): Boolean! @isAdmin
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
@@ -4060,25 +4058,25 @@ type Mutation {
 
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
-  sceneEdit(input: SceneEditInput!): Edit!
+  sceneEdit(input: SceneEditInput!): Edit! @isEdit
   """Propose a new performer or modification to a performer"""
-  performerEdit(input: PerformerEditInput!): Edit!
+  performerEdit(input: PerformerEditInput!): Edit! @isEdit
   """Propose a new studio or modification to a studio"""
-  studioEdit(input: StudioEditInput!): Edit!
+  studioEdit(input: StudioEditInput!): Edit! @isEdit
   """Propose a new tag or modification to a tag"""
-  tagEdit(input: TagEditInput!): Edit!
+  tagEdit(input: TagEditInput!): Edit! @isEdit
 
   """Vote to accept/reject an edit"""
-  editVote(input: EditVoteInput!): Edit!
+  editVote(input: EditVoteInput!): Edit! @isVote
   """Comment on an edit"""
-  editComment(input: EditCommentInput!): Edit!
+  editComment(input: EditCommentInput!): Edit! @isEdit
   """Apply edit without voting"""
-  applyEdit(input: ApplyEditInput!): Edit!
+  applyEdit(input: ApplyEditInput!): Edit! @isAdmin
   """Cancel edit without voting"""
-  cancelEdit(input: CancelEditInput!): Edit!
+  cancelEdit(input: CancelEditInput!): Edit! @isEdit
 
   """Matches/unmatches a scene to fingerprint"""
-  submitFingerprint(input: FingerprintSubmission!): Boolean!
+  submitFingerprint(input: FingerprintSubmission!): Boolean! @isRead
 }
 
 schema {
@@ -6508,8 +6506,28 @@ func (ec *executionContext) _Mutation_sceneCreate(ctx context.Context, field gra
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SceneCreate(rctx, args["input"].(SceneCreateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SceneCreate(rctx, args["input"].(SceneCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Scene); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6547,8 +6565,28 @@ func (ec *executionContext) _Mutation_sceneUpdate(ctx context.Context, field gra
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SceneUpdate(rctx, args["input"].(SceneUpdateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SceneUpdate(rctx, args["input"].(SceneUpdateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Scene); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6586,8 +6624,28 @@ func (ec *executionContext) _Mutation_sceneDestroy(ctx context.Context, field gr
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SceneDestroy(rctx, args["input"].(SceneDestroyInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SceneDestroy(rctx, args["input"].(SceneDestroyInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6628,8 +6686,28 @@ func (ec *executionContext) _Mutation_performerCreate(ctx context.Context, field
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PerformerCreate(rctx, args["input"].(PerformerCreateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().PerformerCreate(rctx, args["input"].(PerformerCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Performer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Performer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6667,8 +6745,28 @@ func (ec *executionContext) _Mutation_performerUpdate(ctx context.Context, field
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PerformerUpdate(rctx, args["input"].(PerformerUpdateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().PerformerUpdate(rctx, args["input"].(PerformerUpdateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Performer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Performer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6706,8 +6804,28 @@ func (ec *executionContext) _Mutation_performerDestroy(ctx context.Context, fiel
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PerformerDestroy(rctx, args["input"].(PerformerDestroyInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().PerformerDestroy(rctx, args["input"].(PerformerDestroyInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6748,8 +6866,28 @@ func (ec *executionContext) _Mutation_studioCreate(ctx context.Context, field gr
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().StudioCreate(rctx, args["input"].(StudioCreateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().StudioCreate(rctx, args["input"].(StudioCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Studio); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Studio`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6787,8 +6925,28 @@ func (ec *executionContext) _Mutation_studioUpdate(ctx context.Context, field gr
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().StudioUpdate(rctx, args["input"].(StudioUpdateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().StudioUpdate(rctx, args["input"].(StudioUpdateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Studio); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Studio`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6826,8 +6984,28 @@ func (ec *executionContext) _Mutation_studioDestroy(ctx context.Context, field g
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().StudioDestroy(rctx, args["input"].(StudioDestroyInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().StudioDestroy(rctx, args["input"].(StudioDestroyInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6868,8 +7046,28 @@ func (ec *executionContext) _Mutation_tagCreate(ctx context.Context, field graph
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TagCreate(rctx, args["input"].(TagCreateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagCreate(rctx, args["input"].(TagCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Tag); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Tag`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6907,8 +7105,28 @@ func (ec *executionContext) _Mutation_tagUpdate(ctx context.Context, field graph
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TagUpdate(rctx, args["input"].(TagUpdateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagUpdate(rctx, args["input"].(TagUpdateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Tag); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Tag`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6946,8 +7164,28 @@ func (ec *executionContext) _Mutation_tagDestroy(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TagDestroy(rctx, args["input"].(TagDestroyInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagDestroy(rctx, args["input"].(TagDestroyInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6988,8 +7226,28 @@ func (ec *executionContext) _Mutation_userCreate(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UserCreate(rctx, args["input"].(UserCreateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UserCreate(rctx, args["input"].(UserCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAdmin == nil {
+				return nil, errors.New("directive isAdmin is not implemented")
+			}
+			return ec.directives.IsAdmin(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.User`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7027,8 +7285,28 @@ func (ec *executionContext) _Mutation_userUpdate(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UserUpdate(rctx, args["input"].(UserUpdateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UserUpdate(rctx, args["input"].(UserUpdateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAdmin == nil {
+				return nil, errors.New("directive isAdmin is not implemented")
+			}
+			return ec.directives.IsAdmin(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.User`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7066,8 +7344,28 @@ func (ec *executionContext) _Mutation_userDestroy(ctx context.Context, field gra
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UserDestroy(rctx, args["input"].(UserDestroyInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UserDestroy(rctx, args["input"].(UserDestroyInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAdmin == nil {
+				return nil, errors.New("directive isAdmin is not implemented")
+			}
+			return ec.directives.IsAdmin(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7108,8 +7406,28 @@ func (ec *executionContext) _Mutation_imageCreate(ctx context.Context, field gra
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ImageCreate(rctx, args["input"].(ImageCreateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ImageCreate(rctx, args["input"].(ImageCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsEdit == nil {
+				return nil, errors.New("directive isEdit is not implemented")
+			}
+			return ec.directives.IsEdit(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Image); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Image`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7147,8 +7465,28 @@ func (ec *executionContext) _Mutation_imageDestroy(ctx context.Context, field gr
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ImageDestroy(rctx, args["input"].(ImageDestroyInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ImageDestroy(rctx, args["input"].(ImageDestroyInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsModify == nil {
+				return nil, errors.New("directive isModify is not implemented")
+			}
+			return ec.directives.IsModify(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7428,8 +7766,28 @@ func (ec *executionContext) _Mutation_tagCategoryCreate(ctx context.Context, fie
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TagCategoryCreate(rctx, args["input"].(TagCategoryCreateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagCategoryCreate(rctx, args["input"].(TagCategoryCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAdmin == nil {
+				return nil, errors.New("directive isAdmin is not implemented")
+			}
+			return ec.directives.IsAdmin(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*TagCategory); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.TagCategory`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7467,8 +7825,28 @@ func (ec *executionContext) _Mutation_tagCategoryUpdate(ctx context.Context, fie
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TagCategoryUpdate(rctx, args["input"].(TagCategoryUpdateInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagCategoryUpdate(rctx, args["input"].(TagCategoryUpdateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAdmin == nil {
+				return nil, errors.New("directive isAdmin is not implemented")
+			}
+			return ec.directives.IsAdmin(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*TagCategory); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.TagCategory`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7506,8 +7884,28 @@ func (ec *executionContext) _Mutation_tagCategoryDestroy(ctx context.Context, fi
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TagCategoryDestroy(rctx, args["input"].(TagCategoryDestroyInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagCategoryDestroy(rctx, args["input"].(TagCategoryDestroyInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAdmin == nil {
+				return nil, errors.New("directive isAdmin is not implemented")
+			}
+			return ec.directives.IsAdmin(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7674,8 +8072,28 @@ func (ec *executionContext) _Mutation_sceneEdit(ctx context.Context, field graph
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SceneEdit(rctx, args["input"].(SceneEditInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SceneEdit(rctx, args["input"].(SceneEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsEdit == nil {
+				return nil, errors.New("directive isEdit is not implemented")
+			}
+			return ec.directives.IsEdit(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7716,8 +8134,28 @@ func (ec *executionContext) _Mutation_performerEdit(ctx context.Context, field g
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PerformerEdit(rctx, args["input"].(PerformerEditInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().PerformerEdit(rctx, args["input"].(PerformerEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsEdit == nil {
+				return nil, errors.New("directive isEdit is not implemented")
+			}
+			return ec.directives.IsEdit(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7758,8 +8196,28 @@ func (ec *executionContext) _Mutation_studioEdit(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().StudioEdit(rctx, args["input"].(StudioEditInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().StudioEdit(rctx, args["input"].(StudioEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsEdit == nil {
+				return nil, errors.New("directive isEdit is not implemented")
+			}
+			return ec.directives.IsEdit(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7800,8 +8258,28 @@ func (ec *executionContext) _Mutation_tagEdit(ctx context.Context, field graphql
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TagEdit(rctx, args["input"].(TagEditInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagEdit(rctx, args["input"].(TagEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsEdit == nil {
+				return nil, errors.New("directive isEdit is not implemented")
+			}
+			return ec.directives.IsEdit(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7842,8 +8320,28 @@ func (ec *executionContext) _Mutation_editVote(ctx context.Context, field graphq
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().EditVote(rctx, args["input"].(EditVoteInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().EditVote(rctx, args["input"].(EditVoteInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsVote == nil {
+				return nil, errors.New("directive isVote is not implemented")
+			}
+			return ec.directives.IsVote(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7884,8 +8382,28 @@ func (ec *executionContext) _Mutation_editComment(ctx context.Context, field gra
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().EditComment(rctx, args["input"].(EditCommentInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().EditComment(rctx, args["input"].(EditCommentInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsEdit == nil {
+				return nil, errors.New("directive isEdit is not implemented")
+			}
+			return ec.directives.IsEdit(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7926,8 +8444,28 @@ func (ec *executionContext) _Mutation_applyEdit(ctx context.Context, field graph
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ApplyEdit(rctx, args["input"].(ApplyEditInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ApplyEdit(rctx, args["input"].(ApplyEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAdmin == nil {
+				return nil, errors.New("directive isAdmin is not implemented")
+			}
+			return ec.directives.IsAdmin(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7968,8 +8506,28 @@ func (ec *executionContext) _Mutation_cancelEdit(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CancelEdit(rctx, args["input"].(CancelEditInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CancelEdit(rctx, args["input"].(CancelEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsEdit == nil {
+				return nil, errors.New("directive isEdit is not implemented")
+			}
+			return ec.directives.IsEdit(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8010,8 +8568,28 @@ func (ec *executionContext) _Mutation_submitFingerprint(ctx context.Context, fie
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SubmitFingerprint(rctx, args["input"].(FingerprintSubmission))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SubmitFingerprint(rctx, args["input"].(FingerprintSubmission))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9956,8 +10534,28 @@ func (ec *executionContext) _Query_findPerformer(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindPerformer(rctx, args["id"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindPerformer(rctx, args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Performer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Performer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9995,8 +10593,28 @@ func (ec *executionContext) _Query_queryPerformers(ctx context.Context, field gr
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().QueryPerformers(rctx, args["performer_filter"].(*PerformerFilterType), args["filter"].(*QuerySpec))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryPerformers(rctx, args["performer_filter"].(*PerformerFilterType), args["filter"].(*QuerySpec))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*PerformerQuery); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.PerformerQuery`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10037,8 +10655,28 @@ func (ec *executionContext) _Query_findStudio(ctx context.Context, field graphql
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindStudio(rctx, args["id"].(*string), args["name"].(*string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindStudio(rctx, args["id"].(*string), args["name"].(*string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Studio); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Studio`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10076,8 +10714,28 @@ func (ec *executionContext) _Query_queryStudios(ctx context.Context, field graph
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().QueryStudios(rctx, args["studio_filter"].(*StudioFilterType), args["filter"].(*QuerySpec))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryStudios(rctx, args["studio_filter"].(*StudioFilterType), args["filter"].(*QuerySpec))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QueryStudiosResultType); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryStudiosResultType`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10118,8 +10776,28 @@ func (ec *executionContext) _Query_findTag(ctx context.Context, field graphql.Co
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindTag(rctx, args["id"].(*string), args["name"].(*string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindTag(rctx, args["id"].(*string), args["name"].(*string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Tag); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Tag`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10157,8 +10835,28 @@ func (ec *executionContext) _Query_queryTags(ctx context.Context, field graphql.
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().QueryTags(rctx, args["tag_filter"].(*TagFilterType), args["filter"].(*QuerySpec))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryTags(rctx, args["tag_filter"].(*TagFilterType), args["filter"].(*QuerySpec))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QueryTagsResultType); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryTagsResultType`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10199,8 +10897,28 @@ func (ec *executionContext) _Query_findTagCategory(ctx context.Context, field gr
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindTagCategory(rctx, args["id"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindTagCategory(rctx, args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*TagCategory); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.TagCategory`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10238,8 +10956,28 @@ func (ec *executionContext) _Query_queryTagCategories(ctx context.Context, field
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().QueryTagCategories(rctx, args["filter"].(*QuerySpec))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryTagCategories(rctx, args["filter"].(*QuerySpec))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QueryTagCategoriesResultType); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryTagCategoriesResultType`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10280,8 +11018,28 @@ func (ec *executionContext) _Query_findScene(ctx context.Context, field graphql.
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindScene(rctx, args["id"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindScene(rctx, args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Scene); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10319,8 +11077,28 @@ func (ec *executionContext) _Query_findSceneByFingerprint(ctx context.Context, f
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindSceneByFingerprint(rctx, args["fingerprint"].(FingerprintQueryInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindSceneByFingerprint(rctx, args["fingerprint"].(FingerprintQueryInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*Scene); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10361,8 +11139,28 @@ func (ec *executionContext) _Query_findScenesByFingerprints(ctx context.Context,
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindScenesByFingerprints(rctx, args["fingerprints"].([]string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindScenesByFingerprints(rctx, args["fingerprints"].([]string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*Scene); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10403,8 +11201,28 @@ func (ec *executionContext) _Query_findScenesByFullFingerprints(ctx context.Cont
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindScenesByFullFingerprints(rctx, args["fingerprints"].([]*FingerprintQueryInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindScenesByFullFingerprints(rctx, args["fingerprints"].([]*FingerprintQueryInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*Scene); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10445,8 +11263,28 @@ func (ec *executionContext) _Query_queryScenes(ctx context.Context, field graphq
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().QueryScenes(rctx, args["scene_filter"].(*SceneFilterType), args["filter"].(*QuerySpec))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryScenes(rctx, args["scene_filter"].(*SceneFilterType), args["filter"].(*QuerySpec))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*SceneQuery); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.SceneQuery`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10487,8 +11325,28 @@ func (ec *executionContext) _Query_findEdit(ctx context.Context, field graphql.C
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindEdit(rctx, args["id"].(*string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindEdit(rctx, args["id"].(*string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10526,8 +11384,28 @@ func (ec *executionContext) _Query_queryEdits(ctx context.Context, field graphql
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().QueryEdits(rctx, args["edit_filter"].(*EditFilterType), args["filter"].(*QuerySpec))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryEdits(rctx, args["edit_filter"].(*EditFilterType), args["filter"].(*QuerySpec))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*EditQuery); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.EditQuery`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10568,8 +11446,28 @@ func (ec *executionContext) _Query_findUser(ctx context.Context, field graphql.C
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindUser(rctx, args["id"].(*string), args["username"].(*string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindUser(rctx, args["id"].(*string), args["username"].(*string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.User`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10701,8 +11599,28 @@ func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field gr
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().SearchPerformer(rctx, args["term"].(string), args["limit"].(*int))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().SearchPerformer(rctx, args["term"].(string), args["limit"].(*int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*Performer); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Performer`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10743,8 +11661,28 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().SearchScene(rctx, args["term"].(string), args["limit"].(*int))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().SearchScene(rctx, args["term"].(string), args["limit"].(*int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*Scene); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10778,8 +11716,28 @@ func (ec *executionContext) _Query_version(ctx context.Context, field graphql.Co
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Version(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Version(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Version); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Version`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10813,8 +11771,28 @@ func (ec *executionContext) _Query_getConfig(ctx context.Context, field graphql.
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetConfig(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetConfig(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsRead == nil {
+				return nil, errors.New("directive isRead is not implemented")
+			}
+			return ec.directives.IsRead(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*StashBoxConfig); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.StashBoxConfig`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)

@@ -9,10 +9,6 @@ import (
 )
 
 func (r *queryResolver) FindTagCategory(ctx context.Context, id string) (*models.TagCategory, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.TagCategory()
 
@@ -21,10 +17,6 @@ func (r *queryResolver) FindTagCategory(ctx context.Context, id string) (*models
 }
 
 func (r *queryResolver) QueryTagCategories(ctx context.Context, filter *models.QuerySpec) (*models.QueryTagCategoriesResultType, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.TagCategory()
 

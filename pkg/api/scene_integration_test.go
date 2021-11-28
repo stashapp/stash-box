@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type sceneTestRunner struct {
@@ -1070,37 +1069,6 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 	s.verifyInvalidModifier(filter)
 }
 
-func (s *sceneTestRunner) testUnauthorisedSceneModify() {
-	// test each api interface - all require modify so all should fail
-	_, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("SceneCreate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().SceneUpdate(s.ctx, models.SceneUpdateInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("SceneUpdate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().SceneDestroy(s.ctx, models.SceneDestroyInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("SceneDestroy: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
-func (s *sceneTestRunner) testUnauthorisedSceneQuery() {
-	// test each api interface - all require read so all should fail
-	_, err := s.resolver.Query().FindScene(s.ctx, "")
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("FindScene: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Query().QueryScenes(s.ctx, nil, nil)
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("QueryScenes: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
 func TestCreateScene(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testCreateScene()
@@ -1147,20 +1115,6 @@ func TestQueryScenesByPerformer(t *testing.T) {
 func TestQueryScenesByTag(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testQueryScenesByTag()
-}
-
-func TestUnauthorisedSceneModify(t *testing.T) {
-	pt := &sceneTestRunner{
-		testRunner: *asRead(t),
-	}
-	pt.testUnauthorisedSceneModify()
-}
-
-func TestUnauthorisedSceneQuery(t *testing.T) {
-	pt := &sceneTestRunner{
-		testRunner: *asNone(t),
-	}
-	pt.testUnauthorisedSceneQuery()
 }
 
 func TestSubmitFingerprint(t *testing.T) {

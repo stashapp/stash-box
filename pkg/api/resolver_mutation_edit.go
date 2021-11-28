@@ -11,10 +11,6 @@ import (
 )
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
-	if err := validateEdit(ctx); err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -52,10 +48,6 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 	return newEdit, nil
 }
 func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
-	if err := validateEdit(ctx); err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -94,10 +86,6 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 }
 
 func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInput) (*models.Edit, error) {
-	if err := validateEdit(ctx); err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -136,10 +124,6 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 }
 
 func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
-	if err := validateEdit(ctx); err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -176,10 +160,6 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 }
 
 func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {
-	if err := validateVote(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	currentUser := getCurrentUser(ctx)
 	var voteEdit *models.Edit
@@ -229,9 +209,6 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 }
 
 func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCommentInput) (*models.Edit, error) {
-	if err := validateEdit(ctx); err != nil {
-		return nil, err
-	}
 	fac := r.getRepoFactory(ctx)
 	currentUser := getCurrentUser(ctx)
 	var edit *models.Edit
@@ -260,10 +237,6 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 }
 
 func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {
-	if err := validateEdit(ctx); err != nil {
-		return nil, err
-	}
-
 	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
 	eqb := fac.Edit()
@@ -293,10 +266,6 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 }
 
 func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
 	eqb := fac.Edit()

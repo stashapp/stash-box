@@ -14,10 +14,6 @@ import (
 )
 
 func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCreateInput) (*models.User, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	if err := user.ValidateCreate(input); err != nil {
 		return nil, err
 	}
@@ -43,10 +39,6 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 }
 
 func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpdateInput) (*models.User, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	var u *models.User
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
@@ -88,10 +80,6 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 }
 
 func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDestroyInput) (bool, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	var ret bool
 	err := fac.WithTxn(func() error {

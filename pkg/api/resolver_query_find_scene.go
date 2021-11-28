@@ -11,10 +11,6 @@ import (
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
 
@@ -23,10 +19,6 @@ func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene
 }
 
 func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
 
@@ -34,10 +26,6 @@ func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint 
 }
 
 func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	if len(fingerprints) > 100 {
 		return nil, errors.New("Too many fingerprints")
 	}
@@ -49,10 +37,6 @@ func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprin
 }
 
 func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, fingerprints []*models.FingerprintQueryInput) ([]*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	if len(fingerprints) > 100 {
 		return nil, errors.New("Too many fingerprints")
 	}
@@ -72,10 +56,6 @@ func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, finger
 }
 
 func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.SceneFilterType, filter *models.QuerySpec) (*models.SceneQuery, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	return &models.SceneQuery{
 		SceneFilter: sceneFilter,
 		Filter:      filter,

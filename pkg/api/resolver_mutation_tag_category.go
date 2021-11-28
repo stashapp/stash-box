@@ -10,16 +10,6 @@ import (
 )
 
 func (r *mutationResolver) TagCategoryCreate(ctx context.Context, input models.TagCategoryCreateInput) (*models.TagCategory, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
-	var err error
-
-	if err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -56,10 +46,6 @@ func (r *mutationResolver) TagCategoryCreate(ctx context.Context, input models.T
 }
 
 func (r *mutationResolver) TagCategoryUpdate(ctx context.Context, input models.TagCategoryUpdateInput) (*models.TagCategory, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	var category *models.TagCategory
 	err := fac.WithTxn(func() error {
@@ -94,10 +80,6 @@ func (r *mutationResolver) TagCategoryUpdate(ctx context.Context, input models.T
 }
 
 func (r *mutationResolver) TagCategoryDestroy(ctx context.Context, input models.TagCategoryDestroyInput) (bool, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		qb := fac.TagCategory()

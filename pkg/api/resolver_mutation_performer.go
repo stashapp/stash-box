@@ -11,10 +11,6 @@ import (
 )
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -84,10 +80,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	var performer *models.Performer
@@ -177,10 +169,6 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
-		return false, err
-	}
-
 	performerID, err := uuid.FromString(input.ID)
 	if err != nil {
 		return false, err

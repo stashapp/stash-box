@@ -159,7 +159,17 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 
 	resolver := api.NewResolver(repoFn)
 
-	gqlHandler := handler.NewDefaultServer(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
+	gqlHandler := handler.NewDefaultServer(models.NewExecutableSchema(models.Config{
+		Resolvers: resolver,
+		Directives: models.DirectiveRoot{
+			IsOwner:  api.IsOwnerDirective,
+			IsAdmin:  api.IsAdminDirective,
+			IsModify: api.IsModifyDirective,
+			IsRead:   api.IsReadDirective,
+			IsEdit:   api.IsEditDirective,
+			IsVote:   api.IsVoteDirective,
+		},
+	}))
 	var handlerFunc http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		// re-create context for each request
 		ctx := context.TODO()

@@ -1,5 +1,9 @@
 directive @isAdmin on FIELD_DEFINITION
 directive @isOwner on FIELD_DEFINITION
+directive @isRead on FIELD_DEFINITION
+directive @isModify on FIELD_DEFINITION
+directive @isEdit on FIELD_DEFINITION
+directive @isVote on FIELD_DEFINITION
 
 enum RoleEnum {
   READ

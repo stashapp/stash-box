@@ -8,10 +8,6 @@ import (
 )
 
 func (r *queryResolver) FindEdit(ctx context.Context, id *string) (*models.Edit, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Edit()
 
@@ -20,10 +16,6 @@ func (r *queryResolver) FindEdit(ctx context.Context, id *string) (*models.Edit,
 }
 
 func (r *queryResolver) QueryEdits(ctx context.Context, editFilter *models.EditFilterType, filter *models.QuerySpec) (*models.EditQuery, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	return &models.EditQuery{
 		EditFilter: editFilter,
 		Filter:     filter,

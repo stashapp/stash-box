@@ -10,16 +10,6 @@ import (
 )
 
 func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreateInput) (*models.Tag, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
-	var err error
-
-	if err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -58,10 +48,6 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 }
 
 func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdateInput) (*models.Tag, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	var tag *models.Tag
 	err := fac.WithTxn(func() error {
@@ -99,10 +85,6 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 }
 
 func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		qb := fac.Tag()
