@@ -15,7 +15,15 @@ type ErrEditPrerequisiteFailed struct {
 }
 
 func (e *ErrEditPrerequisiteFailed) Error() string {
-	return fmt.Sprintf("Expected %s to be “**%v**”, but was “**%v**”.", e.field, e.expected, e.actual)
+	expected := "_blank_"
+	if e.expected != "" {
+		expected = fmt.Sprintf("“**%s**”", e.expected)
+	}
+	actual := "_blank_"
+	if e.actual != "" {
+		actual = fmt.Sprintf("“**%s**”", e.actual)
+	}
+	return fmt.Sprintf("Expected %s to be %s, but was %s.", e.field, expected, actual)
 }
 
 // fromEdit translates edit object fields into entity fields
