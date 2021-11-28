@@ -16,8 +16,7 @@ func (r *studioEditResolver) Parent(ctx context.Context, obj *models.StudioEdit)
 	}
 
 	qb := r.getRepoFactory(ctx).Studio()
-	studioID, _ := uuid.FromString(*obj.ParentID)
-	parent, err := qb.Find(studioID)
+	parent, err := qb.Find(*obj.ParentID)
 
 	if err != nil {
 		return nil, err
@@ -32,8 +31,7 @@ func (r *studioEditResolver) AddedImages(ctx context.Context, obj *models.Studio
 	}
 
 	var uuids []uuid.UUID
-	for _, id := range obj.AddedImages {
-		imageID, _ := uuid.FromString(id)
+	for _, imageID := range obj.AddedImages {
 		uuids = append(uuids, imageID)
 	}
 	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
@@ -51,8 +49,7 @@ func (r *studioEditResolver) RemovedImages(ctx context.Context, obj *models.Stud
 	}
 
 	var uuids []uuid.UUID
-	for _, id := range obj.RemovedImages {
-		imageID, _ := uuid.FromString(id)
+	for _, imageID := range obj.RemovedImages {
 		uuids = append(uuids, imageID)
 	}
 	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)

@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"testing"
+
+	"github.com/gofrs/uuid"
 )
 
 func TestCopyFull(t *testing.T) {
@@ -42,7 +44,7 @@ func TestCopyFull(t *testing.T) {
 }
 
 func TestCopyFullUUID(t *testing.T) {
-	studioID := "01234567-89ab-cdef-0123-456789abcdef"
+	studioID, _ := uuid.NewV4()
 
 	input := SceneCreateInput{
 		StudioID: &studioID,
@@ -52,7 +54,7 @@ func TestCopyFullUUID(t *testing.T) {
 
 	CopyFull(&target, input)
 
-	if target.StudioID.UUID.String() != studioID {
+	if target.StudioID.UUID != studioID {
 		t.Errorf("Expected '%s' got '%s'", studioID, target.StudioID.UUID.String())
 	}
 }

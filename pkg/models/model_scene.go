@@ -166,10 +166,9 @@ func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*Fingerp
 	return ret
 }
 
-func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
+func CreateSceneTags(sceneID uuid.UUID, tagIds []uuid.UUID) ScenesTags {
 	var tagJoins ScenesTags
-	for _, tid := range tagIds {
-		tagID := uuid.FromStringOrNil(tid)
+	for _, tagID := range tagIds {
 		tagJoin := &SceneTag{
 			SceneID: sceneID,
 			TagID:   tagID,
@@ -180,10 +179,9 @@ func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
 	return tagJoins
 }
 
-func CreateSceneImages(sceneID uuid.UUID, imageIds []string) ScenesImages {
+func CreateSceneImages(sceneID uuid.UUID, imageIds []uuid.UUID) ScenesImages {
 	var imageJoins ScenesImages
-	for _, iid := range imageIds {
-		imageID := uuid.FromStringOrNil(iid)
+	for _, imageID := range imageIds {
 		imageJoin := &SceneImage{
 			SceneID: sceneID,
 			ImageID: imageID,

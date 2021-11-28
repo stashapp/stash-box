@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -29,10 +30,7 @@ func (s *performerEditTestRunner) testCreatePerformerEdit() {
 }
 
 func (s *performerEditTestRunner) verifyCreatedPerformerEdit(input models.PerformerEditDetailsInput, edit *models.Edit) {
-	r := s.resolver.Edit()
-
-	id, _ := r.ID(s.ctx, edit)
-	if id == "" {
+	if edit.ID == uuid.Nil {
 		s.t.Errorf("Expected created edit id to be non-zero")
 	}
 
@@ -50,8 +48,8 @@ func (s *performerEditTestRunner) testFindEditById() {
 		return
 	}
 
-	editID := createdEdit.ID.String()
-	edit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+	editID := createdEdit.ID
+	edit, err := s.resolver.Query().FindEdit(s.ctx, editID)
 	if err != nil {
 		s.t.Errorf("Error finding edit: %s", err.Error())
 		return
@@ -391,7 +389,7 @@ func (s *performerEditTestRunner) testDestroyPerformerEdit() {
 	s.verifyDestroyPerformerEdit(performerID, destroyEdit)
 }
 
-func (s *performerEditTestRunner) verifyDestroyPerformerEdit(performerID string, edit *models.Edit) {
+func (s *performerEditTestRunner) verifyDestroyPerformerEdit(performerID uuid.UUID, edit *models.Edit) {
 	s.verifyEditOperation(models.OperationEnumDestroy.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
@@ -399,7 +397,7 @@ func (s *performerEditTestRunner) verifyDestroyPerformerEdit(performerID string,
 
 	editTarget := s.getEditPerformerTarget(edit)
 
-	if performerID != editTarget.ID.String() {
+	if performerID != editTarget.ID {
 		s.fieldMismatch(performerID, editTarget.ID.String(), "ID")
 	}
 }
@@ -420,7 +418,7 @@ func (s *performerEditTestRunner) testMergePerformerEdit() {
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := createdPrimaryPerformer.ID
-	mergeSources := []string{createdMergePerformer.ID}
+	mergeSources := []uuid.UUID{createdMergePerformer.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -432,7 +430,7 @@ func (s *performerEditTestRunner) testMergePerformerEdit() {
 	s.verifyMergePerformerEdit(createdPrimaryPerformer, *performerEditDetailsInput, createdMergeEdit, mergeSources)
 }
 
-func (s *performerEditTestRunner) verifyMergePerformerEdit(originalPerformer *performerOutput, input models.PerformerEditDetailsInput, edit *models.Edit, inputMergeSources []string) {
+func (s *performerEditTestRunner) verifyMergePerformerEdit(originalPerformer *performerOutput, input models.PerformerEditDetailsInput, edit *models.Edit, inputMergeSources []uuid.UUID) {
 	s.verifyEditOperation(models.OperationEnumMerge.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
@@ -454,17 +452,14 @@ func (s *performerEditTestRunner) verifyMergePerformerEdit(originalPerformer *pe
 func (s *performerEditTestRunner) testApplyCreatePerformerEdit() {
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
-	appliedEdit, err := s.applyEdit(edit.ID.String())
+	appliedEdit, err := s.applyEdit(edit.ID)
 	if err == nil {
 		s.verifyAppliedPerformerCreateEdit(*performerEditDetailsInput, appliedEdit)
 	}
 }
 
 func (s *performerEditTestRunner) verifyAppliedPerformerCreateEdit(input models.PerformerEditDetailsInput, edit *models.Edit) {
-	r := s.resolver.Edit()
-
-	id, _ := r.ID(s.ctx, edit)
-	if id == "" {
+	if edit.ID == uuid.Nil {
 		s.t.Errorf("Expected created edit id to be non-zero")
 	}
 
@@ -515,7 +510,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	if err != nil {
 		return
 	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID.String())
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
 	if err != nil {
 		return
 	}
@@ -564,7 +559,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	if err != nil {
 		return
 	}
-	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	_, err = s.applyEdit(createdUpdateEdit.ID)
 	if err != nil {
 		return
 	}
@@ -598,7 +593,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	if err != nil {
 		return
 	}
-	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	_, err = s.applyEdit(createdUpdateEdit.ID)
 	if err != nil {
 		return
 	}
@@ -649,7 +644,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	if err != nil {
 		return
 	}
-	_, err = s.applyEdit(createdUpdateEdit.ID.String())
+	_, err = s.applyEdit(createdUpdateEdit.ID)
 	if err != nil {
 		return
 	}
@@ -689,7 +684,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 	if err != nil {
 		return
 	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID.String())
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
 	if err != nil {
 		return
 	}
@@ -722,7 +717,7 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 	if err != nil {
 		return
 	}
-	appliedEdit, err := s.applyEdit(destroyEdit.ID.String())
+	appliedEdit, err := s.applyEdit(destroyEdit.ID)
 
 	destroyedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, performerID)
 
@@ -799,7 +794,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := mergeTarget.ID
-	mergeSources := []string{mergeSource1.ID, mergeSource2.ID}
+	mergeSources := []uuid.UUID{mergeSource1.ID, mergeSource2.ID}
 	setMergeAliases := true
 	options := models.PerformerEditOptionsInput{
 		SetMergeAliases: &setMergeAliases,
@@ -816,7 +811,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 		return
 	}
 
-	appliedMerge, err := s.applyEdit(mergeEdit.ID.String())
+	appliedMerge, err := s.applyEdit(mergeEdit.ID)
 	if err != nil {
 		return
 	}
@@ -859,7 +854,7 @@ func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.P
 	if len(scene1Performers) > 1 {
 		s.fieldMismatch(len(scene1Performers), 1, "Scene 1 performer count")
 	}
-	if scene1Performers[0].Performer.ID != editTarget.ID.String() {
+	if scene1Performers[0].Performer.ID != editTarget.ID {
 		s.fieldMismatch(scene1Performers[0].Performer.ID, editTarget.ID, "Scene 1 performer ID")
 	}
 
@@ -867,7 +862,7 @@ func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.P
 	if len(scene2Performers) > 1 {
 		s.fieldMismatch(len(scene2Performers), 1, "Scene 2 performer count")
 	}
-	if scene2Performers[0].Performer.ID != editTarget.ID.String() {
+	if scene2Performers[0].Performer.ID != editTarget.ID {
 		s.fieldMismatch(scene2Performers[0].Performer.ID, editTarget.ID, "Scene 2 performer ID")
 	}
 }
@@ -914,7 +909,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := mergeTarget.ID
-	mergeSources := []string{mergeSource.ID}
+	mergeSources := []uuid.UUID{mergeSource.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -926,7 +921,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 		return
 	}
 
-	_, err = s.applyEdit(mergeEdit.ID.String())
+	_, err = s.applyEdit(mergeEdit.ID)
 	if err != nil {
 		return
 	}

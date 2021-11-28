@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -30,10 +31,7 @@ func (s *sceneEditTestRunner) testCreateSceneEdit() {
 }
 
 func (s *sceneEditTestRunner) verifyCreatedSceneEdit(input models.SceneEditDetailsInput, edit *models.Edit) {
-	r := s.resolver.Edit()
-
-	id, _ := r.ID(s.ctx, edit)
-	if id == "" {
+	if edit.ID == uuid.Nil {
 		s.t.Errorf("Expected created edit id to be non-zero")
 	}
 
@@ -51,8 +49,7 @@ func (s *sceneEditTestRunner) testFindEditById() {
 		return
 	}
 
-	editID := createdEdit.ID.String()
-	edit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+	edit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
 	if err != nil {
 		s.t.Errorf("Error finding edit: %s", err.Error())
 		return
@@ -107,7 +104,7 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c.strPtrStrPtr(input.Date, sceneDetails.Date, "Date")
 	c.strPtrStrPtr(input.Details, sceneDetails.Details, "Details")
 	c.strPtrStrPtr(input.Director, sceneDetails.Director, "Director")
-	c.strPtrStrPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
+	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
 	c.intPtrInt64Ptr(input.Duration, sceneDetails.Duration, "Duration")
 
 	if !reflect.DeepEqual(input.Urls, sceneDetails.AddedUrls) {
@@ -135,7 +132,7 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	c.strPtrSQLiteDate(input.Date, scene.Date, "Date")
 	c.strPtrNullStr(input.Details, scene.Details, "Details")
 	c.strPtrNullStr(input.Director, scene.Director, "Director")
-	c.strPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
+	c.uuidPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
 	c.intPtrNullInt64(input.Duration, scene.Duration, "Duration")
 
 	urls, _ := resolver.Urls(s.ctx, scene)
@@ -156,7 +153,7 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 
 	var tagIdObjs []*idObject
 	for _, t := range tags {
-		tagIdObjs = append(tagIdObjs, &idObject{ID: t.ID.String()})
+		tagIdObjs = append(tagIdObjs, &idObject{ID: t.ID})
 	}
 
 	if !compareTags(input.TagIds, tagIdObjs) {
@@ -168,7 +165,7 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	for _, p := range performers {
 		performerIdObjs = append(performerIdObjs, &performerAppearance{
 			Performer: &idObject{
-				ID: p.Performer.ID.String(),
+				ID: p.Performer.ID,
 			},
 			As: p.As,
 		})
@@ -197,7 +194,7 @@ func (s *sceneEditTestRunner) testDestroySceneEdit() {
 	s.verifyDestroySceneEdit(sceneID, destroyEdit)
 }
 
-func (s *sceneEditTestRunner) verifyDestroySceneEdit(sceneID string, edit *models.Edit) {
+func (s *sceneEditTestRunner) verifyDestroySceneEdit(sceneID uuid.UUID, edit *models.Edit) {
 	s.verifyEditOperation(models.OperationEnumDestroy.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumScene.String(), edit)
@@ -205,7 +202,7 @@ func (s *sceneEditTestRunner) verifyDestroySceneEdit(sceneID string, edit *model
 
 	editTarget := s.getEditSceneTarget(edit)
 
-	if sceneID != editTarget.ID.String() {
+	if sceneID != editTarget.ID {
 		s.fieldMismatch(sceneID, editTarget.ID.String(), "ID")
 	}
 }
@@ -224,7 +221,7 @@ func (s *sceneEditTestRunner) testMergeSceneEdit() {
 
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	id := createdPrimaryScene.ID
-	mergeSources := []string{createdMergeScene.ID}
+	mergeSources := []uuid.UUID{createdMergeScene.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -236,7 +233,7 @@ func (s *sceneEditTestRunner) testMergeSceneEdit() {
 	s.verifyMergeSceneEdit(createdPrimaryScene, *sceneEditDetailsInput, createdMergeEdit, mergeSources)
 }
 
-func (s *sceneEditTestRunner) verifyMergeSceneEdit(originalScene *sceneOutput, input models.SceneEditDetailsInput, edit *models.Edit, inputMergeSources []string) {
+func (s *sceneEditTestRunner) verifyMergeSceneEdit(originalScene *sceneOutput, input models.SceneEditDetailsInput, edit *models.Edit, inputMergeSources []uuid.UUID) {
 	s.verifyEditOperation(models.OperationEnumMerge.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumScene.String(), edit)
@@ -258,17 +255,14 @@ func (s *sceneEditTestRunner) verifyMergeSceneEdit(originalScene *sceneOutput, i
 func (s *sceneEditTestRunner) testApplyCreateSceneEdit() {
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
-	appliedEdit, err := s.applyEdit(edit.ID.String())
+	appliedEdit, err := s.applyEdit(edit.ID)
 	if err == nil {
 		s.verifyAppliedSceneCreateEdit(*sceneEditDetailsInput, appliedEdit)
 	}
 }
 
 func (s *sceneEditTestRunner) verifyAppliedSceneCreateEdit(input models.SceneEditDetailsInput, edit *models.Edit) {
-	r := s.resolver.Edit()
-
-	id, _ := r.ID(s.ctx, edit)
-	if id == "" {
+	if edit.ID == uuid.Nil {
 		s.t.Errorf("Expected created edit id to be non-zero")
 	}
 
@@ -310,7 +304,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 	if err != nil {
 		return
 	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID.String())
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
 	if err != nil {
 		return
 	}
@@ -349,7 +343,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 	if err != nil {
 		return
 	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID.String())
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
 	if err != nil {
 		return
 	}
@@ -375,7 +369,7 @@ func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {
 	if err != nil {
 		return
 	}
-	appliedEdit, err := s.applyEdit(destroyEdit.ID.String())
+	appliedEdit, err := s.applyEdit(destroyEdit.ID)
 
 	destroyedScene, _ := s.resolver.Query().FindScene(s.ctx, sceneID)
 	s.verifyApplyDestroySceneEdit(destroyedScene, appliedEdit)
@@ -408,7 +402,7 @@ func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
 
 	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
 	id := mergeTarget.ID
-	mergeSources := []string{mergeSource1.ID, mergeSource2.ID}
+	mergeSources := []uuid.UUID{mergeSource1.ID, mergeSource2.ID}
 
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
@@ -421,7 +415,7 @@ func (s *sceneEditTestRunner) testApplyMergeSceneEdit() {
 		return
 	}
 
-	appliedMerge, err := s.applyEdit(mergeEdit.ID.String())
+	appliedMerge, err := s.applyEdit(mergeEdit.ID)
 	if err != nil {
 		return
 	}

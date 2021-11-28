@@ -92,9 +92,7 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	added, removed := utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
-	performerEdit.New.AddedImages = utils.UUIDSliceToStr(added)
-	performerEdit.New.RemovedImages = utils.UUIDSliceToStr(removed)
+	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
 
 	if input.Options != nil && input.Options.SetModifyAliases != nil {
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
@@ -121,7 +119,7 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 		return fmt.Errorf("performer with id %v not found", *input.Edit.ID)
 	}
 
-	mergeSources := []string{}
+	var mergeSources []uuid.UUID
 	for _, sourceID := range input.Edit.MergeSourceIds {
 		sourcePerformer, err := pqb.Find(sourceID)
 		if err != nil {
@@ -134,7 +132,7 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 		if performerID == sourceID {
 			return errors.New("merge target cannot be used as source")
 		}
-		mergeSources = append(mergeSources, sourceID.String())
+		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
@@ -178,9 +176,7 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	addedImages, removedImages := utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
-	performerEdit.New.AddedImages = utils.UUIDSliceToStr(addedImages)
-	performerEdit.New.RemovedImages = utils.UUIDSliceToStr(removedImages)
+	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
 
 	if input.Options != nil && input.Options.SetMergeAliases != nil {
 		performerEdit.SetMergeAliases = *input.Options.SetMergeAliases
@@ -212,7 +208,7 @@ func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inp
 	}
 
 	if len(input.Details.ImageIds) != 0 || inputSpecified("image_ids") {
-		performerEdit.New.AddedImages = utils.UUIDSliceToStr(input.Details.ImageIds)
+		performerEdit.New.AddedImages = input.Details.ImageIds
 	}
 
 	return m.edit.SetData(performerEdit)

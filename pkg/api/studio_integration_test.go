@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -48,10 +49,7 @@ func (s *studioTestRunner) verifyCreatedStudio(input models.StudioCreateInput, s
 		s.fieldMismatch(input.Name, studio.Name, "Name")
 	}
 
-	r := s.resolver.Studio()
-
-	id, _ := r.ID(s.ctx, studio)
-	if id == "" {
+	if studio.ID == uuid.Nil {
 		s.t.Errorf("Expected created studio id to be non-zero")
 	}
 }

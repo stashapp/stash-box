@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/api"
 	dbtest "github.com/stashapp/stash-box/pkg/database/databasetest"
 	"github.com/stashapp/stash-box/pkg/dataloader"
@@ -397,9 +398,9 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 	return createdScene, nil
 }
 
-func (s *testRunner) generateSceneFingerprint(userIDs []string) *models.FingerprintEditInput {
+func (s *testRunner) generateSceneFingerprint(userIDs []uuid.UUID) *models.FingerprintEditInput {
 	if userIDs == nil {
-		userIDs = []string{}
+		userIDs = []uuid.UUID{}
 	}
 
 	sceneChecksumSuffix += 1
@@ -540,7 +541,7 @@ func (s *testRunner) createTestStudioEdit(operation models.OperationEnum, detail
 	return createdEdit, nil
 }
 
-func (s *testRunner) applyEdit(id string) (*models.Edit, error) {
+func (s *testRunner) applyEdit(id uuid.UUID) (*models.Edit, error) {
 	s.t.Helper()
 
 	input := models.ApplyEditInput{
@@ -833,7 +834,7 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 				As:          &as,
 			},
 		},
-		TagIds: []string{
+		TagIds: []uuid.UUID{
 			createdTag.ID,
 		},
 		Duration: &duration,

@@ -2,6 +2,7 @@ package edit
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 
@@ -42,7 +43,7 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified 
 	tqb := m.fac.Tag()
 
 	// get the existing tag
-	tagID, _ := uuid.FromString(*input.Edit.ID)
+	tagID := *input.Edit.ID
 	tag, err := tqb.Find(tagID)
 
 	if err != nil {
@@ -77,8 +78,8 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 	if input.Edit.ID == nil {
 		return errors.New("Merge target ID is required")
 	}
-	tagID, _ := uuid.FromString(*input.Edit.ID)
-	tag, err := tqb.Find(tagID)
+	tagID := *input.Edit.ID
+	tag, err := tqb.Find(*input.Edit.ID)
 
 	if err != nil {
 		return err
@@ -88,9 +89,8 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 		return errors.New("tag with id " + tagID.String() + " not found")
 	}
 
-	mergeSources := []string{}
-	for _, mergeSourceID := range input.Edit.MergeSourceIds {
-		sourceID, _ := uuid.FromString(mergeSourceID)
+	var mergeSources []uuid.UUID
+	for _, sourceID := range input.Edit.MergeSourceIds {
 		sourceTag, err := tqb.Find(sourceID)
 		if err != nil {
 			return err
@@ -102,7 +102,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 		if tagID == sourceID {
 			return errors.New("merge target cannot be used as source")
 		}
-		mergeSources = append(mergeSources, mergeSourceID)
+		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
@@ -140,20 +140,20 @@ func (m *TagEditProcessor) createEdit(input models.TagEditInput, inputSpecified 
 func (m *TagEditProcessor) destroyEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tqb := m.fac.Tag()
 
-	// get the existing tag
-	tagID, _ := uuid.FromString(*input.Edit.ID)
-	_, err := tqb.Find(tagID)
+	// Get the existing tag
+	tag, err := tqb.Find(*input.Edit.ID)
+	if tag == nil {
+		return fmt.Errorf("tag with id %v not found", *input.Edit.ID)
+	}
 
 	return err
 }
 
 func (m *TagEditProcessor) CreateJoin(input models.TagEditInput) error {
 	if input.Edit.ID != nil {
-		tagID, _ := uuid.FromString(*input.Edit.ID)
-
 		editTag := models.EditTag{
 			EditID: m.edit.ID,
-			TagID:  tagID,
+			TagID:  *input.Edit.ID,
 		}
 
 		return m.fac.Edit().CreateEditTag(editTag)

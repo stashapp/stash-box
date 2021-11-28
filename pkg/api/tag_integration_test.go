@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -47,8 +48,7 @@ func (s *tagTestRunner) verifyCreatedTag(input models.TagCreateInput, tag *model
 
 	r := s.resolver.Tag()
 
-	id, _ := r.ID(s.ctx, tag)
-	if id == "" {
+	if tag.ID == uuid.Nil {
 		s.t.Errorf("Expected created tag id to be non-zero")
 	}
 

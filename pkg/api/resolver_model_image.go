@@ -28,14 +28,13 @@ func (r *imageResolver) URL(ctx context.Context, obj *models.Image) (string, err
 	return obj.RemoteURL.String, nil
 }
 
-func imageList(ctx context.Context, imageIDs []string) ([]*models.Image, error) {
+func imageList(ctx context.Context, imageIDs []uuid.UUID) ([]*models.Image, error) {
 	if len(imageIDs) == 0 {
 		return nil, nil
 	}
 
 	var uuids []uuid.UUID
-	for _, id := range imageIDs {
-		imageID, _ := uuid.FromString(id)
+	for _, imageID := range imageIDs {
 		uuids = append(uuids, imageID)
 	}
 	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)

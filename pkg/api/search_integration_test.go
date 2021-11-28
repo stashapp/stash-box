@@ -39,7 +39,7 @@ func (s *searchTestRunner) testSearchPerformerByTerm() {
 	}
 
 	// ensure values were set
-	if createdPerformer.ID != performers[0].ID.String() {
+	if createdPerformer.ID != performers[0].ID {
 		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
 	}
 }
@@ -50,7 +50,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 		return
 	}
 
-	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID, nil)
+	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID.String(), nil)
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -63,7 +63,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 	}
 
 	// ensure values were set
-	if createdPerformer.ID != performers[0].ID.String() {
+	if createdPerformer.ID != performers[0].ID {
 		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
 	}
 }
@@ -100,7 +100,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	}
 
 	// ensure correct scene
-	if createdScene.ID != scenes[0].ID.String() {
+	if createdScene.ID != scenes[0].ID {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }
@@ -111,7 +111,7 @@ func (s *searchTestRunner) testSearchSceneByID() {
 		return
 	}
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID, nil)
+	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID.String(), nil)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -124,7 +124,7 @@ func (s *searchTestRunner) testSearchSceneByID() {
 	}
 
 	// ensure correct scene
-	if createdScene.ID != scenes[0].ID.String() {
+	if createdScene.ID != scenes[0].ID {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }

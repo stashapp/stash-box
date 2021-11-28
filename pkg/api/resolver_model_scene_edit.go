@@ -16,8 +16,7 @@ func (r *sceneEditResolver) Studio(ctx context.Context, obj *models.SceneEdit) (
 	}
 
 	qb := r.getRepoFactory(ctx).Studio()
-	studioID, _ := uuid.FromString(*obj.StudioID)
-	studio, err := qb.Find(studioID)
+	studio, err := qb.Find(*obj.StudioID)
 
 	if err != nil {
 		return nil, err
@@ -62,14 +61,13 @@ func (r *sceneEditResolver) RemovedPerformers(ctx context.Context, obj *models.S
 	return r.performerAppearanceList(ctx, obj.RemovedPerformers)
 }
 
-func (r *sceneEditResolver) tagList(ctx context.Context, tagIDs []string) ([]*models.Tag, error) {
+func (r *sceneEditResolver) tagList(ctx context.Context, tagIDs []uuid.UUID) ([]*models.Tag, error) {
 	if len(tagIDs) == 0 {
 		return nil, nil
 	}
 
 	var uuids []uuid.UUID
-	for _, id := range tagIDs {
-		tagID, _ := uuid.FromString(id)
+	for _, tagID := range tagIDs {
 		uuids = append(uuids, tagID)
 	}
 	tags, errors := dataloader.For(ctx).TagByID.LoadAll(uuids)

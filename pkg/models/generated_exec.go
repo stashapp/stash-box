@@ -3719,7 +3719,7 @@ type TagEdit {
   description: String
   added_aliases: [String!]
   removed_aliases: [String!]
-  category_id: String
+  category_id: ID
 }
 
 type QueryTagsResultType {
@@ -13539,9 +13539,9 @@ func (ec *executionContext) _TagEdit_category_id(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*uuid.UUID)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _URL_url(ctx context.Context, field graphql.CollectedField, obj *URL) (ret graphql.Marshaler) {

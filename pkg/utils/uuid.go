@@ -33,12 +33,3 @@ func UUIDIndex(vs []uuid.UUID, t uuid.UUID) int {
 	}
 	return -1
 }
-
-func UUIDSliceToStr(slice []uuid.UUID) []string {
-	var out []string
-	for _, id := range slice {
-		out = append(out, id.String())
-	}
-
-	return out
-}

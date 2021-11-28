@@ -85,7 +85,7 @@ func TestTagEditFromDiff(t *testing.T) {
 	input := TagEditDetailsInput{
 		Name:        &bName,
 		Description: &bDescription,
-		CategoryID:  &bCategoryIDStr,
+		CategoryID:  &bCategoryID,
 	}
 
 	out := input.TagEditFromDiff(orig)
@@ -95,12 +95,12 @@ func TestTagEditFromDiff(t *testing.T) {
 		New: &TagEdit{
 			Name:        &bName,
 			Description: &bDescription,
-			CategoryID:  &bCategoryIDStr,
+			CategoryID:  &bCategoryID,
 		},
 		Old: &TagEdit{
 			Name:        &aName,
 			Description: &aDescription,
-			CategoryID:  &aCategoryIDStr,
+			CategoryID:  &aCategoryID,
 		},
 	}, out)
 
@@ -113,7 +113,7 @@ func TestTagEditFromDiff(t *testing.T) {
 		New: &TagEdit{
 			Name:        &bName,
 			Description: &bDescription,
-			CategoryID:  &bCategoryIDStr,
+			CategoryID:  &bCategoryID,
 		},
 		Old: &TagEdit{
 			Name: &aName,
@@ -128,14 +128,14 @@ func TestTagEditFromDiff(t *testing.T) {
 		Old: &TagEdit{
 			Name:        &aName,
 			Description: &aDescription,
-			CategoryID:  &aCategoryIDStr,
+			CategoryID:  &aCategoryID,
 		},
 	}, out)
 
 	equalInput := TagEditDetailsInput{
 		Name:        &aName,
 		Description: &aDescription,
-		CategoryID:  &aCategoryIDStr,
+		CategoryID:  &aCategoryID,
 	}
 
 	out = equalInput.TagEditFromDiff(orig)

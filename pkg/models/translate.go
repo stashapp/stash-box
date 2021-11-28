@@ -63,11 +63,10 @@ func (c *fromEdit) sqliteDate(out *SQLiteDate, in *string, old *string) {
 	}
 }
 
-func (c *fromEdit) nullUUID(out *uuid.NullUUID, in *string, old *string) {
+func (c *fromEdit) nullUUID(out *uuid.NullUUID, in *uuid.UUID, old *uuid.UUID) {
 	if in != nil {
-		UUID := uuid.FromStringOrNil(*in)
-		out.UUID = UUID
-		out.Valid = UUID != uuid.Nil
+		out.UUID = *in
+		out.Valid = true
 	} else if old != nil {
 		*out = uuid.NullUUID{}
 	}
@@ -124,15 +123,13 @@ func (d *editDiff) nullInt64(old sql.NullInt64, new *int) (oldOut *int64, newOut
 	return
 }
 
-func (d *editDiff) nullUUID(old uuid.NullUUID, new *uuid.UUID) (oldOut *string, newOut *string) {
+func (d *editDiff) nullUUID(old uuid.NullUUID, new *uuid.UUID) (oldOut *uuid.UUID, newOut *uuid.UUID) {
 	if old.Valid && (new == nil || *new != old.UUID) {
-		oldVal := old.UUID.String()
-		oldOut = &oldVal
+		oldOut = &old.UUID
 	}
 
 	if new != nil && (!old.Valid || *new != old.UUID) {
-		newVal := new.String()
-		newOut = &newVal
+		newOut = new
 	}
 
 	return
@@ -217,12 +214,12 @@ func (v *editValidator) int64(field string, old *int64, current int64) {
 	}
 }
 
-func (v *editValidator) uuid(field string, old *string, current uuid.NullUUID) {
+func (v *editValidator) uuid(field string, old *uuid.UUID, current uuid.NullUUID) {
 	if v.err != nil {
 		return
 	}
 
-	if old != nil && (!current.Valid || (*old != current.UUID.String())) {
+	if old != nil && (!current.Valid || (*old != current.UUID)) {
 		v.err = v.error(field, *old, current)
 	}
 }

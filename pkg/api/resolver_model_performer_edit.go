@@ -63,8 +63,7 @@ func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.Per
 	}
 
 	var uuids []uuid.UUID
-	for _, id := range obj.AddedImages {
-		imageID, _ := uuid.FromString(id)
+	for _, imageID := range obj.AddedImages {
 		uuids = append(uuids, imageID)
 	}
 	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
@@ -82,8 +81,7 @@ func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.P
 	}
 
 	var uuids []uuid.UUID
-	for _, id := range obj.RemovedImages {
-		imageID, _ := uuid.FromString(id)
+	for _, imageID := range obj.RemovedImages {
 		uuids = append(uuids, imageID)
 	}
 	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)

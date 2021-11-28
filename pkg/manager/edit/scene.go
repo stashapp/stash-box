@@ -85,18 +85,18 @@ func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, 
 	return m.diffPerformers(sceneEdit, sceneID, input.Details.Performers)
 }
 
-func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newImageIds []string) error {
+func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newImageIds []uuid.UUID) error {
 	tqb := m.fac.Tag()
 	tags, err := tqb.FindBySceneID(sceneID)
 	if err != nil {
 		return err
 	}
 
-	existingTags := []string{}
+	var existingTags []uuid.UUID
 	for _, tag := range tags {
-		existingTags = append(existingTags, tag.ID.String())
+		existingTags = append(existingTags, tag.ID)
 	}
-	sceneEdit.New.AddedTags, sceneEdit.New.RemovedTags = utils.StrSliceCompare(newImageIds, existingTags)
+	sceneEdit.New.AddedTags, sceneEdit.New.RemovedTags = utils.UUIDSliceCompare(newImageIds, existingTags)
 	return nil
 }
 
@@ -233,9 +233,8 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 		return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
 	}
 
-	mergeSources := []string{}
-	for _, mergeSourceID := range input.Edit.MergeSourceIds {
-		sourceID, _ := uuid.FromString(mergeSourceID)
+	var mergeSources []uuid.UUID
+	for _, sourceID := range input.Edit.MergeSourceIds {
 		sourceScene, err := sqb.Find(sourceID)
 		if err != nil {
 			return err
@@ -247,7 +246,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 		if sceneID == sourceID {
 			return ErrMergeTargetIsSource
 		}
-		mergeSources = append(mergeSources, mergeSourceID)
+		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
@@ -279,19 +278,19 @@ func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputSpeci
 	tqb := m.fac.Scene()
 
 	// get the existing scene
-	sceneID, _ := uuid.FromString(*input.Edit.ID)
-	_, err := tqb.Find(sceneID)
+	scene, err := tqb.Find(*input.Edit.ID)
+	if scene == nil {
+		return fmt.Errorf("scene with id %v not found", *input.Edit.ID)
+	}
 
 	return err
 }
 
 func (m *SceneEditProcessor) CreateJoin(input models.SceneEditInput) error {
 	if input.Edit.ID != nil {
-		sceneID, _ := uuid.FromString(*input.Edit.ID)
-
 		editScene := models.EditScene{
 			EditID:  m.edit.ID,
-			SceneID: sceneID,
+			SceneID: *input.Edit.ID,
 		}
 
 		return m.fac.Edit().CreateEditScene(editScene)
@@ -416,9 +415,8 @@ func (m *SceneEditProcessor) applyMerge(scene *models.Scene, data *models.SceneE
 		return nil, err
 	}
 
-	for _, v := range data.MergeSources {
-		sourceUUID, _ := uuid.FromString(v)
-		if err := m.mergeInto(sourceUUID, scene.ID); err != nil {
+	for _, sourceID := range data.MergeSources {
+		if err := m.mergeInto(sourceID, scene.ID); err != nil {
 			return nil, err
 		}
 	}

@@ -8,12 +8,13 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/client"
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
 type idObject struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type performerAppearance struct {
@@ -32,7 +33,7 @@ type fingerprint struct {
 }
 
 type sceneOutput struct {
-	ID           string                 `json:"id"`
+	ID           uuid.UUID              `json:"id"`
 	Title        *string                `json:"title"`
 	Details      *string                `json:"details"`
 	Date         *string                `json:"date"`
@@ -65,7 +66,7 @@ type measurements struct {
 }
 
 type performerOutput struct {
-	ID              string        `json:"id"`
+	ID              uuid.UUID     `json:"id"`
 	Name            string        `json:"name"`
 	Disambiguation  *string       `json:"disambiguation"`
 	Gender          *string       `json:"gender"`
@@ -82,7 +83,7 @@ type performerOutput struct {
 }
 
 type studioOutput struct {
-	ID           string        `json:"id"`
+	ID           uuid.UUID     `json:"id"`
 	Name         string        `json:"name"`
 	Urls         []*models.URL `json:"urls"`
 	Parent       *idObject     `json:"parent"`
@@ -92,7 +93,7 @@ type studioOutput struct {
 }
 
 type tagOutput struct {
-	ID          string      `json:"id"`
+	ID          uuid.UUID   `json:"id"`
 	Name        string      `json:"name"`
 	Description *string     `json:"description"`
 	Aliases     []string    `json:"aliases"`
@@ -150,7 +151,7 @@ func (c *graphqlClient) createScene(input models.SceneCreateInput) (*sceneOutput
 	return resp.SceneCreate, nil
 }
 
-func (c *graphqlClient) findScene(id string) (*sceneOutput, error) {
+func (c *graphqlClient) findScene(id uuid.UUID) (*sceneOutput, error) {
 	q := `
 	query FindScene($id: ID!) {
 		findScene(id: $id) {
@@ -290,7 +291,7 @@ func (c *graphqlClient) createPerformer(input models.PerformerCreateInput) (*per
 	return resp.PerformerCreate, nil
 }
 
-func (c *graphqlClient) findPerformer(id string) (*performerOutput, error) {
+func (c *graphqlClient) findPerformer(id uuid.UUID) (*performerOutput, error) {
 	q := `
 	query FindPerformer($id: ID!) {
 		findPerformer(id: $id) {

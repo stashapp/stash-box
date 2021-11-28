@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -25,7 +26,7 @@ func (s *tagEditTestRunner) testCreateTagEdit() {
 	if err != nil {
 		return
 	}
-	categoryID := category.ID.String()
+	categoryID := category.ID
 	name := "Name"
 	description := "Description"
 	tagEditDetailsInput := models.TagEditDetailsInput{
@@ -43,8 +44,7 @@ func (s *tagEditTestRunner) testCreateTagEdit() {
 func (s *tagEditTestRunner) verifyCreatedTagEdit(input models.TagEditDetailsInput, edit *models.Edit) {
 	r := s.resolver.Edit()
 
-	id, _ := r.ID(s.ctx, edit)
-	if id == "" {
+	if edit.ID == uuid.Nil {
 		s.t.Errorf("Expected created edit id to be non-zero")
 	}
 
@@ -80,8 +80,7 @@ func (s *tagEditTestRunner) testFindEditById() {
 		return
 	}
 
-	editID := createdEdit.ID.String()
-	edit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+	edit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
 	if err != nil {
 		s.t.Errorf("Error finding edit: %s", err.Error())
 		return
@@ -99,7 +98,7 @@ func (s *tagEditTestRunner) testModifyTagEdit() {
 	if err != nil {
 		return
 	}
-	existingCategoryID := existingCategory.ID.String()
+	existingCategoryID := existingCategory.ID
 	existingName := "tagName"
 	existingAlias := "tagAlias"
 	tagCreateInput := models.TagCreateInput{
@@ -116,7 +115,7 @@ func (s *tagEditTestRunner) testModifyTagEdit() {
 	if err != nil {
 		return
 	}
-	newCategoryID := newCategory.ID.String()
+	newCategoryID := newCategory.ID
 	newDescription := "newDescription"
 	newAlias := "newTagAlias"
 	newName := "newName"
@@ -186,7 +185,7 @@ func (s *tagEditTestRunner) testDestroyTagEdit() {
 	s.verifyDestroyTagEdit(tagID, destroyEdit)
 }
 
-func (s *tagEditTestRunner) verifyDestroyTagEdit(tagID string, edit *models.Edit) {
+func (s *tagEditTestRunner) verifyDestroyTagEdit(tagID uuid.UUID, edit *models.Edit) {
 	s.verifyEditOperation(models.OperationEnumDestroy.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
 	s.verifyEditTargetType(models.TargetTypeEnumTag.String(), edit)
@@ -194,7 +193,7 @@ func (s *tagEditTestRunner) verifyDestroyTagEdit(tagID string, edit *models.Edit
 
 	editTarget := s.getEditTagTarget(edit)
 
-	if tagID != editTarget.ID.String() {
+	if tagID != editTarget.ID {
 		s.fieldMismatch(tagID, editTarget.ID.String(), "ID")
 	}
 }
@@ -222,7 +221,7 @@ func (s *tagEditTestRunner) testMergeTagEdit() {
 		Aliases:     []string{newAlias},
 	}
 	id := createdPrimaryTag.ID
-	mergeSources := []string{createdMergeTag.ID}
+	mergeSources := []uuid.UUID{createdMergeTag.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -234,7 +233,7 @@ func (s *tagEditTestRunner) testMergeTagEdit() {
 	s.verifyMergeTagEdit(createdPrimaryTag, tagEditDetailsInput, createdMergeEdit, mergeSources)
 }
 
-func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *tagOutput, input models.TagEditDetailsInput, edit *models.Edit, inputMergeSources []string) {
+func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *tagOutput, input models.TagEditDetailsInput, edit *models.Edit, inputMergeSources []uuid.UUID) {
 	tagDetails := s.getEditTagDetails(edit)
 
 	s.verifyEditOperation(models.OperationEnumMerge.String(), edit)
@@ -278,7 +277,7 @@ func (s *tagEditTestRunner) testApplyCreateTagEdit() {
 	if err != nil {
 		return
 	}
-	categoryID := category.ID.String()
+	categoryID := category.ID
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &name,
 		Description: &description,
@@ -286,17 +285,14 @@ func (s *tagEditTestRunner) testApplyCreateTagEdit() {
 		CategoryID:  &categoryID,
 	}
 	edit, err := s.createTestTagEdit(models.OperationEnumCreate, &tagEditDetailsInput, nil)
-	appliedEdit, err := s.applyEdit(edit.ID.String())
+	appliedEdit, err := s.applyEdit(edit.ID)
 	if err == nil {
 		s.verifyAppliedTagCreateEdit(tagEditDetailsInput, appliedEdit)
 	}
 }
 
 func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetailsInput, edit *models.Edit) {
-	r := s.resolver.Edit()
-
-	id, _ := r.ID(s.ctx, edit)
-	if id == "" {
+	if edit.ID == uuid.Nil {
 		s.t.Errorf("Expected created edit id to be non-zero")
 	}
 
@@ -322,7 +318,7 @@ func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetai
 		s.fieldMismatch(input.Aliases, aliases, "Aliases")
 	}
 
-	if *input.CategoryID != tag.CategoryID.UUID.String() {
+	if *input.CategoryID != tag.CategoryID.UUID {
 		s.fieldMismatch(*input.CategoryID, tag.CategoryID.UUID.String(), "CategoryID")
 	}
 }
@@ -346,7 +342,7 @@ func (s *tagEditTestRunner) testApplyModifyTagEdit() {
 	if err != nil {
 		return
 	}
-	newCategoryID := newCategory.ID.String()
+	newCategoryID := newCategory.ID
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &newName,
 		Description: &newDescription,
@@ -363,7 +359,7 @@ func (s *tagEditTestRunner) testApplyModifyTagEdit() {
 	if err != nil {
 		return
 	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID.String())
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
 	if err != nil {
 		return
 	}
@@ -393,7 +389,7 @@ func (s *tagEditTestRunner) verifyApplyModifyTagEdit(input models.TagEditDetails
 		s.fieldMismatch(tagAliases, input.Aliases, "Aliases")
 	}
 
-	if !updatedTag.CategoryID.Valid || *input.CategoryID != updatedTag.CategoryID.UUID.String() {
+	if !updatedTag.CategoryID.Valid || *input.CategoryID != updatedTag.CategoryID.UUID {
 		s.fieldMismatch(*input.CategoryID, updatedTag.CategoryID.UUID.String(), "CategoryID")
 	}
 }
@@ -406,7 +402,7 @@ func (s *tagEditTestRunner) testApplyDestroyTagEdit() {
 
 	tagID := createdTag.ID
 	sceneInput := models.SceneCreateInput{
-		TagIds: []string{tagID},
+		TagIds: []uuid.UUID{tagID},
 	}
 	scene, _ := s.createTestScene(&sceneInput)
 
@@ -419,7 +415,7 @@ func (s *tagEditTestRunner) testApplyDestroyTagEdit() {
 	if err != nil {
 		return
 	}
-	appliedEdit, err := s.applyEdit(destroyEdit.ID.String())
+	appliedEdit, err := s.applyEdit(destroyEdit.ID)
 
 	destroyedTag, _ := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
 
@@ -463,7 +459,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 
 	// Scene with tag from both source and target, should not cause db unique error
 	sceneInput := models.SceneCreateInput{
-		TagIds: []string{mergeSource2.ID, mergeTarget.ID},
+		TagIds: []uuid.UUID{mergeSource2.ID, mergeTarget.ID},
 	}
 	scene1, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -471,7 +467,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 	}
 
 	sceneInput = models.SceneCreateInput{
-		TagIds: []string{mergeSource1.ID, mergeSource2.ID},
+		TagIds: []uuid.UUID{mergeSource1.ID, mergeSource2.ID},
 	}
 	scene2, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -487,7 +483,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 		Aliases:     []string{newAlias},
 	}
 	id := mergeTarget.ID
-	mergeSources := []string{mergeSource1.ID, mergeSource2.ID}
+	mergeSources := []uuid.UUID{mergeSource1.ID, mergeSource2.ID}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -499,7 +495,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 		return
 	}
 
-	appliedMerge, err := s.applyEdit(mergeEdit.ID.String())
+	appliedMerge, err := s.applyEdit(mergeEdit.ID)
 	if err != nil {
 		return
 	}
@@ -550,7 +546,7 @@ func (s *tagEditTestRunner) verifyAppliedMergeTagEdit(input models.TagEditDetail
 	if len(scene1Tags) > 1 {
 		s.fieldMismatch(len(scene1Tags), 1, "Scene 1 tag count")
 	}
-	if scene1Tags[0].ID != editTarget.ID.String() {
+	if scene1Tags[0].ID != editTarget.ID {
 		s.fieldMismatch(scene1Tags[0].ID, editTarget.ID, "Scene 1 tag ID")
 	}
 
@@ -558,7 +554,7 @@ func (s *tagEditTestRunner) verifyAppliedMergeTagEdit(input models.TagEditDetail
 	if len(scene2Tags) > 1 {
 		s.fieldMismatch(len(scene2Tags), 1, "Scene 2 tag count")
 	}
-	if scene2Tags[0].ID != editTarget.ID.String() {
+	if scene2Tags[0].ID != editTarget.ID {
 		s.fieldMismatch(scene2Tags[0].ID, editTarget.ID, "Scene 2 tag ID")
 	}
 }
