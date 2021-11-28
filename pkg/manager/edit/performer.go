@@ -341,9 +341,8 @@ func (m *PerformerEditProcessor) applyMerge(performer *models.Performer, data *m
 		return nil, err
 	}
 
-	for _, v := range data.MergeSources {
-		sourceUUID, _ := uuid.FromString(v)
-		if err := m.mergeInto(sourceUUID, performer.ID, data.SetMergeAliases); err != nil {
+	for _, sourceID := range data.MergeSources {
+		if err := m.mergeInto(sourceID, performer.ID, data.SetMergeAliases); err != nil {
 			return nil, err
 		}
 	}
