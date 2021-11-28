@@ -186,7 +186,8 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 	err := fac.WithTxn(func() error {
 		eqb := fac.Edit()
 
-		voteEdit, err := eqb.Find(input.ID)
+		var err error
+		voteEdit, err = eqb.Find(input.ID)
 		if err != nil {
 			return err
 		}

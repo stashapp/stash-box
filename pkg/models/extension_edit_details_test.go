@@ -9,14 +9,12 @@ import (
 )
 
 var (
-	aName          = "aName"
-	bName          = "bName"
-	aDescription   = "aDescription"
-	bDescription   = "bDescription"
-	aCategoryID    = uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-	aCategoryIDStr = aCategoryID.String()
-	bCategoryID    = uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
-	bCategoryIDStr = bCategoryID.String()
+	aName        = "aName"
+	bName        = "bName"
+	aDescription = "aDescription"
+	bDescription = "bDescription"
+	aCategoryID  = uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	bCategoryID  = uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 
 	aDisambiguation = "aDisambiguation"
 	bDisambiguation = "bDisambiguation"

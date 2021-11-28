@@ -162,13 +162,7 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 }
 
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
-	mergedIDs, err := dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
-
-	var ids []uuid.UUID
-	for _, id := range mergedIDs {
-		ids = append(ids, id)
-	}
-	return ids, err
+	return dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {

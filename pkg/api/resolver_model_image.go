@@ -33,11 +33,7 @@ func imageList(ctx context.Context, imageIDs []uuid.UUID) ([]*models.Image, erro
 		return nil, nil
 	}
 
-	var uuids []uuid.UUID
-	for _, imageID := range imageIDs {
-		uuids = append(uuids, imageID)
-	}
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
+	images, errors := dataloader.For(ctx).ImageByID.LoadAll(imageIDs)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err

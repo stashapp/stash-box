@@ -66,11 +66,7 @@ func (r *sceneEditResolver) tagList(ctx context.Context, tagIDs []uuid.UUID) ([]
 		return nil, nil
 	}
 
-	var uuids []uuid.UUID
-	for _, tagID := range tagIDs {
-		uuids = append(uuids, tagID)
-	}
-	tags, errors := dataloader.For(ctx).TagByID.LoadAll(uuids)
+	tags, errors := dataloader.For(ctx).TagByID.LoadAll(tagIDs)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err
