@@ -109,6 +109,7 @@ export enum OperationEnum {
 
 export enum RoleEnum {
   ADMIN = "ADMIN",
+  BOT = "BOT",
   EDIT = "EDIT",
   INVITE = "INVITE",
   MANAGE_INVITES = "MANAGE_INVITES",

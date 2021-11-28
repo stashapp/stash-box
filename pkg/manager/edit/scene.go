@@ -1,7 +1,7 @@
 package edit
 
 import (
-	"errors"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -35,8 +35,6 @@ func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputSpecified In
 		err = m.destroyEdit(input, inputSpecified)
 	case models.OperationEnumCreate:
 		err = m.createEdit(input, inputSpecified)
-	default:
-		panic("not implemented")
 	}
 
 	return err
@@ -54,7 +52,7 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 	}
 
 	if scene == nil {
-		return errors.New("scene with id " + sceneID.String() + " not found")
+		return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
 	}
 
 	// perform a diff against the input and the current object
@@ -65,7 +63,7 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 	}
 
 	if reflect.DeepEqual(sceneEdit.Old, sceneEdit.New) {
-		return errors.New("edit contains no changes")
+		return ErrNoChanges
 	}
 
 	return m.edit.SetData(sceneEdit)
@@ -221,8 +219,9 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 
 	// get the existing scene
 	if input.Edit.ID == nil {
-		return errors.New("Merge target ID is required")
+		return ErrMergeIDMissing
 	}
+
 	sceneID, _ := uuid.FromString(*input.Edit.ID)
 	scene, err := sqb.Find(sceneID)
 
@@ -231,7 +230,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 	}
 
 	if scene == nil {
-		return errors.New("scene with id " + sceneID.String() + " not found")
+		return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
 	}
 
 	mergeSources := []string{}
@@ -243,16 +242,16 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 		}
 
 		if sourceScene == nil {
-			return errors.New("scene with id " + sourceID.String() + " not found")
+			return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sourceID.String())
 		}
 		if sceneID == sourceID {
-			return errors.New("merge target cannot be used as source")
+			return ErrMergeTargetIsSource
 		}
 		mergeSources = append(mergeSources, mergeSourceID)
 	}
 
 	if len(mergeSources) < 1 {
-		return errors.New("No merge sources found")
+		return ErrNoMergeSources
 	}
 
 	// perform a diff against the input and the current object
@@ -318,7 +317,7 @@ func (m *SceneEditProcessor) apply() error {
 			return err
 		}
 		if scene == nil {
-			return errors.New("Scene not found: " + sceneID.String())
+			return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
 		}
 	}
 
@@ -359,9 +358,8 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) (*models.Scene, erro
 		return m.applyModify(scene, data)
 	case models.OperationEnumMerge:
 		return m.applyMerge(scene, data)
-	default:
-		return nil, errors.New("Unsupported operation: " + operation.String())
 	}
+	return nil, nil
 }
 
 func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData) (*models.Scene, error) {
@@ -435,7 +433,7 @@ func (m *SceneEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) e
 		return err
 	}
 	if scene == nil {
-		return errors.New("Merge source scene not found: " + sourceID.String())
+		return fmt.Errorf("%w: source scene %s", ErrEntityNotFound, sourceID.String())
 	}
 
 	target, err := qb.Find(targetID)
@@ -443,12 +441,8 @@ func (m *SceneEditProcessor) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) e
 		return err
 	}
 	if target == nil {
-		return errors.New("Merge target scene not found: " + targetID.String())
+		return fmt.Errorf("%w: target scene %s", ErrEntityNotFound, targetID.String())
 	}
 
-	_, err = qb.SoftDelete(*scene)
-	if err != nil {
-		return err
-	}
 	return qb.MergeInto(scene, target)
 }

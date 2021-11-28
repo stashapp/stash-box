@@ -3792,6 +3792,7 @@ enum RoleEnum {
   INVITE
   """May grant and rescind invite tokens and resind invite keys"""
   MANAGE_INVITES
+  BOT
 }
 
 type User {

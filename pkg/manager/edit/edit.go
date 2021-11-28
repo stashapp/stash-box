@@ -13,6 +13,15 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
+var ErrInvalidVoteStatus = errors.New("invalid vote status")
+var ErrEditNotFound = errors.New("edit not found")
+var ErrEditAlreadyApplied = errors.New("edit already applied")
+var ErrNoChanges = errors.New("edit contains no changes")
+var ErrMergeIDMissing = errors.New("merge target ID is required")
+var ErrEntityNotFound = errors.New("entity not found")
+var ErrMergeTargetIsSource = errors.New("merge target cannot be used as source")
+var ErrNoMergeSources = errors.New("no merge sources found")
+
 // InputSpecifiedFunc is function that returns true if the qualified field name
 // was specified in the input. Used to distinguish between nil/empty fields and
 // unspecified fields
@@ -55,11 +64,11 @@ type editApplyer interface {
 
 func validateEditPresence(edit *models.Edit) error {
 	if edit == nil {
-		return errors.New("edit not found")
+		return ErrEditNotFound
 	}
 
 	if edit.Applied {
-		return errors.New("edit already applied")
+		return ErrEditAlreadyApplied
 	}
 
 	return nil
@@ -69,7 +78,7 @@ func validateEditPrerequisites(fac models.Repo, edit *models.Edit) error {
 	var status models.VoteStatusEnum
 	utils.ResolveEnumString(edit.Status, &status)
 	if status != models.VoteStatusEnumPending {
-		return errors.New("invalid vote status: " + edit.Status)
+		return fmt.Errorf("%w: %s", ErrInvalidVoteStatus, edit.Status)
 	}
 
 	return nil
@@ -107,31 +116,46 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 			applyer = Studio(fac, edit)
 		case models.TargetTypeEnumScene:
 			applyer = Scene(fac, edit)
-		default:
-			return errors.New("Not implemented: " + edit.TargetType)
 		}
 
+		success := true
 		if err := applyer.apply(); err != nil {
-			return err
+			success = false
+			commentID, _ := uuid.NewV4()
+			text := "###### Edit application failed: ######\n"
+			if prereqErr := (*models.ErrEditPrerequisiteFailed)(nil); errors.As(err, &prereqErr) {
+				text = fmt.Sprintf("%sPrerequisite failed: %v", text, err)
+			} else {
+				text = fmt.Sprintf("%sUnknown Error: %v", text, err)
+			}
+			modUser := user.GetModUser(fac)
+			comment := models.NewEditComment(commentID, modUser, edit, text)
+			if err := eqb.CreateComment(*comment); err != nil {
+				return err
+			}
 		}
 
-		if immediate {
+		switch {
+		case !success:
+			edit.Fail()
+		case immediate:
 			edit.ImmediateAccept()
-		} else {
+		default:
 			edit.Accept()
 		}
 		updatedEdit, err = eqb.Update(*edit)
-
 		if err != nil {
 			return err
 		}
 
-		userPromotionThreshold := config.GetVotePromotionThreshold()
-		if userPromotionThreshold != nil {
-			err = user.PromoteUserVoteRights(fac, updatedEdit.UserID, *userPromotionThreshold)
+		if success {
+			userPromotionThreshold := config.GetVotePromotionThreshold()
+			if userPromotionThreshold != nil {
+				return user.PromoteUserVoteRights(fac, updatedEdit.UserID, *userPromotionThreshold)
+			}
 		}
 
-		return err
+		return nil
 	})
 
 	return updatedEdit, err

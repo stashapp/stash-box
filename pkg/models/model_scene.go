@@ -258,7 +258,7 @@ func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
 	v.int64("Duration", edit.Old.Duration, p.Duration.Int64)
 	v.string("Director", edit.Old.Director, p.Director.String)
 
-	return nil
+	return v.err
 }
 
 type SceneQuery struct {

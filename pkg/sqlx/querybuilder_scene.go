@@ -711,7 +711,7 @@ func (qb *sceneQueryBuilder) updateURLsFromEdit(scene *models.Scene, data *model
 	newUrls := models.CreateSceneURLs(scene.ID, data.New.AddedUrls)
 	oldUrls := models.CreateSceneURLs(scene.ID, data.New.RemovedUrls)
 
-	if err := models.ProcessSlice(&urls, &newUrls, &oldUrls); err != nil {
+	if err := models.ProcessSlice(&urls, &newUrls, &oldUrls, "URL"); err != nil {
 		return err
 	}
 
@@ -726,7 +726,7 @@ func (qb *sceneQueryBuilder) updateImagesFromEdit(scene *models.Scene, data *mod
 	newImages := models.CreateSceneImages(scene.ID, data.New.AddedImages)
 	oldImages := models.CreateSceneImages(scene.ID, data.New.RemovedImages)
 
-	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages); err != nil {
+	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages, "image"); err != nil {
 		return err
 	}
 
@@ -741,7 +741,7 @@ func (qb *sceneQueryBuilder) updateTagsFromEdit(scene *models.Scene, data *model
 	newTags := models.CreateSceneTags(scene.ID, data.New.AddedTags)
 	oldTags := models.CreateSceneTags(scene.ID, data.New.RemovedTags)
 
-	if err := models.ProcessSlice(&currentTags, &newTags, &oldTags); err != nil {
+	if err := models.ProcessSlice(&currentTags, &newTags, &oldTags, "tag"); err != nil {
 		return err
 	}
 
@@ -756,7 +756,7 @@ func (qb *sceneQueryBuilder) updatePerformersFromEdit(scene *models.Scene, data 
 	newPerformers := models.CreateScenePerformers(scene.ID, data.New.AddedPerformers)
 	oldPerformers := models.CreateScenePerformers(scene.ID, data.New.RemovedPerformers)
 
-	if err := models.ProcessSlice(&currentPerformers, &newPerformers, &oldPerformers); err != nil {
+	if err := models.ProcessSlice(&currentPerformers, &newPerformers, &oldPerformers, "performer"); err != nil {
 		return err
 	}
 
