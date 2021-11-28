@@ -4,7 +4,7 @@ This project builds the frontend for the stash-box server. It can be used to bui
 
 ## Setup / Installing
 Make sure your environment is up to date:
-- node >= `8.10.0`
+- node >= `14.16.0`
 - yarn >= `1.15.2`
 
 For installation instructions, please see the websites for [yarn](https://yarnpkg.com/lang/en/docs/install/) and [node.js](https://nodejs.org/en/download/).
@@ -15,15 +15,8 @@ Install dependencies
 yarn
 ```
 
-## Apollo setup
-To generate typescript definitions you need to install and setup the apollo client. Unless you are changing queries, this step can be skipped.
-
-First create a local apollo config file.
-```shell
-cp apollo.config.js.shadow apollo.config.js
-```
-
-If any queries/mutations or the schema on the server is updated, the types can be updated with: 
+## GraphQL development
+If any queries/mutations or the schema on the server is updated, the Typescript types can be updated with: 
 ```shell
 yarn generate
 ```
