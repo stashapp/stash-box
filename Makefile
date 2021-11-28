@@ -30,8 +30,10 @@ build: pre-build
 	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)'"
 
 # Regenerates GraphQL files
-.PHONY: generate
-generate:
+generate: generate-backend generate-ui
+
+.PHONY: generate-backend
+generate-backend:
 	go generate
 
 .PHONY: generate-ui
