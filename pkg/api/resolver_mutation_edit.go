@@ -15,8 +15,6 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 		return nil, err
 	}
 
-	// TODO - handle modification of existing edit
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -57,8 +55,6 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 	if err := validateEdit(ctx); err != nil {
 		return nil, err
 	}
-
-	// TODO - handle modification of existing edit
 
 	UUID, err := uuid.NewV4()
 	if err != nil {
@@ -102,8 +98,6 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 		return nil, err
 	}
 
-	// TODO - handle modification of existing edit
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -145,8 +139,6 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	if err := validateEdit(ctx); err != nil {
 		return nil, err
 	}
-
-	// TODO - handle modification of existing edit
 
 	UUID, err := uuid.NewV4()
 	if err != nil {

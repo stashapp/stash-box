@@ -351,8 +351,6 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 		}
 	}
 
-	// TODO - other filters
-
 	if findFilter.GetSort("") == "trending" {
 		limit := ""
 		if sceneFilterInput == nil && !isCount {
