@@ -38,22 +38,23 @@ func buildCountQuery(query string) string {
 }
 
 func getPagination(findFilter *models.QuerySpec) string {
-	if findFilter == nil {
-		panic("nil find filter for pagination")
+	filter := findFilter
+	if filter == nil {
+		filter = &models.QuerySpec{}
 	}
 
 	var page int
-	if findFilter.Page == nil || *findFilter.Page < 1 {
+	if filter.Page == nil || *filter.Page < 1 {
 		page = 1
 	} else {
-		page = *findFilter.Page
+		page = *filter.Page
 	}
 
 	var perPage int
-	if findFilter.PerPage == nil {
+	if filter.PerPage == nil {
 		perPage = 25
 	} else {
-		perPage = *findFilter.PerPage
+		perPage = *filter.PerPage
 	}
 	if perPage > 10000 {
 		perPage = 10000

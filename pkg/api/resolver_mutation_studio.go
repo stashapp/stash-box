@@ -15,12 +15,6 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	var err error
-
-	if err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -48,8 +42,6 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 			return err
 		}
 
-		// TODO - save child studios
-
 		// Save the URLs
 		studioUrls := models.CreateStudioURLs(studio.ID, input.Urls)
 		if err := qb.CreateURLs(studioUrls); err != nil {
@@ -58,15 +50,10 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 		// Save the images
 		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
-
 		return jqb.CreateStudiosImages(studioImages)
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return studio, nil
+	return studio, err
 }
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
@@ -82,10 +69,9 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		jqb := fac.Joins()
 		iqb := fac.Image()
 
-		// get the existing studio and modify it
+		// Get the existing studio and modify it
 		studioID, _ := uuid.FromString(input.ID)
 		updatedStudio, err := qb.Find(studioID)
-
 		if err != nil {
 			return err
 		}
@@ -103,28 +89,24 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		// Save the URLs
 		// TODO - only do this if provided
 		studioUrls := models.CreateStudioURLs(studio.ID, input.Urls)
-
 		if err := qb.UpdateURLs(studio.ID, studioUrls); err != nil {
 			return err
 		}
 
-		// TODO - handle child studios
-
-		// Save the images
-		// get the existing images
+		// Get the existing images
 		existingImages, err := iqb.FindByStudioID(studio.ID)
 		if err != nil {
 			return err
 		}
 
+		// Save the images
 		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
 		if err := jqb.UpdateStudiosImages(studio.ID, studioImages); err != nil {
 			return err
 		}
 
-		// remove images that are no longer used
+		// Remove images that are no longer used
 		imageService := image.GetService(iqb)
-
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
 				return err
@@ -134,11 +116,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return studio, nil
+	return studio, err
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
@@ -168,9 +146,8 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 			return err
 		}
 
-		// remove images that are no longer used
+		// Remove images that are no longer used
 		imageService := image.GetService(iqb)
-
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
 				return err
@@ -180,8 +157,5 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		return nil
 	})
 
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+	return err == nil, err
 }
