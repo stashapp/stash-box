@@ -15,7 +15,7 @@ type UserRepo interface {
 	UpdateRoles(userID uuid.UUID, updatedJoins UserRoles) error
 
 	Count() (int, error)
-	Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int)
+	Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int, error)
 	GetRoles(id uuid.UUID) (UserRoles, error)
 	CountVotesByType(id uuid.UUID) (*UserVoteCount, error)
 	CountEditsByStatus(id uuid.UUID) (*UserEditCount, error)

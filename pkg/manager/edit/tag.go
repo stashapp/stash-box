@@ -33,8 +33,6 @@ func (m *TagEditProcessor) Edit(input models.TagEditInput, inputSpecified InputS
 		err = m.destroyEdit(input, inputSpecified)
 	case models.OperationEnumCreate:
 		err = m.createEdit(input, inputSpecified)
-	default:
-		panic("not implemented")
 	}
 
 	return err

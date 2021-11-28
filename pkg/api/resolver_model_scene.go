@@ -84,7 +84,6 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 		return nil, err
 	}
 
-	// TODO - probably a better way to do this
 	var ret []*models.PerformerAppearance
 	for _, appearance := range appearances {
 		performer, err := dataloader.For(ctx).PerformerByID.Load(appearance.PerformerID)

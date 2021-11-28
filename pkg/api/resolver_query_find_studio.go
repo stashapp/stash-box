@@ -34,9 +34,9 @@ func (r *queryResolver) QueryStudios(ctx context.Context, studioFilter *models.S
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Studio()
 
-	studios, count := qb.Query(studioFilter, filter)
+	studios, count, err := qb.Query(studioFilter, filter)
 	return &models.QueryStudiosResultType{
 		Studios: studios,
 		Count:   count,
-	}, nil
+	}, err
 }
