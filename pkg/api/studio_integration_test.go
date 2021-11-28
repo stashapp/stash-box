@@ -60,7 +60,7 @@ func (s *studioTestRunner) testFindStudioById() {
 		return
 	}
 
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 	studio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding studio: %s", err.Error())
@@ -114,7 +114,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 		return
 	}
 
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 
 	updatedName := s.generateStudioName()
 	updateInput := models.StudioUpdateInput{
@@ -149,7 +149,7 @@ func (s *studioTestRunner) testDestroyStudio() {
 		return
 	}
 
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 
 	destroyed, err := s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{
 		ID: studioID,

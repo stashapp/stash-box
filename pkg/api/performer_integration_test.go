@@ -206,7 +206,7 @@ func (s *performerTestRunner) testFindPerformer() {
 		return
 	}
 
-	performer, err := s.resolver.Query().FindPerformer(s.ctx, createdPerformer.ID)
+	performer, err := s.resolver.Query().FindPerformer(s.ctx, createdPerformer.UUID())
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -267,7 +267,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		return
 	}
 
-	performerID := createdPerformer.ID
+	performerID := createdPerformer.UUID()
 
 	updateInput := models.PerformerUpdateInput{
 		ID:      performerID,
@@ -369,7 +369,7 @@ func (s *performerTestRunner) testDestroyPerformer() {
 		return
 	}
 
-	performerID := createdPerformer.ID
+	performerID := createdPerformer.UUID()
 
 	destroyed, err := s.resolver.Mutation().PerformerDestroy(s.ctx, models.PerformerDestroyInput{
 		ID: performerID,

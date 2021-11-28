@@ -14,7 +14,7 @@ import (
 )
 
 type idObject struct {
-	ID uuid.UUID `json:"id"`
+	ID string `json:"id"`
 }
 
 type performerAppearance struct {
@@ -33,7 +33,7 @@ type fingerprint struct {
 }
 
 type sceneOutput struct {
-	ID           uuid.UUID              `json:"id"`
+	ID           string                 `json:"id"`
 	Title        *string                `json:"title"`
 	Details      *string                `json:"details"`
 	Date         *string                `json:"date"`
@@ -46,6 +46,10 @@ type sceneOutput struct {
 	Duration     *int                   `json:"duration"`
 	Director     *string                `json:"director"`
 	Deleted      bool                   `json:"deleted"`
+}
+
+func (s sceneOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(s.ID)
 }
 
 type queryScenesResultType struct {
@@ -66,7 +70,7 @@ type measurements struct {
 }
 
 type performerOutput struct {
-	ID              uuid.UUID     `json:"id"`
+	ID              string        `json:"id"`
 	Name            string        `json:"name"`
 	Disambiguation  *string       `json:"disambiguation"`
 	Gender          *string       `json:"gender"`
@@ -82,8 +86,12 @@ type performerOutput struct {
 	CareerEndYear   *int64        `json:"career_end_year"`
 }
 
+func (p performerOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(p.ID)
+}
+
 type studioOutput struct {
-	ID           uuid.UUID     `json:"id"`
+	ID           string        `json:"id"`
 	Name         string        `json:"name"`
 	Urls         []*models.URL `json:"urls"`
 	Parent       *idObject     `json:"parent"`
@@ -92,14 +100,22 @@ type studioOutput struct {
 	Deleted      bool          `json:"deleted"`
 }
 
+func (s studioOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(s.ID)
+}
+
 type tagOutput struct {
-	ID          uuid.UUID   `json:"id"`
+	ID          string      `json:"id"`
 	Name        string      `json:"name"`
 	Description *string     `json:"description"`
 	Aliases     []string    `json:"aliases"`
 	Deleted     bool        `json:"deleted"`
 	Edits       []*idObject `json:"edits"`
 	Category    *idObject   `json:"category"`
+}
+
+func (t tagOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(t.ID)
 }
 
 func makeFragment(t reflect.Type) string {

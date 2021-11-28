@@ -248,8 +248,9 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	if err != nil {
 		return
 	}
+	id := createdTag.UUID()
 	input := models.EditInput{
-		ID:        &createdTag.ID,
+		ID:        &id,
 		Operation: models.OperationEnumDestroy,
 	}
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumDestroy, nil, &input)

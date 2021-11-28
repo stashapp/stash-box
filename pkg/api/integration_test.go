@@ -830,12 +830,12 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 		Date: &date,
 		Performers: []*models.PerformerAppearanceInput{
 			{
-				PerformerID: createdPerformer.ID,
+				PerformerID: createdPerformer.UUID(),
 				As:          &as,
 			},
 		},
 		TagIds: []uuid.UUID{
-			createdTag.ID,
+			createdTag.UUID(),
 		},
 		Duration: &duration,
 		Director: &director,

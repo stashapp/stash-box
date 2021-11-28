@@ -234,7 +234,8 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 	err := fac.WithTxn(func() error {
 		eqb := fac.Edit()
 
-		edit, err := eqb.Find(input.ID)
+		var err error
+		edit, err = eqb.Find(input.ID)
 		if err != nil {
 			return err
 		}

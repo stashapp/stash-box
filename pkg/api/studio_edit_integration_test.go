@@ -26,7 +26,7 @@ func (s *studioEditTestRunner) testCreateStudioEdit() {
 	if err != nil {
 		return
 	}
-	parentID := parentStudio.ID
+	parentID := parentStudio.UUID()
 	name := "Name"
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name:     &name,
@@ -87,7 +87,7 @@ func (s *studioEditTestRunner) testModifyStudioEdit() {
 	if err != nil {
 		return
 	}
-	existingParentID := existingParentStudio.ID
+	existingParentID := existingParentStudio.UUID()
 	existingName := "studioName"
 	studioCreateInput := models.StudioCreateInput{
 		Name:     existingName,
@@ -102,7 +102,7 @@ func (s *studioEditTestRunner) testModifyStudioEdit() {
 	if err != nil {
 		return
 	}
-	newParentID := newParent.ID
+	newParentID := newParent.UUID()
 	newName := "newName"
 	url := models.URL{
 		URL:  "http://example.org",
@@ -113,7 +113,7 @@ func (s *studioEditTestRunner) testModifyStudioEdit() {
 		ParentID: &newParentID,
 		Urls:     []*models.URL{&url},
 	}
-	id := createdStudio.ID
+	id := createdStudio.UUID()
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,
@@ -152,7 +152,7 @@ func (s *studioEditTestRunner) testDestroyStudioEdit() {
 		return
 	}
 
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 
 	studioEditDetailsInput := models.StudioEditDetailsInput{}
 	editInput := models.EditInput{
@@ -193,8 +193,8 @@ func (s *studioEditTestRunner) testMergeStudioEdit() {
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name: &newName,
 	}
-	id := createdPrimaryStudio.ID
-	mergeSources := []uuid.UUID{createdMergeStudio.ID}
+	id := createdPrimaryStudio.UUID()
+	mergeSources := []uuid.UUID{createdMergeStudio.UUID()}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -219,11 +219,11 @@ func (s *studioEditTestRunner) verifyMergeStudioEdit(originalStudio *studioOutpu
 		s.fieldMismatch(*input.Name, *studioDetails.Name, "Name")
 	}
 
-	mergeSources := []string{}
+	var mergeSources []uuid.UUID
 	merges, _ := s.resolver.Edit().MergeSources(s.ctx, edit)
 	for i := range merges {
 		merge := merges[i].(*models.Studio)
-		mergeSources = append(mergeSources, merge.ID.String())
+		mergeSources = append(mergeSources, merge.ID)
 	}
 	if !reflect.DeepEqual(inputMergeSources, mergeSources) {
 		s.fieldMismatch(inputMergeSources, mergeSources, "MergeSources")
@@ -236,7 +236,7 @@ func (s *studioEditTestRunner) testApplyCreateStudioEdit() {
 	if err != nil {
 		return
 	}
-	parentID := parent.ID
+	parentID := parent.UUID()
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name:     &name,
 		ParentID: &parentID,
@@ -289,7 +289,7 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 	if err != nil {
 		return
 	}
-	newParentID := newParent.ID
+	newParentID := newParent.UUID()
 	newUrl := models.URL{
 		URL:  "http://example.org/new",
 		Type: "HOME",
@@ -299,7 +299,7 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 		ParentID: &newParentID,
 		Urls:     []*models.URL{&newUrl},
 	}
-	id := createdStudio.ID
+	id := createdStudio.UUID()
 	editInput := models.EditInput{
 		Operation: models.OperationEnumModify,
 		ID:        &id,
@@ -345,7 +345,7 @@ func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
 		return
 	}
 
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 	sceneInput := models.SceneCreateInput{
 		StudioID: &studioID,
 	}
@@ -363,7 +363,7 @@ func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
 	appliedEdit, err := s.applyEdit(destroyEdit.ID)
 
 	destroyedStudio, _ := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
-	scene, _ = s.client.findScene(scene.ID)
+	scene, _ = s.client.findScene(scene.UUID())
 	s.verifyApplyDestroyStudioEdit(destroyedStudio, appliedEdit, scene)
 }
 
@@ -397,7 +397,7 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 	}
 
 	// Scene with studio from both source and target, should not cause db unique error
-	mergeTargetID := mergeTarget.ID
+	mergeTargetID := mergeTarget.UUID()
 	sceneInput := models.SceneCreateInput{
 		StudioID: &mergeTargetID,
 	}
@@ -406,7 +406,7 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 		return
 	}
 
-	mergeSource1ID := mergeSource1.ID
+	mergeSource1ID := mergeSource1.UUID()
 	sceneInput = models.SceneCreateInput{
 		StudioID: &mergeSource1ID,
 	}
@@ -419,8 +419,8 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name: &newName,
 	}
-	id := mergeTarget.ID
-	mergeSources := []uuid.UUID{mergeSource1.ID, mergeSource2.ID}
+	id := mergeTarget.UUID()
+	mergeSources := []uuid.UUID{mergeSource1.UUID(), mergeSource2.UUID()}
 	editInput := models.EditInput{
 		Operation:      models.OperationEnumMerge,
 		ID:             &id,
@@ -437,8 +437,8 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 		return
 	}
 
-	scene1, _ = s.client.findScene(scene1.ID)
-	scene2, _ = s.client.findScene(scene2.ID)
+	scene1, _ = s.client.findScene(scene1.UUID())
+	scene2, _ = s.client.findScene(scene2.UUID())
 
 	s.verifyAppliedMergeStudioEdit(studioEditDetailsInput, appliedMerge, scene1, scene2)
 }
@@ -463,11 +463,11 @@ func (s *studioEditTestRunner) verifyAppliedMergeStudioEdit(input models.StudioE
 	}
 
 	editTarget := s.getEditStudioTarget(edit)
-	if scene1.Studio.ID != editTarget.ID {
+	if scene1.Studio.ID != editTarget.ID.String() {
 		s.fieldMismatch(scene1.Studio.ID, editTarget.ID, "Scene 1 studio ID")
 	}
 
-	if scene2.Studio.ID != editTarget.ID {
+	if scene2.Studio.ID != editTarget.ID.String() {
 		s.fieldMismatch(scene2.Studio.ID, editTarget.ID, "Scene 2 studio ID")
 	}
 }
