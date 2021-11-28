@@ -274,8 +274,9 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 
 	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
+	eqb := fac.Edit()
 
-	e, err := fac.Edit().Find(editID)
+	e, err := eqb.Find(editID)
 	if err != nil {
 		return nil, err
 	}
@@ -283,6 +284,16 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 	if err = validateUser(ctx, e.UserID); err == nil {
 		return edit.CloseEdit(fac, editID, models.VoteStatusEnumCanceled)
 	} else if err = validateAdmin(ctx); err == nil {
+		currentUser := getCurrentUser(ctx)
+
+		err = fac.WithTxn(func() error {
+			vote := models.NewEditVote(currentUser, e, models.VoteTypeEnumImmediateReject)
+			return eqb.CreateVote(*vote)
+		})
+		if err != nil {
+			return nil, err
+		}
+
 		return edit.CloseEdit(fac, editID, models.VoteStatusEnumImmediateRejected)
 	}
 
@@ -296,6 +307,22 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 
 	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
+	eqb := fac.Edit()
+
+	e, err := eqb.Find(editID)
+	if err != nil {
+		return nil, err
+	}
+
+	currentUser := getCurrentUser(ctx)
+
+	err = fac.WithTxn(func() error {
+		vote := models.NewEditVote(currentUser, e, models.VoteTypeEnumImmediateAccept)
+		return eqb.CreateVote(*vote)
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return edit.ApplyEdit(fac, editID, true)
 }
