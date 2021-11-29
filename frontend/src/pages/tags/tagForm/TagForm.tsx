@@ -121,7 +121,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, saving }) => {
               classNamePrefix="react-select"
               className={cx({ "is-invalid": errors.categoryId })}
               name="categoryId"
-              onChange={(opt) => onChange(opt?.value)}
+              onChange={(opt) => onChange(opt?.value || null)}
               options={categoryObj}
               isClearable
               placeholder="Category"
