@@ -20,3 +20,13 @@
     margin-bottom: 0;
   }
 }
+
+.StudioForm {
+  .EditImages {
+    &-images,
+    &-input {
+      flex: unset;
+      width: unset;
+    }
+  }
+}

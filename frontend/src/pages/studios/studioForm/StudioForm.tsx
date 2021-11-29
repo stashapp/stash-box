@@ -124,7 +124,7 @@ const StudioForm: FC<StudioProps> = ({
       )}
 
       <Form.Group className="mb-3">
-        <Form.Label>Images</Form.Label>
+        <Form.Label>Image</Form.Label>
         <EditImages
           control={control}
           maxImages={1}
