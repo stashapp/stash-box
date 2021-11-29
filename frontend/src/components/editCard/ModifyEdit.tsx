@@ -27,11 +27,11 @@ import {
   isSceneDetails,
   isSceneOldDetails,
   studioHref,
+  categoryHref,
 } from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
 import URLChangeRow from "src/components/urlChangeRow";
-import CategoryChangeRow from "src/components/categoryChangeRow";
 import { Icon } from "src/components/fragments";
 import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
@@ -55,9 +55,16 @@ const renderTagDetails = (
       oldValue={oldTagDetails?.description}
       showDiff={showDiff}
     />
-    <CategoryChangeRow
-      newCategoryID={tagDetails.category_id}
-      oldCategoryID={oldTagDetails?.category_id}
+    <LinkedChangeRow
+      name="Category"
+      newEntity={{
+        name: tagDetails.category?.name,
+        link: tagDetails.category && categoryHref(tagDetails.category),
+      }}
+      oldEntity={{
+        name: oldTagDetails?.category?.name,
+        link: oldTagDetails?.category && categoryHref(oldTagDetails.category),
+      }}
       showDiff={showDiff}
     />
     <ChangeRow
