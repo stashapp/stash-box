@@ -53,6 +53,7 @@ type ResolverRoot interface {
 	StudioEdit() StudioEditResolver
 	Tag() TagResolver
 	TagCategory() TagCategoryResolver
+	TagEdit() TagEditResolver
 	User() UserResolver
 }
 
@@ -384,7 +385,7 @@ type ComplexityRoot struct {
 
 	TagEdit struct {
 		AddedAliases   func(childComplexity int) int
-		CategoryID     func(childComplexity int) int
+		Category       func(childComplexity int) int
 		Description    func(childComplexity int) int
 		Name           func(childComplexity int) int
 		RemovedAliases func(childComplexity int) int
@@ -635,6 +636,9 @@ type TagCategoryResolver interface {
 
 	Group(ctx context.Context, obj *TagCategory) (TagGroupEnum, error)
 	Description(ctx context.Context, obj *TagCategory) (*string, error)
+}
+type TagEditResolver interface {
+	Category(ctx context.Context, obj *TagEdit) (*TagCategory, error)
 }
 type UserResolver interface {
 	ID(ctx context.Context, obj *User) (string, error)
@@ -2582,12 +2586,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TagEdit.AddedAliases(childComplexity), true
 
-	case "TagEdit.category_id":
-		if e.complexity.TagEdit.CategoryID == nil {
+	case "TagEdit.category":
+		if e.complexity.TagEdit.Category == nil {
 			break
 		}
 
-		return e.complexity.TagEdit.CategoryID(childComplexity), true
+		return e.complexity.TagEdit.Category(childComplexity), true
 
 	case "TagEdit.description":
 		if e.complexity.TagEdit.Description == nil {
@@ -3731,7 +3735,7 @@ type TagEdit {
   description: String
   added_aliases: [String!]
   removed_aliases: [String!]
-  category_id: ID
+  category: TagCategory
 }
 
 type QueryTagsResultType {
@@ -13527,7 +13531,7 @@ func (ec *executionContext) _TagEdit_removed_aliases(ctx context.Context, field 
 	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _TagEdit_category_id(ctx context.Context, field graphql.CollectedField, obj *TagEdit) (ret graphql.Marshaler) {
+func (ec *executionContext) _TagEdit_category(ctx context.Context, field graphql.CollectedField, obj *TagEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13538,14 +13542,14 @@ func (ec *executionContext) _TagEdit_category_id(ctx context.Context, field grap
 		Object:     "TagEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CategoryID, nil
+		return ec.resolvers.TagEdit().Category(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13554,9 +13558,9 @@ func (ec *executionContext) _TagEdit_category_id(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*TagCategory)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOTagCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategory(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _URL_url(ctx context.Context, field graphql.CollectedField, obj *URL) (ret graphql.Marshaler) {
@@ -21783,8 +21787,17 @@ func (ec *executionContext) _TagEdit(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._TagEdit_added_aliases(ctx, field, obj)
 		case "removed_aliases":
 			out.Values[i] = ec._TagEdit_removed_aliases(ctx, field, obj)
-		case "category_id":
-			out.Values[i] = ec._TagEdit_category_id(ctx, field, obj)
+		case "category":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TagEdit_category(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
