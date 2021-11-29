@@ -3,10 +3,9 @@ import { Link, useHistory } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 
 import {
-  useEdits,
+  usePendingEdits,
   CriterionModifier,
   TargetTypeEnum,
-  VoteStatusEnum,
 } from "src/graphql";
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 
@@ -32,15 +31,9 @@ const TagComponent: FC<Props> = ({ tag }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
 
-  const { data: editData } = useEdits({
-    filter: {
-      per_page: 1,
-    },
-    editFilter: {
-      target_type: TargetTypeEnum.TAG,
-      target_id: tag.id,
-      status: VoteStatusEnum.PENDING,
-    },
+  const { data: editData } = usePendingEdits({
+    type: TargetTypeEnum.TAG,
+    id: tag.id,
   });
   const pendingEditCount = editData?.queryEdits.count;
 

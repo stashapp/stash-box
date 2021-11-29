@@ -40,6 +40,10 @@ import { Users, UsersVariables } from "../definitions/Users";
 import { PublicUser, PublicUserVariables } from "../definitions/PublicUser";
 import { Config } from "../definitions/Config";
 import { Version } from "../definitions/Version";
+import {
+  PendingEdits,
+  PendingEditsVariables,
+} from "../definitions/PendingEdits";
 
 import CategoryQuery from "./Category.gql";
 import CategoriesQuery from "./Categories.gql";
@@ -63,6 +67,7 @@ import UsersQuery from "./Users.gql";
 import PublicUserQuery from "./PublicUser.gql";
 import ConfigQuery from "./Config.gql";
 import VersionQuery from "./Version.gql";
+import PendingEditsQuery from "./PendingEdits.gql";
 
 export const useCategory = (variables: CategoryVariables, skip = false) =>
   useQuery<Category, CategoryVariables>(CategoryQuery, {
@@ -207,3 +212,8 @@ export const useUsers = (variables: UsersVariables) =>
 export const useConfig = () => useQuery<Config>(ConfigQuery);
 
 export const useVersion = () => useQuery<Version>(VersionQuery);
+
+export const usePendingEdits = (variables: PendingEditsVariables) =>
+  useQuery<PendingEdits, PendingEditsVariables>(PendingEditsQuery, {
+    variables,
+  });

@@ -7,7 +7,7 @@ import {
   Scene_findScene as Scene,
   Scene_findScene_fingerprints as Fingerprint,
 } from "src/graphql/definitions/Scene";
-import { useEdits, TargetTypeEnum, VoteStatusEnum } from "src/graphql";
+import { usePendingEdits, TargetTypeEnum } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   canEdit,
@@ -45,15 +45,9 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const auth = useContext(AuthContext);
 
-  const { data: editData } = useEdits({
-    filter: {
-      per_page: 1,
-    },
-    editFilter: {
-      target_type: TargetTypeEnum.SCENE,
-      target_id: scene.id,
-      status: VoteStatusEnum.PENDING,
-    },
+  const { data: editData } = usePendingEdits({
+    type: TargetTypeEnum.SCENE,
+    id: scene.id,
   });
   const pendingEditCount = editData?.queryEdits.count;
 
