@@ -83,7 +83,7 @@ const StudioForm: FC<StudioProps> = ({
   };
 
   return (
-    <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
+    <Form className="StudioForm w-50" onSubmit={handleSubmit(onSubmit)}>
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
         <Form.Control
