@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
