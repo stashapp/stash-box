@@ -239,13 +239,19 @@ export interface Edits_queryEdits_edits_target_Scene {
 
 export type Edits_queryEdits_edits_target = Edits_queryEdits_edits_target_Tag | Edits_queryEdits_edits_target_Performer | Edits_queryEdits_edits_target_Studio | Edits_queryEdits_edits_target_Scene;
 
+export interface Edits_queryEdits_edits_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
   added_aliases: string[] | null;
   removed_aliases: string[] | null;
-  category_id: string | null;
+  category: Edits_queryEdits_edits_details_TagEdit_category | null;
 }
 
 export interface Edits_queryEdits_edits_details_PerformerEdit_added_urls {
@@ -684,11 +690,17 @@ export interface Edits_queryEdits_edits_details_SceneEdit {
 
 export type Edits_queryEdits_edits_details = Edits_queryEdits_edits_details_TagEdit | Edits_queryEdits_edits_details_PerformerEdit | Edits_queryEdits_edits_details_StudioEdit | Edits_queryEdits_edits_details_SceneEdit;
 
+export interface Edits_queryEdits_edits_old_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface Edits_queryEdits_edits_old_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
-  category_id: string | null;
+  category: Edits_queryEdits_edits_old_details_TagEdit_category | null;
 }
 
 export interface Edits_queryEdits_edits_old_details_PerformerEdit {

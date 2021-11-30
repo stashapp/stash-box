@@ -41,6 +41,9 @@ func (r *Resolver) PerformerEdit() models.PerformerEditResolver {
 func (r *Resolver) StudioEdit() models.StudioEditResolver {
 	return &studioEditResolver{r}
 }
+func (r *Resolver) TagEdit() models.TagEditResolver {
+	return &tagEditResolver{r}
+}
 func (r *Resolver) SceneEdit() models.SceneEditResolver {
 	return &sceneEditResolver{r}
 }

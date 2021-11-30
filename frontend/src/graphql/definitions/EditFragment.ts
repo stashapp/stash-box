@@ -239,13 +239,19 @@ export interface EditFragment_target_Scene {
 
 export type EditFragment_target = EditFragment_target_Tag | EditFragment_target_Performer | EditFragment_target_Studio | EditFragment_target_Scene;
 
+export interface EditFragment_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface EditFragment_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
   added_aliases: string[] | null;
   removed_aliases: string[] | null;
-  category_id: string | null;
+  category: EditFragment_details_TagEdit_category | null;
 }
 
 export interface EditFragment_details_PerformerEdit_added_urls {
@@ -684,11 +690,17 @@ export interface EditFragment_details_SceneEdit {
 
 export type EditFragment_details = EditFragment_details_TagEdit | EditFragment_details_PerformerEdit | EditFragment_details_StudioEdit | EditFragment_details_SceneEdit;
 
+export interface EditFragment_old_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface EditFragment_old_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
-  category_id: string | null;
+  category: EditFragment_old_details_TagEdit_category | null;
 }
 
 export interface EditFragment_old_details_PerformerEdit {
