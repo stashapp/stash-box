@@ -250,8 +250,7 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
-	if q := tagFilter.CategoryID; q != nil && *q != "" {
-		catID, _ := uuid.FromString(*q)
+	if catID := tagFilter.CategoryID; catID != nil {
 		query.Eq("tags.category_id", catID)
 	}
 
@@ -404,9 +403,8 @@ func (qb *tagQueryBuilder) ApplyEdit(edit models.Edit, operation models.Operatio
 			return nil, err
 		}
 
-		for _, v := range data.MergeSources {
-			sourceUUID, _ := uuid.FromString(v)
-			if err := qb.mergeInto(sourceUUID, tag.ID); err != nil {
+		for _, sourceID := range data.MergeSources {
+			if err := qb.mergeInto(sourceID, tag.ID); err != nil {
 				return nil, err
 			}
 		}

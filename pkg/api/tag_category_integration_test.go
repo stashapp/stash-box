@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -48,8 +49,7 @@ func (s *tagCategoryTestRunner) verifyCreatedTagCategory(input models.TagCategor
 
 	r := s.resolver.TagCategory()
 
-	id, _ := r.ID(s.ctx, category)
-	if id == "" {
+	if category.ID == uuid.Nil {
 		s.t.Errorf("Expected created tagCategory id to be non-zero")
 	}
 
@@ -67,8 +67,7 @@ func (s *tagCategoryTestRunner) testFindTagCategoryById() {
 		return
 	}
 
-	catID := createdCategory.ID.String()
-	category, err := s.resolver.Query().FindTagCategory(s.ctx, catID)
+	category, err := s.resolver.Query().FindTagCategory(s.ctx, createdCategory.ID)
 	if err != nil {
 		s.t.Errorf("Error finding tagCategory: %s", err.Error())
 		return
@@ -92,7 +91,7 @@ func (s *tagCategoryTestRunner) testUpdateTagCategory() {
 		return
 	}
 
-	catID := createdCategory.ID.String()
+	catID := createdCategory.ID
 
 	newDescription := "newDescription"
 
@@ -129,7 +128,7 @@ func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 		return
 	}
 
-	catID := createdCategory.ID.String()
+	catID := createdCategory.ID
 
 	destroyed, err := s.resolver.Mutation().TagCategoryDestroy(s.ctx, models.TagCategoryDestroyInput{
 		ID: catID,
@@ -175,7 +174,7 @@ func (s *tagCategoryTestRunner) testUnauthorisedTagCategoryModify() {
 }
 
 func (s *tagTestRunner) testUnauthorisedTagCategoryQuery() {
-	_, err := s.resolver.Query().FindTagCategory(s.ctx, "")
+	_, err := s.resolver.Query().FindTagCategory(s.ctx, uuid.Nil)
 	if err != user.ErrUnauthorized {
 		s.t.Errorf("FindTagCategory: got %v want %v", err, user.ErrUnauthorized)
 	}

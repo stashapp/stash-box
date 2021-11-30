@@ -6,7 +6,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -134,8 +133,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 		switch ret {
 		case models.TargetTypeEnumTag:
 			tqb := fac.Tag()
-			for _, tagStringID := range editData.MergeSources {
-				tagID, _ := uuid.FromString(tagStringID)
+			for _, tagID := range editData.MergeSources {
 				tag, err := tqb.Find(tagID)
 				if err == nil {
 					mergeSources = append(mergeSources, tag)
@@ -143,8 +141,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 			}
 		case models.TargetTypeEnumPerformer:
 			pqb := fac.Performer()
-			for _, performerStringID := range editData.MergeSources {
-				performerID, _ := uuid.FromString(performerStringID)
+			for _, performerID := range editData.MergeSources {
 				performer, err := pqb.Find(performerID)
 				if err == nil {
 					mergeSources = append(mergeSources, performer)
@@ -152,8 +149,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 			}
 		case models.TargetTypeEnumStudio:
 			pqb := fac.Studio()
-			for _, studioStringID := range editData.MergeSources {
-				studioID, _ := uuid.FromString(studioStringID)
+			for _, studioID := range editData.MergeSources {
 				studio, err := pqb.Find(studioID)
 				if err == nil {
 					mergeSources = append(mergeSources, studio)
@@ -161,8 +157,7 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 			}
 		case models.TargetTypeEnumScene:
 			qb := fac.Scene()
-			for _, sceneStringID := range editData.MergeSources {
-				sceneID, _ := uuid.FromString(sceneStringID)
+			for _, sceneID := range editData.MergeSources {
 				scene, err := qb.Find(sceneID)
 				if err == nil {
 					mergeSources = append(mergeSources, scene)

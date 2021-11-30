@@ -89,31 +89,31 @@ func RepealInviteTokens(uf FinderUpdater, userID uuid.UUID, tokens int) (int, er
 // GenerateInviteKey creates and returns an invite key, using a token if
 // required. If useToken is true and the user has no invite tokens, then
 // an error is returned.
-func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, useToken bool) (string, error) {
+func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, useToken bool) (*uuid.UUID, error) {
 	if useToken {
 		u, err := uf.Find(userID)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		if u == nil {
-			return "", fmt.Errorf("user not found for id %s", userID.String())
+			return nil, fmt.Errorf("user not found for id %s", userID.String())
 		}
 
 		if u.InviteTokens <= 0 {
-			return "", ErrNoInviteTokens
+			return nil, ErrNoInviteTokens
 		}
 
 		_, err = RepealInviteTokens(uf, userID, 1)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 	}
 
 	// create the invite key
 	UUID, err := uuid.NewV4()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	currentTime := time.Now()
@@ -125,10 +125,10 @@ func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid
 
 	_, err = ic.Create(newKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return UUID.String(), nil
+	return &UUID, nil
 }
 
 // RescindInviteKey makes an invite key invalid, refunding the invite token if

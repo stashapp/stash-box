@@ -44,7 +44,7 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 	pqb := m.fac.Performer()
 
 	// get the existing performer
-	performerID, _ := uuid.FromString(*input.Edit.ID)
+	performerID := *input.Edit.ID
 	performer, err := pqb.Find(performerID)
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 	}
 
 	if performer == nil {
-		return errors.New("performer with id " + performerID.String() + " not found")
+		return fmt.Errorf("performer with id %v not found", performerID)
 	}
 
 	// perform a diff against the input and the current object
@@ -88,11 +88,11 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 		return err
 	}
 
-	existingImages := []string{}
+	var existingImages []uuid.UUID
 	for _, image := range images {
-		existingImages = append(existingImages, image.ID.String())
+		existingImages = append(existingImages, image.ID)
 	}
-	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
+	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
 
 	if input.Options != nil && input.Options.SetModifyAliases != nil {
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
@@ -108,7 +108,7 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 	if input.Edit.ID == nil {
 		return errors.New("Merge performer ID is required")
 	}
-	performerID, _ := uuid.FromString(*input.Edit.ID)
+	performerID := *input.Edit.ID
 	performer, err := pqb.Find(performerID)
 
 	if err != nil {
@@ -116,24 +116,23 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 	}
 
 	if performer == nil {
-		return errors.New("performer with id " + performerID.String() + " not found")
+		return fmt.Errorf("performer with id %v not found", *input.Edit.ID)
 	}
 
-	mergeSources := []string{}
-	for _, mergeSourceID := range input.Edit.MergeSourceIds {
-		sourceID, _ := uuid.FromString(mergeSourceID)
+	var mergeSources []uuid.UUID
+	for _, sourceID := range input.Edit.MergeSourceIds {
 		sourcePerformer, err := pqb.Find(sourceID)
 		if err != nil {
 			return err
 		}
 
 		if sourcePerformer == nil {
-			return errors.New("performer with id " + sourceID.String() + " not found")
+			return fmt.Errorf("performer with id %v not found", sourceID)
 		}
 		if performerID == sourceID {
 			return errors.New("merge target cannot be used as source")
 		}
-		mergeSources = append(mergeSources, mergeSourceID)
+		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
@@ -173,11 +172,11 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 		return err
 	}
 
-	existingImages := []string{}
+	var existingImages []uuid.UUID
 	for _, image := range images {
-		existingImages = append(existingImages, image.ID.String())
+		existingImages = append(existingImages, image.ID)
 	}
-	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
+	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
 
 	if input.Options != nil && input.Options.SetMergeAliases != nil {
 		performerEdit.SetMergeAliases = *input.Options.SetMergeAliases
@@ -219,19 +218,16 @@ func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput, in
 	pqb := m.fac.Performer()
 
 	// get the existing performer
-	performerID, _ := uuid.FromString(*input.Edit.ID)
-	_, err := pqb.Find(performerID)
+	_, err := pqb.Find(*input.Edit.ID)
 
 	return err
 }
 
 func (m *PerformerEditProcessor) CreateJoin(input models.PerformerEditInput) error {
 	if input.Edit.ID != nil {
-		performerID, _ := uuid.FromString(*input.Edit.ID)
-
 		editTag := models.EditPerformer{
 			EditID:      m.edit.ID,
-			PerformerID: performerID,
+			PerformerID: *input.Edit.ID,
 		}
 
 		return m.fac.Edit().CreateEditPerformer(editTag)
@@ -345,9 +341,8 @@ func (m *PerformerEditProcessor) applyMerge(performer *models.Performer, data *m
 		return nil, err
 	}
 
-	for _, v := range data.MergeSources {
-		sourceUUID, _ := uuid.FromString(v)
-		if err := m.mergeInto(sourceUUID, performer.ID, data.SetMergeAliases); err != nil {
+	for _, sourceID := range data.MergeSources {
+		if err := m.mergeInto(sourceID, performer.ID, data.SetMergeAliases); err != nil {
 			return nil, err
 		}
 	}

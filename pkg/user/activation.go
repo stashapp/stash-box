@@ -189,7 +189,7 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 		return nil, errors.New("cannot find invite key")
 	}
 
-	invitedBy := i.GeneratedBy.String()
+	invitedBy := i.GeneratedBy
 
 	createInput := models.UserCreateInput{
 		Name:        name,

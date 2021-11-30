@@ -265,8 +265,7 @@ func Update(fac models.Repo, input models.UserUpdateInput) (*models.User, error)
 	qb := fac.User()
 
 	// get the existing user and modify it
-	userID, _ := uuid.FromString(input.ID)
-	updatedUser, err := qb.Find(userID)
+	updatedUser, err := qb.Find(input.ID)
 
 	if err != nil {
 		return nil, err
@@ -301,11 +300,7 @@ func Destroy(fac models.Repo, input models.UserDestroyInput) (bool, error) {
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
 
-	userID, err := uuid.FromString(input.ID)
-	if err != nil {
-		return false, err
-	}
-	if err = qb.Destroy(userID); err != nil {
+	if err := qb.Destroy(input.ID); err != nil {
 		return false, err
 	}
 
@@ -423,12 +418,11 @@ func Authenticate(fac models.Repo, username string, password string) (string, er
 	return user.ID.String(), nil
 }
 
-func RegenerateAPIKey(fac models.Repo, userID string) (string, error) {
+func RegenerateAPIKey(fac models.Repo, userID uuid.UUID) (string, error) {
 	var err error
 
 	qb := fac.User()
-	userUUID, _ := uuid.FromString(userID)
-	user, err := qb.Find(userUUID)
+	user, err := qb.Find(userID)
 
 	if err != nil {
 		return "", fmt.Errorf("error finding user: %w", err)
