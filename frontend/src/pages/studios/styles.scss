@@ -28,5 +28,10 @@
       flex: unset;
       width: unset;
     }
+
+    &-drop {
+      height: 200px;
+      padding: 1rem;
+    }
   }
 }
