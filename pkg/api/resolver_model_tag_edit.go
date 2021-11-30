@@ -15,6 +15,5 @@ func (r *tagEditResolver) Category(ctx context.Context, obj *models.TagEdit) (*m
 	}
 
 	qb := r.getRepoFactory(ctx).TagCategory()
-	categoryID, _ := uuid.FromString(*obj.CategoryID)
-	return qb.Find(categoryID)
+	return qb.Find(*obj.CategoryID)
 }
