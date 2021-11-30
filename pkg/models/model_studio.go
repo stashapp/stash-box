@@ -101,10 +101,7 @@ func (s *Studio) CopyFromCreateInput(input StudioCreateInput) {
 	CopyFull(s, input)
 
 	if input.ParentID != nil {
-		UUID, err := uuid.FromString(*input.ParentID)
-		if err == nil {
-			s.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
-		}
+		s.ParentStudioID = uuid.NullUUID{UUID: *input.ParentID, Valid: true}
 	}
 }
 
@@ -112,10 +109,7 @@ func (s *Studio) CopyFromUpdateInput(input StudioUpdateInput) {
 	CopyFull(s, input)
 
 	if input.ParentID != nil {
-		UUID, err := uuid.FromString(*input.ParentID)
-		if err == nil {
-			s.ParentStudioID = uuid.NullUUID{UUID: UUID, Valid: true}
-		}
+		s.ParentStudioID = uuid.NullUUID{UUID: *input.ParentID, Valid: true}
 	} else {
 		s.ParentStudioID = uuid.NullUUID{}
 	}
@@ -136,13 +130,12 @@ func (s *Studio) ValidateModifyEdit(edit StudioEditData) error {
 	return v.err
 }
 
-func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudiosImages {
+func CreateStudioImages(studioID uuid.UUID, imageIds []uuid.UUID) StudiosImages {
 	var imageJoins StudiosImages
 	for _, iid := range imageIds {
-		imageID := uuid.FromStringOrNil(iid)
 		imageJoin := &StudioImage{
 			StudioID: studioID,
-			ImageID:  imageID,
+			ImageID:  iid,
 		}
 		imageJoins = append(imageJoins, imageJoin)
 	}

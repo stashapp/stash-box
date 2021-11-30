@@ -259,19 +259,19 @@ func (p *EditScenes) Add(o interface{}) {
 }
 
 type TagEdit struct {
-	Name           *string  `json:"name,omitempty"`
-	Description    *string  `json:"description,omitempty"`
-	AddedAliases   []string `json:"added_aliases,omitempty"`
-	RemovedAliases []string `json:"removed_aliases,omitempty"`
-	CategoryID     *string  `json:"category_id,omitempty"`
+	Name           *string    `json:"name,omitempty"`
+	Description    *string    `json:"description,omitempty"`
+	AddedAliases   []string   `json:"added_aliases,omitempty"`
+	RemovedAliases []string   `json:"removed_aliases,omitempty"`
+	CategoryID     *uuid.UUID `json:"category_id,omitempty"`
 }
 
 func (TagEdit) IsEditDetails() {}
 
 type TagEditData struct {
-	New          *TagEdit `json:"new_data,omitempty"`
-	Old          *TagEdit `json:"old_data,omitempty"`
-	MergeSources []string `json:"merge_sources,omitempty"`
+	New          *TagEdit    `json:"new_data,omitempty"`
+	Old          *TagEdit    `json:"old_data,omitempty"`
+	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
 }
 
 func (PerformerEdit) IsEditDetails() {}
@@ -302,14 +302,14 @@ type PerformerEdit struct {
 	RemovedTattoos    []*BodyModification `json:"removed_tattoos,omitempty"`
 	AddedPiercings    []*BodyModification `json:"added_piercings,omitempty"`
 	RemovedPiercings  []*BodyModification `json:"removed_piercings,omitempty"`
-	AddedImages       []string            `json:"added_images,omitempty"`
-	RemovedImages     []string            `json:"removed_images,omitempty"`
+	AddedImages       []uuid.UUID         `json:"added_images,omitempty"`
+	RemovedImages     []uuid.UUID         `json:"removed_images,omitempty"`
 }
 
 type PerformerEditData struct {
 	New              *PerformerEdit `json:"new_data,omitempty"`
 	Old              *PerformerEdit `json:"old_data,omitempty"`
-	MergeSources     []string       `json:"merge_sources,omitempty"`
+	MergeSources     []uuid.UUID    `json:"merge_sources,omitempty"`
 	SetModifyAliases bool           `json:"modify_aliases,omitempty"`
 	SetMergeAliases  bool           `json:"merge_aliases,omitempty"`
 }
@@ -317,11 +317,11 @@ type PerformerEditData struct {
 type StudioEdit struct {
 	Name *string `json:"name"`
 	// Added and modified URLs
-	AddedUrls     []*URL   `json:"added_urls,omitempty"`
-	RemovedUrls   []*URL   `json:"removed_urls,omitempty"`
-	ParentID      *string  `json:"parent_id,omitempty"`
-	AddedImages   []string `json:"added_images,omitempty"`
-	RemovedImages []string `json:"removed_images,omitempty"`
+	AddedUrls     []*URL      `json:"added_urls,omitempty"`
+	RemovedUrls   []*URL      `json:"removed_urls,omitempty"`
+	ParentID      *uuid.UUID  `json:"parent_id,omitempty"`
+	AddedImages   []uuid.UUID `json:"added_images,omitempty"`
+	RemovedImages []uuid.UUID `json:"removed_images,omitempty"`
 }
 
 func (StudioEdit) IsEditDetails() {}
@@ -329,23 +329,23 @@ func (StudioEdit) IsEditDetails() {}
 type StudioEditData struct {
 	New          *StudioEdit `json:"new_data,omitempty"`
 	Old          *StudioEdit `json:"old_data,omitempty"`
-	MergeSources []string    `json:"merge_sources,omitempty"`
+	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
 }
 
 type SceneEdit struct {
-	Title       *string `json:"title,omitempty"`
-	Details     *string `json:"details,omitempty"`
-	AddedUrls   []*URL  `json:"added_urls,omitempty"`
-	RemovedUrls []*URL  `json:"removed_urls,omitempty"`
-	Date        *string `json:"date,omitempty"`
-	StudioID    *string `json:"studio_id,omitempty"`
+	Title       *string    `json:"title,omitempty"`
+	Details     *string    `json:"details,omitempty"`
+	AddedUrls   []*URL     `json:"added_urls,omitempty"`
+	RemovedUrls []*URL     `json:"removed_urls,omitempty"`
+	Date        *string    `json:"date,omitempty"`
+	StudioID    *uuid.UUID `json:"studio_id,omitempty"`
 	// Added or modified performer appearance entries
 	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
 	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`
-	AddedTags           []string                    `json:"added_tags,omitempty"`
-	RemovedTags         []string                    `json:"removed_tags,omitempty"`
-	AddedImages         []string                    `json:"added_images,omitempty"`
-	RemovedImages       []string                    `json:"removed_images,omitempty"`
+	AddedTags           []uuid.UUID                 `json:"added_tags,omitempty"`
+	RemovedTags         []uuid.UUID                 `json:"removed_tags,omitempty"`
+	AddedImages         []uuid.UUID                 `json:"added_images,omitempty"`
+	RemovedImages       []uuid.UUID                 `json:"removed_images,omitempty"`
 	AddedFingerprints   []*FingerprintEditInput     `json:"added_fingerprints,omitempty"`
 	RemovedFingerprints []*FingerprintEditInput     `json:"removed_fingerprints,omitempty"`
 	Duration            *int64                      `json:"duration,omitempty"`
@@ -355,15 +355,15 @@ type SceneEdit struct {
 func (SceneEdit) IsEditDetails() {}
 
 type SceneEditData struct {
-	New          *SceneEdit `json:"new_data,omitempty"`
-	Old          *SceneEdit `json:"old_data,omitempty"`
-	MergeSources []string   `json:"merge_sources,omitempty"`
+	New          *SceneEdit  `json:"new_data,omitempty"`
+	Old          *SceneEdit  `json:"old_data,omitempty"`
+	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
 }
 
 type EditData struct {
 	New          *json.RawMessage `json:"new_data,omitempty"`
 	Old          *json.RawMessage `json:"old_data,omitempty"`
-	MergeSources []string         `json:"merge_sources,omitempty"`
+	MergeSources []uuid.UUID      `json:"merge_sources,omitempty"`
 }
 
 type EditComments []*EditComment

@@ -92,6 +92,12 @@ func translateField(targetFieldValue reflect.Value, sourceFieldValue reflect.Val
 		targetFieldValue.Set(reflect.ValueOf(output))
 	}
 
+	if targetFieldType == reflect.TypeOf(uuid.NullUUID{}) && sourceFieldType == reflect.TypeOf(uuid.UUID{}) {
+		UUID := sourceFieldValue.Interface().(uuid.UUID)
+		output := uuid.NullUUID{UUID: UUID, Valid: true}
+		targetFieldValue.Set(reflect.ValueOf(output))
+	}
+
 	if targetFieldType == reflect.TypeOf(sql.NullInt64{}) && sourceFieldType.ConvertibleTo(reflect.TypeOf(int(0))) {
 		output := sql.NullInt64{Int64: sourceFieldValue.Int(), Valid: true}
 		targetFieldValue.Set(reflect.ValueOf(output))

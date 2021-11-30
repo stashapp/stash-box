@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) FindPerformer(ctx context.Context, id string) (*models.Performer, error) {
+func (r *queryResolver) FindPerformer(ctx context.Context, id uuid.UUID) (*models.Performer, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err
 	}
@@ -16,8 +16,7 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (*models.P
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
 
-	idUUID, _ := uuid.FromString(id)
-	return qb.Find(idUUID)
+	return qb.Find(id)
 }
 
 func (r *queryResolver) QueryPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.QuerySpec) (*models.PerformerQuery, error) {

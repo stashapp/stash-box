@@ -12,13 +12,13 @@ func TestCopyFromTagEdit(t *testing.T) {
 	input := TagEdit{
 		Name:        &bName,
 		Description: &bDescription,
-		CategoryID:  &bCategoryIDStr,
+		CategoryID:  &bCategoryID,
 	}
 
 	old := TagEdit{
 		Name:        &aName,
 		Description: &aDescription,
-		CategoryID:  &aCategoryIDStr,
+		CategoryID:  &aCategoryID,
 	}
 
 	orig := Tag{

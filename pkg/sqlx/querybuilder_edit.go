@@ -204,15 +204,11 @@ func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFi
 
 	query := newQueryBuilder(editDBTable)
 
-	if q := editFilter.UserID; q != nil && *q != "" {
+	if q := editFilter.UserID; q != nil {
 		query.Eq(editDBTable.Name()+".user_id", *q)
 	}
 
-	if q := editFilter.TargetID; q != nil {
-		targetID, err := uuid.FromString(*q)
-		if err != nil {
-			return nil, err
-		}
+	if targetID := editFilter.TargetID; targetID != nil {
 		if editFilter.TargetType == nil || *editFilter.TargetType == "" {
 			return nil, errors.New("TargetType is required when TargetID filter is used")
 		}
@@ -232,8 +228,8 @@ func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFi
 		default:
 			return nil, fmt.Errorf("TargetType is not yet supported: %s", *editFilter.TargetType)
 		}
-		jsonID, _ := json.Marshal(targetID)
-		query.AddArg(targetID, jsonID)
+		jsonID, _ := json.Marshal(*targetID)
+		query.AddArg(*targetID, jsonID)
 	} else if q := editFilter.TargetType; q != nil && *q != "" {
 		query.Eq("target_type", q.String())
 	}

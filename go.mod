@@ -7,7 +7,7 @@ require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi v4.0.2+incompatible
-	github.com/gofrs/uuid v4.0.0+incompatible
+	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/gorilla/sessions v1.1.3

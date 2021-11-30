@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -48,10 +49,7 @@ func (s *studioTestRunner) verifyCreatedStudio(input models.StudioCreateInput, s
 		s.fieldMismatch(input.Name, studio.Name, "Name")
 	}
 
-	r := s.resolver.Studio()
-
-	id, _ := r.ID(s.ctx, studio)
-	if id == "" {
+	if studio.ID == uuid.Nil {
 		s.t.Errorf("Expected created studio id to be non-zero")
 	}
 }
@@ -62,7 +60,7 @@ func (s *studioTestRunner) testFindStudioById() {
 		return
 	}
 
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 	studio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding studio: %s", err.Error())
@@ -116,7 +114,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 		return
 	}
 
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 
 	updatedName := s.generateStudioName()
 	updateInput := models.StudioUpdateInput{
@@ -151,7 +149,7 @@ func (s *studioTestRunner) testDestroyStudio() {
 		return
 	}
 
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 
 	destroyed, err := s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{
 		ID: studioID,

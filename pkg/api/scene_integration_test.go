@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -30,9 +31,9 @@ func (s *sceneTestRunner) testCreateScene() {
 	studio, _ := s.createTestStudio(nil)
 	tag, _ := s.createTestTag(nil)
 
-	performerID := performer.ID
-	studioID := studio.ID
-	tagID := tag.ID
+	performerID := performer.UUID()
+	studioID := studio.UUID()
+	tagID := tag.UUID()
 
 	performerAlias := "alias"
 
@@ -56,7 +57,7 @@ func (s *sceneTestRunner) testCreateScene() {
 				Type: "Type",
 			},
 		},
-		TagIds: []string{
+		TagIds: []uuid.UUID{
 			tagID,
 		},
 	}
@@ -78,7 +79,7 @@ func comparePerformers(input []*models.PerformerAppearanceInput, performers []*p
 
 	for i, v := range performers {
 		performerID := v.Performer.ID
-		if performerID != input[i].PerformerID {
+		if performerID != input[i].PerformerID.String() {
 			return false
 		}
 
@@ -121,14 +122,14 @@ func comparePerformersInput(input, performers []*models.PerformerAppearanceInput
 	return true
 }
 
-func compareTags(tagIDs []string, tags []*idObject) bool {
+func compareTags(tagIDs []uuid.UUID, tags []*idObject) bool {
 	if len(tags) != len(tagIDs) {
 		return false
 	}
 
 	for i, v := range tags {
 		tagID := v.ID
-		if tagID != tagIDs[i] {
+		if tagID != tagIDs[i].String() {
 			return false
 		}
 	}
@@ -206,7 +207,7 @@ func (s *sceneTestRunner) testFindSceneById() {
 		return
 	}
 
-	scene, err := s.client.findScene(createdScene.ID)
+	scene, err := s.client.findScene(createdScene.UUID())
 
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
@@ -313,9 +314,9 @@ func (s *sceneTestRunner) testUpdateScene() {
 	studio, _ := s.createTestStudio(nil)
 	tag, _ := s.createTestTag(nil)
 
-	performerID := performer.ID
-	studioID := studio.ID
-	tagID := tag.ID
+	performerID := performer.UUID()
+	studioID := studio.UUID()
+	tagID := tag.UUID()
 
 	performerAlias := "alias"
 
@@ -325,9 +326,9 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Date:    &date,
 		Fingerprints: []*models.FingerprintEditInput{
 			// fingerprint that will be kept
-			s.generateSceneFingerprint([]string{
-				userDB.none.ID.String(),
-				userDB.admin.ID.String(),
+			s.generateSceneFingerprint([]uuid.UUID{
+				userDB.none.ID,
+				userDB.admin.ID,
 			}),
 			// fingerprint that will be removed
 			s.generateSceneFingerprint(nil),
@@ -345,7 +346,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 				Type: "Type",
 			},
 		},
-		TagIds: []string{
+		TagIds: []uuid.UUID{
 			tagID,
 		},
 	}
@@ -355,8 +356,6 @@ func (s *sceneTestRunner) testUpdateScene() {
 		return
 	}
 
-	sceneID := createdScene.ID
-
 	newTitle := "NewTitle"
 	newDetails := "NewDetails"
 	newDate := "2001-02-03"
@@ -365,12 +364,13 @@ func (s *sceneTestRunner) testUpdateScene() {
 	studio, _ = s.createTestStudio(nil)
 	tag, _ = s.createTestTag(nil)
 
-	performerID = performer.ID
-	studioID = studio.ID
-	tagID = tag.ID
+	performerID = performer.UUID()
+	studioID = studio.UUID()
+	tagID = tag.UUID()
 
 	performerAlias = "updatedAlias"
 
+	sceneID := createdScene.UUID()
 	updateInput := models.SceneUpdateInput{
 		ID:      sceneID,
 		Title:   &newTitle,
@@ -393,7 +393,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 			},
 		},
 		StudioID: &studioID,
-		TagIds: []string{
+		TagIds: []uuid.UUID{
 			tagID,
 		},
 	}
@@ -507,7 +507,7 @@ func (s *sceneTestRunner) testDestroyScene() {
 		return
 	}
 
-	sceneID := createdScene.ID
+	sceneID := createdScene.UUID()
 
 	destroyed, err := s.client.destroyScene(models.SceneDestroyInput{
 		ID: sceneID,
@@ -546,7 +546,7 @@ func (s *sceneTestRunner) testSubmitFingerprint() {
 	fp := s.generateSceneFingerprint(nil)
 
 	if _, err := s.client.submitFingerprint(models.FingerprintSubmission{
-		SceneID: createdScene.ID,
+		SceneID: createdScene.UUID(),
 		Fingerprint: &models.FingerprintInput{
 			Hash:      fp.Hash,
 			Algorithm: fp.Algorithm,
@@ -557,7 +557,7 @@ func (s *sceneTestRunner) testSubmitFingerprint() {
 		return
 	}
 
-	scene, err := s.client.findScene(createdScene.ID)
+	scene, err := s.client.findScene(createdScene.UUID())
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -583,7 +583,7 @@ func (s *sceneTestRunner) testSubmitFingerprint() {
 
 	// submit the same fingerprint - should not add and should not error
 	if _, err := s.client.submitFingerprint(models.FingerprintSubmission{
-		SceneID: createdScene.ID,
+		SceneID: createdScene.UUID(),
 		Fingerprint: &models.FingerprintInput{
 			Hash:      fp.Hash,
 			Algorithm: fp.Algorithm,
@@ -603,7 +603,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatch() {
 
 	unmatch := true
 	if _, err := s.client.submitFingerprint(models.FingerprintSubmission{
-		SceneID: createdScene.ID,
+		SceneID: createdScene.UUID(),
 		Fingerprint: &models.FingerprintInput{
 			Hash:      createdScene.Fingerprints[0].Hash,
 			Algorithm: createdScene.Fingerprints[0].Algorithm,
@@ -615,7 +615,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatch() {
 		return
 	}
 
-	scene, err := s.client.findScene(createdScene.ID)
+	scene, err := s.client.findScene(createdScene.UUID())
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -635,15 +635,15 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 	fp := s.generateSceneFingerprint(nil)
 
 	if _, err := s.client.submitFingerprint(models.FingerprintSubmission{
-		SceneID: createdScene.ID,
+		SceneID: createdScene.UUID(),
 		Fingerprint: &models.FingerprintInput{
 			Hash:      fp.Hash,
 			Algorithm: fp.Algorithm,
 			Duration:  fp.Duration,
-			UserIds: []string{
-				userDB.edit.ID.String(),
-				userDB.none.ID.String(),
-				userDB.read.ID.String(),
+			UserIds: []uuid.UUID{
+				userDB.edit.ID,
+				userDB.none.ID,
+				userDB.read.ID,
 			},
 		},
 	}); err != nil {
@@ -651,7 +651,7 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 		return
 	}
 
-	scene, err := s.client.findScene(createdScene.ID)
+	scene, err := s.client.findScene(createdScene.UUID())
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -677,7 +677,7 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 
 	// submit the same fingerprint - should add
 	if _, err := s.client.submitFingerprint(models.FingerprintSubmission{
-		SceneID: createdScene.ID,
+		SceneID: createdScene.UUID(),
 		Fingerprint: &models.FingerprintInput{
 			Hash:      fp.Hash,
 			Algorithm: fp.Algorithm,
@@ -688,7 +688,7 @@ func (s *sceneTestRunner) testSubmitFingerprintModify() {
 		return
 	}
 
-	scene, err = s.client.findScene(createdScene.ID)
+	scene, err = s.client.findScene(createdScene.UUID())
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -711,15 +711,15 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 	fp := s.generateSceneFingerprint(nil)
 
 	if _, err := s.client.submitFingerprint(models.FingerprintSubmission{
-		SceneID: createdScene.ID,
+		SceneID: createdScene.UUID(),
 		Fingerprint: &models.FingerprintInput{
 			Hash:      fp.Hash,
 			Algorithm: fp.Algorithm,
 			Duration:  fp.Duration,
-			UserIds: []string{
-				userDB.edit.ID.String(),
-				userDB.none.ID.String(),
-				userDB.read.ID.String(),
+			UserIds: []uuid.UUID{
+				userDB.edit.ID,
+				userDB.none.ID,
+				userDB.read.ID,
 			},
 		},
 	}); err != nil {
@@ -729,13 +729,13 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 
 	unmatch := true
 	if _, err := s.client.submitFingerprint(models.FingerprintSubmission{
-		SceneID: createdScene.ID,
+		SceneID: createdScene.UUID(),
 		Fingerprint: &models.FingerprintInput{
 			Hash:      fp.Hash,
 			Algorithm: fp.Algorithm,
 			Duration:  fp.Duration,
-			UserIds: []string{
-				userDB.edit.ID.String(),
+			UserIds: []uuid.UUID{
+				userDB.edit.ID,
 			},
 		},
 		Unmatch: &unmatch,
@@ -744,7 +744,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 		return
 	}
 
-	scene, err := s.client.findScene(createdScene.ID)
+	scene, err := s.client.findScene(createdScene.UUID())
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return
@@ -768,7 +768,7 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 	}
 }
 
-func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneFilterType, ids []string) {
+func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneFilterType, ids []uuid.UUID) {
 	s.t.Helper()
 
 	page := 1
@@ -792,7 +792,7 @@ func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneFilterType,
 	for _, id := range ids {
 		found := false
 		for _, scene := range results.Scenes {
-			if scene.ID == id {
+			if scene.ID == id.String() {
 				found = true
 				break
 			}
@@ -827,8 +827,8 @@ func (s *sceneTestRunner) testQueryScenesByStudio() {
 	studio1, _ := s.createTestStudio(nil)
 	studio2, _ := s.createTestStudio(nil)
 
-	studio1ID := studio1.ID
-	studio2ID := studio2.ID
+	studio1ID := studio1.UUID()
+	studio2ID := studio2.UUID()
 
 	prefix := "testQueryScenesByStudio_"
 	scene1Title := prefix + "scene1Title"
@@ -859,41 +859,41 @@ func (s *sceneTestRunner) testQueryScenesByStudio() {
 		return
 	}
 
-	scene1ID := scene1.ID
-	scene2ID := scene2.ID
-	scene3ID := scene3.ID
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+	scene3ID := scene3.UUID()
 
 	// test equals
 	filter := models.SceneFilterType{
 		Studios: &models.MultiIDCriterionInput{
-			Value:    []string{studio1ID},
+			Value:    []uuid.UUID{studio1ID},
 			Modifier: models.CriterionModifierEquals,
 		},
 	}
 
-	s.verifyQueryScenesResult(filter, []string{scene1ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID})
 
 	filter.Studios.Modifier = models.CriterionModifierNotEquals
 	filter.Title = &scene2Title
-	s.verifyQueryScenesResult(filter, []string{scene2ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID})
 
 	filter.Studios.Modifier = models.CriterionModifierIsNull
 	filter.Title = &scene3Title
-	s.verifyQueryScenesResult(filter, []string{scene3ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene3ID})
 
 	filter.Studios.Modifier = models.CriterionModifierNotNull
 	filter.Title = &scene1Title
-	s.verifyQueryScenesResult(filter, []string{scene1ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID})
 
 	filter.Studios.Modifier = models.CriterionModifierIncludes
-	filter.Studios.Value = []string{studio1ID, studio2ID}
+	filter.Studios.Value = []uuid.UUID{studio1ID, studio2ID}
 	filter.Title = nil
-	s.verifyQueryScenesResult(filter, []string{scene1ID, scene2ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene2ID})
 
 	filter.Studios.Modifier = models.CriterionModifierExcludes
-	filter.Studios.Value = []string{studio1ID}
+	filter.Studios.Value = []uuid.UUID{studio1ID}
 	filter.Title = &scene2Title
-	s.verifyQueryScenesResult(filter, []string{scene2ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID})
 
 	// test invalid modifiers
 	filter.Studios.Modifier = models.CriterionModifierGreaterThan
@@ -910,8 +910,8 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	performer1, _ := s.createTestPerformer(nil)
 	performer2, _ := s.createTestPerformer(nil)
 
-	performer1ID := performer1.ID
-	performer2ID := performer2.ID
+	performer1ID := performer1.UUID()
+	performer2ID := performer2.UUID()
 
 	prefix := "testQueryScenesByPerformer_"
 	scene1Title := prefix + "scene1Title"
@@ -948,27 +948,27 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 		return
 	}
 
-	scene1ID := scene1.ID
-	scene2ID := scene2.ID
-	scene3ID := scene3.ID
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+	scene3ID := scene3.UUID()
 
 	titleSearch := prefix
 	filter := models.SceneFilterType{
 		Performers: &models.MultiIDCriterionInput{
-			Value:    []string{performer1ID},
+			Value:    []uuid.UUID{performer1ID},
 			Modifier: models.CriterionModifierIncludes,
 		},
 		Title: &titleSearch,
 	}
 
-	s.verifyQueryScenesResult(filter, []string{scene1ID, scene3ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID})
 
 	filter.Performers.Modifier = models.CriterionModifierExcludes
-	s.verifyQueryScenesResult(filter, []string{scene2ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID})
 
 	filter.Performers.Modifier = models.CriterionModifierIncludesAll
 	filter.Performers.Value = append(filter.Performers.Value, performer2ID)
-	s.verifyQueryScenesResult(filter, []string{scene3ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene3ID})
 
 	// test invalid modifiers
 	filter.Performers.Modifier = models.CriterionModifierGreaterThan
@@ -994,8 +994,8 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 	tag1, _ := s.createTestTag(nil)
 	tag2, _ := s.createTestTag(nil)
 
-	tag1ID := tag1.ID
-	tag2ID := tag2.ID
+	tag1ID := tag1.UUID()
+	tag2ID := tag2.UUID()
 
 	prefix := "testQueryScenesByTag_"
 	scene1Title := prefix + "scene1Title"
@@ -1003,7 +1003,7 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 	scene3Title := prefix + "scene3Title"
 
 	input := models.SceneCreateInput{
-		TagIds: []string{
+		TagIds: []uuid.UUID{
 			tag1ID,
 		},
 		Title: &scene1Title,
@@ -1028,27 +1028,27 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 		return
 	}
 
-	scene1ID := scene1.ID
-	scene2ID := scene2.ID
-	scene3ID := scene3.ID
+	scene1ID := scene1.UUID()
+	scene2ID := scene2.UUID()
+	scene3ID := scene3.UUID()
 
 	titleSearch := prefix
 	filter := models.SceneFilterType{
 		Tags: &models.MultiIDCriterionInput{
-			Value:    []string{tag1ID},
+			Value:    []uuid.UUID{tag1ID},
 			Modifier: models.CriterionModifierIncludes,
 		},
 		Title: &titleSearch,
 	}
 
-	s.verifyQueryScenesResult(filter, []string{scene1ID, scene3ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID})
 
 	filter.Tags.Modifier = models.CriterionModifierExcludes
-	s.verifyQueryScenesResult(filter, []string{scene2ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID})
 
 	filter.Tags.Modifier = models.CriterionModifierIncludesAll
 	filter.Tags.Value = append(filter.Tags.Value, tag2ID)
-	s.verifyQueryScenesResult(filter, []string{scene3ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene3ID})
 
 	// test invalid modifiers
 	filter.Tags.Modifier = models.CriterionModifierGreaterThan
@@ -1090,7 +1090,7 @@ func (s *sceneTestRunner) testUnauthorisedSceneModify() {
 
 func (s *sceneTestRunner) testUnauthorisedSceneQuery() {
 	// test each api interface - all require read so all should fail
-	_, err := s.resolver.Query().FindScene(s.ctx, "")
+	_, err := s.resolver.Query().FindScene(s.ctx, uuid.Nil)
 	if err != user.ErrUnauthorized {
 		s.t.Errorf("FindScene: got %v want %v", err, user.ErrUnauthorized)
 	}

@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -120,8 +121,7 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 
 	r := s.resolver.Performer()
 
-	id, _ := r.ID(s.ctx, performer)
-	if id == "" {
+	if performer.ID == uuid.Nil {
 		s.t.Errorf("Expected created performer id to be non-zero")
 	}
 
@@ -206,7 +206,7 @@ func (s *performerTestRunner) testFindPerformer() {
 		return
 	}
 
-	performer, err := s.resolver.Query().FindPerformer(s.ctx, createdPerformer.ID)
+	performer, err := s.resolver.Query().FindPerformer(s.ctx, createdPerformer.UUID())
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -267,7 +267,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		return
 	}
 
-	performerID := createdPerformer.ID
+	performerID := createdPerformer.UUID()
 
 	updateInput := models.PerformerUpdateInput{
 		ID:      performerID,
@@ -369,7 +369,7 @@ func (s *performerTestRunner) testDestroyPerformer() {
 		return
 	}
 
-	performerID := createdPerformer.ID
+	performerID := createdPerformer.UUID()
 
 	destroyed, err := s.resolver.Mutation().PerformerDestroy(s.ctx, models.PerformerDestroyInput{
 		ID: performerID,
@@ -418,7 +418,7 @@ func (s *performerTestRunner) testUnauthorisedPerformerModify() {
 
 func (s *performerTestRunner) testUnauthorisedPerformerQuery() {
 	// test each api interface - all require read so all should fail
-	_, err := s.resolver.Query().FindPerformer(s.ctx, "")
+	_, err := s.resolver.Query().FindPerformer(s.ctx, uuid.Nil)
 	if err != user.ErrUnauthorized {
 		s.t.Errorf("FindPerformer: got %v want %v", err, user.ErrUnauthorized)
 	}
