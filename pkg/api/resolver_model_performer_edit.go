@@ -6,8 +6,6 @@ import (
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
-
-	"github.com/gofrs/uuid"
 )
 
 type performerEditResolver struct{ *Resolver }
@@ -62,12 +60,7 @@ func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.Per
 		return nil, nil
 	}
 
-	var uuids []uuid.UUID
-	for _, id := range obj.AddedImages {
-		imageID, _ := uuid.FromString(id)
-		uuids = append(uuids, imageID)
-	}
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
+	images, errors := dataloader.For(ctx).ImageByID.LoadAll(obj.AddedImages)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err
@@ -81,12 +74,7 @@ func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.P
 		return nil, nil
 	}
 
-	var uuids []uuid.UUID
-	for _, id := range obj.RemovedImages {
-		imageID, _ := uuid.FromString(id)
-		uuids = append(uuids, imageID)
-	}
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
+	images, errors := dataloader.For(ctx).ImageByID.LoadAll(obj.RemovedImages)
 	for _, err := range errors {
 		if err != nil {
 			return nil, err

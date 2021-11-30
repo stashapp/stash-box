@@ -1290,5 +1290,5 @@ export interface Edit {
 }
 
 export interface EditVariables {
-  id?: string | null;
+  id: string;
 }

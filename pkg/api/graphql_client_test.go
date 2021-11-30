@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/client"
+	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -47,6 +48,10 @@ type sceneOutput struct {
 	Deleted      bool                   `json:"deleted"`
 }
 
+func (s sceneOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(s.ID)
+}
+
 type queryScenesResultType struct {
 	Count  int            `json:"count"`
 	Scenes []*sceneOutput `json:"scenes"`
@@ -81,6 +86,10 @@ type performerOutput struct {
 	CareerEndYear   *int64        `json:"career_end_year"`
 }
 
+func (p performerOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(p.ID)
+}
+
 type studioOutput struct {
 	ID           string        `json:"id"`
 	Name         string        `json:"name"`
@@ -91,6 +100,10 @@ type studioOutput struct {
 	Deleted      bool          `json:"deleted"`
 }
 
+func (s studioOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(s.ID)
+}
+
 type tagOutput struct {
 	ID          string      `json:"id"`
 	Name        string      `json:"name"`
@@ -99,6 +112,10 @@ type tagOutput struct {
 	Deleted     bool        `json:"deleted"`
 	Edits       []*idObject `json:"edits"`
 	Category    *idObject   `json:"category"`
+}
+
+func (t tagOutput) UUID() uuid.UUID {
+	return uuid.FromStringOrNil(t.ID)
 }
 
 func makeFragment(t reflect.Type) string {
@@ -150,7 +167,7 @@ func (c *graphqlClient) createScene(input models.SceneCreateInput) (*sceneOutput
 	return resp.SceneCreate, nil
 }
 
-func (c *graphqlClient) findScene(id string) (*sceneOutput, error) {
+func (c *graphqlClient) findScene(id uuid.UUID) (*sceneOutput, error) {
 	q := `
 	query FindScene($id: ID!) {
 		findScene(id: $id) {
@@ -290,7 +307,7 @@ func (c *graphqlClient) createPerformer(input models.PerformerCreateInput) (*per
 	return resp.PerformerCreate, nil
 }
 
-func (c *graphqlClient) findPerformer(id string) (*performerOutput, error) {
+func (c *graphqlClient) findPerformer(id uuid.UUID) (*performerOutput, error) {
 	q := `
 	query FindPerformer($id: ID!) {
 		findPerformer(id: $id) {

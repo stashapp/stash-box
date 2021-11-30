@@ -48,7 +48,7 @@ type Query {
 
   #### Edits ####
 
-  findEdit(id: ID): Edit
+  findEdit(id: ID!): Edit
 
   queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType!
 
@@ -104,9 +104,9 @@ type Mutation {
   activateNewUser(input: ActivateNewUserInput!): User
 
   """Generates an invite code using an invite token"""
-  generateInviteCode: String!
+  generateInviteCode: ID
   """Removes a pending invite code - refunding the token"""
-  rescindInviteCode(code: String!): Boolean!
+  rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""
   grantInvite(input: GrantInviteInput!): Int!
   """Removes invite tokens from a user"""

@@ -118,10 +118,7 @@ func (p *Tag) CopyFromCreateInput(input TagCreateInput) {
 	CopyFull(p, input)
 
 	if input.CategoryID != nil {
-		UUID, err := uuid.FromString(*input.CategoryID)
-		if err == nil {
-			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
-		}
+		p.CategoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
 	}
 }
 
@@ -129,10 +126,7 @@ func (p *Tag) CopyFromUpdateInput(input TagUpdateInput) {
 	CopyFull(p, input)
 
 	if input.CategoryID != nil {
-		UUID, err := uuid.FromString(*input.CategoryID)
-		if err == nil {
-			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
-		}
+		p.CategoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
 	} else {
 		p.CategoryID = uuid.NullUUID{UUID: uuid.UUID{}, Valid: false}
 	}

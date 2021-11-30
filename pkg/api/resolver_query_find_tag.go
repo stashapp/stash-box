@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (*models.Tag, error) {
+func (r *queryResolver) FindTag(ctx context.Context, id *uuid.UUID, name *string) (*models.Tag, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err
 	}
@@ -17,8 +17,7 @@ func (r *queryResolver) FindTag(ctx context.Context, id *string, name *string) (
 	qb := fac.Tag()
 
 	if id != nil {
-		idUUID, _ := uuid.FromString(*id)
-		return qb.Find(idUUID)
+		return qb.Find(*id)
 	} else if name != nil {
 		return qb.FindByName(*name)
 	}

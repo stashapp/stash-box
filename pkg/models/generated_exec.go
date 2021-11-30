@@ -14,6 +14,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/gofrs/uuid"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -144,8 +145,8 @@ type ComplexityRoot struct {
 		PerformerDestroy   func(childComplexity int, input PerformerDestroyInput) int
 		PerformerEdit      func(childComplexity int, input PerformerEditInput) int
 		PerformerUpdate    func(childComplexity int, input PerformerUpdateInput) int
-		RegenerateAPIKey   func(childComplexity int, userID *string) int
-		RescindInviteCode  func(childComplexity int, code string) int
+		RegenerateAPIKey   func(childComplexity int, userID *uuid.UUID) int
+		RescindInviteCode  func(childComplexity int, code uuid.UUID) int
 		ResetPassword      func(childComplexity int, input ResetPasswordInput) int
 		RevokeInvite       func(childComplexity int, input RevokeInviteInput) int
 		SceneCreate        func(childComplexity int, input SceneCreateInput) int
@@ -243,16 +244,16 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		FindEdit                     func(childComplexity int, id *string) int
-		FindPerformer                func(childComplexity int, id string) int
-		FindScene                    func(childComplexity int, id string) int
+		FindEdit                     func(childComplexity int, id uuid.UUID) int
+		FindPerformer                func(childComplexity int, id uuid.UUID) int
+		FindScene                    func(childComplexity int, id uuid.UUID) int
 		FindSceneByFingerprint       func(childComplexity int, fingerprint FingerprintQueryInput) int
 		FindScenesByFingerprints     func(childComplexity int, fingerprints []string) int
 		FindScenesByFullFingerprints func(childComplexity int, fingerprints []*FingerprintQueryInput) int
-		FindStudio                   func(childComplexity int, id *string, name *string) int
-		FindTag                      func(childComplexity int, id *string, name *string) int
-		FindTagCategory              func(childComplexity int, id string) int
-		FindUser                     func(childComplexity int, id *string, username *string) int
+		FindStudio                   func(childComplexity int, id *uuid.UUID, name *string) int
+		FindTag                      func(childComplexity int, id *uuid.UUID, name *string) int
+		FindTagCategory              func(childComplexity int, id uuid.UUID) int
+		FindUser                     func(childComplexity int, id *uuid.UUID, username *string) int
 		GetConfig                    func(childComplexity int) int
 		Me                           func(childComplexity int) int
 		QueryEdits                   func(childComplexity int, editFilter *EditFilterType, filter *QuerySpec) int
@@ -437,7 +438,6 @@ type ComplexityRoot struct {
 }
 
 type EditResolver interface {
-	ID(ctx context.Context, obj *Edit) (string, error)
 	User(ctx context.Context, obj *Edit) (*User, error)
 	Target(ctx context.Context, obj *Edit) (EditTarget, error)
 	TargetType(ctx context.Context, obj *Edit) (TargetTypeEnum, error)
@@ -465,7 +465,6 @@ type EditVoteResolver interface {
 	Vote(ctx context.Context, obj *EditVote) (VoteTypeEnum, error)
 }
 type ImageResolver interface {
-	ID(ctx context.Context, obj *Image) (string, error)
 	URL(ctx context.Context, obj *Image) (string, error)
 }
 type MutationResolver interface {
@@ -488,14 +487,14 @@ type MutationResolver interface {
 	ImageDestroy(ctx context.Context, input ImageDestroyInput) (bool, error)
 	NewUser(ctx context.Context, input NewUserInput) (*string, error)
 	ActivateNewUser(ctx context.Context, input ActivateNewUserInput) (*User, error)
-	GenerateInviteCode(ctx context.Context) (string, error)
-	RescindInviteCode(ctx context.Context, code string) (bool, error)
+	GenerateInviteCode(ctx context.Context) (*uuid.UUID, error)
+	RescindInviteCode(ctx context.Context, code uuid.UUID) (bool, error)
 	GrantInvite(ctx context.Context, input GrantInviteInput) (int, error)
 	RevokeInvite(ctx context.Context, input RevokeInviteInput) (int, error)
 	TagCategoryCreate(ctx context.Context, input TagCategoryCreateInput) (*TagCategory, error)
 	TagCategoryUpdate(ctx context.Context, input TagCategoryUpdateInput) (*TagCategory, error)
 	TagCategoryDestroy(ctx context.Context, input TagCategoryDestroyInput) (bool, error)
-	RegenerateAPIKey(ctx context.Context, userID *string) (string, error)
+	RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error)
 	ResetPassword(ctx context.Context, input ResetPasswordInput) (bool, error)
 	ChangePassword(ctx context.Context, input UserChangePasswordInput) (bool, error)
 	SceneEdit(ctx context.Context, input SceneEditInput) (*Edit, error)
@@ -509,8 +508,6 @@ type MutationResolver interface {
 	SubmitFingerprint(ctx context.Context, input FingerprintSubmission) (bool, error)
 }
 type PerformerResolver interface {
-	ID(ctx context.Context, obj *Performer) (string, error)
-
 	Disambiguation(ctx context.Context, obj *Performer) (*string, error)
 	Aliases(ctx context.Context, obj *Performer) ([]string, error)
 	Gender(ctx context.Context, obj *Performer) (*GenderEnum, error)
@@ -532,7 +529,7 @@ type PerformerResolver interface {
 
 	Edits(ctx context.Context, obj *Performer) ([]*Edit, error)
 	SceneCount(ctx context.Context, obj *Performer) (int, error)
-	MergedIds(ctx context.Context, obj *Performer) ([]string, error)
+	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer) ([]*PerformerStudio, error)
 }
 type PerformerEditResolver interface {
@@ -549,22 +546,22 @@ type PerformerEditResolver interface {
 	RemovedImages(ctx context.Context, obj *PerformerEdit) ([]*Image, error)
 }
 type QueryResolver interface {
-	FindPerformer(ctx context.Context, id string) (*Performer, error)
+	FindPerformer(ctx context.Context, id uuid.UUID) (*Performer, error)
 	QueryPerformers(ctx context.Context, performerFilter *PerformerFilterType, filter *QuerySpec) (*PerformerQuery, error)
-	FindStudio(ctx context.Context, id *string, name *string) (*Studio, error)
+	FindStudio(ctx context.Context, id *uuid.UUID, name *string) (*Studio, error)
 	QueryStudios(ctx context.Context, studioFilter *StudioFilterType, filter *QuerySpec) (*QueryStudiosResultType, error)
-	FindTag(ctx context.Context, id *string, name *string) (*Tag, error)
+	FindTag(ctx context.Context, id *uuid.UUID, name *string) (*Tag, error)
 	QueryTags(ctx context.Context, tagFilter *TagFilterType, filter *QuerySpec) (*QueryTagsResultType, error)
-	FindTagCategory(ctx context.Context, id string) (*TagCategory, error)
+	FindTagCategory(ctx context.Context, id uuid.UUID) (*TagCategory, error)
 	QueryTagCategories(ctx context.Context, filter *QuerySpec) (*QueryTagCategoriesResultType, error)
-	FindScene(ctx context.Context, id string) (*Scene, error)
+	FindScene(ctx context.Context, id uuid.UUID) (*Scene, error)
 	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]*Scene, error)
 	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*Scene, error)
 	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput) ([]*Scene, error)
 	QueryScenes(ctx context.Context, sceneFilter *SceneFilterType, filter *QuerySpec) (*SceneQuery, error)
-	FindEdit(ctx context.Context, id *string) (*Edit, error)
+	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
 	QueryEdits(ctx context.Context, editFilter *EditFilterType, filter *QuerySpec) (*EditQuery, error)
-	FindUser(ctx context.Context, id *string, username *string) (*User, error)
+	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
 	QueryUsers(ctx context.Context, userFilter *UserFilterType, filter *QuerySpec) (*QueryUsersResultType, error)
 	Me(ctx context.Context) (*User, error)
 	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
@@ -585,7 +582,6 @@ type QueryScenesResultTypeResolver interface {
 	Scenes(ctx context.Context, obj *SceneQuery) ([]*Scene, error)
 }
 type SceneResolver interface {
-	ID(ctx context.Context, obj *Scene) (string, error)
 	Title(ctx context.Context, obj *Scene) (*string, error)
 	Details(ctx context.Context, obj *Scene) (*string, error)
 	Date(ctx context.Context, obj *Scene) (*string, error)
@@ -610,8 +606,6 @@ type SceneEditResolver interface {
 	RemovedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
 }
 type StudioResolver interface {
-	ID(ctx context.Context, obj *Studio) (string, error)
-
 	Urls(ctx context.Context, obj *Studio) ([]*URL, error)
 	Parent(ctx context.Context, obj *Studio) (*Studio, error)
 	ChildStudios(ctx context.Context, obj *Studio) ([]*Studio, error)
@@ -623,8 +617,6 @@ type StudioEditResolver interface {
 	RemovedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
 }
 type TagResolver interface {
-	ID(ctx context.Context, obj *Tag) (string, error)
-
 	Description(ctx context.Context, obj *Tag) (*string, error)
 	Aliases(ctx context.Context, obj *Tag) ([]string, error)
 
@@ -632,8 +624,6 @@ type TagResolver interface {
 	Category(ctx context.Context, obj *Tag) (*TagCategory, error)
 }
 type TagCategoryResolver interface {
-	ID(ctx context.Context, obj *TagCategory) (string, error)
-
 	Group(ctx context.Context, obj *TagCategory) (TagGroupEnum, error)
 	Description(ctx context.Context, obj *TagCategory) (*string, error)
 }
@@ -641,8 +631,6 @@ type TagEditResolver interface {
 	Category(ctx context.Context, obj *TagEdit) (*TagCategory, error)
 }
 type UserResolver interface {
-	ID(ctx context.Context, obj *User) (string, error)
-
 	Roles(ctx context.Context, obj *User) ([]RoleEnum, error)
 
 	VoteCount(ctx context.Context, obj *User) (*UserVoteCount, error)
@@ -1140,7 +1128,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RegenerateAPIKey(childComplexity, args["userID"].(*string)), true
+		return e.complexity.Mutation.RegenerateAPIKey(childComplexity, args["userID"].(*uuid.UUID)), true
 
 	case "Mutation.rescindInviteCode":
 		if e.complexity.Mutation.RescindInviteCode == nil {
@@ -1152,7 +1140,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RescindInviteCode(childComplexity, args["code"].(string)), true
+		return e.complexity.Mutation.RescindInviteCode(childComplexity, args["code"].(uuid.UUID)), true
 
 	case "Mutation.resetPassword":
 		if e.complexity.Mutation.ResetPassword == nil {
@@ -1822,7 +1810,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FindEdit(childComplexity, args["id"].(*string)), true
+		return e.complexity.Query.FindEdit(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Query.findPerformer":
 		if e.complexity.Query.FindPerformer == nil {
@@ -1834,7 +1822,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FindPerformer(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.FindPerformer(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Query.findScene":
 		if e.complexity.Query.FindScene == nil {
@@ -1846,7 +1834,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FindScene(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.FindScene(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Query.findSceneByFingerprint":
 		if e.complexity.Query.FindSceneByFingerprint == nil {
@@ -1894,7 +1882,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FindStudio(childComplexity, args["id"].(*string), args["name"].(*string)), true
+		return e.complexity.Query.FindStudio(childComplexity, args["id"].(*uuid.UUID), args["name"].(*string)), true
 
 	case "Query.findTag":
 		if e.complexity.Query.FindTag == nil {
@@ -1906,7 +1894,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FindTag(childComplexity, args["id"].(*string), args["name"].(*string)), true
+		return e.complexity.Query.FindTag(childComplexity, args["id"].(*uuid.UUID), args["name"].(*string)), true
 
 	case "Query.findTagCategory":
 		if e.complexity.Query.FindTagCategory == nil {
@@ -1918,7 +1906,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FindTagCategory(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.FindTagCategory(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Query.findUser":
 		if e.complexity.Query.FindUser == nil {
@@ -1930,7 +1918,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FindUser(childComplexity, args["id"].(*string), args["username"].(*string)), true
+		return e.complexity.Query.FindUser(childComplexity, args["id"].(*uuid.UUID), args["username"].(*string)), true
 
 	case "Query.getConfig":
 		if e.complexity.Query.GetConfig == nil {
@@ -3985,7 +3973,7 @@ type Query {
 
   #### Edits ####
 
-  findEdit(id: ID): Edit
+  findEdit(id: ID!): Edit
 
   queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType!
 
@@ -4041,9 +4029,9 @@ type Mutation {
   activateNewUser(input: ActivateNewUserInput!): User
 
   """Generates an invite code using an invite token"""
-  generateInviteCode: String!
+  generateInviteCode: ID
   """Removes a pending invite code - refunding the token"""
-  rescindInviteCode(code: String!): Boolean!
+  rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""
   grantInvite(input: GrantInviteInput!): Int!
   """Removes invite tokens from a user"""
@@ -4310,10 +4298,10 @@ func (ec *executionContext) field_Mutation_performerUpdate_args(ctx context.Cont
 func (ec *executionContext) field_Mutation_regenerateAPIKey_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 *uuid.UUID
 	if tmp, ok := rawArgs["userID"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4325,10 +4313,10 @@ func (ec *executionContext) field_Mutation_regenerateAPIKey_args(ctx context.Con
 func (ec *executionContext) field_Mutation_rescindInviteCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 uuid.UUID
 	if tmp, ok := rawArgs["code"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4670,10 +4658,10 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_findEdit_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 uuid.UUID
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4685,10 +4673,10 @@ func (ec *executionContext) field_Query_findEdit_args(ctx context.Context, rawAr
 func (ec *executionContext) field_Query_findPerformer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 uuid.UUID
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4715,10 +4703,10 @@ func (ec *executionContext) field_Query_findSceneByFingerprint_args(ctx context.
 func (ec *executionContext) field_Query_findScene_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 uuid.UUID
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4760,10 +4748,10 @@ func (ec *executionContext) field_Query_findScenesByFullFingerprints_args(ctx co
 func (ec *executionContext) field_Query_findStudio_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 *uuid.UUID
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4784,10 +4772,10 @@ func (ec *executionContext) field_Query_findStudio_args(ctx context.Context, raw
 func (ec *executionContext) field_Query_findTagCategory_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 uuid.UUID
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4799,10 +4787,10 @@ func (ec *executionContext) field_Query_findTagCategory_args(ctx context.Context
 func (ec *executionContext) field_Query_findTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 *uuid.UUID
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4823,10 +4811,10 @@ func (ec *executionContext) field_Query_findTag_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Query_findUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 *uuid.UUID
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5167,14 +5155,14 @@ func (ec *executionContext) _Edit_id(ctx context.Context, field graphql.Collecte
 		Object:     "Edit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Edit().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5186,9 +5174,9 @@ func (ec *executionContext) _Edit_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Edit_user(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
@@ -6231,14 +6219,14 @@ func (ec *executionContext) _Image_id(ctx context.Context, field graphql.Collect
 		Object:     "Image",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Image().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6250,9 +6238,9 @@ func (ec *executionContext) _Image_id(ctx context.Context, field graphql.Collect
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Image_url(ctx context.Context, field graphql.CollectedField, obj *Image) (ret graphql.Marshaler) {
@@ -7272,14 +7260,11 @@ func (ec *executionContext) _Mutation_generateInviteCode(ctx context.Context, fi
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*uuid.UUID)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_rescindInviteCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7307,7 +7292,7 @@ func (ec *executionContext) _Mutation_rescindInviteCode(ctx context.Context, fie
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RescindInviteCode(rctx, args["code"].(string))
+		return ec.resolvers.Mutation().RescindInviteCode(rctx, args["code"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7553,7 +7538,7 @@ func (ec *executionContext) _Mutation_regenerateAPIKey(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RegenerateAPIKey(rctx, args["userID"].(*string))
+		return ec.resolvers.Mutation().RegenerateAPIKey(rctx, args["userID"].(*uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8043,14 +8028,14 @@ func (ec *executionContext) _Performer_id(ctx context.Context, field graphql.Col
 		Object:     "Performer",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Performer().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8062,9 +8047,9 @@ func (ec *executionContext) _Performer_id(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Performer_name(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
@@ -8825,9 +8810,9 @@ func (ec *executionContext) _Performer_merged_ids(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]string)
+	res := resTmp.([]uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2ᚕstringᚄ(ctx, field.Selections, res)
+	return ec.marshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Performer_studios(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
@@ -9961,7 +9946,7 @@ func (ec *executionContext) _Query_findPerformer(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindPerformer(rctx, args["id"].(string))
+		return ec.resolvers.Query().FindPerformer(rctx, args["id"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10042,7 +10027,7 @@ func (ec *executionContext) _Query_findStudio(ctx context.Context, field graphql
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindStudio(rctx, args["id"].(*string), args["name"].(*string))
+		return ec.resolvers.Query().FindStudio(rctx, args["id"].(*uuid.UUID), args["name"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10123,7 +10108,7 @@ func (ec *executionContext) _Query_findTag(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindTag(rctx, args["id"].(*string), args["name"].(*string))
+		return ec.resolvers.Query().FindTag(rctx, args["id"].(*uuid.UUID), args["name"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10204,7 +10189,7 @@ func (ec *executionContext) _Query_findTagCategory(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindTagCategory(rctx, args["id"].(string))
+		return ec.resolvers.Query().FindTagCategory(rctx, args["id"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10285,7 +10270,7 @@ func (ec *executionContext) _Query_findScene(ctx context.Context, field graphql.
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindScene(rctx, args["id"].(string))
+		return ec.resolvers.Query().FindScene(rctx, args["id"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10492,7 +10477,7 @@ func (ec *executionContext) _Query_findEdit(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindEdit(rctx, args["id"].(*string))
+		return ec.resolvers.Query().FindEdit(rctx, args["id"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10573,7 +10558,7 @@ func (ec *executionContext) _Query_findUser(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FindUser(rctx, args["id"].(*string), args["username"].(*string))
+		return ec.resolvers.Query().FindUser(rctx, args["id"].(*uuid.UUID), args["username"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11407,14 +11392,14 @@ func (ec *executionContext) _Scene_id(ctx context.Context, field graphql.Collect
 		Object:     "Scene",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11426,9 +11411,9 @@ func (ec *executionContext) _Scene_id(ctx context.Context, field graphql.Collect
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Scene_title(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
@@ -12604,14 +12589,14 @@ func (ec *executionContext) _Studio_id(ctx context.Context, field graphql.Collec
 		Object:     "Studio",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Studio().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12623,9 +12608,9 @@ func (ec *executionContext) _Studio_id(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Studio_name(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
@@ -13038,14 +13023,14 @@ func (ec *executionContext) _Tag_id(ctx context.Context, field graphql.Collected
 		Object:     "Tag",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tag().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13057,9 +13042,9 @@ func (ec *executionContext) _Tag_id(ctx context.Context, field graphql.Collected
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Tag_name(ctx context.Context, field graphql.CollectedField, obj *Tag) (ret graphql.Marshaler) {
@@ -13277,14 +13262,14 @@ func (ec *executionContext) _TagCategory_id(ctx context.Context, field graphql.C
 		Object:     "TagCategory",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.TagCategory().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13296,9 +13281,9 @@ func (ec *executionContext) _TagCategory_id(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TagCategory_name(ctx context.Context, field graphql.CollectedField, obj *TagCategory) (ret graphql.Marshaler) {
@@ -13644,14 +13629,14 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 		Object:     "User",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13663,9 +13648,9 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
@@ -15882,7 +15867,7 @@ func (ec *executionContext) unmarshalInputApplyEditInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16006,7 +15991,7 @@ func (ec *executionContext) unmarshalInputCancelEditInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16060,7 +16045,7 @@ func (ec *executionContext) unmarshalInputEditCommentInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16091,7 +16076,7 @@ func (ec *executionContext) unmarshalInputEditFilterType(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-			it.UserID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.UserID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16139,7 +16124,7 @@ func (ec *executionContext) unmarshalInputEditFilterType(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("target_id"))
-			it.TargetID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.TargetID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16162,7 +16147,7 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16178,7 +16163,7 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("edit_id"))
-			it.EditID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.EditID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16186,7 +16171,7 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("merge_source_ids"))
-			it.MergeSourceIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.MergeSourceIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16217,7 +16202,7 @@ func (ec *executionContext) unmarshalInputEditVoteInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16279,7 +16264,7 @@ func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_ids"))
-			it.UserIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.UserIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16350,7 +16335,7 @@ func (ec *executionContext) unmarshalInputFingerprintInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_ids"))
-			it.UserIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.UserIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16428,7 +16413,7 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scene_id"))
-			it.SceneID, err = ec.unmarshalNID2string(ctx, v)
+			it.SceneID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16498,7 +16483,7 @@ func (ec *executionContext) unmarshalInputGrantInviteInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-			it.UserID, err = ec.unmarshalNID2string(ctx, v)
+			it.UserID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16560,7 +16545,7 @@ func (ec *executionContext) unmarshalInputIDCriterionInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
-			it.Value, err = ec.unmarshalNID2ᚕstringᚄ(ctx, v)
+			it.Value, err = ec.unmarshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16622,7 +16607,7 @@ func (ec *executionContext) unmarshalInputImageDestroyInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16645,7 +16630,7 @@ func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16754,7 +16739,7 @@ func (ec *executionContext) unmarshalInputMultiIDCriterionInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
-			it.Value, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.Value, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16816,7 +16801,7 @@ func (ec *executionContext) unmarshalInputPerformerAppearanceInput(ctx context.C
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performer_id"))
-			it.PerformerID, err = ec.unmarshalNID2string(ctx, v)
+			it.PerformerID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16983,7 +16968,7 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17006,7 +16991,7 @@ func (ec *executionContext) unmarshalInputPerformerDestroyInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17165,7 +17150,7 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17461,7 +17446,7 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17605,7 +17590,7 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17698,7 +17683,7 @@ func (ec *executionContext) unmarshalInputRevokeInviteInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-			it.UserID, err = ec.unmarshalNID2string(ctx, v)
+			it.UserID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17792,7 +17777,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
-			it.StudioID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.StudioID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17808,7 +17793,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
-			it.TagIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.TagIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17816,7 +17801,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17863,7 +17848,7 @@ func (ec *executionContext) unmarshalInputSceneDestroyInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17918,7 +17903,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
-			it.StudioID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.StudioID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17934,7 +17919,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
-			it.TagIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.TagIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17942,7 +17927,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18115,7 +18100,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18155,7 +18140,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
-			it.StudioID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.StudioID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18171,7 +18156,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
-			it.TagIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.TagIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18179,7 +18164,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18273,7 +18258,7 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent_id"))
-			it.ParentID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ParentID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18281,7 +18266,7 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18304,7 +18289,7 @@ func (ec *executionContext) unmarshalInputStudioDestroyInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18343,7 +18328,7 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent_id"))
-			it.ParentID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ParentID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18351,7 +18336,7 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18460,7 +18445,7 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18484,7 +18469,7 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent_id"))
-			it.ParentID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.ParentID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18492,7 +18477,7 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
-			it.ImageIds, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
+			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18554,7 +18539,7 @@ func (ec *executionContext) unmarshalInputTagCategoryDestroyInput(ctx context.Co
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18577,7 +18562,7 @@ func (ec *executionContext) unmarshalInputTagCategoryUpdateInput(ctx context.Con
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18648,7 +18633,7 @@ func (ec *executionContext) unmarshalInputTagCreateInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
-			it.CategoryID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.CategoryID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18671,7 +18656,7 @@ func (ec *executionContext) unmarshalInputTagDestroyInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18718,7 +18703,7 @@ func (ec *executionContext) unmarshalInputTagEditDetailsInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
-			it.CategoryID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.CategoryID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18796,7 +18781,7 @@ func (ec *executionContext) unmarshalInputTagFilterType(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
-			it.CategoryID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.CategoryID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18819,7 +18804,7 @@ func (ec *executionContext) unmarshalInputTagUpdateInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18851,7 +18836,7 @@ func (ec *executionContext) unmarshalInputTagUpdateInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
-			it.CategoryID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.CategoryID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18976,7 +18961,7 @@ func (ec *executionContext) unmarshalInputUserCreateInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("invited_by_id"))
-			it.InvitedByID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.InvitedByID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18999,7 +18984,7 @@ func (ec *executionContext) unmarshalInputUserDestroyInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19094,7 +19079,7 @@ func (ec *executionContext) unmarshalInputUserFilterType(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("invited_by"))
-			it.InvitedBy, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.InvitedBy, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19117,7 +19102,7 @@ func (ec *executionContext) unmarshalInputUserUpdateInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19274,19 +19259,10 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Edit")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Edit_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._Edit_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "user":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -19698,19 +19674,10 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Image")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Image_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._Image_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "url":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -19849,9 +19816,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_activateNewUser(ctx, field)
 		case "generateInviteCode":
 			out.Values[i] = ec._Mutation_generateInviteCode(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "rescindInviteCode":
 			out.Values[i] = ec._Mutation_rescindInviteCode(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -19959,19 +19923,10 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Performer")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Performer_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._Performer_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._Performer_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -21095,19 +21050,10 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Scene")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Scene_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._Scene_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "title":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -21458,19 +21404,10 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Studio")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Studio_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._Studio_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._Studio_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -21618,19 +21555,10 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Tag")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tag_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._Tag_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._Tag_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -21714,19 +21642,10 @@ func (ec *executionContext) _TagCategory(ctx context.Context, sel ast.SelectionS
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("TagCategory")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._TagCategory_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._TagCategory_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._TagCategory_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -21853,19 +21772,10 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("User")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._User_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._User_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -22801,13 +22711,13 @@ func (ec *executionContext) unmarshalNGrantInviteInput2githubᚗcomᚋstashapp�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
+func (ec *executionContext) unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx context.Context, v interface{}) (uuid.UUID, error) {
+	res, err := UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
+func (ec *executionContext) marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
+	res := MarshalID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -22816,7 +22726,7 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+func (ec *executionContext) unmarshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx context.Context, v interface{}) ([]uuid.UUID, error) {
 	var vSlice []interface{}
 	if v != nil {
 		if tmp1, ok := v.([]interface{}); ok {
@@ -22826,10 +22736,10 @@ func (ec *executionContext) unmarshalNID2ᚕstringᚄ(ctx context.Context, v int
 		}
 	}
 	var err error
-	res := make([]string, len(vSlice))
+	res := make([]uuid.UUID, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -22837,10 +22747,10 @@ func (ec *executionContext) unmarshalNID2ᚕstringᚄ(ctx context.Context, v int
 	return res, nil
 }
 
-func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+func (ec *executionContext) marshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx context.Context, sel ast.SelectionSet, v []uuid.UUID) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	for i := range v {
-		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
+		ret[i] = ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, sel, v[i])
 	}
 
 	for _, e := range ret {
@@ -24543,7 +24453,7 @@ func (ec *executionContext) marshalOHairColorEnum2ᚖgithubᚗcomᚋstashappᚋs
 	return v
 }
 
-func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+func (ec *executionContext) unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx context.Context, v interface{}) ([]uuid.UUID, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -24556,10 +24466,10 @@ func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v int
 		}
 	}
 	var err error
-	res := make([]string, len(vSlice))
+	res := make([]uuid.UUID, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -24567,13 +24477,13 @@ func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v int
 	return res, nil
 }
 
-func (ec *executionContext) marshalOID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+func (ec *executionContext) marshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx context.Context, sel ast.SelectionSet, v []uuid.UUID) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := make(graphql.Array, len(v))
 	for i := range v {
-		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
+		ret[i] = ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, sel, v[i])
 	}
 
 	for _, e := range ret {
@@ -24585,19 +24495,19 @@ func (ec *executionContext) marshalOID2ᚕstringᚄ(ctx context.Context, sel ast
 	return ret
 }
 
-func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+func (ec *executionContext) unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx context.Context, v interface{}) (*uuid.UUID, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalID(v)
+	res, err := UnmarshalID(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+func (ec *executionContext) marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v *uuid.UUID) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return graphql.MarshalID(*v)
+	return MarshalID(*v)
 }
 
 func (ec *executionContext) unmarshalOIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIDCriterionInput(ctx context.Context, v interface{}) (*IDCriterionInput, error) {
