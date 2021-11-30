@@ -239,13 +239,19 @@ export interface Vote_editVote_target_Scene {
 
 export type Vote_editVote_target = Vote_editVote_target_Tag | Vote_editVote_target_Performer | Vote_editVote_target_Studio | Vote_editVote_target_Scene;
 
+export interface Vote_editVote_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface Vote_editVote_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
   added_aliases: string[] | null;
   removed_aliases: string[] | null;
-  category_id: string | null;
+  category: Vote_editVote_details_TagEdit_category | null;
 }
 
 export interface Vote_editVote_details_PerformerEdit_added_urls {
@@ -684,11 +690,17 @@ export interface Vote_editVote_details_SceneEdit {
 
 export type Vote_editVote_details = Vote_editVote_details_TagEdit | Vote_editVote_details_PerformerEdit | Vote_editVote_details_StudioEdit | Vote_editVote_details_SceneEdit;
 
+export interface Vote_editVote_old_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface Vote_editVote_old_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
-  category_id: string | null;
+  category: Vote_editVote_old_details_TagEdit_category | null;
 }
 
 export interface Vote_editVote_old_details_PerformerEdit {
