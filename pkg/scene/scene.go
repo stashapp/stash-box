@@ -41,7 +41,7 @@ func Create(ctx context.Context, fac models.Repo, input models.SceneCreateInput)
 	for _, fp := range input.Fingerprints {
 		if len(fp.UserIds) == 0 {
 			// set the current user
-			fp.UserIds = []string{currentUserID.String()}
+			fp.UserIds = []uuid.UUID{currentUserID}
 		}
 	}
 
@@ -88,9 +88,8 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 	jqb := fac.Joins()
 	iqb := fac.Image()
 
-	// get the existing scene and modify it
-	sceneID, _ := uuid.FromString(input.ID)
-	updatedScene, err := qb.Find(sceneID)
+	// Get the existing scene and modify it
+	updatedScene, err := qb.Find(input.ID)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "error finding scene")
@@ -110,7 +109,7 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 		return nil, errors.Wrap(err, "error updating scene")
 	}
 
-	existingFingerprints, err := qb.GetFingerprints(sceneID)
+	existingFingerprints, err := qb.GetFingerprints(input.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting scene fingerprints")
 	}
@@ -193,7 +192,7 @@ func createUpdatedSceneFingerprints(sceneID uuid.UUID, original []*models.SceneF
 
 		if !found {
 			if len(u.UserIds) == 0 {
-				u.UserIds = []string{currentUserID.String()}
+				u.UserIds = []uuid.UUID{currentUserID}
 			}
 			ret = append(ret, models.CreateSceneFingerprints(sceneID, []*models.FingerprintEditInput{u})...)
 		}
@@ -203,22 +202,17 @@ func createUpdatedSceneFingerprints(sceneID uuid.UUID, original []*models.SceneF
 }
 
 func Destroy(fac models.Repo, input models.SceneDestroyInput) (bool, error) {
-	sceneID, err := uuid.FromString(input.ID)
-	if err != nil {
-		return false, err
-	}
-
 	qb := fac.Scene()
 	iqb := fac.Image()
 
-	existingImages, err := iqb.FindBySceneID(sceneID)
+	existingImages, err := iqb.FindBySceneID(input.ID)
 	if err != nil {
 		return false, err
 	}
 
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
-	if err = qb.Destroy(sceneID); err != nil {
+	if err = qb.Destroy(input.ID); err != nil {
 		return false, err
 	}
 
@@ -237,9 +231,8 @@ func Destroy(fac models.Repo, input models.SceneDestroyInput) (bool, error) {
 func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.FingerprintSubmission) (bool, error) {
 	qb := fac.Scene()
 
-	// find the scene
-	sceneID, _ := uuid.FromString(input.SceneID)
-	scene, err := qb.Find(sceneID)
+	// Find the scene
+	scene, err := qb.Find(input.SceneID)
 
 	if err != nil {
 		return false, err
@@ -249,7 +242,7 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 	// role, then set users to the current user
 	if len(input.Fingerprint.UserIds) == 0 || !user.IsRole(ctx, models.RoleEnumModify) {
 		currentUserID := user.GetCurrentUser(ctx).ID
-		input.Fingerprint.UserIds = []string{currentUserID.String()}
+		input.Fingerprint.UserIds = []uuid.UUID{currentUserID}
 	}
 
 	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
@@ -261,7 +254,7 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 		}
 	} else {
 		// remove fingerprints that match the user id, algorithm and hash
-		if err := qb.DestroyFingerprints(sceneID, sceneFingerprint); err != nil {
+		if err := qb.DestroyFingerprints(input.SceneID, sceneFingerprint); err != nil {
 			return false, err
 		}
 	}

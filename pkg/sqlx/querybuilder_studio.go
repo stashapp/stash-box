@@ -317,9 +317,8 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 			return nil, err
 		}
 
-		for _, v := range data.MergeSources {
-			sourceUUID, _ := uuid.FromString(v)
-			if err := qb.mergeInto(sourceUUID, studio.ID); err != nil {
+		for _, sourceID := range data.MergeSources {
+			if err := qb.mergeInto(sourceID, studio.ID); err != nil {
 				return nil, err
 			}
 		}

@@ -9,14 +9,12 @@ import (
 )
 
 var (
-	aName          = "aName"
-	bName          = "bName"
-	aDescription   = "aDescription"
-	bDescription   = "bDescription"
-	aCategoryID    = uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-	aCategoryIDStr = aCategoryID.String()
-	bCategoryID    = uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
-	bCategoryIDStr = bCategoryID.String()
+	aName        = "aName"
+	bName        = "bName"
+	aDescription = "aDescription"
+	bDescription = "bDescription"
+	aCategoryID  = uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	bCategoryID  = uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 
 	aDisambiguation = "aDisambiguation"
 	bDisambiguation = "bDisambiguation"
@@ -85,7 +83,7 @@ func TestTagEditFromDiff(t *testing.T) {
 	input := TagEditDetailsInput{
 		Name:        &bName,
 		Description: &bDescription,
-		CategoryID:  &bCategoryIDStr,
+		CategoryID:  &bCategoryID,
 	}
 
 	out := input.TagEditFromDiff(orig)
@@ -95,12 +93,12 @@ func TestTagEditFromDiff(t *testing.T) {
 		New: &TagEdit{
 			Name:        &bName,
 			Description: &bDescription,
-			CategoryID:  &bCategoryIDStr,
+			CategoryID:  &bCategoryID,
 		},
 		Old: &TagEdit{
 			Name:        &aName,
 			Description: &aDescription,
-			CategoryID:  &aCategoryIDStr,
+			CategoryID:  &aCategoryID,
 		},
 	}, out)
 
@@ -113,7 +111,7 @@ func TestTagEditFromDiff(t *testing.T) {
 		New: &TagEdit{
 			Name:        &bName,
 			Description: &bDescription,
-			CategoryID:  &bCategoryIDStr,
+			CategoryID:  &bCategoryID,
 		},
 		Old: &TagEdit{
 			Name: &aName,
@@ -128,14 +126,14 @@ func TestTagEditFromDiff(t *testing.T) {
 		Old: &TagEdit{
 			Name:        &aName,
 			Description: &aDescription,
-			CategoryID:  &aCategoryIDStr,
+			CategoryID:  &aCategoryID,
 		},
 	}, out)
 
 	equalInput := TagEditDetailsInput{
 		Name:        &aName,
 		Description: &aDescription,
-		CategoryID:  &aCategoryIDStr,
+		CategoryID:  &aCategoryID,
 	}
 
 	out = equalInput.TagEditFromDiff(orig)

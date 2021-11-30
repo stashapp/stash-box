@@ -49,7 +49,7 @@ func (s *editTestRunner) testAdminCancelEdit() {
 	}
 
 	editInput := models.CancelEditInput{
-		ID: createdEdit.ID.String(),
+		ID: createdEdit.ID,
 	}
 
 	pt := createEditTestRunner(s.t)
@@ -71,7 +71,7 @@ func (s *editTestRunner) testOwnerCancelEdit() {
 	}
 
 	editInput := models.CancelEditInput{
-		ID: createdEdit.ID.String(),
+		ID: createdEdit.ID,
 	}
 	cancelEdit, err := s.resolver.Mutation().CancelEdit(s.ctx, editInput)
 	s.verifyOwnerCancelEdit(cancelEdit)
@@ -92,7 +92,7 @@ func (s *editTestRunner) testEditComment() {
 
 	text := "some comment text"
 	editInput := models.EditCommentInput{
-		ID:      createdEdit.ID.String(),
+		ID:      createdEdit.ID,
 		Comment: text,
 	}
 	editComment, err := s.resolver.Mutation().EditComment(s.ctx, editInput)
@@ -123,14 +123,14 @@ func (s *editTestRunner) testVotePermissionsPromotion() {
 			return
 		}
 		s.ctx = context.WithValue(s.ctx, user.ContextRoles, userDB.adminRoles)
-		_, err = s.applyEdit(createdEdit.ID.String())
+		_, err = s.applyEdit(createdEdit.ID)
 		if err != nil {
 			return
 		}
 	}
 	s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
 
 	s.verifyUserRolePromotion(user)
@@ -170,13 +170,12 @@ func (s *editTestRunner) testPositiveEditVoteApplication() {
 		}
 		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
-			ID:   createdEdit.ID.String(),
+			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,
 		})
 	}
 
-	editID := createdEdit.ID.String()
-	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
 
 	s.verifyEditApplied(updatedEdit)
 }
@@ -202,13 +201,12 @@ func (s *editTestRunner) testNegativeEditVoteApplication() {
 		}
 		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
-			ID:   createdEdit.ID.String(),
+			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumReject,
 		})
 	}
 
-	editID := createdEdit.ID.String()
-	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
 
 	s.verifyEditRejected(updatedEdit)
 }
@@ -231,13 +229,12 @@ func (s *editTestRunner) testEditVoteNotApplying() {
 			vote = models.VoteTypeEnumReject
 		}
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
-			ID:   createdEdit.ID.String(),
+			ID:   createdEdit.ID,
 			Vote: vote,
 		})
 	}
 
-	editID := createdEdit.ID.String()
-	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
 
 	s.verifyEditPending(updatedEdit)
 }
@@ -251,9 +248,9 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	if err != nil {
 		return
 	}
-	tagID := createdTag.ID
+	id := createdTag.UUID()
 	input := models.EditInput{
-		ID:        &tagID,
+		ID:        &id,
 		Operation: models.OperationEnumDestroy,
 	}
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumDestroy, nil, &input)
@@ -268,13 +265,12 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 		}
 		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
-			ID:   createdEdit.ID.String(),
+			ID:   createdEdit.ID,
 			Vote: models.VoteTypeEnumAccept,
 		})
 	}
 
-	editID := createdEdit.ID.String()
-	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, &editID)
+	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
 
 	s.verifyEditPending(updatedEdit)
 }
@@ -286,7 +282,7 @@ func (s *editTestRunner) testVoteOwnedEditsDisallowed() {
 	}
 
 	_, err = s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
-		ID:   createdEdit.ID.String(),
+		ID:   createdEdit.ID,
 		Vote: models.VoteTypeEnumAccept,
 	})
 

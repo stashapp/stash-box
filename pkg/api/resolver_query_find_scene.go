@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene, error) {
+func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Scene, error) {
 	if err := validateRead(ctx); err != nil {
 		return nil, err
 	}
@@ -18,8 +18,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
 
-	idUUID, _ := uuid.FromString(id)
-	return qb.Find(idUUID)
+	return qb.Find(id)
 }
 
 func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]*models.Scene, error) {

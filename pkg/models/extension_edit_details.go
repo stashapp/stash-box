@@ -19,7 +19,7 @@ func (e TagEditDetailsInput) TagEditFromDiff(orig Tag) TagEditData {
 	}
 }
 
-func (e TagEditDetailsInput) TagEditFromMerge(orig Tag, sources []string) TagEditData {
+func (e TagEditDetailsInput) TagEditFromMerge(orig Tag, sources []uuid.UUID) TagEditData {
 	data := e.TagEditFromDiff(orig)
 	data.MergeSources = sources
 
@@ -69,7 +69,7 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 	}
 }
 
-func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, sources []string) PerformerEditData {
+func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, sources []uuid.UUID) PerformerEditData {
 	data := e.PerformerEditFromDiff(orig)
 	data.MergeSources = sources
 
@@ -98,7 +98,7 @@ func (e StudioEditDetailsInput) StudioEditFromDiff(orig Studio) StudioEditData {
 	}
 }
 
-func (e StudioEditDetailsInput) StudioEditFromMerge(orig Studio, sources []string) StudioEditData {
+func (e StudioEditDetailsInput) StudioEditFromMerge(orig Studio, sources []uuid.UUID) StudioEditData {
 	data := e.StudioEditFromDiff(orig)
 	data.MergeSources = sources
 
@@ -135,7 +135,7 @@ func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) SceneEditData {
 	}
 }
 
-func (e SceneEditDetailsInput) SceneEditFromMerge(orig Scene, sources []string) SceneEditData {
+func (e SceneEditDetailsInput) SceneEditFromMerge(orig Scene, sources []uuid.UUID) SceneEditData {
 	data := e.SceneEditFromDiff(orig)
 	data.MergeSources = sources
 
