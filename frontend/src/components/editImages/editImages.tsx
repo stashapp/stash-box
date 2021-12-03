@@ -9,6 +9,8 @@ import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
 const CLASSNAME = "EditImages";
+const CLASSNAME_IMAGES = `${CLASSNAME}-images`;
+const CLASSNAME_INPUT = `${CLASSNAME}-input`;
 const CLASSNAME_DROP = `${CLASSNAME}-drop`;
 const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
@@ -89,12 +91,12 @@ const EditImages: FC<EditImagesProps> = ({
 
   return (
     <Row className={`${CLASSNAME} w-100`}>
-      <Col xs={7} className="d-flex flex-wrap justify-content-between">
+      <Col xs={7} className={CLASSNAME_IMAGES}>
         {images.map((i, index) => (
           <ImageInput image={i} onRemove={() => remove(index)} key={i.id} />
         ))}
       </Col>
-      <Col xs={5}>
+      <Col xs={5} className={CLASSNAME_INPUT}>
         <div className="d-flex">
           {file ? (
             <div

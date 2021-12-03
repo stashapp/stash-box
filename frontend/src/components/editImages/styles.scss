@@ -27,6 +27,12 @@
     }
   }
 
+  &-images {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
   &-image {
     margin: auto;
     max-height: 600px;

@@ -183,12 +183,12 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
         {isPrivateUser(user) && (
           <>
             <Row>
-              <span className="col-2">Email</span>
-              <span className="col">{user?.email}</span>
+              <Col xs={2}>Email</Col>
+              <Col>{user.email}</Col>
             </Row>
             <Row>
-              <span className="col-2">Roles</span>
-              <span className="col">{(user?.roles ?? []).join(", ")}</span>
+              <Col xs={2}>Roles</Col>
+              <Col>{(user.roles ?? []).join(", ")}</Col>
             </Row>
             <Row className="my-3 align-items-baseline">
               <Col xs={2}>API key</Col>
@@ -265,14 +265,14 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           </Row>
           {isPrivateUser(user) && (
             <Row>
-              <span className="col-2">Invite Tokens</span>
+              <Col xs={2}>Invite Tokens</Col>
               <InputGroup className="col">
                 {isAdmin(Auth.user) && (
                   <Button onClick={() => handleRevokeInvite()}>
                     <Icon icon={faMinus} />
                   </Button>
                 )}
-                <InputGroup.Text>{user?.invite_tokens ?? 0}</InputGroup.Text>
+                <InputGroup.Text>{user.invite_tokens ?? 0}</InputGroup.Text>
                 {isAdmin(Auth.user) && (
                   <Button onClick={() => handleGrantInvite()}>
                     <Icon icon={faPlus} />
@@ -283,8 +283,8 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           )}
           {isPrivateUser(user) && user.id === Auth.user?.id && (
             <Row className="my-2">
-              <span className="col-2">Invite Keys</span>
-              <div className="col">
+              <Col xs={2}>Invite Keys</Col>
+              <Col>
                 {user.active_invite_codes?.map((c) => (
                   <InputGroup className="mb-2" key={c}>
                     <InputGroup.Text>
@@ -313,7 +313,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                     </Button>
                   )}
                 </div>
-              </div>
+              </Col>
             </Row>
           )}
         </>

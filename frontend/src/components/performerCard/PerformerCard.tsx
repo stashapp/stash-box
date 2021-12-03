@@ -28,7 +28,7 @@ const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
         />
       </div>
       <Card.Footer>
-        <h5>
+        <h5 className="my-1">
           <GenderIcon gender={performer.gender} />
           <PerformerName performer={performer} />
         </h5>

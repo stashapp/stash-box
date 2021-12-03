@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react";
 
-import { Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 
 interface ListChangeRowProps<T> {
   added?: T[] | null;
@@ -21,7 +21,7 @@ const ListChangeRow = <T extends unknown>(
     <Row className={CLASSNAME}>
       <b className="col-2 text-end">{props.name}</b>
       {props.showDiff && (
-        <div className="col-5">
+        <Col xs={5}>
           {(props.removed ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
@@ -34,9 +34,9 @@ const ListChangeRow = <T extends unknown>(
               </div>
             </>
           )}
-        </div>
+        </Col>
       )}
-      <span className="col-5">
+      <Col xs={5}>
         {(props.added ?? []).length > 0 && (
           <>
             {props.showDiff && <h6>Added</h6>}
@@ -49,7 +49,7 @@ const ListChangeRow = <T extends unknown>(
             </div>
           </>
         )}
-      </span>
+      </Col>
     </Row>
   ) : (
     <></>
