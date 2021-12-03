@@ -22,14 +22,16 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 	}
 
 	// Generate uuid that does not start with AD to prevent adblock issues
-	for strings.HasPrefix(UUID.String(), "ad") {
+	for {
+		if !strings.HasPrefix(UUID.String(), "ad") {
+			break
+		}
 		UUID, err = uuid.NewV4()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// Populate a new performer from the input
 	newImage := models.Image{
 		ID: UUID,
 	}
