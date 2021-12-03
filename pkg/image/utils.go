@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
@@ -19,16 +20,18 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
+var ErrImageZeroSize = errors.New("image has 0px dimension")
+
 func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error {
 	img, _, err := image.Decode(imgReader)
 	if err != nil {
 		// SVG is not an image so we have to manually check if the image is SVG
-		if _, err = imgReader.Seek(0, 0); err != nil {
-			return err
+		if _, readerErr := imgReader.Seek(0, 0); readerErr != nil {
+			return readerErr
 		}
 		buf := new(bytes.Buffer)
-		if _, err := buf.ReadFrom(imgReader); err != nil {
-			return err
+		if _, bufErr := buf.ReadFrom(imgReader); bufErr != nil {
+			return bufErr
 		}
 		if issvg.IsSVG(buf.Bytes()) {
 			dest.Width = -1
@@ -41,6 +44,10 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 
 	dest.Width = int64(img.Bounds().Max.X)
 	dest.Height = int64(img.Bounds().Max.Y)
+
+	if dest.Width == 0 || dest.Height == 0 {
+		return ErrImageZeroSize
+	}
 
 	return nil
 }
