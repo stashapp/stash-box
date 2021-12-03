@@ -83,7 +83,7 @@ const StudioForm: FC<StudioProps> = ({
   };
 
   return (
-    <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
+    <Form className="StudioForm w-50" onSubmit={handleSubmit(onSubmit)}>
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
         <Form.Control
@@ -124,7 +124,7 @@ const StudioForm: FC<StudioProps> = ({
       )}
 
       <Form.Group className="mb-3">
-        <Form.Label>Images</Form.Label>
+        <Form.Label>Image</Form.Label>
         <EditImages
           control={control}
           maxImages={1}
@@ -137,7 +137,7 @@ const StudioForm: FC<StudioProps> = ({
 
       <Form.Group className="mb-3">
         <div className="d-flex">
-          <Button className="col-2" type="submit" disabled={!!file || saving}>
+          <Button type="submit" disabled={!!file || saving}>
             Submit Edit
           </Button>
           <Button type="reset" variant="secondary" className="ms-auto me-2">

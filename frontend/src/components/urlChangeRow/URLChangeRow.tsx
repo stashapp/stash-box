@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 
 const CLASSNAME = "URLChangeRow";
 
@@ -19,7 +19,7 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
     <Row className={CLASSNAME}>
       <b className="col-2 text-end">URLs</b>
       {showDiff && (
-        <div className="col-5">
+        <Col xs={5}>
           {(oldURLs ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
@@ -32,9 +32,9 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
               </div>
             </>
           )}
-        </div>
+        </Col>
       )}
-      <span className="col-5">
+      <Col xs={5}>
         {(newURLs ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
@@ -47,7 +47,7 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
             </div>
           </>
         )}
-      </span>
+      </Col>
     </Row>
   ) : (
     <></>

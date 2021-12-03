@@ -136,7 +136,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, saving }) => {
 
       <Form.Group className="d-flex mb-3">
         <Button type="submit" disabled className="d-none" aria-hidden="true" />
-        <Button type="submit" className="col-2" disabled={saving}>
+        <Button type="submit" disabled={saving}>
           Submit Edit
         </Button>
         <Button type="reset" className="ms-auto me-2">
