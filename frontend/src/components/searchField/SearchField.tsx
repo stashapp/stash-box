@@ -33,6 +33,7 @@ interface SearchFieldProps {
   navigate?: boolean;
   placeholder?: string;
   showAllLink?: boolean;
+  autoFocus?: boolean;
 }
 
 export type PerformerResult = PerformerAllResult | PerformerOnlyResult;
@@ -158,6 +159,7 @@ const SearchField: FC<SearchFieldProps> = ({
   navigate = false,
   placeholder,
   showAllLink = false,
+  autoFocus = false,
 }) => {
   const history = useHistory();
   const [selectedValue, setSelected] = useState(null);
@@ -220,6 +222,7 @@ const SearchField: FC<SearchFieldProps> = ({
   return (
     <div className="SearchField">
       <Async
+        autoFocus={autoFocus}
         classNamePrefix="react-select"
         value={selectedValue}
         loadOptions={handleLoad}

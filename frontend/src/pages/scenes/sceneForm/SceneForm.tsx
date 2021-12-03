@@ -90,6 +90,9 @@ const schema = yup.object({
   note: yup.string().required("Edit note is required"),
 });
 
+const CLASS_NAME = "SceneForm";
+const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
+
 type SceneFormData = yup.Asserts<typeof schema>;
 export type CastedSceneFormData = yup.TypeOf<typeof schema>;
 
@@ -228,18 +231,27 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
           </Button>
           <>
             {isChanging === index ? (
-              <Button variant="primary" onClick={() => setChange(undefined)}>
+              <Button
+                className={CLASS_NAME_PERFORMER_CHANGE}
+                variant="primary"
+                onClick={() => setChange(undefined)}
+              >
                 Cancel
               </Button>
             ) : (
-              <Button variant="primary" onClick={() => setChange(index)}>
+              <Button
+                className={CLASS_NAME_PERFORMER_CHANGE}
+                variant="primary"
+                onClick={() => setChange(index)}
+              >
                 Change
               </Button>
             )}
           </>
-          <span className="flex-grow-1">
+          <>
             {isChanging === index ? (
               <SearchField
+                autoFocus
                 onClick={(res) =>
                   res.__typename === "Performer" && handleChange(res, index)
                 }
@@ -259,7 +271,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
                 </span>
               </InputGroup.Text>
             )}
-          </span>
+          </>
         </InputGroup>
       </Col>
 
@@ -278,7 +290,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
   ));
 
   return (
-    <Form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
+    <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
       <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
         <Tab eventKey="details" title="Details" className="col-xl-9">
           <Row>
