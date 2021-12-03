@@ -114,6 +114,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
     <Modal
       message="Are you sure you want to regenerate the API key? This operation cannot be undone."
       callback={handleRegenerateAPIKey}
+      acceptTerm="Confirm"
     />
   );
 
