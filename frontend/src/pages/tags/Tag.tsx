@@ -3,7 +3,7 @@ import { Link, useHistory } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 
 import {
-  usePendingEdits,
+  usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
 } from "src/graphql";
@@ -31,7 +31,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
 
-  const { data: editData } = usePendingEdits({
+  const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.TAG,
     id: tag.id,
   });

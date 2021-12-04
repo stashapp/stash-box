@@ -5,7 +5,7 @@ import { groupBy, keyBy, sortBy } from "lodash-es";
 
 import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import {
-  usePendingEdits,
+  usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
 } from "src/graphql";
@@ -31,7 +31,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
     setStudioFilter(null);
   }, [performer.id]);
 
-  const { data: editData } = usePendingEdits({
+  const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.PERFORMER,
     id: performer.id,
   });

@@ -7,20 +7,20 @@
 import { TargetTypeEnum } from "./globalTypes";
 
 // ====================================================
-// GraphQL query operation: PendingEdits
+// GraphQL query operation: PendingEditsCount
 // ====================================================
 
 
-export interface PendingEdits_queryEdits {
+export interface PendingEditsCount_queryEdits {
   __typename: "QueryEditsResultType";
   count: number;
 }
 
-export interface PendingEdits {
-  queryEdits: PendingEdits_queryEdits;
+export interface PendingEditsCount {
+  queryEdits: PendingEditsCount_queryEdits;
 }
 
-export interface PendingEditsVariables {
+export interface PendingEditsCountVariables {
   type: TargetTypeEnum;
   id: string;
 }

@@ -5,7 +5,7 @@ import { sortBy } from "lodash-es";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import {
-  usePendingEdits,
+  usePendingEditsCount,
   TargetTypeEnum,
   CriterionModifier,
 } from "src/graphql";
@@ -33,7 +33,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
 
-  const { data: editData } = usePendingEdits({
+  const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.STUDIO,
     id: studio.id,
   });
