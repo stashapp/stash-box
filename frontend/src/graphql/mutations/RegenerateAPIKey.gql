@@ -1,0 +1,3 @@
+mutation RegenerateAPIKey($user_id: ID) {
+  regenerateAPIKey(userID: $user_id)
+}
