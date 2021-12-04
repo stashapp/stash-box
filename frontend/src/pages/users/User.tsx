@@ -111,21 +111,17 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
     setShowRegenerateAPIKey(false);
   };
   const regenerateAPIKeyModal = showRegenerateAPIKey && (
-    <Modal
-      body={
-        <>
-          <p>
-            Are you sure you want to regenerate the API key? The old key will be
-            removed and can no longer be used.
-          </p>
-          <p>
-            <i>This operation cannot be undone.</i>
-          </p>
-        </>
-      }
-      callback={handleRegenerateAPIKey}
-      acceptTerm="Confirm"
-    />
+    <Modal callback={handleRegenerateAPIKey} acceptTerm="Confirm">
+      <>
+        <p>
+          Are you sure you want to regenerate the API key? The old key will be
+          removed and can no longer be used.
+        </p>
+        <p>
+          <i>This operation cannot be undone.</i>
+        </p>
+      </>
+    </Modal>
   );
 
   const handleRescindCode = (status: boolean): void => {

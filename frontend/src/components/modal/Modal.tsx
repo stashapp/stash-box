@@ -9,16 +9,16 @@ interface ModalProps {
 
 interface MessageProps {
   message: string;
-  body?: never;
+  children?: never;
 }
 interface ElementProps {
-  body: ReactNode;
+  children: ReactNode;
   message?: never;
 }
 
 const ModalComponent: FC<ModalProps & (MessageProps | ElementProps)> = ({
   message,
-  body,
+  children,
   callback,
   cancelTerm = "Cancel",
   acceptTerm = "Delete",
@@ -26,7 +26,7 @@ const ModalComponent: FC<ModalProps & (MessageProps | ElementProps)> = ({
   const handleCancel = () => callback(false);
   const handleAccept = () => callback(true);
 
-  const content = message || body;
+  const content = message || children;
 
   return (
     <Modal show onHide={handleCancel}>
