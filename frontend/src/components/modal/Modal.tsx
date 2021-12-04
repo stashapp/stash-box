@@ -1,15 +1,24 @@
-import { FC } from "react";
+import { ReactNode, FC } from "react";
 import { Modal, Button } from "react-bootstrap";
 
 interface ModalProps {
-  message: string;
   callback: (status: boolean) => void;
   cancelTerm?: string;
   acceptTerm?: string;
 }
 
-const ModalComponent: FC<ModalProps> = ({
+interface MessageProps {
+  message: string;
+  body?: never;
+}
+interface ElementProps {
+  body: ReactNode;
+  message?: never;
+}
+
+const ModalComponent: FC<ModalProps & (MessageProps | ElementProps)> = ({
   message,
+  body,
   callback,
   cancelTerm = "Cancel",
   acceptTerm = "Delete",
@@ -17,10 +26,14 @@ const ModalComponent: FC<ModalProps> = ({
   const handleCancel = () => callback(false);
   const handleAccept = () => callback(true);
 
+  const content = message || body;
+
   return (
     <Modal show onHide={handleCancel}>
-      <Modal.Header closeButton>Warning</Modal.Header>
-      <Modal.Body>{message}</Modal.Body>
+      <Modal.Header closeButton>
+        <b>Warning</b>
+      </Modal.Header>
+      <Modal.Body>{content}</Modal.Body>
       <Modal.Footer>
         <Button variant="danger" onClick={handleAccept}>
           {acceptTerm}
