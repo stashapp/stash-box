@@ -21,27 +21,6 @@ func createEditTestRunner(t *testing.T) *editTestRunner {
 	}
 }
 
-func (s *editTestRunner) testUnauthorisedEditEdit() {
-	// requires edit so should fail
-	_, err := s.resolver.Mutation().TagEdit(s.ctx, models.TagEditInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
-func (s *editTestRunner) testUnauthorisedApplyEditAdmin() {
-	// both require admin so should fail
-	_, err := s.resolver.Mutation().ApplyEdit(s.ctx, models.ApplyEditInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().CancelEdit(s.ctx, models.CancelEditInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("TagCreate: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
 func (s *editTestRunner) testAdminCancelEdit() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 	if err != nil {
@@ -148,13 +127,6 @@ func (s *editTestRunner) verifyUserRolePromotion(user *models.User) {
 	if !hasVotePermission {
 		s.fieldMismatch(hasVotePermission, true, "User has vote permission")
 	}
-}
-
-func TestUnauthorisedEditEdit(t *testing.T) {
-	pt := &editTestRunner{
-		testRunner: *asRead(t),
-	}
-	pt.testUnauthorisedEditEdit()
 }
 
 func (s *editTestRunner) testPositiveEditVoteApplication() {
@@ -289,13 +261,6 @@ func (s *editTestRunner) testVoteOwnedEditsDisallowed() {
 	if err != user.ErrUnauthorized {
 		s.t.Errorf("Voting: got %v want %v", err, user.ErrUnauthorized)
 	}
-}
-
-func TestUnauthorisedApplyEditAdmin(t *testing.T) {
-	pt := &editTestRunner{
-		testRunner: *asModify(t),
-	}
-	pt.testUnauthorisedApplyEditAdmin()
 }
 
 func TestAdminCancelEdit(t *testing.T) {

@@ -9,7 +9,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type studioTestRunner struct {
@@ -178,37 +177,6 @@ func (s *studioTestRunner) testDestroyStudio() {
 	// TODO - ensure scene was not removed
 }
 
-func (s *studioTestRunner) testUnauthorisedStudioModify() {
-	// test each api interface - all require modify so all should fail
-	_, err := s.resolver.Mutation().StudioCreate(s.ctx, models.StudioCreateInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("StudioCreate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().StudioUpdate(s.ctx, models.StudioUpdateInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("StudioUpdate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("StudioDestroy: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
-func (s *studioTestRunner) testUnauthorisedStudioQuery() {
-	// test each api interface - all require read so all should fail
-	_, err := s.resolver.Query().FindStudio(s.ctx, nil, nil)
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("FindStudio: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Query().QueryStudios(s.ctx, nil, nil)
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("QueryStudios: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
 func TestCreateStudio(t *testing.T) {
 	pt := createStudioTestRunner(t)
 	pt.testCreateStudio()
@@ -235,17 +203,3 @@ func TestDestroyStudio(t *testing.T) {
 }
 
 // TODO - test parent/children studios
-
-func TestUnauthorisedStudioModify(t *testing.T) {
-	pt := &studioTestRunner{
-		testRunner: *asRead(t),
-	}
-	pt.testUnauthorisedStudioModify()
-}
-
-func TestUnauthorisedStudioQuery(t *testing.T) {
-	pt := &studioTestRunner{
-		testRunner: *asNone(t),
-	}
-	pt.testUnauthorisedStudioQuery()
-}

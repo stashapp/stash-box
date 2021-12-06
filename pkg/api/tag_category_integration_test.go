@@ -9,7 +9,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type tagCategoryTestRunner struct {
@@ -155,36 +154,6 @@ func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 	}
 }
 
-func (s *tagCategoryTestRunner) testUnauthorisedTagCategoryModify() {
-	// test each api interface - all require admin so all should fail
-	_, err := s.resolver.Mutation().TagCategoryCreate(s.ctx, models.TagCategoryCreateInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("TagCategoryCreate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().TagCategoryUpdate(s.ctx, models.TagCategoryUpdateInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("TagCategoryUpdate: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().TagCategoryDestroy(s.ctx, models.TagCategoryDestroyInput{})
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("TagCategoryDestroy: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
-func (s *tagTestRunner) testUnauthorisedTagCategoryQuery() {
-	_, err := s.resolver.Query().FindTagCategory(s.ctx, uuid.Nil)
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("FindTagCategory: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Query().QueryTagCategories(s.ctx, nil)
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("QueryTagCategories: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
 func TestCreateTagCategory(t *testing.T) {
 	pt := createTagCategoryTestRunner(t)
 	pt.testCreateTagCategory()
@@ -198,18 +167,4 @@ func TestUpdateTagCategory(t *testing.T) {
 func TestDestroyTagCategory(t *testing.T) {
 	pt := createTagCategoryTestRunner(t)
 	pt.testDestroyTagCategory()
-}
-
-func TestUnauthorisedTagCategoryAdmin(t *testing.T) {
-	pt := &tagCategoryTestRunner{
-		testRunner: *asEdit(t),
-	}
-	pt.testUnauthorisedTagCategoryModify()
-}
-
-func TestUnauthorisedTagCategoryQuery(t *testing.T) {
-	pt := &tagTestRunner{
-		testRunner: *asNone(t),
-	}
-	pt.testUnauthorisedTagCategoryQuery()
 }

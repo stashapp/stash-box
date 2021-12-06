@@ -9,10 +9,6 @@ import (
 )
 
 func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit *int) ([]*models.Performer, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
 
@@ -36,10 +32,6 @@ func (r *queryResolver) SearchPerformer(ctx context.Context, term string, limit 
 }
 
 func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int) ([]*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
 

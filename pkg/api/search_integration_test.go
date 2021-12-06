@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type searchTestRunner struct {
@@ -128,19 +127,6 @@ func (s *searchTestRunner) testSearchSceneByID() {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }
-func (s *searchTestRunner) testUnauthorisedSearch() {
-	// test each api interface - all require read so all should fail
-	_, err := s.resolver.Query().SearchPerformer(s.ctx, "", nil)
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("SearchPerformer: got %v want %v", err, user.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Query().SearchScene(s.ctx, "", nil)
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("SearchScene: got %v want %v", err, user.ErrUnauthorized)
-	}
-}
-
 func TestSearchPerformerByTerm(t *testing.T) {
 	pt := createSearchTestRunner(t)
 	pt.testSearchPerformerByTerm()
@@ -159,10 +145,4 @@ func TestSearchSceneByTerm(t *testing.T) {
 func TestSearchSceneByID(t *testing.T) {
 	pt := createSearchTestRunner(t)
 	pt.testSearchSceneByID()
-}
-func TestUnauthorisedSearch(t *testing.T) {
-	pt := &searchTestRunner{
-		testRunner: *asNone(t),
-	}
-	pt.testUnauthorisedSearch()
 }
