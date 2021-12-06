@@ -57,12 +57,8 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	IsAdmin  func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
-	IsEdit   func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
-	IsModify func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
-	IsOwner  func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
-	IsRead   func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
-	IsVote   func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	HasRole     func(ctx context.Context, obj interface{}, next graphql.Resolver, role RoleEnum) (res interface{}, err error)
+	IsUserOwner func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -3783,12 +3779,8 @@ input TagCategoryDestroyInput {
   id: ID!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/user.graphql", Input: `directive @isAdmin on FIELD_DEFINITION
-directive @isOwner on FIELD_DEFINITION
-directive @isRead on FIELD_DEFINITION
-directive @isModify on FIELD_DEFINITION
-directive @isEdit on FIELD_DEFINITION
-directive @isVote on FIELD_DEFINITION
+	{Name: "graphql/schema/types/user.graphql", Input: `directive @isUserOwner on FIELD_DEFINITION
+directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION
 
 enum RoleEnum {
   READ
@@ -3807,11 +3799,11 @@ type User {
   id: ID!
   name: String!
   """Should not be visible to other users"""
-  roles: [RoleEnum!] @isOwner
+  roles: [RoleEnum!] @isUserOwner
   """Should not be visible to other users"""
-  email: String @isOwner
+  email: String @isUserOwner
   """Should not be visible to other users"""
-  api_key: String @isOwner
+  api_key: String @isUserOwner
 
   """ Vote counts by type """
   vote_count: UserVoteCount!
@@ -3819,10 +3811,10 @@ type User {
   edit_count: UserEditCount!
 
   """Calls to the API from this user over a configurable time period"""
-  api_calls: Int! @isOwner
-  invited_by: User @isOwner
-  invite_tokens: Int @isOwner
-  active_invite_codes: [String!] @isOwner
+  api_calls: Int! @isUserOwner
+  invited_by: User @isUserOwner
+  invite_tokens: Int @isUserOwner
+  active_invite_codes: [String!] @isUserOwner
 }
 
 input UserCreateInput {
@@ -3945,90 +3937,90 @@ type Query {
 
   # performer names may not be unique
   """Find a performer by ID"""
-  findPerformer(id: ID!): Performer @isRead
-  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType! @isRead
+  findPerformer(id: ID!): Performer @hasRole(role: READ)
+  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType! @hasRole(role: READ)
 
   #### Studios ####
 
   # studio names should be unique
   """Find a studio by ID or name"""
-  findStudio(id: ID, name: String): Studio @isRead
-  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType! @isRead
+  findStudio(id: ID, name: String): Studio @hasRole(role: READ)
+  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType! @hasRole(role: READ)
 
   #### Tags ####
 
   # tag names will be unique
   """Find a tag by ID or name, or aliases"""
-  findTag(id: ID, name: String): Tag @isRead
-  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType! @isRead
+  findTag(id: ID, name: String): Tag @hasRole(role: READ)
+  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType! @hasRole(role: READ)
 
   """Find a tag cateogry by ID"""
-  findTagCategory(id: ID!): TagCategory @isRead
-  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType! @isRead
+  findTagCategory(id: ID!): TagCategory @hasRole(role: READ)
+  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType! @hasRole(role: READ)
 
   #### Scenes ####
 
   # ids should be unique
   """Find a scene by ID"""
-  findScene(id: ID!): Scene @isRead
+  findScene(id: ID!): Scene @hasRole(role: READ)
 
   """Finds a scene by an algorithm-specific checksum"""
-  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]! @isRead
+  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]! @hasRole(role: READ)
   """Finds scenes that match a list of hashes"""
-  findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @isRead
-  findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @isRead
+  findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ)
+  findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ)
 
-  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType! @isRead
+  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType! @hasRole(role: READ)
 
   #### Edits ####
 
-  findEdit(id: ID): Edit @isRead
-  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @isRead
+  findEdit(id: ID): Edit @hasRole(role: READ)
+  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @hasRole(role: READ)
 
   #### Users ####
 
   """Find user by ID or username"""
-  findUser(id: ID, username: String): User @isRead
-  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @isAdmin
+  findUser(id: ID, username: String): User @hasRole(role: READ)
+  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @hasRole(role: ADMIN)
 
   """Returns currently authenticated user"""
   me: User
 
   ### Full text search ###
-  searchPerformer(term: String!, limit: Int): [Performer!]! @isRead
-  searchScene(term: String!, limit: Int): [Scene!]! @isRead
+  searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
+  searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
 
   #### Version ####
-  version: Version! @isRead
+  version: Version! @hasRole(role: READ)
 
   ### Instance Config ###
-  getConfig: StashBoxConfig! @isRead
+  getConfig: StashBoxConfig! @hasRole(role: READ)
 }
 
 type Mutation {
   # Admin-only interface
-  sceneCreate(input: SceneCreateInput!): Scene @isModify
-  sceneUpdate(input: SceneUpdateInput!): Scene @isModify
-  sceneDestroy(input: SceneDestroyInput!): Boolean! @isModify
+  sceneCreate(input: SceneCreateInput!): Scene @hasRole(role: MODIFY)
+  sceneUpdate(input: SceneUpdateInput!): Scene @hasRole(role: MODIFY)
+  sceneDestroy(input: SceneDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
-  performerCreate(input: PerformerCreateInput!): Performer @isModify
-  performerUpdate(input: PerformerUpdateInput!): Performer @isModify
-  performerDestroy(input: PerformerDestroyInput!): Boolean! @isModify
+  performerCreate(input: PerformerCreateInput!): Performer @hasRole(role: MODIFY)
+  performerUpdate(input: PerformerUpdateInput!): Performer @hasRole(role: MODIFY)
+  performerDestroy(input: PerformerDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
-  studioCreate(input: StudioCreateInput!): Studio @isModify
-  studioUpdate(input: StudioUpdateInput!): Studio @isModify
-  studioDestroy(input: StudioDestroyInput!): Boolean! @isModify
+  studioCreate(input: StudioCreateInput!): Studio @hasRole(role: MODIFY)
+  studioUpdate(input: StudioUpdateInput!): Studio @hasRole(role: MODIFY)
+  studioDestroy(input: StudioDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
-  tagCreate(input: TagCreateInput!): Tag @isModify
-  tagUpdate(input: TagUpdateInput!): Tag @isModify
-  tagDestroy(input: TagDestroyInput!): Boolean! @isModify
+  tagCreate(input: TagCreateInput!): Tag @hasRole(role: MODIFY)
+  tagUpdate(input: TagUpdateInput!): Tag @hasRole(role: MODIFY)
+  tagDestroy(input: TagDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
-  userCreate(input: UserCreateInput!): User @isAdmin
-  userUpdate(input: UserUpdateInput!): User @isAdmin
-  userDestroy(input: UserDestroyInput!): Boolean! @isAdmin
+  userCreate(input: UserCreateInput!): User @hasRole(role: ADMIN)
+  userUpdate(input: UserUpdateInput!): User @hasRole(role: ADMIN)
+  userDestroy(input: UserDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
-  imageCreate(input: ImageCreateInput!): Image @isEdit
-  imageDestroy(input: ImageDestroyInput!): Boolean! @isModify
+  imageCreate(input: ImageCreateInput!): Image @hasRole(role: EDIT)
+  imageDestroy(input: ImageDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   """User interface for registering"""
   newUser(input: NewUserInput!): String
@@ -4043,9 +4035,9 @@ type Mutation {
   """Removes invite tokens from a user"""
   revokeInvite(input: RevokeInviteInput!): Int!
 
-  tagCategoryCreate(input: TagCategoryCreateInput!): TagCategory @isAdmin
-  tagCategoryUpdate(input: TagCategoryUpdateInput!): TagCategory @isAdmin
-  tagCategoryDestroy(input: TagCategoryDestroyInput!): Boolean! @isAdmin
+  tagCategoryCreate(input: TagCategoryCreateInput!): TagCategory @hasRole(role: ADMIN)
+  tagCategoryUpdate(input: TagCategoryUpdateInput!): TagCategory @hasRole(role: ADMIN)
+  tagCategoryDestroy(input: TagCategoryDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
@@ -4058,25 +4050,25 @@ type Mutation {
 
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
-  sceneEdit(input: SceneEditInput!): Edit! @isEdit
+  sceneEdit(input: SceneEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new performer or modification to a performer"""
-  performerEdit(input: PerformerEditInput!): Edit! @isEdit
+  performerEdit(input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new studio or modification to a studio"""
-  studioEdit(input: StudioEditInput!): Edit! @isEdit
+  studioEdit(input: StudioEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new tag or modification to a tag"""
-  tagEdit(input: TagEditInput!): Edit! @isEdit
+  tagEdit(input: TagEditInput!): Edit! @hasRole(role: EDIT)
 
   """Vote to accept/reject an edit"""
-  editVote(input: EditVoteInput!): Edit! @isVote
+  editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
-  editComment(input: EditCommentInput!): Edit! @isEdit
+  editComment(input: EditCommentInput!): Edit! @hasRole(role: EDIT)
   """Apply edit without voting"""
-  applyEdit(input: ApplyEditInput!): Edit! @isAdmin
+  applyEdit(input: ApplyEditInput!): Edit! @hasRole(role: ADMIN)
   """Cancel edit without voting"""
-  cancelEdit(input: CancelEditInput!): Edit! @isEdit
+  cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
 
   """Matches/unmatches a scene to fingerprint"""
-  submitFingerprint(input: FingerprintSubmission!): Boolean! @isRead
+  submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
 }
 
 schema {
@@ -4090,6 +4082,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 RoleEnum
+	if tmp, ok := rawArgs["role"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+		arg0, err = ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["role"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_activateNewUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -6511,10 +6518,14 @@ func (ec *executionContext) _Mutation_sceneCreate(ctx context.Context, field gra
 			return ec.resolvers.Mutation().SceneCreate(rctx, args["input"].(SceneCreateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -6570,10 +6581,14 @@ func (ec *executionContext) _Mutation_sceneUpdate(ctx context.Context, field gra
 			return ec.resolvers.Mutation().SceneUpdate(rctx, args["input"].(SceneUpdateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -6629,10 +6644,14 @@ func (ec *executionContext) _Mutation_sceneDestroy(ctx context.Context, field gr
 			return ec.resolvers.Mutation().SceneDestroy(rctx, args["input"].(SceneDestroyInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -6691,10 +6710,14 @@ func (ec *executionContext) _Mutation_performerCreate(ctx context.Context, field
 			return ec.resolvers.Mutation().PerformerCreate(rctx, args["input"].(PerformerCreateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -6750,10 +6773,14 @@ func (ec *executionContext) _Mutation_performerUpdate(ctx context.Context, field
 			return ec.resolvers.Mutation().PerformerUpdate(rctx, args["input"].(PerformerUpdateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -6809,10 +6836,14 @@ func (ec *executionContext) _Mutation_performerDestroy(ctx context.Context, fiel
 			return ec.resolvers.Mutation().PerformerDestroy(rctx, args["input"].(PerformerDestroyInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -6871,10 +6902,14 @@ func (ec *executionContext) _Mutation_studioCreate(ctx context.Context, field gr
 			return ec.resolvers.Mutation().StudioCreate(rctx, args["input"].(StudioCreateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -6930,10 +6965,14 @@ func (ec *executionContext) _Mutation_studioUpdate(ctx context.Context, field gr
 			return ec.resolvers.Mutation().StudioUpdate(rctx, args["input"].(StudioUpdateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -6989,10 +7028,14 @@ func (ec *executionContext) _Mutation_studioDestroy(ctx context.Context, field g
 			return ec.resolvers.Mutation().StudioDestroy(rctx, args["input"].(StudioDestroyInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7051,10 +7094,14 @@ func (ec *executionContext) _Mutation_tagCreate(ctx context.Context, field graph
 			return ec.resolvers.Mutation().TagCreate(rctx, args["input"].(TagCreateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7110,10 +7157,14 @@ func (ec *executionContext) _Mutation_tagUpdate(ctx context.Context, field graph
 			return ec.resolvers.Mutation().TagUpdate(rctx, args["input"].(TagUpdateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7169,10 +7220,14 @@ func (ec *executionContext) _Mutation_tagDestroy(ctx context.Context, field grap
 			return ec.resolvers.Mutation().TagDestroy(rctx, args["input"].(TagDestroyInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7231,10 +7286,14 @@ func (ec *executionContext) _Mutation_userCreate(ctx context.Context, field grap
 			return ec.resolvers.Mutation().UserCreate(rctx, args["input"].(UserCreateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsAdmin == nil {
-				return nil, errors.New("directive isAdmin is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsAdmin(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7290,10 +7349,14 @@ func (ec *executionContext) _Mutation_userUpdate(ctx context.Context, field grap
 			return ec.resolvers.Mutation().UserUpdate(rctx, args["input"].(UserUpdateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsAdmin == nil {
-				return nil, errors.New("directive isAdmin is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsAdmin(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7349,10 +7412,14 @@ func (ec *executionContext) _Mutation_userDestroy(ctx context.Context, field gra
 			return ec.resolvers.Mutation().UserDestroy(rctx, args["input"].(UserDestroyInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsAdmin == nil {
-				return nil, errors.New("directive isAdmin is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsAdmin(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7411,10 +7478,14 @@ func (ec *executionContext) _Mutation_imageCreate(ctx context.Context, field gra
 			return ec.resolvers.Mutation().ImageCreate(rctx, args["input"].(ImageCreateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsEdit == nil {
-				return nil, errors.New("directive isEdit is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsEdit(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7470,10 +7541,14 @@ func (ec *executionContext) _Mutation_imageDestroy(ctx context.Context, field gr
 			return ec.resolvers.Mutation().ImageDestroy(rctx, args["input"].(ImageDestroyInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsModify == nil {
-				return nil, errors.New("directive isModify is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "MODIFY")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsModify(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7771,10 +7846,14 @@ func (ec *executionContext) _Mutation_tagCategoryCreate(ctx context.Context, fie
 			return ec.resolvers.Mutation().TagCategoryCreate(rctx, args["input"].(TagCategoryCreateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsAdmin == nil {
-				return nil, errors.New("directive isAdmin is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsAdmin(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7830,10 +7909,14 @@ func (ec *executionContext) _Mutation_tagCategoryUpdate(ctx context.Context, fie
 			return ec.resolvers.Mutation().TagCategoryUpdate(rctx, args["input"].(TagCategoryUpdateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsAdmin == nil {
-				return nil, errors.New("directive isAdmin is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsAdmin(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -7889,10 +7972,14 @@ func (ec *executionContext) _Mutation_tagCategoryDestroy(ctx context.Context, fi
 			return ec.resolvers.Mutation().TagCategoryDestroy(rctx, args["input"].(TagCategoryDestroyInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsAdmin == nil {
-				return nil, errors.New("directive isAdmin is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsAdmin(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8077,10 +8164,14 @@ func (ec *executionContext) _Mutation_sceneEdit(ctx context.Context, field graph
 			return ec.resolvers.Mutation().SceneEdit(rctx, args["input"].(SceneEditInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsEdit == nil {
-				return nil, errors.New("directive isEdit is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsEdit(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8139,10 +8230,14 @@ func (ec *executionContext) _Mutation_performerEdit(ctx context.Context, field g
 			return ec.resolvers.Mutation().PerformerEdit(rctx, args["input"].(PerformerEditInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsEdit == nil {
-				return nil, errors.New("directive isEdit is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsEdit(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8201,10 +8296,14 @@ func (ec *executionContext) _Mutation_studioEdit(ctx context.Context, field grap
 			return ec.resolvers.Mutation().StudioEdit(rctx, args["input"].(StudioEditInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsEdit == nil {
-				return nil, errors.New("directive isEdit is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsEdit(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8263,10 +8362,14 @@ func (ec *executionContext) _Mutation_tagEdit(ctx context.Context, field graphql
 			return ec.resolvers.Mutation().TagEdit(rctx, args["input"].(TagEditInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsEdit == nil {
-				return nil, errors.New("directive isEdit is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsEdit(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8325,10 +8428,14 @@ func (ec *executionContext) _Mutation_editVote(ctx context.Context, field graphq
 			return ec.resolvers.Mutation().EditVote(rctx, args["input"].(EditVoteInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsVote == nil {
-				return nil, errors.New("directive isVote is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "VOTE")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsVote(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8387,10 +8494,14 @@ func (ec *executionContext) _Mutation_editComment(ctx context.Context, field gra
 			return ec.resolvers.Mutation().EditComment(rctx, args["input"].(EditCommentInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsEdit == nil {
-				return nil, errors.New("directive isEdit is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsEdit(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8449,10 +8560,14 @@ func (ec *executionContext) _Mutation_applyEdit(ctx context.Context, field graph
 			return ec.resolvers.Mutation().ApplyEdit(rctx, args["input"].(ApplyEditInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsAdmin == nil {
-				return nil, errors.New("directive isAdmin is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsAdmin(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8511,10 +8626,14 @@ func (ec *executionContext) _Mutation_cancelEdit(ctx context.Context, field grap
 			return ec.resolvers.Mutation().CancelEdit(rctx, args["input"].(CancelEditInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsEdit == nil {
-				return nil, errors.New("directive isEdit is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsEdit(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -8573,10 +8692,14 @@ func (ec *executionContext) _Mutation_submitFingerprint(ctx context.Context, fie
 			return ec.resolvers.Mutation().SubmitFingerprint(rctx, args["input"].(FingerprintSubmission))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -10539,10 +10662,14 @@ func (ec *executionContext) _Query_findPerformer(ctx context.Context, field grap
 			return ec.resolvers.Query().FindPerformer(rctx, args["id"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -10598,10 +10725,14 @@ func (ec *executionContext) _Query_queryPerformers(ctx context.Context, field gr
 			return ec.resolvers.Query().QueryPerformers(rctx, args["performer_filter"].(*PerformerFilterType), args["filter"].(*QuerySpec))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -10660,10 +10791,14 @@ func (ec *executionContext) _Query_findStudio(ctx context.Context, field graphql
 			return ec.resolvers.Query().FindStudio(rctx, args["id"].(*string), args["name"].(*string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -10719,10 +10854,14 @@ func (ec *executionContext) _Query_queryStudios(ctx context.Context, field graph
 			return ec.resolvers.Query().QueryStudios(rctx, args["studio_filter"].(*StudioFilterType), args["filter"].(*QuerySpec))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -10781,10 +10920,14 @@ func (ec *executionContext) _Query_findTag(ctx context.Context, field graphql.Co
 			return ec.resolvers.Query().FindTag(rctx, args["id"].(*string), args["name"].(*string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -10840,10 +10983,14 @@ func (ec *executionContext) _Query_queryTags(ctx context.Context, field graphql.
 			return ec.resolvers.Query().QueryTags(rctx, args["tag_filter"].(*TagFilterType), args["filter"].(*QuerySpec))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -10902,10 +11049,14 @@ func (ec *executionContext) _Query_findTagCategory(ctx context.Context, field gr
 			return ec.resolvers.Query().FindTagCategory(rctx, args["id"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -10961,10 +11112,14 @@ func (ec *executionContext) _Query_queryTagCategories(ctx context.Context, field
 			return ec.resolvers.Query().QueryTagCategories(rctx, args["filter"].(*QuerySpec))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11023,10 +11178,14 @@ func (ec *executionContext) _Query_findScene(ctx context.Context, field graphql.
 			return ec.resolvers.Query().FindScene(rctx, args["id"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11082,10 +11241,14 @@ func (ec *executionContext) _Query_findSceneByFingerprint(ctx context.Context, f
 			return ec.resolvers.Query().FindSceneByFingerprint(rctx, args["fingerprint"].(FingerprintQueryInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11144,10 +11307,14 @@ func (ec *executionContext) _Query_findScenesByFingerprints(ctx context.Context,
 			return ec.resolvers.Query().FindScenesByFingerprints(rctx, args["fingerprints"].([]string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11206,10 +11373,14 @@ func (ec *executionContext) _Query_findScenesByFullFingerprints(ctx context.Cont
 			return ec.resolvers.Query().FindScenesByFullFingerprints(rctx, args["fingerprints"].([]*FingerprintQueryInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11268,10 +11439,14 @@ func (ec *executionContext) _Query_queryScenes(ctx context.Context, field graphq
 			return ec.resolvers.Query().QueryScenes(rctx, args["scene_filter"].(*SceneFilterType), args["filter"].(*QuerySpec))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11330,10 +11505,14 @@ func (ec *executionContext) _Query_findEdit(ctx context.Context, field graphql.C
 			return ec.resolvers.Query().FindEdit(rctx, args["id"].(*string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11389,10 +11568,14 @@ func (ec *executionContext) _Query_queryEdits(ctx context.Context, field graphql
 			return ec.resolvers.Query().QueryEdits(rctx, args["edit_filter"].(*EditFilterType), args["filter"].(*QuerySpec))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11451,10 +11634,14 @@ func (ec *executionContext) _Query_findUser(ctx context.Context, field graphql.C
 			return ec.resolvers.Query().FindUser(rctx, args["id"].(*string), args["username"].(*string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11510,10 +11697,14 @@ func (ec *executionContext) _Query_queryUsers(ctx context.Context, field graphql
 			return ec.resolvers.Query().QueryUsers(rctx, args["user_filter"].(*UserFilterType), args["filter"].(*QuerySpec))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsAdmin == nil {
-				return nil, errors.New("directive isAdmin is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsAdmin(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11604,10 +11795,14 @@ func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field gr
 			return ec.resolvers.Query().SearchPerformer(rctx, args["term"].(string), args["limit"].(*int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11666,10 +11861,14 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 			return ec.resolvers.Query().SearchScene(rctx, args["term"].(string), args["limit"].(*int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11721,10 +11920,14 @@ func (ec *executionContext) _Query_version(ctx context.Context, field graphql.Co
 			return ec.resolvers.Query().Version(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -11776,10 +11979,14 @@ func (ec *executionContext) _Query_getConfig(ctx context.Context, field graphql.
 			return ec.resolvers.Query().GetConfig(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsRead == nil {
-				return nil, errors.New("directive isRead is not implemented")
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.IsRead(ctx, nil, directive0)
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
 
 		tmp, err := directive1(rctx)
@@ -14699,10 +14906,10 @@ func (ec *executionContext) _User_roles(ctx context.Context, field graphql.Colle
 			return ec.resolvers.User().Roles(rctx, obj)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsOwner == nil {
-				return nil, errors.New("directive isOwner is not implemented")
+			if ec.directives.IsUserOwner == nil {
+				return nil, errors.New("directive isUserOwner is not implemented")
 			}
-			return ec.directives.IsOwner(ctx, obj, directive0)
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -14751,10 +14958,10 @@ func (ec *executionContext) _User_email(ctx context.Context, field graphql.Colle
 			return obj.Email, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsOwner == nil {
-				return nil, errors.New("directive isOwner is not implemented")
+			if ec.directives.IsUserOwner == nil {
+				return nil, errors.New("directive isUserOwner is not implemented")
 			}
-			return ec.directives.IsOwner(ctx, obj, directive0)
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -14803,10 +15010,10 @@ func (ec *executionContext) _User_api_key(ctx context.Context, field graphql.Col
 			return obj.APIKey, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsOwner == nil {
-				return nil, errors.New("directive isOwner is not implemented")
+			if ec.directives.IsUserOwner == nil {
+				return nil, errors.New("directive isUserOwner is not implemented")
 			}
-			return ec.directives.IsOwner(ctx, obj, directive0)
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -14925,10 +15132,10 @@ func (ec *executionContext) _User_api_calls(ctx context.Context, field graphql.C
 			return obj.APICalls, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsOwner == nil {
-				return nil, errors.New("directive isOwner is not implemented")
+			if ec.directives.IsUserOwner == nil {
+				return nil, errors.New("directive isUserOwner is not implemented")
 			}
-			return ec.directives.IsOwner(ctx, obj, directive0)
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -14980,10 +15187,10 @@ func (ec *executionContext) _User_invited_by(ctx context.Context, field graphql.
 			return ec.resolvers.User().InvitedBy(rctx, obj)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsOwner == nil {
-				return nil, errors.New("directive isOwner is not implemented")
+			if ec.directives.IsUserOwner == nil {
+				return nil, errors.New("directive isUserOwner is not implemented")
 			}
-			return ec.directives.IsOwner(ctx, obj, directive0)
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -15032,10 +15239,10 @@ func (ec *executionContext) _User_invite_tokens(ctx context.Context, field graph
 			return obj.InviteTokens, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsOwner == nil {
-				return nil, errors.New("directive isOwner is not implemented")
+			if ec.directives.IsUserOwner == nil {
+				return nil, errors.New("directive isUserOwner is not implemented")
 			}
-			return ec.directives.IsOwner(ctx, obj, directive0)
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -15084,10 +15291,10 @@ func (ec *executionContext) _User_active_invite_codes(ctx context.Context, field
 			return ec.resolvers.User().ActiveInviteCodes(rctx, obj)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.IsOwner == nil {
-				return nil, errors.New("directive isOwner is not implemented")
+			if ec.directives.IsUserOwner == nil {
+				return nil, errors.New("directive isUserOwner is not implemented")
 			}
-			return ec.directives.IsOwner(ctx, obj, directive0)
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
 		}
 
 		tmp, err := directive1(rctx)

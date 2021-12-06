@@ -139,12 +139,8 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	gqlConfig := models.Config{
 		Resolvers: NewResolver(getRepo),
 		Directives: models.DirectiveRoot{
-			IsOwner:  IsOwnerDirective,
-			IsAdmin:  IsAdminDirective,
-			IsModify: IsModifyDirective,
-			IsRead:   IsReadDirective,
-			IsEdit:   IsEditDirective,
-			IsVote:   IsVoteDirective,
+			IsUserOwner: IsUserOwnerDirective,
+			HasRole:     HasRoleDirective,
 		},
 	}
 	gqlSrv := gqlHandler.New(models.NewExecutableSchema(gqlConfig))
