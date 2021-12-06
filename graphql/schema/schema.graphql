@@ -42,7 +42,6 @@ type Query {
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
-
   queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @hasRole(role: READ)
 
   #### Users ####

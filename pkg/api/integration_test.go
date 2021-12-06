@@ -163,12 +163,8 @@ func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *te
 	gqlHandler := handler.NewDefaultServer(models.NewExecutableSchema(models.Config{
 		Resolvers: resolver,
 		Directives: models.DirectiveRoot{
-			IsOwner:  api.IsOwnerDirective,
-			IsAdmin:  api.IsAdminDirective,
-			IsModify: api.IsModifyDirective,
-			IsRead:   api.IsReadDirective,
-			IsEdit:   api.IsEditDirective,
-			IsVote:   api.IsVoteDirective,
+			IsUserOwner: api.IsUserOwnerDirective,
+			HasRole:     api.HasRoleDirective,
 		},
 	}))
 	var handlerFunc http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
