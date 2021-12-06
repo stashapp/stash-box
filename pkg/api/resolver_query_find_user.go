@@ -10,10 +10,6 @@ import (
 )
 
 func (r *queryResolver) FindUser(ctx context.Context, id *uuid.UUID, username *string) (*models.User, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
 

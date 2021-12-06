@@ -8,10 +8,6 @@ import (
 )
 
 func (r *mutationResolver) ImageCreate(ctx context.Context, input models.ImageCreateInput) (*models.Image, error) {
-	if err := validateEdit(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	var ret *models.Image
@@ -32,10 +28,6 @@ func (r *mutationResolver) ImageCreate(ctx context.Context, input models.ImageCr
 }
 
 func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	err := fac.WithTxn(func() error {

@@ -9,10 +9,6 @@ import (
 )
 
 func (r *queryResolver) FindPerformer(ctx context.Context, id uuid.UUID) (*models.Performer, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
 
@@ -20,10 +16,6 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id uuid.UUID) (*model
 }
 
 func (r *queryResolver) QueryPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.QuerySpec) (*models.PerformerQuery, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	return &models.PerformerQuery{
 		PerformerFilter: performerFilter,
 		Filter:          filter,
