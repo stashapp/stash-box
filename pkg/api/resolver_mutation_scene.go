@@ -8,10 +8,6 @@ import (
 )
 
 func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCreateInput) (*models.Scene, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	var s *models.Scene
@@ -27,10 +23,6 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 }
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	var s *models.Scene
@@ -46,10 +38,6 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	var ret bool
