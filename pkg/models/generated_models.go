@@ -198,6 +198,11 @@ type MultiIDCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type MultiStringCriterionInput struct {
+	Value    []string          `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
 type NewUserInput struct {
 	Email     string  `json:"email"`
 	InviteKey *string `json:"invite_key"`
@@ -434,7 +439,7 @@ type SceneFilterType struct {
 	// Filter to include scenes with performer appearing as alias
 	Alias *StringCriterionInput `json:"alias"`
 	// Filter to only include scenes with these fingerprints
-	Fingerprints *MultiIDCriterionInput `json:"fingerprints"`
+	Fingerprints *MultiStringCriterionInput `json:"fingerprints"`
 }
 
 type SceneUpdateInput struct {

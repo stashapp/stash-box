@@ -3019,6 +3019,11 @@ input StringCriterionInput {
   modifier: CriterionModifier!
 }
 
+input MultiStringCriterionInput {
+  value: [String!]!
+  modifier: CriterionModifier!
+}
+
 input IntCriterionInput {
   value: Int!
   modifier: CriterionModifier!
@@ -3598,7 +3603,7 @@ input SceneFilterType {
   """Filter to include scenes with performer appearing as alias"""
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
-  fingerprints: MultiIDCriterionInput
+  fingerprints: MultiStringCriterionInput
 }
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/studio.graphql", Input: `type Studio {
@@ -16757,6 +16762,37 @@ func (ec *executionContext) unmarshalInputMultiIDCriterionInput(ctx context.Cont
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMultiStringCriterionInput(ctx context.Context, obj interface{}) (MultiStringCriterionInput, error) {
+	var it MultiStringCriterionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "value":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
+			it.Value, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "modifier":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modifier"))
+			it.Modifier, err = ec.unmarshalNCriterionModifier2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐCriterionModifier(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewUserInput(ctx context.Context, obj interface{}) (NewUserInput, error) {
 	var it NewUserInput
 	asMap := map[string]interface{}{}
@@ -18077,7 +18113,7 @@ func (ec *executionContext) unmarshalInputSceneFilterType(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
-			it.Fingerprints, err = ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiIDCriterionInput(ctx, v)
+			it.Fingerprints, err = ec.unmarshalOMultiStringCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiStringCriterionInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -24632,6 +24668,14 @@ func (ec *executionContext) unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋst
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputMultiIDCriterionInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOMultiStringCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiStringCriterionInput(ctx context.Context, v interface{}) (*MultiStringCriterionInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMultiStringCriterionInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
