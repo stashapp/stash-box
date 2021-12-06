@@ -5,10 +5,9 @@ import { groupBy, keyBy, sortBy } from "lodash-es";
 
 import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import {
-  useEdits,
+  usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
-  VoteStatusEnum,
 } from "src/graphql";
 
 import { formatPendingEdits } from "src/utils";
@@ -32,15 +31,9 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
     setStudioFilter(null);
   }, [performer.id]);
 
-  const { data: editData } = useEdits({
-    filter: {
-      per_page: 1,
-    },
-    editFilter: {
-      target_type: TargetTypeEnum.PERFORMER,
-      target_id: performer.id,
-      status: VoteStatusEnum.PENDING,
-    },
+  const { data: editData } = usePendingEditsCount({
+    type: TargetTypeEnum.PERFORMER,
+    id: performer.id,
   });
   const pendingEditCount = editData?.queryEdits.count;
 
