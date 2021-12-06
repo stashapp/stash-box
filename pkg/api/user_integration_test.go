@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -63,10 +64,7 @@ func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *m
 		s.t.Errorf("Password was not set")
 	}
 
-	r := s.resolver.User()
-
-	id, _ := r.ID(s.ctx, user)
-	if id == "" {
+	if user.ID == uuid.Nil {
 		s.t.Errorf("Expected created user id to be non-zero")
 	}
 
@@ -80,8 +78,7 @@ func (s *userTestRunner) testFindUserById() {
 		return
 	}
 
-	userID := createdUser.ID.String()
-	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
+	user, err := s.resolver.Query().FindUser(s.ctx, &createdUser.ID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding user: %s", err.Error())
 		return
@@ -175,7 +172,7 @@ func (s *userTestRunner) testUpdateUserName() {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 
 	updatedName := s.generateUserName()
 	updateInput := models.UserUpdateInput{
@@ -210,7 +207,7 @@ func (s *userTestRunner) testUpdatePassword() {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 	oldPassword := createdUser.PasswordHash
 
 	updatedPassword := s.generateUserName() + "newpassword"
@@ -252,7 +249,7 @@ func (s *userTestRunner) testDestroyUser() {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 
 	destroyed, err := s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{
 		ID: userID,
@@ -368,7 +365,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 	ctx := context.TODO()
 	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
-	adminID := userDB.admin.ID.String()
+	adminID := userDB.admin.ID
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
 	if err == nil {
 		s.t.Error("Expected error for changing other user API key")
@@ -392,7 +389,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding user: %s", err.Error())
@@ -410,7 +407,7 @@ func (s *userTestRunner) testUserEditQuery() {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 	filter := models.EditFilterType{
 		UserID: &userID,
 	}

@@ -166,11 +166,8 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 	err := fac.WithTxn(func() error {
 		eqb := fac.Edit()
 
-		editID, err := uuid.FromString(input.ID)
-		if err != nil {
-			return err
-		}
-		voteEdit, err = eqb.Find(editID)
+		var err error
+		voteEdit, err = eqb.Find(input.ID)
 		if err != nil {
 			return err
 		}
@@ -184,17 +181,17 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 			return err
 		}
 
-		voteEdit, err = eqb.Find(editID)
+		voteEdit, err = eqb.Find(input.ID)
 		if err != nil {
 			return err
 		}
 
 		result, err := edit.ResolveVotingThreshold(fac, voteEdit)
 		if result == models.VoteStatusEnumAccepted {
-			voteEdit, err = edit.ApplyEdit(fac, editID, false)
+			voteEdit, err = edit.ApplyEdit(fac, input.ID, false)
 			return err
 		} else if result == models.VoteStatusEnumRejected {
-			voteEdit, err = edit.CloseEdit(fac, editID, models.VoteStatusEnumRejected)
+			voteEdit, err = edit.CloseEdit(fac, input.ID, models.VoteStatusEnumRejected)
 			return err
 		}
 
@@ -215,11 +212,8 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 	err := fac.WithTxn(func() error {
 		eqb := fac.Edit()
 
-		editID, err := uuid.FromString(input.ID)
-		if err != nil {
-			return err
-		}
-		edit, err = eqb.Find(editID)
+		var err error
+		edit, err = eqb.Find(input.ID)
 		if err != nil {
 			return err
 		}
@@ -237,17 +231,16 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 }
 
 func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {
-	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
 	eqb := fac.Edit()
 
-	e, err := eqb.Find(editID)
+	e, err := eqb.Find(input.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	if err = validateUser(ctx, e.UserID); err == nil {
-		return edit.CloseEdit(fac, editID, models.VoteStatusEnumCanceled)
+		return edit.CloseEdit(fac, input.ID, models.VoteStatusEnumCanceled)
 	} else if err = validateAdmin(ctx); err == nil {
 		currentUser := getCurrentUser(ctx)
 
@@ -259,18 +252,17 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 			return nil, err
 		}
 
-		return edit.CloseEdit(fac, editID, models.VoteStatusEnumImmediateRejected)
+		return edit.CloseEdit(fac, input.ID, models.VoteStatusEnumImmediateRejected)
 	}
 
 	return nil, err
 }
 
 func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEditInput) (*models.Edit, error) {
-	editID, _ := uuid.FromString(input.ID)
 	fac := r.getRepoFactory(ctx)
 	eqb := fac.Edit()
 
-	e, err := eqb.Find(editID)
+	e, err := eqb.Find(input.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -285,5 +277,5 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 		return nil, err
 	}
 
-	return edit.ApplyEdit(fac, editID, true)
+	return edit.ApplyEdit(fac, input.ID, true)
 }

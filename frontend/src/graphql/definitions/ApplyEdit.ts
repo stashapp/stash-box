@@ -239,13 +239,19 @@ export interface ApplyEdit_applyEdit_target_Scene {
 
 export type ApplyEdit_applyEdit_target = ApplyEdit_applyEdit_target_Tag | ApplyEdit_applyEdit_target_Performer | ApplyEdit_applyEdit_target_Studio | ApplyEdit_applyEdit_target_Scene;
 
+export interface ApplyEdit_applyEdit_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface ApplyEdit_applyEdit_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
   added_aliases: string[] | null;
   removed_aliases: string[] | null;
-  category_id: string | null;
+  category: ApplyEdit_applyEdit_details_TagEdit_category | null;
 }
 
 export interface ApplyEdit_applyEdit_details_PerformerEdit_added_urls {
@@ -684,11 +690,17 @@ export interface ApplyEdit_applyEdit_details_SceneEdit {
 
 export type ApplyEdit_applyEdit_details = ApplyEdit_applyEdit_details_TagEdit | ApplyEdit_applyEdit_details_PerformerEdit | ApplyEdit_applyEdit_details_StudioEdit | ApplyEdit_applyEdit_details_SceneEdit;
 
+export interface ApplyEdit_applyEdit_old_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface ApplyEdit_applyEdit_old_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
-  category_id: string | null;
+  category: ApplyEdit_applyEdit_old_details_TagEdit_category | null;
 }
 
 export interface ApplyEdit_applyEdit_old_details_PerformerEdit {

@@ -8,13 +8,12 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) FindStudio(ctx context.Context, id *string, name *string) (*models.Studio, error) {
+func (r *queryResolver) FindStudio(ctx context.Context, id *uuid.UUID, name *string) (*models.Studio, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Studio()
 
 	if id != nil {
-		idUUID, _ := uuid.FromString(*id)
-		return qb.Find(idUUID)
+		return qb.Find(*id)
 	} else if name != nil {
 		return qb.FindByName(*name)
 	}

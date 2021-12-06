@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -115,8 +116,9 @@ func makeValidUser() models.User {
 }
 
 func makeValidUserUpdateInput() models.UserUpdateInput {
+	ID, _ := uuid.NewV4()
 	return models.UserUpdateInput{
-		ID: "id",
+		ID: ID,
 	}
 }
 

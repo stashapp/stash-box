@@ -55,7 +55,10 @@ fragment EditFragment on Edit {
       description
       added_aliases
       removed_aliases
-      category_id
+      category {
+        id
+        name
+      }
     }
     ... on PerformerEdit {
       name
@@ -175,7 +178,10 @@ fragment EditFragment on Edit {
     ... on TagEdit {
       name
       description
-      category_id
+      category {
+        id
+        name
+      }
     }
     ... on PerformerEdit {
       name

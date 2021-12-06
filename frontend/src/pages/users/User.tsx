@@ -1,7 +1,12 @@
 import { FC, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
-import { faMinus, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMinus,
+  faPlus,
+  faSyncAlt,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { sortBy } from "lodash-es";
 
 import {
@@ -9,6 +14,7 @@ import {
   VoteTypeEnum,
   useConfig,
   useDeleteUser,
+  useRegenerateAPIKey,
   useRescindInviteCode,
   useGenerateInviteCode,
   useGrantInvite,
@@ -28,7 +34,7 @@ import {
   ROUTE_USER_EDITS,
 } from "src/constants/route";
 import Modal from "src/components/modal";
-import { Icon } from "src/components/fragments";
+import { Icon, Tooltip } from "src/components/fragments";
 import { isAdmin, isPrivateUser, createHref } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 
@@ -66,9 +72,11 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const Auth = useContext(AuthContext);
   const { data: configData } = useConfig();
   const [showDelete, setShowDelete] = useState(false);
+  const [showRegenerateAPIKey, setShowRegenerateAPIKey] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
 
   const [deleteUser, { loading: deleting }] = useDeleteUser();
+  const [regenerateAPIKey] = useRegenerateAPIKey();
   const [rescindInviteCode] = useRescindInviteCode();
   const [generateInviteCode] = useGenerateInviteCode();
   const [grantInvite] = useGrantInvite();
@@ -91,6 +99,29 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
       message={`Are you sure you want to delete '${user.name}'? This operation cannot be undone.`}
       callback={handleDelete}
     />
+  );
+
+  const handleRegenerateAPIKey = (status: boolean): void => {
+    if (status) {
+      const userID = user.id === Auth.user?.id ? null : user.id;
+      regenerateAPIKey({ variables: { user_id: userID } }).then(() => {
+        refetch();
+      });
+    }
+    setShowRegenerateAPIKey(false);
+  };
+  const regenerateAPIKeyModal = showRegenerateAPIKey && (
+    <Modal callback={handleRegenerateAPIKey} acceptTerm="Confirm">
+      <>
+        <p>
+          Are you sure you want to regenerate the API key? The old key will be
+          removed and can no longer be used.
+        </p>
+        <p>
+          <i>This operation cannot be undone.</i>
+        </p>
+      </>
+    </Modal>
   );
 
   const handleRescindCode = (status: boolean): void => {
@@ -152,6 +183,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
         <div className="d-flex">
           <h3>{user.name}</h3>
           {deleteModal}
+          {regenerateAPIKeyModal}
           {rescindCodeModal}
           <div className="ms-auto">
             <Link to={createHref(ROUTE_USER_EDITS, user)} className="ms-2">
@@ -183,12 +215,12 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
         {isPrivateUser(user) && (
           <>
             <Row>
-              <span className="col-2">Email</span>
-              <span className="col">{user?.email}</span>
+              <Col xs={2}>Email</Col>
+              <Col>{user.email}</Col>
             </Row>
             <Row>
-              <span className="col-2">Roles</span>
-              <span className="col">{(user?.roles ?? []).join(", ")}</span>
+              <Col xs={2}>Roles</Col>
+              <Col>{(user.roles ?? []).join(", ")}</Col>
             </Row>
             <Row className="my-3 align-items-baseline">
               <Col xs={2}>API key</Col>
@@ -202,6 +234,15 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                   >
                     Copy to Clipboard
                   </Button>
+                  <Tooltip text="Regenerate API Key" placement="top-end">
+                    <Button
+                      variant="danger"
+                      disabled={showRegenerateAPIKey}
+                      onClick={() => setShowRegenerateAPIKey(true)}
+                    >
+                      <Icon icon={faSyncAlt} />
+                    </Button>
+                  </Tooltip>
                 </InputGroup>
               </Col>
             </Row>
@@ -265,14 +306,14 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           </Row>
           {isPrivateUser(user) && (
             <Row>
-              <span className="col-2">Invite Tokens</span>
+              <Col xs={2}>Invite Tokens</Col>
               <InputGroup className="col">
                 {isAdmin(Auth.user) && (
                   <Button onClick={() => handleRevokeInvite()}>
                     <Icon icon={faMinus} />
                   </Button>
                 )}
-                <InputGroup.Text>{user?.invite_tokens ?? 0}</InputGroup.Text>
+                <InputGroup.Text>{user.invite_tokens ?? 0}</InputGroup.Text>
                 {isAdmin(Auth.user) && (
                   <Button onClick={() => handleGrantInvite()}>
                     <Icon icon={faPlus} />
@@ -283,8 +324,8 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           )}
           {isPrivateUser(user) && user.id === Auth.user?.id && (
             <Row className="my-2">
-              <span className="col-2">Invite Keys</span>
-              <div className="col">
+              <Col xs={2}>Invite Keys</Col>
+              <Col>
                 {user.active_invite_codes?.map((c) => (
                   <InputGroup className="mb-2" key={c}>
                     <InputGroup.Text>
@@ -313,7 +354,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                     </Button>
                   )}
                 </div>
-              </div>
+              </Col>
             </Row>
           )}
         </>

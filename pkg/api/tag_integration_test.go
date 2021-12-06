@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -46,8 +47,7 @@ func (s *tagTestRunner) verifyCreatedTag(input models.TagCreateInput, tag *model
 
 	r := s.resolver.Tag()
 
-	id, _ := r.ID(s.ctx, tag)
-	if id == "" {
+	if tag.ID == uuid.Nil {
 		s.t.Errorf("Expected created tag id to be non-zero")
 	}
 
@@ -62,7 +62,7 @@ func (s *tagTestRunner) testFindTagById() {
 		return
 	}
 
-	tagID := createdTag.ID
+	tagID := createdTag.UUID()
 	tag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding tag: %s", err.Error())
@@ -113,7 +113,7 @@ func (s *tagTestRunner) testUpdateTag() {
 		return
 	}
 
-	tagID := createdTag.ID
+	tagID := createdTag.UUID()
 
 	newDescription := "newDescription"
 
@@ -151,7 +151,7 @@ func (s *tagTestRunner) testDestroyTag() {
 		return
 	}
 
-	tagID := createdTag.ID
+	tagID := createdTag.UUID()
 
 	destroyed, err := s.resolver.Mutation().TagDestroy(s.ctx, models.TagDestroyInput{
 		ID: tagID,

@@ -5,9 +5,8 @@ import { sortBy } from "lodash-es";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import {
+  usePendingEditsCount,
   TargetTypeEnum,
-  useEdits,
-  VoteStatusEnum,
   CriterionModifier,
 } from "src/graphql";
 import { EditList, SceneList } from "src/components/list";
@@ -34,16 +33,11 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
 
-  const { data: editData } = useEdits({
-    filter: {
-      per_page: 1,
-    },
-    editFilter: {
-      target_type: TargetTypeEnum.STUDIO,
-      target_id: studio.id,
-      status: VoteStatusEnum.PENDING,
-    },
+  const { data: editData } = usePendingEditsCount({
+    type: TargetTypeEnum.STUDIO,
+    id: studio.id,
   });
+  const pendingEditCount = editData?.queryEdits.count;
 
   const studioImage = getImage(studio.images, "landscape");
 
@@ -52,8 +46,6 @@ const StudioComponent: FC<Props> = ({ studio }) => {
       <Link to={studioHref(s)}>{s.name}</Link>
     </li>
   ));
-
-  const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/gofrs/uuid"
 )
 
 type EditDetails interface {
@@ -27,7 +28,7 @@ type ActivateNewUserInput struct {
 }
 
 type ApplyEditInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type BodyModificationCriterionInput struct {
@@ -42,7 +43,7 @@ type BreastTypeCriterionInput struct {
 }
 
 type CancelEditInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type DateCriterionInput struct {
@@ -51,13 +52,13 @@ type DateCriterionInput struct {
 }
 
 type EditCommentInput struct {
-	ID      string `json:"id"`
-	Comment string `json:"comment"`
+	ID      uuid.UUID `json:"id"`
+	Comment string    `json:"comment"`
 }
 
 type EditFilterType struct {
 	// Filter by user id
-	UserID *string `json:"user_id"`
+	UserID *uuid.UUID `json:"user_id"`
 	// Filter by status
 	Status *VoteStatusEnum `json:"status"`
 	// Filter by operation
@@ -69,22 +70,22 @@ type EditFilterType struct {
 	// Filter by target type
 	TargetType *TargetTypeEnum `json:"target_type"`
 	// Filter by target id
-	TargetID *string `json:"target_id"`
+	TargetID *uuid.UUID `json:"target_id"`
 }
 
 type EditInput struct {
 	// Not required for create type
-	ID        *string       `json:"id"`
+	ID        *uuid.UUID    `json:"id"`
 	Operation OperationEnum `json:"operation"`
 	// Required for amending an existing edit
-	EditID *string `json:"edit_id"`
+	EditID *uuid.UUID `json:"edit_id"`
 	// Only required for merge type
-	MergeSourceIds []string `json:"merge_source_ids"`
-	Comment        *string  `json:"comment"`
+	MergeSourceIds []uuid.UUID `json:"merge_source_ids"`
+	Comment        *string     `json:"comment"`
 }
 
 type EditVoteInput struct {
-	ID   string       `json:"id"`
+	ID   uuid.UUID    `json:"id"`
 	Vote VoteTypeEnum `json:"vote"`
 }
 
@@ -104,7 +105,7 @@ type Fingerprint struct {
 }
 
 type FingerprintEditInput struct {
-	UserIds   []string             `json:"user_ids"`
+	UserIds   []uuid.UUID          `json:"user_ids"`
 	Hash      string               `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
@@ -117,7 +118,7 @@ type FingerprintEditInput struct {
 
 type FingerprintInput struct {
 	// assumes current user if omitted. Ignored for non-modify Users
-	UserIds   []string             `json:"user_ids"`
+	UserIds   []uuid.UUID          `json:"user_ids"`
 	Hash      string               `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
@@ -129,7 +130,7 @@ type FingerprintQueryInput struct {
 }
 
 type FingerprintSubmission struct {
-	SceneID     string            `json:"scene_id"`
+	SceneID     uuid.UUID         `json:"scene_id"`
 	Fingerprint *FingerprintInput `json:"fingerprint"`
 	Unmatch     *bool             `json:"unmatch"`
 }
@@ -145,8 +146,8 @@ type FuzzyDateInput struct {
 }
 
 type GrantInviteInput struct {
-	UserID string `json:"user_id"`
-	Amount int    `json:"amount"`
+	UserID uuid.UUID `json:"user_id"`
+	Amount int       `json:"amount"`
 }
 
 type HairColorCriterionInput struct {
@@ -155,7 +156,7 @@ type HairColorCriterionInput struct {
 }
 
 type IDCriterionInput struct {
-	Value    []string          `json:"value"`
+	Value    []uuid.UUID       `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
 
@@ -165,12 +166,12 @@ type ImageCreateInput struct {
 }
 
 type ImageDestroyInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type ImageUpdateInput struct {
-	ID  string  `json:"id"`
-	URL *string `json:"url"`
+	ID  uuid.UUID `json:"id"`
+	URL *string   `json:"url"`
 }
 
 type IntCriterionInput struct {
@@ -193,6 +194,11 @@ type MeasurementsInput struct {
 }
 
 type MultiIDCriterionInput struct {
+	Value    []uuid.UUID       `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
+type MultiStringCriterionInput struct {
 	Value    []string          `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
@@ -209,7 +215,7 @@ type PerformerAppearance struct {
 }
 
 type PerformerAppearanceInput struct {
-	PerformerID string `json:"performer_id"`
+	PerformerID uuid.UUID `json:"performer_id"`
 	// Performing as alias
 	As *string `json:"as"`
 }
@@ -232,11 +238,11 @@ type PerformerCreateInput struct {
 	CareerEndYear   *int                `json:"career_end_year"`
 	Tattoos         []*BodyModification `json:"tattoos"`
 	Piercings       []*BodyModification `json:"piercings"`
-	ImageIds        []string            `json:"image_ids"`
+	ImageIds        []uuid.UUID         `json:"image_ids"`
 }
 
 type PerformerDestroyInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type PerformerEditDetailsInput struct {
@@ -257,7 +263,7 @@ type PerformerEditDetailsInput struct {
 	CareerEndYear   *int                `json:"career_end_year"`
 	Tattoos         []*BodyModification `json:"tattoos"`
 	Piercings       []*BodyModification `json:"piercings"`
-	ImageIds        []string            `json:"image_ids"`
+	ImageIds        []uuid.UUID         `json:"image_ids"`
 }
 
 type PerformerEditInput struct {
@@ -313,7 +319,7 @@ type PerformerFilterType struct {
 }
 
 type PerformerUpdateInput struct {
-	ID              string              `json:"id"`
+	ID              uuid.UUID           `json:"id"`
 	Name            *string             `json:"name"`
 	Disambiguation  *string             `json:"disambiguation"`
 	Aliases         []string            `json:"aliases"`
@@ -331,7 +337,7 @@ type PerformerUpdateInput struct {
 	CareerEndYear   *int                `json:"career_end_year"`
 	Tattoos         []*BodyModification `json:"tattoos"`
 	Piercings       []*BodyModification `json:"piercings"`
-	ImageIds        []string            `json:"image_ids"`
+	ImageIds        []uuid.UUID         `json:"image_ids"`
 }
 
 type QuerySpec struct {
@@ -366,8 +372,8 @@ type ResetPasswordInput struct {
 }
 
 type RevokeInviteInput struct {
-	UserID string `json:"user_id"`
-	Amount int    `json:"amount"`
+	UserID uuid.UUID `json:"user_id"`
+	Amount int       `json:"amount"`
 }
 
 type RoleCriterionInput struct {
@@ -380,17 +386,17 @@ type SceneCreateInput struct {
 	Details      *string                     `json:"details"`
 	Urls         []*URL                      `json:"urls"`
 	Date         *string                     `json:"date"`
-	StudioID     *string                     `json:"studio_id"`
+	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
-	TagIds       []string                    `json:"tag_ids"`
-	ImageIds     []string                    `json:"image_ids"`
+	TagIds       []uuid.UUID                 `json:"tag_ids"`
+	ImageIds     []uuid.UUID                 `json:"image_ids"`
 	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
 }
 
 type SceneDestroyInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type SceneEditDetailsInput struct {
@@ -398,10 +404,10 @@ type SceneEditDetailsInput struct {
 	Details    *string                     `json:"details"`
 	Urls       []*URL                      `json:"urls"`
 	Date       *string                     `json:"date"`
-	StudioID   *string                     `json:"studio_id"`
+	StudioID   *uuid.UUID                  `json:"studio_id"`
 	Performers []*PerformerAppearanceInput `json:"performers"`
-	TagIds     []string                    `json:"tag_ids"`
-	ImageIds   []string                    `json:"image_ids"`
+	TagIds     []uuid.UUID                 `json:"tag_ids"`
+	ImageIds   []uuid.UUID                 `json:"image_ids"`
 	Duration   *int                        `json:"duration"`
 	Director   *string                     `json:"director"`
 }
@@ -433,19 +439,19 @@ type SceneFilterType struct {
 	// Filter to include scenes with performer appearing as alias
 	Alias *StringCriterionInput `json:"alias"`
 	// Filter to only include scenes with these fingerprints
-	Fingerprints *MultiIDCriterionInput `json:"fingerprints"`
+	Fingerprints *MultiStringCriterionInput `json:"fingerprints"`
 }
 
 type SceneUpdateInput struct {
-	ID           string                      `json:"id"`
+	ID           uuid.UUID                   `json:"id"`
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URL                      `json:"urls"`
 	Date         *string                     `json:"date"`
-	StudioID     *string                     `json:"studio_id"`
+	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
-	TagIds       []string                    `json:"tag_ids"`
-	ImageIds     []string                    `json:"image_ids"`
+	TagIds       []uuid.UUID                 `json:"tag_ids"`
+	ImageIds     []uuid.UUID                 `json:"image_ids"`
 	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
@@ -468,21 +474,21 @@ type StringCriterionInput struct {
 }
 
 type StudioCreateInput struct {
-	Name     string   `json:"name"`
-	Urls     []*URL   `json:"urls"`
-	ParentID *string  `json:"parent_id"`
-	ImageIds []string `json:"image_ids"`
+	Name     string      `json:"name"`
+	Urls     []*URL      `json:"urls"`
+	ParentID *uuid.UUID  `json:"parent_id"`
+	ImageIds []uuid.UUID `json:"image_ids"`
 }
 
 type StudioDestroyInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type StudioEditDetailsInput struct {
-	Name     *string  `json:"name"`
-	Urls     []*URL   `json:"urls"`
-	ParentID *string  `json:"parent_id"`
-	ImageIds []string `json:"image_ids"`
+	Name     *string     `json:"name"`
+	Urls     []*URL      `json:"urls"`
+	ParentID *uuid.UUID  `json:"parent_id"`
+	ImageIds []uuid.UUID `json:"image_ids"`
 }
 
 type StudioEditInput struct {
@@ -503,11 +509,11 @@ type StudioFilterType struct {
 }
 
 type StudioUpdateInput struct {
-	ID       string   `json:"id"`
-	Name     *string  `json:"name"`
-	Urls     []*URL   `json:"urls"`
-	ParentID *string  `json:"parent_id"`
-	ImageIds []string `json:"image_ids"`
+	ID       uuid.UUID   `json:"id"`
+	Name     *string     `json:"name"`
+	Urls     []*URL      `json:"urls"`
+	ParentID *uuid.UUID  `json:"parent_id"`
+	ImageIds []uuid.UUID `json:"image_ids"`
 }
 
 type TagCategoryCreateInput struct {
@@ -517,32 +523,32 @@ type TagCategoryCreateInput struct {
 }
 
 type TagCategoryDestroyInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type TagCategoryUpdateInput struct {
-	ID          string        `json:"id"`
+	ID          uuid.UUID     `json:"id"`
 	Name        *string       `json:"name"`
 	Group       *TagGroupEnum `json:"group"`
 	Description *string       `json:"description"`
 }
 
 type TagCreateInput struct {
-	Name        string   `json:"name"`
-	Description *string  `json:"description"`
-	Aliases     []string `json:"aliases"`
-	CategoryID  *string  `json:"category_id"`
+	Name        string     `json:"name"`
+	Description *string    `json:"description"`
+	Aliases     []string   `json:"aliases"`
+	CategoryID  *uuid.UUID `json:"category_id"`
 }
 
 type TagDestroyInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type TagEditDetailsInput struct {
-	Name        *string  `json:"name"`
-	Description *string  `json:"description"`
-	Aliases     []string `json:"aliases"`
-	CategoryID  *string  `json:"category_id"`
+	Name        *string    `json:"name"`
+	Description *string    `json:"description"`
+	Aliases     []string   `json:"aliases"`
+	CategoryID  *uuid.UUID `json:"category_id"`
 }
 
 type TagEditInput struct {
@@ -559,15 +565,15 @@ type TagFilterType struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name"`
 	// Filter to category ID
-	CategoryID *string `json:"category_id"`
+	CategoryID *uuid.UUID `json:"category_id"`
 }
 
 type TagUpdateInput struct {
-	ID          string   `json:"id"`
-	Name        *string  `json:"name"`
-	Description *string  `json:"description"`
-	Aliases     []string `json:"aliases"`
-	CategoryID  *string  `json:"category_id"`
+	ID          uuid.UUID  `json:"id"`
+	Name        *string    `json:"name"`
+	Description *string    `json:"description"`
+	Aliases     []string   `json:"aliases"`
+	CategoryID  *uuid.UUID `json:"category_id"`
 }
 
 type UserChangePasswordInput struct {
@@ -583,11 +589,11 @@ type UserCreateInput struct {
 	Password    string     `json:"password"`
 	Roles       []RoleEnum `json:"roles"`
 	Email       string     `json:"email"`
-	InvitedByID *string    `json:"invited_by_id"`
+	InvitedByID *uuid.UUID `json:"invited_by_id"`
 }
 
 type UserDestroyInput struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
 
 type UserEditCount struct {
@@ -620,12 +626,12 @@ type UserFilterType struct {
 	// Filter by number of API calls
 	APICalls *IntCriterionInput `json:"api_calls"`
 	// Filter by user that invited
-	InvitedBy *string `json:"invited_by"`
+	InvitedBy *uuid.UUID `json:"invited_by"`
 }
 
 type UserUpdateInput struct {
-	ID   string  `json:"id"`
-	Name *string `json:"name"`
+	ID   uuid.UUID `json:"id"`
+	Name *string   `json:"name"`
 	// Password in plain text
 	Password *string    `json:"password"`
 	Roles    []RoleEnum `json:"roles"`

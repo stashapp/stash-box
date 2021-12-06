@@ -38,7 +38,7 @@ func (s *searchTestRunner) testSearchPerformerByTerm() {
 	}
 
 	// ensure values were set
-	if createdPerformer.ID != performers[0].ID.String() {
+	if createdPerformer.UUID() != performers[0].ID {
 		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
 	}
 }
@@ -62,7 +62,7 @@ func (s *searchTestRunner) testSearchPerformerByID() {
 	}
 
 	// ensure values were set
-	if createdPerformer.ID != performers[0].ID.String() {
+	if createdPerformer.UUID() != performers[0].ID {
 		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
 	}
 }
@@ -72,7 +72,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	if err != nil {
 		return
 	}
-	studioID := createdStudio.ID
+	studioID := createdStudio.UUID()
 
 	title := "scene search title"
 	date := "2019-02-03"
@@ -99,7 +99,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	}
 
 	// ensure correct scene
-	if createdScene.ID != scenes[0].ID.String() {
+	if createdScene.UUID() != scenes[0].ID {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }
@@ -123,7 +123,7 @@ func (s *searchTestRunner) testSearchSceneByID() {
 	}
 
 	// ensure correct scene
-	if createdScene.ID != scenes[0].ID.String() {
+	if createdScene.UUID() != scenes[0].ID {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }

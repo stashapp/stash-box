@@ -130,8 +130,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditI
 
 	for _, fingerprint := range fingerprints {
 		if fingerprint.Duration > 0 {
-			for _, user := range fingerprint.UserIds {
-				userID, _ := uuid.FromString(user)
+			for _, userID := range fingerprint.UserIds {
 				ret = append(ret, &SceneFingerprint{
 					SceneID:   sceneID,
 					UserID:    userID,
@@ -152,8 +151,7 @@ func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*Fingerp
 
 	for _, fingerprint := range fingerprints {
 		if fingerprint.Duration > 0 {
-			for _, user := range fingerprint.UserIds {
-				userID, _ := uuid.FromString(user)
+			for _, userID := range fingerprint.UserIds {
 				ret = append(ret, &SceneFingerprint{
 					SceneID:   sceneID,
 					UserID:    userID,
@@ -168,10 +166,9 @@ func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*Fingerp
 	return ret
 }
 
-func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
+func CreateSceneTags(sceneID uuid.UUID, tagIds []uuid.UUID) ScenesTags {
 	var tagJoins ScenesTags
-	for _, tid := range tagIds {
-		tagID := uuid.FromStringOrNil(tid)
+	for _, tagID := range tagIds {
 		tagJoin := &SceneTag{
 			SceneID: sceneID,
 			TagID:   tagID,
@@ -182,10 +179,9 @@ func CreateSceneTags(sceneID uuid.UUID, tagIds []string) ScenesTags {
 	return tagJoins
 }
 
-func CreateSceneImages(sceneID uuid.UUID, imageIds []string) ScenesImages {
+func CreateSceneImages(sceneID uuid.UUID, imageIds []uuid.UUID) ScenesImages {
 	var imageJoins ScenesImages
-	for _, iid := range imageIds {
-		imageID := uuid.FromStringOrNil(iid)
+	for _, imageID := range imageIds {
 		imageJoin := &SceneImage{
 			SceneID: sceneID,
 			ImageID: imageID,
@@ -199,10 +195,9 @@ func CreateSceneImages(sceneID uuid.UUID, imageIds []string) ScenesImages {
 func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearanceInput) PerformersScenes {
 	var performerJoins PerformersScenes
 	for _, a := range appearances {
-		performerID, _ := uuid.FromString(a.PerformerID)
 		performerJoin := &PerformerScene{
 			SceneID:     sceneID,
-			PerformerID: performerID,
+			PerformerID: a.PerformerID,
 		}
 
 		if a.As != nil {

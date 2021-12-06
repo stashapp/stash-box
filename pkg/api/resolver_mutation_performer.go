@@ -89,15 +89,14 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		iqb := fac.Image()
 
 		// get the existing performer and modify it
-		performerID, _ := uuid.FromString(input.ID)
-		updatedPerformer, err := qb.Find(performerID)
+		updatedPerformer, err := qb.Find(input.ID)
 
 		if err != nil {
 			return err
 		}
 
 		if updatedPerformer == nil {
-			return models.NotFoundError(performerID)
+			return models.NotFoundError(input.ID)
 		}
 
 		updatedPerformer.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
@@ -169,26 +168,21 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
-	performerID, err := uuid.FromString(input.ID)
-	if err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
-	err = fac.WithTxn(func() error {
+	err := fac.WithTxn(func() error {
 		qb := fac.Performer()
 		iqb := fac.Image()
 
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly
 
-		existingImages, err := iqb.FindByPerformerID(performerID)
+		existingImages, err := iqb.FindByPerformerID(input.ID)
 		if err != nil {
 			return err
 		}
 
-		if err = qb.Destroy(performerID); err != nil {
+		if err = qb.Destroy(input.ID); err != nil {
 			return err
 		}
 

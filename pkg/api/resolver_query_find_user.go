@@ -9,15 +9,14 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-func (r *queryResolver) FindUser(ctx context.Context, id *string, username *string) (*models.User, error) {
+func (r *queryResolver) FindUser(ctx context.Context, id *uuid.UUID, username *string) (*models.User, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
 
 	var ret *models.User
 	var err error
 	if id != nil {
-		idUUID, _ := uuid.FromString(*id)
-		ret, err = qb.Find(idUUID)
+		ret, err = qb.Find(*id)
 	} else if username != nil {
 		ret, err = qb.FindByName(*username)
 	}

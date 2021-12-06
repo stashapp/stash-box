@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { Col, Row } from "react-bootstrap";
 import cx from "classnames";
 
 export interface ChangeRowProps {
@@ -15,19 +16,19 @@ const ChangeRow: FC<ChangeRowProps> = ({
   showDiff = false,
 }) =>
   name && (newValue || oldValue) ? (
-    <div className="row mb-2">
+    <Row className="mb-2">
       <b className="col-2 text-end pt-1">{name}</b>
       {showDiff && (
-        <span className="col-5">
+        <Col xs={5}>
           <div className="EditDiff bg-danger">{oldValue}</div>
-        </span>
+        </Col>
       )}
-      <span className="col-5">
+      <Col xs={5}>
         <div className={cx("EditDiff", { "bg-success": showDiff })}>
           {newValue}
         </div>
-      </span>
-    </div>
+      </Col>
+    </Row>
   ) : (
     <></>
   );

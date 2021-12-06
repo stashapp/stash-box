@@ -54,8 +54,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		qb := fac.Tag()
 
 		// get the existing tag and modify it
-		tagID, _ := uuid.FromString(input.ID)
-		updatedTag, err := qb.Find(tagID)
+		updatedTag, err := qb.Find(input.ID)
 
 		if err != nil {
 			return err
@@ -92,11 +91,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly
 
-		tagID, err := uuid.FromString(input.ID)
-		if err != nil {
-			return err
-		}
-		return qb.Destroy(tagID)
+		return qb.Destroy(input.ID)
 	})
 
 	if err != nil {

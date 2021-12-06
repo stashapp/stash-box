@@ -13,5 +13,5 @@ export interface GenerateInviteCode {
   /**
    * Generates an invite code using an invite token
    */
-  generateInviteCode: string;
+  generateInviteCode: string | null;
 }

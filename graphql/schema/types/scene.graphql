@@ -172,5 +172,5 @@ input SceneFilterType {
   """Filter to include scenes with performer appearing as alias"""
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
-  fingerprints: MultiIDCriterionInput
+  fingerprints: MultiStringCriterionInput
 }

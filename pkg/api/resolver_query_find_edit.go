@@ -7,12 +7,11 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) FindEdit(ctx context.Context, id *string) (*models.Edit, error) {
+func (r *queryResolver) FindEdit(ctx context.Context, id uuid.UUID) (*models.Edit, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Edit()
 
-	idUUID, _ := uuid.FromString(*id)
-	return qb.Find(idUUID)
+	return qb.Find(id)
 }
 
 func (r *queryResolver) QueryEdits(ctx context.Context, editFilter *models.EditFilterType, filter *models.QuerySpec) (*models.EditQuery, error) {

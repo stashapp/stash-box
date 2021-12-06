@@ -2,6 +2,7 @@ package edit
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 
@@ -42,7 +43,7 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	sqb := m.fac.Studio()
 
 	// get the existing studio
-	studioID, _ := uuid.FromString(*input.Edit.ID)
+	studioID := *input.Edit.ID
 	studio, err := sqb.Find(studioID)
 
 	if err != nil {
@@ -68,11 +69,11 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 		return err
 	}
 
-	existingImages := []string{}
+	var existingImages []uuid.UUID
 	for _, image := range images {
-		existingImages = append(existingImages, image.ID.String())
+		existingImages = append(existingImages, image.ID)
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
+	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
 
 	return m.edit.SetData(studioEdit)
 }
@@ -84,7 +85,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 	if input.Edit.ID == nil {
 		return errors.New("Merge target ID is required")
 	}
-	studioID, _ := uuid.FromString(*input.Edit.ID)
+	studioID := *input.Edit.ID
 	studio, err := sqb.Find(studioID)
 
 	if err != nil {
@@ -95,9 +96,8 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 		return errors.New("studio with id " + studioID.String() + " not found")
 	}
 
-	mergeSources := []string{}
-	for _, mergeSourceID := range input.Edit.MergeSourceIds {
-		sourceID, _ := uuid.FromString(mergeSourceID)
+	var mergeSources []uuid.UUID
+	for _, sourceID := range input.Edit.MergeSourceIds {
 		sourceStudio, err := sqb.Find(sourceID)
 		if err != nil {
 			return err
@@ -109,7 +109,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 		if studioID == sourceID {
 			return errors.New("merge target cannot be used as source")
 		}
-		mergeSources = append(mergeSources, mergeSourceID)
+		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
@@ -131,11 +131,11 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 		return err
 	}
 
-	existingImages := []string{}
+	var existingImages []uuid.UUID
 	for _, image := range images {
-		existingImages = append(existingImages, image.ID.String())
+		existingImages = append(existingImages, image.ID)
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.StrSliceCompare(input.Details.ImageIds, existingImages)
+	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
 
 	return m.edit.SetData(studioEdit)
 }
@@ -157,20 +157,20 @@ func (m *StudioEditProcessor) createEdit(input models.StudioEditInput, inputSpec
 func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
 	tqb := m.fac.Studio()
 
-	// get the existing studio
-	studioID, _ := uuid.FromString(*input.Edit.ID)
-	_, err := tqb.Find(studioID)
+	// Get the existing studio
+	studio, err := tqb.Find(*input.Edit.ID)
+	if studio == nil {
+		return fmt.Errorf("scene with id %v not found", *input.Edit.ID)
+	}
 
 	return err
 }
 
 func (m *StudioEditProcessor) CreateJoin(input models.StudioEditInput) error {
 	if input.Edit.ID != nil {
-		studioID, _ := uuid.FromString(*input.Edit.ID)
-
 		editStudio := models.EditStudio{
 			EditID:   m.edit.ID,
-			StudioID: studioID,
+			StudioID: *input.Edit.ID,
 		}
 
 		return m.fac.Edit().CreateEditStudio(editStudio)

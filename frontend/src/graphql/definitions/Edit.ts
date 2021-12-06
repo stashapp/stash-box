@@ -239,13 +239,19 @@ export interface Edit_findEdit_target_Scene {
 
 export type Edit_findEdit_target = Edit_findEdit_target_Tag | Edit_findEdit_target_Performer | Edit_findEdit_target_Studio | Edit_findEdit_target_Scene;
 
+export interface Edit_findEdit_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface Edit_findEdit_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
   added_aliases: string[] | null;
   removed_aliases: string[] | null;
-  category_id: string | null;
+  category: Edit_findEdit_details_TagEdit_category | null;
 }
 
 export interface Edit_findEdit_details_PerformerEdit_added_urls {
@@ -684,11 +690,17 @@ export interface Edit_findEdit_details_SceneEdit {
 
 export type Edit_findEdit_details = Edit_findEdit_details_TagEdit | Edit_findEdit_details_PerformerEdit | Edit_findEdit_details_StudioEdit | Edit_findEdit_details_SceneEdit;
 
+export interface Edit_findEdit_old_details_TagEdit_category {
+  __typename: "TagCategory";
+  id: string;
+  name: string;
+}
+
 export interface Edit_findEdit_old_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
-  category_id: string | null;
+  category: Edit_findEdit_old_details_TagEdit_category | null;
 }
 
 export interface Edit_findEdit_old_details_PerformerEdit {
@@ -1278,5 +1290,5 @@ export interface Edit {
 }
 
 export interface EditVariables {
-  id?: string | null;
+  id: string;
 }

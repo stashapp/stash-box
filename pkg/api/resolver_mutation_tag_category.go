@@ -52,8 +52,7 @@ func (r *mutationResolver) TagCategoryUpdate(ctx context.Context, input models.T
 		qb := fac.TagCategory()
 
 		// get the existing category and modify it
-		categoryID, _ := uuid.FromString(input.ID)
-		updatedCategory, err := qb.Find(categoryID)
+		updatedCategory, err := qb.Find(input.ID)
 
 		if err != nil {
 			return err
@@ -84,11 +83,7 @@ func (r *mutationResolver) TagCategoryDestroy(ctx context.Context, input models.
 	err := fac.WithTxn(func() error {
 		qb := fac.TagCategory()
 
-		categoryID, err := uuid.FromString(input.ID)
-		if err != nil {
-			return err
-		}
-		return qb.Destroy(categoryID)
+		return qb.Destroy(input.ID)
 	})
 
 	return err == nil, err

@@ -265,8 +265,7 @@ func Update(fac models.Repo, input models.UserUpdateInput) (*models.User, error)
 	qb := fac.User()
 
 	// get the existing user and modify it
-	userID, _ := uuid.FromString(input.ID)
-	updatedUser, err := qb.Find(userID)
+	updatedUser, err := qb.Find(input.ID)
 
 	if err != nil {
 		return nil, err
@@ -301,11 +300,7 @@ func Destroy(fac models.Repo, input models.UserDestroyInput) (bool, error) {
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
 
-	userID, err := uuid.FromString(input.ID)
-	if err != nil {
-		return false, err
-	}
-	if err = qb.Destroy(userID); err != nil {
+	if err := qb.Destroy(input.ID); err != nil {
 		return false, err
 	}
 
@@ -316,7 +311,7 @@ func Destroy(fac models.Repo, input models.UserDestroyInput) (bool, error) {
 func CreateSystemUsers(fac models.Repo) {
 	// if there are no users present, then create a root user with a
 	// generated password and api key, outputting them
-	var password string
+	var rootPassword string
 	var createdUser *models.User
 
 	err := fac.WithTxn(func() error {
@@ -328,14 +323,13 @@ func CreateSystemUsers(fac models.Repo) {
 		}
 
 		if root == nil {
-			const passwordLength = 16
-			password, err = utils.GenerateRandomPassword(passwordLength)
+			rootPassword, err = utils.GenerateRandomPassword(16)
 			if err != nil {
 				panic(fmt.Errorf("Error creating root user: %w", err))
 			}
 			newUser := models.UserCreateInput{
 				Name:     rootUserName,
-				Password: password,
+				Password: rootPassword,
 				Email:    unsetEmail,
 				Roles:    rootUserRoles,
 			}
@@ -352,7 +346,7 @@ func CreateSystemUsers(fac models.Repo) {
 		}
 
 		if modUser == nil {
-			password, err = utils.GenerateRandomPassword(32)
+			password, err := utils.GenerateRandomPassword(32)
 			if err != nil {
 				panic(fmt.Errorf("Error creating root user: %w", err))
 			}
@@ -378,7 +372,7 @@ func CreateSystemUsers(fac models.Repo) {
 
 	if createdUser != nil {
 		// print (not log) the details of the created user
-		fmt.Printf("root user has been created.\nUser: root\nPassword: %s\nAPI Key: %s\n", password, createdUser.APIKey)
+		fmt.Printf("root user has been created.\nUser: %s\nPassword: %s\nAPI Key: %s\n", rootUserName, rootPassword, createdUser.APIKey)
 		fmt.Print("These credentials have not been logged. The email should be set and the password should be changed after logging in.\n")
 	}
 }
@@ -423,12 +417,11 @@ func Authenticate(fac models.Repo, username string, password string) (string, er
 	return user.ID.String(), nil
 }
 
-func RegenerateAPIKey(fac models.Repo, userID string) (string, error) {
+func RegenerateAPIKey(fac models.Repo, userID uuid.UUID) (string, error) {
 	var err error
 
 	qb := fac.User()
-	userUUID, _ := uuid.FromString(userID)
-	user, err := qb.Find(userUUID)
+	user, err := qb.Find(userID)
 
 	if err != nil {
 		return "", fmt.Errorf("error finding user: %w", err)

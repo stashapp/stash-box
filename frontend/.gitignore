@@ -6,6 +6,5 @@ tests/__coverage__/
 tests/**/*.jsx
 .eslintcache
 .env*.local
-apollo.config.js
 build
 *.swp

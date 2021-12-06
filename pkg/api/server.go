@@ -67,6 +67,12 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				userID, err = getSessionUserID(w, r)
 			}
 
+			var u *models.User
+			var roles []models.RoleEnum
+			if err == nil {
+				u, roles, err = getUserAndRoles(getRepo(ctx), userID)
+			}
+
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				_, err = w.Write([]byte(err.Error()))
@@ -76,12 +82,9 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			u, roles, err := getUserAndRoles(getRepo(ctx), userID)
-
 			// ensure api key of the user matches the passed one
 			if apiKey != "" && u != nil && u.APIKey != apiKey {
 				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte(err.Error()))
 				return
 			}
 
