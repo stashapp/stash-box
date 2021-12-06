@@ -13,18 +13,6 @@ func getCurrentUser(ctx context.Context) *models.User {
 	return user.GetCurrentUser(ctx)
 }
 
-func validateRead(ctx context.Context) error {
-	return user.ValidateRole(ctx, models.RoleEnumRead)
-}
-
-func validateModify(ctx context.Context) error {
-	return user.ValidateRole(ctx, models.RoleEnumModify)
-}
-
-func validateEdit(ctx context.Context) error {
-	return user.ValidateRole(ctx, models.RoleEnumEdit)
-}
-
 func validateVote(ctx context.Context) error {
 	return user.ValidateRole(ctx, models.RoleEnumVote)
 }
