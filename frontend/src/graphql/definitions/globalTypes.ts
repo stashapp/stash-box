@@ -275,6 +275,11 @@ export interface MultiIDCriterionInput {
   modifier: CriterionModifier;
 }
 
+export interface MultiStringCriterionInput {
+  value: string[];
+  modifier: CriterionModifier;
+}
+
 export interface NewUserInput {
   email: string;
   invite_key?: string | null;
@@ -411,7 +416,7 @@ export interface SceneFilterType {
   tags?: MultiIDCriterionInput | null;
   performers?: MultiIDCriterionInput | null;
   alias?: StringCriterionInput | null;
-  fingerprints?: MultiIDCriterionInput | null;
+  fingerprints?: MultiStringCriterionInput | null;
 }
 
 export interface SceneUpdateInput {

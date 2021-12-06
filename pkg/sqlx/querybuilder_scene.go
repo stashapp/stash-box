@@ -399,24 +399,24 @@ func (qb *sceneQueryBuilder) QueryCount(sceneFilter *models.SceneFilterType, fin
 	return qb.dbi.CountOnly(*query)
 }
 
-func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string, error) {
+func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion models.MultiCriterionInput) (string, string, error) {
 	joinTableName := joinTable.Name()
 	whereClause := ""
 	havingClause := ""
 
-	switch criterion.Modifier {
+	switch criterion.GetModifier() {
 	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
-		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
+		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(criterion.Count())
 	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
-		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(len(criterion.Value))
-		havingClause = "count(distinct " + joinTableName + "." + joinTableField + ") = " + strconv.Itoa(len(criterion.Value))
+		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(criterion.Count())
+		havingClause = "count(distinct " + joinTableName + "." + joinTableField + ") = " + strconv.Itoa(criterion.Count())
 	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids
-		whereClause = "not exists (select " + joinTableName + ".scene_id from " + joinTableName + " where " + joinTableName + ".scene_id = scenes.id and " + joinTableName + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
+		whereClause = "not exists (select " + joinTableName + ".scene_id from " + joinTableName + " where " + joinTableName + ".scene_id = scenes.id and " + joinTableName + "." + joinTableField + " in " + getInBinding(criterion.Count()) + ")"
 	default:
-		return "", "", fmt.Errorf("unsupported modifier %s for scenes.studio_id", criterion.Modifier)
+		return "", "", fmt.Errorf("unsupported modifier %s for %s.%s", criterion.GetModifier(), joinTableName, joinTableField)
 	}
 
 	return whereClause, havingClause, nil
