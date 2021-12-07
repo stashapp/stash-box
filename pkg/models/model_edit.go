@@ -161,6 +161,13 @@ func (e *Edit) GetSceneData() (*SceneEditData, error) {
 	return &data, nil
 }
 
+func (e *Edit) IsDestructive() bool {
+	if e.Operation == OperationEnumDestroy.String() || e.Operation == OperationEnumMerge.String() {
+		return true
+	}
+	return false
+}
+
 type Edits []*Edit
 
 func (p Edits) Each(fn func(interface{})) {
