@@ -13,6 +13,7 @@ fragment EditFragment on Edit {
   created
   updated
   vote_count
+  destructive
   comments {
     ...CommentFragment
   }

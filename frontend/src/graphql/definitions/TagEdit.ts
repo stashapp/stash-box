@@ -1263,6 +1263,7 @@ export interface TagEdit_tagEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  destructive: boolean;
   comments: TagEdit_tagEdit_comments[];
   votes: TagEdit_tagEdit_votes[];
   user: TagEdit_tagEdit_user | null;

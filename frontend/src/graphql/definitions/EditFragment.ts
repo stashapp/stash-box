@@ -1263,6 +1263,7 @@ export interface EditFragment {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  destructive: boolean;
   comments: EditFragment_comments[];
   votes: EditFragment_votes[];
   user: EditFragment_user | null;

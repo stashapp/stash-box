@@ -1263,6 +1263,7 @@ export interface Edits_queryEdits_edits {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  destructive: boolean;
   comments: Edits_queryEdits_edits_comments[];
   votes: Edits_queryEdits_edits_votes[];
   user: Edits_queryEdits_edits_user | null;

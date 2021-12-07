@@ -73,6 +73,7 @@ type ComplexityRoot struct {
 		Applied      func(childComplexity int) int
 		Comments     func(childComplexity int) int
 		Created      func(childComplexity int) int
+		Destructive  func(childComplexity int) int
 		Details      func(childComplexity int) int
 		ID           func(childComplexity int) int
 		MergeSources func(childComplexity int) int
@@ -449,6 +450,7 @@ type EditResolver interface {
 	Comments(ctx context.Context, obj *Edit) ([]*EditComment, error)
 	Votes(ctx context.Context, obj *Edit) ([]*EditVote, error)
 
+	Destructive(ctx context.Context, obj *Edit) (bool, error)
 	Status(ctx context.Context, obj *Edit) (VoteStatusEnum, error)
 
 	Created(ctx context.Context, obj *Edit) (*time.Time, error)
@@ -690,6 +692,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Edit.Created(childComplexity), true
+
+	case "Edit.destructive":
+		if e.complexity.Edit.Destructive == nil {
+			break
+		}
+
+		return e.complexity.Edit.Destructive(childComplexity), true
 
 	case "Edit.details":
 		if e.complexity.Edit.Details == nil {
@@ -2948,6 +2957,7 @@ type Edit {
     votes: [EditVote!]!
     """ = Accepted - Rejected"""
     vote_count: Int!
+    destructive: Boolean!
     status: VoteStatusEnum!
     applied: Boolean!
     created: Time!
@@ -3972,7 +3982,6 @@ type Query {
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
-
   queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @hasRole(role: READ)
 
   #### Users ####
@@ -5558,6 +5567,41 @@ func (ec *executionContext) _Edit_vote_count(ctx context.Context, field graphql.
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Edit_destructive(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Edit().Destructive(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Edit_status(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
@@ -20615,6 +20659,20 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "destructive":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Edit_destructive(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "status":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
