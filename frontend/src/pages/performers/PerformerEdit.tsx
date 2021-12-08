@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
@@ -17,11 +17,14 @@ interface Props {
 
 const PerformerModify: FC<Props> = ({ performer }) => {
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (editData) => {
+      if (submissionError) setSubmissionError("");
       if (editData.performerEdit.id)
         history.push(editHref(editData.performerEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   const doUpdate = (
@@ -61,6 +64,11 @@ const PerformerModify: FC<Props> = ({ performer }) => {
         changeType="modify"
         saving={saving}
       />
+      {submissionError && (
+        <div className="text-danger text-end col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </>
   );
 };
