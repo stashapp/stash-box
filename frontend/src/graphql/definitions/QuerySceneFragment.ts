@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: QuerySceneFragment
 // ====================================================
-
 
 export interface QuerySceneFragment_urls {
   __typename: "URL";

@@ -1,5 +1,6 @@
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/SearchPerformerFragment.gql"
+#import "../fragments/URLFragment.gql"
 query SearchAll($term: String!, $limit: Int = 5) {
     searchPerformer(term: $term, limit: $limit) {
       ...SearchPerformerFragment
@@ -10,8 +11,7 @@ query SearchAll($term: String!, $limit: Int = 5) {
         title
         duration
         urls {
-            url
-            type
+          ...URLFragment
         }
         images {
           ...ImageFragment

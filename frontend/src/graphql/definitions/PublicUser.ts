@@ -3,11 +3,9 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 // ====================================================
 // GraphQL query operation: PublicUser
 // ====================================================
-
 
 export interface PublicUser_findUser_vote_count {
   __typename: "UserVoteCount";

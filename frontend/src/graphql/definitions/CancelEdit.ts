@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { CancelEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: CancelEdit
 // ====================================================
-
 
 export interface CancelEdit_cancelEdit_user {
   __typename: "User";

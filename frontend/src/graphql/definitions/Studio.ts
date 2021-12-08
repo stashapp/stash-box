@@ -3,11 +3,9 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 // ====================================================
 // GraphQL query operation: Studio
 // ====================================================
-
 
 export interface Studio_findStudio_child_studios {
   __typename: "Studio";
