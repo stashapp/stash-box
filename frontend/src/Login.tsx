@@ -94,7 +94,7 @@ const Login: FC = () => {
               </Link>
             </div>
           </Col>
-          <Col xs={3} className="d-flex justify-content-end pr-0">
+          <Col xs={3} className="d-flex justify-content-end">
             <div>
               <Button type="submit" className="login-button" disabled={loading}>
                 Login
