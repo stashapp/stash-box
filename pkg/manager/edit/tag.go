@@ -90,7 +90,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 	}
 
 	if tag == nil {
-		return fmt.Errorf("%w: tag %s", ErrEntityNotFound, tagID.String())
+		return fmt.Errorf("%w: target tag %s", ErrEntityNotFound, tagID.String())
 	}
 
 	var mergeSources []uuid.UUID
@@ -101,7 +101,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 		}
 
 		if sourceTag == nil {
-			return fmt.Errorf("%w: tag %s", ErrEntityNotFound, sourceID.String())
+			return fmt.Errorf("%w: source tag %s", ErrEntityNotFound, sourceID.String())
 		}
 		if tagID == sourceID {
 			return ErrMergeTargetIsSource

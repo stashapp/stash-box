@@ -113,7 +113,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 	}
 
 	if studio == nil {
-		return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
+		return fmt.Errorf("%w: target studio %s", ErrEntityNotFound, studioID.String())
 	}
 
 	var mergeSources []uuid.UUID
@@ -124,7 +124,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 		}
 
 		if sourceStudio == nil {
-			return fmt.Errorf("%w: studio %s", ErrEntityNotFound, sourceID.String())
+			return fmt.Errorf("%w: source studio %s", ErrEntityNotFound, sourceID.String())
 		}
 		if studioID == sourceID {
 			return ErrMergeTargetIsSource
