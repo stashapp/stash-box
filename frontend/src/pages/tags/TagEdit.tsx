@@ -44,9 +44,7 @@ const TagEdit: FC<Props> = ({ tag }) => {
       <hr />
       <TagForm tag={tag} callback={doUpdate} saving={saving} />
       {submissionError && (
-        <div className="text-danger text-end col-9">
-          Error: {submissionError}
-        </div>
+        <div className="text-danger col-9">Error: {submissionError}</div>
       )}
     </div>
   );

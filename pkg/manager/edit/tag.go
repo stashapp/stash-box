@@ -3,6 +3,7 @@ package edit
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/gofrs/uuid"
 
@@ -66,6 +67,10 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified 
 		}
 
 		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
+	}
+
+	if reflect.DeepEqual(tagEdit.Old, tagEdit.New) {
+		return ErrNoChanges
 	}
 
 	return m.edit.SetData(tagEdit)
