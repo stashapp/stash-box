@@ -3,6 +3,7 @@ package edit
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -96,6 +97,10 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 
 	if input.Options != nil && input.Options.SetModifyAliases != nil {
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
+	}
+
+	if reflect.DeepEqual(performerEdit.Old, performerEdit.New) {
+		return errors.New("edit contains no changes")
 	}
 
 	return m.edit.SetData(performerEdit)

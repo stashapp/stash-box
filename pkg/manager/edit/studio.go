@@ -3,6 +3,7 @@ package edit
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/gofrs/uuid"
 
@@ -57,12 +58,32 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	// perform a diff against the input and the current object
 	studioEdit := input.Details.StudioEditFromDiff(*studio)
 
+	if err := m.diffURLs(&studioEdit, studioID, input.Details.Urls); err != nil {
+		return err
+	}
+
+	if err := m.diffImages(&studioEdit, studioID, input.Details.ImageIds); err != nil {
+		return err
+	}
+
+	if reflect.DeepEqual(studioEdit.Old, studioEdit.New) {
+		return errors.New("edit contains no changes")
+	}
+
+	return m.edit.SetData(studioEdit)
+}
+
+func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studioID uuid.UUID, newURLs []*models.URL) error {
+	sqb := m.fac.Studio()
 	urls, err := sqb.GetURLs(studioID)
 	if err != nil {
 		return err
 	}
-	studioEdit.New.AddedUrls, studioEdit.New.RemovedUrls = urlCompare(input.Details.Urls, urls)
+	studioEdit.New.AddedUrls, studioEdit.New.RemovedUrls = urlCompare(newURLs, urls)
+	return nil
+}
 
+func (m *StudioEditProcessor) diffImages(studioEdit *models.StudioEditData, studioID uuid.UUID, newImageIds []uuid.UUID) error {
 	iqb := m.fac.Image()
 	images, err := iqb.FindByStudioID(studioID)
 	if err != nil {
@@ -73,9 +94,9 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
+	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(newImageIds, existingImages)
 
-	return m.edit.SetData(studioEdit)
+	return nil
 }
 
 func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {

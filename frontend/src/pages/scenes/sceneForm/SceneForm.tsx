@@ -48,7 +48,7 @@ const schema = yup.object({
   director: yup.string().trim().transform(nullCheck).nullable(),
   studio: yup
     .object({
-      id: yup.string().required("asdasd"),
+      id: yup.string().required(),
       name: yup.string().required(),
     })
     .nullable()

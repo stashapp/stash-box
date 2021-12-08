@@ -1,6 +1,6 @@
-import { FC, useState } from "react";
-import { useHistory, Link } from "react-router-dom";
-import { Button, Form } from "react-bootstrap";
+import { FC, useMemo, useState } from "react";
+import { useHistory } from "react-router-dom";
+import { Button, Row, Col, Form, Tab, Tabs } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -10,15 +10,17 @@ import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import { StudioEditDetailsInput } from "src/graphql";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
-import { getUrlByType, createHref } from "src/utils";
-import { ROUTE_STUDIOS, ROUTE_STUDIO } from "src/constants/route";
+import { getUrlByType } from "src/utils";
 import { EditNote } from "src/components/form";
+import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
+
+import DiffStudio from "./diff";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
 
 const schema = yup.object({
-  title: yup.string().required("Title is required"),
+  name: yup.string().required("Name is required"),
   url: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
   images: yup
     .array()
@@ -34,11 +36,13 @@ const schema = yup.object({
       id: yup.string().required(),
       name: yup.string().required(),
     })
-    .nullable(),
+    .optional()
+    .default(undefined),
   note: yup.string().required("Edit note is required"),
 });
 
 type StudioFormData = yup.Asserts<typeof schema>;
+export type CastedStudioFormData = yup.TypeOf<typeof schema>;
 
 interface StudioProps {
   studio: Studio;
@@ -58,24 +62,35 @@ const StudioForm: FC<StudioProps> = ({
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<StudioFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      title: studio.name,
-      studio: studio.parent,
+      name: studio.name,
       images: studio.images,
+      studio: studio.parent
+        ? {
+            id: studio.parent.id,
+            name: studio.parent.name,
+          }
+        : undefined,
     },
   });
 
   const [file, setFile] = useState<File | undefined>();
+  const fieldData = watch();
+  const [oldStudioChanges, newStudioChanges] = useMemo(
+    () => DiffStudio(schema.cast(fieldData), studio),
+    [fieldData, studio]
+  );
+
+  const [activeTab, setActiveTab] = useState("details");
 
   const onSubmit = (data: StudioFormData) => {
-    const urls = [];
-    if (data.url) urls.push({ url: data.url, type: "HOME" });
     const callbackData: StudioEditDetailsInput = {
-      name: data.title,
-      urls,
+      name: data.name,
+      urls: data.url ? [{ url: data.url, type: "HOME" }] : [],
       image_ids: data.images.map((i) => i.id),
       parent_id: data.studio?.id,
     };
@@ -83,80 +98,129 @@ const StudioForm: FC<StudioProps> = ({
   };
 
   return (
-    <Form className="StudioForm w-50" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name" className="mb-3">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
-          className={cx({ "is-invalid": errors.title })}
-          placeholder="Title"
-          defaultValue={studio.name}
-          {...register("title")}
-        />
-        <Form.Control.Feedback type="invalid">
-          {errors?.title?.message}
-        </Form.Control.Feedback>
-      </Form.Group>
+    <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
+      <Tabs
+        activeKey={activeTab}
+        onSelect={(key) => key && setActiveTab(key)}
+        className="d-flex"
+      >
+        <Tab eventKey="details" title="Details" className="col-xl-6">
+          <Form.Group controlId="name" className="mb-3">
+            <Form.Label>Name</Form.Label>
+            <Form.Control
+              className={cx({ "is-invalid": errors.name })}
+              placeholder="Name"
+              defaultValue={studio.name}
+              {...register("name")}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors?.name?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-      <Form.Group controlId="url" className="mb-3">
-        <Form.Label>URL</Form.Label>
-        <Form.Control
-          className={cx({ "is-invalid": errors.url })}
-          placeholder="URL"
-          defaultValue={getUrlByType(studio.urls, "HOME")}
-          {...register("url")}
-        />
-        <Form.Control.Feedback type="invalid">
-          {errors?.url?.message}
-        </Form.Control.Feedback>
-      </Form.Group>
+          <Form.Group controlId="url" className="mb-3">
+            <Form.Label>URL</Form.Label>
+            <Form.Control
+              className={cx({ "is-invalid": errors.url })}
+              placeholder="URL"
+              defaultValue={getUrlByType(studio.urls, "HOME")}
+              {...register("url")}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors?.url?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-      {showNetworkSelect && (
-        <Form.Group controlId="network" className="mb-3">
-          <Form.Label>Network</Form.Label>
-          <StudioSelect
-            excludeStudio={studio.id}
-            control={control}
-            initialStudio={studio.parent}
-            isClearable
-            networkSelect
-          />
-        </Form.Group>
-      )}
+          {showNetworkSelect && (
+            <Form.Group controlId="network" className="mb-3">
+              <Form.Label>Network</Form.Label>
+              <StudioSelect
+                excludeStudio={studio.id}
+                control={control}
+                initialStudio={studio.parent}
+                isClearable
+                networkSelect
+              />
+            </Form.Group>
+          )}
 
-      <Form.Group className="mb-3">
-        <Form.Label>Image</Form.Label>
-        <EditImages
-          control={control}
-          maxImages={1}
-          file={file}
-          setFile={(f) => setFile(f)}
-        />
-      </Form.Group>
-
-      <EditNote register={register} error={errors.note} />
-
-      <Form.Group className="mb-3">
-        <div className="d-flex">
-          <Button type="submit" disabled={!!file || saving}>
-            Submit Edit
-          </Button>
-          <Button type="reset" variant="secondary" className="ms-auto me-2">
-            Reset
-          </Button>
-          <Link
-            to={createHref(studio.id ? ROUTE_STUDIO : ROUTE_STUDIOS, studio)}
-          >
-            <Button variant="danger" onClick={() => history.goBack()}>
+          <div className="d-flex mt-1">
+            <Button
+              variant="danger"
+              className="ms-auto me-2"
+              onClick={() => history.goBack()}
+            >
               Cancel
             </Button>
-          </Link>
-        </div>
-        {/* dummy element for feedback */}
-        <span className={file ? "is-invalid" : ""} />
-        <Form.Control.Feedback type="invalid">
-          Upload or remove image to continue.
-        </Form.Control.Feedback>
-      </Form.Group>
+            <Button className="me-1" onClick={() => setActiveTab("images")}>
+              Next
+            </Button>
+          </div>
+        </Tab>
+
+        <Tab eventKey="images" title="Images" className="col-xl-6">
+          <EditImages
+            control={control}
+            maxImages={1}
+            file={file}
+            setFile={(f) => setFile(f)}
+          />
+
+          <div className="d-flex mt-1">
+            <Button
+              variant="danger"
+              className="ms-auto me-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="me-1"
+              disabled={!!file}
+              onClick={() => setActiveTab("confirm")}
+            >
+              Next
+            </Button>
+          </div>
+          <div className="d-flex">
+            {/* dummy element for feedback */}
+            <div className="ms-auto">
+              <span className={file ? "is-invalid" : ""} />
+              <Form.Control.Feedback type="invalid">
+                Upload or remove image to continue.
+              </Form.Control.Feedback>
+            </div>
+          </div>
+        </Tab>
+
+        <Tab eventKey="confirm" title="Confirm" className="mt-3 col-xl-9">
+          {renderStudioDetails(newStudioChanges, oldStudioChanges, true)}
+          <Row className="my-4">
+            <Col md={{ span: 8, offset: 4 }}>
+              <EditNote register={register} error={errors.note} />
+            </Col>
+          </Row>
+
+          <div className="d-flex mt-2">
+            <Button
+              variant="danger"
+              className="ms-auto me-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled
+              className="d-none"
+              aria-hidden="true"
+            />
+            <Button type="submit" disabled={!!file || saving}>
+              Submit Edit
+            </Button>
+          </div>
+        </Tab>
+      </Tabs>
     </Form>
   );
 };

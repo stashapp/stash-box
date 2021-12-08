@@ -120,3 +120,14 @@ export const parseDuration = (
     Number.parseInt(hours, 10) * 3600;
   return duration > 0 ? duration : null;
 };
+
+export const parseBraSize = (braSize = ""): [string | null, number | null] => {
+  const band = /^\d+/.exec(braSize)?.[0];
+  const bandSize = band ? Number.parseInt(band, 10) : null;
+  const cup = bandSize ? braSize.replace(bandSize.toString(), "") : null;
+  const cupSize = cup
+    ? /^[a-zA-Z]+/.exec(cup)?.[0]?.toUpperCase() ?? null
+    : null;
+
+  return [cupSize, bandSize];
+};

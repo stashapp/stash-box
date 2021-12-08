@@ -1,156 +1,124 @@
-import { isEqual } from "lodash-es";
+import { PerformerDetails } from "src/components/editCard/ModifyEdit";
 
-import { BodyModificationInput, BreastTypeEnum } from "src/graphql";
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
-import { ChangeRowProps } from "src/components/changeRow/ChangeRow";
-import { formatFuzzyDate } from "src/utils";
+import { PerformerFragment } from "src/graphql";
+import {
+  breastType,
+  ethnicityEnum,
+  genderEnum,
+  diffArray,
+  diffValue,
+  diffImages,
+  filterData,
+  parseBraSize,
+} from "src/utils";
+
 import { CastedPerformerFormData } from "./PerformerForm";
 
-const diffArray = (
-  name: string,
-  original: (string | number)[] | null,
-  updated: (string | number)[] | null | undefined
-) => {
-  const arrA = original ?? [];
-  const arrB = updated ?? [];
+const diffBodyMods = (
+  newMods:
+    | { location: string | undefined; description: string | null | undefined }[]
+    | undefined,
+  oldMods: { location: string; description: string | null }[] | null
+) =>
+  diffArray(
+    (newMods ?? []).flatMap((m) =>
+      m.location
+        ? [
+            {
+              location: m.location,
+              description: m.description ?? null,
+            },
+          ]
+        : []
+    ),
+    oldMods ?? [],
+    (mod) => `${mod.location}|${mod.description}`
+  );
 
-  if (isEqual(arrA, arrB)) return null;
+const selectPerformerDetails = (
+  data: CastedPerformerFormData,
+  original: PerformerFragment
+): [PerformerDetails, PerformerDetails] => {
+  const [addedImages, removedImages] = diffImages(data.images, original.images);
+  const [addedTattoos, removedTattoos] = diffBodyMods(
+    data.tattoos,
+    original.tattoos
+  );
+  const [addedPiercings, removedPiercings] = diffBodyMods(
+    data.piercings,
+    original.piercings
+  );
+  const [addedAliases, removedAliases] = diffArray(
+    filterData(data.aliases),
+    original.aliases,
+    (a) => a
+  );
+  const [newCupSize, newBandSize] = parseBraSize(data.braSize ?? "");
 
-  const removed = arrA.filter((x) => !arrB.includes(x));
-  const added = arrB.filter((x) => !arrA.includes(x));
-
-  return {
-    name,
-    newValue: added.join(", "),
-    oldValue: removed.join(", "),
-    showDiff: true,
-  };
+  return [
+    {
+      name: diffValue(original.name, data.name),
+      gender: diffValue(original.gender, genderEnum(data.gender)),
+      birthdate: diffValue(original.birthdate?.date, data.birthdate),
+      birthdate_accuracy: diffValue(
+        original.birthdate?.accuracy,
+        data.birthdate
+      ),
+      career_start_year: diffValue(
+        original.career_start_year,
+        data.career_start_year
+      ),
+      career_end_year: diffValue(
+        original.career_end_year,
+        data.career_end_year
+      ),
+      height: diffValue(original.height, data.height),
+      band_size: diffValue(original.measurements.band_size, newBandSize),
+      cup_size: diffValue(original.measurements.cup_size, newCupSize),
+      waist_size: diffValue(original.measurements.waist, data.waistSize),
+      hip_size: diffValue(original.measurements.hip, data.hipSize),
+      breast_type: diffValue(original.breast_type, breastType(data.boobJob)),
+      country: diffValue(original.country, data.country),
+      ethnicity: diffValue(original.ethnicity, ethnicityEnum(data.ethnicity)),
+      eye_color: diffValue(original.eye_color, data.eye_color),
+      hair_color: diffValue(original.hair_color, data.hair_color),
+    },
+    {
+      name: diffValue(data.name, original.name),
+      gender: diffValue(genderEnum(data.gender), original.gender),
+      birthdate: diffValue(data.birthdate, original.birthdate?.date),
+      birthdate_accuracy: diffValue(
+        data.birthdate,
+        original.birthdate?.accuracy
+      ),
+      career_start_year: diffValue(
+        data.career_start_year,
+        original.career_start_year
+      ),
+      career_end_year: diffValue(
+        data.career_end_year,
+        original.career_end_year
+      ),
+      height: diffValue(data.height, original.height),
+      band_size: diffValue(newBandSize, original.measurements.band_size),
+      cup_size: diffValue(newCupSize, original.measurements.cup_size),
+      waist_size: diffValue(data.waistSize, original.measurements.waist),
+      hip_size: diffValue(data.hipSize, original.measurements.hip),
+      breast_type: diffValue(breastType(data.boobJob), original.breast_type),
+      country: diffValue(data.country, original.country),
+      ethnicity: diffValue(ethnicityEnum(data.ethnicity), original.ethnicity),
+      eye_color: diffValue(data.eye_color, original.eye_color),
+      hair_color: diffValue(data.hair_color, original.hair_color),
+      added_tattoos: addedTattoos,
+      removed_tattoos: removedTattoos,
+      added_piercings: addedPiercings,
+      removed_piercings: removedPiercings,
+      added_aliases: addedAliases,
+      removed_aliases: removedAliases,
+      added_images: addedImages,
+      removed_images: removedImages,
+    },
+  ];
 };
 
-type BodyModFormData = {
-  location?: string;
-  description?: string | null;
-};
-
-const diffBodyMod = (
-  name: string,
-  original: BodyModificationInput[] | null,
-  updated: BodyModFormData[] | null | undefined
-) => {
-  const arrA = (original ?? []).map(
-    (b) => `${b.location}${b.description ? ": " : ""}${b.description || ""}`
-  );
-  const arrB = (updated ?? []).map(
-    (b) => `${b.location}${b.description ? ": " : ""}${b.description || ""}`
-  );
-
-  if (isEqual(arrA, arrB)) return null;
-
-  const removed = arrA.filter((x) => !arrB.includes(x));
-  const added = arrB.filter((x) => !arrA.includes(x));
-
-  return {
-    name,
-    newValue: added.join("\n"),
-    oldValue: removed.join("\n"),
-    showDiff: true,
-  };
-};
-
-const diffValue = (
-  name: string,
-  original: string | number | null | undefined,
-  updated: string | number | null | undefined
-) => {
-  const valueA = original || null;
-  const valueB = updated || null;
-
-  if (valueA !== valueB) {
-    return {
-      name,
-      oldValue: valueA,
-      newValue: valueB,
-      showDiff: true,
-    };
-  }
-  return null;
-};
-
-const DiffPerformer = (
-  original: Performer,
-  updated: CastedPerformerFormData
-): ChangeRowProps[] => {
-  const changes = [];
-
-  changes.push(diffValue("Name", original.name, updated.name));
-  changes.push(
-    diffValue("Disambiguation", original.disambiguation, updated.disambiguation)
-  );
-  changes.push(
-    diffArray(
-      "Aliases",
-      original.aliases,
-      (updated.aliases?.filter((a) => a) ?? []) as string[]
-    )
-  );
-  changes.push(diffValue("Gender", original.gender, updated.gender));
-  changes.push(
-    diffValue(
-      "Birthdate",
-      formatFuzzyDate(original.birthdate),
-      updated.birthdate
-    )
-  );
-  changes.push(diffValue("Eye Color", original.eye_color, updated.eye_color));
-  changes.push(
-    diffValue("Hair Color", original.hair_color, updated.hair_color)
-  );
-  changes.push(diffValue("Height", original.height, updated.height));
-  changes.push(
-    diffValue(
-      "Breast Type",
-      original.breast_type,
-      updated.boobJob === undefined ? BreastTypeEnum.NA : updated.boobJob
-    )
-  );
-  changes.push(
-    diffValue(
-      "Bra Size",
-      `${original.measurements.band_size ?? ""}${
-        original.measurements.cup_size ?? ""
-      }`,
-      updated.braSize
-    )
-  );
-  changes.push(
-    diffValue("Waist Size", original.measurements.waist, updated.waistSize)
-  );
-  changes.push(
-    diffValue("Hip Size", original.measurements.hip, updated.hipSize)
-  );
-  changes.push(diffValue("Nationality", original.country, updated.country));
-  changes.push(diffValue("Ethnicity", original.ethnicity, updated.ethnicity));
-  changes.push(
-    diffValue(
-      "Career Start",
-      original.career_start_year,
-      updated.career_start_year
-    )
-  );
-  changes.push(
-    diffValue("Career End", original.career_end_year, updated.career_end_year)
-  );
-  changes.push(diffBodyMod("Tattoos", original.tattoos, updated.tattoos));
-  changes.push(diffBodyMod("Piercings", original.piercings, updated.piercings));
-  changes.push(
-    diffArray(
-      "ImageIDs",
-      original.images.map((i) => i.id),
-      (updated.images ?? []).map((i) => i.id ?? "")
-    )
-  );
-
-  return changes.flatMap((c) => (c === null ? [] : [c]));
-};
-
-export default DiffPerformer;
+export default selectPerformerDetails;
