@@ -1,7 +1,6 @@
 package edit
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -52,7 +51,7 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	}
 
 	if studio == nil {
-		return errors.New("studio with id " + studioID.String() + " not found")
+		return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
 	}
 
 	// perform a diff against the input and the current object
@@ -67,7 +66,7 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	}
 
 	if reflect.DeepEqual(studioEdit.Old, studioEdit.New) {
-		return errors.New("edit contains no changes")
+		return ErrNoChanges
 	}
 
 	return m.edit.SetData(studioEdit)
@@ -104,7 +103,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 
 	// get the existing studio
 	if input.Edit.ID == nil {
-		return errors.New("Merge target ID is required")
+		return ErrMergeIDMissing
 	}
 	studioID := *input.Edit.ID
 	studio, err := sqb.Find(studioID)
@@ -114,7 +113,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 	}
 
 	if studio == nil {
-		return errors.New("studio with id " + studioID.String() + " not found")
+		return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
 	}
 
 	var mergeSources []uuid.UUID
@@ -125,16 +124,16 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 		}
 
 		if sourceStudio == nil {
-			return errors.New("studio with id " + sourceID.String() + " not found")
+			return fmt.Errorf("%w: studio %s", ErrEntityNotFound, sourceID.String())
 		}
 		if studioID == sourceID {
-			return errors.New("merge target cannot be used as source")
+			return ErrMergeTargetIsSource
 		}
 		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
-		return errors.New("No merge sources found")
+		return ErrNoMergeSources
 	}
 
 	// perform a diff against the input and the current object
@@ -217,7 +216,7 @@ func (m *StudioEditProcessor) apply() error {
 			return err
 		}
 		if studio == nil {
-			return errors.New("Studio not found: " + studioID.String())
+			return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
 		}
 	}
 
