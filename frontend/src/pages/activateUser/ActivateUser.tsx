@@ -109,7 +109,7 @@ const ActivateNewUserPage: FC = () => {
           </div>
         </label>
         <div className="row">
-          <div className="col-3 offset-9 d-flex justify-content-end pr-0">
+          <div className="col-3 offset-9 d-flex justify-content-end">
             <div>
               <button type="submit" className="register-button btn btn-primary">
                 Create Account

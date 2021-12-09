@@ -1,10 +1,9 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Select from "react-select";
 import { Button, Col, Form, Row, Tabs, Tab } from "react-bootstrap";
-import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
@@ -19,16 +18,17 @@ import {
   DateAccuracyEnum,
   PerformerEditDetailsInput,
 } from "src/graphql";
-import { getBraSize, formatFuzzyDate } from "src/utils";
+import { getBraSize, parseBraSize, formatFuzzyDate } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { Image } from "src/utils/transforms";
 
+import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
 import { Help } from "src/components/fragments";
 import { BodyModification, EditNote } from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
-import ChangeRow from "src/components/changeRow";
 import EditImages from "src/components/editImages";
 import DiffPerformer from "./diff";
+import { PerformerSchema, PerformerFormData } from "./schema";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en");
@@ -99,114 +99,6 @@ const getEnumValue = (enumArray: OptionEnum[], val: string) => {
   return val;
 };
 
-const nullCheck = (input: string | null) =>
-  input === "" || input === "null" ? null : input;
-const zeroCheck = (input: number | null) =>
-  input === 0 || Number.isNaN(input) ? null : input;
-
-const schema = yup.object({
-  id: yup.string(),
-  name: yup.string().required("Name is required"),
-  gender: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([null, ...Object.keys(GenderEnum)], "Invalid gender"),
-  disambiguation: yup.string().trim().transform(nullCheck).nullable(),
-  birthdate: yup
-    .string()
-    .defined()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .nullable(),
-  career_start_year: yup
-    .number()
-    .transform(zeroCheck)
-    .nullable()
-    .min(1950, "Invalid year")
-    .max(new Date().getFullYear(), "Invalid year"),
-  career_end_year: yup
-    .number()
-    .transform(zeroCheck)
-    .min(1950, "Invalid year")
-    .max(new Date().getFullYear(), "Invalid year")
-    .nullable(),
-  height: yup
-    .number()
-    .transform(zeroCheck)
-    .min(100, "Invalid height, Height must be in centimeters.")
-    .max(230, "Invalid height")
-    .nullable(),
-  braSize: yup
-    .string()
-    .transform(nullCheck)
-    .matches(
-      /\d{2,3}[a-zA-Z]{1,4}/,
-      "Invalid cup size. Only american sizes are accepted."
-    )
-    .nullable(),
-  waistSize: yup
-    .number()
-    .transform(zeroCheck)
-    .min(15, "Invalid waist size")
-    .max(50, "Invalid waist size")
-    .nullable(),
-  hipSize: yup.number().transform(zeroCheck).nullable(),
-  boobJob: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
-  country: yup.string().trim().transform(nullCheck).nullable().defined(),
-  ethnicity: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([...Object.keys(EthnicityEnum), null], "Invalid ethnicity"),
-  eye_color: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([null, ...Object.keys(EyeColorEnum)], "Invalid eye color"),
-  hair_color: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
-  tattoos: yup.array().of(
-    yup.object({
-      location: yup.string().trim().required("Location is required"),
-      description: yup.string().trim().transform(nullCheck).nullable(),
-    })
-  ),
-  piercings: yup.array().of(
-    yup.object({
-      location: yup.string().trim().required("Location is required"),
-      description: yup.string().trim().transform(nullCheck).nullable(),
-    })
-  ),
-  aliases: yup
-    .array()
-    .of(yup.string().trim().transform(nullCheck).required())
-    .required(),
-  images: yup
-    .array()
-    .of(
-      yup.object({
-        id: yup.string().required(),
-        url: yup.string().required(),
-      })
-    )
-    .required(),
-  note: yup.string().required("Edit note is required"),
-});
-
-export type PerformerFormData = yup.Asserts<typeof schema>;
-export type CastedPerformerFormData = yup.TypeOf<typeof schema>;
-
 interface PerformerProps {
   performer: Performer;
   callback: (
@@ -226,7 +118,6 @@ const PerformerForm: FC<PerformerProps> = ({
   callback,
   initialAliases = [],
   initialImages = [],
-  changeType,
   saving,
 }) => {
   const images = uniqBy([...performer.images, ...initialImages], (i) => i.id);
@@ -241,9 +132,10 @@ const PerformerForm: FC<PerformerProps> = ({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<PerformerFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(PerformerSchema),
     mode: "onBlur",
     defaultValues: {
       tattoos,
@@ -258,11 +150,19 @@ const PerformerForm: FC<PerformerProps> = ({
   const [file, setFile] = useState<File | undefined>();
 
   const fieldData = watch();
-  const changes = useMemo(
-    () => DiffPerformer(performer, schema.cast(fieldData)),
+  const [oldChanges, newChanges] = useMemo(
+    () => DiffPerformer(PerformerSchema.cast(fieldData), performer),
     [fieldData, performer]
   );
   const history = useHistory();
+
+  const showBreastType =
+    fieldData.gender !== GenderEnum.MALE &&
+    fieldData.gender !== GenderEnum.TRANSGENDER_MALE;
+  // Update breast type based on gender
+  useEffect(() => {
+    if (!showBreastType) setValue("boobJob", BreastTypeEnum.NA);
+  }, [showBreastType, setValue]);
 
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
@@ -301,15 +201,8 @@ const PerformerForm: FC<PerformerProps> = ({
       hip: data.hipSize ?? null,
     };
     if (data.braSize != null) {
-      const band = /^\d+/.exec(data.braSize)?.[0];
-      const bandSize = band ? Number.parseInt(band, 10) : null;
-      const cup = bandSize
-        ? data.braSize.replace(bandSize.toString(), "")
-        : null;
-      const braSize = cup
-        ? /^[a-zA-Z]+/.exec(cup)?.[0]?.toUpperCase() ?? null
-        : null;
-      performerData.measurements.cup_size = braSize;
+      const [cupSize, bandSize] = parseBraSize(data.braSize);
+      performerData.measurements.cup_size = cupSize;
       performerData.measurements.band_size = bandSize ?? 0;
     }
 
@@ -544,53 +437,52 @@ const PerformerForm: FC<PerformerProps> = ({
               )}
           </Row>
 
-          {fieldData.gender !== GenderEnum.MALE &&
-            fieldData.gender !== GenderEnum.TRANSGENDER_MALE && (
-              <Row>
-                <Form.Group controlId="braSize" className="col-4 mb-3">
-                  <Form.Label>Bra size</Form.Label>
-                  <Form.Control
-                    className={cx({ "is-invalid": errors.braSize })}
-                    defaultValue={getBraSize(performer.measurements)}
-                    {...register("braSize", {
-                      pattern: /\d{2,3}[a-zA-Z]{1,4}/i,
-                    })}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors?.braSize?.message}
-                  </Form.Control.Feedback>
-                  <Form.Text>US Bra Size</Form.Text>
-                </Form.Group>
+          {showBreastType && (
+            <Row>
+              <Form.Group controlId="braSize" className="col-4 mb-3">
+                <Form.Label>Bra size</Form.Label>
+                <Form.Control
+                  className={cx({ "is-invalid": errors.braSize })}
+                  defaultValue={getBraSize(performer.measurements)}
+                  {...register("braSize", {
+                    pattern: /\d{2,3}[a-zA-Z]{1,4}/i,
+                  })}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.braSize?.message}
+                </Form.Control.Feedback>
+                <Form.Text>US Bra Size</Form.Text>
+              </Form.Group>
 
-                <Form.Group controlId="waistSize" className="col-4 mb-3">
-                  <Form.Label>Waist size</Form.Label>
-                  <Form.Control
-                    className={cx({ "is-invalid": errors.waistSize })}
-                    type="number"
-                    defaultValue={performer.measurements.waist ?? ""}
-                    {...register("waistSize")}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors?.waistSize?.message}
-                  </Form.Control.Feedback>
-                  <Form.Text>Waist circumference in inches</Form.Text>
-                </Form.Group>
+              <Form.Group controlId="waistSize" className="col-4 mb-3">
+                <Form.Label>Waist size</Form.Label>
+                <Form.Control
+                  className={cx({ "is-invalid": errors.waistSize })}
+                  type="number"
+                  defaultValue={performer.measurements.waist ?? ""}
+                  {...register("waistSize")}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.waistSize?.message}
+                </Form.Control.Feedback>
+                <Form.Text>Waist circumference in inches</Form.Text>
+              </Form.Group>
 
-                <Form.Group controlId="hipSize" className="col-4 mb-3">
-                  <Form.Label>Hip size</Form.Label>
-                  <Form.Control
-                    className={cx({ "is-invalid": errors.hipSize })}
-                    type="number"
-                    defaultValue={performer.measurements.hip ?? ""}
-                    {...register("hipSize")}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors?.hipSize?.message}
-                  </Form.Control.Feedback>
-                  <Form.Text>Hip circumference in inches</Form.Text>
-                </Form.Group>
-              </Row>
-            )}
+              <Form.Group controlId="hipSize" className="col-4 mb-3">
+                <Form.Label>Hip size</Form.Label>
+                <Form.Control
+                  className={cx({ "is-invalid": errors.hipSize })}
+                  type="number"
+                  defaultValue={performer.measurements.hip ?? ""}
+                  {...register("hipSize")}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.hipSize?.message}
+                </Form.Control.Feedback>
+                <Form.Text>Hip circumference in inches</Form.Text>
+              </Form.Group>
+            </Row>
+          )}
 
           <Row>
             <Form.Group controlId="country" className="col-6 mb-3">
@@ -767,17 +659,8 @@ const PerformerForm: FC<PerformerProps> = ({
           </div>
         </Tab>
 
-        <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
-          {changes.length > 0 && (
-            <Row>
-              <h6 className="col-5 offset-2">Remove</h6>
-              <h6 className="col-5">Add</h6>
-            </Row>
-          )}
-          {changes.length === 0 && <h6>No changes.</h6>}
-          {changes.map((c) => (
-            <ChangeRow {...c} key={c.name} />
-          ))}
+        <Tab eventKey="confirm" title="Confirm" className="mt-3 col-xl-9">
+          {renderPerformerDetails(newChanges, oldChanges, true, updateAliases)}
           <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>
               <EditNote register={register} error={errors.note} />
@@ -797,12 +680,7 @@ const PerformerForm: FC<PerformerProps> = ({
               className="d-none"
               aria-hidden="true"
             />
-            <Button
-              type="submit"
-              disabled={
-                (changes.length === 0 && changeType !== "merge") || saving
-              }
-            >
+            <Button type="submit" disabled={!!file || saving}>
               Submit Edit
             </Button>
           </div>

@@ -1,3 +1,5 @@
+#import "../fragments/URLFragment.gql"
+#import "../fragments/ImageFragment.gql"
 query Performers($filter: QuerySpec, $performerFilter: PerformerFilterType) {
   queryPerformers(filter: $filter, performer_filter: $performerFilter) {
     count
@@ -36,14 +38,10 @@ query Performers($filter: QuerySpec, $performerFilter: PerformerFilterType) {
         description
       }
       urls {
-          type
-          url
+        ...URLFragment
       }
       images {
-          id
-          url
-          height
-          width
+        ...ImageFragment
       }
     }
   }

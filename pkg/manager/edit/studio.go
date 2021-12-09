@@ -1,8 +1,8 @@
 package edit
 
 import (
-	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/gofrs/uuid"
 
@@ -51,18 +51,38 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	}
 
 	if studio == nil {
-		return errors.New("studio with id " + studioID.String() + " not found")
+		return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
 	}
 
 	// perform a diff against the input and the current object
 	studioEdit := input.Details.StudioEditFromDiff(*studio)
 
+	if err := m.diffURLs(&studioEdit, studioID, input.Details.Urls); err != nil {
+		return err
+	}
+
+	if err := m.diffImages(&studioEdit, studioID, input.Details.ImageIds); err != nil {
+		return err
+	}
+
+	if reflect.DeepEqual(studioEdit.Old, studioEdit.New) {
+		return ErrNoChanges
+	}
+
+	return m.edit.SetData(studioEdit)
+}
+
+func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studioID uuid.UUID, newURLs []*models.URL) error {
+	sqb := m.fac.Studio()
 	urls, err := sqb.GetURLs(studioID)
 	if err != nil {
 		return err
 	}
-	studioEdit.New.AddedUrls, studioEdit.New.RemovedUrls = urlCompare(input.Details.Urls, urls)
+	studioEdit.New.AddedUrls, studioEdit.New.RemovedUrls = urlCompare(newURLs, urls)
+	return nil
+}
 
+func (m *StudioEditProcessor) diffImages(studioEdit *models.StudioEditData, studioID uuid.UUID, newImageIds []uuid.UUID) error {
 	iqb := m.fac.Image()
 	images, err := iqb.FindByStudioID(studioID)
 	if err != nil {
@@ -73,9 +93,9 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
+	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(newImageIds, existingImages)
 
-	return m.edit.SetData(studioEdit)
+	return nil
 }
 
 func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -83,7 +103,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 
 	// get the existing studio
 	if input.Edit.ID == nil {
-		return errors.New("Merge target ID is required")
+		return ErrMergeIDMissing
 	}
 	studioID := *input.Edit.ID
 	studio, err := sqb.Find(studioID)
@@ -93,7 +113,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 	}
 
 	if studio == nil {
-		return errors.New("studio with id " + studioID.String() + " not found")
+		return fmt.Errorf("%w: target studio %s", ErrEntityNotFound, studioID.String())
 	}
 
 	var mergeSources []uuid.UUID
@@ -104,16 +124,16 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 		}
 
 		if sourceStudio == nil {
-			return errors.New("studio with id " + sourceID.String() + " not found")
+			return fmt.Errorf("%w: source studio %s", ErrEntityNotFound, sourceID.String())
 		}
 		if studioID == sourceID {
-			return errors.New("merge target cannot be used as source")
+			return ErrMergeTargetIsSource
 		}
 		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
-		return errors.New("No merge sources found")
+		return ErrNoMergeSources
 	}
 
 	// perform a diff against the input and the current object
@@ -196,7 +216,7 @@ func (m *StudioEditProcessor) apply() error {
 			return err
 		}
 		if studio == nil {
-			return errors.New("Studio not found: " + studioID.String())
+			return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
 		}
 	}
 

@@ -3,11 +3,9 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 // ====================================================
 // GraphQL fragment: TagFragment
 // ====================================================
-
 
 export interface TagFragment_category {
   __typename: "TagCategory";

@@ -1,8 +1,8 @@
 package edit
 
 import (
-	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/gofrs/uuid"
 
@@ -51,7 +51,7 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified 
 	}
 
 	if tag == nil {
-		return errors.New("tag with id " + tagID.String() + " not found")
+		return fmt.Errorf("%w: tag %s", ErrEntityNotFound, tagID.String())
 	}
 
 	// perform a diff against the input and the current object
@@ -68,6 +68,10 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified 
 		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
+	if reflect.DeepEqual(tagEdit.Old, tagEdit.New) {
+		return ErrNoChanges
+	}
+
 	return m.edit.SetData(tagEdit)
 }
 
@@ -76,7 +80,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 
 	// get the existing tag
 	if input.Edit.ID == nil {
-		return errors.New("Merge target ID is required")
+		return ErrMergeIDMissing
 	}
 	tagID := *input.Edit.ID
 	tag, err := tqb.Find(*input.Edit.ID)
@@ -86,7 +90,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 	}
 
 	if tag == nil {
-		return errors.New("tag with id " + tagID.String() + " not found")
+		return fmt.Errorf("%w: target tag %s", ErrEntityNotFound, tagID.String())
 	}
 
 	var mergeSources []uuid.UUID
@@ -97,16 +101,16 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 		}
 
 		if sourceTag == nil {
-			return errors.New("tag with id " + sourceID.String() + " not found")
+			return fmt.Errorf("%w: source tag %s", ErrEntityNotFound, sourceID.String())
 		}
 		if tagID == sourceID {
-			return errors.New("merge target cannot be used as source")
+			return ErrMergeTargetIsSource
 		}
 		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
-		return errors.New("No merge sources found")
+		return ErrNoMergeSources
 	}
 
 	// perform a diff against the input and the current object
@@ -179,7 +183,7 @@ func (m *TagEditProcessor) apply() error {
 			return err
 		}
 		if tag == nil {
-			return errors.New("Tag not found: " + tagID.String())
+			return fmt.Errorf("%w: tag %s", ErrEntityNotFound, tagID.String())
 		}
 	}
 

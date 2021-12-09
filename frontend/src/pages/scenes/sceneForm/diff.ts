@@ -1,30 +1,21 @@
-import { SceneDetails as SceneDet } from "src/components/editCard/ModifyEdit";
+import { SceneDetails } from "src/components/editCard/ModifyEdit";
 
 import { SceneFragment } from "src/graphql";
-import { genderEnum, parseDuration } from "src/utils";
+import {
+  genderEnum,
+  parseDuration,
+  diffArray,
+  diffValue,
+  diffImages,
+  diffURLs,
+} from "src/utils";
 
-import { CastedSceneFormData } from "./SceneForm";
-
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const diffArray = <T extends unknown>(
-  a: T[],
-  b: T[],
-  getKey: (t: T) => string
-) => [
-  a.filter((x) => !b.some((val) => getKey(val) === getKey(x))),
-  b.filter((x) => !a.some((val) => getKey(val) === getKey(x))),
-];
-
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const diffValue = <T extends unknown>(
-  a: T | undefined | null,
-  b: T | undefined | null
-): T | null => (a && a !== b ? a : null);
+import { CastedSceneFormData } from "./schema";
 
 const selectSceneDetails = (
   data: CastedSceneFormData,
   original: SceneFragment
-): [SceneDet, SceneDet] => {
+): [SceneDetails, SceneDetails] => {
   const [addedPerformers, removedPerformers] = diffArray(
     (data.performers ?? []).flatMap((p) =>
       p.performerId && p.name
@@ -61,22 +52,8 @@ const selectSceneDetails = (
     (t) => t.id
   );
 
-  const [addedImages, removedImages] = diffArray(
-    (data.images ?? []).flatMap((i) =>
-      i.id && i.url
-        ? [
-            {
-              id: i.id,
-              url: i.url,
-            },
-          ]
-        : []
-    ),
-    original.images,
-    (i) => i.id
-  );
-
-  const [addedUrls, removedUrls] = diffArray(
+  const [addedImages, removedImages] = diffImages(data.images, original.images);
+  const [addedUrls, removedUrls] = diffURLs(
     data.studioURL
       ? [
           {
@@ -85,11 +62,7 @@ const selectSceneDetails = (
           },
         ]
       : [],
-    original.urls.map((u) => ({
-      url: u.url,
-      type: u.type,
-    })),
-    (u) => `${u.url}${u.type}`
+    original.urls
   );
 
   return [

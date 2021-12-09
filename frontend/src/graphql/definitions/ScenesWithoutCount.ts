@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { QuerySpec, SceneFilterType, GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: ScenesWithoutCount
 // ====================================================
-
 
 export interface ScenesWithoutCount_queryScenes_scenes_urls {
   __typename: "URL";

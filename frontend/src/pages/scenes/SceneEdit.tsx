@@ -44,7 +44,12 @@ const SceneEdit: FC<Props> = ({ scene }) => {
 
   return (
     <div>
-      <h3>Edit “{scene.title}”</h3>
+      <h3>
+        Edit scene{" "}
+        <i>
+          <b>{scene.title}</b>
+        </i>
+      </h3>
       <hr />
       <SceneForm scene={scene} callback={doUpdate} saving={saving} />
       {submissionError && (

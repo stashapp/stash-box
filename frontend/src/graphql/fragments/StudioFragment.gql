@@ -1,3 +1,4 @@
+#import "../fragments/URLFragment.gql"
 fragment StudioFragment on Studio {
     id
     name
@@ -10,8 +11,7 @@ fragment StudioFragment on Studio {
       name
     }
     urls {
-        url
-        type
+      ...URLFragment
     }
     images {
         id
