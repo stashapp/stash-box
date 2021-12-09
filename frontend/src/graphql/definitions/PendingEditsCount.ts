@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { TargetTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: PendingEditsCount
 // ====================================================
-
 
 export interface PendingEditsCount_queryEdits {
   __typename: "QueryEditsResultType";

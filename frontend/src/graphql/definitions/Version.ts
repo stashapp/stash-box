@@ -3,11 +3,9 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 // ====================================================
 // GraphQL query operation: Version
 // ====================================================
-
 
 export interface Version_version {
   __typename: "Version";

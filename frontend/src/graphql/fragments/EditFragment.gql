@@ -4,6 +4,7 @@
 #import "../fragments/SceneFragment.gql"
 #import "../fragments/TagFragment.gql"
 #import "../fragments/CommentFragment.gql"
+#import "../fragments/URLFragment.gql"
 fragment EditFragment on Edit {
   id
   target_type
@@ -67,12 +68,10 @@ fragment EditFragment on Edit {
       removed_aliases
       gender
       added_urls {
-        url
-        type
+        ...URLFragment
       }
       removed_urls {
-        url
-        type
+        ...URLFragment
       }
       birthdate
       birthdate_accuracy
@@ -114,12 +113,10 @@ fragment EditFragment on Edit {
     ... on StudioEdit {
       name
       added_urls {
-        url
-        type
+        ...URLFragment
       }
       removed_urls {
-        url
-        type
+        ...URLFragment
       }
       parent {
         ...StudioFragment
@@ -135,12 +132,10 @@ fragment EditFragment on Edit {
       title
       details
       added_urls {
-        url
-        type
+        ...URLFragment
       }
       removed_urls {
-        url
-        type
+        ...URLFragment
       }
       date
       studio {
@@ -212,12 +207,10 @@ fragment EditFragment on Edit {
       title
       details
       added_urls {
-        url
-        type
+        ...URLFragment
       }
       removed_urls {
-        url
-        type
+        ...URLFragment
       }
       date
       studio {

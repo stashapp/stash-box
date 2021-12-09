@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
@@ -17,11 +17,14 @@ interface Props {
 
 const StudioEdit: FC<Props> = ({ studio }) => {
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const [insertStudioEdit, { loading: saving }] = useStudioEdit({
     onCompleted: (data) => {
+      if (submissionError) setSubmissionError("");
       if (data.studioEdit.id)
         history.push(createHref(ROUTE_EDIT, data.studioEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   const doUpdate = (insertData: StudioEditDetailsInput, editNote: string) => {
@@ -52,6 +55,11 @@ const StudioEdit: FC<Props> = ({ studio }) => {
         showNetworkSelect={studio.child_studios.length === 0}
         saving={saving}
       />
+      {submissionError && (
+        <div className="text-danger text-end col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </div>
   );
 };

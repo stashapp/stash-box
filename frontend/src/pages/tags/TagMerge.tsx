@@ -15,11 +15,14 @@ interface Props {
 
 const TagMerge: FC<Props> = ({ tag }) => {
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const [mergeSources, setMergeSources] = useState<string[]>([]);
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
+      if (submissionError) setSubmissionError("");
       if (data.tagEdit.id) history.push(editHref(data.tagEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   const doUpdate = (insertData: TagEditDetailsInput, editNote: string) => {
@@ -59,6 +62,9 @@ const TagMerge: FC<Props> = ({ tag }) => {
         Modify <em>{tag.name}</em>
       </h5>
       <Row className="g-0">
+        {submissionError && (
+          <div className="text-danger mb-2">Error: {submissionError}</div>
+        )}
         <TagForm tag={tag} callback={doUpdate} saving={saving} />
       </Row>
     </div>

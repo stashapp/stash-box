@@ -8,3 +8,5 @@ export * from "./route";
 export * from "./markdown";
 export * from "./enum";
 export * from "./user";
+export * from "./diff";
+export * from "./data";

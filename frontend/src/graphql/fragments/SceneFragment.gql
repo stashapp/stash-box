@@ -1,5 +1,6 @@
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/ScenePerformerFragment.gql"
+#import "../fragments/URLFragment.gql"
 fragment SceneFragment on Scene {
   id
   date
@@ -9,8 +10,7 @@ fragment SceneFragment on Scene {
   director
   duration
   urls {
-    url
-    type
+    ...URLFragment
   }
   images {
     ...ImageFragment

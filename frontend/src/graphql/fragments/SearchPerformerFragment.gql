@@ -1,4 +1,5 @@
 #import "../fragments/ImageFragment.gql"
+#import "../fragments/URLFragment.gql"
 fragment SearchPerformerFragment on Performer {
   id
   name
@@ -15,10 +16,9 @@ fragment SearchPerformerFragment on Performer {
     accuracy
   }
   urls {
-    url
-    type
+    ...URLFragment
   }
   images {
-    ... ImageFragment
+    ...ImageFragment
   }
 }

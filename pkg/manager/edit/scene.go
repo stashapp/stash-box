@@ -230,7 +230,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 	}
 
 	if scene == nil {
-		return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
+		return fmt.Errorf("%w: target scene %s", ErrEntityNotFound, sceneID.String())
 	}
 
 	var mergeSources []uuid.UUID
@@ -241,7 +241,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 		}
 
 		if sourceScene == nil {
-			return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sourceID.String())
+			return fmt.Errorf("%w: source scene %s", ErrEntityNotFound, sourceID.String())
 		}
 		if sceneID == sourceID {
 			return ErrMergeTargetIsSource

@@ -1,3 +1,4 @@
+#import "../fragments/URLFragment.gql"
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/ScenePerformerFragment.gql"
 fragment QuerySceneFragment on Scene {
@@ -6,8 +7,7 @@ fragment QuerySceneFragment on Scene {
   title
   duration
   urls {
-    url
-    type
+    ...URLFragment
   }
   images {
     ...ImageFragment
