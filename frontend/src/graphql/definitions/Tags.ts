@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { QuerySpec, TagFilterType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Tags
 // ====================================================
-
 
 export interface Tags_queryTags_tags {
   __typename: "Tag";

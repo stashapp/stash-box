@@ -2,13 +2,12 @@ import { FC, useState, useMemo } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import { GenderEnum, SceneEditDetailsInput } from "src/graphql";
+import { SceneEditDetailsInput } from "src/graphql";
 import { getUrlByType, formatDuration, parseDuration } from "src/utils";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -22,79 +21,10 @@ import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
 import { EditNote } from "src/components/form";
 import DiffScene from "./diff";
-
-const nullCheck = (input: string | null) =>
-  input === "" || input === "null" ? null : input;
-
-const schema = yup.object({
-  title: yup.string().required("Title is required"),
-  details: yup.string().trim(),
-  date: yup
-    .string()
-    .transform(nullCheck)
-    .matches(/^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date",
-    })
-    .nullable()
-    .required("Release date is required"),
-  duration: yup
-    .string()
-    .matches(/^((\d+:)?([0-5]?\d):)?([0-5]?\d)$/, {
-      excludeEmptyString: true,
-      message: "Invalid duration, format should be HH:MM:SS",
-    })
-    .nullable(),
-  director: yup.string().trim().transform(nullCheck).nullable(),
-  studio: yup
-    .object({
-      id: yup.string().required("asdasd"),
-      name: yup.string().required(),
-    })
-    .nullable()
-    .required("Studio is required"),
-  studioURL: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
-  performers: yup
-    .array()
-    .of(
-      yup
-        .object({
-          performerId: yup.string().required(),
-          name: yup.string().required(),
-          disambiguation: yup.string().nullable(),
-          alias: yup.string().trim().transform(nullCheck).nullable(),
-          gender: yup.string().oneOf(Object.keys(GenderEnum)).nullable(),
-          deleted: yup.bool().required(),
-        })
-        .required()
-    )
-    .ensure(),
-  tags: yup
-    .array()
-    .of(
-      yup.object({
-        id: yup.string().required(),
-        name: yup.string().required(),
-      })
-    )
-    .ensure(),
-  images: yup
-    .array()
-    .of(
-      yup.object({
-        id: yup.string().required(),
-        url: yup.string().required(),
-      })
-    )
-    .required(),
-  note: yup.string().required("Edit note is required"),
-});
+import { SceneSchema, SceneFormData } from "./schema";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
-
-type SceneFormData = yup.Asserts<typeof schema>;
-export type CastedSceneFormData = yup.TypeOf<typeof schema>;
 
 interface SceneProps {
   scene: Scene;
@@ -111,7 +41,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
     watch,
     formState: { errors },
   } = useForm<SceneFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(SceneSchema),
     mode: "onBlur",
     defaultValues: {
       title: scene?.title ?? undefined,
@@ -151,7 +81,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
 
   const fieldData = watch();
   const [oldSceneChanges, newSceneChanges] = useMemo(
-    () => DiffScene(schema.cast(fieldData), scene),
+    () => DiffScene(SceneSchema.cast(fieldData), scene),
     [fieldData, scene]
   );
 

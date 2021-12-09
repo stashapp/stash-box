@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/api"
 	dbtest "github.com/stashapp/stash-box/pkg/database/databasetest"
 	"github.com/stashapp/stash-box/pkg/dataloader"
@@ -19,6 +18,7 @@ import (
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/gofrs/uuid"
 )
 
 // we need to create some users to test the api with, otherwise all calls

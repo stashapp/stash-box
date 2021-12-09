@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { TagEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: TagEdit
 // ====================================================
-
 
 export interface TagEdit_tagEdit_comments_user {
   __typename: "User";

@@ -31,7 +31,7 @@
     "@types/react-router-dom": "^5.1.8",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
-    "@vitejs/plugin-react": "1.0.5",
+    "@vitejs/plugin-react": "^1.1.1",
     "apollo": "^2.33.9",
     "eslint": "^8.2.0",
     "eslint-config-airbnb-typescript": "^16.0.0",

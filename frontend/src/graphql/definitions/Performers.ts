@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { QuerySpec, PerformerFilterType, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Performers
 // ====================================================
-
 
 export interface Performers_queryPerformers_performers_birthdate {
   __typename: "FuzzyDate";
@@ -39,16 +37,16 @@ export interface Performers_queryPerformers_performers_piercings {
 
 export interface Performers_queryPerformers_performers_urls {
   __typename: "URL";
-  type: string;
   url: string;
+  type: string;
 }
 
 export interface Performers_queryPerformers_performers_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface Performers_queryPerformers_performers {

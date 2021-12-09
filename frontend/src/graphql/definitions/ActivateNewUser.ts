@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { ActivateNewUserInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: ActivateNewUser
 // ====================================================
-
 
 export interface ActivateNewUser_activateNewUser {
   __typename: "User";

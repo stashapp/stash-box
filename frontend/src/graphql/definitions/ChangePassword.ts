@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { UserChangePasswordInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: ChangePassword
 // ====================================================
-
 
 export interface ChangePassword {
   /**

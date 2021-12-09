@@ -3951,7 +3951,7 @@ type Query {
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
   queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType! @hasRole(role: READ)
 
-  """Find a tag cateogry by ID"""
+  """Find a tag category by ID"""
   findTagCategory(id: ID!): TagCategory @hasRole(role: READ)
   queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType! @hasRole(role: READ)
 
@@ -3966,13 +3966,11 @@ type Query {
   """Finds scenes that match a list of hashes"""
   findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ)
   findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ)
-
   queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType! @hasRole(role: READ)
 
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
-
   queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @hasRole(role: READ)
 
   #### Users ####

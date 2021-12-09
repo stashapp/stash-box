@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { SceneEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: SceneEdit
 // ====================================================
-
 
 export interface SceneEdit_sceneEdit_comments_user {
   __typename: "User";

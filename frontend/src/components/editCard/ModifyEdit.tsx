@@ -3,16 +3,16 @@ import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits_details as Details,
-  Edits_queryEdits_edits_details_PerformerEdit as PerformerDetails,
-  Edits_queryEdits_edits_details_StudioEdit as StudioDetails,
-  Edits_queryEdits_edits_details_TagEdit as TagDetails,
   Edits_queryEdits_edits_old_details as OldDetails,
-  Edits_queryEdits_edits_old_details_PerformerEdit as OldPerformerDetails,
-  Edits_queryEdits_edits_old_details_StudioEdit as OldStudioDetails,
-  Edits_queryEdits_edits_old_details_TagEdit as OldTagDetails,
   Edits_queryEdits_edits_options as Options,
 } from "src/graphql/definitions/Edits";
-import { FingerprintAlgorithm, PerformerFragment } from "src/graphql";
+import {
+  FingerprintAlgorithm,
+  PerformerFragment,
+  GenderEnum,
+  EthnicityEnum,
+  BreastTypeEnum,
+} from "src/graphql";
 import {
   formatDuration,
   getCountryByISO,
@@ -37,9 +37,17 @@ import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
 import { renderPerformer, renderTag, renderFingerprint } from "./renderEntity";
 
+export interface TagDetails {
+  name: string | null;
+  description?: string | null;
+  category: { id: string; name: string } | null;
+  added_aliases?: string[] | null;
+  removed_aliases?: string[] | null;
+}
+
 const renderTagDetails = (
   tagDetails: TagDetails,
-  oldTagDetails: OldTagDetails | undefined,
+  oldTagDetails: TagDetails | undefined,
   showDiff: boolean
 ) => (
   <>
@@ -82,9 +90,47 @@ const renderTagDetails = (
   </>
 );
 
-const renderPerformerDetails = (
+type BodyMod = {
+  location: string;
+  description: string | null;
+};
+
+type Image = {
+  id: string;
+  url: string;
+};
+
+export interface PerformerDetails {
+  name: string | null;
+  gender?: GenderEnum | null;
+  disambiguation?: string | null;
+  birthdate?: string | null;
+  birthdate_accuracy?: string | null;
+  career_start_year?: number | null;
+  career_end_year?: number | null;
+  height?: number | null;
+  band_size?: number | null;
+  cup_size?: string | null;
+  waist_size?: number | null;
+  hip_size?: number | null;
+  breast_type?: BreastTypeEnum | null;
+  country?: string | null;
+  ethnicity?: EthnicityEnum | null;
+  eye_color?: string | null;
+  hair_color?: string | null;
+  added_tattoos?: BodyMod[] | null;
+  removed_tattoos?: BodyMod[] | null;
+  added_piercings?: BodyMod[] | null;
+  removed_piercings?: BodyMod[] | null;
+  added_aliases?: string[] | null;
+  removed_aliases?: string[] | null;
+  added_images?: Image[] | null;
+  removed_images?: Image[] | null;
+}
+
+export const renderPerformerDetails = (
   performerDetails: PerformerDetails,
-  oldPerformerDetails: OldPerformerDetails | undefined,
+  oldPerformerDetails: PerformerDetails | undefined,
   showDiff: boolean,
   setModifyAliases = false
 ) => (
@@ -209,27 +255,27 @@ const renderPerformerDetails = (
     />
     <ChangeRow
       name="Tattoos"
-      newValue={(performerDetails?.added_tattoos ?? [])
+      newValue={(performerDetails.added_tattoos ?? [])
         .map(formatBodyModification)
         .join("\n")}
-      oldValue={(performerDetails?.removed_tattoos ?? [])
+      oldValue={(performerDetails.removed_tattoos ?? [])
         .map(formatBodyModification)
         .join("\n")}
       showDiff={showDiff}
     />
     <ChangeRow
       name="Piercings"
-      newValue={(performerDetails?.added_piercings ?? [])
+      newValue={(performerDetails.added_piercings ?? [])
         .map(formatBodyModification)
         .join("\n")}
-      oldValue={(performerDetails?.removed_piercings ?? [])
+      oldValue={(performerDetails.removed_piercings ?? [])
         .map(formatBodyModification)
         .join("\n")}
       showDiff={showDiff}
     />
     <ImageChangeRow
-      newImages={performerDetails?.added_images}
-      oldImages={performerDetails?.removed_images}
+      newImages={performerDetails.added_images}
+      oldImages={performerDetails.removed_images}
       showDiff={showDiff}
     />
   </>
@@ -243,6 +289,11 @@ type ScenePerformance = {
   >;
 };
 
+interface URL {
+  url: string;
+  type: string;
+}
+
 export interface SceneDetails {
   title: string | null;
   date: string | null;
@@ -255,30 +306,10 @@ export interface SceneDetails {
   } | null;
   added_performers?: ScenePerformance[] | null;
   removed_performers?: ScenePerformance[] | null;
-  added_images?:
-    | {
-        id: string;
-        url: string;
-      }[]
-    | null;
-  removed_images?:
-    | {
-        id: string;
-        url: string;
-      }[]
-    | null;
-  added_urls?:
-    | {
-        type: string;
-        url: string;
-      }[]
-    | null;
-  removed_urls?:
-    | {
-        type: string;
-        url: string;
-      }[]
-    | null;
+  added_images?: Image[] | null;
+  removed_images?: Image[] | null;
+  added_urls?: URL[] | null;
+  removed_urls?: URL[] | null;
   added_tags?:
     | {
         id: string;
@@ -394,9 +425,21 @@ export const renderSceneDetails = (
   </>
 );
 
-const renderStudioDetails = (
+export interface StudioDetails {
+  name: string | null;
+  parent: {
+    id: string;
+    name: string;
+  } | null;
+  added_images?: Image[] | null;
+  removed_images?: Image[] | null;
+  added_urls?: URL[] | null;
+  removed_urls?: URL[] | null;
+}
+
+export const renderStudioDetails = (
   studioDetails: StudioDetails,
-  oldStudioDetails: OldStudioDetails | undefined,
+  oldStudioDetails: StudioDetails | undefined,
   showDiff: boolean
 ) => (
   <>
@@ -424,8 +467,8 @@ const renderStudioDetails = (
       showDiff={showDiff}
     />
     <ImageChangeRow
-      newImages={studioDetails?.added_images}
-      oldImages={studioDetails?.removed_images}
+      newImages={studioDetails.added_images}
+      oldImages={studioDetails.removed_images}
       showDiff={showDiff}
     />
   </>

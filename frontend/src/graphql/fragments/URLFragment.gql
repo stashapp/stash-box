@@ -1,0 +1,4 @@
+fragment URLFragment on URL {
+  url
+  type
+}

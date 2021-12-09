@@ -4,13 +4,11 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL fragment: ImageFragment
+// GraphQL fragment: URLFragment
 // ====================================================
 
-export interface ImageFragment {
-  __typename: "Image";
-  id: string;
+export interface URLFragment {
+  __typename: "URL";
   url: string;
-  width: number;
-  height: number;
+  type: string;
 }

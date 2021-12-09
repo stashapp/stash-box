@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { StudioCreateInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddStudio
 // ====================================================
-
 
 export interface AddStudio_studioCreate_urls {
   __typename: "URL";

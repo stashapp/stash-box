@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { SceneDestroyInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: DeleteScene
 // ====================================================
-
 
 export interface DeleteScene {
   sceneDestroy: boolean;

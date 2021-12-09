@@ -3,13 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-
 import { QuerySpec, TagGroupEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Categories
 // ====================================================
-
 
 export interface Categories_queryTagCategories_tag_categories {
   __typename: "TagCategory";

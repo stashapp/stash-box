@@ -1,8 +1,8 @@
 package edit
 
 import (
-	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -98,6 +98,10 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
 	}
 
+	if reflect.DeepEqual(performerEdit.Old, performerEdit.New) {
+		return ErrNoChanges
+	}
+
 	return m.edit.SetData(performerEdit)
 }
 
@@ -106,7 +110,7 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 
 	// get the existing performer
 	if input.Edit.ID == nil {
-		return errors.New("Merge performer ID is required")
+		return ErrMergeIDMissing
 	}
 	performerID := *input.Edit.ID
 	performer, err := pqb.Find(performerID)
@@ -130,13 +134,13 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 			return fmt.Errorf("performer with id %v not found", sourceID)
 		}
 		if performerID == sourceID {
-			return errors.New("merge target cannot be used as source")
+			return ErrMergeTargetIsSource
 		}
 		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
-		return errors.New("No merge sources found")
+		return ErrNoMergeSources
 	}
 
 	// perform a diff against the input and the current object
