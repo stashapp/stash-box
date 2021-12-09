@@ -1,6 +1,6 @@
 import { StudioDetails } from "src/components/editCard/ModifyEdit";
 import { StudioFragment } from "src/graphql";
-import { CastedStudioFormData } from "./StudioForm";
+import { CastedStudioFormData } from "./schema";
 import { diffValue, diffImages, diffURLs } from "src/utils";
 
 const selectStudioDetails = (

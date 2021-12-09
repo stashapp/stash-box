@@ -10,7 +10,7 @@ import {
   diffURLs,
 } from "src/utils";
 
-import { CastedSceneFormData } from "./SceneForm";
+import { CastedSceneFormData } from "./schema";
 
 const selectSceneDetails = (
   data: CastedSceneFormData,

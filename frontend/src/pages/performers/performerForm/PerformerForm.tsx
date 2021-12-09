@@ -4,7 +4,6 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Select from "react-select";
 import { Button, Col, Form, Row, Tabs, Tab } from "react-bootstrap";
-import * as yup from "yup";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
@@ -29,6 +28,7 @@ import { BodyModification, EditNote } from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
 import EditImages from "src/components/editImages";
 import DiffPerformer from "./diff";
+import { PerformerSchema, PerformerFormData } from "./schema";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en");
@@ -99,114 +99,6 @@ const getEnumValue = (enumArray: OptionEnum[], val: string) => {
   return val;
 };
 
-const nullCheck = (input: string | null) =>
-  input === "" || input === "null" ? null : input;
-const zeroCheck = (input: number | null) =>
-  input === 0 || Number.isNaN(input) ? null : input;
-
-const schema = yup.object({
-  id: yup.string(),
-  name: yup.string().required("Name is required"),
-  gender: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([null, ...Object.keys(GenderEnum)], "Invalid gender"),
-  disambiguation: yup.string().trim().transform(nullCheck).nullable(),
-  birthdate: yup
-    .string()
-    .defined()
-    .transform(nullCheck)
-    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
-      excludeEmptyString: true,
-      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
-    })
-    .nullable(),
-  career_start_year: yup
-    .number()
-    .transform(zeroCheck)
-    .nullable()
-    .min(1950, "Invalid year")
-    .max(new Date().getFullYear(), "Invalid year"),
-  career_end_year: yup
-    .number()
-    .transform(zeroCheck)
-    .min(1950, "Invalid year")
-    .max(new Date().getFullYear(), "Invalid year")
-    .nullable(),
-  height: yup
-    .number()
-    .transform(zeroCheck)
-    .min(100, "Invalid height, Height must be in centimeters.")
-    .max(230, "Invalid height")
-    .nullable(),
-  braSize: yup
-    .string()
-    .transform(nullCheck)
-    .matches(
-      /\d{2,3}[a-zA-Z]{1,4}/,
-      "Invalid cup size. Only american sizes are accepted."
-    )
-    .nullable(),
-  waistSize: yup
-    .number()
-    .transform(zeroCheck)
-    .min(15, "Invalid waist size")
-    .max(50, "Invalid waist size")
-    .nullable(),
-  hipSize: yup.number().transform(zeroCheck).nullable(),
-  boobJob: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([...Object.keys(BreastTypeEnum), null], "Invalid breast type"),
-  country: yup.string().trim().transform(nullCheck).nullable().defined(),
-  ethnicity: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([...Object.keys(EthnicityEnum), null], "Invalid ethnicity"),
-  eye_color: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([null, ...Object.keys(EyeColorEnum)], "Invalid eye color"),
-  hair_color: yup
-    .string()
-    .transform(nullCheck)
-    .nullable()
-    .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
-  tattoos: yup.array().of(
-    yup.object({
-      location: yup.string().trim().required("Location is required"),
-      description: yup.string().trim().transform(nullCheck).nullable(),
-    })
-  ),
-  piercings: yup.array().of(
-    yup.object({
-      location: yup.string().trim().required("Location is required"),
-      description: yup.string().trim().transform(nullCheck).nullable(),
-    })
-  ),
-  aliases: yup
-    .array()
-    .of(yup.string().trim().transform(nullCheck).required())
-    .required(),
-  images: yup
-    .array()
-    .of(
-      yup.object({
-        id: yup.string().required(),
-        url: yup.string().required(),
-      })
-    )
-    .required(),
-  note: yup.string().required("Edit note is required"),
-});
-
-export type PerformerFormData = yup.Asserts<typeof schema>;
-export type CastedPerformerFormData = yup.TypeOf<typeof schema>;
-
 interface PerformerProps {
   performer: Performer;
   callback: (
@@ -243,7 +135,7 @@ const PerformerForm: FC<PerformerProps> = ({
     setValue,
     formState: { errors },
   } = useForm<PerformerFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(PerformerSchema),
     mode: "onBlur",
     defaultValues: {
       tattoos,
@@ -259,7 +151,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const fieldData = watch();
   const [oldChanges, newChanges] = useMemo(
-    () => DiffPerformer(schema.cast(fieldData), performer),
+    () => DiffPerformer(PerformerSchema.cast(fieldData), performer),
     [fieldData, performer]
   );
   const history = useHistory();

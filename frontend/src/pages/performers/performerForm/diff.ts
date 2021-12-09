@@ -12,7 +12,7 @@ import {
   parseBraSize,
 } from "src/utils";
 
-import { CastedPerformerFormData } from "./PerformerForm";
+import { CastedPerformerFormData } from "./schema";
 
 const diffBodyMods = (
   newMods:

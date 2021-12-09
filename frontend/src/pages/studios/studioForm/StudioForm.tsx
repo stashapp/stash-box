@@ -3,7 +3,6 @@ import { useHistory } from "react-router-dom";
 import { Button, Row, Col, Form, Tab, Tabs } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import cx from "classnames";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
@@ -14,35 +13,8 @@ import { getUrlByType } from "src/utils";
 import { EditNote } from "src/components/form";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
+import { StudioSchema, StudioFormData } from "./schema";
 import DiffStudio from "./diff";
-
-const nullCheck = (input: string | null) =>
-  input === "" || input === "null" ? null : input;
-
-const schema = yup.object({
-  name: yup.string().required("Name is required"),
-  url: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
-  images: yup
-    .array()
-    .of(
-      yup.object({
-        id: yup.string().required(),
-        url: yup.string().required(),
-      })
-    )
-    .required(),
-  studio: yup
-    .object({
-      id: yup.string().required(),
-      name: yup.string().required(),
-    })
-    .optional()
-    .default(undefined),
-  note: yup.string().required("Edit note is required"),
-});
-
-type StudioFormData = yup.Asserts<typeof schema>;
-export type CastedStudioFormData = yup.TypeOf<typeof schema>;
 
 interface StudioProps {
   studio: Studio;
@@ -65,7 +37,7 @@ const StudioForm: FC<StudioProps> = ({
     watch,
     formState: { errors },
   } = useForm<StudioFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(StudioSchema),
     defaultValues: {
       name: studio.name,
       images: studio.images,
@@ -81,7 +53,7 @@ const StudioForm: FC<StudioProps> = ({
   const [file, setFile] = useState<File | undefined>();
   const fieldData = watch();
   const [oldStudioChanges, newStudioChanges] = useMemo(
-    () => DiffStudio(schema.cast(fieldData), studio),
+    () => DiffStudio(StudioSchema.cast(fieldData), studio),
     [fieldData, studio]
   );
 
