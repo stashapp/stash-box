@@ -10,7 +10,7 @@ interface Props {
 export const NavButtons: FC<Props> = ({ onNext, disabled = false }) => {
   const history = useHistory();
   return (
-    <div className="d-flex">
+    <div className="d-flex mt-2">
       <Button
         variant="danger"
         className="ms-auto me-2"
