@@ -1,6 +1,5 @@
 import { FC, useMemo, useState } from "react";
-import { useHistory } from "react-router-dom";
-import { Button, Row, Col, Form, Tab, Tabs } from "react-bootstrap";
+import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
@@ -10,7 +9,7 @@ import { StudioEditDetailsInput } from "src/graphql";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
 import { getUrlByType } from "src/utils";
-import { EditNote } from "src/components/form";
+import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
 import { StudioSchema, StudioFormData } from "./schema";
@@ -29,7 +28,6 @@ const StudioForm: FC<StudioProps> = ({
   showNetworkSelect = true,
   saving,
 }) => {
-  const history = useHistory();
   const {
     register,
     control,
@@ -116,18 +114,7 @@ const StudioForm: FC<StudioProps> = ({
             </Form.Group>
           )}
 
-          <div className="d-flex mt-1">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button className="me-1" onClick={() => setActiveTab("images")}>
-              Next
-            </Button>
-          </div>
+          <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
 
         <Tab eventKey="images" title="Images" className="col-xl-6">
@@ -138,22 +125,11 @@ const StudioForm: FC<StudioProps> = ({
             setFile={(f) => setFile(f)}
           />
 
-          <div className="d-flex mt-1">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="me-1"
-              disabled={!!file}
-              onClick={() => setActiveTab("confirm")}
-            >
-              Next
-            </Button>
-          </div>
+          <NavButtons
+            onNext={() => setActiveTab("confirm")}
+            disabled={!!file}
+          />
+
           <div className="d-flex">
             {/* dummy element for feedback */}
             <div className="ms-auto">
@@ -173,24 +149,7 @@ const StudioForm: FC<StudioProps> = ({
             </Col>
           </Row>
 
-          <div className="d-flex mt-2">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled
-              className="d-none"
-              aria-hidden="true"
-            />
-            <Button type="submit" disabled={!!file || saving}>
-              Submit Edit
-            </Button>
-          </div>
+          <SubmitButtons disabled={!!file || saving} />
         </Tab>
       </Tabs>
     </Form>
