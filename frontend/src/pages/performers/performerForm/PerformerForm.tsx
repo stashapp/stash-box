@@ -1,9 +1,8 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { useHistory } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Select from "react-select";
-import { Button, Col, Form, Row, Tabs, Tab } from "react-bootstrap";
+import { Col, Form, Row, Tabs, Tab } from "react-bootstrap";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
@@ -24,7 +23,12 @@ import { Image } from "src/utils/transforms";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
 import { Help } from "src/components/fragments";
-import { BodyModification, EditNote } from "src/components/form";
+import {
+  BodyModification,
+  EditNote,
+  NavButtons,
+  SubmitButtons,
+} from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
 import EditImages from "src/components/editImages";
 import DiffPerformer from "./diff";
@@ -154,7 +158,6 @@ const PerformerForm: FC<PerformerProps> = ({
     () => DiffPerformer(PerformerSchema.cast(fieldData), performer),
     [fieldData, performer]
   );
-  const history = useHistory();
 
   const showBreastType =
     fieldData.gender !== GenderEnum.MALE &&
@@ -556,18 +559,7 @@ const PerformerForm: FC<PerformerProps> = ({
             </Form.Group>
           </Row>
 
-          <div className="d-flex">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button className="me-1" onClick={() => setActiveTab("bodymod")}>
-              Next
-            </Button>
-          </div>
+          <NavButtons onNext={() => setActiveTab("bodymod")} />
         </Tab>
 
         <Tab
@@ -611,18 +603,7 @@ const PerformerForm: FC<PerformerProps> = ({
             ))}
           </Form.Control.Feedback>
 
-          <div className="d-flex mt-3">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button className="me-1" onClick={() => setActiveTab("images")}>
-              Next
-            </Button>
-          </div>
+          <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
 
         <Tab eventKey="images" title="Images">
@@ -632,22 +613,11 @@ const PerformerForm: FC<PerformerProps> = ({
             setFile={(f) => setFile(f)}
           />
 
-          <div className="d-flex mt-1">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="me-1"
-              disabled={!!file}
-              onClick={() => setActiveTab("confirm")}
-            >
-              Next
-            </Button>
-          </div>
+          <NavButtons
+            onNext={() => setActiveTab("confirm")}
+            disabled={!!file}
+          />
+
           <div className="d-flex">
             {/* dummy element for feedback */}
             <div className="ms-auto">
@@ -666,24 +636,8 @@ const PerformerForm: FC<PerformerProps> = ({
               <EditNote register={register} error={errors.note} />
             </Col>
           </Row>
-          <div className="d-flex mt-2">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled
-              className="d-none"
-              aria-hidden="true"
-            />
-            <Button type="submit" disabled={!!file || saving}>
-              Submit Edit
-            </Button>
-          </div>
+
+          <SubmitButtons disabled={!!file || saving} />
         </Tab>
       </Tabs>
     </Form>
