@@ -1,5 +1,4 @@
 import { FC, useState, useMemo } from "react";
-import { useHistory } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
@@ -19,7 +18,7 @@ import SearchField, {
 import TagSelect from "src/components/tagSelect";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
-import { EditNote } from "src/components/form";
+import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 
@@ -33,7 +32,6 @@ interface SceneProps {
 }
 
 const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
-  const history = useHistory();
   const {
     register,
     control,
@@ -355,18 +353,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
             <TagSelect tags={scene.tags} onChange={onTagChange} />
           </Form.Group>
 
-          <div className="d-flex mt-1">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button className="me-1" onClick={() => setActiveTab("images")}>
-              Next
-            </Button>
-          </div>
+          <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
         <Tab eventKey="images" title="Images">
           <EditImages
@@ -375,22 +362,11 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
             setFile={(f) => setFile(f)}
           />
 
-          <div className="d-flex mt-1">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="me-1"
-              disabled={!!file}
-              onClick={() => setActiveTab("confirm")}
-            >
-              Next
-            </Button>
-          </div>
+          <NavButtons
+            onNext={() => setActiveTab("confirm")}
+            disabled={!!file}
+          />
+
           <div className="d-flex">
             {/* dummy element for feedback */}
             <div className="ms-auto">
@@ -408,24 +384,8 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
               <EditNote register={register} error={errors.note} />
             </Col>
           </Row>
-          <div className="d-flex mt-2">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => history.goBack()}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled
-              className="d-none"
-              aria-hidden="true"
-            />
-            <Button type="submit" disabled={saving}>
-              Submit Edit
-            </Button>
-          </div>
+
+          <SubmitButtons disabled={saving} />
         </Tab>
       </Tabs>
     </Form>
