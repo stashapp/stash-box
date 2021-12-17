@@ -134,7 +134,7 @@ const URLInput: React.FC<URLInputProps> = ({ control, type }) => {
         />
         <Button
           onClick={handleAdd}
-          disabled={!newURL && !!selectRef.current?.value}
+          disabled={!newURL || !selectRef.current?.value}
         >
           Add
         </Button>
