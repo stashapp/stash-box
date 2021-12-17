@@ -84,10 +84,6 @@ func (r *mutationResolver) SiteUpdate(ctx context.Context, input models.SiteUpda
 }
 
 func (r *mutationResolver) SiteDestroy(ctx context.Context, input models.SiteDestroyInput) (bool, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		qb := fac.Site()
