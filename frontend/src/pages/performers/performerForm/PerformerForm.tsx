@@ -619,12 +619,8 @@ const PerformerForm: FC<PerformerProps> = ({
           <NavButtons onNext={() => setActiveTab("links")} />
         </Tab>
 
-        <Tab eventKey="links" title="Links">
-          <Row>
-            <Col xs={8}>
-              <URLInput control={control} type={ValidSiteTypeEnum.PERFORMER} />
-            </Col>
-          </Row>
+        <Tab eventKey="links" title="Links" className="col-xl-9">
+          <URLInput control={control} type={ValidSiteTypeEnum.PERFORMER} />
 
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
