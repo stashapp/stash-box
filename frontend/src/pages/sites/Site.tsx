@@ -37,12 +37,12 @@ const SiteComponent: React.FC<Props> = ({ site }) => {
       <Link to={ROUTE_SITES}>
         <h6 className="mb-4">&larr; Site List</h6>
       </Link>
-      <div className="d-flex no-gutters">
-        <h3 className="col-4 me-auto">
+      <div className="d-flex">
+        <h3 className="me-auto">
           <SiteLink site={site} />
         </h3>
         {isAdmin(auth.user) && (
-          <div>
+          <div className="ms-auto">
             <Link to={createHref(ROUTE_SITE_EDIT, site)} className="me-2">
               <Button>Edit</Button>
             </Link>
