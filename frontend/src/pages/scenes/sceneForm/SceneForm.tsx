@@ -350,10 +350,8 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
           <NavButtons onNext={() => setActiveTab("links")} />
         </Tab>
 
-        <Tab eventKey="links" title="Links">
-          <Row>
-            <URLInput control={control} type={ValidSiteTypeEnum.SCENE} />
-          </Row>
+        <Tab eventKey="links" title="Links" className="col-xl-9">
+          <URLInput control={control} type={ValidSiteTypeEnum.SCENE} />
 
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
