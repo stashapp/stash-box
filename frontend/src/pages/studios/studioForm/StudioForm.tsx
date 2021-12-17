@@ -108,7 +108,7 @@ const StudioForm: FC<StudioProps> = ({
           <NavButtons onNext={() => setActiveTab("links")} />
         </Tab>
 
-        <Tab eventKey="links" title="Links">
+        <Tab eventKey="links" title="Links" className="col-xl-9">
           <Form.Group className="mb-3">
             <Form.Label>Links</Form.Label>
             <URLInput control={control} type={ValidSiteTypeEnum.STUDIO} />
