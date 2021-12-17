@@ -52,10 +52,6 @@ func (r *mutationResolver) SiteCreate(ctx context.Context, input models.SiteCrea
 }
 
 func (r *mutationResolver) SiteUpdate(ctx context.Context, input models.SiteUpdateInput) (*models.Site, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	var site *models.Site
 	err := fac.WithTxn(func() error {
