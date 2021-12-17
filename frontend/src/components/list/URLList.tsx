@@ -16,7 +16,7 @@ const URLList: React.FC<URLListProps> = ({ urls }) => (
     {urls.map((u) => (
       <li key={u.url}>
         <SiteLink site={u.site} hideName />
-        <a href={u.url} target="_blank" rel="noreferrer">
+        <a href={u.url} target="_blank" rel="noreferrer noopener">
           {u.url}
         </a>
       </li>
