@@ -59,7 +59,7 @@ const SiteForm: React.FC<SiteProps> = ({ id, site, callback }) => {
   };
 
   return (
-    <Form className="TagForm col-6" onSubmit={handleSubmit(onSubmit)}>
+    <Form className="SiteForm w-50" onSubmit={handleSubmit(onSubmit)}>
       <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
         <Form.Control
