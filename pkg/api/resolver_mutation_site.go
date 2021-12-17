@@ -10,10 +10,6 @@ import (
 )
 
 func (r *mutationResolver) SiteCreate(ctx context.Context, input models.SiteCreateInput) (*models.Site, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	var err error
 
 	if err != nil {
