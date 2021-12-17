@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { siteHref } from "src/utils/route";
 
 const CLASSNAME = "SiteLink";
@@ -9,16 +10,17 @@ interface Props {
   site: {
     id: string;
     name: string;
+    icon: string;
   } | null;
   hideName?: boolean;
 }
 
 const SiteLink: React.FC<Props> = ({ site, hideName = false }) =>
   site ? (
-    <a href={siteHref(site)} className={CLASSNAME}>
-      <img className={CLASSNAME_ICON} src={`/image/site/${site.id}`} alt="" />
+    <Link to={siteHref(site)} className={CLASSNAME}>
+      <img className={CLASSNAME_ICON} src={site.icon} alt="" />
       {!hideName && <span className={CLASSNAME_NAME}>{site.name}</span>}
-    </a>
+    </Link>
   ) : (
     <></>
   );

@@ -13,6 +13,7 @@ export interface Scenes_queryScenes_scenes_urls_site {
   __typename: "Site";
   id: string;
   name: string;
+  icon: string;
 }
 
 export interface Scenes_queryScenes_scenes_urls {

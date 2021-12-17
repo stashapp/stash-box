@@ -1,3 +1,4 @@
+import { URLFragment } from "src/graphql/definitions/URLFragment";
 import { Performer_findPerformer_measurements as Measurements } from "src/graphql/definitions/Performer";
 
 export const formatCareer = (
@@ -20,11 +21,6 @@ export const getBraSize = (measurements: Measurements): string | undefined =>
     measurements.cup_size &&
     `${measurements.band_size}${measurements.cup_size}`) ??
   undefined;
-
-export interface URL {
-  url: string;
-  type: string;
-}
 
 export interface Image {
   url: string;
@@ -63,8 +59,8 @@ export const getImage = (
   return images?.[0]?.url ?? "";
 };
 
-export const getUrlByType = (urls: (URL | null)[], type: string) =>
-  (urls && (urls.find((url) => url?.type === type) || {}).url) || "";
+export const getUrlBySite = (urls: URLFragment[], name: string) =>
+  (urls && (urls.find((url) => url.site.name === name) || {}).url) || "";
 
 export const formatBodyModification = (
   bodyMod?: { location: string; description?: string | null } | null

@@ -19,6 +19,7 @@ import {
   formatDuration,
   formatDateTime,
   formatPendingEdits,
+  getUrlBySite,
 } from "src/utils";
 import {
   ROUTE_SCENE_EDIT,
@@ -114,6 +115,8 @@ const SceneComponent: FC<Props> = ({ scene }) => {
       </li>
     ));
 
+  const studioURL = getUrlBySite(scene.urls, "Studio");
+
   return (
     <>
       <Card className="scene-info">
@@ -185,17 +188,17 @@ const SceneComponent: FC<Props> = ({ scene }) => {
               <h6>Tags:</h6>
               <ul className="scene-tag-list">{tags}</ul>
             </div>
-            <hr />
-            <div>
-              {scene.urls.map((u) => (
-                <>
-                  <strong className="me-2">{u.site?.name ?? "Unknown"}:</strong>
-                  <a href={u.url} target="_blank" rel="noopener noreferrer">
-                    {u.url}
+            {studioURL && (
+              <>
+                <hr />
+                <div>
+                  <b className="me-2">Studio URL:</b>
+                  <a href={studioURL} target="_blank" rel="noopener noreferrer">
+                    {studioURL}
                   </a>
-                </>
-              ))}
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </Tab>
         <Tab eventKey="fingerprints" title="Fingerprints" mountOnEnter={false}>

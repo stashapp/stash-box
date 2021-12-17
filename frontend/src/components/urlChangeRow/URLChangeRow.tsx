@@ -4,11 +4,12 @@ import { SiteLink } from "src/components/fragments";
 
 const CLASSNAME = "URLChangeRow";
 
-interface URL {
+export interface URL {
   url: string;
   site: {
     id: string;
     name: string;
+    icon: string;
   };
 }
 

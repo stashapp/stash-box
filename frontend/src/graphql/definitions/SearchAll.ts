@@ -19,6 +19,7 @@ export interface SearchAll_searchPerformer_urls_site {
   __typename: "Site";
   id: string;
   name: string;
+  icon: string;
 }
 
 export interface SearchAll_searchPerformer_urls {
@@ -56,6 +57,7 @@ export interface SearchAll_searchScene_urls_site {
   __typename: "Site";
   id: string;
   name: string;
+  icon: string;
 }
 
 export interface SearchAll_searchScene_urls {

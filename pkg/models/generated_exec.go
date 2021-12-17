@@ -353,6 +353,7 @@ type ComplexityRoot struct {
 		Created     func(childComplexity int) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
+		Icon        func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Regex       func(childComplexity int) int
 		URL         func(childComplexity int) int
@@ -639,6 +640,7 @@ type SiteResolver interface {
 	URL(ctx context.Context, obj *Site) (*string, error)
 	Regex(ctx context.Context, obj *Site) (*string, error)
 	ValidTypes(ctx context.Context, obj *Site) ([]ValidSiteTypeEnum, error)
+	Icon(ctx context.Context, obj *Site) (string, error)
 	Created(ctx context.Context, obj *Site) (*time.Time, error)
 	Updated(ctx context.Context, obj *Site) (*time.Time, error)
 }
@@ -2479,6 +2481,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Site.ID(childComplexity), true
 
+	case "Site.icon":
+		if e.complexity.Site.Icon == nil {
+			break
+		}
+
+		return e.complexity.Site.Icon(childComplexity), true
+
 	case "Site.name":
 		if e.complexity.Site.Name == nil {
 			break
@@ -3792,6 +3801,7 @@ input SceneFilterType {
   url:  String
   regex:  String
   valid_types: [ValidSiteTypeEnum!]!
+  icon: String!
   created: Time!
   updated: Time!
 }
@@ -14315,6 +14325,41 @@ func (ec *executionContext) _Site_valid_types(ctx context.Context, field graphql
 	return ec.marshalNValidSiteTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnumᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Site_icon(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Site().Icon(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Site_created(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -23753,6 +23798,20 @@ func (ec *executionContext) _Site(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Site_valid_types(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "icon":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_icon(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

@@ -23,6 +23,7 @@ export interface StudioFragment_urls_site {
   __typename: "Site";
   id: string;
   name: string;
+  icon: string;
 }
 
 export interface StudioFragment_urls {

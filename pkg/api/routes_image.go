@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/image"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
 type imageRoutes struct{}
@@ -13,12 +14,24 @@ type imageRoutes struct{}
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/site/{uuid}", rs.SiteImage)
+	r.Get("/{checksum}", rs.image)
+	r.Get("/site/{uuid}", rs.siteImage)
 
 	return r
 }
 
-func (rs imageRoutes) SiteImage(w http.ResponseWriter, r *http.Request) {
+func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
+	checksum := chi.URLParam(r, "checksum")
+
+	if err := config.ValidateImageLocation(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	http.ServeFile(w, r, image.GetImagePath(config.GetImageLocation(), checksum))
+}
+
+func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "uuid")
 	siteID, err := uuid.FromString(id)
 	if err != nil {

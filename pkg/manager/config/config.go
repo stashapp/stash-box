@@ -61,6 +61,7 @@ type config struct {
 	// Image storage settings
 	ImageLocation string `mapstructure:"image_location"`
 	ImageBackend  string `mapstructure:"image_backend"`
+	FaviconPath   string `mapstructure:"favicon_path"`
 
 	// Logging options
 	LogFile     string `mapstructure:"logFile"`
@@ -75,8 +76,6 @@ type config struct {
 	PHashDistance int `mapstructure:"phash_distance"`
 
 	Title string `mapstructure:"title"`
-
-	FaviconPath string `mapstructure:"favicon_path"`
 }
 
 var JWTSignKey = "jwt_secret_key"

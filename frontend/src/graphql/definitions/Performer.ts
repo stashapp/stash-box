@@ -39,6 +39,7 @@ export interface Performer_findPerformer_urls_site {
   __typename: "Site";
   id: string;
   name: string;
+  icon: string;
 }
 
 export interface Performer_findPerformer_urls {

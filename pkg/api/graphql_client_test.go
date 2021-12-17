@@ -34,8 +34,7 @@ type fingerprint struct {
 
 type siteURL struct {
 	Site *idObject `json:"site"`
-	// Performing as alias
-	URL string `json:"url"`
+	URL  string    `json:"url"`
 }
 
 type sceneOutput struct {

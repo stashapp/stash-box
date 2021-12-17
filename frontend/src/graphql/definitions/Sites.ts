@@ -17,6 +17,7 @@ export interface Sites_querySites_sites {
   url: string | null;
   regex: string | null;
   valid_types: ValidSiteTypeEnum[];
+  icon: string;
   created: any;
   updated: any;
 }

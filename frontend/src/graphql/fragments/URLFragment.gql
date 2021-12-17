@@ -3,5 +3,6 @@ fragment URLFragment on URL {
   site {
     id
     name
+    icon
   }
 }

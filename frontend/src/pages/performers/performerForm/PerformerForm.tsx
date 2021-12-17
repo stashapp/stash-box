@@ -152,6 +152,7 @@ const PerformerForm: FC<PerformerProps> = ({
         site: {
           id: u.site?.id ?? "",
           name: u.site?.name ?? "",
+          icon: u.site?.icon ?? "",
         },
       })),
     },

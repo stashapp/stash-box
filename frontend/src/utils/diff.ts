@@ -41,6 +41,7 @@ export const diffURLs = (
           | {
               id: string | undefined;
               name: string | undefined;
+              icon: string | undefined;
             }
           | undefined;
       }[]
@@ -50,6 +51,7 @@ export const diffURLs = (
     site: {
       id: string;
       name: string;
+      icon: string;
     };
   }[]
 ) =>
@@ -59,6 +61,7 @@ export const diffURLs = (
       site: {
         id: u.site?.id ?? "",
         name: u.site?.name ?? "",
+        icon: u.site?.icon ?? "",
       },
     })),
     originalURLs.map((u) => ({
@@ -66,6 +69,7 @@ export const diffURLs = (
       site: {
         id: u.site.id,
         name: u.site.name,
+        icon: u.site.icon,
       },
     })),
     (u) => `${u.site.name ?? "Unknown"}: ${u.url}`

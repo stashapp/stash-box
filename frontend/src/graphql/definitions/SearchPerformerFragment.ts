@@ -19,6 +19,7 @@ export interface SearchPerformerFragment_urls_site {
   __typename: "Site";
   id: string;
   name: string;
+  icon: string;
 }
 
 export interface SearchPerformerFragment_urls {

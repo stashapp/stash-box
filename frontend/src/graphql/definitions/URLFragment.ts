@@ -11,6 +11,7 @@ export interface URLFragment_site {
   __typename: "Site";
   id: string;
   name: string;
+  icon: string;
 }
 
 export interface URLFragment {

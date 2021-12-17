@@ -13,6 +13,7 @@ export interface Scene_findScene_urls_site {
   __typename: "Site";
   id: string;
   name: string;
+  icon: string;
 }
 
 export interface Scene_findScene_urls {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/stashapp/stash-box/pkg/api/urlbuilders"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -44,4 +45,10 @@ func (r *siteResolver) Created(ctx context.Context, obj *models.Site) (*time.Tim
 
 func (r *siteResolver) Updated(ctx context.Context, obj *models.Site) (*time.Time, error) {
 	return &obj.UpdatedAt.Timestamp, nil
+}
+
+func (r *siteResolver) Icon(ctx context.Context, obj *models.Site) (string, error) {
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	builder := urlbuilders.NewSiteIconURLBuilder(baseURL, obj.ID)
+	return builder.GetIconURL(), nil
 }

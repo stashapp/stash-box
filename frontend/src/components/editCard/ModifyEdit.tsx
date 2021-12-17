@@ -31,7 +31,7 @@ import {
 } from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
-import URLChangeRow from "src/components/urlChangeRow";
+import URLChangeRow, { URL } from "src/components/urlChangeRow";
 import { Icon } from "src/components/fragments";
 import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
@@ -295,14 +295,6 @@ type ScenePerformance = {
     "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
   >;
 };
-
-interface URL {
-  url: string;
-  site: {
-    id: string;
-    name: string;
-  };
-}
 
 export interface SceneDetails {
   title: string | null;

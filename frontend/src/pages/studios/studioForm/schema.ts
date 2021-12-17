@@ -11,6 +11,7 @@ export const StudioSchema = yup.object({
           .object({
             id: yup.string().required(),
             name: yup.string().required(),
+            icon: yup.string().required(),
           })
           .required(),
       })

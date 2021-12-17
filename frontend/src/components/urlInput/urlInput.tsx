@@ -49,16 +49,19 @@ const URLInput: React.FC<URLInputProps> = ({ control, type }) => {
   };
 
   const handleAdd = () => {
-    if (!inputRef.current) return;
-    const selectedSiteID = selectRef.current?.value;
+    if (!inputRef.current || !selectRef.current) return;
+    const selectedSiteID = selectRef.current.value;
     const selectedSite = sites.find((s) => s.id === selectedSiteID);
     const cleanedURL = cleanURL(selectedSite?.regex, inputRef.current.value);
 
-    if (selectedSite)
+    if (selectedSite) {
       append({
         url: cleanedURL ?? inputRef.current.value,
         site: selectedSite,
       });
+      selectRef.current.value = "";
+      inputRef.current.value = "";
+    }
   };
 
   const handleBlur = () => {

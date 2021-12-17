@@ -5,6 +5,7 @@ type Site {
   url:  String
   regex:  String
   valid_types: [ValidSiteTypeEnum!]!
+  icon: String!
   created: Time!
   updated: Time!
 }

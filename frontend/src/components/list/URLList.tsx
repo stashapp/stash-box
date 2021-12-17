@@ -7,6 +7,7 @@ interface URLListProps {
     site: {
       id: string;
       name: string;
+      icon: string;
     } | null;
   }[];
 }

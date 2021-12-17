@@ -1,16 +1,15 @@
 import React from "react";
-import { useHistory, Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
+import { capitalize } from "lodash-es";
 
 import { Site_findSite as Site } from "src/graphql/definitions/Site";
 import { ValidSiteTypeEnum, SiteCreateInput } from "src/graphql";
-import { createHref } from "src/utils";
-import { ROUTE_SITES, ROUTE_SITE } from "src/constants/route";
 
 const validSites = Object.keys(ValidSiteTypeEnum);
 
@@ -27,16 +26,12 @@ const schema = yup.object({
 
 type SiteFormData = yup.Asserts<typeof schema>;
 
-const capitalizeText = (text: string) =>
-  `${text[0].toUpperCase()}${text.toLowerCase().slice(1)}`;
-
 interface SiteProps {
-  id?: string;
   site?: Site;
   callback: (data: SiteCreateInput) => void;
 }
 
-const SiteForm: React.FC<SiteProps> = ({ id, site, callback }) => {
+const SiteForm: React.FC<SiteProps> = ({ site, callback }) => {
   const history = useHistory();
   const {
     control,
@@ -119,13 +114,13 @@ const SiteForm: React.FC<SiteProps> = ({ id, site, callback }) => {
               className={cx({ "is-invalid": errors.valid_types })}
               defaultValue={(site?.valid_types ?? []).map((s) => ({
                 value: s as string,
-                label: capitalizeText(s),
+                label: capitalize(s),
               }))}
               isMulti
               onChange={(values) => onChange(values.map((v) => v.value))}
               options={validSites.map((s) => ({
                 value: s,
-                label: capitalizeText(s),
+                label: capitalize(s),
               }))}
               placeholder="Types this site can link to"
             />
@@ -144,11 +139,9 @@ const SiteForm: React.FC<SiteProps> = ({ id, site, callback }) => {
         <Button type="reset" className="ms-auto me-2">
           Reset
         </Button>
-        <Link to={createHref(id ? ROUTE_SITE : ROUTE_SITES, { id })}>
-          <Button variant="danger" onClick={() => history.goBack()}>
-            Cancel
-          </Button>
-        </Link>
+        <Button variant="danger" onClick={() => history.goBack()}>
+          Cancel
+        </Button>
       </Form.Group>
     </Form>
   );

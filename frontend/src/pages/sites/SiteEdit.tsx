@@ -35,7 +35,7 @@ const UpdateSite: React.FC<Props> = ({ site }) => {
         Update <em>{site.name}</em>
       </h3>
       <hr />
-      <SiteForm callback={doUpdate} site={site} id={site.id} />
+      <SiteForm callback={doUpdate} site={site} />
     </div>
   );
 };

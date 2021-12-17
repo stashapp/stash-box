@@ -4,8 +4,8 @@ import { Button, Card } from "react-bootstrap";
 
 import { useSites } from "src/graphql";
 import { LoadingIndicator, SiteLink } from "src/components/fragments";
-import { isAdmin, createHref } from "src/utils";
-import { ROUTE_SITE, ROUTE_SITE_ADD } from "src/constants/route";
+import { isAdmin } from "src/utils";
+import { ROUTE_SITE_ADD } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
 const SiteList: React.FC = () => {
@@ -28,9 +28,7 @@ const SiteList: React.FC = () => {
           <ul>
             {(data?.querySites.sites ?? []).map((site) => (
               <li key={site.id}>
-                <Link to={createHref(ROUTE_SITE, site)}>
-                  <SiteLink site={site} />
-                </Link>
+                <SiteLink site={site} />
                 {site.description && (
                   <span className="ms-2">
                     &bull;
