@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -25,29 +24,9 @@ func (r *studioEditResolver) Parent(ctx context.Context, obj *models.StudioEdit)
 }
 
 func (r *studioEditResolver) AddedImages(ctx context.Context, obj *models.StudioEdit) ([]*models.Image, error) {
-	if len(obj.AddedImages) == 0 {
-		return nil, nil
-	}
-
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(obj.AddedImages)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return images, nil
+	return imageList(ctx, obj.AddedImages)
 }
 
 func (r *studioEditResolver) RemovedImages(ctx context.Context, obj *models.StudioEdit) ([]*models.Image, error) {
-	if len(obj.RemovedImages) == 0 {
-		return nil, nil
-	}
-
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(obj.RemovedImages)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return images, nil
+	return imageList(ctx, obj.RemovedImages)
 }
