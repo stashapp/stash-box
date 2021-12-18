@@ -26,8 +26,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
   const [submitVote, { loading: savingVote }] = useVote();
 
-  if (edit.status !== VoteStatusEnum.PENDING || !canVote(auth.user))
-    return <></>;
+  if (edit.status !== VoteStatusEnum.PENDING) return <></>;
 
   const currentVote = (
     <h6>
@@ -38,8 +37,10 @@ const VoteBar: FC<Props> = ({ edit }) => {
     </h6>
   );
 
-  if (auth.user?.id === edit.user?.id) {
-    return <div>{currentVote}</div>;
+  if (!canVote(auth.user)) {
+    if (edit.user && auth.user?.id === edit.user.id)
+      return <div>{currentVote}</div>;
+    return <></>;
   }
 
   const handleSave = () => {
