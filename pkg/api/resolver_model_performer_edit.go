@@ -82,3 +82,11 @@ func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.P
 	}
 	return images, nil
 }
+
+func (r *performerEditResolver) AddedUrls(ctx context.Context, obj *models.PerformerEdit) ([]*models.URL, error) {
+	return urlList(ctx, obj.AddedUrls)
+}
+
+func (r *performerEditResolver) RemovedUrls(ctx context.Context, obj *models.PerformerEdit) ([]*models.URL, error) {
+	return urlList(ctx, obj.RemovedUrls)
+}

@@ -51,3 +51,11 @@ func (r *studioEditResolver) RemovedImages(ctx context.Context, obj *models.Stud
 	}
 	return images, nil
 }
+
+func (r *studioEditResolver) AddedUrls(ctx context.Context, obj *models.StudioEdit) ([]*models.URL, error) {
+	return urlList(ctx, obj.AddedUrls)
+}
+
+func (r *studioEditResolver) RemovedUrls(ctx context.Context, obj *models.StudioEdit) ([]*models.URL, error) {
+	return urlList(ctx, obj.RemovedUrls)
+}

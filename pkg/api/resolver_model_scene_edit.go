@@ -90,3 +90,11 @@ func (r *sceneEditResolver) AddedImages(ctx context.Context, obj *models.SceneEd
 func (r *sceneEditResolver) RemovedImages(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.RemovedImages)
 }
+
+func (r *sceneEditResolver) AddedUrls(ctx context.Context, obj *models.SceneEdit) ([]*models.URL, error) {
+	return urlList(ctx, obj.AddedUrls)
+}
+
+func (r *sceneEditResolver) RemovedUrls(ctx context.Context, obj *models.SceneEdit) ([]*models.URL, error) {
+	return urlList(ctx, obj.RemovedUrls)
+}

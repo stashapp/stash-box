@@ -25,3 +25,11 @@ func (r *urlResolver) Type(ctx context.Context, obj *models.URL) (string, error)
 	}
 	return strings.ToUpper(site.Name), err
 }
+
+func urlList(ctx context.Context, urls []*models.URL) ([]*models.URL, error) {
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return urls, nil
+}
