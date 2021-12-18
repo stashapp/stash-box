@@ -1,12 +1,16 @@
 import { FC } from "react";
-import { Col, Form, Row } from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import querystring from "query-string";
 import { useHistory } from "react-router-dom";
+import {
+  faSortAmountUp,
+  faSortAmountDown,
+} from "@fortawesome/free-solid-svg-icons";
 
-import { useScenes, SceneFilterType } from "src/graphql";
+import { useScenes, SceneFilterType, SortDirectionEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
 import SceneCard from "src/components/sceneCard";
-import { ErrorMessage } from "src/components/fragments";
+import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "./List";
 
 const PER_PAGE = 20;
@@ -27,6 +31,11 @@ const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
   const history = useHistory();
   const queries = querystring.parse(history.location.search);
   const sort = Array.isArray(queries.sort) ? queries.sort[0] : queries.sort;
+  const direction =
+    (Array.isArray(queries.dir) ? queries.dir[0] : queries.dir) ===
+    SortDirectionEnum.ASC
+      ? SortDirectionEnum.ASC
+      : SortDirectionEnum.DESC;
 
   const { page, setPage } = usePagination();
   const { loading, data } = useScenes({
@@ -34,6 +43,7 @@ const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
       page,
       per_page: perPage,
       sort,
+      direction,
     },
     sceneFilter: filter,
   });
@@ -50,17 +60,38 @@ const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
   };
 
   const filters = (
-    <Form.Select
-      className="w-auto"
-      onChange={(e) => handleQuery("sort", e.currentTarget.value)}
-      defaultValue={sort ?? "name"}
-    >
-      {sortOptions.map((s) => (
-        <option value={s.value} key={s.value}>
-          {s.label}
-        </option>
-      ))}
-    </Form.Select>
+    <InputGroup className="scene-sort w-auto">
+      <Form.Select
+        className="w-auto"
+        onChange={(e) => handleQuery("sort", e.currentTarget.value)}
+        defaultValue={sort ?? "name"}
+      >
+        {sortOptions.map((s) => (
+          <option value={s.value} key={s.value}>
+            {s.label}
+          </option>
+        ))}
+      </Form.Select>
+      <Button
+        variant="secondary"
+        onClick={() =>
+          handleQuery(
+            "dir",
+            direction === SortDirectionEnum.DESC
+              ? SortDirectionEnum.ASC
+              : undefined
+          )
+        }
+      >
+        <Icon
+          icon={
+            direction === SortDirectionEnum.DESC
+              ? faSortAmountDown
+              : faSortAmountUp
+          }
+        />
+      </Button>
+    </InputGroup>
   );
 
   const scenes = (data?.queryScenes.scenes ?? []).map((scene) => (
