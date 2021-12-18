@@ -48,13 +48,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
       date: scene?.date,
       duration: formatDuration(scene?.duration),
       director: scene?.director,
-      urls: scene.urls.map((u) => ({
-        url: u.url,
-        site: {
-          id: u.site?.id ?? "",
-          name: u.site?.name ?? "",
-        },
-      })),
+      urls: scene.urls ?? [],
       images: scene.images,
       studio: scene.studio ?? undefined,
       tags: scene.tags,

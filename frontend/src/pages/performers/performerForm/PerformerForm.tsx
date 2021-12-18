@@ -147,14 +147,7 @@ const PerformerForm: FC<PerformerProps> = ({
       tattoos,
       piercings,
       images,
-      urls: performer.urls.map((u) => ({
-        url: u.url,
-        site: {
-          id: u.site?.id ?? "",
-          name: u.site?.name ?? "",
-          icon: u.site?.icon ?? "",
-        },
-      })),
+      urls: performer.urls ?? [],
     },
   });
 
