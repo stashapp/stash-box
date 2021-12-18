@@ -110,6 +110,21 @@ export const PerformerSchema = yup.object({
       })
     )
     .required(),
+  urls: yup
+    .array()
+    .of(
+      yup.object({
+        url: yup.string().url("Invalid URL").required(),
+        site: yup
+          .object({
+            id: yup.string().required(),
+            name: yup.string().required(),
+            icon: yup.string().required(),
+          })
+          .required(),
+      })
+    )
+    .ensure(),
   note: yup.string().required("Edit note is required"),
 });
 

@@ -25,12 +25,13 @@ enum SortDirectionEnum {
 
 type URL {
   url: String!
-  type: String!
+  type: String! @deprecated(reason: "Use the site field instead")
+  site: Site!
 }
 
 input URLInput {
   url: String!
-  type: String!
+  site_id: ID!
 }
 
 input QuerySpec {

@@ -5,11 +5,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { StudioEditDetailsInput } from "src/graphql";
+import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
-import { getUrlByType } from "src/utils";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
+import URLInput from "src/components/urlInput";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
 import { StudioSchema, StudioFormData } from "./schema";
@@ -39,6 +39,7 @@ const StudioForm: FC<StudioProps> = ({
     defaultValues: {
       name: studio.name,
       images: studio.images,
+      urls: studio.urls ?? [],
       studio: studio.parent
         ? {
             id: studio.parent.id,
@@ -60,7 +61,10 @@ const StudioForm: FC<StudioProps> = ({
   const onSubmit = (data: StudioFormData) => {
     const callbackData: StudioEditDetailsInput = {
       name: data.name,
-      urls: data.url ? [{ url: data.url, type: "HOME" }] : [],
+      urls: data.urls.map((u) => ({
+        url: u.url,
+        site_id: u.site.id,
+      })),
       image_ids: data.images.map((i) => i.id),
       parent_id: data.studio?.id,
     };
@@ -88,19 +92,6 @@ const StudioForm: FC<StudioProps> = ({
             </Form.Control.Feedback>
           </Form.Group>
 
-          <Form.Group controlId="url" className="mb-3">
-            <Form.Label>URL</Form.Label>
-            <Form.Control
-              className={cx({ "is-invalid": errors.url })}
-              placeholder="URL"
-              defaultValue={getUrlByType(studio.urls, "HOME")}
-              {...register("url")}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.url?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-
           {showNetworkSelect && (
             <Form.Group controlId="network" className="mb-3">
               <Form.Label>Network</Form.Label>
@@ -113,6 +104,15 @@ const StudioForm: FC<StudioProps> = ({
               />
             </Form.Group>
           )}
+
+          <NavButtons onNext={() => setActiveTab("links")} />
+        </Tab>
+
+        <Tab eventKey="links" title="Links" className="col-xl-9">
+          <Form.Group className="mb-3">
+            <Form.Label>Links</Form.Label>
+            <URLInput control={control} type={ValidSiteTypeEnum.STUDIO} />
+          </Form.Group>
 
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>

@@ -17,7 +17,7 @@ type sceneTestRunner struct {
 
 func createSceneTestRunner(t *testing.T) *sceneTestRunner {
 	return &sceneTestRunner{
-		testRunner: *asModify(t),
+		testRunner: *asAdmin(t),
 	}
 }
 
@@ -29,6 +29,7 @@ func (s *sceneTestRunner) testCreateScene() {
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
 	tag, _ := s.createTestTag(nil)
+	site, _ := s.createTestSite(nil)
 
 	performerID := performer.UUID()
 	studioID := studio.UUID()
@@ -52,8 +53,8 @@ func (s *sceneTestRunner) testCreateScene() {
 		},
 		Urls: []*models.URLInput{
 			{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		TagIds: []uuid.UUID{
@@ -178,10 +179,7 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 		s.fieldMismatch(input.Details, scene.Details, "Details")
 	}
 
-	// ensure urls were set correctly
-	if !compareUrls(input.Urls, scene.Urls) {
-		s.fieldMismatch(input.Urls, scene.Urls, "Urls")
-	}
+	s.compareSiteURLs(input.Urls, scene.Urls)
 
 	if !reflect.DeepEqual(scene.Date, input.Date) {
 		s.fieldMismatch(*input.Date, scene.Date, "Date")
@@ -312,6 +310,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
 	tag, _ := s.createTestTag(nil)
+	site, _ := s.createTestSite(nil)
 
 	performerID := performer.UUID()
 	studioID := studio.UUID()
@@ -341,8 +340,8 @@ func (s *sceneTestRunner) testUpdateScene() {
 		},
 		Urls: []*models.URLInput{
 			{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		TagIds: []uuid.UUID{
@@ -362,6 +361,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	performer, _ = s.createTestPerformer(nil)
 	studio, _ = s.createTestStudio(nil)
 	tag, _ = s.createTestTag(nil)
+	site, _ = s.createTestSite(nil)
 
 	performerID = performer.UUID()
 	studioID = studio.UUID()
@@ -387,8 +387,8 @@ func (s *sceneTestRunner) testUpdateScene() {
 		},
 		Urls: []*models.URLInput{
 			{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		StudioID: &studioID,
@@ -439,10 +439,7 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 
-	// ensure urls were set correctly
-	if !compareUrls(input.Urls, scene.Urls) {
-		s.fieldMismatch(input.Urls, scene.Urls, "Urls")
-	}
+	s.compareSiteURLs(input.Urls, scene.Urls)
 
 	if !comparePerformers(input.Performers, scene.Performers) {
 		s.fieldMismatch(input.Performers, scene.Performers, "Performers")

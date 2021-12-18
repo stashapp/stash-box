@@ -50,11 +50,13 @@ type ResolverRoot interface {
 	QueryScenesResultType() QueryScenesResultTypeResolver
 	Scene() SceneResolver
 	SceneEdit() SceneEditResolver
+	Site() SiteResolver
 	Studio() StudioResolver
 	StudioEdit() StudioEditResolver
 	Tag() TagResolver
 	TagCategory() TagCategoryResolver
 	TagEdit() TagEditResolver
+	URL() URLResolver
 	User() UserResolver
 }
 
@@ -153,6 +155,9 @@ type ComplexityRoot struct {
 		SceneDestroy       func(childComplexity int, input SceneDestroyInput) int
 		SceneEdit          func(childComplexity int, input SceneEditInput) int
 		SceneUpdate        func(childComplexity int, input SceneUpdateInput) int
+		SiteCreate         func(childComplexity int, input SiteCreateInput) int
+		SiteDestroy        func(childComplexity int, input SiteDestroyInput) int
+		SiteUpdate         func(childComplexity int, input SiteUpdateInput) int
 		StudioCreate       func(childComplexity int, input StudioCreateInput) int
 		StudioDestroy      func(childComplexity int, input StudioDestroyInput) int
 		StudioEdit         func(childComplexity int, input StudioEditInput) int
@@ -250,6 +255,7 @@ type ComplexityRoot struct {
 		FindSceneByFingerprint       func(childComplexity int, fingerprint FingerprintQueryInput) int
 		FindScenesByFingerprints     func(childComplexity int, fingerprints []string) int
 		FindScenesByFullFingerprints func(childComplexity int, fingerprints []*FingerprintQueryInput) int
+		FindSite                     func(childComplexity int, id uuid.UUID) int
 		FindStudio                   func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTag                      func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTagCategory              func(childComplexity int, id uuid.UUID) int
@@ -259,6 +265,7 @@ type ComplexityRoot struct {
 		QueryEdits                   func(childComplexity int, editFilter *EditFilterType, filter *QuerySpec) int
 		QueryPerformers              func(childComplexity int, performerFilter *PerformerFilterType, filter *QuerySpec) int
 		QueryScenes                  func(childComplexity int, sceneFilter *SceneFilterType, filter *QuerySpec) int
+		QuerySites                   func(childComplexity int, filter *QuerySpec) int
 		QueryStudios                 func(childComplexity int, studioFilter *StudioFilterType, filter *QuerySpec) int
 		QueryTagCategories           func(childComplexity int, filter *QuerySpec) int
 		QueryTags                    func(childComplexity int, tagFilter *TagFilterType, filter *QuerySpec) int
@@ -281,6 +288,11 @@ type ComplexityRoot struct {
 	QueryScenesResultType struct {
 		Count  func(childComplexity int) int
 		Scenes func(childComplexity int) int
+	}
+
+	QuerySitesResultType struct {
+		Count func(childComplexity int) int
+		Sites func(childComplexity int) int
 	}
 
 	QueryStudiosResultType struct {
@@ -335,6 +347,18 @@ type ComplexityRoot struct {
 		RemovedUrls       func(childComplexity int) int
 		Studio            func(childComplexity int) int
 		Title             func(childComplexity int) int
+	}
+
+	Site struct {
+		Created     func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Icon        func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Regex       func(childComplexity int) int
+		URL         func(childComplexity int) int
+		Updated     func(childComplexity int) int
+		ValidTypes  func(childComplexity int) int
 	}
 
 	StashBoxConfig struct {
@@ -393,6 +417,7 @@ type ComplexityRoot struct {
 	}
 
 	URL struct {
+		Site func(childComplexity int) int
 		Type func(childComplexity int) int
 		URL  func(childComplexity int) int
 	}
@@ -494,6 +519,9 @@ type MutationResolver interface {
 	TagCategoryCreate(ctx context.Context, input TagCategoryCreateInput) (*TagCategory, error)
 	TagCategoryUpdate(ctx context.Context, input TagCategoryUpdateInput) (*TagCategory, error)
 	TagCategoryDestroy(ctx context.Context, input TagCategoryDestroyInput) (bool, error)
+	SiteCreate(ctx context.Context, input SiteCreateInput) (*Site, error)
+	SiteUpdate(ctx context.Context, input SiteUpdateInput) (*Site, error)
+	SiteDestroy(ctx context.Context, input SiteDestroyInput) (bool, error)
 	RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error)
 	ResetPassword(ctx context.Context, input ResetPasswordInput) (bool, error)
 	ChangePassword(ctx context.Context, input UserChangePasswordInput) (bool, error)
@@ -559,6 +587,8 @@ type QueryResolver interface {
 	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*Scene, error)
 	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput) ([]*Scene, error)
 	QueryScenes(ctx context.Context, sceneFilter *SceneFilterType, filter *QuerySpec) (*SceneQuery, error)
+	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
+	QuerySites(ctx context.Context, filter *QuerySpec) (*QuerySitesResultType, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
 	QueryEdits(ctx context.Context, editFilter *EditFilterType, filter *QuerySpec) (*EditQuery, error)
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
@@ -605,6 +635,15 @@ type SceneEditResolver interface {
 	AddedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
 	RemovedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
 }
+type SiteResolver interface {
+	Description(ctx context.Context, obj *Site) (*string, error)
+	URL(ctx context.Context, obj *Site) (*string, error)
+	Regex(ctx context.Context, obj *Site) (*string, error)
+	ValidTypes(ctx context.Context, obj *Site) ([]ValidSiteTypeEnum, error)
+	Icon(ctx context.Context, obj *Site) (string, error)
+	Created(ctx context.Context, obj *Site) (*time.Time, error)
+	Updated(ctx context.Context, obj *Site) (*time.Time, error)
+}
 type StudioResolver interface {
 	Urls(ctx context.Context, obj *Studio) ([]*URL, error)
 	Parent(ctx context.Context, obj *Studio) (*Studio, error)
@@ -629,6 +668,10 @@ type TagCategoryResolver interface {
 }
 type TagEditResolver interface {
 	Category(ctx context.Context, obj *TagEdit) (*TagCategory, error)
+}
+type URLResolver interface {
+	Type(ctx context.Context, obj *URL) (string, error)
+	Site(ctx context.Context, obj *URL) (*Site, error)
 }
 type UserResolver interface {
 	Roles(ctx context.Context, obj *User) ([]RoleEnum, error)
@@ -1213,6 +1256,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.SceneUpdate(childComplexity, args["input"].(SceneUpdateInput)), true
+
+	case "Mutation.siteCreate":
+		if e.complexity.Mutation.SiteCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_siteCreate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SiteCreate(childComplexity, args["input"].(SiteCreateInput)), true
+
+	case "Mutation.siteDestroy":
+		if e.complexity.Mutation.SiteDestroy == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_siteDestroy_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SiteDestroy(childComplexity, args["input"].(SiteDestroyInput)), true
+
+	case "Mutation.siteUpdate":
+		if e.complexity.Mutation.SiteUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_siteUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SiteUpdate(childComplexity, args["input"].(SiteUpdateInput)), true
 
 	case "Mutation.studioCreate":
 		if e.complexity.Mutation.StudioCreate == nil {
@@ -1872,6 +1951,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindScenesByFullFingerprints(childComplexity, args["fingerprints"].([]*FingerprintQueryInput)), true
 
+	case "Query.findSite":
+		if e.complexity.Query.FindSite == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findSite_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindSite(childComplexity, args["id"].(uuid.UUID)), true
+
 	case "Query.findStudio":
 		if e.complexity.Query.FindStudio == nil {
 			break
@@ -1969,6 +2060,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.QueryScenes(childComplexity, args["scene_filter"].(*SceneFilterType), args["filter"].(*QuerySpec)), true
+
+	case "Query.querySites":
+		if e.complexity.Query.QuerySites == nil {
+			break
+		}
+
+		args, err := ec.field_Query_querySites_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.QuerySites(childComplexity, args["filter"].(*QuerySpec)), true
 
 	case "Query.queryStudios":
 		if e.complexity.Query.QueryStudios == nil {
@@ -2090,6 +2193,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.QueryScenesResultType.Scenes(childComplexity), true
+
+	case "QuerySitesResultType.count":
+		if e.complexity.QuerySitesResultType.Count == nil {
+			break
+		}
+
+		return e.complexity.QuerySitesResultType.Count(childComplexity), true
+
+	case "QuerySitesResultType.sites":
+		if e.complexity.QuerySitesResultType.Sites == nil {
+			break
+		}
+
+		return e.complexity.QuerySitesResultType.Sites(childComplexity), true
 
 	case "QueryStudiosResultType.count":
 		if e.complexity.QueryStudiosResultType.Count == nil {
@@ -2342,6 +2459,69 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneEdit.Title(childComplexity), true
+
+	case "Site.created":
+		if e.complexity.Site.Created == nil {
+			break
+		}
+
+		return e.complexity.Site.Created(childComplexity), true
+
+	case "Site.description":
+		if e.complexity.Site.Description == nil {
+			break
+		}
+
+		return e.complexity.Site.Description(childComplexity), true
+
+	case "Site.id":
+		if e.complexity.Site.ID == nil {
+			break
+		}
+
+		return e.complexity.Site.ID(childComplexity), true
+
+	case "Site.icon":
+		if e.complexity.Site.Icon == nil {
+			break
+		}
+
+		return e.complexity.Site.Icon(childComplexity), true
+
+	case "Site.name":
+		if e.complexity.Site.Name == nil {
+			break
+		}
+
+		return e.complexity.Site.Name(childComplexity), true
+
+	case "Site.regex":
+		if e.complexity.Site.Regex == nil {
+			break
+		}
+
+		return e.complexity.Site.Regex(childComplexity), true
+
+	case "Site.url":
+		if e.complexity.Site.URL == nil {
+			break
+		}
+
+		return e.complexity.Site.URL(childComplexity), true
+
+	case "Site.updated":
+		if e.complexity.Site.Updated == nil {
+			break
+		}
+
+		return e.complexity.Site.Updated(childComplexity), true
+
+	case "Site.valid_types":
+		if e.complexity.Site.ValidTypes == nil {
+			break
+		}
+
+		return e.complexity.Site.ValidTypes(childComplexity), true
 
 	case "StashBoxConfig.host_url":
 		if e.complexity.StashBoxConfig.HostURL == nil {
@@ -2601,6 +2781,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TagEdit.RemovedAliases(childComplexity), true
+
+	case "URL.site":
+		if e.complexity.URL.Site == nil {
+			break
+		}
+
+		return e.complexity.URL.Site(childComplexity), true
 
 	case "URL.type":
 		if e.complexity.URL.Type == nil {
@@ -3102,12 +3289,13 @@ enum SortDirectionEnum {
 
 type URL {
   url: String!
-  type: String!
+  type: String! @deprecated(reason: "Use the site field instead")
+  site: Site!
 }
 
 input URLInput {
   url: String!
-  type: String!
+  site_id: ID!
 }
 
 input QuerySpec {
@@ -3606,6 +3794,50 @@ input SceneFilterType {
   fingerprints: MultiStringCriterionInput
 }
 `, BuiltIn: false},
+	{Name: "graphql/schema/types/site.graphql", Input: `type Site {
+  id: ID!
+  name: String!
+  description:  String
+  url:  String
+  regex:  String
+  valid_types: [ValidSiteTypeEnum!]!
+  icon: String!
+  created: Time!
+  updated: Time!
+}
+
+input SiteCreateInput {
+  name: String!
+  description: String
+  url: String
+  regex: String
+  valid_types: [ValidSiteTypeEnum!]!
+}
+
+input SiteUpdateInput {
+  id: ID!
+  name: String!
+  description: String
+  url: String
+  regex: String
+  valid_types: [ValidSiteTypeEnum!]!
+}
+
+input SiteDestroyInput {
+  id: ID!
+}
+
+type QuerySitesResultType {
+  count: Int!
+  sites: [Site!]!
+}
+
+enum ValidSiteTypeEnum {
+  PERFORMER
+  SCENE
+  STUDIO
+}
+`, BuiltIn: false},
 	{Name: "graphql/schema/types/studio.graphql", Input: `type Studio {
   id: ID!
   name: String!
@@ -3968,6 +4200,10 @@ type Query {
   findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ)
   queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType! @hasRole(role: READ)
 
+  """Find an external site by ID"""
+  findSite(id: ID!): Site @hasRole(role: READ)
+  querySites(filter: QuerySpec): QuerySitesResultType! @hasRole(role: READ)
+
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
@@ -4034,6 +4270,10 @@ type Mutation {
   tagCategoryCreate(input: TagCategoryCreateInput!): TagCategory @hasRole(role: ADMIN)
   tagCategoryUpdate(input: TagCategoryUpdateInput!): TagCategory @hasRole(role: ADMIN)
   tagCategoryDestroy(input: TagCategoryDestroyInput!): Boolean! @hasRole(role: ADMIN)
+
+  siteCreate(input: SiteCreateInput!): Site @hasRole(role: ADMIN)
+  siteUpdate(input: SiteUpdateInput!): Site @hasRole(role: ADMIN)
+  siteDestroy(input: SiteDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
@@ -4424,6 +4664,51 @@ func (ec *executionContext) field_Mutation_sceneUpdate_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_siteCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 SiteCreateInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSiteCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteCreateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_siteDestroy_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 SiteDestroyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSiteDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteDestroyInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_siteUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 SiteUpdateInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSiteUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteUpdateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_studioCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4754,6 +5039,21 @@ func (ec *executionContext) field_Query_findScenesByFullFingerprints_args(ctx co
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_findSite_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_findStudio_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4910,6 +5210,21 @@ func (ec *executionContext) field_Query_queryScenes_args(ctx context.Context, ra
 		}
 	}
 	args["filter"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_querySites_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *QuerySpec
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg0
 	return args, nil
 }
 
@@ -7963,6 +8278,198 @@ func (ec *executionContext) _Mutation_tagCategoryDestroy(ctx context.Context, fi
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Mutation().TagCategoryDestroy(rctx, args["input"].(TagCategoryDestroyInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_siteCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_siteCreate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SiteCreate(rctx, args["input"].(SiteCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Site); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Site`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Site)
+	fc.Result = res
+	return ec.marshalOSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_siteUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_siteUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SiteUpdate(rctx, args["input"].(SiteUpdateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Site); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Site`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Site)
+	fc.Result = res
+	return ec.marshalOSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_siteDestroy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_siteDestroy_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SiteDestroy(rctx, args["input"].(SiteDestroyInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
@@ -11469,6 +11976,135 @@ func (ec *executionContext) _Query_queryScenes(ctx context.Context, field graphq
 	return ec.marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneQuery(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_findSite(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_findSite_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindSite(rctx, args["id"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Site); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Site`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Site)
+	fc.Result = res
+	return ec.marshalOSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_querySites(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_querySites_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QuerySites(rctx, args["filter"].(*QuerySpec))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QuerySitesResultType); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QuerySitesResultType`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*QuerySitesResultType)
+	fc.Result = res
+	return ec.marshalNQuerySitesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySitesResultType(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_findEdit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -12288,6 +12924,76 @@ func (ec *executionContext) _QueryScenesResultType_scenes(ctx context.Context, f
 	res := resTmp.([]*Scene)
 	fc.Result = res
 	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _QuerySitesResultType_count(ctx context.Context, field graphql.CollectedField, obj *QuerySitesResultType) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "QuerySitesResultType",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _QuerySitesResultType_sites(ctx context.Context, field graphql.CollectedField, obj *QuerySitesResultType) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "QuerySitesResultType",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sites, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Site)
+	fc.Result = res
+	return ec.marshalNSite2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _QueryStudiosResultType_count(ctx context.Context, field graphql.CollectedField, obj *QueryStudiosResultType) (ret graphql.Marshaler) {
@@ -13488,6 +14194,312 @@ func (ec *executionContext) _SceneEdit_director(ctx context.Context, field graph
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_id(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_name(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_description(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Site().Description(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_url(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Site().URL(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_regex(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Site().Regex(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_valid_types(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Site().ValidTypes(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]ValidSiteTypeEnum)
+	fc.Result = res
+	return ec.marshalNValidSiteTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnumᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_icon(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Site().Icon(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_created(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Site().Created(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Site_updated(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Site",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Site().Updated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _StashBoxConfig_host_url(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
@@ -14783,14 +15795,14 @@ func (ec *executionContext) _URL_type(ctx context.Context, field graphql.Collect
 		Object:     "URL",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Type, nil
+		return ec.resolvers.URL().Type(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -14805,6 +15817,41 @@ func (ec *executionContext) _URL_type(ctx context.Context, field graphql.Collect
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _URL_site(ctx context.Context, field graphql.CollectedField, obj *URL) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "URL",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.URL().Site(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Site)
+	fc.Result = res
+	return ec.marshalNSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
@@ -18084,7 +19131,7 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18266,7 +19313,7 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18706,7 +19753,7 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18981,7 +20028,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19107,7 +20154,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19344,7 +20391,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19418,6 +20465,147 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, obj interface{}) (SiteCreateInput, error) {
+	var it SiteCreateInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			it.URL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "regex":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("regex"))
+			it.Regex, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "valid_types":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("valid_types"))
+			it.ValidTypes, err = ec.unmarshalNValidSiteTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSiteDestroyInput(ctx context.Context, obj interface{}) (SiteDestroyInput, error) {
+	var it SiteDestroyInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, obj interface{}) (SiteUpdateInput, error) {
+	var it SiteUpdateInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			it.URL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "regex":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("regex"))
+			it.Regex, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "valid_types":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("valid_types"))
+			it.ValidTypes, err = ec.unmarshalNValidSiteTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnumᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputStringCriterionInput(ctx context.Context, obj interface{}) (StringCriterionInput, error) {
 	var it StringCriterionInput
 	asMap := map[string]interface{}{}
@@ -19470,7 +20658,7 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19540,7 +20728,7 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19681,7 +20869,7 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
-			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, v)
+			it.Urls, err = ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -20066,8 +21254,8 @@ func (ec *executionContext) unmarshalInputTagUpdateInput(ctx context.Context, ob
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj interface{}) (URL, error) {
-	var it URL
+func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj interface{}) (URLInput, error) {
+	var it URLInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -20083,11 +21271,11 @@ func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj inte
 			if err != nil {
 				return it, err
 			}
-		case "type":
+		case "site_id":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			it.Type, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("site_id"))
+			it.SiteID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -21060,6 +22248,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "siteCreate":
+			out.Values[i] = ec._Mutation_siteCreate(ctx, field)
+		case "siteUpdate":
+			out.Values[i] = ec._Mutation_siteUpdate(ctx, field)
+		case "siteDestroy":
+			out.Values[i] = ec._Mutation_siteDestroy(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "regenerateAPIKey":
 			out.Values[i] = ec._Mutation_regenerateAPIKey(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -21848,6 +23045,31 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "findSite":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findSite(ctx, field)
+				return res
+			})
+		case "querySites":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_querySites(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "findEdit":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -22119,6 +23341,38 @@ func (ec *executionContext) _QueryScenesResultType(ctx context.Context, sel ast.
 				}
 				return res
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var querySitesResultTypeImplementors = []string{"QuerySitesResultType"}
+
+func (ec *executionContext) _QuerySitesResultType(ctx context.Context, sel ast.SelectionSet, obj *QuerySitesResultType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, querySitesResultTypeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QuerySitesResultType")
+		case "count":
+			out.Values[i] = ec._QuerySitesResultType_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sites":
+			out.Values[i] = ec._QuerySitesResultType_sites(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22553,6 +23807,127 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var siteImplementors = []string{"Site"}
+
+func (ec *executionContext) _Site(ctx context.Context, sel ast.SelectionSet, obj *Site) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, siteImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Site")
+		case "id":
+			out.Values[i] = ec._Site_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._Site_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "description":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_description(ctx, field, obj)
+				return res
+			})
+		case "url":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_url(ctx, field, obj)
+				return res
+			})
+		case "regex":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_regex(ctx, field, obj)
+				return res
+			})
+		case "valid_types":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_valid_types(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "icon":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_icon(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "created":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_created(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "updated":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Site_updated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var stashBoxConfigImplementors = []string{"StashBoxConfig"}
 
 func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.SelectionSet, obj *StashBoxConfig) graphql.Marshaler {
@@ -22962,13 +24337,36 @@ func (ec *executionContext) _URL(ctx context.Context, sel ast.SelectionSet, obj 
 		case "url":
 			out.Values[i] = ec._URL_url(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "type":
-			out.Values[i] = ec._URL_type(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._URL_type(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "site":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._URL_site(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -24334,6 +25732,20 @@ func (ec *executionContext) marshalNQueryScenesResultType2ᚖgithubᚗcomᚋstas
 	return ec._QueryScenesResultType(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNQuerySitesResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySitesResultType(ctx context.Context, sel ast.SelectionSet, v QuerySitesResultType) graphql.Marshaler {
+	return ec._QuerySitesResultType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQuerySitesResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySitesResultType(ctx context.Context, sel ast.SelectionSet, v *QuerySitesResultType) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._QuerySitesResultType(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNQueryStudiosResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryStudiosResultType(ctx context.Context, sel ast.SelectionSet, v QueryStudiosResultType) graphql.Marshaler {
 	return ec._QueryStudiosResultType(ctx, sel, &v)
 }
@@ -24546,6 +25958,79 @@ func (ec *executionContext) unmarshalNSceneEditInput2githubᚗcomᚋstashappᚋs
 
 func (ec *executionContext) unmarshalNSceneUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneUpdateInput(ctx context.Context, v interface{}) (SceneUpdateInput, error) {
 	res, err := ec.unmarshalInputSceneUpdateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSite2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx context.Context, sel ast.SelectionSet, v Site) graphql.Marshaler {
+	return ec._Site(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSite2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteᚄ(ctx context.Context, sel ast.SelectionSet, v []*Site) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx context.Context, sel ast.SelectionSet, v *Site) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Site(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSiteCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteCreateInput(ctx context.Context, v interface{}) (SiteCreateInput, error) {
+	res, err := ec.unmarshalInputSiteCreateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNSiteDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteDestroyInput(ctx context.Context, v interface{}) (SiteDestroyInput, error) {
+	res, err := ec.unmarshalInputSiteDestroyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNSiteUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteUpdateInput(ctx context.Context, v interface{}) (SiteUpdateInput, error) {
+	res, err := ec.unmarshalInputSiteUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -24945,7 +26430,7 @@ func (ec *executionContext) marshalNURL2ᚖgithubᚗcomᚋstashappᚋstashᚑbox
 	return ec._URL(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNURLInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx context.Context, v interface{}) (*URL, error) {
+func (ec *executionContext) unmarshalNURLInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInput(ctx context.Context, v interface{}) (*URLInput, error) {
 	res, err := ec.unmarshalInputURLInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -25050,6 +26535,81 @@ func (ec *executionContext) marshalNUserVoteCount2ᚖgithubᚗcomᚋstashappᚋs
 		return graphql.Null
 	}
 	return ec._UserVoteCount(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNValidSiteTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnum(ctx context.Context, v interface{}) (ValidSiteTypeEnum, error) {
+	var res ValidSiteTypeEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNValidSiteTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnum(ctx context.Context, sel ast.SelectionSet, v ValidSiteTypeEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNValidSiteTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnumᚄ(ctx context.Context, v interface{}) ([]ValidSiteTypeEnum, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]ValidSiteTypeEnum, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNValidSiteTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnum(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNValidSiteTypeEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []ValidSiteTypeEnum) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNValidSiteTypeEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐValidSiteTypeEnum(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNVersion2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVersion(ctx context.Context, sel ast.SelectionSet, v Version) graphql.Marshaler {
@@ -26098,6 +27658,13 @@ func (ec *executionContext) unmarshalOSceneFilterType2ᚖgithubᚗcomᚋstashapp
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalOSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx context.Context, sel ast.SelectionSet, v *Site) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Site(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOSortDirectionEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx context.Context, v interface{}) (*SortDirectionEnum, error) {
 	if v == nil {
 		return nil, nil
@@ -26382,7 +27949,7 @@ func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx context.Context, v interface{}) ([]*URL, error) {
+func (ec *executionContext) unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx context.Context, v interface{}) ([]*URLInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -26395,10 +27962,10 @@ func (ec *executionContext) unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋs
 		}
 	}
 	var err error
-	res := make([]*URL, len(vSlice))
+	res := make([]*URLInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNURLInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNURLInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}

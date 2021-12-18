@@ -31,7 +31,6 @@ export const SceneSchema = yup.object({
     })
     .nullable()
     .required("Studio is required"),
-  studioURL: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
   performers: yup
     .array()
     .of(
@@ -65,6 +64,21 @@ export const SceneSchema = yup.object({
       })
     )
     .required(),
+  urls: yup
+    .array()
+    .of(
+      yup.object({
+        url: yup.string().url("Invalid URL").required(),
+        site: yup
+          .object({
+            id: yup.string().required(),
+            name: yup.string().required(),
+            icon: yup.string().required(),
+          })
+          .required(),
+      })
+    )
+    .ensure(),
   note: yup.string().required("Edit note is required"),
 });
 

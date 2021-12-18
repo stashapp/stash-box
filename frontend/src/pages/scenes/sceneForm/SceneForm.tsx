@@ -6,8 +6,8 @@ import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import { SceneEditDetailsInput } from "src/graphql";
-import { getUrlByType, formatDuration, parseDuration } from "src/utils";
+import { formatDuration, parseDuration } from "src/utils";
+import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import { GenderIcon } from "src/components/fragments";
@@ -19,6 +19,7 @@ import TagSelect from "src/components/tagSelect";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
+import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 
@@ -47,7 +48,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
       date: scene?.date,
       duration: formatDuration(scene?.duration),
       director: scene?.director,
-      studioURL: getUrlByType(scene.urls, "STUDIO"),
+      urls: scene.urls ?? [],
       images: scene.images,
       studio: scene.studio ?? undefined,
       tags: scene.tags,
@@ -104,10 +105,11 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
       })),
       image_ids: data.images.map((i) => i.id),
       tag_ids: data.tags.map((t) => t.id),
+      urls: data.urls.map((u) => ({
+        url: u.url,
+        site_id: u.site.id,
+      })),
     };
-    const urls = [];
-    if (data.studioURL) urls.push({ url: data.studioURL, type: "STUDIO" });
-    sceneData.urls = urls;
 
     callback(sceneData, data.note);
   };
@@ -300,20 +302,6 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
                 {(errors.studio as { message: string })?.message}
               </Form.Control.Feedback>
             </Form.Group>
-
-            <Form.Group controlId="studioURL" className="col-6 mb-3">
-              <Form.Label>Studio URL</Form.Label>
-              <Form.Control
-                as="input"
-                className={cx({ "is-invalid": errors.studioURL })}
-                type="url"
-                defaultValue={getUrlByType(scene.urls, "STUDIO")}
-                {...register("studioURL")}
-              />
-              <Form.Control.Feedback type="invalid">
-                {errors?.studioURL?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
           </Row>
 
           <Row>
@@ -353,8 +341,15 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
             <TagSelect tags={scene.tags} onChange={onTagChange} />
           </Form.Group>
 
+          <NavButtons onNext={() => setActiveTab("links")} />
+        </Tab>
+
+        <Tab eventKey="links" title="Links" className="col-xl-9">
+          <URLInput control={control} type={ValidSiteTypeEnum.SCENE} />
+
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
+
         <Tab eventKey="images" title="Images">
           <EditImages
             control={control}

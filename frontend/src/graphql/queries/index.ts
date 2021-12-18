@@ -44,6 +44,8 @@ import {
   PendingEditsCount,
   PendingEditsCountVariables,
 } from "../definitions/PendingEditsCount";
+import { Site, SiteVariables } from "../definitions/Site";
+import { Sites } from "../definitions/Sites";
 
 import CategoryQuery from "./Category.gql";
 import CategoriesQuery from "./Categories.gql";
@@ -68,6 +70,8 @@ import PublicUserQuery from "./PublicUser.gql";
 import ConfigQuery from "./Config.gql";
 import VersionQuery from "./Version.gql";
 import PendingEditsCountQuery from "./PendingEditsCount.gql";
+import SiteQuery from "./Site.gql";
+import SitesQuery from "./Sites.gql";
 
 export const useCategory = (variables: CategoryVariables, skip = false) =>
   useQuery<Category, CategoryVariables>(CategoryQuery, {
@@ -218,3 +222,11 @@ export const usePendingEditsCount = (variables: PendingEditsCountVariables) =>
     PendingEditsCountQuery,
     { variables }
   );
+
+export const useSite = (variables: SiteVariables, skip = false) =>
+  useQuery<Site, SiteVariables>(SiteQuery, {
+    variables,
+    skip,
+  });
+
+export const useSites = () => useQuery<Sites>(SitesQuery);

@@ -62,6 +62,12 @@ func (r *Resolver) Studio() models.StudioResolver {
 func (r *Resolver) Scene() models.SceneResolver {
 	return &sceneResolver{r}
 }
+func (r *Resolver) Site() models.SiteResolver {
+	return &siteResolver{r}
+}
+func (r *Resolver) URL() models.URLResolver {
+	return &urlResolver{r}
+}
 func (r *Resolver) User() models.UserResolver {
 	return &userResolver{r}
 }

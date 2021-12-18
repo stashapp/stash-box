@@ -19,10 +19,17 @@ export interface StudioFragment_parent {
   name: string;
 }
 
+export interface StudioFragment_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface StudioFragment_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: StudioFragment_urls_site;
 }
 
 export interface StudioFragment_images {

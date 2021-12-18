@@ -66,6 +66,9 @@ import { EditComment, EditCommentVariables } from "../definitions/EditComment";
 import { StudioEdit, StudioEditVariables } from "../definitions/StudioEdit";
 import { SceneEdit, SceneEditVariables } from "../definitions/SceneEdit";
 import { Vote, VoteVariables } from "../definitions/Vote";
+import { AddSite, AddSiteVariables } from "../definitions/AddSite";
+import { DeleteSite, DeleteSiteVariables } from "../definitions/DeleteSite";
+import { UpdateSite, UpdateSiteVariables } from "../definitions/UpdateSite";
 
 import ActivateUserMutation from "./ActivateNewUser.gql";
 import AddUserMutation from "./AddUser.gql";
@@ -97,6 +100,9 @@ import RescindInviteCodeMutation from "./RescindInviteCode.gql";
 import RevokeInviteMutation from "./RevokeInvite.gql";
 import EditCommentMutation from "./EditComment.gql";
 import VoteMutation from "./Vote.gql";
+import AddSiteMutation from "./AddSite.gql";
+import DeleteSiteMutation from "./DeleteSite.gql";
+import UpdateSiteMutation from "./UpdateSite.gql";
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -216,3 +222,15 @@ export const useEditComment = (
 
 export const useVote = (options?: MutationHookOptions<Vote, VoteVariables>) =>
   useMutation(VoteMutation, options);
+
+export const useAddSite = (
+  options?: MutationHookOptions<AddSite, AddSiteVariables>
+) => useMutation(AddSiteMutation, options);
+
+export const useDeleteSite = (
+  options?: MutationHookOptions<DeleteSite, DeleteSiteVariables>
+) => useMutation(DeleteSiteMutation, options);
+
+export const useUpdateSite = (
+  options?: MutationHookOptions<UpdateSite, UpdateSiteVariables>
+) => useMutation(UpdateSiteMutation, options);

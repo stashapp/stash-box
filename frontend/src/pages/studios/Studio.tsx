@@ -9,15 +9,15 @@ import {
   TargetTypeEnum,
   CriterionModifier,
 } from "src/graphql";
-import { EditList, SceneList } from "src/components/list";
+import { EditList, SceneList, URLList } from "src/components/list";
 
 import {
   getImage,
-  getUrlByType,
   createHref,
   studioHref,
   canEdit,
   formatPendingEdits,
+  getUrlBySite,
 } from "src/utils";
 import { ROUTE_STUDIO_EDIT, ROUTE_STUDIO_DELETE } from "src/constants/route";
 import AuthContext from "src/AuthContext";
@@ -50,27 +50,26 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
+  const homeURL = getUrlBySite(studio.urls, "Home");
+
   return (
     <>
       <div className="d-flex">
         <div className="studio-title me-auto">
           <h3>
-            <span className="me-2">Studio:</span>
             {studio.deleted ? (
               <del>{studio.name}</del>
             ) : (
               <span>{studio.name}</span>
             )}
           </h3>
-          <h6>
-            <a
-              href={getUrlByType(studio.urls, "HOME")}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              {getUrlByType(studio.urls, "HOME")}
-            </a>
-          </h6>
+          {homeURL && (
+            <h6>
+              <a href={homeURL} target="_blank" rel="noreferrer noopener">
+                {homeURL}
+              </a>
+            </h6>
+          )}
           {studio.parent && (
             <span>
               Part of{" "}
@@ -133,6 +132,9 @@ const StudioComponent: FC<Props> = ({ studio }) => {
             />
           </Tab>
         )}
+        <Tab eventKey="links" title="Links">
+          <URLList urls={studio.urls} />
+        </Tab>
         <Tab
           eventKey="edits"
           title={`Edits${formatPendingEdits(pendingEditCount)}`}
