@@ -1415,6 +1415,7 @@ export interface SceneEdit_sceneEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  destructive: boolean;
   comments: SceneEdit_sceneEdit_comments[];
   votes: SceneEdit_sceneEdit_votes[];
   user: SceneEdit_sceneEdit_user | null;

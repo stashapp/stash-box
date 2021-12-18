@@ -1415,6 +1415,7 @@ export interface PerformerEdit_performerEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  destructive: boolean;
   comments: PerformerEdit_performerEdit_comments[];
   votes: PerformerEdit_performerEdit_votes[];
   user: PerformerEdit_performerEdit_user | null;

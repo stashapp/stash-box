@@ -1415,6 +1415,7 @@ export interface StudioEdit_studioEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  destructive: boolean;
   comments: StudioEdit_studioEdit_comments[];
   votes: StudioEdit_studioEdit_votes[];
   user: StudioEdit_studioEdit_user | null;

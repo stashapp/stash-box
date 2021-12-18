@@ -26,12 +26,21 @@ const VoteBar: FC<Props> = ({ edit }) => {
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
   const [submitVote, { loading: savingVote }] = useVote();
 
-  if (
-    edit.status !== VoteStatusEnum.PENDING ||
-    !canVote(auth.user) ||
-    auth.user?.id === edit.user?.id
-  )
+  if (edit.status !== VoteStatusEnum.PENDING || !canVote(auth.user))
     return <></>;
+
+  const currentVote = (
+    <h6>
+      <span className="me-2">Current Vote:</span>
+      <span>{`${edit.vote_count > 0 ? "+" : ""}${
+        edit.vote_count === 0 ? "-" : edit.vote_count
+      }`}</span>
+    </h6>
+  );
+
+  if (auth.user?.id === edit.user?.id) {
+    return <div>{currentVote}</div>;
+  }
 
   const handleSave = () => {
     if (!vote) return;
@@ -49,12 +58,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
   return (
     <div className={CLASSNAME}>
       <div className={CLASSNAME_SAVE}>
-        <h6>
-          <span className="me-2">Current Vote:</span>
-          <span>{`${edit.vote_count > 0 ? "+" : ""}${
-            edit.vote_count === 0 ? "-" : edit.vote_count
-          }`}</span>
-        </h6>
+        {currentVote}
         {vote &&
           vote !== userVote?.vote &&
           (userVote || vote !== VoteTypeEnum.ABSTAIN) && (
