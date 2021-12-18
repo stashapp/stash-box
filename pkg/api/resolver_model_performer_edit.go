@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -56,31 +55,11 @@ func (r *performerEditResolver) BreastType(ctx context.Context, obj *models.Perf
 }
 
 func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
-	if len(obj.AddedImages) == 0 {
-		return nil, nil
-	}
-
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(obj.AddedImages)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return images, nil
+	return imageList(ctx, obj.AddedImages)
 }
 
 func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
-	if len(obj.RemovedImages) == 0 {
-		return nil, nil
-	}
-
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(obj.RemovedImages)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return images, nil
+	return imageList(ctx, obj.RemovedImages)
 }
 
 func (r *performerEditResolver) AddedUrls(ctx context.Context, obj *models.PerformerEdit) ([]*models.URL, error) {
