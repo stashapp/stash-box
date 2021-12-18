@@ -12,7 +12,6 @@ import AuthContext from "src/AuthContext";
 import {
   canEdit,
   getImage,
-  getUrlByType,
   tagHref,
   performerHref,
   studioHref,
@@ -20,6 +19,7 @@ import {
   formatDuration,
   formatDateTime,
   formatPendingEdits,
+  getUrlBySite,
 } from "src/utils";
 import {
   ROUTE_SCENE_EDIT,
@@ -32,7 +32,7 @@ import {
   PerformerName,
   Icon,
 } from "src/components/fragments";
-import { EditList } from "src/components/list";
+import { EditList, URLList } from "src/components/list";
 
 const DEFAULT_TAB = "description";
 
@@ -115,6 +115,8 @@ const SceneComponent: FC<Props> = ({ scene }) => {
       </li>
     ));
 
+  const studioURL = getUrlBySite(scene.urls, "Studio");
+
   return (
     <>
       <Card className="scene-info">
@@ -186,17 +188,17 @@ const SceneComponent: FC<Props> = ({ scene }) => {
               <h6>Tags:</h6>
               <ul className="scene-tag-list">{tags}</ul>
             </div>
-            <hr />
-            <div>
-              <strong className="me-2">Studio URL: </strong>
-              <a
-                href={getUrlByType(scene.urls, "STUDIO")}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {getUrlByType(scene.urls, "STUDIO")}
-              </a>
-            </div>
+            {studioURL && (
+              <>
+                <hr />
+                <div>
+                  <b className="me-2">Studio URL:</b>
+                  <a href={studioURL} target="_blank" rel="noopener noreferrer">
+                    {studioURL}
+                  </a>
+                </div>
+              </>
+            )}
           </div>
         </Tab>
         <Tab eventKey="fingerprints" title="Fingerprints" mountOnEnter={false}>
@@ -232,6 +234,9 @@ const SceneComponent: FC<Props> = ({ scene }) => {
               </Table>
             )}
           </div>
+        </Tab>
+        <Tab eventKey="links" title="Links">
+          <URLList urls={scene.urls} />
         </Tab>
         <Tab
           eventKey="edits"

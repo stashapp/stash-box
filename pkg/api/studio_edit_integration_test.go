@@ -104,14 +104,19 @@ func (s *studioEditTestRunner) testModifyStudioEdit() {
 	}
 	newParentID := newParent.UUID()
 	newName := "newName"
-	url := models.URL{
-		URL:  "http://example.org",
-		Type: "HOME",
+
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
+	url := models.URLInput{
+		URL:    "http://example.org",
+		SiteID: site.ID,
 	}
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name:     &newName,
 		ParentID: &newParentID,
-		Urls:     []*models.URL{&url},
+		Urls:     []*models.URLInput{&url},
 	}
 	id := createdStudio.UUID()
 	editInput := models.EditInput{
@@ -141,9 +146,7 @@ func (s *studioEditTestRunner) verifyUpdatedStudioEdit(originalStudio *studioOut
 		s.fieldMismatch(*input.ParentID, *studioDetails.ParentID, "ParentID")
 	}
 
-	if !reflect.DeepEqual(studioDetails.AddedUrls, input.Urls) {
-		s.fieldMismatch(input.Urls, studioDetails.AddedUrls, "URLs")
-	}
+	s.compareURLs(input.Urls, studioDetails.AddedUrls)
 }
 
 func (s *studioEditTestRunner) testDestroyStudioEdit() {
@@ -272,11 +275,15 @@ func (s *studioEditTestRunner) verifyAppliedStudioCreateEdit(input models.Studio
 
 func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 	existingName := "studioName3"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
 	studioCreateInput := models.StudioCreateInput{
 		Name: existingName,
-		Urls: []*models.URL{{
-			URL:  "http://example.org/old",
-			Type: "HOME",
+		Urls: []*models.URLInput{{
+			URL:    "http://example.org/old",
+			SiteID: site.ID,
 		}},
 	}
 	createdStudio, err := s.createTestStudio(&studioCreateInput)
@@ -290,14 +297,14 @@ func (s *studioEditTestRunner) testApplyModifyStudioEdit() {
 		return
 	}
 	newParentID := newParent.UUID()
-	newUrl := models.URL{
-		URL:  "http://example.org/new",
-		Type: "HOME",
+	newUrl := models.URLInput{
+		URL:    "http://example.org/new",
+		SiteID: site.ID,
 	}
 	studioEditDetailsInput := models.StudioEditDetailsInput{
 		Name:     &newName,
 		ParentID: &newParentID,
-		Urls:     []*models.URL{&newUrl},
+		Urls:     []*models.URLInput{&newUrl},
 	}
 	id := createdStudio.UUID()
 	editInput := models.EditInput{
@@ -334,9 +341,7 @@ func (s *studioEditTestRunner) verifyApplyModifyStudioEdit(input models.StudioEd
 	}
 
 	urls, _ := s.resolver.Studio().Urls(s.ctx, updatedStudio)
-	if !reflect.DeepEqual(input.Urls, urls) {
-		s.fieldMismatch(input.Urls, urls, "URLs")
-	}
+	s.compareURLs(input.Urls, urls)
 }
 
 func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {

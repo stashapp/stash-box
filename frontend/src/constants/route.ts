@@ -41,3 +41,7 @@ export const ROUTE_FORGOT_PASSWORD = "/forgotPassword";
 export const ROUTE_RESET_PASSWORD = "/resetPassword";
 export const ROUTE_SEARCH = "/search/:term?";
 export const ROUTE_VERSION = "/version";
+export const ROUTE_SITE = "/sites/:id";
+export const ROUTE_SITE_ADD = "/sites/add";
+export const ROUTE_SITE_EDIT = "/sites/:id/edit";
+export const ROUTE_SITES = "/sites";

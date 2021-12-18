@@ -72,7 +72,7 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studioID uuid.UUID, newURLs []*models.URL) error {
+func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studioID uuid.UUID, newURLs []*models.URLInput) error {
 	sqb := m.fac.Studio()
 	urls, err := sqb.GetURLs(studioID)
 	if err != nil {
@@ -164,7 +164,7 @@ func (m *StudioEditProcessor) createEdit(input models.StudioEditInput, inputSpec
 	studioEdit := input.Details.StudioEditFromCreate()
 
 	if len(input.Details.Urls) != 0 || inputSpecified("urls") {
-		studioEdit.New.AddedUrls = input.Details.Urls
+		studioEdit.New.AddedUrls = models.ParseURLInput(input.Details.Urls)
 	}
 
 	if len(input.Details.ImageIds) != 0 || inputSpecified("image_ids") {

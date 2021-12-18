@@ -6,6 +6,7 @@ import {
   ROUTE_EDIT,
   ROUTE_STUDIO,
   ROUTE_SCENE,
+  ROUTE_SITE,
   ROUTE_USER,
 } from "src/constants/route";
 
@@ -33,6 +34,9 @@ export const performerHref = (
   obj: { id: string },
   route: string = ROUTE_PERFORMER
 ) => generatePath(route, obj);
+
+export const siteHref = (obj: { id: string }, route: string = ROUTE_SITE) =>
+  generatePath(route, obj);
 
 export const createHref = (route: string, params: unknown = {}) =>
   generatePath(

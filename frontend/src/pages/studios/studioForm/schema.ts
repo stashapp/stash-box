@@ -1,11 +1,22 @@
 import * as yup from "yup";
 
-const nullCheck = (input: string | null) =>
-  input === "" || input === "null" ? null : input;
-
 export const StudioSchema = yup.object({
   name: yup.string().required("Name is required"),
-  url: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
+  urls: yup
+    .array()
+    .of(
+      yup.object({
+        url: yup.string().url("Invalid URL").required(),
+        site: yup
+          .object({
+            id: yup.string().required(),
+            name: yup.string().required(),
+            icon: yup.string().required(),
+          })
+          .required(),
+      })
+    )
+    .ensure(),
   images: yup
     .array()
     .of(

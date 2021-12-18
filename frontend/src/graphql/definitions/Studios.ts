@@ -15,10 +15,17 @@ export interface Studios_queryStudios_studios_parent {
   name: string;
 }
 
+export interface Studios_queryStudios_studios_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface Studios_queryStudios_studios_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Studios_queryStudios_studios_urls_site;
 }
 
 export interface Studios_queryStudios_studios_images {

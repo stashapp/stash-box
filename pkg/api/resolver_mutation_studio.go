@@ -39,7 +39,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		}
 
 		// Save the URLs
-		studioUrls := models.CreateStudioURLs(studio.ID, input.Urls)
+		studioUrls := models.CreateStudioURLs(studio.ID, models.ParseURLInput(input.Urls))
 		if err := qb.CreateURLs(studioUrls); err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 		// Save the URLs
 		// TODO - only do this if provided
-		studioUrls := models.CreateStudioURLs(studio.ID, input.Urls)
+		studioUrls := models.CreateStudioURLs(studio.ID, models.ParseURLInput(input.Urls))
 		if err := qb.UpdateURLs(studio.ID, studioUrls); err != nil {
 			return err
 		}

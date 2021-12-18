@@ -51,3 +51,7 @@ func (f *repo) Invite() models.InviteKeyRepo {
 func (f *repo) User() models.UserRepo {
 	return newUserQueryBuilder(f.txnState)
 }
+
+func (f *repo) Site() models.SiteRepo {
+	return newSiteQueryBuilder(f.txnState)
+}

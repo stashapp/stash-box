@@ -53,17 +53,7 @@ const selectSceneDetails = (
   );
 
   const [addedImages, removedImages] = diffImages(data.images, original.images);
-  const [addedUrls, removedUrls] = diffURLs(
-    data.studioURL
-      ? [
-          {
-            url: data.studioURL,
-            type: "STUDIO",
-          },
-        ]
-      : [],
-    original.urls
-  );
+  const [addedUrls, removedUrls] = diffURLs(data.urls, original.urls);
 
   return [
     {

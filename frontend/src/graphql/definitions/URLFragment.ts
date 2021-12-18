@@ -7,8 +7,15 @@
 // GraphQL fragment: URLFragment
 // ====================================================
 
+export interface URLFragment_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface URLFragment {
   __typename: "URL";
   url: string;
-  type: string;
+  site: URLFragment_site;
 }

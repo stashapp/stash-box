@@ -15,10 +15,17 @@ export interface SearchAll_searchPerformer_birthdate {
   accuracy: DateAccuracyEnum;
 }
 
+export interface SearchAll_searchPerformer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface SearchAll_searchPerformer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: SearchAll_searchPerformer_urls_site;
 }
 
 export interface SearchAll_searchPerformer_images {
@@ -46,10 +53,17 @@ export interface SearchAll_searchPerformer {
   images: SearchAll_searchPerformer_images[];
 }
 
+export interface SearchAll_searchScene_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface SearchAll_searchScene_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: SearchAll_searchScene_urls_site;
 }
 
 export interface SearchAll_searchScene_images {

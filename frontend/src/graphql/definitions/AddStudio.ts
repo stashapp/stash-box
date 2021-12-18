@@ -9,10 +9,16 @@ import { StudioCreateInput } from "./globalTypes";
 // GraphQL mutation operation: AddStudio
 // ====================================================
 
+export interface AddStudio_studioCreate_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface AddStudio_studioCreate_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: AddStudio_studioCreate_urls_site;
 }
 
 export interface AddStudio_studioCreate {

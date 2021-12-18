@@ -118,9 +118,7 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 		s.fieldMismatch(input.Gender, performerDetails.Gender, "Disambiguation")
 	}
 
-	if !reflect.DeepEqual(input.Urls, performerDetails.AddedUrls) {
-		s.fieldMismatch(input.Urls, performerDetails.AddedUrls, "URLs")
-	}
+	s.compareURLs(input.Urls, performerDetails.AddedUrls)
 
 	if !input.Birthdate.Accuracy.IsValid() || (input.Birthdate.Accuracy.String() != *performerDetails.BirthdateAccuracy) {
 		s.fieldMismatch(input.Birthdate.Accuracy, performerDetails.BirthdateAccuracy, "BirthdateAccuracy")
@@ -220,9 +218,7 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	}
 
 	urls, _ := resolver.Urls(s.ctx, performer)
-	if (len(input.Urls) > 0 || len(urls) > 0) && !reflect.DeepEqual(input.Urls, urls) {
-		s.fieldMismatch(input.Urls, urls, "Urls")
-	}
+	s.compareURLs(input.Urls, urls)
 
 	if input.Birthdate == nil {
 		if performer.BirthdateAccuracy.Valid {
@@ -473,6 +469,10 @@ func (s *performerEditTestRunner) verifyAppliedPerformerCreateEdit(input models.
 }
 
 func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
 	performerCreateInput := models.PerformerCreateInput{
 		Name:    "performerName3",
 		Aliases: []string{"modfied performer alias"},
@@ -486,10 +486,10 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 				Location: "some piercing location",
 			},
 		},
-		Urls: []*models.URL{
+		Urls: []*models.URLInput{
 			{
-				URL:  "http://example.org/asd",
-				Type: "someothertype",
+				URL:    "http://example.org/asd",
+				SiteID: site.ID,
 			},
 		},
 	}
@@ -670,7 +670,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		Aliases:      []string{},
 		Tattoos:      []*models.BodyModification{},
 		Piercings:    []*models.BodyModification{},
-		Urls:         []*models.URL{},
+		Urls:         []*models.URLInput{},
 		Measurements: &measurements,
 	}
 

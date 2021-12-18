@@ -31,18 +31,18 @@ func (s *Studios) Add(o interface{}) {
 
 type StudioURL struct {
 	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+	SiteID   uuid.UUID `db:"site_id" json:"site_id"`
 	URL      string    `db:"url" json:"url"`
-	Type     string    `db:"type" json:"type"`
 }
 
 func (s StudioURL) ID() string {
-	return s.URL + s.Type
+	return s.URL
 }
 
 func (s *StudioURL) ToURL() URL {
 	url := URL{
-		URL:  s.URL,
-		Type: s.Type,
+		URL:    s.URL,
+		SiteID: s.SiteID,
 	}
 	return url
 }
@@ -80,14 +80,14 @@ func (s *StudioURLs) Remove(id string) {
 	}
 }
 
-func CreateStudioURLs(studioID uuid.UUID, urls []*URLInput) StudioURLs {
+func CreateStudioURLs(studioID uuid.UUID, urls []*URL) StudioURLs {
 	var ret StudioURLs
 
 	for _, urlInput := range urls {
 		ret = append(ret, &StudioURL{
 			StudioID: studioID,
 			URL:      urlInput.URL,
-			Type:     urlInput.Type,
+			SiteID:   urlInput.SiteID,
 		})
 	}
 

@@ -19,6 +19,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/gofrs/uuid"
+	"gotest.tools/v3/assert"
 )
 
 // we need to create some users to test the api with, otherwise all calls
@@ -152,6 +153,7 @@ var tagSuffix int
 var sceneChecksumSuffix int
 var userSuffix int
 var categorySuffix int
+var siteSuffix int
 
 func createTestRunner(t *testing.T, u *models.User, roles []models.RoleEnum) *testRunner {
 	repoFn := func(context.Context) models.Repo {
@@ -283,16 +285,20 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 	careerstart := 2019
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return nil
+	}
 
 	return &models.PerformerCreateInput{
 		Name:           name,
 		Disambiguation: &disambiguation,
 		Aliases:        []string{"Alias1"},
 		Gender:         &gender,
-		Urls: []*models.URL{
+		Urls: []*models.URLInput{
 			{
-				URL:  "http://example.org",
-				Type: "someurl",
+				URL:    "http://example.org",
+				SiteID: site.ID,
 			},
 		},
 		Birthdate: &models.FuzzyDateInput{
@@ -605,7 +611,7 @@ func compareUrls(input []*models.URLInput, urls []*models.URL) bool {
 	}
 
 	for i, v := range urls {
-		if v.URL != input[i].URL || v.Type != input[i].Type {
+		if v.URL != input[i].URL || v.SiteID != input[i].SiteID {
 			return false
 		}
 	}
@@ -714,16 +720,20 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 	careerstart := 2019
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return nil
+	}
 
 	return &models.PerformerEditDetailsInput{
 		Name:           &name,
 		Disambiguation: &disambiguation,
 		Aliases:        []string{"Alias1"},
 		Gender:         &gender,
-		Urls: []*models.URL{
+		Urls: []*models.URLInput{
 			{
-				URL:  "http://example.org",
-				Type: "someurl",
+				URL:    "http://example.org",
+				SiteID: site.ID,
 			},
 		},
 		Birthdate: &models.FuzzyDateInput{
@@ -764,14 +774,18 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 	date := "2000-02-03"
 	duration := 123
 	director := "Director"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return nil
+	}
 
 	return &models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []*models.URL{
+		Urls: []*models.URLInput{
 			{
-				URL:  "http://example.org",
-				Type: "someurl",
+				URL:    "http://example.org",
+				SiteID: site.ID,
 			},
 		},
 		Date: &date,
@@ -789,14 +803,18 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 	date := "2000-02-03"
 	duration := 123
 	director := "Director"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return nil
+	}
 
 	return &models.SceneEditDetailsInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []*models.URL{
+		Urls: []*models.URLInput{
 			{
-				URL:  "http://example.org",
-				Type: "someurl",
+				URL:    "http://example.org",
+				SiteID: site.ID,
 			},
 		},
 		Date:     &date,
@@ -823,14 +841,18 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 	duration := 123
 	director := "Director"
 	as := "Alias"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return nil
+	}
 
 	return &models.SceneEditDetailsInput{
 		Title:   &title,
 		Details: &details,
-		Urls: []*models.URL{
+		Urls: []*models.URLInput{
 			{
-				URL:  "http://example.org",
-				Type: "someurl",
+				URL:    "http://example.org",
+				SiteID: site.ID,
 			},
 		},
 		Date: &date,
@@ -897,4 +919,56 @@ func (s *testRunner) getEditSceneTarget(input *models.Edit) *models.Scene {
 	target, _ := r.Target(s.ctx, input)
 	sceneTarget := target.(*models.Scene)
 	return sceneTarget
+}
+
+func (s *testRunner) generateSiteName() string {
+	siteSuffix += 1
+	return "site-" + strconv.Itoa(siteSuffix)
+}
+
+func (s *testRunner) createTestSite(input *models.SiteCreateInput) (*models.Site, error) {
+	s.t.Helper()
+
+	if input == nil {
+		name := s.generateSiteName()
+		desc := "Description for " + name
+		input = &models.SiteCreateInput{
+			Name:        name,
+			Description: &desc,
+			ValidTypes:  []models.ValidSiteTypeEnum{models.ValidSiteTypeEnumScene},
+		}
+	}
+
+	createdSite, err := s.resolver.Mutation().SiteCreate(s.ctx, *input)
+
+	if err != nil {
+		s.t.Errorf("Error creating site: %s", err.Error())
+		return nil, err
+	}
+
+	return createdSite, nil
+}
+
+func (s *testRunner) compareURLs(input []*models.URLInput, output []*models.URL) {
+	var convertedURLs []*models.URL
+	for _, url := range input {
+		convertedURLs = append(convertedURLs, &models.URL{
+			URL:    url.URL,
+			SiteID: url.SiteID,
+		})
+	}
+
+	assert.DeepEqual(s.t, convertedURLs, output)
+}
+
+func (s *testRunner) compareSiteURLs(input []*models.URLInput, output []*siteURL) {
+	var convertedURLs []*models.URLInput
+	for _, url := range output {
+		convertedURLs = append(convertedURLs, &models.URLInput{
+			URL:    url.URL,
+			SiteID: uuid.FromStringOrNil(url.Site.ID),
+		})
+	}
+
+	assert.DeepEqual(s.t, input, convertedURLs)
 }

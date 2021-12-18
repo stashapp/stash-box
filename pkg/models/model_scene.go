@@ -37,18 +37,18 @@ func (p *Scenes) Add(o interface{}) {
 
 type SceneURL struct {
 	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+	SiteID  uuid.UUID `db:"site_id" json:"site_id"`
 	URL     string    `db:"url" json:"url"`
-	Type    string    `db:"type" json:"type"`
 }
 
 func (u SceneURL) ID() string {
-	return u.URL + u.Type
+	return u.URL
 }
 
 func (u *SceneURL) ToURL() URL {
 	url := URL{
-		URL:  u.URL,
-		Type: u.Type,
+		URL:    u.URL,
+		SiteID: u.SiteID,
 	}
 	return url
 }
@@ -81,14 +81,14 @@ func (u *SceneURLs) Remove(id string) {
 	}
 }
 
-func CreateSceneURLs(sceneID uuid.UUID, urls []*URLInput) SceneURLs {
+func CreateSceneURLs(sceneID uuid.UUID, urls []*URL) SceneURLs {
 	var ret SceneURLs
 
 	for _, urlInput := range urls {
 		ret = append(ret, &SceneURL{
 			SceneID: sceneID,
 			URL:     urlInput.URL,
-			Type:    urlInput.Type,
+			SiteID:  urlInput.SiteID,
 		})
 	}
 

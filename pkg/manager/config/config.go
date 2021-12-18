@@ -61,6 +61,7 @@ type config struct {
 	// Image storage settings
 	ImageLocation string `mapstructure:"image_location"`
 	ImageBackend  string `mapstructure:"image_backend"`
+	FaviconPath   string `mapstructure:"favicon_path"`
 
 	// Logging options
 	LogFile     string `mapstructure:"logFile"`
@@ -336,4 +337,11 @@ func GetTitle() string {
 		return "Stash-Box"
 	}
 	return C.Title
+}
+
+func GetFaviconPath() *string {
+	if len(C.FaviconPath) == 0 {
+		return nil
+	}
+	return &C.FaviconPath
 }

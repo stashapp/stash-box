@@ -15,10 +15,17 @@ export interface SearchPerformers_searchPerformer_birthdate {
   accuracy: DateAccuracyEnum;
 }
 
+export interface SearchPerformers_searchPerformer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface SearchPerformers_searchPerformer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: SearchPerformers_searchPerformer_urls_site;
 }
 
 export interface SearchPerformers_searchPerformer_images {

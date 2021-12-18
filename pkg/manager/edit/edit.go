@@ -197,7 +197,7 @@ func CloseEdit(fac models.Repo, editID uuid.UUID, status models.VoteStatusEnum) 
 	return updatedEdit, err
 }
 
-func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.URL, missing []*models.URL) {
+func urlCompare(subject []*models.URLInput, against []*models.URL) (added []*models.URL, missing []*models.URL) {
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {
@@ -213,7 +213,10 @@ func urlCompare(subject []*models.URL, against []*models.URL) (added []*models.U
 		}
 
 		if newMod {
-			added = append(added, s)
+			newURL := s.ToURL()
+			if newURL != nil {
+				added = append(added, newURL)
+			}
 		}
 	}
 

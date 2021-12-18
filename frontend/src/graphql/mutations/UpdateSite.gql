@@ -1,0 +1,10 @@
+mutation UpdateSite($siteData: SiteUpdateInput!) {
+  siteUpdate(input: $siteData) {
+    id
+    name
+    description
+    url
+    regex
+    valid_types
+  }
+}
