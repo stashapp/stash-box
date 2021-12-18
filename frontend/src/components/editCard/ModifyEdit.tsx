@@ -31,7 +31,7 @@ import {
 } from "src/utils";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
-import URLChangeRow from "src/components/urlChangeRow";
+import URLChangeRow, { URL } from "src/components/urlChangeRow";
 import { Icon } from "src/components/fragments";
 import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
@@ -126,6 +126,8 @@ export interface PerformerDetails {
   removed_aliases?: string[] | null;
   added_images?: Image[] | null;
   removed_images?: Image[] | null;
+  added_urls?: URL[] | null;
+  removed_urls?: URL[] | null;
 }
 
 export const renderPerformerDetails = (
@@ -273,6 +275,11 @@ export const renderPerformerDetails = (
         .join("\n")}
       showDiff={showDiff}
     />
+    <URLChangeRow
+      newURLs={performerDetails.added_urls}
+      oldURLs={performerDetails.removed_urls}
+      showDiff={showDiff}
+    />
     <ImageChangeRow
       newImages={performerDetails.added_images}
       oldImages={performerDetails.removed_images}
@@ -288,11 +295,6 @@ type ScenePerformance = {
     "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
   >;
 };
-
-interface URL {
-  url: string;
-  type: string;
-}
 
 export interface SceneDetails {
   title: string | null;

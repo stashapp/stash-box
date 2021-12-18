@@ -1,11 +1,16 @@
 import { FC } from "react";
 import { Col, Row } from "react-bootstrap";
+import { SiteLink } from "src/components/fragments";
 
 const CLASSNAME = "URLChangeRow";
 
-interface URL {
+export interface URL {
   url: string;
-  type: string;
+  site: {
+    id: string;
+    name: string;
+    icon: string;
+  };
 }
 
 interface URLChangeRowProps {
@@ -17,7 +22,7 @@ interface URLChangeRowProps {
 const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
   (newURLs ?? []).length > 0 || (oldURLs ?? []).length > 0 ? (
     <Row className={CLASSNAME}>
-      <b className="col-2 text-end">URLs</b>
+      <b className="col-2 text-end">Links</b>
       {showDiff && (
         <Col xs={5}>
           {(oldURLs ?? []).length > 0 && (
@@ -26,7 +31,10 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
               <div className={CLASSNAME}>
                 <ul>
                   {(oldURLs ?? []).map((u) => (
-                    <li key={u.url}>{`${u.type}: ${u.url}`}</li>
+                    <li key={u.url}>
+                      <SiteLink site={u.site} />
+                      <span>{u.url}</span>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -41,7 +49,10 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
             <div className={CLASSNAME}>
               <ul>
                 {(newURLs ?? []).map((u) => (
-                  <li key={u.url}>{`${u.type}: ${u.url}`}</li>
+                  <li key={u.url}>
+                    <SiteLink site={u.site} />
+                    <span>{u.url}</span>
+                  </li>
                 ))}
               </ul>
             </div>

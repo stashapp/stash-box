@@ -9,10 +9,16 @@ import { SceneCreateInput, GenderEnum, FingerprintAlgorithm } from "./globalType
 // GraphQL mutation operation: AddScene
 // ====================================================
 
+export interface AddScene_sceneCreate_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface AddScene_sceneCreate_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: AddScene_sceneCreate_urls_site;
 }
 
 export interface AddScene_sceneCreate_studio {

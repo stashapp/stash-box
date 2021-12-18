@@ -225,7 +225,7 @@ type PerformerCreateInput struct {
 	Disambiguation  *string             `json:"disambiguation"`
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
-	Urls            []*URL              `json:"urls"`
+	Urls            []*URLInput         `json:"urls"`
 	Birthdate       *FuzzyDateInput     `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
@@ -250,7 +250,7 @@ type PerformerEditDetailsInput struct {
 	Disambiguation  *string             `json:"disambiguation"`
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
-	Urls            []*URL              `json:"urls"`
+	Urls            []*URLInput         `json:"urls"`
 	Birthdate       *FuzzyDateInput     `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
@@ -324,7 +324,7 @@ type PerformerUpdateInput struct {
 	Disambiguation  *string             `json:"disambiguation"`
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
-	Urls            []*URL              `json:"urls"`
+	Urls            []*URLInput         `json:"urls"`
 	Birthdate       *FuzzyDateInput     `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
@@ -338,6 +338,11 @@ type PerformerUpdateInput struct {
 	Tattoos         []*BodyModification `json:"tattoos"`
 	Piercings       []*BodyModification `json:"piercings"`
 	ImageIds        []uuid.UUID         `json:"image_ids"`
+}
+
+type QuerySitesResultType struct {
+	Count int     `json:"count"`
+	Sites []*Site `json:"sites"`
 }
 
 type QuerySpec struct {
@@ -384,7 +389,7 @@ type RoleCriterionInput struct {
 type SceneCreateInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
-	Urls         []*URL                      `json:"urls"`
+	Urls         []*URLInput                 `json:"urls"`
 	Date         *string                     `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
@@ -402,7 +407,7 @@ type SceneDestroyInput struct {
 type SceneEditDetailsInput struct {
 	Title      *string                     `json:"title"`
 	Details    *string                     `json:"details"`
-	Urls       []*URL                      `json:"urls"`
+	Urls       []*URLInput                 `json:"urls"`
 	Date       *string                     `json:"date"`
 	StudioID   *uuid.UUID                  `json:"studio_id"`
 	Performers []*PerformerAppearanceInput `json:"performers"`
@@ -446,7 +451,7 @@ type SceneUpdateInput struct {
 	ID           uuid.UUID                   `json:"id"`
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
-	Urls         []*URL                      `json:"urls"`
+	Urls         []*URLInput                 `json:"urls"`
 	Date         *string                     `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
@@ -455,6 +460,27 @@ type SceneUpdateInput struct {
 	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
+}
+
+type SiteCreateInput struct {
+	Name        string              `json:"name"`
+	Description *string             `json:"description"`
+	URL         *string             `json:"url"`
+	Regex       *string             `json:"regex"`
+	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
+}
+
+type SiteDestroyInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
+type SiteUpdateInput struct {
+	ID          uuid.UUID           `json:"id"`
+	Name        string              `json:"name"`
+	Description *string             `json:"description"`
+	URL         *string             `json:"url"`
+	Regex       *string             `json:"regex"`
+	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
 }
 
 type StashBoxConfig struct {
@@ -475,7 +501,7 @@ type StringCriterionInput struct {
 
 type StudioCreateInput struct {
 	Name     string      `json:"name"`
-	Urls     []*URL      `json:"urls"`
+	Urls     []*URLInput `json:"urls"`
 	ParentID *uuid.UUID  `json:"parent_id"`
 	ImageIds []uuid.UUID `json:"image_ids"`
 }
@@ -486,7 +512,7 @@ type StudioDestroyInput struct {
 
 type StudioEditDetailsInput struct {
 	Name     *string     `json:"name"`
-	Urls     []*URL      `json:"urls"`
+	Urls     []*URLInput `json:"urls"`
 	ParentID *uuid.UUID  `json:"parent_id"`
 	ImageIds []uuid.UUID `json:"image_ids"`
 }
@@ -511,7 +537,7 @@ type StudioFilterType struct {
 type StudioUpdateInput struct {
 	ID       uuid.UUID   `json:"id"`
 	Name     *string     `json:"name"`
-	Urls     []*URL      `json:"urls"`
+	Urls     []*URLInput `json:"urls"`
 	ParentID *uuid.UUID  `json:"parent_id"`
 	ImageIds []uuid.UUID `json:"image_ids"`
 }
@@ -1378,6 +1404,49 @@ func (e *TargetTypeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e TargetTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ValidSiteTypeEnum string
+
+const (
+	ValidSiteTypeEnumPerformer ValidSiteTypeEnum = "PERFORMER"
+	ValidSiteTypeEnumScene     ValidSiteTypeEnum = "SCENE"
+	ValidSiteTypeEnumStudio    ValidSiteTypeEnum = "STUDIO"
+)
+
+var AllValidSiteTypeEnum = []ValidSiteTypeEnum{
+	ValidSiteTypeEnumPerformer,
+	ValidSiteTypeEnumScene,
+	ValidSiteTypeEnumStudio,
+}
+
+func (e ValidSiteTypeEnum) IsValid() bool {
+	switch e {
+	case ValidSiteTypeEnumPerformer, ValidSiteTypeEnumScene, ValidSiteTypeEnumStudio:
+		return true
+	}
+	return false
+}
+
+func (e ValidSiteTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *ValidSiteTypeEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ValidSiteTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ValidSiteTypeEnum", str)
+	}
+	return nil
+}
+
+func (e ValidSiteTypeEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

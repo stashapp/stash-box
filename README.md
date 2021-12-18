@@ -89,6 +89,7 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `s3.secret ` | (none) | Secret Access key used for authentication. |
 | `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original.
 | `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a phash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
+| `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 
 ## SSL (HTTPS)
 

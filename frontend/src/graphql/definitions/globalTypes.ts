@@ -134,6 +134,12 @@ export enum TargetTypeEnum {
   TAG = "TAG",
 }
 
+export enum ValidSiteTypeEnum {
+  PERFORMER = "PERFORMER",
+  SCENE = "SCENE",
+  STUDIO = "STUDIO",
+}
+
 export enum VoteStatusEnum {
   ACCEPTED = "ACCEPTED",
   CANCELED = "CANCELED",
@@ -432,6 +438,27 @@ export interface SceneUpdateInput {
   director?: string | null;
 }
 
+export interface SiteCreateInput {
+  name: string;
+  description?: string | null;
+  url?: string | null;
+  regex?: string | null;
+  valid_types: ValidSiteTypeEnum[];
+}
+
+export interface SiteDestroyInput {
+  id: string;
+}
+
+export interface SiteUpdateInput {
+  id: string;
+  name: string;
+  description?: string | null;
+  url?: string | null;
+  regex?: string | null;
+  valid_types: ValidSiteTypeEnum[];
+}
+
 export interface StringCriterionInput {
   value: string;
   modifier: CriterionModifier;
@@ -514,7 +541,7 @@ export interface TagFilterType {
 
 export interface URLInput {
   url: string;
-  type: string;
+  site_id: string;
 }
 
 export interface UserChangePasswordInput {

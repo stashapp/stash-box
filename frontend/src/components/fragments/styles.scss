@@ -78,3 +78,22 @@
     display: inline-block;
   }
 }
+
+.SiteLink {
+  align-items: baseline;
+  display: inline-flex;
+
+  &-icon {
+    align-self: center;
+    border-radius: 3px;
+    height: 2ex;
+    width: 2ex;
+    margin-right: 5px;
+  }
+
+  &-name {
+    font-size: 2ex;
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+}

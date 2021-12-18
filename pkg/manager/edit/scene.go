@@ -100,7 +100,7 @@ func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID u
 	return nil
 }
 
-func (m *SceneEditProcessor) diffURLs(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newURLs []*models.URL) error {
+func (m *SceneEditProcessor) diffURLs(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newURLs []*models.URLInput) error {
 	sqb := m.fac.Scene()
 	urls, err := sqb.GetURLs(sceneID)
 	if err != nil {
@@ -266,7 +266,7 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
 	sceneEdit := input.Details.SceneEditFromCreate()
 
-	sceneEdit.New.AddedUrls = input.Details.Urls
+	sceneEdit.New.AddedUrls = models.ParseURLInput(input.Details.Urls)
 	sceneEdit.New.AddedTags = input.Details.TagIds
 	sceneEdit.New.AddedImages = input.Details.ImageIds
 	sceneEdit.New.AddedPerformers = input.Details.Performers

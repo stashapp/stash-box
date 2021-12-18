@@ -208,7 +208,11 @@ func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inp
 	}
 
 	if len(input.Details.Urls) != 0 || inputSpecified("urls") {
-		performerEdit.New.AddedUrls = input.Details.Urls
+		var addedUrls []*models.URL
+		for _, url := range input.Details.Urls {
+			addedUrls = append(addedUrls, &models.URL{URL: url.URL, SiteID: url.SiteID})
+		}
+		performerEdit.New.AddedUrls = addedUrls
 	}
 
 	if len(input.Details.ImageIds) != 0 || inputSpecified("image_ids") {

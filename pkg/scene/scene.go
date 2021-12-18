@@ -57,7 +57,7 @@ func Create(ctx context.Context, fac models.Repo, input models.SceneCreateInput)
 	}
 
 	// Save the URLs
-	sceneUrls := models.CreateSceneURLs(scene.ID, input.Urls)
+	sceneUrls := models.CreateSceneURLs(scene.ID, models.ParseURLInput(input.Urls))
 	if err := qb.CreateURLs(sceneUrls); err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 	}
 
 	// Save the URLs
-	sceneUrls := models.CreateSceneURLs(scene.ID, input.Urls)
+	sceneUrls := models.CreateSceneURLs(scene.ID, models.ParseURLInput(input.Urls))
 	if err := qb.UpdateURLs(scene.ID, sceneUrls); err != nil {
 		return nil, errors.Wrap(err, "error updating scene URLs")
 	}

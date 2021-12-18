@@ -193,8 +193,26 @@ func (p *StudiosImages) Remove(id string) {
 }
 
 type URL struct {
-	URL  string `json:"url"`
-	Type string `json:"type"`
+	URL    string `json:"url"`
+	SiteID uuid.UUID
 }
 
-type URLInput = URL
+type URLInput struct {
+	URL    string    `json:"url"`
+	SiteID uuid.UUID `json:"site_id"`
+}
+
+func (u *URLInput) ToURL() *URL {
+	return &URL{URL: u.URL, SiteID: u.SiteID}
+}
+
+func ParseURLInput(input []*URLInput) []*URL {
+	var ret []*URL
+	for _, url := range input {
+		convertedURL := url.ToURL()
+		if convertedURL != nil {
+			ret = append(ret, convertedURL)
+		}
+	}
+	return ret
+}

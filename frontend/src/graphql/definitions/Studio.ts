@@ -19,10 +19,17 @@ export interface Studio_findStudio_parent {
   name: string;
 }
 
+export interface Studio_findStudio_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface Studio_findStudio_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Studio_findStudio_urls_site;
 }
 
 export interface Studio_findStudio_images {
