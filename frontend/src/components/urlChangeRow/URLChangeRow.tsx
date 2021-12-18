@@ -33,7 +33,7 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
                   {(oldURLs ?? []).map((u) => (
                     <li key={u.url}>
                       <SiteLink site={u.site} />
-                      <span>: {u.url}</span>
+                      <span>{u.url}</span>
                     </li>
                   ))}
                 </ul>
@@ -51,7 +51,7 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
                 {(newURLs ?? []).map((u) => (
                   <li key={u.url}>
                     <SiteLink site={u.site} />
-                    <span>: {u.url}</span>
+                    <span>{u.url}</span>
                   </li>
                 ))}
               </ul>

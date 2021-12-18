@@ -19,7 +19,7 @@ const SiteLink: React.FC<Props> = ({ site, hideName = false }) =>
   site ? (
     <Link to={siteHref(site)} className={CLASSNAME}>
       <img className={CLASSNAME_ICON} src={site.icon} alt="" />
-      {!hideName && <span className={CLASSNAME_NAME}>{site.name}</span>}
+      {!hideName && <span className={CLASSNAME_NAME}>{site.name}:</span>}
     </Link>
   ) : (
     <></>

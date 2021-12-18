@@ -17,6 +17,7 @@ import {
   studioHref,
   canEdit,
   formatPendingEdits,
+  getUrlBySite,
 } from "src/utils";
 import { ROUTE_STUDIO_EDIT, ROUTE_STUDIO_DELETE } from "src/constants/route";
 import AuthContext from "src/AuthContext";
@@ -49,18 +50,26 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const setTab = (tab: string | null) =>
     history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
+  const homeURL = getUrlBySite(studio.urls, "Home");
+
   return (
     <>
       <div className="d-flex">
         <div className="studio-title me-auto">
           <h3>
-            <span className="me-2">Studio:</span>
             {studio.deleted ? (
               <del>{studio.name}</del>
             ) : (
               <span>{studio.name}</span>
             )}
           </h3>
+          {homeURL && (
+            <h6>
+              <a href={homeURL} rel="noreferrer noopener">
+                {homeURL}
+              </a>
+            </h6>
+          )}
           {studio.parent && (
             <span>
               Part of{" "}
