@@ -11,10 +11,6 @@ import (
 
 type siteResolver struct{ *Resolver }
 
-func (r *siteResolver) ID(ctx context.Context, obj *models.Site) (string, error) {
-	return obj.ID.String(), nil
-}
-
 func (r *siteResolver) Description(ctx context.Context, obj *models.Site) (*string, error) {
 	return resolveNullString(obj.Description), nil
 }

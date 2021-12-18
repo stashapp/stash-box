@@ -14,7 +14,7 @@ const SiteList: React.FC = () => {
 
   return (
     <>
-      <div className="d-flex no-gutters">
+      <div className="d-flex">
         <h3 className="me-4">Sites</h3>
         {isAdmin(auth.user) && (
           <Link to={ROUTE_SITE_ADD} className="ms-auto">
