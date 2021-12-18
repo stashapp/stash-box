@@ -311,3 +311,7 @@ func (r *editResolver) Options(ctx context.Context, obj *models.Edit) (*models.P
 	}
 	return nil, nil
 }
+
+func (r *editResolver) Destructive(ctx context.Context, obj *models.Edit) (bool, error) {
+	return obj.IsDestructive(), nil
+}

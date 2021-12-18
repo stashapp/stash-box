@@ -1415,6 +1415,7 @@ export interface Edit_findEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  destructive: boolean;
   comments: Edit_findEdit_comments[];
   votes: Edit_findEdit_votes[];
   user: Edit_findEdit_user | null;
