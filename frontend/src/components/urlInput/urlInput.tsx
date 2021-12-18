@@ -3,6 +3,7 @@ import { Button, Form, InputGroup } from "react-bootstrap";
 import { Control, useFieldArray } from "react-hook-form";
 
 import { useSites, ValidSiteTypeEnum } from "src/graphql";
+import { Site_findSite as Site } from "src/graphql/definitions/Site";
 
 const CLASSNAME = "URLInput";
 
@@ -27,6 +28,7 @@ const URLInput: React.FC<URLInputProps> = ({ control, type }) => {
     keyName: "key",
   });
   const [newURL, setNewURL] = useState("");
+  const [selectedSite, setSelectedSite] = useState<Site>();
   const selectRef = useRef<HTMLSelectElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { data, loading } = useSites();
@@ -49,46 +51,47 @@ const URLInput: React.FC<URLInputProps> = ({ control, type }) => {
   };
 
   const handleAdd = () => {
-    if (!inputRef.current || !selectRef.current) return;
-    const selectedSiteID = selectRef.current.value;
-    const selectedSite = sites.find((s) => s.id === selectedSiteID);
-    const cleanedURL = cleanURL(selectedSite?.regex, inputRef.current.value);
+    if (!newURL || !selectedSite) return;
+    const cleanedURL = cleanURL(selectedSite?.regex, newURL);
 
-    if (selectedSite) {
-      append({
-        url: cleanedURL ?? inputRef.current.value,
-        site: selectedSite,
-      });
-      selectRef.current.value = "";
-      inputRef.current.value = "";
-    }
+    append({
+      url: cleanedURL ?? newURL,
+      site: selectedSite,
+    });
+
+    if (selectRef.current) selectRef.current.value = "";
+    if (inputRef.current) inputRef.current.value = "";
+    setSelectedSite(undefined);
+    setNewURL("");
   };
 
   const handleBlur = () => {
-    if (!inputRef.current) return;
+    if (!inputRef.current || !selectRef.current) return;
 
     const url = inputRef.current.value;
-    let selectedSiteID = selectRef.current?.value;
-    if (selectedSiteID == "") {
-      const matchedSite = sites.find(
-        (s) => s.regex && new RegExp(s.regex).test(url)
-      );
-      if (matchedSite) {
-        selectedSiteID = matchedSite.id;
-        if (selectRef.current) selectRef.current.value = matchedSite.id;
-      }
+    const site =
+      selectedSite ??
+      sites.find((s) => s.regex && new RegExp(s.regex).test(url));
+
+    if (site?.regex && url) {
+      const updatedURL = cleanURL(site.regex, url);
+      if (updatedURL) inputRef.current.value = updatedURL;
     }
 
-    const selectedSite = sites.find((s) => s.id === selectedSiteID);
-    if (selectedSite && selectedSite.regex && url) {
-      const updatedURL = cleanURL(selectedSite.regex, url);
-      if (updatedURL) inputRef.current.value = updatedURL;
+    if (site && selectedSite?.id !== site.id) {
+      setSelectedSite(site);
+      selectRef.current.value = site.id;
     }
   };
 
   const handleRemove = (url: string) => {
     const index = urls.findIndex((u) => u.url === url);
     if (index !== -1) remove(index);
+  };
+
+  const handleSiteSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const site = sites.find((s) => s.id === e.currentTarget.value);
+    if (site) setSelectedSite(site);
   };
 
   return (
@@ -112,8 +115,14 @@ const URLInput: React.FC<URLInputProps> = ({ control, type }) => {
       </ul>
       <InputGroup>
         <InputGroup.Text>Add new link</InputGroup.Text>
-        <Form.Control as="select" disabled={sites.length === 0} ref={selectRef}>
-          <option disabled selected value="">
+        <Form.Control
+          as="select"
+          disabled={sites.length === 0}
+          ref={selectRef}
+          onChange={handleSiteSelect}
+          defaultValue=""
+        >
+          <option disabled value="">
             Select site
           </option>
           {sites.length === 0 ? (
@@ -135,10 +144,7 @@ const URLInput: React.FC<URLInputProps> = ({ control, type }) => {
           }
           className="w-50"
         />
-        <Button
-          onClick={handleAdd}
-          disabled={!newURL || !selectRef.current?.value}
-        >
+        <Button onClick={handleAdd} disabled={!newURL || !selectedSite}>
           Add
         </Button>
       </InputGroup>
