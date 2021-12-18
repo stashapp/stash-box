@@ -35,7 +35,7 @@ func (c EditCron) processEdits() {
 	for _, e := range edits {
 		if err := c.rfp.Repo().WithTxn(func() error {
 			voteThreshold := 0
-			if e.Operation == models.OperationEnumDestroy.String() || e.Operation == models.OperationEnumMerge.String() {
+			if e.IsDestructive() {
 				// Require at least +1 votes to pass destructive edits
 				voteThreshold = 1
 			}

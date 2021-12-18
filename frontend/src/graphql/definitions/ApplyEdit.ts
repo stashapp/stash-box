@@ -1415,6 +1415,7 @@ export interface ApplyEdit_applyEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  destructive: boolean;
   comments: ApplyEdit_applyEdit_comments[];
   votes: ApplyEdit_applyEdit_votes[];
   user: ApplyEdit_applyEdit_user | null;
