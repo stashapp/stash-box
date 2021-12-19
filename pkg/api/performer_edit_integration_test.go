@@ -938,6 +938,60 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	s.verifyPerformanceAlias(scene, nil)
 }
 
+func (s *performerTestRunner) testChangeURLSite() {
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
+
+	input := &models.PerformerCreateInput{
+		Name: s.generatePerformerName(),
+		Urls: []*models.URLInput{
+			{
+				URL:    "URL",
+				SiteID: site.ID,
+			},
+		},
+	}
+
+	createdPerformer, err := s.createTestPerformer(input)
+
+	siteTwo, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
+
+	updateInput := &models.PerformerEditDetailsInput{
+		Urls: []*models.URLInput{
+			{
+				URL:    "URL",
+				SiteID: siteTwo.ID,
+			},
+		},
+	}
+	id := uuid.FromStringOrNil(createdPerformer.ID)
+	editInput := models.EditInput{
+		Operation: models.OperationEnumModify,
+		ID:        &id,
+	}
+
+	modifyEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, updateInput, &editInput, nil)
+	if err != nil {
+		return
+	}
+
+	_, err = s.applyEdit(modifyEdit.ID)
+	if err != nil {
+		return
+	}
+
+	performer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
+	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
+	if !compareUrls(updateInput.Urls, urls) {
+		s.fieldMismatch(updateInput.Urls, urls, "Urls")
+	}
+}
+
 func TestCreatePerformerEdit(t *testing.T) {
 	pt := createPerformerEditTestRunner(t)
 	pt.testCreatePerformerEdit()
@@ -992,4 +1046,9 @@ func TestApplyDestroyPerformerEdit(t *testing.T) {
 func TestApplyMergePerformerEdit(t *testing.T) {
 	pt := createPerformerEditTestRunner(t)
 	pt.testApplyMergePerformerEdit()
+}
+
+func TestChangeURLSite(t *testing.T) {
+	pt := createPerformerTestRunner(t)
+	pt.testChangeURLSite()
 }
