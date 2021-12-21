@@ -24,6 +24,7 @@
     }
   },
   "rules": {
+    "react/prop-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": true }],
     "@typescript-eslint/no-unsafe-assignment": "off",

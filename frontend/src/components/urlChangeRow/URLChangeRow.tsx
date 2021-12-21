@@ -13,6 +13,19 @@ export interface URL {
   };
 }
 
+const URLChanges: React.FC<{ urls: URL[] }> = ({ urls }) => (
+  <div className={CLASSNAME}>
+    <ul className="ps-0">
+      {urls.map((url) => (
+        <li key={url.url} className="d-flex align-items-start">
+          <SiteLink site={url.site} />
+          <span className="d-inline-block w-50 flex-grow-1">{url.url}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
 interface URLChangeRowProps {
   newURLs?: URL[] | null;
   oldURLs?: URL[] | null;
@@ -28,16 +41,7 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
           {(oldURLs ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
-              <div className={CLASSNAME}>
-                <ul>
-                  {(oldURLs ?? []).map((u) => (
-                    <li key={u.url}>
-                      <SiteLink site={u.site} />
-                      <span>{u.url}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <URLChanges urls={oldURLs ?? []} />
             </>
           )}
         </Col>
@@ -46,16 +50,7 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
         {(newURLs ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
-            <div className={CLASSNAME}>
-              <ul>
-                {(newURLs ?? []).map((u) => (
-                  <li key={u.url}>
-                    <SiteLink site={u.site} />
-                    <span>{u.url}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <URLChanges urls={newURLs ?? []} />
           </>
         )}
       </Col>
