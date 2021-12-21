@@ -694,9 +694,7 @@ func (qb *performerQueryBuilder) updateAliasesFromEdit(performer *models.Perform
 
 	newAliases := models.CreatePerformerAliases(performer.ID, data.New.AddedAliases)
 	oldAliases := models.CreatePerformerAliases(performer.ID, data.New.RemovedAliases)
-	if err := models.ProcessSlice(&currentAliases, &newAliases, &oldAliases, "alias"); err != nil {
-		return err
-	}
+	models.ProcessSlice(&currentAliases, &newAliases, &oldAliases, "alias")
 
 	return qb.UpdateAliases(performer.ID, currentAliases)
 }
@@ -708,10 +706,8 @@ func (qb *performerQueryBuilder) updateTattoosFromEdit(performer *models.Perform
 	}
 	newTattoos := models.CreatePerformerBodyMods(performer.ID, data.New.AddedTattoos)
 	oldTattoos := models.CreatePerformerBodyMods(performer.ID, data.New.RemovedTattoos)
+	models.ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos, "tattoo")
 
-	if err := models.ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos, "tattoo"); err != nil {
-		return err
-	}
 	return qb.UpdateTattoos(performer.ID, currentTattoos)
 }
 
@@ -722,10 +718,8 @@ func (qb *performerQueryBuilder) updatePiercingsFromEdit(performer *models.Perfo
 	}
 	newPiercings := models.CreatePerformerBodyMods(performer.ID, data.New.AddedPiercings)
 	oldPiercings := models.CreatePerformerBodyMods(performer.ID, data.New.RemovedPiercings)
+	models.ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings, "piercing")
 
-	if err := models.ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings, "piercing"); err != nil {
-		return err
-	}
 	return qb.UpdatePiercings(performer.ID, currentPiercings)
 }
 
@@ -737,10 +731,7 @@ func (qb *performerQueryBuilder) updateURLsFromEdit(performer *models.Performer,
 	}
 	newUrls := models.CreatePerformerURLs(performer.ID, data.New.AddedUrls)
 	oldUrls := models.CreatePerformerURLs(performer.ID, data.New.RemovedUrls)
-
-	if err := models.ProcessSlice(&currentUrls, &newUrls, &oldUrls, "URL"); err != nil {
-		return err
-	}
+	models.ProcessSlice(&currentUrls, &newUrls, &oldUrls, "URL")
 
 	return qb.UpdateUrls(performer.ID, currentUrls)
 }
@@ -752,10 +743,7 @@ func (qb *performerQueryBuilder) updateImagesFromEdit(performer *models.Performe
 	}
 	newImages := models.CreatePerformerImages(performer.ID, data.New.AddedImages)
 	oldImages := models.CreatePerformerImages(performer.ID, data.New.RemovedImages)
-
-	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages, "image"); err != nil {
-		return err
-	}
+	models.ProcessSlice(&currentImages, &newImages, &oldImages, "image")
 
 	return qb.UpdateImages(performer.ID, currentImages)
 }

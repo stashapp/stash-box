@@ -161,13 +161,11 @@ type EditSlice interface {
 	Remove(v string)
 }
 
-func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityType string) error {
+func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityType string) {
 	idMap := map[string]bool{}
 	current.Each(func(v interface{}) {
 		idMap[v.(EditSliceValue).ID()] = true
 	})
-
-	var err error
 
 	removed.Each(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
@@ -184,6 +182,4 @@ func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityT
 			idMap[id] = true
 		}
 	})
-
-	return err
 }
