@@ -25,10 +25,10 @@ const SiteList: React.FC = () => {
       <Card>
         <Card.Body className="p-4">
           {loading && <LoadingIndicator message="Loading sites..." />}
-          <ul>
+          <ul className="ps-0">
             {(data?.querySites.sites ?? []).map((site) => (
-              <li key={site.id}>
-                <SiteLink site={site} />
+              <li key={site.id} className="d-block">
+                <SiteLink site={site} noMargin />
                 {site.description && (
                   <span className="ms-2">
                     &bull;

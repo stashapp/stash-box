@@ -94,6 +94,14 @@
   &-name {
     font-size: 2ex;
     font-weight: bold;
-    margin-right: 0.5rem;
+
+    &::after {
+      content: ":";
+      margin-right: 0.5rem;
+    }
+  }
+
+  &-no-margin::after {
+    display: none;
   }
 }
