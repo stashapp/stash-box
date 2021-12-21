@@ -201,13 +201,13 @@ func urlCompare(subject []*models.URLInput, against []*models.URL) (added []*mod
 	for _, s := range subject {
 		newMod := true
 		for _, a := range against {
-			if s.URL == a.URL {
+			if s.URL == a.URL && s.SiteID == a.SiteID {
 				newMod = false
 			}
 		}
 
 		for _, a := range added {
-			if s.URL == a.URL {
+			if s.URL == a.URL && s.SiteID == a.SiteID {
 				newMod = false
 			}
 		}
@@ -223,13 +223,13 @@ func urlCompare(subject []*models.URLInput, against []*models.URL) (added []*mod
 	for _, s := range against {
 		removedMod := true
 		for _, a := range subject {
-			if s.URL == a.URL {
+			if s.URL == a.URL && s.SiteID == a.SiteID {
 				removedMod = false
 			}
 		}
 
 		for _, a := range missing {
-			if s.URL == a.URL {
+			if s.URL == a.URL && s.SiteID == a.SiteID {
 				removedMod = false
 			}
 		}
