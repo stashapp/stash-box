@@ -3144,6 +3144,7 @@ type Edit {
     votes: [EditVote!]!
     """ = Accepted - Rejected"""
     vote_count: Int!
+    """Is the edit considered destructive."""
     destructive: Boolean!
     status: VoteStatusEnum!
     applied: Boolean!
