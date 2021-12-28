@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -85,6 +86,7 @@ func (qb *sceneQueryBuilder) CreateFingerprints(newJoins models.SceneFingerprint
 }
 
 func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins models.SceneFingerprints) error {
+	fmt.Println("asd")
 	return qb.dbi.ReplaceJoins(sceneFingerprintTable, sceneID, &updatedJoins)
 }
 
@@ -683,7 +685,7 @@ func (qb *sceneQueryBuilder) UpdatePerformers(sceneID uuid.UUID, updatedJoins mo
 	return qb.dbi.ReplaceJoins(scenePerformerTable, sceneID, &updatedJoins)
 }
 
-func (qb *sceneQueryBuilder) ApplyEdit(scene *models.Scene, create bool, data *models.SceneEditData) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) ApplyEdit(scene *models.Scene, create bool, data *models.SceneEditData, userID *uuid.UUID) (*models.Scene, error) {
 	old := data.Old
 	if old == nil {
 		old = &models.SceneEdit{}
@@ -715,6 +717,12 @@ func (qb *sceneQueryBuilder) ApplyEdit(scene *models.Scene, create bool, data *m
 
 	if err := qb.updatePerformersFromEdit(scene, data); err != nil {
 		return nil, err
+	}
+
+	if create && len(data.New.AddedFingerprints) > 0 && userID != nil {
+		if err := qb.addFingerprintsFromEdit(scene, data, *userID); err != nil {
+			return nil, err
+		}
 	}
 
 	return updatedScene, err
@@ -766,6 +774,24 @@ func (qb *sceneQueryBuilder) updatePerformersFromEdit(scene *models.Scene, data 
 	models.ProcessSlice(&currentPerformers, &newPerformers, &oldPerformers, "performer")
 
 	return qb.UpdatePerformers(scene.ID, currentPerformers)
+}
+
+func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *models.SceneEditData, userID uuid.UUID) error {
+	var newFingerprints models.SceneFingerprints
+	for _, fingerprint := range data.New.AddedFingerprints {
+		if fingerprint.Duration > 0 {
+			newFingerprints = append(newFingerprints, &models.SceneFingerprint{
+				SceneID:   scene.ID,
+				UserID:    userID,
+				Hash:      fingerprint.Hash,
+				Algorithm: fingerprint.Algorithm.String(),
+				Duration:  fingerprint.Duration,
+				CreatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
+			})
+		}
+	}
+
+	return qb.UpdateFingerprints(scene.ID, newFingerprints)
 }
 
 func (qb *sceneQueryBuilder) MergeInto(source *models.Scene, target *models.Scene) error {

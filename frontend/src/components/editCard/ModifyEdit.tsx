@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { Row } from "react-bootstrap";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -128,6 +129,7 @@ export interface PerformerDetails {
   removed_images?: Image[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
+  draft_id?: string | null;
 }
 
 export const renderPerformerDetails = (
@@ -338,6 +340,7 @@ export interface SceneDetails {
         duration: number;
       }[]
     | null;
+  draft_id?: string | null;
 }
 
 export const renderSceneDetails = (
@@ -354,6 +357,7 @@ export const renderSceneDetails = (
         showDiff={showDiff}
       />
     )}
+    {sceneDetails.draft_id && <Row className="mb-2">Submitted by draft</Row>}
     <ChangeRow
       name="Date"
       newValue={sceneDetails.date}

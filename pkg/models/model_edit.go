@@ -311,6 +311,7 @@ type PerformerEdit struct {
 	RemovedPiercings  []*BodyModification `json:"removed_piercings,omitempty"`
 	AddedImages       []uuid.UUID         `json:"added_images,omitempty"`
 	RemovedImages     []uuid.UUID         `json:"removed_images,omitempty"`
+	DraftID           *uuid.UUID          `json:"draft_id,omitempty"`
 }
 
 type PerformerEditData struct {
@@ -340,23 +341,23 @@ type StudioEditData struct {
 }
 
 type SceneEdit struct {
-	Title       *string    `json:"title,omitempty"`
-	Details     *string    `json:"details,omitempty"`
-	AddedUrls   []*URL     `json:"added_urls,omitempty"`
-	RemovedUrls []*URL     `json:"removed_urls,omitempty"`
-	Date        *string    `json:"date,omitempty"`
-	StudioID    *uuid.UUID `json:"studio_id,omitempty"`
-	// Added or modified performer appearance entries
+	Title               *string                     `json:"title,omitempty"`
+	Details             *string                     `json:"details,omitempty"`
+	AddedUrls           []*URL                      `json:"added_urls,omitempty"`
+	RemovedUrls         []*URL                      `json:"removed_urls,omitempty"`
+	Date                *string                     `json:"date,omitempty"`
+	StudioID            *uuid.UUID                  `json:"studio_id,omitempty"`
 	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
 	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`
 	AddedTags           []uuid.UUID                 `json:"added_tags,omitempty"`
 	RemovedTags         []uuid.UUID                 `json:"removed_tags,omitempty"`
 	AddedImages         []uuid.UUID                 `json:"added_images,omitempty"`
 	RemovedImages       []uuid.UUID                 `json:"removed_images,omitempty"`
-	AddedFingerprints   []*FingerprintEditInput     `json:"added_fingerprints,omitempty"`
-	RemovedFingerprints []*FingerprintEditInput     `json:"removed_fingerprints,omitempty"`
+	AddedFingerprints   []*FingerprintInput         `json:"added_fingerprints,omitempty"`
+	RemovedFingerprints []*FingerprintInput         `json:"removed_fingerprints,omitempty"`
 	Duration            *int64                      `json:"duration,omitempty"`
 	Director            *string                     `json:"director,omitempty"`
+	DraftID             *uuid.UUID                  `json:"draft_id,omitempty"`
 }
 
 func (SceneEdit) IsEditDetails() {}

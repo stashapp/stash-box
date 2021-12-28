@@ -32,6 +32,8 @@ type Performer struct {
 	Deleted           bool            `db:"deleted" json:"deleted"`
 }
 
+func (Performer) IsSceneDraftPerformer() {}
+
 func (p Performer) GetID() uuid.UUID {
 	return p.ID
 }

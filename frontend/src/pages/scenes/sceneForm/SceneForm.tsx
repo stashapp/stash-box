@@ -28,11 +28,12 @@ const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
   scene: Scene;
+  initial: Scene;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
 }
 
-const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
+const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
   const {
     register,
     control,
@@ -43,16 +44,16 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
     resolver: yupResolver(SceneSchema),
     mode: "onBlur",
     defaultValues: {
-      title: scene?.title ?? undefined,
-      details: scene?.details ?? undefined,
-      date: scene?.date,
-      duration: formatDuration(scene?.duration),
-      director: scene?.director,
-      urls: scene.urls ?? [],
-      images: scene.images,
-      studio: scene.studio ?? undefined,
-      tags: scene.tags,
-      performers: scene.performers.map((p) => ({
+      title: initial?.title ?? scene?.title ?? undefined,
+      details: initial?.details ?? scene?.details ?? undefined,
+      date: initial?.date ?? scene?.date,
+      duration: formatDuration(initial?.duration ?? scene?.duration),
+      director: initial?.director ?? scene?.director,
+      urls: initial?.urls ?? scene.urls ?? [],
+      images: initial?.images ?? scene.images,
+      studio: initial?.studio ?? scene.studio ?? undefined,
+      tags: initial?.tags ?? scene.tags,
+      performers: (initial?.performers ?? scene.performers).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
         alias: p.as ?? "",

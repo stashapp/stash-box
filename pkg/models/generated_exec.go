@@ -37,18 +37,21 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Draft() DraftResolver
 	Edit() EditResolver
 	EditComment() EditCommentResolver
 	EditVote() EditVoteResolver
 	Image() ImageResolver
 	Mutation() MutationResolver
 	Performer() PerformerResolver
+	PerformerDraft() PerformerDraftResolver
 	PerformerEdit() PerformerEditResolver
 	Query() QueryResolver
 	QueryEditsResultType() QueryEditsResultTypeResolver
 	QueryPerformersResultType() QueryPerformersResultTypeResolver
 	QueryScenesResultType() QueryScenesResultTypeResolver
 	Scene() SceneResolver
+	SceneDraft() SceneDraftResolver
 	SceneEdit() SceneEditResolver
 	Site() SiteResolver
 	Studio() StudioResolver
@@ -69,6 +72,28 @@ type ComplexityRoot struct {
 	BodyModification struct {
 		Description func(childComplexity int) int
 		Location    func(childComplexity int) int
+	}
+
+	Draft struct {
+		Created func(childComplexity int) int
+		Data    func(childComplexity int) int
+		Expires func(childComplexity int) int
+		ID      func(childComplexity int) int
+	}
+
+	DraftEntity struct {
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
+	}
+
+	DraftFingerprint struct {
+		Algorithm func(childComplexity int) int
+		Duration  func(childComplexity int) int
+		Hash      func(childComplexity int) int
+	}
+
+	DraftSubmissionStatus struct {
+		ID func(childComplexity int) int
 	}
 
 	Edit struct {
@@ -134,49 +159,52 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		ActivateNewUser    func(childComplexity int, input ActivateNewUserInput) int
-		ApplyEdit          func(childComplexity int, input ApplyEditInput) int
-		CancelEdit         func(childComplexity int, input CancelEditInput) int
-		ChangePassword     func(childComplexity int, input UserChangePasswordInput) int
-		EditComment        func(childComplexity int, input EditCommentInput) int
-		EditVote           func(childComplexity int, input EditVoteInput) int
-		FavoritePerformer  func(childComplexity int, id uuid.UUID, favorite bool) int
-		FavoriteStudio     func(childComplexity int, id uuid.UUID, favorite bool) int
-		GenerateInviteCode func(childComplexity int) int
-		GrantInvite        func(childComplexity int, input GrantInviteInput) int
-		ImageCreate        func(childComplexity int, input ImageCreateInput) int
-		ImageDestroy       func(childComplexity int, input ImageDestroyInput) int
-		NewUser            func(childComplexity int, input NewUserInput) int
-		PerformerCreate    func(childComplexity int, input PerformerCreateInput) int
-		PerformerDestroy   func(childComplexity int, input PerformerDestroyInput) int
-		PerformerEdit      func(childComplexity int, input PerformerEditInput) int
-		PerformerUpdate    func(childComplexity int, input PerformerUpdateInput) int
-		RegenerateAPIKey   func(childComplexity int, userID *uuid.UUID) int
-		RescindInviteCode  func(childComplexity int, code uuid.UUID) int
-		ResetPassword      func(childComplexity int, input ResetPasswordInput) int
-		RevokeInvite       func(childComplexity int, input RevokeInviteInput) int
-		SceneCreate        func(childComplexity int, input SceneCreateInput) int
-		SceneDestroy       func(childComplexity int, input SceneDestroyInput) int
-		SceneEdit          func(childComplexity int, input SceneEditInput) int
-		SceneUpdate        func(childComplexity int, input SceneUpdateInput) int
-		SiteCreate         func(childComplexity int, input SiteCreateInput) int
-		SiteDestroy        func(childComplexity int, input SiteDestroyInput) int
-		SiteUpdate         func(childComplexity int, input SiteUpdateInput) int
-		StudioCreate       func(childComplexity int, input StudioCreateInput) int
-		StudioDestroy      func(childComplexity int, input StudioDestroyInput) int
-		StudioEdit         func(childComplexity int, input StudioEditInput) int
-		StudioUpdate       func(childComplexity int, input StudioUpdateInput) int
-		SubmitFingerprint  func(childComplexity int, input FingerprintSubmission) int
-		TagCategoryCreate  func(childComplexity int, input TagCategoryCreateInput) int
-		TagCategoryDestroy func(childComplexity int, input TagCategoryDestroyInput) int
-		TagCategoryUpdate  func(childComplexity int, input TagCategoryUpdateInput) int
-		TagCreate          func(childComplexity int, input TagCreateInput) int
-		TagDestroy         func(childComplexity int, input TagDestroyInput) int
-		TagEdit            func(childComplexity int, input TagEditInput) int
-		TagUpdate          func(childComplexity int, input TagUpdateInput) int
-		UserCreate         func(childComplexity int, input UserCreateInput) int
-		UserDestroy        func(childComplexity int, input UserDestroyInput) int
-		UserUpdate         func(childComplexity int, input UserUpdateInput) int
+		ActivateNewUser      func(childComplexity int, input ActivateNewUserInput) int
+		ApplyEdit            func(childComplexity int, input ApplyEditInput) int
+		CancelEdit           func(childComplexity int, input CancelEditInput) int
+		ChangePassword       func(childComplexity int, input UserChangePasswordInput) int
+		DestroyDraft         func(childComplexity int, id uuid.UUID) int
+		EditComment          func(childComplexity int, input EditCommentInput) int
+		EditVote             func(childComplexity int, input EditVoteInput) int
+		FavoritePerformer    func(childComplexity int, id uuid.UUID, favorite bool) int
+		FavoriteStudio       func(childComplexity int, id uuid.UUID, favorite bool) int
+		GenerateInviteCode   func(childComplexity int) int
+		GrantInvite          func(childComplexity int, input GrantInviteInput) int
+		ImageCreate          func(childComplexity int, input ImageCreateInput) int
+		ImageDestroy         func(childComplexity int, input ImageDestroyInput) int
+		NewUser              func(childComplexity int, input NewUserInput) int
+		PerformerCreate      func(childComplexity int, input PerformerCreateInput) int
+		PerformerDestroy     func(childComplexity int, input PerformerDestroyInput) int
+		PerformerEdit        func(childComplexity int, input PerformerEditInput) int
+		PerformerUpdate      func(childComplexity int, input PerformerUpdateInput) int
+		RegenerateAPIKey     func(childComplexity int, userID *uuid.UUID) int
+		RescindInviteCode    func(childComplexity int, code uuid.UUID) int
+		ResetPassword        func(childComplexity int, input ResetPasswordInput) int
+		RevokeInvite         func(childComplexity int, input RevokeInviteInput) int
+		SceneCreate          func(childComplexity int, input SceneCreateInput) int
+		SceneDestroy         func(childComplexity int, input SceneDestroyInput) int
+		SceneEdit            func(childComplexity int, input SceneEditInput) int
+		SceneUpdate          func(childComplexity int, input SceneUpdateInput) int
+		SiteCreate           func(childComplexity int, input SiteCreateInput) int
+		SiteDestroy          func(childComplexity int, input SiteDestroyInput) int
+		SiteUpdate           func(childComplexity int, input SiteUpdateInput) int
+		StudioCreate         func(childComplexity int, input StudioCreateInput) int
+		StudioDestroy        func(childComplexity int, input StudioDestroyInput) int
+		StudioEdit           func(childComplexity int, input StudioEditInput) int
+		StudioUpdate         func(childComplexity int, input StudioUpdateInput) int
+		SubmitFingerprint    func(childComplexity int, input FingerprintSubmission) int
+		SubmitPerformerDraft func(childComplexity int, input PerformerDraftInput) int
+		SubmitSceneDraft     func(childComplexity int, input SceneDraftInput) int
+		TagCategoryCreate    func(childComplexity int, input TagCategoryCreateInput) int
+		TagCategoryDestroy   func(childComplexity int, input TagCategoryDestroyInput) int
+		TagCategoryUpdate    func(childComplexity int, input TagCategoryUpdateInput) int
+		TagCreate            func(childComplexity int, input TagCreateInput) int
+		TagDestroy           func(childComplexity int, input TagDestroyInput) int
+		TagEdit              func(childComplexity int, input TagEditInput) int
+		TagUpdate            func(childComplexity int, input TagUpdateInput) int
+		UserCreate           func(childComplexity int, input UserCreateInput) int
+		UserDestroy          func(childComplexity int, input UserDestroyInput) int
+		UserUpdate           func(childComplexity int, input UserUpdateInput) int
 	}
 
 	Performer struct {
@@ -213,6 +241,26 @@ type ComplexityRoot struct {
 		Performer func(childComplexity int) int
 	}
 
+	PerformerDraft struct {
+		Aliases         func(childComplexity int) int
+		Birthdate       func(childComplexity int) int
+		BreastType      func(childComplexity int) int
+		CareerEndYear   func(childComplexity int) int
+		CareerStartYear func(childComplexity int) int
+		Country         func(childComplexity int) int
+		Ethnicity       func(childComplexity int) int
+		EyeColor        func(childComplexity int) int
+		Gender          func(childComplexity int) int
+		HairColor       func(childComplexity int) int
+		Height          func(childComplexity int) int
+		Image           func(childComplexity int) int
+		Measurements    func(childComplexity int) int
+		Name            func(childComplexity int) int
+		Piercings       func(childComplexity int) int
+		Tattoos         func(childComplexity int) int
+		Urls            func(childComplexity int) int
+	}
+
 	PerformerEdit struct {
 		AddedAliases      func(childComplexity int) int
 		AddedImages       func(childComplexity int) int
@@ -228,6 +276,7 @@ type ComplexityRoot struct {
 		Country           func(childComplexity int) int
 		CupSize           func(childComplexity int) int
 		Disambiguation    func(childComplexity int) int
+		DraftID           func(childComplexity int) int
 		Ethnicity         func(childComplexity int) int
 		EyeColor          func(childComplexity int) int
 		Gender            func(childComplexity int) int
@@ -254,6 +303,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		FindDraft                    func(childComplexity int, id uuid.UUID) int
+		FindDrafts                   func(childComplexity int) int
 		FindEdit                     func(childComplexity int, id uuid.UUID) int
 		FindPerformer                func(childComplexity int, id uuid.UUID) int
 		FindScene                    func(childComplexity int, id uuid.UUID) int
@@ -337,21 +388,36 @@ type ComplexityRoot struct {
 		Urls         func(childComplexity int) int
 	}
 
+	SceneDraft struct {
+		Date         func(childComplexity int) int
+		Details      func(childComplexity int) int
+		Fingerprints func(childComplexity int) int
+		Image        func(childComplexity int) int
+		Performers   func(childComplexity int) int
+		Studio       func(childComplexity int) int
+		Tags         func(childComplexity int) int
+		Title        func(childComplexity int) int
+		URL          func(childComplexity int) int
+	}
+
 	SceneEdit struct {
-		AddedImages       func(childComplexity int) int
-		AddedPerformers   func(childComplexity int) int
-		AddedTags         func(childComplexity int) int
-		AddedUrls         func(childComplexity int) int
-		Date              func(childComplexity int) int
-		Details           func(childComplexity int) int
-		Director          func(childComplexity int) int
-		Duration          func(childComplexity int) int
-		RemovedImages     func(childComplexity int) int
-		RemovedPerformers func(childComplexity int) int
-		RemovedTags       func(childComplexity int) int
-		RemovedUrls       func(childComplexity int) int
-		Studio            func(childComplexity int) int
-		Title             func(childComplexity int) int
+		AddedFingerprints   func(childComplexity int) int
+		AddedImages         func(childComplexity int) int
+		AddedPerformers     func(childComplexity int) int
+		AddedTags           func(childComplexity int) int
+		AddedUrls           func(childComplexity int) int
+		Date                func(childComplexity int) int
+		Details             func(childComplexity int) int
+		Director            func(childComplexity int) int
+		DraftID             func(childComplexity int) int
+		Duration            func(childComplexity int) int
+		RemovedFingerprints func(childComplexity int) int
+		RemovedImages       func(childComplexity int) int
+		RemovedPerformers   func(childComplexity int) int
+		RemovedTags         func(childComplexity int) int
+		RemovedUrls         func(childComplexity int) int
+		Studio              func(childComplexity int) int
+		Title               func(childComplexity int) int
 	}
 
 	Site struct {
@@ -468,6 +534,11 @@ type ComplexityRoot struct {
 	}
 }
 
+type DraftResolver interface {
+	Created(ctx context.Context, obj *Draft) (*time.Time, error)
+	Expires(ctx context.Context, obj *Draft) (*time.Time, error)
+	Data(ctx context.Context, obj *Draft) (DraftData, error)
+}
 type EditResolver interface {
 	User(ctx context.Context, obj *Edit) (*User, error)
 	Target(ctx context.Context, obj *Edit) (EditTarget, error)
@@ -541,6 +612,9 @@ type MutationResolver interface {
 	ApplyEdit(ctx context.Context, input ApplyEditInput) (*Edit, error)
 	CancelEdit(ctx context.Context, input CancelEditInput) (*Edit, error)
 	SubmitFingerprint(ctx context.Context, input FingerprintSubmission) (bool, error)
+	SubmitSceneDraft(ctx context.Context, input SceneDraftInput) (*DraftSubmissionStatus, error)
+	SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput) (*DraftSubmissionStatus, error)
+	DestroyDraft(ctx context.Context, id uuid.UUID) (bool, error)
 	FavoritePerformer(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
 	FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
 }
@@ -569,6 +643,9 @@ type PerformerResolver interface {
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer) ([]*PerformerStudio, error)
 	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
+}
+type PerformerDraftResolver interface {
+	Image(ctx context.Context, obj *PerformerDraft) (*Image, error)
 }
 type PerformerEditResolver interface {
 	Gender(ctx context.Context, obj *PerformerEdit) (*GenderEnum, error)
@@ -606,6 +683,8 @@ type QueryResolver interface {
 	Me(ctx context.Context) (*User, error)
 	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
 	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
+	FindDraft(ctx context.Context, id uuid.UUID) (*Draft, error)
+	FindDrafts(ctx context.Context) ([]*Draft, error)
 	Version(ctx context.Context) (*Version, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 }
@@ -636,6 +715,14 @@ type SceneResolver interface {
 
 	Edits(ctx context.Context, obj *Scene) ([]*Edit, error)
 }
+type SceneDraftResolver interface {
+	URL(ctx context.Context, obj *SceneDraft) (*URL, error)
+
+	Studio(ctx context.Context, obj *SceneDraft) (SceneDraftStudio, error)
+	Performers(ctx context.Context, obj *SceneDraft) ([]SceneDraftPerformer, error)
+	Tags(ctx context.Context, obj *SceneDraft) ([]SceneDraftTag, error)
+	Image(ctx context.Context, obj *SceneDraft) (*Image, error)
+}
 type SceneEditResolver interface {
 	Studio(ctx context.Context, obj *SceneEdit) (*Studio, error)
 	AddedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
@@ -644,6 +731,8 @@ type SceneEditResolver interface {
 	RemovedTags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
 	AddedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
 	RemovedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
+	AddedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
+	RemovedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
 }
 type SiteResolver interface {
 	Description(ctx context.Context, obj *Site) (*string, error)
@@ -724,6 +813,76 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BodyModification.Location(childComplexity), true
+
+	case "Draft.created":
+		if e.complexity.Draft.Created == nil {
+			break
+		}
+
+		return e.complexity.Draft.Created(childComplexity), true
+
+	case "Draft.data":
+		if e.complexity.Draft.Data == nil {
+			break
+		}
+
+		return e.complexity.Draft.Data(childComplexity), true
+
+	case "Draft.expires":
+		if e.complexity.Draft.Expires == nil {
+			break
+		}
+
+		return e.complexity.Draft.Expires(childComplexity), true
+
+	case "Draft.id":
+		if e.complexity.Draft.ID == nil {
+			break
+		}
+
+		return e.complexity.Draft.ID(childComplexity), true
+
+	case "DraftEntity.id":
+		if e.complexity.DraftEntity.ID == nil {
+			break
+		}
+
+		return e.complexity.DraftEntity.ID(childComplexity), true
+
+	case "DraftEntity.name":
+		if e.complexity.DraftEntity.Name == nil {
+			break
+		}
+
+		return e.complexity.DraftEntity.Name(childComplexity), true
+
+	case "DraftFingerprint.algorithm":
+		if e.complexity.DraftFingerprint.Algorithm == nil {
+			break
+		}
+
+		return e.complexity.DraftFingerprint.Algorithm(childComplexity), true
+
+	case "DraftFingerprint.duration":
+		if e.complexity.DraftFingerprint.Duration == nil {
+			break
+		}
+
+		return e.complexity.DraftFingerprint.Duration(childComplexity), true
+
+	case "DraftFingerprint.hash":
+		if e.complexity.DraftFingerprint.Hash == nil {
+			break
+		}
+
+		return e.complexity.DraftFingerprint.Hash(childComplexity), true
+
+	case "DraftSubmissionStatus.id":
+		if e.complexity.DraftSubmissionStatus.ID == nil {
+			break
+		}
+
+		return e.complexity.DraftSubmissionStatus.ID(childComplexity), true
 
 	case "Edit.applied":
 		if e.complexity.Edit.Applied == nil {
@@ -1059,6 +1218,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ChangePassword(childComplexity, args["input"].(UserChangePasswordInput)), true
+
+	case "Mutation.destroyDraft":
+		if e.complexity.Mutation.DestroyDraft == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_destroyDraft_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DestroyDraft(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Mutation.editComment":
 		if e.complexity.Mutation.EditComment == nil {
@@ -1403,6 +1574,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SubmitFingerprint(childComplexity, args["input"].(FingerprintSubmission)), true
 
+	case "Mutation.submitPerformerDraft":
+		if e.complexity.Mutation.SubmitPerformerDraft == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_submitPerformerDraft_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SubmitPerformerDraft(childComplexity, args["input"].(PerformerDraftInput)), true
+
+	case "Mutation.submitSceneDraft":
+		if e.complexity.Mutation.SubmitSceneDraft == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_submitSceneDraft_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SubmitSceneDraft(childComplexity, args["input"].(SceneDraftInput)), true
+
 	case "Mutation.tagCategoryCreate":
 		if e.complexity.Mutation.TagCategoryCreate == nil {
 			break
@@ -1719,6 +1914,125 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PerformerAppearance.Performer(childComplexity), true
 
+	case "PerformerDraft.aliases":
+		if e.complexity.PerformerDraft.Aliases == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Aliases(childComplexity), true
+
+	case "PerformerDraft.birthdate":
+		if e.complexity.PerformerDraft.Birthdate == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Birthdate(childComplexity), true
+
+	case "PerformerDraft.breast_type":
+		if e.complexity.PerformerDraft.BreastType == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.BreastType(childComplexity), true
+
+	case "PerformerDraft.career_end_year":
+		if e.complexity.PerformerDraft.CareerEndYear == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.CareerEndYear(childComplexity), true
+
+	case "PerformerDraft.career_start_year":
+		if e.complexity.PerformerDraft.CareerStartYear == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.CareerStartYear(childComplexity), true
+
+	case "PerformerDraft.country":
+		if e.complexity.PerformerDraft.Country == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Country(childComplexity), true
+
+	case "PerformerDraft.ethnicity":
+		if e.complexity.PerformerDraft.Ethnicity == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Ethnicity(childComplexity), true
+
+	case "PerformerDraft.eye_color":
+		if e.complexity.PerformerDraft.EyeColor == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.EyeColor(childComplexity), true
+
+	case "PerformerDraft.gender":
+		if e.complexity.PerformerDraft.Gender == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Gender(childComplexity), true
+
+	case "PerformerDraft.hair_color":
+		if e.complexity.PerformerDraft.HairColor == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.HairColor(childComplexity), true
+
+	case "PerformerDraft.height":
+		if e.complexity.PerformerDraft.Height == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Height(childComplexity), true
+
+	case "PerformerDraft.image":
+		if e.complexity.PerformerDraft.Image == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Image(childComplexity), true
+
+	case "PerformerDraft.measurements":
+		if e.complexity.PerformerDraft.Measurements == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Measurements(childComplexity), true
+
+	case "PerformerDraft.name":
+		if e.complexity.PerformerDraft.Name == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Name(childComplexity), true
+
+	case "PerformerDraft.piercings":
+		if e.complexity.PerformerDraft.Piercings == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Piercings(childComplexity), true
+
+	case "PerformerDraft.tattoos":
+		if e.complexity.PerformerDraft.Tattoos == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Tattoos(childComplexity), true
+
+	case "PerformerDraft.urls":
+		if e.complexity.PerformerDraft.Urls == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Urls(childComplexity), true
+
 	case "PerformerEdit.added_aliases":
 		if e.complexity.PerformerEdit.AddedAliases == nil {
 			break
@@ -1816,6 +2130,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerEdit.Disambiguation(childComplexity), true
+
+	case "PerformerEdit.draft_id":
+		if e.complexity.PerformerEdit.DraftID == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.DraftID(childComplexity), true
 
 	case "PerformerEdit.ethnicity":
 		if e.complexity.PerformerEdit.Ethnicity == nil {
@@ -1935,6 +2256,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerStudio.Studio(childComplexity), true
+
+	case "Query.findDraft":
+		if e.complexity.Query.FindDraft == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findDraft_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindDraft(childComplexity, args["id"].(uuid.UUID)), true
+
+	case "Query.findDrafts":
+		if e.complexity.Query.FindDrafts == nil {
+			break
+		}
+
+		return e.complexity.Query.FindDrafts(childComplexity), true
 
 	case "Query.findEdit":
 		if e.complexity.Query.FindEdit == nil {
@@ -2419,6 +2759,76 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Urls(childComplexity), true
 
+	case "SceneDraft.date":
+		if e.complexity.SceneDraft.Date == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Date(childComplexity), true
+
+	case "SceneDraft.details":
+		if e.complexity.SceneDraft.Details == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Details(childComplexity), true
+
+	case "SceneDraft.fingerprints":
+		if e.complexity.SceneDraft.Fingerprints == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Fingerprints(childComplexity), true
+
+	case "SceneDraft.image":
+		if e.complexity.SceneDraft.Image == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Image(childComplexity), true
+
+	case "SceneDraft.performers":
+		if e.complexity.SceneDraft.Performers == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Performers(childComplexity), true
+
+	case "SceneDraft.studio":
+		if e.complexity.SceneDraft.Studio == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Studio(childComplexity), true
+
+	case "SceneDraft.tags":
+		if e.complexity.SceneDraft.Tags == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Tags(childComplexity), true
+
+	case "SceneDraft.title":
+		if e.complexity.SceneDraft.Title == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Title(childComplexity), true
+
+	case "SceneDraft.url":
+		if e.complexity.SceneDraft.URL == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.URL(childComplexity), true
+
+	case "SceneEdit.added_fingerprints":
+		if e.complexity.SceneEdit.AddedFingerprints == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.AddedFingerprints(childComplexity), true
+
 	case "SceneEdit.added_images":
 		if e.complexity.SceneEdit.AddedImages == nil {
 			break
@@ -2468,12 +2878,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneEdit.Director(childComplexity), true
 
+	case "SceneEdit.draft_id":
+		if e.complexity.SceneEdit.DraftID == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.DraftID(childComplexity), true
+
 	case "SceneEdit.duration":
 		if e.complexity.SceneEdit.Duration == nil {
 			break
 		}
 
 		return e.complexity.SceneEdit.Duration(childComplexity), true
+
+	case "SceneEdit.removed_fingerprints":
+		if e.complexity.SceneEdit.RemovedFingerprints == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.RemovedFingerprints(childComplexity), true
 
 	case "SceneEdit.removed_images":
 		if e.complexity.SceneEdit.RemovedImages == nil {
@@ -3131,6 +3555,29 @@ var sources = []*ast.Source{
   vote_cron_interval: String!
 }
 `, BuiltIn: false},
+	{Name: "graphql/schema/types/draft.graphql", Input: `type DraftSubmissionStatus {
+  id: ID
+}
+
+type DraftEntity {
+  name: String!
+  id: ID
+}
+
+input DraftEntityInput {
+  name: String!
+  id: ID
+}
+
+type Draft {
+  id: ID!
+  created: Time!
+  expires: Time!
+  data: DraftData!
+}
+
+union DraftData = SceneDraft | PerformerDraft
+`, BuiltIn: false},
 	{Name: "graphql/schema/types/edit.graphql", Input: `enum OperationEnum {
     CREATE
     MODIFY
@@ -3519,6 +3966,7 @@ input PerformerCreateInput {
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
   image_ids: [ID!]
+  draft_id: ID
 }
 
 input PerformerUpdateInput {
@@ -3566,6 +4014,7 @@ input PerformerEditDetailsInput {
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
   image_ids: [ID!]
+  draft_id: ID
 }
 
 input PerformerEditOptionsInput {
@@ -3612,6 +4061,7 @@ type PerformerEdit {
   removed_piercings: [BodyModification!]
   added_images: [Image!]
   removed_images: [Image!]
+  draft_id: ID
 }
 
 type PerformerEditOptions {
@@ -3688,6 +4138,46 @@ input PerformerFilterType {
   """Filter by performerfavorite status for the current user"""
   is_favorite: Boolean
 }
+
+type PerformerDraft {
+  name: String!
+  aliases: String
+  gender: String
+  birthdate: String
+  urls: [String!]
+  ethnicity: String
+  country: String
+  eye_color: String
+  hair_color: String
+  height: String
+  measurements: String
+  breast_type: String
+  tattoos: String
+  piercings: String
+  career_start_year: Int
+  career_end_year: Int
+  image: Image
+}
+
+input PerformerDraftInput {
+  name: String!
+  aliases: String
+  gender: String
+  birthdate: String
+  urls: [String!]
+  ethnicity: String
+  country: String
+  eye_color: String
+  hair_color: String
+  height: String
+  measurements: String
+  breast_type: String
+  tattoos: String
+  piercings: String
+  career_start_year: Int
+  career_end_year: Int
+  image: Upload
+}
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/scene.graphql", Input: `type PerformerAppearance {
   performer: Performer!
@@ -3715,6 +4205,12 @@ type Fingerprint {
   created: Time!
   updated: Time!
   user_submitted: Boolean!
+}
+
+type DraftFingerprint {
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
 }
 
 input FingerprintInput {
@@ -3811,6 +4307,8 @@ input SceneEditDetailsInput {
   image_ids: [ID!]
   duration: Int
   director: String
+  fingerprints: [FingerprintInput!]
+  draft_id: ID
 }
 
 input SceneEditInput {
@@ -3834,8 +4332,11 @@ type SceneEdit {
   removed_tags: [Tag!]
   added_images: [Image!]
   removed_images: [Image!]
+  added_fingerprints: [Fingerprint!]
+  removed_fingerprints: [Fingerprint!]
   duration: Int
   director: String
+  draft_id: ID
 }
 
 type QueryScenesResultType {
@@ -3864,6 +4365,34 @@ input SceneFilterType {
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
   fingerprints: MultiStringCriterionInput
+}
+
+union SceneDraftStudio = Studio | DraftEntity
+union SceneDraftPerformer = Performer | DraftEntity
+union SceneDraftTag = Tag | DraftEntity
+
+type SceneDraft {
+  title: String
+  details: String
+  url: URL
+  date: Date
+  studio: SceneDraftStudio
+  performers: [SceneDraftPerformer!]!
+  tags: [SceneDraftTag!]
+  image: Image
+  fingerprints: [DraftFingerprint!]!
+}
+
+input SceneDraftInput {
+  title: String
+  details: String
+  url: String
+  date: Date
+  studio: DraftEntityInput
+  performers: [DraftEntityInput!]!
+  tags: [DraftEntityInput!]
+  image: Upload
+  fingerprints: [FingerprintInput!]!
 }
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/site.graphql", Input: `type Site {
@@ -4297,6 +4826,10 @@ type Query {
   searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
 
+  ### Drafts ###
+  findDraft(id: ID!): Draft @hasRole(role: READ)
+  findDrafts: [Draft!]! @hasRole(role: READ)
+
   #### Version ####
   version: Version! @hasRole(role: READ)
 
@@ -4380,6 +4913,11 @@ type Mutation {
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
+
+  """Draft submissions"""
+  submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
+  submitPerformerDraft(input: PerformerDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
+  destroyDraft(id: ID!): Boolean! @hasRole(role: EDIT)
 
   """Favorite or unfavorite a performer"""
   favoritePerformer(id: ID!, favorite: Boolean!): Boolean!
@@ -4471,6 +5009,21 @@ func (ec *executionContext) field_Mutation_changePassword_args(ctx context.Conte
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_destroyDraft_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -4912,6 +5465,36 @@ func (ec *executionContext) field_Mutation_submitFingerprint_args(ctx context.Co
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_submitPerformerDraft_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 PerformerDraftInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNPerformerDraftInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerDraftInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_submitSceneDraft_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 SceneDraftInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSceneDraftInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_tagCategoryCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5074,6 +5657,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findDraft_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -5594,6 +6192,350 @@ func (ec *executionContext) _BodyModification_description(ctx context.Context, f
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Draft_id(ctx context.Context, field graphql.CollectedField, obj *Draft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Draft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Draft_created(ctx context.Context, field graphql.CollectedField, obj *Draft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Draft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Draft().Created(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Draft_expires(ctx context.Context, field graphql.CollectedField, obj *Draft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Draft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Draft().Expires(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Draft_data(ctx context.Context, field graphql.CollectedField, obj *Draft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Draft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Draft().Data(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(DraftData)
+	fc.Result = res
+	return ec.marshalNDraftData2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftData(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftEntity_name(ctx context.Context, field graphql.CollectedField, obj *DraftEntity) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftEntity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftEntity_id(ctx context.Context, field graphql.CollectedField, obj *DraftEntity) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftEntity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftFingerprint_hash(ctx context.Context, field graphql.CollectedField, obj *DraftFingerprint) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftFingerprint",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Hash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftFingerprint_algorithm(ctx context.Context, field graphql.CollectedField, obj *DraftFingerprint) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftFingerprint",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Algorithm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(FingerprintAlgorithm)
+	fc.Result = res
+	return ec.marshalNFingerprintAlgorithm2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintAlgorithm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftFingerprint_duration(ctx context.Context, field graphql.CollectedField, obj *DraftFingerprint) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftFingerprint",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DraftSubmissionStatus_id(ctx context.Context, field graphql.CollectedField, obj *DraftSubmissionStatus) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DraftSubmissionStatus",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Edit_id(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
@@ -9427,6 +10369,204 @@ func (ec *executionContext) _Mutation_submitFingerprint(ctx context.Context, fie
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_submitSceneDraft(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_submitSceneDraft_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SubmitSceneDraft(rctx, args["input"].(SceneDraftInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*DraftSubmissionStatus); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.DraftSubmissionStatus`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*DraftSubmissionStatus)
+	fc.Result = res
+	return ec.marshalNDraftSubmissionStatus2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftSubmissionStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_submitPerformerDraft(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_submitPerformerDraft_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SubmitPerformerDraft(rctx, args["input"].(PerformerDraftInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*DraftSubmissionStatus); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.DraftSubmissionStatus`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*DraftSubmissionStatus)
+	fc.Result = res
+	return ec.marshalNDraftSubmissionStatus2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftSubmissionStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_destroyDraft(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_destroyDraft_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DestroyDraft(rctx, args["id"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_favoritePerformer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -10446,6 +11586,553 @@ func (ec *executionContext) _PerformerAppearance_as(ctx context.Context, field g
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _PerformerDraft_name(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_aliases(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Aliases, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_gender(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Gender, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_birthdate(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Birthdate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_urls(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Urls, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_ethnicity(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ethnicity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_country(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Country, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_eye_color(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EyeColor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_hair_color(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HairColor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_height(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Height, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_measurements(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Measurements, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_breast_type(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BreastType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_tattoos(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tattoos, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_piercings(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Piercings, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_career_start_year(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CareerStartYear, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_career_end_year(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CareerEndYear, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerDraft_image(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PerformerDraft().Image(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Image)
+	fc.Result = res
+	return ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PerformerEdit_name(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11308,6 +12995,38 @@ func (ec *executionContext) _PerformerEdit_removed_images(ctx context.Context, f
 	res := resTmp.([]*Image)
 	fc.Result = res
 	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerEdit_draft_id(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DraftID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PerformerEditOptions_set_modify_aliases(ctx context.Context, field graphql.CollectedField, obj *PerformerEditOptions) (ret graphql.Marshaler) {
@@ -12844,6 +14563,128 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_findDraft(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_findDraft_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindDraft(rctx, args["id"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Draft); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Draft`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Draft)
+	fc.Result = res
+	return ec.marshalODraft2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraft(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_findDrafts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindDrafts(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*Draft); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Draft`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Draft)
+	fc.Result = res
+	return ec.marshalNDraft2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_version(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -14065,6 +15906,300 @@ func (ec *executionContext) _Scene_edits(ctx context.Context, field graphql.Coll
 	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _SceneDraft_title(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneDraft_details(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Details, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneDraft_url(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneDraft().URL(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*URL)
+	fc.Result = res
+	return ec.marshalOURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneDraft_date(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneDraft_studio(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneDraft().Studio(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(SceneDraftStudio)
+	fc.Result = res
+	return ec.marshalOSceneDraftStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftStudio(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneDraft_performers(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneDraft().Performers(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]SceneDraftPerformer)
+	fc.Result = res
+	return ec.marshalNSceneDraftPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftPerformerᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneDraft_tags(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneDraft().Tags(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]SceneDraftTag)
+	fc.Result = res
+	return ec.marshalOSceneDraftTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneDraft_image(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneDraft().Image(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Image)
+	fc.Result = res
+	return ec.marshalOImage2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneDraft_fingerprints(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fingerprints, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]DraftFingerprint)
+	fc.Result = res
+	return ec.marshalNDraftFingerprint2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftFingerprintᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _SceneEdit_title(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -14449,6 +16584,70 @@ func (ec *executionContext) _SceneEdit_removed_images(ctx context.Context, field
 	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _SceneEdit_added_fingerprints(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().AddedFingerprints(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*Fingerprint)
+	fc.Result = res
+	return ec.marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_removed_fingerprints(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().RemovedFingerprints(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*Fingerprint)
+	fc.Result = res
+	return ec.marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _SceneEdit_duration(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -14511,6 +16710,38 @@ func (ec *executionContext) _SceneEdit_director(ctx context.Context, field graph
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_draft_id(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DraftID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Site_id(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
@@ -18620,6 +20851,37 @@ func (ec *executionContext) unmarshalInputDateCriterionInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDraftEntityInput(ctx context.Context, obj interface{}) (DraftEntityInput, error) {
+	var it DraftEntityInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputEditCommentInput(ctx context.Context, obj interface{}) (EditCommentInput, error) {
 	var it EditCommentInput
 	asMap := map[string]interface{}{}
@@ -19599,6 +21861,14 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
+		case "draft_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("draft_id"))
+			it.DraftID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -19619,6 +21889,157 @@ func (ec *executionContext) unmarshalInputPerformerDestroyInput(ctx context.Cont
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			it.ID, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Context, obj interface{}) (PerformerDraftInput, error) {
+	var it PerformerDraftInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "aliases":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliases"))
+			it.Aliases, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "gender":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
+			it.Gender, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "birthdate":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birthdate"))
+			it.Birthdate, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "urls":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			it.Urls, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ethnicity":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ethnicity"))
+			it.Ethnicity, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "country":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("country"))
+			it.Country, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "eye_color":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("eye_color"))
+			it.EyeColor, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hair_color":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hair_color"))
+			it.HairColor, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "height":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("height"))
+			it.Height, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "measurements":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("measurements"))
+			it.Measurements, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "breast_type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("breast_type"))
+			it.BreastType, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tattoos":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tattoos"))
+			it.Tattoos, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "piercings":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("piercings"))
+			it.Piercings, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "career_start_year":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("career_start_year"))
+			it.CareerStartYear, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "career_end_year":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("career_end_year"))
+			it.CareerEndYear, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
+			it.Image, err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19778,6 +22199,14 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
 			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "draft_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("draft_id"))
+			it.DraftID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -20496,6 +22925,93 @@ func (ec *executionContext) unmarshalInputSceneDestroyInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, obj interface{}) (SceneDraftInput, error) {
+	var it SceneDraftInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "details":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
+			it.Details, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			it.URL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			it.Date, err = ec.unmarshalODate2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "studio":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio"))
+			it.Studio, err = ec.unmarshalODraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "performers":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
+			it.Performers, err = ec.unmarshalNDraftEntityInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tags":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			it.Tags, err = ec.unmarshalODraftEntityInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
+			it.Image, err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fingerprints":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
+			it.Fingerprints, err = ec.unmarshalNFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Context, obj interface{}) (SceneEditDetailsInput, error) {
 	var it SceneEditDetailsInput
 	asMap := map[string]interface{}{}
@@ -20582,6 +23098,22 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("director"))
 			it.Director, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fingerprints":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
+			it.Fingerprints, err = ec.unmarshalOFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "draft_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("draft_id"))
+			it.DraftID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -21935,6 +24467,29 @@ func (ec *executionContext) unmarshalInputUserUpdateInput(ctx context.Context, o
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _DraftData(ctx context.Context, sel ast.SelectionSet, obj DraftData) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case SceneDraft:
+		return ec._SceneDraft(ctx, sel, &obj)
+	case *SceneDraft:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._SceneDraft(ctx, sel, obj)
+	case PerformerDraft:
+		return ec._PerformerDraft(ctx, sel, &obj)
+	case *PerformerDraft:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PerformerDraft(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _EditDetails(ctx context.Context, sel ast.SelectionSet, obj EditDetails) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -22001,6 +24556,75 @@ func (ec *executionContext) _EditTarget(ctx context.Context, sel ast.SelectionSe
 	}
 }
 
+func (ec *executionContext) _SceneDraftPerformer(ctx context.Context, sel ast.SelectionSet, obj SceneDraftPerformer) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case Performer:
+		return ec._Performer(ctx, sel, &obj)
+	case *Performer:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Performer(ctx, sel, obj)
+	case DraftEntity:
+		return ec._DraftEntity(ctx, sel, &obj)
+	case *DraftEntity:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DraftEntity(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _SceneDraftStudio(ctx context.Context, sel ast.SelectionSet, obj SceneDraftStudio) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case Studio:
+		return ec._Studio(ctx, sel, &obj)
+	case *Studio:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Studio(ctx, sel, obj)
+	case DraftEntity:
+		return ec._DraftEntity(ctx, sel, &obj)
+	case *DraftEntity:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DraftEntity(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _SceneDraftTag(ctx context.Context, sel ast.SelectionSet, obj SceneDraftTag) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case Tag:
+		return ec._Tag(ctx, sel, &obj)
+	case *Tag:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Tag(ctx, sel, obj)
+	case DraftEntity:
+		return ec._DraftEntity(ctx, sel, &obj)
+	case *DraftEntity:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._DraftEntity(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
@@ -22028,6 +24652,214 @@ func (ec *executionContext) _BodyModification(ctx context.Context, sel ast.Selec
 		case "description":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._BodyModification_description(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var draftImplementors = []string{"Draft"}
+
+func (ec *executionContext) _Draft(ctx context.Context, sel ast.SelectionSet, obj *Draft) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, draftImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Draft")
+		case "id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Draft_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "created":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Draft_created(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "expires":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Draft_expires(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "data":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Draft_data(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var draftEntityImplementors = []string{"DraftEntity", "SceneDraftStudio", "SceneDraftPerformer", "SceneDraftTag"}
+
+func (ec *executionContext) _DraftEntity(ctx context.Context, sel ast.SelectionSet, obj *DraftEntity) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, draftEntityImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DraftEntity")
+		case "name":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._DraftEntity_name(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._DraftEntity_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var draftFingerprintImplementors = []string{"DraftFingerprint"}
+
+func (ec *executionContext) _DraftFingerprint(ctx context.Context, sel ast.SelectionSet, obj *DraftFingerprint) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, draftFingerprintImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DraftFingerprint")
+		case "hash":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._DraftFingerprint_hash(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "algorithm":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._DraftFingerprint_algorithm(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "duration":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._DraftFingerprint_duration(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var draftSubmissionStatusImplementors = []string{"DraftSubmissionStatus"}
+
+func (ec *executionContext) _DraftSubmissionStatus(ctx context.Context, sel ast.SelectionSet, obj *DraftSubmissionStatus) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, draftSubmissionStatusImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DraftSubmissionStatus")
+		case "id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._DraftSubmissionStatus_id(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -23152,6 +25984,36 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "submitSceneDraft":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_submitSceneDraft(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "submitPerformerDraft":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_submitPerformerDraft(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "destroyDraft":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_destroyDraft(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "favoritePerformer":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_favoritePerformer(ctx, field)
@@ -23183,7 +26045,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
-var performerImplementors = []string{"Performer", "EditTarget"}
+var performerImplementors = []string{"Performer", "EditTarget", "SceneDraftPerformer"}
 
 func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet, obj *Performer) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, performerImplementors)
@@ -23690,6 +26552,159 @@ func (ec *executionContext) _PerformerAppearance(ctx context.Context, sel ast.Se
 	return out
 }
 
+var performerDraftImplementors = []string{"PerformerDraft", "DraftData"}
+
+func (ec *executionContext) _PerformerDraft(ctx context.Context, sel ast.SelectionSet, obj *PerformerDraft) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, performerDraftImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PerformerDraft")
+		case "name":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_name(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "aliases":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_aliases(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "gender":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_gender(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "birthdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_birthdate(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "urls":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_urls(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "ethnicity":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_ethnicity(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "country":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_country(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "eye_color":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_eye_color(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "hair_color":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_hair_color(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "height":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_height(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "measurements":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_measurements(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "breast_type":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_breast_type(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "tattoos":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_tattoos(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "piercings":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_piercings(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "career_start_year":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_career_start_year(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "career_end_year":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerDraft_career_end_year(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "image":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerDraft_image(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var performerEditImplementors = []string{"PerformerEdit", "EditDetails"}
 
 func (ec *executionContext) _PerformerEdit(ctx context.Context, sel ast.SelectionSet, obj *PerformerEdit) graphql.Marshaler {
@@ -23959,6 +26974,13 @@ func (ec *executionContext) _PerformerEdit(ctx context.Context, sel ast.Selectio
 				return innerFunc(ctx)
 
 			})
+		case "draft_id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._PerformerEdit_draft_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -24537,6 +27559,49 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_searchScene(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "findDraft":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findDraft(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "findDrafts":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findDrafts(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -25272,6 +28337,146 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var sceneDraftImplementors = []string{"SceneDraft", "DraftData"}
+
+func (ec *executionContext) _SceneDraft(ctx context.Context, sel ast.SelectionSet, obj *SceneDraft) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sceneDraftImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SceneDraft")
+		case "title":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SceneDraft_title(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "details":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SceneDraft_details(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "url":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneDraft_url(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "date":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SceneDraft_date(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "studio":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneDraft_studio(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "performers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneDraft_performers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "tags":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneDraft_tags(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "image":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneDraft_image(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "fingerprints":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SceneDraft_fingerprints(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var sceneEditImplementors = []string{"SceneEdit", "EditDetails"}
 
 func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet, obj *SceneEdit) graphql.Marshaler {
@@ -25436,6 +28641,40 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 				return innerFunc(ctx)
 
 			})
+		case "added_fingerprints":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_added_fingerprints(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "removed_fingerprints":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_removed_fingerprints(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "duration":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._SceneEdit_duration(ctx, field, obj)
@@ -25446,6 +28685,13 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 		case "director":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._SceneEdit_director(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "draft_id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SceneEdit_draft_id(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -25731,7 +28977,7 @@ func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.Selecti
 	return out
 }
 
-var studioImplementors = []string{"Studio", "EditTarget"}
+var studioImplementors = []string{"Studio", "EditTarget", "SceneDraftStudio"}
 
 func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, obj *Studio) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, studioImplementors)
@@ -25972,7 +29218,7 @@ func (ec *executionContext) _StudioEdit(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
-var tagImplementors = []string{"Tag", "EditTarget"}
+var tagImplementors = []string{"Tag", "EditTarget", "SceneDraftTag"}
 
 func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *Tag) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, tagImplementors)
@@ -27187,6 +30433,154 @@ func (ec *executionContext) marshalNDateAccuracyEnum2githubᚗcomᚋstashappᚋs
 	return v
 }
 
+func (ec *executionContext) marshalNDraft2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftᚄ(ctx context.Context, sel ast.SelectionSet, v []*Draft) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDraft2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraft(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNDraft2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraft(ctx context.Context, sel ast.SelectionSet, v *Draft) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Draft(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDraftData2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftData(ctx context.Context, sel ast.SelectionSet, v DraftData) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._DraftData(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDraftEntityInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx context.Context, v interface{}) ([]*DraftEntityInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*DraftEntityInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNDraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNDraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx context.Context, v interface{}) (*DraftEntityInput, error) {
+	res, err := ec.unmarshalInputDraftEntityInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDraftFingerprint2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftFingerprint(ctx context.Context, sel ast.SelectionSet, v DraftFingerprint) graphql.Marshaler {
+	return ec._DraftFingerprint(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDraftFingerprint2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftFingerprintᚄ(ctx context.Context, sel ast.SelectionSet, v []DraftFingerprint) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDraftFingerprint2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftFingerprint(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNDraftSubmissionStatus2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftSubmissionStatus(ctx context.Context, sel ast.SelectionSet, v DraftSubmissionStatus) graphql.Marshaler {
+	return ec._DraftSubmissionStatus(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDraftSubmissionStatus2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftSubmissionStatus(ctx context.Context, sel ast.SelectionSet, v *DraftSubmissionStatus) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._DraftSubmissionStatus(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNEdit2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx context.Context, sel ast.SelectionSet, v Edit) graphql.Marshaler {
 	return ec._Edit(ctx, sel, &v)
 }
@@ -27506,6 +30900,23 @@ func (ec *executionContext) unmarshalNFingerprintEditInput2ᚕᚖgithubᚗcomᚋ
 func (ec *executionContext) unmarshalNFingerprintEditInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInput(ctx context.Context, v interface{}) (*FingerprintEditInput, error) {
 	res, err := ec.unmarshalInputFingerprintEditInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx context.Context, v interface{}) ([]*FingerprintInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*FingerprintInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNFingerprintInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) unmarshalNFingerprintInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx context.Context, v interface{}) (*FingerprintInput, error) {
@@ -27843,6 +31254,11 @@ func (ec *executionContext) unmarshalNPerformerDestroyInput2githubᚗcomᚋstash
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNPerformerDraftInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerDraftInput(ctx context.Context, v interface{}) (PerformerDraftInput, error) {
+	res, err := ec.unmarshalInputPerformerDraftInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNPerformerEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerEditInput(ctx context.Context, v interface{}) (PerformerEditInput, error) {
 	res, err := ec.unmarshalInputPerformerEditInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -28162,6 +31578,75 @@ func (ec *executionContext) unmarshalNSceneCreateInput2githubᚗcomᚋstashapp�
 func (ec *executionContext) unmarshalNSceneDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDestroyInput(ctx context.Context, v interface{}) (SceneDestroyInput, error) {
 	res, err := ec.unmarshalInputSceneDestroyInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNSceneDraftInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftInput(ctx context.Context, v interface{}) (SceneDraftInput, error) {
+	res, err := ec.unmarshalInputSceneDraftInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSceneDraftPerformer2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftPerformer(ctx context.Context, sel ast.SelectionSet, v SceneDraftPerformer) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._SceneDraftPerformer(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSceneDraftPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftPerformerᚄ(ctx context.Context, sel ast.SelectionSet, v []SceneDraftPerformer) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSceneDraftPerformer2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftPerformer(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSceneDraftTag2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftTag(ctx context.Context, sel ast.SelectionSet, v SceneDraftTag) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._SceneDraftTag(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNSceneEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneEditInput(ctx context.Context, v interface{}) (SceneEditInput, error) {
@@ -29253,6 +32738,41 @@ func (ec *executionContext) unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstash
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalODraft2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraft(ctx context.Context, sel ast.SelectionSet, v *Draft) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Draft(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalODraftEntityInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInputᚄ(ctx context.Context, v interface{}) ([]*DraftEntityInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*DraftEntityInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNDraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalODraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx context.Context, v interface{}) (*DraftEntityInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDraftEntityInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalOEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx context.Context, sel ast.SelectionSet, v *Edit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -29338,6 +32858,53 @@ func (ec *executionContext) marshalOEyeColorEnum2ᚖgithubᚗcomᚋstashappᚋst
 	return v
 }
 
+func (ec *executionContext) marshalOFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx context.Context, sel ast.SelectionSet, v []*Fingerprint) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNFingerprint2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprint(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOFingerprintEditInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInputᚄ(ctx context.Context, v interface{}) ([]*FingerprintEditInput, error) {
 	if v == nil {
 		return nil, nil
@@ -29351,6 +32918,26 @@ func (ec *executionContext) unmarshalOFingerprintEditInput2ᚕᚖgithubᚗcomᚋ
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
 		res[i], err = ec.unmarshalNFingerprintEditInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintEditInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx context.Context, v interface{}) ([]*FingerprintInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*FingerprintInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNFingerprintInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -29830,6 +33417,60 @@ func (ec *executionContext) marshalOScene2ᚖgithubᚗcomᚋstashappᚋstashᚑb
 	return ec._Scene(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOSceneDraftStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftStudio(ctx context.Context, sel ast.SelectionSet, v SceneDraftStudio) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SceneDraftStudio(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSceneDraftTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftTagᚄ(ctx context.Context, sel ast.SelectionSet, v []SceneDraftTag) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSceneDraftTag2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftTag(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOSceneEditDetailsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneEditDetailsInput(ctx context.Context, v interface{}) (*SceneEditDetailsInput, error) {
 	if v == nil {
 		return nil, nil
@@ -30134,6 +33775,13 @@ func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx context.Context, sel ast.SelectionSet, v *URL) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._URL(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx context.Context, v interface{}) ([]*URLInput, error) {

@@ -374,6 +374,7 @@ export interface SceneEdit_sceneEdit_details_PerformerEdit {
   removed_piercings: SceneEdit_sceneEdit_details_PerformerEdit_removed_piercings[] | null;
   added_images: SceneEdit_sceneEdit_details_PerformerEdit_added_images[] | null;
   removed_images: SceneEdit_sceneEdit_details_PerformerEdit_removed_images[] | null;
+  draft_id: string | null;
 }
 
 export interface SceneEdit_sceneEdit_details_StudioEdit_added_urls_site {
@@ -763,6 +764,18 @@ export interface SceneEdit_sceneEdit_details_SceneEdit_removed_images {
   height: number;
 }
 
+export interface SceneEdit_sceneEdit_details_SceneEdit_added_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+}
+
+export interface SceneEdit_sceneEdit_details_SceneEdit_removed_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+}
+
 export interface SceneEdit_sceneEdit_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -780,8 +793,11 @@ export interface SceneEdit_sceneEdit_details_SceneEdit {
   removed_tags: SceneEdit_sceneEdit_details_SceneEdit_removed_tags[] | null;
   added_images: SceneEdit_sceneEdit_details_SceneEdit_added_images[] | null;
   removed_images: SceneEdit_sceneEdit_details_SceneEdit_removed_images[] | null;
+  added_fingerprints: SceneEdit_sceneEdit_details_SceneEdit_added_fingerprints[] | null;
+  removed_fingerprints: SceneEdit_sceneEdit_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
+  draft_id: string | null;
 }
 
 export type SceneEdit_sceneEdit_details = SceneEdit_sceneEdit_details_TagEdit | SceneEdit_sceneEdit_details_PerformerEdit | SceneEdit_sceneEdit_details_StudioEdit | SceneEdit_sceneEdit_details_SceneEdit;
@@ -1161,6 +1177,18 @@ export interface SceneEdit_sceneEdit_old_details_SceneEdit_removed_images {
   height: number;
 }
 
+export interface SceneEdit_sceneEdit_old_details_SceneEdit_added_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+}
+
+export interface SceneEdit_sceneEdit_old_details_SceneEdit_removed_fingerprints {
+  __typename: "Fingerprint";
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+}
+
 export interface SceneEdit_sceneEdit_old_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
@@ -1178,6 +1206,8 @@ export interface SceneEdit_sceneEdit_old_details_SceneEdit {
   removed_tags: SceneEdit_sceneEdit_old_details_SceneEdit_removed_tags[] | null;
   added_images: SceneEdit_sceneEdit_old_details_SceneEdit_added_images[] | null;
   removed_images: SceneEdit_sceneEdit_old_details_SceneEdit_removed_images[] | null;
+  added_fingerprints: SceneEdit_sceneEdit_old_details_SceneEdit_added_fingerprints[] | null;
+  removed_fingerprints: SceneEdit_sceneEdit_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
 }

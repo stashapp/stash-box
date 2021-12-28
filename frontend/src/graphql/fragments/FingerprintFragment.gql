@@ -1,0 +1,4 @@
+fragment FingerprintFragment on Fingerprint {
+  hash
+  algorithm
+}

@@ -13,13 +13,13 @@ import (
 
 var sem = semaphore.NewWeighted(1)
 
-type EditCron struct {
+type Cron struct {
 	rfp api.RepoProvider
 }
 
 // processEdits runs at set intervals and closes edits where the voting period has ended,
 // either by applying the edit if enough positive votes have been cast, or by rejecting it.
-func (c EditCron) processEdits() {
+func (c Cron) processEdits() {
 	if !sem.TryAcquire(1) {
 		logger.Debug("Edit cronjob failed to start, already running.")
 	}
@@ -53,13 +53,28 @@ func (c EditCron) processEdits() {
 	}
 }
 
+func (c Cron) cleanDrafts() {
+	err := c.rfp.Repo().WithTxn(func() error {
+		return c.rfp.Repo().Draft().DestroyExpired(config.GetDraftTimeLimit())
+	})
+
+	if err != nil {
+		logger.Errorf("Error cleaning drafts: %s", err)
+	}
+}
+
 func Init(rfp api.RepoProvider) {
 	c := cron.New()
-	editCron := EditCron{rfp}
+	cronJobs := Cron{rfp}
+
+	_, err := c.AddFunc("@every 5m", cronJobs.cleanDrafts)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	interval := config.GetVoteCronInterval()
 	if interval != "" {
-		_, err := c.AddFunc("@every "+config.GetVoteCronInterval(), editCron.processEdits)
+		_, err := c.AddFunc("@every "+config.GetVoteCronInterval(), cronJobs.processEdits)
 		if err != nil {
 			panic(err.Error())
 		}

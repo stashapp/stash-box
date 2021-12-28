@@ -307,12 +307,16 @@ func (m *PerformerEditProcessor) applyEdit(performer *models.Performer) (*models
 
 func (m *PerformerEditProcessor) applyCreate(data *models.PerformerEditData) (*models.Performer, error) {
 	now := time.Now()
-	UUID, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
+	UUID := data.New.DraftID
+	if UUID == nil {
+		newUUID, err := uuid.NewV4()
+		if err != nil {
+			return nil, err
+		}
+		UUID = &newUUID
 	}
 	newPerformer := &models.Performer{
-		ID:        UUID,
+		ID:        *UUID,
 		CreatedAt: models.SQLiteTimestamp{Timestamp: now},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
 	}

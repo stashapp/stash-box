@@ -45,3 +45,5 @@ export const ROUTE_SITE = "/sites/:id";
 export const ROUTE_SITE_ADD = "/sites/add";
 export const ROUTE_SITE_EDIT = "/sites/:id/edit";
 export const ROUTE_SITES = "/sites";
+export const ROUTE_DRAFT = "/drafts/:id";
+export const ROUTE_DRAFTS = "/drafts";
