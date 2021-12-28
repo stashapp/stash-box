@@ -1415,6 +1415,9 @@ export interface ApplyEdit_applyEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  /**
+   * Is the edit considered destructive.
+   */
   destructive: boolean;
   comments: ApplyEdit_applyEdit_comments[];
   votes: ApplyEdit_applyEdit_votes[];
