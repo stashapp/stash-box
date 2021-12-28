@@ -1,8 +1,8 @@
 import { FC, KeyboardEvent, useRef, useState } from "react";
-import { useLazyQuery } from "@apollo/client";
-import { components, Options, OptionProps, OnChangeValue } from "react-select";
+import { useApolloClient } from "@apollo/client";
+import { components, OptionProps, OnChangeValue } from "react-select";
 import Async from "react-select/async";
-import { debounce } from "lodash-es";
+import debounce from "p-debounce";
 import { useHistory } from "react-router-dom";
 
 import SearchAllQuery from "src/graphql/queries/SearchAll.gql";
@@ -74,10 +74,9 @@ const valueIsPerformer = (
 
 function handleResult(
   result: SearchAll | SearchPerformers,
-  callback: (result: (SearchGroup | SearchResult)[]) => void,
   excludeIDs: string[],
   showAllLink: boolean
-) {
+): (SearchGroup | SearchResult)[] {
   let performers: SearchResult[] = [];
   let scenes: SearchResult[] = [];
 
@@ -142,13 +141,13 @@ function handleResult(
       }));
   }
 
-  callback([
+  return [
     ...(showAllLink ? [{ type: "ALL", label: "Show all results" }] : []),
     ...(performers.length
       ? [{ label: "Performers", options: performers }]
       : []),
     ...(scenes.length ? [{ label: "Scenes", options: scenes }] : []),
-  ]);
+  ];
 }
 
 const SearchField: FC<SearchFieldProps> = ({
@@ -161,42 +160,31 @@ const SearchField: FC<SearchFieldProps> = ({
   showAllLink = false,
   autoFocus = false,
 }) => {
+  const client = useApolloClient();
   const history = useHistory();
   const [selectedValue, setSelected] = useState(null);
-  const [searchCallback, setCallback] =
-    useState<(result: (SearchGroup | SearchResult)[]) => void>();
   const searchTerm = useRef("");
-  const [search] = useLazyQuery<SearchPerformers | SearchAll>(
-    searchType === SearchType.Performer
-      ? SearchPerformersQuery
-      : SearchAllQuery,
-    {
-      fetchPolicy: "network-only",
-      onCompleted: (result) => {
-        if (searchCallback)
-          handleResult(result, searchCallback, excludeIDs, showAllLink);
-      },
-    }
-  );
 
-  const handleSearch = (
-    term: string,
-    callback: (options: Options<SearchResult>) => void
-  ) => {
+  const handleSearch = async (term: string) => {
     if (term) {
-      setCallback(() => callback);
-      search({ variables: { term } });
-    } else callback([]);
+      const { data } = await client.query<SearchPerformers | SearchAll>({
+        query:
+          searchType === SearchType.Performer
+            ? SearchPerformersQuery
+            : SearchAllQuery,
+        variables: { term },
+        fetchPolicy: "network-only",
+      });
+      return handleResult(data, excludeIDs, showAllLink);
+    }
+    return [];
   };
 
   const debouncedLoadOptions = debounce(handleSearch, 400);
 
-  const handleLoad = (
-    term: string,
-    callback: (options: Options<SearchResult>) => void
-  ) => {
+  const handleLoad = (term: string) => {
     searchTerm.current = term;
-    debouncedLoadOptions(term, callback);
+    return debouncedLoadOptions(term);
   };
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {

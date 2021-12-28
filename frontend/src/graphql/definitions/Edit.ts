@@ -1415,6 +1415,9 @@ export interface Edit_findEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  /**
+   * Is the edit considered destructive.
+   */
   destructive: boolean;
   comments: Edit_findEdit_comments[];
   votes: Edit_findEdit_votes[];

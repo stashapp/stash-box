@@ -1415,6 +1415,9 @@ export interface SceneEdit_sceneEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  /**
+   * Is the edit considered destructive.
+   */
   destructive: boolean;
   comments: SceneEdit_sceneEdit_comments[];
   votes: SceneEdit_sceneEdit_votes[];

@@ -1415,6 +1415,9 @@ export interface PerformerEdit_performerEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  /**
+   * Is the edit considered destructive.
+   */
   destructive: boolean;
   comments: PerformerEdit_performerEdit_comments[];
   votes: PerformerEdit_performerEdit_votes[];
