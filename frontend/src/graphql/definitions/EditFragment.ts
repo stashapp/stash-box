@@ -1415,6 +1415,9 @@ export interface EditFragment {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  /**
+   * Is the edit considered destructive.
+   */
   destructive: boolean;
   comments: EditFragment_comments[];
   votes: EditFragment_votes[];

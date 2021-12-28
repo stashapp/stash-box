@@ -1415,6 +1415,9 @@ export interface StudioEdit_studioEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  /**
+   * Is the edit considered destructive.
+   */
   destructive: boolean;
   comments: StudioEdit_studioEdit_comments[];
   votes: StudioEdit_studioEdit_votes[];

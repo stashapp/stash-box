@@ -1415,6 +1415,9 @@ export interface TagEdit_tagEdit {
    *  = Accepted - Rejected
    */
   vote_count: number;
+  /**
+   * Is the edit considered destructive.
+   */
   destructive: boolean;
   comments: TagEdit_tagEdit_comments[];
   votes: TagEdit_tagEdit_votes[];
