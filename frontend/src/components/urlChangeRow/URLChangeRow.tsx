@@ -13,7 +13,7 @@ export interface URL {
   };
 }
 
-const URLChanges: React.FC<{ urls: URL[] }> = ({ urls }) => (
+const URLChanges: FC<{ urls: URL[] }> = ({ urls }) => (
   <div className={CLASSNAME}>
     <ul className="ps-0">
       {urls.map((url) => (

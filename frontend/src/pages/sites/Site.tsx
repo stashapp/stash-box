@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
@@ -14,7 +14,7 @@ interface Props {
   site: Site;
 }
 
-const SiteComponent: React.FC<Props> = ({ site }) => {
+const SiteComponent: FC<Props> = ({ site }) => {
   const history = useHistory();
   const auth = useContext(AuthContext);
 
