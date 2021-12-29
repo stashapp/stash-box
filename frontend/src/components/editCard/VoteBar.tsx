@@ -37,11 +37,11 @@ const VoteBar: FC<Props> = ({ edit }) => {
     </h6>
   );
 
-  if (!canVote(auth.user)) {
-    if (edit.user && auth.user?.id === edit.user.id)
-      return <div>{currentVote}</div>;
-    return <></>;
-  }
+  // The submitter of the edit can see the current vote
+  if (edit.user && auth.user?.id === edit.user.id)
+    return <div>{currentVote}</div>;
+
+  if (!canVote(auth.user)) return <></>;
 
   const handleSave = () => {
     if (!vote) return;
