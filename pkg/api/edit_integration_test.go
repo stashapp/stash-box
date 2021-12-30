@@ -33,6 +33,10 @@ func (s *editTestRunner) testAdminCancelEdit() {
 
 	pt := createEditTestRunner(s.t)
 	cancelEdit, err := s.resolver.Mutation().CancelEdit(pt.ctx, editInput)
+	if err != nil {
+		s.t.Errorf("Admin failed to cancel edit: %s", err)
+		return
+	}
 	s.verifyAdminCancelEdit(cancelEdit)
 }
 
