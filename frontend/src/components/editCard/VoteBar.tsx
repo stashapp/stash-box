@@ -37,11 +37,9 @@ const VoteBar: FC<Props> = ({ edit }) => {
     </h6>
   );
 
-  if (!canVote(auth.user)) {
-    if (edit.user && auth.user?.id === edit.user.id)
-      return <div>{currentVote}</div>;
-    return <></>;
-  }
+  // Only show vote total for edit owner and users without vote role
+  if (!canVote(auth.user) || auth.user?.id === edit.user?.id)
+    return <div>{currentVote}</div>;
 
   const handleSave = () => {
     if (!vote) return;
