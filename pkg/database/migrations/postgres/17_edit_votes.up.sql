@@ -1,4 +1,5 @@
 UPDATE edits SET status = 'REJECTED', updated_at = NOW() WHERE status = 'PENDING';
+UPDATE edits SET status = 'CANCELED' WHERE status = 'IMMEDIATE_REJECTED';
 
 CREATE TABLE "edit_votes" (
   "edit_id" UUID NOT NULL,
