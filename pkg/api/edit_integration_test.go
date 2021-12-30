@@ -41,7 +41,7 @@ func (s *editTestRunner) testUnauthorisedApplyEditAdmin() {
 	}
 }
 
-func (s *editTestRunner) testCancelEdit() {
+func (s *editTestRunner) testAdminCancelEdit() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
 	if err != nil {
 		return
@@ -50,7 +50,13 @@ func (s *editTestRunner) testCancelEdit() {
 	editInput := models.CancelEditInput{
 		ID: createdEdit.ID.String(),
 	}
-	cancelEdit, err := s.resolver.Mutation().CancelEdit(s.ctx, editInput)
+
+	pt := createEditTestRunner(s.t)
+	cancelEdit, err := s.resolver.Mutation().CancelEdit(pt.ctx, editInput)
+	if err != nil {
+		s.t.Errorf("Admin failed to cancel edit: %s", err)
+		return
+	}
 	s.verifyCancelEdit(cancelEdit)
 }
 
@@ -114,9 +120,11 @@ func TestUnauthorisedApplyEditAdmin(t *testing.T) {
 	pt.testUnauthorisedApplyEditAdmin()
 }
 
-func TestCancelEdit(t *testing.T) {
-	pt := createEditTestRunner(t)
-	pt.testCancelEdit()
+func TestAdminCancelEdit(t *testing.T) {
+	pt := &editTestRunner{
+		testRunner: *asEdit(t),
+	}
+	pt.testAdminCancelEdit()
 }
 
 func TestOwnerCancelEdit(t *testing.T) {
