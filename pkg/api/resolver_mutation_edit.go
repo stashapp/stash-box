@@ -248,7 +248,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 			return errors.New("Edit not found")
 		}
 
-		if err = validateOwner(ctx, edit.UserID); err != nil {
+		if err = validateUserOrAdmin(ctx, edit.UserID); err != nil {
 			return err
 		}
 
