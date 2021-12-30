@@ -103,3 +103,5 @@ endif
 				-v /var/run/docker.sock:/var/run/docker.sock \
 				-w /go/src/github.com/stashapp/stash-box \
 				ghcr.io/gythialy/golang-cross:latest --snapshot --rm-dist
+	# goreleaser outputs an unreadable file which trips up docker
+	sudo chmod 644 ./dist/artifacts.json
