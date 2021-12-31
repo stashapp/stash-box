@@ -188,12 +188,13 @@ const SearchField: FC<SearchFieldProps> = ({
   };
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {
+    if (result?.type === "ALL")
+      return history.push(
+        createHref(ROUTE_SEARCH, { term: searchTerm.current })
+      );
+
     if (result?.value) {
       if (valueIsPerformer(result.value)) onClickPerformer?.(result.value);
-      if (result.type === "ALL")
-        return history.push(
-          createHref(ROUTE_SEARCH, { term: searchTerm.current })
-        );
       onClick?.(result.value);
       if (navigate) history.push(`/${result.type}s/${result.value.id}`);
     }
