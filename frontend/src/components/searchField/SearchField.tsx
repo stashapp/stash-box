@@ -203,7 +203,7 @@ const SearchField: FC<SearchFieldProps> = ({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
-    if (e.key === "Enter" && searchTerm.current) {
+    if (e.key === "Enter" && searchTerm.current && showAllLink) {
       history.push(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
     }
   };
