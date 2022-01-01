@@ -82,6 +82,10 @@ pre-ui:
 ui:
 	cd frontend && yarn build
 
+.PHONY: ui-start
+ui-start:
+	cd frontend && yarn start
+
 .PHONY: ui-fmt
 ui-fmt:
 	cd frontend && yarn format
