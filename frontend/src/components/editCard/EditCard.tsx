@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import cx from "classnames";
 
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 import { OperationEnum } from "src/graphql";
@@ -16,6 +17,8 @@ import VoteBar from "./VoteBar";
 import EditExpiration from "./EditExpiration";
 import EditStatus from "./EditStatus";
 import Votes from "./Votes";
+
+const CLASSNAME = "EditCard";
 
 interface Props {
   edit: Edit;
@@ -52,7 +55,7 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   ));
 
   return (
-    <Card className="mb-3">
+    <Card className={cx(CLASSNAME, "mb-3")}>
       <Card.Header className="row">
         <div className="flex-column col-4">
           <Link to={editHref(edit)}>
