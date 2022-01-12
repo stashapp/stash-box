@@ -13,4 +13,5 @@ export interface FingerprintFragment {
   __typename: "Fingerprint";
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }

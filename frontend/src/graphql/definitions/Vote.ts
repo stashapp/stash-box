@@ -768,12 +768,14 @@ export interface Vote_editVote_details_SceneEdit_added_fingerprints {
   __typename: "Fingerprint";
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface Vote_editVote_details_SceneEdit_removed_fingerprints {
   __typename: "Fingerprint";
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface Vote_editVote_details_SceneEdit {
@@ -1181,12 +1183,14 @@ export interface Vote_editVote_old_details_SceneEdit_added_fingerprints {
   __typename: "Fingerprint";
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface Vote_editVote_old_details_SceneEdit_removed_fingerprints {
   __typename: "Fingerprint";
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface Vote_editVote_old_details_SceneEdit {
