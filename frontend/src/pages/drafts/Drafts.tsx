@@ -1,14 +1,20 @@
 import React from "react";
-import { Card } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { sortBy } from "lodash-es";
 import { Link } from "react-router-dom";
 import { formatDistance } from "date-fns";
-import { LoadingIndicator, Tooltip } from "src/components/fragments";
+import { Icon, LoadingIndicator, Tooltip } from "src/components/fragments";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
-import { useDrafts } from "src/graphql";
+import { useDrafts, useDeleteDraft } from "src/graphql";
 
 const DraftList: React.FC = () => {
-  const { loading, data } = useDrafts();
+  const { loading, data, refetch } = useDrafts();
+  const [deleteDraft, { loading: destroying }] = useDeleteDraft();
+
+  const handleDelete = (id: string) => {
+    deleteDraft({ variables: { id } }).then(() => refetch());
+  };
 
   return (
     <>
@@ -40,6 +46,14 @@ const DraftList: React.FC = () => {
                       <small className="ms-2">Expires in {expiration}</small>
                     </Tooltip>
                   </span>
+                  <Button
+                    onClick={() => handleDelete(draft.id)}
+                    disabled={destroying}
+                    title="Delete draft"
+                    variant="minimal"
+                  >
+                    <Icon icon={faTrash} color="red" />
+                  </Button>
                 </li>
               );
             })}
