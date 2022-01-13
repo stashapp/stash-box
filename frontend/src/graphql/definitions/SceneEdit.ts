@@ -17,6 +17,7 @@ export interface SceneEdit_sceneEdit_comments_user {
 
 export interface SceneEdit_sceneEdit_comments {
   __typename: "EditComment";
+  id: string;
   user: SceneEdit_sceneEdit_comments_user | null;
   date: any;
   comment: string;

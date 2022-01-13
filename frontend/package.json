@@ -75,7 +75,7 @@
     "react-dom": "^17.0.2",
     "react-helmet": "^6.1.0",
     "react-hook-form": "7.19.5",
-    "react-markdown": "^7.1.0",
+    "react-markdown": "^8.0.0",
     "react-responsive-carousel": "^3.2.20",
     "react-router-dom": "^5.2.0",
     "react-select": "^5.2.1",

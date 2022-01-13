@@ -39,7 +39,7 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
     />
   );
   const comments = (edit.comments ?? []).map((comment) => (
-    <EditComment {...comment} key={`${comment.user?.id}-${comment.date}`} />
+    <EditComment {...comment} key={comment.id} />
   ));
 
   return (

@@ -17,6 +17,7 @@ export interface TagEdit_tagEdit_comments_user {
 
 export interface TagEdit_tagEdit_comments {
   __typename: "EditComment";
+  id: string;
   user: TagEdit_tagEdit_comments_user | null;
   date: any;
   comment: string;

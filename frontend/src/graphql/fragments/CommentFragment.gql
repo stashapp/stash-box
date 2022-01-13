@@ -1,4 +1,5 @@
 fragment CommentFragment on EditComment {
+  id
   user {
     id
     name

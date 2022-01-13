@@ -17,6 +17,7 @@ export interface Edit_findEdit_comments_user {
 
 export interface Edit_findEdit_comments {
   __typename: "EditComment";
+  id: string;
   user: Edit_findEdit_comments_user | null;
   date: any;
   comment: string;

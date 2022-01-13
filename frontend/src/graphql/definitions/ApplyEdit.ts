@@ -17,6 +17,7 @@ export interface ApplyEdit_applyEdit_comments_user {
 
 export interface ApplyEdit_applyEdit_comments {
   __typename: "EditComment";
+  id: string;
   user: ApplyEdit_applyEdit_comments_user | null;
   date: any;
   comment: string;

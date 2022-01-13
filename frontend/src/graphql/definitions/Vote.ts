@@ -17,6 +17,7 @@ export interface Vote_editVote_comments_user {
 
 export interface Vote_editVote_comments {
   __typename: "EditComment";
+  id: string;
   user: Vote_editVote_comments_user | null;
   date: any;
   comment: string;

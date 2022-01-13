@@ -17,6 +17,7 @@ export interface PerformerEdit_performerEdit_comments_user {
 
 export interface PerformerEdit_performerEdit_comments {
   __typename: "EditComment";
+  id: string;
   user: PerformerEdit_performerEdit_comments_user | null;
   date: any;
   comment: string;
