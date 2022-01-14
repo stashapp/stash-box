@@ -42,10 +42,13 @@ func (qb *draftQueryBuilder) Destroy(id uuid.UUID) error {
 	return qb.dbi.Delete(id, draftDBTable)
 }
 
-func (qb *draftQueryBuilder) DestroyExpired(timeLimit int) error {
-	query := "DELETE FROM drafts WHERE created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))"
+func (qb *draftQueryBuilder) FindExpired(timeLimit int) ([]*models.Draft, error) {
+	output := models.Drafts{}
+	query := "SELECT * FROM drafts WHERE created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))"
 	args := []interface{}{timeLimit}
-	return qb.dbi.RawExec(query, args)
+	err := qb.dbi.RawQuery(draftDBTable, query, args, &output)
+
+	return output, err
 }
 
 func (qb *draftQueryBuilder) Find(id uuid.UUID) (*models.Draft, error) {

@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/pkg/draft"
 	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -40,7 +40,6 @@ func (r *mutationResolver) SubmitSceneDraft(ctx context.Context, input models.Sc
 
 	fac := r.getRepoFactory(ctx)
 	err = fac.WithTxn(func() error {
-		fmt.Println(input.Image)
 		if input.Image != nil {
 			iqb := fac.Image()
 			imageService := image.GetService(iqb)
@@ -132,7 +131,7 @@ func (r *mutationResolver) SubmitPerformerDraft(ctx context.Context, input model
 func (r *mutationResolver) DestroyDraft(ctx context.Context, id uuid.UUID) (bool, error) {
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
-		return fac.Draft().Destroy(id)
+		return draft.Destroy(fac, id)
 	})
 	return err == nil, err
 }

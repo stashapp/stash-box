@@ -5,6 +5,7 @@ import (
 	"golang.org/x/sync/semaphore"
 
 	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/stashapp/stash-box/pkg/draft"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/edit"
@@ -54,8 +55,18 @@ func (c Cron) processEdits() {
 }
 
 func (c Cron) cleanDrafts() {
-	err := c.rfp.Repo().WithTxn(func() error {
-		return c.rfp.Repo().Draft().DestroyExpired(config.GetDraftTimeLimit())
+	fac := c.rfp.Repo()
+	err := fac.WithTxn(func() error {
+		drafts, err := fac.Draft().FindExpired(config.GetDraftTimeLimit())
+		if err != nil {
+			return err
+		}
+		for _, d := range drafts {
+			if err := draft.Destroy(fac, d.ID); err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 
 	if err != nil {

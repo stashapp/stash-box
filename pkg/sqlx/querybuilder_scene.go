@@ -86,7 +86,6 @@ func (qb *sceneQueryBuilder) CreateFingerprints(newJoins models.SceneFingerprint
 }
 
 func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins models.SceneFingerprints) error {
-	fmt.Println("asd")
 	return qb.dbi.ReplaceJoins(sceneFingerprintTable, sceneID, &updatedJoins)
 }
 
