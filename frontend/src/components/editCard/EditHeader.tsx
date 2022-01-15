@@ -64,7 +64,7 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
 
       case OperationEnum.MERGE:
         return (
-          <Col>
+          <Col className="lh-base">
             <Row>
               <b className="col-2 text-end">Merge</b>
               <Col xs={10}>
@@ -97,8 +97,10 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
         return (
           <>
             <b className="col-2 text-end">Deleting: </b>
-            <Col className="EditDiff bg-danger">
-              {renderTargetLink(edit.target)}
+            <Col>
+              <span className="EditDiff bg-danger">
+                {renderTargetLink(edit.target)}
+              </span>
             </Col>
           </>
         );
