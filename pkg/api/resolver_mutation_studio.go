@@ -152,10 +152,9 @@ func (r *mutationResolver) FavoriteStudio(ctx context.Context, id uuid.UUID, fav
 		if favorite {
 			err := jqb.AddStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
 			return err
-		} else {
-			err := jqb.DestroyStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
-			return err
 		}
+		err := jqb.DestroyStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+		return err
 	})
 	return err == nil, err
 }

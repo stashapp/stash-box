@@ -214,10 +214,9 @@ func (r *mutationResolver) FavoritePerformer(ctx context.Context, id uuid.UUID, 
 			pf := models.PerformerFavorite{PerformerID: id, UserID: user.ID}
 			err := jqb.AddPerformerFavorite(pf)
 			return err
-		} else {
-			err := jqb.DestroyPerformerFavorite(models.PerformerFavorite{PerformerID: id, UserID: user.ID})
-			return err
 		}
+		err := jqb.DestroyPerformerFavorite(models.PerformerFavorite{PerformerID: id, UserID: user.ID})
+		return err
 	})
 	return err == nil, err
 }
