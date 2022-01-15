@@ -8,8 +8,6 @@ import { OperationEnum } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
-import DestroyEdit from "./DestroyEdit";
-import MergeEdit from "./MergeEdit";
 import EditComment from "./EditComment";
 import EditHeader from "./EditHeader";
 import AddComment from "./AddComment";
@@ -30,13 +28,6 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   const created = new Date(edit.created as string);
   const updated = new Date(edit.updated as string);
 
-  const merges = edit.operation === OperationEnum.MERGE && (
-    <MergeEdit
-      merges={edit.merge_sources}
-      target={edit.target}
-      options={edit.options ?? undefined}
-    />
-  );
   const creation = edit.operation === OperationEnum.CREATE && (
     <ModifyEdit details={edit.details} />
   );
@@ -46,9 +37,6 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
       oldDetails={edit.old_details}
       options={edit.options ?? undefined}
     />
-  );
-  const destruction = edit.operation === OperationEnum.DESTROY && (
-    <DestroyEdit {...edit} />
   );
   const comments = (edit.comments ?? []).map((comment) => (
     <EditComment {...comment} key={`${comment.user?.id}-${comment.date}`} />
@@ -92,10 +80,8 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
       <hr />
       <Card.Body>
         <EditHeader edit={edit} />
-        {merges}
         {creation}
         {modifications}
-        {destruction}
         <Row className="mt-2">
           <Col md={{ offset: 4, span: 8 }}>
             {showVotes && <Votes edit={edit} />}
