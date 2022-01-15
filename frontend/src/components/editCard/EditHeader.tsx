@@ -48,7 +48,7 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
             <Col xs={2} className="fw-bold text-end">
               Modifying {edit.target_type.toLowerCase()}
             </Col>
-            <Col className="pl-1">{renderTargetLink(edit.target)}</Col>
+            <Col>{renderTargetLink(edit.target)}</Col>
           </>
         );
 
