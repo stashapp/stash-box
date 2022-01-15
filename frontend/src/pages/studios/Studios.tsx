@@ -10,6 +10,7 @@ import querystring from "query-string";
 import { useStudios, SortDirectionEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { List } from "src/components/list";
+import { FavoriteStar } from "src/components/fragments";
 
 const PER_PAGE = 40;
 
@@ -38,6 +39,7 @@ const StudiosComponent: FC = () => {
           <Link to={studioHref(s.parent)}>{s.parent.name}</Link>
         </small>
       )}
+      <FavoriteStar entity={s} entityType="studio" className="ps-2" />
     </li>
   ));
 

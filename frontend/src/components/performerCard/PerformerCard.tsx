@@ -6,7 +6,11 @@ import cx from "classnames";
 import { Performers_queryPerformers_performers as Performer } from "src/graphql/definitions/Performers";
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 
-import { GenderIcon, PerformerName } from "src/components/fragments";
+import {
+  GenderIcon,
+  FavoriteStar,
+  PerformerName,
+} from "src/components/fragments";
 import { getImage, performerHref } from "src/utils";
 
 interface PerformerCardProps {
@@ -16,6 +20,7 @@ interface PerformerCardProps {
 
 const CLASSNAME = "PerformerCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
+const CLASSNAME_STAR = `${CLASSNAME}-star`;
 
 const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
   <Card className={cx(CLASSNAME, className)}>
@@ -25,6 +30,11 @@ const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
           src={getImage(performer.images, "portrait")}
           alt={performer.name}
           title={performer.name}
+        />
+        <FavoriteStar
+          entity={performer}
+          entityType="performer"
+          className={CLASSNAME_STAR}
         />
       </div>
       <Card.Footer>

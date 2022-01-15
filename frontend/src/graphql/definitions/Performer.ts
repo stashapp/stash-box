@@ -82,6 +82,7 @@ export interface Performer_findPerformer {
   piercings: Performer_findPerformer_piercings[] | null;
   urls: Performer_findPerformer_urls[];
   images: Performer_findPerformer_images[];
+  is_favorite: boolean;
 }
 
 export interface Performer {

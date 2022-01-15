@@ -105,3 +105,16 @@
     display: none;
   }
 }
+
+.FavoriteStar {
+  padding: 0;
+  margin-top: -4px;
+
+  &:disabled {
+    opacity: 100%;
+  }
+
+  &:focus {
+    box-shadow: none;
+  }
+}

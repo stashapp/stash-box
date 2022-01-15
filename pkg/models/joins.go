@@ -18,4 +18,10 @@ type JoinsRepo interface {
 	CreateStudiosImages(newJoins StudiosImages) error
 	UpdateStudiosImages(studioID uuid.UUID, updatedJoins StudiosImages) error
 	DestroyStudiosImages(studioID uuid.UUID) error
+	AddStudioFavorite(join StudioFavorite) error
+	AddPerformerFavorite(join PerformerFavorite) error
+	DestroyStudioFavorite(join StudioFavorite) error
+	DestroyPerformerFavorite(join PerformerFavorite) error
+	IsPerformerFavorite(favorite PerformerFavorite) (bool, error)
+	IsStudioFavorite(favorite StudioFavorite) (bool, error)
 }

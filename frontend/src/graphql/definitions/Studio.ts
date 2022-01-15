@@ -49,6 +49,7 @@ export interface Studio_findStudio {
   urls: Studio_findStudio_urls[];
   images: Studio_findStudio_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface Studio {

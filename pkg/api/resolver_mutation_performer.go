@@ -203,3 +203,21 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 	}
 	return true, nil
 }
+
+func (r *mutationResolver) FavoritePerformer(ctx context.Context, id uuid.UUID, favorite bool) (bool, error) {
+	fac := r.getRepoFactory(ctx)
+	user := getCurrentUser(ctx)
+
+	err := fac.WithTxn(func() error {
+		jqb := r.getRepoFactory(ctx).Joins()
+		if favorite {
+			pf := models.PerformerFavorite{PerformerID: id, UserID: user.ID}
+			err := jqb.AddPerformerFavorite(pf)
+			return err
+		} else {
+			err := jqb.DestroyPerformerFavorite(models.PerformerFavorite{PerformerID: id, UserID: user.ID})
+			return err
+		}
+	})
+	return err == nil, err
+}

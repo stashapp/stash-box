@@ -115,6 +115,7 @@ type Performer {
   scene_count: Int!
   merged_ids: [ID!]!
   studios: [PerformerStudio!]!
+  is_favorite: Boolean!
 }
 
 type PerformerStudio {

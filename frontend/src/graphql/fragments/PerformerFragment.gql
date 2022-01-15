@@ -40,4 +40,5 @@ fragment PerformerFragment on Performer {
   images {
     ... ImageFragment
   }
+  is_favorite
 }

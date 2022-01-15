@@ -142,3 +142,20 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 
 	return err == nil, err
 }
+
+func (r *mutationResolver) FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error) {
+	fac := r.getRepoFactory(ctx)
+	user := getCurrentUser(ctx)
+
+	err := fac.WithTxn(func() error {
+		jqb := fac.Joins()
+		if favorite {
+			err := jqb.AddStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+			return err
+		} else {
+			err := jqb.DestroyStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+			return err
+		}
+	})
+	return err == nil, err
+}

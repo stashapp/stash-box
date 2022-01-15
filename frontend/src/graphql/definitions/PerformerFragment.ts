@@ -82,4 +82,5 @@ export interface PerformerFragment {
   piercings: PerformerFragment_piercings[] | null;
   urls: PerformerFragment_urls[];
   images: PerformerFragment_images[];
+  is_favorite: boolean;
 }

@@ -16,6 +16,7 @@ query Studios($filter: QuerySpec, $studioFilter: StudioFilterType) {
         images {
           ...ImageFragment
         }
+        is_favorite
       }
   }
 }

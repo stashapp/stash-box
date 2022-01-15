@@ -20,4 +20,5 @@ fragment StudioFragment on Studio {
         width
     }
     deleted
+    is_favorite
 }

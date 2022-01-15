@@ -28,7 +28,12 @@ import {
   ROUTE_PERFORMER_DELETE,
 } from "src/constants/route";
 
-import { GenderIcon, PerformerName, Tooltip } from "src/components/fragments";
+import {
+  FavoriteStar,
+  GenderIcon,
+  PerformerName,
+  Tooltip,
+} from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 
 const PerformerInfo: FC<{ performer: Performer }> = ({ performer }) => {
@@ -42,6 +47,12 @@ const PerformerInfo: FC<{ performer: Performer }> = ({ performer }) => {
             <h3>
               <GenderIcon gender={performer?.gender} />
               <PerformerName performer={performer} />
+              <FavoriteStar
+                entity={performer}
+                entityType="performer"
+                interactable
+                className="ps-2"
+              />
             </h3>
             {canEdit(auth?.user) && !performer.deleted && (
               <div className="ms-auto flex-shrink-0">

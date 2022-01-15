@@ -6,6 +6,7 @@ type Studio {
   child_studios: [Studio!]!
   images: [Image!]!
   deleted: Boolean!
+  is_favorite: Boolean!
 }
 
 input StudioCreateInput {

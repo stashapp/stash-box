@@ -43,6 +43,7 @@ export interface Studios_queryStudios_studios {
   parent: Studios_queryStudios_studios_parent | null;
   urls: Studios_queryStudios_studios_urls[];
   images: Studios_queryStudios_studios_images[];
+  is_favorite: boolean;
 }
 
 export interface Studios_queryStudios {
