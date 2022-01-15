@@ -45,20 +45,20 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
       case OperationEnum.MODIFY:
         return (
           <>
-            <Col xs={2} className="text-end">
-              Modifying {edit.target_type.toLowerCase()}:
+            <Col xs={2} className="fw-bold text-end">
+              Modifying {edit.target_type.toLowerCase()}
             </Col>
-            <Col>{renderTargetLink(edit.target)}</Col>
+            <Col className="pl-1">{renderTargetLink(edit.target)}</Col>
           </>
         );
 
       case OperationEnum.CREATE:
         return edit.applied ? (
           <>
-            <Col xs={2} className="text-end">
-              Created {edit.target_type.toLowerCase()}:
+            <Col xs={2} className="fw-bold text-end">
+              Created {edit.target_type.toLowerCase()}
             </Col>
-            <Col>{renderTargetLink(edit.target)}</Col>
+            <Col className="ps-3">{renderTargetLink(edit.target)}</Col>
           </>
         ) : null;
 
@@ -66,7 +66,9 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
         return (
           <Col className="lh-base">
             <Row>
-              <b className="col-2 text-end">Merge</b>
+              <Col xs={2} className="fw-bold text-end">
+                Merge
+              </Col>
               <Col xs={10}>
                 {edit.merge_sources?.map((target) => (
                   <div key={target.id}>{renderTargetLink(target)}</div>
@@ -74,7 +76,9 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
               </Col>
             </Row>
             <Row>
-              <b className="col-2 text-end">Into</b>
+              <Col xs={2} className="fw-bold text-end">
+                Into
+              </Col>
               <Col xs={10}>{renderTargetLink(edit.target)}</Col>
             </Row>
             {isPerformer(edit.target) && (
@@ -96,7 +100,9 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
       case OperationEnum.DESTROY:
         return (
           <>
-            <b className="col-2 text-end">Deleting: </b>
+            <Col xs={2} className="fw-bold text-end">
+              Deleting
+            </Col>
             <Col>
               <span className="EditDiff bg-danger">
                 {renderTargetLink(edit.target)}
@@ -108,7 +114,7 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
   }, [edit]);
 
   return isValidEditTarget(edit.target) ? (
-    <h6 className="row mb-4">{header}</h6>
+    <Row className="mb-4">{header}</Row>
   ) : null;
 };
 

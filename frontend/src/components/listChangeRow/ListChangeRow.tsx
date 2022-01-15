@@ -14,21 +14,26 @@ interface ListChangeRowProps<T> {
 const CLASSNAME = "ListChangeRow";
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const ListChangeRow = <T extends unknown>(
-  props: PropsWithChildren<ListChangeRowProps<T>>
-) =>
-  (props.added ?? []).length > 0 || (props.removed ?? []).length > 0 ? (
+const ListChangeRow = <T extends unknown>({
+  added,
+  removed,
+  name,
+  getKey,
+  renderItem,
+  showDiff,
+}: PropsWithChildren<ListChangeRowProps<T>>) =>
+  (added ?? []).length > 0 || (removed ?? []).length > 0 ? (
     <Row className={CLASSNAME}>
-      <b className="col-2 text-end">{props.name}</b>
-      {props.showDiff && (
+      <b className="col-2 text-end">{name}</b>
+      {showDiff && (
         <Col xs={5}>
-          {(props.removed ?? []).length > 0 && (
+          {(removed ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
               <div className={CLASSNAME}>
                 <ul>
-                  {(props.removed ?? []).map((u) => (
-                    <li key={props.getKey(u)}>{props.renderItem(u)}</li>
+                  {(removed ?? []).map((u) => (
+                    <li key={getKey(u)}>{renderItem(u)}</li>
                   ))}
                 </ul>
               </div>
@@ -36,14 +41,14 @@ const ListChangeRow = <T extends unknown>(
           )}
         </Col>
       )}
-      <Col xs={5}>
-        {(props.added ?? []).length > 0 && (
+      <Col xs={showDiff ? 5 : 10}>
+        {(added ?? []).length > 0 && (
           <>
-            {props.showDiff && <h6>Added</h6>}
+            {showDiff && <h6>Added</h6>}
             <div className={CLASSNAME}>
               <ul>
-                {(props.added ?? []).map((u) => (
-                  <li key={props.getKey(u)}>{props.renderItem(u)}</li>
+                {(added ?? []).map((u) => (
+                  <li key={getKey(u)}>{renderItem(u)}</li>
                 ))}
               </ul>
             </div>
