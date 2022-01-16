@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -31,7 +31,7 @@ interface SiteProps {
   callback: (data: SiteCreateInput) => void;
 }
 
-const SiteForm: React.FC<SiteProps> = ({ site, callback }) => {
+const SiteForm: FC<SiteProps> = ({ site, callback }) => {
   const history = useHistory();
   const {
     control,

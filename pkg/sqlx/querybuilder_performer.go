@@ -151,7 +151,7 @@ func (qb *performerQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Performer
 func (qb *performerQueryBuilder) FindBySceneID(sceneID uuid.UUID) (models.Performers, error) {
 	query := `
 		SELECT performers.* FROM performers
-		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
+		LEFT JOIN scene_performers as scenes_join on scenes_join.performer_id = performers.id
 		WHERE scenes_join.scene_id = ?
 		GROUP BY performers.id
 	`

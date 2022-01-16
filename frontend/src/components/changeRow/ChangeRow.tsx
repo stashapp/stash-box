@@ -23,7 +23,7 @@ const ChangeRow: FC<ChangeRowProps> = ({
           <div className="EditDiff bg-danger">{oldValue}</div>
         </Col>
       )}
-      <Col xs={5}>
+      <Col xs={showDiff ? 5 : 10}>
         <div className={cx("EditDiff", { "bg-success": showDiff })}>
           {newValue}
         </div>

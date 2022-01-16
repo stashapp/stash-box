@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Route, Switch, useParams } from "react-router-dom";
 
 import { useSite } from "src/graphql";
@@ -16,7 +16,7 @@ import Sites from "./Sites";
 import SiteAdd from "./SiteAdd";
 import SiteEdit from "./SiteEdit";
 
-const SiteLoader: React.FC = () => {
+const SiteLoader: FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data, loading } = useSite({ id });
 
@@ -45,7 +45,7 @@ const SiteLoader: React.FC = () => {
   );
 };
 
-const SiteRoutes: React.FC = () => (
+const SiteRoutes: FC = () => (
   <Switch>
     <Route exact path={ROUTE_SITES}>
       <>

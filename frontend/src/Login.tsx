@@ -7,6 +7,7 @@ import * as yup from "yup";
 import cx from "classnames";
 
 import AuthContext, { ContextType } from "src/AuthContext";
+import { ROUTE_REGISTER, ROUTE_FORGOT_PASSWORD } from "src/constants/route";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 
 import "./App.scss";
@@ -84,12 +85,12 @@ const Login: FC = () => {
         <Row>
           <Col xs={9}>
             <div>
-              <Link to="/register">
+              <Link to={ROUTE_REGISTER}>
                 <small>Register</small>
               </Link>
             </div>
             <div>
-              <Link to="/forgotPassword">
+              <Link to={ROUTE_FORGOT_PASSWORD}>
                 <small>Forgot Password</small>
               </Link>
             </div>

@@ -51,7 +51,7 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
           )}
         </Col>
       )}
-      <Col xs={5}>
+      <Col xs={showDiff ? 5 : 10}>
         {(newImages ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { SiteLink } from "src/components/fragments";
 
 interface URLListProps {
@@ -12,7 +12,7 @@ interface URLListProps {
   }[];
 }
 
-const URLList: React.FC<URLListProps> = ({ urls }) => (
+const URLList: FC<URLListProps> = ({ urls }) => (
   <ul className="URLList">
     {urls.map((u) => (
       <li key={u.url}>

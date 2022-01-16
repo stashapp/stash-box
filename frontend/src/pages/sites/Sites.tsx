@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card } from "react-bootstrap";
 
@@ -8,7 +8,7 @@ import { isAdmin } from "src/utils";
 import { ROUTE_SITE_ADD } from "src/constants/route";
 import AuthContext from "src/AuthContext";
 
-const SiteList: React.FC = () => {
+const SiteList: FC = () => {
   const auth = useContext(AuthContext);
   const { loading, data } = useSites();
 

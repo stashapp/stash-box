@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Control, useFieldArray } from "react-hook-form";
 
@@ -13,7 +13,7 @@ interface URLInputProps {
   type: ValidSiteTypeEnum;
 }
 
-const URLInput: React.FC<URLInputProps> = ({ control, type }) => {
+const URLInput: FC<URLInputProps> = ({ control, type }) => {
   const {
     fields: urls,
     append,
