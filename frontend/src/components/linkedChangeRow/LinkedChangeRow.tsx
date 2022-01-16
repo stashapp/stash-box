@@ -43,7 +43,7 @@ const LinkedChangeRow: FC<LinkedChangeRowProps> = ({
           <div className="EditDiff bg-danger">{getValue(oldEntity)}</div>
         </Col>
       )}
-      <Col xs={5} key={newEntity?.name}>
+      <Col xs={showDiff ? 5 : 10} key={newEntity?.name}>
         <div className={cx("EditDiff", { "bg-success": showDiff })}>
           {getValue(newEntity)}
         </div>

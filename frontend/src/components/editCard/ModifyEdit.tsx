@@ -29,10 +29,10 @@ import {
   studioHref,
   categoryHref,
 } from "src/utils";
+import { Icon } from "src/components/fragments";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
 import URLChangeRow, { URL } from "src/components/urlChangeRow";
-import { Icon } from "src/components/fragments";
 import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
 import { renderPerformer, renderTag, renderFingerprint } from "./renderEntity";

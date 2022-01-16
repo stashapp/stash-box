@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Site_findSite as Site } from "src/graphql/definitions/Site";
@@ -10,7 +10,7 @@ interface Props {
   site: Site;
 }
 
-const UpdateSite: React.FC<Props> = ({ site }) => {
+const UpdateSite: FC<Props> = ({ site }) => {
   const history = useHistory();
   const [updateSite] = useUpdateSite({
     onCompleted: (result) => {
