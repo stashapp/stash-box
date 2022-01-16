@@ -1,11 +1,11 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useAddSite, SiteCreateInput } from "src/graphql";
 import { siteHref } from "src/utils";
 import SiteForm from "./siteForm";
 
-const AddSite: React.FC = () => {
+const AddSite: FC = () => {
   const history = useHistory();
   const [createSite] = useAddSite({
     onCompleted: (data) => {

@@ -13,7 +13,7 @@ export interface URL {
   };
 }
 
-const URLChanges: React.FC<{ urls: URL[] }> = ({ urls }) => (
+const URLChanges: FC<{ urls: URL[] }> = ({ urls }) => (
   <div className={CLASSNAME}>
     <ul className="ps-0">
       {urls.map((url) => (
@@ -46,7 +46,7 @@ const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
           )}
         </Col>
       )}
-      <Col xs={5}>
+      <Col xs={showDiff ? 5 : 10}>
         {(newURLs ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}

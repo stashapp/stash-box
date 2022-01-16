@@ -1,4 +1,4 @@
-import React from "react";
+import { createContext } from "react";
 
 import { RoleEnum } from "src/graphql";
 
@@ -13,7 +13,7 @@ export type ContextType = {
   user?: User;
 };
 
-const AuthContext = React.createContext<ContextType>({
+const AuthContext = createContext<ContextType>({
   authenticated: false,
 });
 

@@ -1,14 +1,13 @@
 import { FC } from "react";
 import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import cx from "classnames";
 
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 import { OperationEnum } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
-import DestroyEdit from "./DestroyEdit";
-import MergeEdit from "./MergeEdit";
 import EditComment from "./EditComment";
 import EditHeader from "./EditHeader";
 import AddComment from "./AddComment";
@@ -16,6 +15,8 @@ import VoteBar from "./VoteBar";
 import EditExpiration from "./EditExpiration";
 import EditStatus from "./EditStatus";
 import Votes from "./Votes";
+
+const CLASSNAME = "EditCard";
 
 interface Props {
   edit: Edit;
@@ -27,13 +28,6 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   const created = new Date(edit.created as string);
   const updated = new Date(edit.updated as string);
 
-  const merges = edit.operation === OperationEnum.MERGE && (
-    <MergeEdit
-      merges={edit.merge_sources}
-      target={edit.target}
-      options={edit.options ?? undefined}
-    />
-  );
   const creation = edit.operation === OperationEnum.CREATE && (
     <ModifyEdit details={edit.details} />
   );
@@ -44,15 +38,12 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
       options={edit.options ?? undefined}
     />
   );
-  const destruction = edit.operation === OperationEnum.DESTROY && (
-    <DestroyEdit {...edit} />
-  );
   const comments = (edit.comments ?? []).map((comment) => (
     <EditComment {...comment} key={`${comment.user?.id}-${comment.date}`} />
   ));
 
   return (
-    <Card className="mb-3">
+    <Card className={cx(CLASSNAME, "mb-3")}>
       <Card.Header className="row">
         <div className="flex-column col-4">
           <Link to={editHref(edit)}>
@@ -89,10 +80,8 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
       <hr />
       <Card.Body>
         <EditHeader edit={edit} />
-        {merges}
         {creation}
         {modifications}
-        {destruction}
         <Row className="mt-2">
           <Col md={{ offset: 4, span: 8 }}>
             {showVotes && <Votes edit={edit} />}
