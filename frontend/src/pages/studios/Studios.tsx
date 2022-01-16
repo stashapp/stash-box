@@ -19,6 +19,10 @@ const StudiosComponent: FC = () => {
   const auth = useContext(AuthContext);
   const queries = querystring.parse(history.location.search);
   const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
+  const favorite =
+    (Array.isArray(queries.favorite)
+      ? queries.favorite[0]
+      : queries.favorite) === "true";
   const { page, setPage } = usePagination();
   const { loading, data } = useStudios({
     filter: {
@@ -28,6 +32,7 @@ const StudiosComponent: FC = () => {
     },
     studioFilter: {
       names: query,
+      is_favorite: favorite || undefined,
     },
   });
 
@@ -43,10 +48,10 @@ const StudiosComponent: FC = () => {
     </li>
   ));
 
-  const handleQuery = (q: string) => {
+  const handleQuery = (name: string, value?: string) => {
     const qs = querystring.stringify({
       ...querystring.parse(history.location.search),
-      query: q || undefined,
+      [name]: value || undefined,
       page: undefined,
     });
     history.replace(`${history.location.pathname}?${qs}`);
@@ -54,13 +59,24 @@ const StudiosComponent: FC = () => {
   const debouncedHandler = debounce(handleQuery, 200);
 
   const filters = (
-    <Form.Control
-      id="studio-query"
-      onChange={(e) => debouncedHandler(e.currentTarget.value)}
-      placeholder="Filter studio name"
-      defaultValue={query ?? ""}
-      className="w-25"
-    />
+    <>
+      <Form.Control
+        id="studio-query"
+        onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
+        placeholder="Filter studio name"
+        defaultValue={query ?? ""}
+        className="w-25 me-3"
+      />
+      <Form.Check
+        className="mt-2"
+        type="switch"
+        label="Only favorites"
+        defaultChecked={favorite}
+        onChange={(e) =>
+          handleQuery("favorite", e.currentTarget.checked ? "true" : undefined)
+        }
+      />
+    </>
   );
 
   return (

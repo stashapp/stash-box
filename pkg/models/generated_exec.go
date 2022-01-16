@@ -3683,6 +3683,8 @@ input PerformerFilterType {
   career_end_year: IntCriterionInput
   tattoos: BodyModificationCriterionInput
   piercings: BodyModificationCriterionInput
+  """Filter by performerfavorite status for the current user"""
+  is_favorite: Boolean
 }
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/scene.graphql", Input: `type PerformerAppearance {
@@ -3974,6 +3976,8 @@ input StudioFilterType {
   
   parent: IDCriterionInput
   has_parent: Boolean
+  """Filter by studio favorite status for the current user"""
+  is_favorite: Boolean
 }
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/tag.graphql", Input: `enum TagGroupEnum {
@@ -20043,6 +20047,14 @@ func (ec *executionContext) unmarshalInputPerformerFilterType(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
+		case "is_favorite":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
+			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -21180,6 +21192,14 @@ func (ec *executionContext) unmarshalInputStudioFilterType(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("has_parent"))
 			it.HasParent, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_favorite":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
+			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}

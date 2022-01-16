@@ -51,6 +51,10 @@ const PerformersComponent: FC = () => {
       ? SortDirectionEnum.DESC
       : SortDirectionEnum.ASC;
   const sort = Array.isArray(queries.sort) ? queries.sort[0] : queries.sort;
+  const favorite =
+    (Array.isArray(queries.favorite)
+      ? queries.favorite[0]
+      : queries.favorite) === "true";
   const { page, setPage } = usePagination();
   const { loading, data } = usePerformers({
     filter: {
@@ -62,6 +66,7 @@ const PerformersComponent: FC = () => {
     performerFilter: {
       name: query || undefined,
       gender: gender ? (gender as GenderFilterEnum) : undefined,
+      is_favorite: favorite || undefined,
     },
   });
 
@@ -104,7 +109,7 @@ const PerformersComponent: FC = () => {
         classNamePrefix="react-select"
         className="performer-filter ms-2"
       />
-      <InputGroup className="performer-sort ms-2">
+      <InputGroup className="performer-sort ms-2 me-3">
         <Form.Select
           onChange={(e) => handleQuery("sort", e.currentTarget.value)}
           defaultValue={sort ?? "name"}
@@ -135,6 +140,15 @@ const PerformersComponent: FC = () => {
           />
         </Button>
       </InputGroup>
+      <Form.Check
+        className="mt-2"
+        type="switch"
+        label="Only favorites"
+        defaultChecked={favorite}
+        onChange={(e) =>
+          handleQuery("favorite", e.currentTarget.checked ? "true" : undefined)
+        }
+      />
     </>
   );
 

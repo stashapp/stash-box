@@ -201,7 +201,7 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) *queryBuilder {
+func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) *queryBuilder {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
 	}
@@ -247,6 +247,17 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 		}
 	}
 
+	if performerFilter.IsFavorite != nil {
+		// userID is internal based on user context so it is safe to append rather than bind
+		q := fmt.Sprintf(" JOIN performer_favorites F ON performers.id = F.performer_id AND F.user_id = '%s'", userID)
+		if *performerFilter.IsFavorite {
+			query.Body += q
+		} else {
+			query.Body += " LEFT" + q
+			query.AddWhere("F.performer_id IS NULL")
+		}
+	}
+
 	handleStringCriterion("country", performerFilter.Country, query)
 	/*
 		handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
@@ -281,8 +292,8 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 	return query
 }
 
-func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, error) {
-	query := qb.buildQuery(performerFilter, findFilter)
+func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) ([]*models.Performer, error) {
+	query := qb.buildQuery(performerFilter, findFilter, userID)
 	query.Pagination = getPagination(findFilter)
 
 	var performers models.Performers
@@ -290,8 +301,8 @@ func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.Perform
 	return performers, err
 }
 
-func (qb *performerQueryBuilder) QueryCount(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) (int, error) {
-	query := qb.buildQuery(performerFilter, findFilter)
+func (qb *performerQueryBuilder) QueryCount(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (int, error) {
+	query := qb.buildQuery(performerFilter, findFilter, userID)
 	return qb.dbi.CountOnly(*query)
 }
 

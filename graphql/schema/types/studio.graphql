@@ -66,4 +66,6 @@ input StudioFilterType {
   
   parent: IDCriterionInput
   has_parent: Boolean
+  """Filter by studio favorite status for the current user"""
+  is_favorite: Boolean
 }

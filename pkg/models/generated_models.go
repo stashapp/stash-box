@@ -316,6 +316,8 @@ type PerformerFilterType struct {
 	CareerEndYear   *IntCriterionInput              `json:"career_end_year"`
 	Tattoos         *BodyModificationCriterionInput `json:"tattoos"`
 	Piercings       *BodyModificationCriterionInput `json:"piercings"`
+	// Filter by performerfavorite status for the current user
+	IsFavorite *bool `json:"is_favorite"`
 }
 
 type PerformerUpdateInput struct {
@@ -532,6 +534,8 @@ type StudioFilterType struct {
 	URL       *string           `json:"url"`
 	Parent    *IDCriterionInput `json:"parent"`
 	HasParent *bool             `json:"has_parent"`
+	// Filter by studio favorite status for the current user
+	IsFavorite *bool `json:"is_favorite"`
 }
 
 type StudioUpdateInput struct {

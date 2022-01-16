@@ -3,6 +3,7 @@ package sqlx
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -124,7 +125,7 @@ func (qb *studioQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.QuerySpec) (models.Studios, int, error) {
+func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (models.Studios, int, error) {
 	if studioFilter == nil {
 		studioFilter = &models.StudioFilterType{}
 	}
@@ -156,6 +157,17 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 			query.AddWhere("parent_studio.id IS NOT NULL")
 		} else {
 			query.AddWhere("parent_studio.id IS NULL")
+		}
+	}
+
+	if studioFilter.IsFavorite != nil {
+		// userID is internal based on user context so it is safe to append rather than bind
+		q := fmt.Sprintf(" JOIN studio_favorites F ON studios.id = F.studio_id AND F.user_id = '%s'", userID)
+		if *studioFilter.IsFavorite {
+			query.Body += q
+		} else {
+			query.Body += " LEFT" + q
+			query.AddWhere("F.studio_id IS NULL")
 		}
 	}
 

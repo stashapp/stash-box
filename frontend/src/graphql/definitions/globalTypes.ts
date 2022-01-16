@@ -350,6 +350,7 @@ export interface PerformerFilterType {
   career_end_year?: IntCriterionInput | null;
   tattoos?: BodyModificationCriterionInput | null;
   piercings?: BodyModificationCriterionInput | null;
+  is_favorite?: boolean | null;
 }
 
 export interface QuerySpec {
@@ -493,6 +494,7 @@ export interface StudioFilterType {
   url?: string | null;
   parent?: IDCriterionInput | null;
   has_parent?: boolean | null;
+  is_favorite?: boolean | null;
 }
 
 export interface StudioUpdateInput {

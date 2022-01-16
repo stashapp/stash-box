@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 func (r *queryResolver) FindStudio(ctx context.Context, id *uuid.UUID, name *string) (*models.Studio, error) {
@@ -24,8 +25,9 @@ func (r *queryResolver) FindStudio(ctx context.Context, id *uuid.UUID, name *str
 func (r *queryResolver) QueryStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.QuerySpec) (*models.QueryStudiosResultType, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Studio()
+	user := user.GetCurrentUser(ctx)
 
-	studios, count, err := qb.Query(studioFilter, filter)
+	studios, count, err := qb.Query(studioFilter, filter, user.ID)
 	return &models.QueryStudiosResultType{
 		Studios: studios,
 		Count:   count,
