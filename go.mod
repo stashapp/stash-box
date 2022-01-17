@@ -6,7 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.15.1
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/disintegration/imaging v1.6.2
-	github.com/go-chi/chi v4.0.2+incompatible
+	github.com/go-chi/chi/v5 v5.0.7
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
@@ -14,6 +14,7 @@ require (
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/jmoiron/sqlx v1.3.4
+	github.com/lib/pq v1.10.2
 	github.com/minio/minio-go/v7 v7.0.21
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pkg/errors v0.9.1
@@ -33,8 +34,6 @@ require (
 	golang.org/x/tools v0.1.8 // indirect
 	gotest.tools/v3 v3.1.0
 )
-
-require github.com/lib/pq v1.10.2
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
