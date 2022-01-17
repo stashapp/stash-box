@@ -532,25 +532,29 @@ func (qb *performerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*models.B
 
 func (qb *performerQueryBuilder) SearchPerformers(term string, limit int) (models.Performers, error) {
 	query := `
-	SELECT P.* FROM performers P
-	JOIN (
-		SELECT DISTINCT ON (P.id)
-			P.id,
-			(similarity(P.name, $1) +
-			 similarity(COALESCE(PA.alias, ''), $1) * 0.7 +
-			 similarity(COALESCE(P.disambiguation, ''), $1) * 0.3
-			) AS score
-		FROM performers P
-		LEFT JOIN performer_aliases PA on PA.performer_id = P.id
-		WHERE
-			P.deleted = FALSE AND (
-				(P.name % $1 AND similarity(P.name, $1) > 0.5)
-				OR (PA.alias % $1 AND similarity(COALESCE(PA.alias, ''), $1) > 0.6)
-				OR (P.disambiguation % $1 AND similarity(COALESCE(P.disambiguation, ''), $1) > 0.7)
-			)
-	) T ON T.id = P.id
-	ORDER BY T.score DESC
-	LIMIT $2`
+		SELECT P.* FROM performers P
+		WHERE P.id IN (
+			SELECT id FROM (
+				SELECT P.id, similarity(P.name, $1) AS similarity
+				FROM performers P
+				LEFT JOIN performer_aliases PA on PA.performer_id = P.id
+				WHERE P.deleted = FALSE AND (P.name % $1 AND similarity(P.name, $1) > 0.5)
+			UNION
+				SELECT P.id, (similarity(COALESCE(PA.alias, ''), $1) * 0.7) AS similarity
+				FROM performers P
+				LEFT JOIN performer_aliases PA on PA.performer_id = P.id
+				WHERE P.deleted = FALSE AND (PA.alias % $1 AND similarity(COALESCE(PA.alias, ''), $1) > 0.6)
+			UNION
+				SELECT P.id, (similarity(COALESCE(P.disambiguation, ''), $1) * 0.3) AS similarity
+				FROM performers P
+				LEFT JOIN performer_aliases PA on PA.performer_id = P.id
+				WHERE P.deleted = FALSE AND (P.disambiguation % $1 AND similarity(COALESCE(P.disambiguation), $1) > 0.7)
+			) A
+			GROUP BY id
+			ORDER BY SUM(similarity)
+			DESC LIMIT $2
+		);
+	`
 	args := []interface{}{term, limit}
 	return qb.queryPerformers(query, args)
 }
