@@ -532,9 +532,8 @@ func (qb *performerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*models.B
 
 func (qb *performerQueryBuilder) SearchPerformers(term string, limit int) (models.Performers, error) {
 	query := `
-		SELECT P.* FROM performers P
-		WHERE P.id IN (
-			SELECT id FROM (
+		SELECT P.* FROM (
+			SELECT id, SUM(similarity) AS score FROM (
 				SELECT P.id, similarity(P.name, $1) AS similarity
 				FROM performers P
 				WHERE P.deleted = FALSE AND P.name % $1 AND similarity(P.name, $1) > 0.5
@@ -549,9 +548,11 @@ func (qb *performerQueryBuilder) SearchPerformers(term string, limit int) (model
 				WHERE P.deleted = FALSE AND P.disambiguation % $1 AND similarity(COALESCE(P.disambiguation), $1) > 0.7
 			) A
 			GROUP BY id
-			ORDER BY SUM(similarity) DESC
+			ORDER BY score DESC
 			LIMIT $2
-		);
+		) T
+		JOIN performers P ON P.id = T.id
+		ORDER BY score DESC;
 	`
 	args := []interface{}{term, limit}
 	return qb.queryPerformers(query, args)
