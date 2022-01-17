@@ -319,9 +319,14 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 			return nil, err
 		}
 
-		err = qb.deleteSceneStudios(studio.ID)
-		err = qb.deleteStudioFavorites(studio.ID)
-		return updatedStudio, err
+		if err = qb.deleteSceneStudios(studio.ID); err != nil {
+			return nil, err
+		}
+		if err = qb.deleteStudioFavorites(studio.ID); err != nil {
+			return nil, err
+		}
+
+		return updatedStudio, nil
 	case models.OperationEnumModify:
 		return qb.applyModifyEdit(studio, data)
 	case models.OperationEnumMerge:

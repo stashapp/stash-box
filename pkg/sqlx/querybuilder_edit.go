@@ -244,7 +244,7 @@ func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFi
 		query.Eq("applied", *q)
 	}
 
-	if q := editFilter.IsFavorite; q != nil && *q == true {
+	if q := editFilter.IsFavorite; q != nil && *q {
 		q := `
 			(edits.id IN (
 			 -- Edits on studio
