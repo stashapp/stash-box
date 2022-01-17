@@ -41,6 +41,7 @@ const EditListComponent: FC<EditsProps> = ({
     selectedType,
     selectedOperation,
     selectedStatus,
+    selectedFavorite,
   } = useEditFilter({
     sort,
     direction,
@@ -61,6 +62,7 @@ const EditListComponent: FC<EditsProps> = ({
       status: selectedStatus,
       operation: selectedOperation,
       user_id: userId,
+      is_favorite: selectedFavorite,
     },
   });
 

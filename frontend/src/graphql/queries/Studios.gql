@@ -6,6 +6,7 @@ query Studios($filter: QuerySpec, $studioFilter: StudioFilterType) {
       studios {
         id
         name
+        deleted
         parent {
             id,
             name

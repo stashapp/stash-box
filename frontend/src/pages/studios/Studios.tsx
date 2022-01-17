@@ -67,15 +67,20 @@ const StudiosComponent: FC = () => {
         defaultValue={query ?? ""}
         className="w-25 me-3"
       />
-      <Form.Check
-        className="mt-2"
-        type="switch"
-        label="Only favorites"
-        defaultChecked={favorite}
-        onChange={(e) =>
-          handleQuery("favorite", e.currentTarget.checked ? "true" : undefined)
-        }
-      />
+      <Form.Group controlId="favorite">
+        <Form.Check
+          className="mt-2"
+          type="switch"
+          label="Only favorites"
+          defaultChecked={favorite}
+          onChange={(e) =>
+            handleQuery(
+              "favorite",
+              e.currentTarget.checked ? "true" : undefined
+            )
+          }
+        />
+      </Form.Group>
     </>
   );
 

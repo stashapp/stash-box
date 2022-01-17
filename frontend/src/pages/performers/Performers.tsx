@@ -140,15 +140,20 @@ const PerformersComponent: FC = () => {
           />
         </Button>
       </InputGroup>
-      <Form.Check
-        className="mt-2"
-        type="switch"
-        label="Only favorites"
-        defaultChecked={favorite}
-        onChange={(e) =>
-          handleQuery("favorite", e.currentTarget.checked ? "true" : undefined)
-        }
-      />
+      <Form.Group controlId="favorite">
+        <Form.Check
+          className="mt-2"
+          type="switch"
+          label="Only favorites"
+          defaultChecked={favorite}
+          onChange={(e) =>
+            handleQuery(
+              "favorite",
+              e.currentTarget.checked ? "true" : undefined
+            )
+          }
+        />
+      </Form.Group>
     </>
   );
 

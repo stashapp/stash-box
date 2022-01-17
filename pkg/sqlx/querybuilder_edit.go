@@ -194,7 +194,7 @@ func (qb *editQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edits.id FROM edits"), nil)
 }
 
-func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFilter *models.QuerySpec) (*queryBuilder, error) {
+func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (*queryBuilder, error) {
 	if editFilter == nil {
 		editFilter = &models.EditFilterType{}
 	}
@@ -244,13 +244,50 @@ func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFi
 		query.Eq("applied", *q)
 	}
 
+	if q := editFilter.IsFavorite; q != nil && *q == true {
+		q := `
+			(edits.id IN (
+			 -- Edits on studio
+			 (SELECT TE.edit_id FROM studio_favorites TF JOIN studio_edits TE ON TF.studio_id = TE.studio_id WHERE TF.user_id = ?)
+			 UNION
+			 -- Edits on performer
+			 (SELECT PE.edit_id FROM performer_favorites PF JOIN performer_edits PE ON PF.performer_id = PE.performer_id WHERE PF.user_id = ?)
+			 UNION
+			 -- Edits on scene currently set to studio
+			 (SELECT SE.edit_id FROM studio_favorites TF JOIN scenes S ON TF.studio_id = S.studio_id JOIN scene_edits SE ON S.id = SE.scene_id WHERE TF.user_id = ?)
+			 UNION
+			 -- Edits that merge performer
+			 (SELECT E.id FROM performer_favorites PF JOIN edits E
+			 ON E.data->'merge_sources' @> to_jsonb(PF.performer_id::TEXT)
+			 WHERE E.target_type = 'PERFORMER' AND E.operation = 'MERGE'
+			 AND PF.user_id = ?)
+			 UNION
+			 -- Edits that add/remove performer to scene
+			 (SELECT E.id FROM performer_favorites PF JOIN edits E
+			 ON jsonb_path_query_array(E.data, '$.new_data.added_performers[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
+			 OR jsonb_path_query_array(E.data, '$.new_data.removed_performers[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
+			 WHERE E.target_type = 'SCENE'
+			 AND PF.user_id = ?)
+			 UNION
+			 -- Edits that add/remove studio from scene
+			 (SELECT E.id FROM studio_favorites TF JOIN edits E
+			 ON jsonb_path_query_first(E.data, '$.new_data.studio_id') = to_jsonb(TF.studio_id::TEXT)
+			 OR jsonb_path_query_first(E.data, '$.old_data.studio_id') = to_jsonb(TF.studio_id::TEXT)
+			 WHERE E.target_type = 'SCENE'
+			 AND TF.user_id = ?)
+			))
+		`
+		query.AddWhere(q)
+		query.AddArg(userID, userID, userID, userID, userID, userID)
+	}
+
 	query.Sort = qb.getEditSort(findFilter)
 
 	return query, nil
 }
 
-func (qb *editQueryBuilder) QueryEdits(editFilter *models.EditFilterType, findFilter *models.QuerySpec) ([]*models.Edit, error) {
-	query, err := qb.buildQuery(editFilter, findFilter)
+func (qb *editQueryBuilder) QueryEdits(editFilter *models.EditFilterType, findFilter *models.QuerySpec, userID uuid.UUID) ([]*models.Edit, error) {
+	query, err := qb.buildQuery(editFilter, findFilter, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -262,8 +299,8 @@ func (qb *editQueryBuilder) QueryEdits(editFilter *models.EditFilterType, findFi
 	return edits, err
 }
 
-func (qb *editQueryBuilder) QueryCount(editFilter *models.EditFilterType, findFilter *models.QuerySpec) (int, error) {
-	query, err := qb.buildQuery(editFilter, findFilter)
+func (qb *editQueryBuilder) QueryCount(editFilter *models.EditFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (int, error) {
+	query, err := qb.buildQuery(editFilter, findFilter, userID)
 	if err != nil {
 		return 0, err
 	}

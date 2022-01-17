@@ -35,4 +35,5 @@ type PerformerRepo interface {
 	SoftDelete(performer Performer) (*Performer, error)
 	MergeInto(source *Performer, target *Performer, setAlias bool) error
 	DeleteScenePerformers(id uuid.UUID) error
+	DeletePerformerFavorites(id uuid.UUID) error
 }

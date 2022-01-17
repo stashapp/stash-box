@@ -574,6 +574,11 @@ func (qb *performerQueryBuilder) DeleteScenePerformers(id uuid.UUID) error {
 	return qb.dbi.DeleteJoins(performerSceneTable, id)
 }
 
+func (qb *performerQueryBuilder) DeletePerformerFavorites(id uuid.UUID) error {
+	// Delete performer_favorites joins
+	return qb.dbi.DeleteJoins(performerFavoriteTable, id)
+}
+
 func (qb *performerQueryBuilder) SoftDelete(performer models.Performer) (*models.Performer, error) {
 	// Delete joins
 	if err := qb.dbi.DeleteJoins(performerAliasTable, performer.ID); err != nil {
@@ -631,6 +636,24 @@ func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Perf
 	return qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 }
 
+func (qb *performerQueryBuilder) reassignFavorites(oldPerformer *models.Performer, newTargetID uuid.UUID) error {
+	// Reassign performer favorites to new id where it isn't already assigned
+	query := `UPDATE performer_favorites
+					 SET performer_id = ?
+					 WHERE performer_id = ?
+					 AND user_id NOT IN (SELECT user_id from performer_favorites WHERE performer_id = ?)`
+	args := []interface{}{newTargetID, oldPerformer.ID, newTargetID}
+	err := qb.dbi.RawQuery(performerFavoriteTable.table, query, args, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete any remaining joins with the old performer
+	query = `DELETE FROM performer_favorites WHERE performer_id = ?`
+	args = []interface{}{oldPerformer.ID}
+	return qb.dbi.RawQuery(performerFavoriteTable.table, query, args, nil)
+}
+
 func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID, name string) error {
 	query := `UPDATE scene_performers
             SET "as" = ?
@@ -660,6 +683,9 @@ func (qb *performerQueryBuilder) MergeInto(source *models.Performer, target *mod
 		return err
 	}
 	if err := qb.UpdateScenePerformers(source, target.ID, setAliases); err != nil {
+		return err
+	}
+	if err := qb.reassignFavorites(source, target.ID); err != nil {
 		return err
 	}
 	redirect := models.Redirect{SourceID: source.ID, TargetID: target.ID}

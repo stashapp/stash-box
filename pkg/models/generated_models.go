@@ -71,6 +71,8 @@ type EditFilterType struct {
 	TargetType *TargetTypeEnum `json:"target_type"`
 	// Filter by target id
 	TargetID *uuid.UUID `json:"target_id"`
+	// Filter by favorite status
+	IsFavorite *bool `json:"is_favorite"`
 }
 
 type EditInput struct {

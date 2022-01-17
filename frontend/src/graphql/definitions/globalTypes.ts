@@ -207,6 +207,7 @@ export interface EditFilterType {
   applied?: boolean | null;
   target_type?: TargetTypeEnum | null;
   target_id?: string | null;
+  is_favorite?: boolean | null;
 }
 
 export interface EditInput {

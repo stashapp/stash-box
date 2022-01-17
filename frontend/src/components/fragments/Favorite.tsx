@@ -12,6 +12,7 @@ const CLASSNAME = "FavoriteStar";
 interface Props {
   entity: {
     id: string;
+    deleted: boolean;
     is_favorite: boolean;
   };
   entityType: "performer" | "studio";
@@ -38,7 +39,7 @@ export const FavoriteStar: FC<Props> = ({
     e.preventDefault();
   };
 
-  if (!interactable && !entity.is_favorite) return null;
+  if ((!interactable && !entity.is_favorite) || entity.deleted) return null;
 
   return (
     <Tooltip

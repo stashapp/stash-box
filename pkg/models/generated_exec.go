@@ -3249,6 +3249,8 @@ input EditFilterType {
   target_type: TargetTypeEnum
   """Filter by target id"""
   target_id: ID
+  """Filter by favorite status"""
+  is_favorite: Boolean
 }
 
 input ApplyEditInput {
@@ -18711,6 +18713,14 @@ func (ec *executionContext) unmarshalInputEditFilterType(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("target_id"))
 			it.TargetID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_favorite":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
+			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
