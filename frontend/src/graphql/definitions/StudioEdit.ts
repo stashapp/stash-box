@@ -17,6 +17,7 @@ export interface StudioEdit_studioEdit_comments_user {
 
 export interface StudioEdit_studioEdit_comments {
   __typename: "EditComment";
+  id: string;
   user: StudioEdit_studioEdit_comments_user | null;
   date: any;
   comment: string;

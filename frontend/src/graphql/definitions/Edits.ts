@@ -17,6 +17,7 @@ export interface Edits_queryEdits_edits_comments_user {
 
 export interface Edits_queryEdits_edits_comments {
   __typename: "EditComment";
+  id: string;
   user: Edits_queryEdits_edits_comments_user | null;
   date: any;
   comment: string;
