@@ -40,6 +40,7 @@ interface EditFilterProps {
   type?: TargetTypeEnum;
   status?: VoteStatusEnum;
   operation?: OperationEnum;
+  favorite?: boolean;
 }
 
 const useEditFilter = ({
@@ -48,6 +49,7 @@ const useEditFilter = ({
   type: fixedType,
   status: fixedStatus,
   operation: fixedOperation,
+  favorite: fixedFavorite,
 }: EditFilterProps) => {
   const history = useHistory();
   const query = queryString.parse(history.location.search);
@@ -57,11 +59,15 @@ const useEditFilter = ({
   const operation = resolveParam(OperationEnum, query.operation);
   const status = resolveParam(VoteStatusEnum, query.status);
   const type = resolveParam(TargetTypeEnum, query.type);
+  const favorite =
+    (Array.isArray(query.favorite) ? query.favorite[0] : query.favorite) ===
+    "true";
   const selectedSort = fixedSort ?? sort;
   const selectedDirection = fixedDirection ?? direction;
   const selectedStatus = fixedStatus ?? status;
   const selectedType = fixedType ?? type;
   const selectedOperation = fixedOperation ?? operation;
+  const selectedFavorite = fixedFavorite ?? favorite;
 
   const createQueryString = (
     updatedParams: Record<string, string | undefined>
@@ -76,6 +82,7 @@ const useEditFilter = ({
         type: !type ? undefined : type,
         status: !status ? undefined : status,
         operation: !operation ? undefined : operation,
+        favorite: favorite ? "true" : undefined,
         ...updatedParams,
       })
       .toLowerCase();
@@ -170,6 +177,20 @@ const useEditFilter = ({
           {enumToOptions(EditOperationTypes)}
         </Form.Select>
       </Form.Group>
+      <Form.Group controlId="favorite">
+        <Form.Label>Favorites</Form.Label>
+        <Form.Check
+          className="ms-3 mt-2"
+          type="switch"
+          defaultChecked={favorite}
+          onChange={(e) =>
+            handleChange(
+              "favorite",
+              e.currentTarget.checked ? "true" : undefined
+            )
+          }
+        />
+      </Form.Group>
     </Form>
   );
 
@@ -180,6 +201,7 @@ const useEditFilter = ({
     selectedType,
     selectedStatus,
     selectedOperation,
+    selectedFavorite,
   };
 };
 

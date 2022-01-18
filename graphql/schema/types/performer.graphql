@@ -115,6 +115,7 @@ type Performer {
   scene_count: Int!
   merged_ids: [ID!]!
   studios: [PerformerStudio!]!
+  is_favorite: Boolean!
 }
 
 type PerformerStudio {
@@ -307,4 +308,6 @@ input PerformerFilterType {
   career_end_year: IntCriterionInput
   tattoos: BodyModificationCriterionInput
   piercings: BodyModificationCriterionInput
+  """Filter by performerfavorite status for the current user"""
+  is_favorite: Boolean
 }

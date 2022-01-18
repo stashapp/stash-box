@@ -207,6 +207,7 @@ export interface EditFilterType {
   applied?: boolean | null;
   target_type?: TargetTypeEnum | null;
   target_id?: string | null;
+  is_favorite?: boolean | null;
 }
 
 export interface EditInput {
@@ -350,6 +351,7 @@ export interface PerformerFilterType {
   career_end_year?: IntCriterionInput | null;
   tattoos?: BodyModificationCriterionInput | null;
   piercings?: BodyModificationCriterionInput | null;
+  is_favorite?: boolean | null;
 }
 
 export interface QuerySpec {
@@ -493,6 +495,7 @@ export interface StudioFilterType {
   url?: string | null;
   parent?: IDCriterionInput | null;
   has_parent?: boolean | null;
+  is_favorite?: boolean | null;
 }
 
 export interface StudioUpdateInput {

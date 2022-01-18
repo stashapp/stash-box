@@ -169,3 +169,9 @@ func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) 
 	sqb := r.getRepoFactory(ctx).Studio()
 	return sqb.CountByPerformer(obj.ID)
 }
+
+func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performer) (bool, error) {
+	jqb := r.getRepoFactory(ctx).Joins()
+	user := getCurrentUser(ctx)
+	return jqb.IsPerformerFavorite(models.PerformerFavorite{PerformerID: obj.ID, UserID: user.ID})
+}

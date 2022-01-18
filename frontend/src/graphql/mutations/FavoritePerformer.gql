@@ -1,0 +1,3 @@
+mutation FavoritePerformer($id: ID!, $favorite: Boolean!) {
+  favoritePerformer(id: $id, favorite: $favorite)
+}

@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 func (r *queryResolver) FindPerformer(ctx context.Context, id uuid.UUID) (*models.Performer, error) {
@@ -27,11 +28,13 @@ type queryPerformerResolver struct{ *Resolver }
 func (r *queryPerformerResolver) Count(ctx context.Context, obj *models.PerformerQuery) (int, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
-	return qb.QueryCount(obj.PerformerFilter, obj.Filter)
+	user := user.GetCurrentUser(ctx)
+	return qb.QueryCount(obj.PerformerFilter, obj.Filter, user.ID)
 }
 
 func (r *queryPerformerResolver) Performers(ctx context.Context, obj *models.PerformerQuery) ([]*models.Performer, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
-	return qb.QueryPerformers(obj.PerformerFilter, obj.Filter)
+	user := user.GetCurrentUser(ctx)
+	return qb.QueryPerformers(obj.PerformerFilter, obj.Filter, user.ID)
 }

@@ -18,8 +18,8 @@ type PerformerRepo interface {
 	Find(id uuid.UUID) (*Performer, error)
 	FindByIds(ids []uuid.UUID) ([]*Performer, []error)
 	Count() (int, error)
-	QueryPerformers(performerFilter *PerformerFilterType, findFilter *QuerySpec) ([]*Performer, error)
-	QueryCount(performerFilter *PerformerFilterType, findFilter *QuerySpec) (int, error)
+	QueryPerformers(performerFilter *PerformerFilterType, findFilter *QuerySpec, userID uuid.UUID) ([]*Performer, error)
+	QueryCount(performerFilter *PerformerFilterType, findFilter *QuerySpec, userID uuid.UUID) (int, error)
 	GetAliases(id uuid.UUID) (PerformerAliases, error)
 	GetImages(id uuid.UUID) (PerformersImages, error)
 	GetAllAliases(ids []uuid.UUID) ([][]string, []error)
@@ -35,4 +35,5 @@ type PerformerRepo interface {
 	SoftDelete(performer Performer) (*Performer, error)
 	MergeInto(source *Performer, target *Performer, setAlias bool) error
 	DeleteScenePerformers(id uuid.UUID) error
+	DeletePerformerFavorites(id uuid.UUID) error
 }

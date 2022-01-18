@@ -101,6 +101,7 @@ export interface FullPerformer_findPerformer {
   piercings: FullPerformer_findPerformer_piercings[] | null;
   urls: FullPerformer_findPerformer_urls[];
   images: FullPerformer_findPerformer_images[];
+  is_favorite: boolean;
   studios: FullPerformer_findPerformer_studios[];
 }
 

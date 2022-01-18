@@ -49,4 +49,5 @@ export interface StudioFragment {
   urls: StudioFragment_urls[];
   images: StudioFragment_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }

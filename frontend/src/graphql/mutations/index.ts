@@ -69,6 +69,14 @@ import { Vote, VoteVariables } from "../definitions/Vote";
 import { AddSite, AddSiteVariables } from "../definitions/AddSite";
 import { DeleteSite, DeleteSiteVariables } from "../definitions/DeleteSite";
 import { UpdateSite, UpdateSiteVariables } from "../definitions/UpdateSite";
+import {
+  FavoriteStudio,
+  FavoriteStudioVariables,
+} from "../definitions/FavoriteStudio";
+import {
+  FavoritePerformer,
+  FavoritePerformerVariables,
+} from "../definitions/FavoritePerformer";
 
 import ActivateUserMutation from "./ActivateNewUser.gql";
 import AddUserMutation from "./AddUser.gql";
@@ -103,6 +111,8 @@ import VoteMutation from "./Vote.gql";
 import AddSiteMutation from "./AddSite.gql";
 import DeleteSiteMutation from "./DeleteSite.gql";
 import UpdateSiteMutation from "./UpdateSite.gql";
+import FavoriteStudioMutation from "./FavoriteStudio.gql";
+import FavoritePerformerMutation from "./FavoritePerformer.gql";
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -234,3 +244,27 @@ export const useDeleteSite = (
 export const useUpdateSite = (
   options?: MutationHookOptions<UpdateSite, UpdateSiteVariables>
 ) => useMutation(UpdateSiteMutation, options);
+
+export const useSetFavorite = <T extends "performer" | "studio">(
+  type: T,
+  id: string
+) =>
+  useMutation<
+    T extends "performer" ? FavoritePerformer : FavoriteStudio,
+    T extends "performer" ? FavoritePerformerVariables : FavoriteStudioVariables
+  >(type === "performer" ? FavoritePerformerMutation : FavoriteStudioMutation, {
+    update: (cache, { errors }) => {
+      if (errors === undefined) {
+        const identity = cache.identify({
+          __typename: type === "performer" ? "Performer" : "Studio",
+          id,
+        });
+        cache.modify({
+          id: identity,
+          fields: {
+            is_favorite: (prevState) => !prevState,
+          },
+        });
+      }
+    },
+  });

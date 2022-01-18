@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -202,4 +203,28 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 		return false, err
 	}
 	return true, nil
+}
+
+func (r *mutationResolver) FavoritePerformer(ctx context.Context, id uuid.UUID, favorite bool) (bool, error) {
+	fac := r.getRepoFactory(ctx)
+	user := getCurrentUser(ctx)
+
+	err := fac.WithTxn(func() error {
+		jqb := fac.Joins()
+		performer, err := fac.Performer().Find(id)
+		if err != nil {
+			return err
+		}
+		if performer.Deleted {
+			return fmt.Errorf("performer is deleted, unable to make favorite")
+		}
+
+		if favorite {
+			pf := models.PerformerFavorite{PerformerID: id, UserID: user.ID}
+			err := jqb.AddPerformerFavorite(pf)
+			return err
+		}
+		return jqb.DestroyPerformerFavorite(models.PerformerFavorite{PerformerID: id, UserID: user.ID})
+	})
+	return err == nil, err
 }
