@@ -142,6 +142,7 @@ input PerformerCreateInput {
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
   image_ids: [ID!]
+  draft_id: ID
 }
 
 input PerformerUpdateInput {
@@ -189,6 +190,7 @@ input PerformerEditDetailsInput {
   tattoos: [BodyModificationInput!]
   piercings: [BodyModificationInput!]
   image_ids: [ID!]
+  draft_id: ID
 }
 
 input PerformerEditOptionsInput {
@@ -235,6 +237,7 @@ type PerformerEdit {
   removed_piercings: [BodyModification!]
   added_images: [Image!]
   removed_images: [Image!]
+  draft_id: ID
 }
 
 type PerformerEditOptions {
@@ -310,4 +313,44 @@ input PerformerFilterType {
   piercings: BodyModificationCriterionInput
   """Filter by performerfavorite status for the current user"""
   is_favorite: Boolean
+}
+
+type PerformerDraft {
+  name: String!
+  aliases: String
+  gender: String
+  birthdate: String
+  urls: [String!]
+  ethnicity: String
+  country: String
+  eye_color: String
+  hair_color: String
+  height: String
+  measurements: String
+  breast_type: String
+  tattoos: String
+  piercings: String
+  career_start_year: Int
+  career_end_year: Int
+  image: Image
+}
+
+input PerformerDraftInput {
+  name: String!
+  aliases: String
+  gender: String
+  birthdate: String
+  urls: [String!]
+  ethnicity: String
+  country: String
+  eye_color: String
+  hair_color: String
+  height: String
+  measurements: String
+  breast_type: String
+  tattoos: String
+  piercings: String
+  career_start_year: Int
+  career_end_year: Int
+  image: Upload
 }

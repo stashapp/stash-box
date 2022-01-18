@@ -3,14 +3,16 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import { formatDuration, parseDuration } from "src/utils";
+import { formatDuration, parseDuration, filterData } from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
-import { GenderIcon } from "src/components/fragments";
+import { GenderIcon, Icon } from "src/components/fragments";
 import SearchField, {
   SearchType,
   PerformerResult,
@@ -28,11 +30,12 @@ const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
   scene: Scene;
+  initial?: Scene;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
 }
 
-const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
+const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
   const {
     register,
     control,
@@ -43,16 +46,16 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
     resolver: yupResolver(SceneSchema),
     mode: "onBlur",
     defaultValues: {
-      title: scene?.title ?? undefined,
-      details: scene?.details ?? undefined,
-      date: scene?.date,
-      duration: formatDuration(scene?.duration),
-      director: scene?.director,
-      urls: scene.urls ?? [],
-      images: scene.images,
-      studio: scene.studio ?? undefined,
-      tags: scene.tags,
-      performers: scene.performers.map((p) => ({
+      title: initial?.title ?? scene?.title ?? undefined,
+      details: initial?.details ?? scene?.details ?? undefined,
+      date: initial?.date ?? scene?.date,
+      duration: formatDuration(initial?.duration ?? scene?.duration),
+      director: initial?.director ?? scene?.director,
+      urls: initial?.urls ?? scene.urls ?? [],
+      images: initial?.images ?? scene.images,
+      studio: initial?.studio ?? scene.studio ?? undefined,
+      tags: initial?.tags ?? scene.tags,
+      performers: (initial?.performers ?? scene.performers).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
         alias: p.as ?? "",
@@ -219,6 +222,13 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
     </Row>
   ));
 
+  const metadataErrors = filterData([
+    errors.title?.message,
+    errors.date?.message,
+    errors.duration?.message,
+    errors.studio?.id?.message,
+  ]);
+
   return (
     <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
       <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
@@ -298,8 +308,7 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
                 isClearable
               />
               <Form.Control.Feedback type="invalid">
-                {/* Workaround for typing error in react-hook-form */}
-                {(errors.studio as { message: string })?.message}
+                {errors.studio?.id?.message}
               </Form.Control.Feedback>
             </Form.Group>
           </Row>
@@ -322,15 +331,11 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
               <Form.Label>Director</Form.Label>
               <Form.Control
                 as="input"
-                className={cx({ "is-invalid": errors.director })}
                 type="text"
                 placeholder="Director"
                 defaultValue={scene?.director ?? ""}
                 {...register("director")}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors?.director?.message}
-              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group className="col-8 mb-3" />
@@ -380,6 +385,21 @@ const SceneForm: FC<SceneProps> = ({ scene, callback, saving }) => {
             </Col>
           </Row>
 
+          {metadataErrors.length > 0 && (
+            <div className="text-end my-4">
+              <h6>
+                <Icon icon={faExclamationTriangle} color="red" />
+                <span className="ms-1">Errors</span>
+              </h6>
+              <div className="d-flex flex-column text-danger">
+                {metadataErrors.map((e) => (
+                  <Link to="#" key={e} onClick={() => setActiveTab("details")}>
+                    {e}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
           <SubmitButtons disabled={saving} />
         </Tab>
       </Tabs>

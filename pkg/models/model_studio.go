@@ -13,6 +13,8 @@ type Studio struct {
 	Deleted        bool            `db:"deleted" json:"deleted"`
 }
 
+func (Studio) IsSceneDraftStudio() {}
+
 func (s Studio) GetID() uuid.UUID {
 	return s.ID
 }

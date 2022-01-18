@@ -38,6 +38,12 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 			return err
 		}
 
+		if input.Details != nil && input.Details.DraftID != nil {
+			if err := fac.Draft().Destroy(*input.Details.DraftID); err != nil {
+				return err
+			}
+		}
+
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
@@ -147,6 +153,12 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 
 		if err := p.CreateJoin(input); err != nil {
 			return err
+		}
+
+		if input.Details != nil && input.Details.DraftID != nil {
+			if err := fac.Draft().Destroy(*input.Details.DraftID); err != nil {
+				return err
+			}
 		}
 
 		return p.CreateComment(currentUser, input.Edit.Comment)

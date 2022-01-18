@@ -39,9 +39,9 @@ export const renderFingerprint = (fingerprint: {
     <Link to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}>
       {fingerprint.algorithm}: {fingerprint.hash}
     </Link>
-    <span title={formatDuration(fingerprint.duration)}>
-      {" "}
-      ({fingerprint.duration})
+    <span title={`${fingerprint.duration}s`}>
+      {", duration: "}
+      {formatDuration(fingerprint.duration)}
     </span>
   </>
 );
