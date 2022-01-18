@@ -270,6 +270,8 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecif
 	sceneEdit.New.AddedTags = input.Details.TagIds
 	sceneEdit.New.AddedImages = input.Details.ImageIds
 	sceneEdit.New.AddedPerformers = input.Details.Performers
+	sceneEdit.New.AddedFingerprints = input.Details.Fingerprints
+	sceneEdit.New.DraftID = input.Details.DraftID
 
 	return m.edit.SetData(sceneEdit)
 }
@@ -350,7 +352,7 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) (*models.Scene, erro
 
 	switch operation {
 	case models.OperationEnumCreate:
-		return m.applyCreate(data)
+		return m.applyCreate(data, &m.edit.UserID)
 	case models.OperationEnumDestroy:
 		return m.applyDestroy(scene)
 	case models.OperationEnumModify:
@@ -361,14 +363,18 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) (*models.Scene, erro
 	return nil, nil
 }
 
-func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData) (*models.Scene, error) {
+func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData, userID *uuid.UUID) (*models.Scene, error) {
 	now := time.Now()
-	UUID, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
+	UUID := data.New.DraftID
+	if UUID == nil {
+		newUUID, err := uuid.NewV4()
+		if err != nil {
+			return nil, err
+		}
+		UUID = &newUUID
 	}
 	newScene := &models.Scene{
-		ID:        UUID,
+		ID:        *UUID,
 		CreatedAt: models.SQLiteTimestamp{Timestamp: now},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
 	}
@@ -376,7 +382,7 @@ func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData) (*models.Sc
 	qb := m.fac.Scene()
 
 	const create = true
-	return qb.ApplyEdit(newScene, create, data)
+	return qb.ApplyEdit(newScene, create, data, userID)
 }
 
 func (m *SceneEditProcessor) applyModify(scene *models.Scene, data *models.SceneEditData) (*models.Scene, error) {
@@ -386,7 +392,7 @@ func (m *SceneEditProcessor) applyModify(scene *models.Scene, data *models.Scene
 
 	qb := m.fac.Scene()
 	const create = false
-	return qb.ApplyEdit(scene, create, data)
+	return qb.ApplyEdit(scene, create, data, nil)
 }
 
 func (m *SceneEditProcessor) applyDestroy(scene *models.Scene) (*models.Scene, error) {

@@ -115,6 +115,7 @@ interface PerformerProps {
   ) => void;
   initialAliases?: string[];
   initialImages?: Image[];
+  initial?: Performer;
   changeType: "modify" | "create" | "merge";
   saving: boolean;
 }
@@ -124,9 +125,13 @@ const PerformerForm: FC<PerformerProps> = ({
   callback,
   initialAliases = [],
   initialImages = [],
+  initial,
   saving,
 }) => {
-  const images = uniqBy([...performer.images, ...initialImages], (i) => i.id);
+  const images = uniqBy(
+    [...performer.images, ...initialImages, ...(initial?.images ?? [])],
+    (i) => i.id
+  );
   const tattoos = (performer?.tattoos ?? []).map(
     ({ __typename, ...mod }) => mod
   );
@@ -151,7 +156,11 @@ const PerformerForm: FC<PerformerProps> = ({
     },
   });
 
-  const aliases = uniq([...performer.aliases, ...initialAliases]);
+  const aliases = uniq([
+    ...performer.aliases,
+    ...initialAliases,
+    ...(initial?.aliases ?? []),
+  ]);
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState(false);
   const [file, setFile] = useState<File | undefined>();
@@ -275,7 +284,7 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Label>Name</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.name })}
-                defaultValue={performer.name}
+                defaultValue={initial?.name ?? performer.name}
                 {...register("name", { required: true })}
               />
               <Form.Control.Feedback type="invalid">
@@ -340,7 +349,7 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Label>Gender</Form.Label>
               <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
-                defaultValue={performer?.gender ?? ""}
+                defaultValue={initial?.gender ?? performer?.gender ?? ""}
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
@@ -355,11 +364,9 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Control
                 className={cx({ "is-invalid": errors.birthdate })}
                 placeholder="YYYY-MM-DD"
-                defaultValue={
-                  performer.birthdate
-                    ? formatFuzzyDate(performer.birthdate)
-                    : ""
-                }
+                defaultValue={formatFuzzyDate(
+                  initial?.birthdate ?? performer.birthdate
+                )}
                 {...register("birthdate")}
               />
               <Form.Control.Feedback type="invalid">
@@ -378,8 +385,13 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Select
                 className={cx({ "is-invalid": errors.eye_color })}
                 defaultValue={
-                  performer.eye_color
-                    ? getEnumValue(EYE, performer.eye_color)
+                  initial?.eye_color
+                    ? initial.eye_color
+                    : performer.eye_color
+                    ? getEnumValue(
+                        EYE,
+                        initial?.eye_color ?? performer.eye_color
+                      )
                     : ""
                 }
                 {...register("eye_color")}
@@ -396,7 +408,9 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Select
                 className={cx({ "is-invalid": errors.hair_color })}
                 defaultValue={
-                  performer.hair_color
+                  initial?.hair_color
+                    ? initial.hair_color
+                    : performer.hair_color
                     ? getEnumValue(HAIR, performer.hair_color)
                     : ""
                 }
@@ -416,7 +430,7 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Control
                 className={cx({ "is-invalid": errors.height })}
                 type="number"
-                defaultValue={performer?.height || ""}
+                defaultValue={initial?.height || performer?.height || ""}
                 {...register("height")}
               />
               <Form.Control.Feedback type="invalid">
@@ -500,7 +514,7 @@ const PerformerForm: FC<PerformerProps> = ({
               <Controller
                 control={control}
                 name="country"
-                defaultValue={performer.country}
+                defaultValue={initial?.country ?? performer.country}
                 render={({ field: { onChange, value } }) => (
                   <Select
                     classNamePrefix="react-select"
@@ -522,7 +536,9 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Select
                 className={cx({ "is-invalid": errors.ethnicity })}
                 defaultValue={
-                  performer.ethnicity
+                  initial?.ethnicity
+                    ? initial.ethnicity
+                    : performer.ethnicity
                     ? getEnumValue(ETHNICITY, performer.ethnicity)
                     : ""
                 }

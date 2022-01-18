@@ -26,11 +26,11 @@ export const SceneSchema = yup.object({
   director: yup.string().trim().transform(nullCheck).nullable(),
   studio: yup
     .object({
-      id: yup.string().required(),
+      id: yup.string().required("Studio is required"),
       name: yup.string().required(),
     })
     .nullable()
-    .required("Studio is required"),
+    .required(),
   performers: yup
     .array()
     .of(

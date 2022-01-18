@@ -76,6 +76,8 @@ type config struct {
 	PHashDistance int `mapstructure:"phash_distance"`
 
 	Title string `mapstructure:"title"`
+
+	DraftTimeLimit int `mapstructure:"draft_time_limit"`
 }
 
 var JWTSignKey = "jwt_secret_key"
@@ -103,6 +105,7 @@ var C = &config{
 	VoteCronInterval:           "5m",
 	VotingPeriod:               345600,
 	MinDestructiveVotingPeriod: 172800,
+	DraftTimeLimit:             86400,
 }
 
 func GetDatabasePath() string {
@@ -344,4 +347,8 @@ func GetFaviconPath() *string {
 		return nil
 	}
 	return &C.FaviconPath
+}
+
+func GetDraftTimeLimit() int {
+	return C.DraftTimeLimit
 }

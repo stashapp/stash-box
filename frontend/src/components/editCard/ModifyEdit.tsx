@@ -1,5 +1,6 @@
 import { FC } from "react";
-import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { Col, Row } from "react-bootstrap";
+import { faCheck, faTimes, faEdit } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits_details as Details,
@@ -128,6 +129,7 @@ export interface PerformerDetails {
   removed_images?: Image[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
+  draft_id?: string | null;
 }
 
 export const renderPerformerDetails = (
@@ -338,6 +340,7 @@ export interface SceneDetails {
         duration: number;
       }[]
     | null;
+  draft_id?: string | null;
 }
 
 export const renderSceneDetails = (
@@ -424,6 +427,16 @@ export const renderSceneDetails = (
       getKey={(o) => `${o.hash}${o.algorithm}`}
       showDiff={showDiff}
     />
+    {sceneDetails.draft_id && (
+      <Row className="mb-2">
+        <Col xs={{ offset: 2 }}>
+          <h6>
+            <Icon icon={faEdit} color="green" />
+            <span className="ms-1">Submitted by draft</span>
+          </h6>
+        </Col>
+      </Row>
+    )}
   </>
 );
 

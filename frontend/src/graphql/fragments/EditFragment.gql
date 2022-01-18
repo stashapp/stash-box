@@ -5,6 +5,7 @@
 #import "../fragments/TagFragment.gql"
 #import "../fragments/CommentFragment.gql"
 #import "../fragments/URLFragment.gql"
+#import "../fragments/FingerprintFragment.gql"
 fragment EditFragment on Edit {
   id
   target_type
@@ -110,6 +111,7 @@ fragment EditFragment on Edit {
       removed_images {
         ...ImageFragment
       }
+      draft_id
     }
     ... on StudioEdit {
       name
@@ -166,8 +168,15 @@ fragment EditFragment on Edit {
       removed_images {
         ...ImageFragment
       }
+      added_fingerprints {
+        ...FingerprintFragment
+      }
+      removed_fingerprints {
+        ...FingerprintFragment
+      }
       duration
       director
+      draft_id
     }
   }
   old_details {
@@ -240,6 +249,12 @@ fragment EditFragment on Edit {
       }
       removed_images {
         ...ImageFragment
+      }
+      added_fingerprints {
+        ...FingerprintFragment
+      }
+      removed_fingerprints {
+        ...FingerprintFragment
       }
       duration
       director

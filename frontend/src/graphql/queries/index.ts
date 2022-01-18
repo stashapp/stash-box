@@ -46,6 +46,8 @@ import {
 } from "../definitions/PendingEditsCount";
 import { Site, SiteVariables } from "../definitions/Site";
 import { Sites } from "../definitions/Sites";
+import { Draft, DraftVariables } from "../definitions/Draft";
+import { Drafts } from "../definitions/Drafts";
 
 import CategoryQuery from "./Category.gql";
 import CategoriesQuery from "./Categories.gql";
@@ -72,6 +74,8 @@ import VersionQuery from "./Version.gql";
 import PendingEditsCountQuery from "./PendingEditsCount.gql";
 import SiteQuery from "./Site.gql";
 import SitesQuery from "./Sites.gql";
+import DraftQuery from "./Draft.gql";
+import DraftsQuery from "./Drafts.gql";
 
 export const useCategory = (variables: CategoryVariables, skip = false) =>
   useQuery<Category, CategoryVariables>(CategoryQuery, {
@@ -230,3 +234,11 @@ export const useSite = (variables: SiteVariables, skip = false) =>
   });
 
 export const useSites = () => useQuery<Sites>(SitesQuery);
+
+export const useDraft = (variables: DraftVariables, skip = false) =>
+  useQuery<Draft, DraftVariables>(DraftQuery, {
+    variables,
+    skip,
+  });
+
+export const useDrafts = () => useQuery<Drafts>(DraftsQuery);

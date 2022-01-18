@@ -55,3 +55,7 @@ func (f *repo) User() models.UserRepo {
 func (f *repo) Site() models.SiteRepo {
 	return newSiteQueryBuilder(f.txnState)
 }
+
+func (f *repo) Draft() models.DraftRepo {
+	return newDraftQueryBuilder(f.txnState)
+}

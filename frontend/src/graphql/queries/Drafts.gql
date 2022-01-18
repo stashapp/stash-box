@@ -1,0 +1,15 @@
+query Drafts {
+  findDrafts {
+    id
+    created
+    expires
+    data {
+      ... on PerformerDraft {
+        name
+      }
+      ... on SceneDraft {
+        title
+      }
+    }
+  }
+}

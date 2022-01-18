@@ -83,6 +83,15 @@ func (r *Resolver) QueryScenesResultType() models.QueryScenesResultTypeResolver 
 func (r *Resolver) QueryEditsResultType() models.QueryEditsResultTypeResolver {
 	return &queryEditResolver{r}
 }
+func (r *Resolver) Draft() models.DraftResolver {
+	return &draftResolver{r}
+}
+func (r *Resolver) PerformerDraft() models.PerformerDraftResolver {
+	return &performerDraftResolver{r}
+}
+func (r *Resolver) SceneDraft() models.SceneDraftResolver {
+	return &sceneDraftResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 

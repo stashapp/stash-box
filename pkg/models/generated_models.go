@@ -12,12 +12,28 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+type DraftData interface {
+	IsDraftData()
+}
+
 type EditDetails interface {
 	IsEditDetails()
 }
 
 type EditTarget interface {
 	IsEditTarget()
+}
+
+type SceneDraftPerformer interface {
+	IsSceneDraftPerformer()
+}
+
+type SceneDraftStudio interface {
+	IsSceneDraftStudio()
+}
+
+type SceneDraftTag interface {
+	IsSceneDraftTag()
 }
 
 type ActivateNewUserInput struct {
@@ -49,6 +65,21 @@ type CancelEditInput struct {
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
+}
+
+type DraftEntityInput struct {
+	Name string     `json:"name"`
+	ID   *uuid.UUID `json:"id"`
+}
+
+type DraftFingerprint struct {
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+}
+
+type DraftSubmissionStatus struct {
+	ID *uuid.UUID `json:"id"`
 }
 
 type EditCommentInput struct {
@@ -241,10 +272,31 @@ type PerformerCreateInput struct {
 	Tattoos         []*BodyModification `json:"tattoos"`
 	Piercings       []*BodyModification `json:"piercings"`
 	ImageIds        []uuid.UUID         `json:"image_ids"`
+	DraftID         *uuid.UUID          `json:"draft_id"`
 }
 
 type PerformerDestroyInput struct {
 	ID uuid.UUID `json:"id"`
+}
+
+type PerformerDraftInput struct {
+	Name            string          `json:"name"`
+	Aliases         *string         `json:"aliases"`
+	Gender          *string         `json:"gender"`
+	Birthdate       *string         `json:"birthdate"`
+	Urls            []string        `json:"urls"`
+	Ethnicity       *string         `json:"ethnicity"`
+	Country         *string         `json:"country"`
+	EyeColor        *string         `json:"eye_color"`
+	HairColor       *string         `json:"hair_color"`
+	Height          *string         `json:"height"`
+	Measurements    *string         `json:"measurements"`
+	BreastType      *string         `json:"breast_type"`
+	Tattoos         *string         `json:"tattoos"`
+	Piercings       *string         `json:"piercings"`
+	CareerStartYear *int            `json:"career_start_year"`
+	CareerEndYear   *int            `json:"career_end_year"`
+	Image           *graphql.Upload `json:"image"`
 }
 
 type PerformerEditDetailsInput struct {
@@ -266,6 +318,7 @@ type PerformerEditDetailsInput struct {
 	Tattoos         []*BodyModification `json:"tattoos"`
 	Piercings       []*BodyModification `json:"piercings"`
 	ImageIds        []uuid.UUID         `json:"image_ids"`
+	DraftID         *uuid.UUID          `json:"draft_id"`
 }
 
 type PerformerEditInput struct {
@@ -408,17 +461,31 @@ type SceneDestroyInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
+type SceneDraftInput struct {
+	Title        *string             `json:"title"`
+	Details      *string             `json:"details"`
+	URL          *string             `json:"url"`
+	Date         *string             `json:"date"`
+	Studio       *DraftEntityInput   `json:"studio"`
+	Performers   []*DraftEntityInput `json:"performers"`
+	Tags         []*DraftEntityInput `json:"tags"`
+	Image        *graphql.Upload     `json:"image"`
+	Fingerprints []*FingerprintInput `json:"fingerprints"`
+}
+
 type SceneEditDetailsInput struct {
-	Title      *string                     `json:"title"`
-	Details    *string                     `json:"details"`
-	Urls       []*URLInput                 `json:"urls"`
-	Date       *string                     `json:"date"`
-	StudioID   *uuid.UUID                  `json:"studio_id"`
-	Performers []*PerformerAppearanceInput `json:"performers"`
-	TagIds     []uuid.UUID                 `json:"tag_ids"`
-	ImageIds   []uuid.UUID                 `json:"image_ids"`
-	Duration   *int                        `json:"duration"`
-	Director   *string                     `json:"director"`
+	Title        *string                     `json:"title"`
+	Details      *string                     `json:"details"`
+	Urls         []*URLInput                 `json:"urls"`
+	Date         *string                     `json:"date"`
+	StudioID     *uuid.UUID                  `json:"studio_id"`
+	Performers   []*PerformerAppearanceInput `json:"performers"`
+	TagIds       []uuid.UUID                 `json:"tag_ids"`
+	ImageIds     []uuid.UUID                 `json:"image_ids"`
+	Duration     *int                        `json:"duration"`
+	Director     *string                     `json:"director"`
+	Fingerprints []*FingerprintInput         `json:"fingerprints"`
+	DraftID      *uuid.UUID                  `json:"draft_id"`
 }
 
 type SceneEditInput struct {
