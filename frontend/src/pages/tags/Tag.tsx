@@ -56,7 +56,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
               <Tooltip
                 text={
                   <>
-                    Merge other tags into <b>{tag.name}</b>.
+                    Merge other tags into <b>{tag.name}</b>
                   </>
                 }
               >
