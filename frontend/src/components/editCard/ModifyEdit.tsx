@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { Row } from "react-bootstrap";
-import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { Col, Row } from "react-bootstrap";
+import { faCheck, faTimes, faEdit } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits_details as Details,
@@ -357,7 +357,6 @@ export const renderSceneDetails = (
         showDiff={showDiff}
       />
     )}
-    {sceneDetails.draft_id && <Row className="mb-2">Submitted by draft</Row>}
     <ChangeRow
       name="Date"
       newValue={sceneDetails.date}
@@ -428,6 +427,16 @@ export const renderSceneDetails = (
       getKey={(o) => `${o.hash}${o.algorithm}`}
       showDiff={showDiff}
     />
+    {sceneDetails.draft_id && (
+      <Row className="mb-2">
+        <Col xs={{ offset: 2 }}>
+          <h6>
+            <Icon icon={faEdit} color="green" />
+            <span className="ms-1">Submitted by draft</span>
+          </h6>
+        </Col>
+      </Row>
+    )}
   </>
 );
 
