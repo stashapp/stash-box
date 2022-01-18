@@ -4920,9 +4920,9 @@ type Mutation {
   destroyDraft(id: ID!): Boolean! @hasRole(role: EDIT)
 
   """Favorite or unfavorite a performer"""
-  favoritePerformer(id: ID!, favorite: Boolean!): Boolean!
+  favoritePerformer(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
   """Favorite or unfavorite a studio"""
-  favoriteStudio(id: ID!, favorite: Boolean!): Boolean!
+  favoriteStudio(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
 }
 
 schema {
@@ -10591,8 +10591,32 @@ func (ec *executionContext) _Mutation_favoritePerformer(ctx context.Context, fie
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().FavoritePerformer(rctx, args["id"].(uuid.UUID), args["favorite"].(bool))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().FavoritePerformer(rctx, args["id"].(uuid.UUID), args["favorite"].(bool))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10633,8 +10657,32 @@ func (ec *executionContext) _Mutation_favoriteStudio(ctx context.Context, field 
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().FavoriteStudio(rctx, args["id"].(uuid.UUID), args["favorite"].(bool))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().FavoriteStudio(rctx, args["id"].(uuid.UUID), args["favorite"].(bool))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
