@@ -106,6 +106,7 @@ const TagSelect: FC<TagSelectProps> = ({
             inputValue === "" ? null : `No tags found for "${inputValue}"`
           }
           menuPlacement={menuPlacement}
+          controlShouldRenderValue={false}
         />
       </div>
     </div>
