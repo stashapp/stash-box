@@ -36,7 +36,7 @@ import {
 } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 
-const CLASSNAME = 'PerformerInfo';
+const CLASSNAME = "PerformerInfo";
 
 const PerformerInfo: FC<{ performer: Performer }> = ({ performer }) => {
   const auth = useContext(AuthContext);
