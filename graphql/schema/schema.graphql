@@ -143,6 +143,11 @@ type Mutation {
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
+
+  """Favorite or unfavorite a performer"""
+  favoritePerformer(id: ID!, favorite: Boolean!): Boolean!
+  """Favorite or unfavorite a studio"""
+  favoriteStudio(id: ID!, favorite: Boolean!): Boolean!
 }
 
 schema {

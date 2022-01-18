@@ -91,9 +91,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
 
   return (
     <>
-      <div className="performer-info">
-        <PerformerInfo performer={performer} />
-      </div>
+      <PerformerInfo performer={performer} />
       <hr className="my-2" />
       <Tabs
         activeKey={activeTab}

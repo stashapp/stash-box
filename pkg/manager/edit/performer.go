@@ -338,9 +338,14 @@ func (m *PerformerEditProcessor) applyDestroy(performer *models.Performer) (*mod
 		return nil, err
 	}
 
-	err = qb.DeleteScenePerformers(performer.ID)
+	if err = qb.DeleteScenePerformers(performer.ID); err != nil {
+		return nil, err
+	}
+	if err = qb.DeletePerformerFavorites(performer.ID); err != nil {
+		return nil, err
+	}
 
-	return updatedPerformer, err
+	return updatedPerformer, nil
 }
 
 func (m *PerformerEditProcessor) applyMerge(performer *models.Performer, data *models.PerformerEditData) (*models.Performer, error) {

@@ -51,6 +51,7 @@ export interface SearchPerformers_searchPerformer {
   birthdate: SearchPerformers_searchPerformer_birthdate | null;
   urls: SearchPerformers_searchPerformer_urls[];
   images: SearchPerformers_searchPerformer_images[];
+  is_favorite: boolean;
 }
 
 export interface SearchPerformers {

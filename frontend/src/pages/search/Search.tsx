@@ -19,6 +19,7 @@ import {
 import { useSearchAll } from "src/graphql";
 import {
   Icon,
+  FavoriteStar,
   GenderIcon,
   LoadingIndicator,
   PerformerName,
@@ -54,6 +55,11 @@ const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
         <h4>
           <GenderIcon gender={performer?.gender} />
           <PerformerName performer={performer} />
+          <FavoriteStar
+            entity={performer}
+            entityType="performer"
+            className="ps-2"
+          />
           {performer.aliases.length > 0 && (
             <h6>
               <small>Aliases: {performer.aliases.join(", ")}</small>

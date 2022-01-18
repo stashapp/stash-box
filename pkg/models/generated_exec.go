@@ -140,6 +140,8 @@ type ComplexityRoot struct {
 		ChangePassword     func(childComplexity int, input UserChangePasswordInput) int
 		EditComment        func(childComplexity int, input EditCommentInput) int
 		EditVote           func(childComplexity int, input EditVoteInput) int
+		FavoritePerformer  func(childComplexity int, id uuid.UUID, favorite bool) int
+		FavoriteStudio     func(childComplexity int, id uuid.UUID, favorite bool) int
 		GenerateInviteCode func(childComplexity int) int
 		GrantInvite        func(childComplexity int, input GrantInviteInput) int
 		ImageCreate        func(childComplexity int, input ImageCreateInput) int
@@ -195,6 +197,7 @@ type ComplexityRoot struct {
 		Height          func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Images          func(childComplexity int) int
+		IsFavorite      func(childComplexity int) int
 		Measurements    func(childComplexity int) int
 		MergedIds       func(childComplexity int) int
 		Name            func(childComplexity int) int
@@ -379,6 +382,7 @@ type ComplexityRoot struct {
 		Deleted      func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Images       func(childComplexity int) int
+		IsFavorite   func(childComplexity int) int
 		Name         func(childComplexity int) int
 		Parent       func(childComplexity int) int
 		Urls         func(childComplexity int) int
@@ -537,6 +541,8 @@ type MutationResolver interface {
 	ApplyEdit(ctx context.Context, input ApplyEditInput) (*Edit, error)
 	CancelEdit(ctx context.Context, input CancelEditInput) (*Edit, error)
 	SubmitFingerprint(ctx context.Context, input FingerprintSubmission) (bool, error)
+	FavoritePerformer(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
+	FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
 }
 type PerformerResolver interface {
 	Disambiguation(ctx context.Context, obj *Performer) (*string, error)
@@ -562,6 +568,7 @@ type PerformerResolver interface {
 	SceneCount(ctx context.Context, obj *Performer) (int, error)
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer) ([]*PerformerStudio, error)
+	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
 }
 type PerformerEditResolver interface {
 	Gender(ctx context.Context, obj *PerformerEdit) (*GenderEnum, error)
@@ -652,6 +659,8 @@ type StudioResolver interface {
 	Parent(ctx context.Context, obj *Studio) (*Studio, error)
 	ChildStudios(ctx context.Context, obj *Studio) ([]*Studio, error)
 	Images(ctx context.Context, obj *Studio) ([]*Image, error)
+
+	IsFavorite(ctx context.Context, obj *Studio) (bool, error)
 }
 type StudioEditResolver interface {
 	Parent(ctx context.Context, obj *StudioEdit) (*Studio, error)
@@ -1074,6 +1083,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.EditVote(childComplexity, args["input"].(EditVoteInput)), true
+
+	case "Mutation.favoritePerformer":
+		if e.complexity.Mutation.FavoritePerformer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_favoritePerformer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.FavoritePerformer(childComplexity, args["id"].(uuid.UUID), args["favorite"].(bool)), true
+
+	case "Mutation.favoriteStudio":
+		if e.complexity.Mutation.FavoriteStudio == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_favoriteStudio_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.FavoriteStudio(childComplexity, args["id"].(uuid.UUID), args["favorite"].(bool)), true
 
 	case "Mutation.generateInviteCode":
 		if e.complexity.Mutation.GenerateInviteCode == nil {
@@ -1608,6 +1641,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Performer.Images(childComplexity), true
+
+	case "Performer.is_favorite":
+		if e.complexity.Performer.IsFavorite == nil {
+			break
+		}
+
+		return e.complexity.Performer.IsFavorite(childComplexity), true
 
 	case "Performer.measurements":
 		if e.complexity.Performer.Measurements == nil {
@@ -2624,6 +2664,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Studio.Images(childComplexity), true
 
+	case "Studio.is_favorite":
+		if e.complexity.Studio.IsFavorite == nil {
+			break
+		}
+
+		return e.complexity.Studio.IsFavorite(childComplexity), true
+
 	case "Studio.name":
 		if e.complexity.Studio.Name == nil {
 			break
@@ -3202,6 +3249,8 @@ input EditFilterType {
   target_type: TargetTypeEnum
   """Filter by target id"""
   target_id: ID
+  """Filter by favorite status"""
+  is_favorite: Boolean
 }
 
 input ApplyEditInput {
@@ -3443,6 +3492,7 @@ type Performer {
   scene_count: Int!
   merged_ids: [ID!]!
   studios: [PerformerStudio!]!
+  is_favorite: Boolean!
 }
 
 type PerformerStudio {
@@ -3635,6 +3685,8 @@ input PerformerFilterType {
   career_end_year: IntCriterionInput
   tattoos: BodyModificationCriterionInput
   piercings: BodyModificationCriterionInput
+  """Filter by performerfavorite status for the current user"""
+  is_favorite: Boolean
 }
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/scene.graphql", Input: `type PerformerAppearance {
@@ -3866,6 +3918,7 @@ enum ValidSiteTypeEnum {
   child_studios: [Studio!]!
   images: [Image!]!
   deleted: Boolean!
+  is_favorite: Boolean!
 }
 
 input StudioCreateInput {
@@ -3925,6 +3978,8 @@ input StudioFilterType {
   
   parent: IDCriterionInput
   has_parent: Boolean
+  """Filter by studio favorite status for the current user"""
+  is_favorite: Boolean
 }
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/tag.graphql", Input: `enum TagGroupEnum {
@@ -4325,6 +4380,11 @@ type Mutation {
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
+
+  """Favorite or unfavorite a performer"""
+  favoritePerformer(id: ID!, favorite: Boolean!): Boolean!
+  """Favorite or unfavorite a studio"""
+  favoriteStudio(id: ID!, favorite: Boolean!): Boolean!
 }
 
 schema {
@@ -4441,6 +4501,54 @@ func (ec *executionContext) field_Mutation_editVote_args(ctx context.Context, ra
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_favoritePerformer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 bool
+	if tmp, ok := rawArgs["favorite"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("favorite"))
+		arg1, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["favorite"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_favoriteStudio_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 bool
+	if tmp, ok := rawArgs["favorite"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("favorite"))
+		arg1, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["favorite"] = arg1
 	return args, nil
 }
 
@@ -9319,6 +9427,90 @@ func (ec *executionContext) _Mutation_submitFingerprint(ctx context.Context, fie
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_favoritePerformer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_favoritePerformer_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().FavoritePerformer(rctx, args["id"].(uuid.UUID), args["favorite"].(bool))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_favoriteStudio(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_favoriteStudio_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().FavoriteStudio(rctx, args["id"].(uuid.UUID), args["favorite"].(bool))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Performer_id(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -10150,6 +10342,41 @@ func (ec *executionContext) _Performer_studios(ctx context.Context, field graphq
 	res := resTmp.([]*PerformerStudio)
 	fc.Result = res
 	return ec.marshalNPerformerStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudioᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Performer_is_favorite(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().IsFavorite(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PerformerAppearance_performer(ctx context.Context, field graphql.CollectedField, obj *PerformerAppearance) (ret graphql.Marshaler) {
@@ -15111,6 +15338,41 @@ func (ec *executionContext) _Studio_deleted(ctx context.Context, field graphql.C
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Studio_is_favorite(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Studio",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studio().IsFavorite(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _StudioEdit_name(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -18454,6 +18716,14 @@ func (ec *executionContext) unmarshalInputEditFilterType(ctx context.Context, ob
 			if err != nil {
 				return it, err
 			}
+		case "is_favorite":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
+			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -19787,6 +20057,14 @@ func (ec *executionContext) unmarshalInputPerformerFilterType(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
+		case "is_favorite":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
+			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -20924,6 +21202,14 @@ func (ec *executionContext) unmarshalInputStudioFilterType(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("has_parent"))
 			it.HasParent, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_favorite":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
+			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -22084,7 +22370,12 @@ func (ec *executionContext) _EditComment(ctx context.Context, sel ast.SelectionS
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("EditComment")
 		case "id":
-			out.Values[i] = ec._EditComment_id(ctx, field, obj)
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._EditComment_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -22861,6 +23152,26 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "favoritePerformer":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_favoritePerformer(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "favoriteStudio":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_favoriteStudio(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -23300,6 +23611,26 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 					}
 				}()
 				res = ec._Performer_studios(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "is_favorite":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_is_favorite(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -25517,6 +25848,26 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "is_favorite":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studio_is_favorite(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

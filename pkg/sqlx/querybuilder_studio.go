@@ -3,6 +3,7 @@ package sqlx
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -124,7 +125,7 @@ func (qb *studioQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.QuerySpec) (models.Studios, int, error) {
+func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (models.Studios, int, error) {
 	if studioFilter == nil {
 		studioFilter = &models.StudioFilterType{}
 	}
@@ -156,6 +157,17 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 			query.AddWhere("parent_studio.id IS NOT NULL")
 		} else {
 			query.AddWhere("parent_studio.id IS NULL")
+		}
+	}
+
+	if studioFilter.IsFavorite != nil {
+		// userID is internal based on user context so it is safe to append rather than bind
+		q := fmt.Sprintf(" JOIN studio_favorites F ON studios.id = F.studio_id AND F.user_id = '%s'", userID)
+		if *studioFilter.IsFavorite {
+			query.Body += q
+		} else {
+			query.Body += " LEFT" + q
+			query.AddWhere("F.studio_id IS NULL")
 		}
 	}
 
@@ -307,8 +319,14 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 			return nil, err
 		}
 
-		err = qb.deleteSceneStudios(studio.ID)
-		return updatedStudio, err
+		if err = qb.deleteSceneStudios(studio.ID); err != nil {
+			return nil, err
+		}
+		if err = qb.deleteStudioFavorites(studio.ID); err != nil {
+			return nil, err
+		}
+
+		return updatedStudio, nil
 	case models.OperationEnumModify:
 		return qb.applyModifyEdit(studio, data)
 	case models.OperationEnumMerge:
@@ -389,6 +407,10 @@ func (qb *studioQueryBuilder) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) 
 	if err := qb.updateSceneStudios(sourceID, targetID); err != nil {
 		return err
 	}
+	if err := qb.reassignFavorites(sourceID, targetID); err != nil {
+		return err
+	}
+
 	redirect := models.Redirect{SourceID: sourceID, TargetID: targetID}
 	return qb.CreateRedirect(redirect)
 }
@@ -416,10 +438,32 @@ func (qb *studioQueryBuilder) updateSceneStudios(oldTargetID uuid.UUID, newTarge
 	return qb.dbi.RawExec(query, args)
 }
 
+func (qb *studioQueryBuilder) reassignFavorites(oldTargetID uuid.UUID, newTargetID uuid.UUID) error {
+	// Reassign performer favorites to new id where it isn't already assigned
+	query := `UPDATE studio_favorites
+					 SET studio_id = ?
+					 WHERE studio_id = ?
+					 AND user_id NOT IN (SELECT user_id from studio_favorites WHERE studio_id = ?)`
+	args := []interface{}{newTargetID, oldTargetID, newTargetID}
+	err := qb.dbi.RawQuery(performerFavoriteTable.table, query, args, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete any remaining joins with the old performer
+	query = `DELETE FROM studio_favorites WHERE studio_id = ?`
+	args = []interface{}{oldTargetID}
+	return qb.dbi.RawQuery(studioFavoriteTable.table, query, args, nil)
+}
+
 func (qb *studioQueryBuilder) deleteSceneStudios(id uuid.UUID) error {
 	// set existing studio ids to null
 	query := `UPDATE ` + sceneDBTable.Name() + ` SET studio_id = NULL WHERE studio_id = ?`
 	args := []interface{}{id}
 
 	return qb.dbi.RawExec(query, args)
+}
+
+func (qb *studioQueryBuilder) deleteStudioFavorites(id uuid.UUID) error {
+	return qb.dbi.DeleteJoins(studioFavoriteTable, id)
 }

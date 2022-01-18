@@ -201,7 +201,7 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) *queryBuilder {
+func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) *queryBuilder {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
 	}
@@ -247,6 +247,17 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 		}
 	}
 
+	if performerFilter.IsFavorite != nil {
+		// userID is internal based on user context so it is safe to append rather than bind
+		q := fmt.Sprintf(" JOIN performer_favorites F ON performers.id = F.performer_id AND F.user_id = '%s'", userID)
+		if *performerFilter.IsFavorite {
+			query.Body += q
+		} else {
+			query.Body += " LEFT" + q
+			query.AddWhere("F.performer_id IS NULL")
+		}
+	}
+
 	handleStringCriterion("country", performerFilter.Country, query)
 	/*
 		handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
@@ -281,8 +292,8 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 	return query
 }
 
-func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, error) {
-	query := qb.buildQuery(performerFilter, findFilter)
+func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) ([]*models.Performer, error) {
+	query := qb.buildQuery(performerFilter, findFilter, userID)
 	query.Pagination = getPagination(findFilter)
 
 	var performers models.Performers
@@ -290,8 +301,8 @@ func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.Perform
 	return performers, err
 }
 
-func (qb *performerQueryBuilder) QueryCount(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) (int, error) {
-	query := qb.buildQuery(performerFilter, findFilter)
+func (qb *performerQueryBuilder) QueryCount(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (int, error) {
+	query := qb.buildQuery(performerFilter, findFilter, userID)
 	return qb.dbi.CountOnly(*query)
 }
 
@@ -563,6 +574,11 @@ func (qb *performerQueryBuilder) DeleteScenePerformers(id uuid.UUID) error {
 	return qb.dbi.DeleteJoins(performerSceneTable, id)
 }
 
+func (qb *performerQueryBuilder) DeletePerformerFavorites(id uuid.UUID) error {
+	// Delete performer_favorites joins
+	return qb.dbi.DeleteJoins(performerFavoriteTable, id)
+}
+
 func (qb *performerQueryBuilder) SoftDelete(performer models.Performer) (*models.Performer, error) {
 	// Delete joins
 	if err := qb.dbi.DeleteJoins(performerAliasTable, performer.ID); err != nil {
@@ -620,6 +636,24 @@ func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Perf
 	return qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 }
 
+func (qb *performerQueryBuilder) reassignFavorites(oldPerformer *models.Performer, newTargetID uuid.UUID) error {
+	// Reassign performer favorites to new id where it isn't already assigned
+	query := `UPDATE performer_favorites
+					 SET performer_id = ?
+					 WHERE performer_id = ?
+					 AND user_id NOT IN (SELECT user_id from performer_favorites WHERE performer_id = ?)`
+	args := []interface{}{newTargetID, oldPerformer.ID, newTargetID}
+	err := qb.dbi.RawQuery(performerFavoriteTable.table, query, args, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete any remaining joins with the old performer
+	query = `DELETE FROM performer_favorites WHERE performer_id = ?`
+	args = []interface{}{oldPerformer.ID}
+	return qb.dbi.RawQuery(performerFavoriteTable.table, query, args, nil)
+}
+
 func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID, name string) error {
 	query := `UPDATE scene_performers
             SET "as" = ?
@@ -649,6 +683,9 @@ func (qb *performerQueryBuilder) MergeInto(source *models.Performer, target *mod
 		return err
 	}
 	if err := qb.UpdateScenePerformers(source, target.ID, setAliases); err != nil {
+		return err
+	}
+	if err := qb.reassignFavorites(source, target.ID); err != nil {
 		return err
 	}
 	redirect := models.Redirect{SourceID: source.ID, TargetID: target.ID}

@@ -16,8 +16,8 @@ type EditRepo interface {
 	FindStudioID(id uuid.UUID) (*uuid.UUID, error)
 	FindSceneID(id uuid.UUID) (*uuid.UUID, error)
 	Count() (int, error)
-	QueryEdits(editFilter *EditFilterType, findFilter *QuerySpec) ([]*Edit, error)
-	QueryCount(editFilter *EditFilterType, findFilter *QuerySpec) (int, error)
+	QueryEdits(editFilter *EditFilterType, findFilter *QuerySpec, userID uuid.UUID) ([]*Edit, error)
+	QueryCount(editFilter *EditFilterType, findFilter *QuerySpec, userID uuid.UUID) (int, error)
 	CreateComment(newJoin EditComment) error
 	CreateVote(newJoin EditVote) error
 	GetComments(id uuid.UUID) (EditComments, error)

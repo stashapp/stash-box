@@ -51,6 +51,7 @@ export interface UpdateStudio_studioUpdate {
   urls: UpdateStudio_studioUpdate_urls[];
   images: UpdateStudio_studioUpdate_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface UpdateStudio {
