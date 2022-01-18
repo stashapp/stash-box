@@ -94,6 +94,7 @@ type ComplexityRoot struct {
 	EditComment struct {
 		Comment func(childComplexity int) int
 		Date    func(childComplexity int) int
+		ID      func(childComplexity int) int
 		User    func(childComplexity int) int
 	}
 
@@ -847,6 +848,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.EditComment.Date(childComplexity), true
+
+	case "EditComment.id":
+		if e.complexity.EditComment.ID == nil {
+			break
+		}
+
+		return e.complexity.EditComment.ID(childComplexity), true
 
 	case "EditComment.user":
 		if e.complexity.EditComment.User == nil {
@@ -3110,6 +3118,7 @@ type EditVote {
 }
 
 type EditComment {
+    id: ID!
     user: User
     date: Time!
     comment: String!
@@ -6057,6 +6066,41 @@ func (ec *executionContext) _Edit_updated(ctx context.Context, field graphql.Col
 	res := resTmp.(*time.Time)
 	fc.Result = res
 	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EditComment_id(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EditComment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EditComment_user(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
@@ -21930,6 +21974,11 @@ func (ec *executionContext) _EditComment(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("EditComment")
+		case "id":
+			out.Values[i] = ec._EditComment_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "user":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {

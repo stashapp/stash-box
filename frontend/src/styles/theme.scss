@@ -340,3 +340,7 @@ textarea.text-input {
   min-height: 12ex;
   overflow-y: scroll;
 }
+
+.sr-only {
+  @include visually-hidden;
+}
