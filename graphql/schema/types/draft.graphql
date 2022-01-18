@@ -1,0 +1,22 @@
+type DraftSubmissionStatus {
+  id: ID
+}
+
+type DraftEntity {
+  name: String!
+  id: ID
+}
+
+input DraftEntityInput {
+  name: String!
+  id: ID
+}
+
+type Draft {
+  id: ID!
+  created: Time!
+  expires: Time!
+  data: DraftData!
+}
+
+union DraftData = SceneDraft | PerformerDraft

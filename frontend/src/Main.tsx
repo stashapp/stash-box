@@ -4,7 +4,7 @@ import { NavLink, useHistory } from "react-router-dom";
 
 import SearchField, { SearchType } from "src/components/searchField";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
-import { isAdmin, userHref, setCachedUser } from "src/utils";
+import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
 import { useAuth } from "src/hooks";
 import {
   ROUTE_SCENES,
@@ -21,6 +21,7 @@ import {
   ROUTE_REGISTER,
   ROUTE_FORGOT_PASSWORD,
   ROUTE_SITES,
+  ROUTE_DRAFTS,
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
@@ -111,6 +112,11 @@ const Main: FC = ({ children }) => {
           <NavLink to={ROUTE_EDITS} className="nav-link">
             Edits
           </NavLink>
+          {canEdit(user) && (
+            <NavLink to={ROUTE_DRAFTS} className="nav-link">
+              Drafts
+            </NavLink>
+          )}
           {isAdmin(user) && (
             <NavLink to={ROUTE_SITES} className="nav-link">
               Sites

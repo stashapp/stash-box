@@ -32,5 +32,5 @@ type SceneRepo interface {
 	SearchScenes(term string, limit int) ([]*Scene, error)
 	CountByPerformer(id uuid.UUID) (int, error)
 	MergeInto(source *Scene, target *Scene) error
-	ApplyEdit(scene *Scene, create bool, data *SceneEditData) (*Scene, error)
+	ApplyEdit(scene *Scene, create bool, data *SceneEditData, userID *uuid.UUID) (*Scene, error)
 }

@@ -238,6 +238,13 @@ export interface FingerprintEditInput {
   updated?: any | null;
 }
 
+export interface FingerprintInput {
+  user_ids?: string[] | null;
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
+}
+
 export interface FuzzyDateInput {
   date: any;
   accuracy: DateAccuracyEnum;
@@ -314,6 +321,7 @@ export interface PerformerEditDetailsInput {
   tattoos?: BodyModificationInput[] | null;
   piercings?: BodyModificationInput[] | null;
   image_ids?: string[] | null;
+  draft_id?: string | null;
 }
 
 export interface PerformerEditInput {
@@ -404,6 +412,8 @@ export interface SceneEditDetailsInput {
   image_ids?: string[] | null;
   duration?: number | null;
   director?: string | null;
+  fingerprints?: FingerprintInput[] | null;
+  draft_id?: string | null;
 }
 
 export interface SceneEditInput {

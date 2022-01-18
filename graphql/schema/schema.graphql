@@ -60,6 +60,10 @@ type Query {
   searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
 
+  ### Drafts ###
+  findDraft(id: ID!): Draft @hasRole(role: READ)
+  findDrafts: [Draft!]! @hasRole(role: READ)
+
   #### Version ####
   version: Version! @hasRole(role: READ)
 
@@ -144,10 +148,15 @@ type Mutation {
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
 
+  """Draft submissions"""
+  submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
+  submitPerformerDraft(input: PerformerDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
+  destroyDraft(id: ID!): Boolean! @hasRole(role: EDIT)
+
   """Favorite or unfavorite a performer"""
-  favoritePerformer(id: ID!, favorite: Boolean!): Boolean!
+  favoritePerformer(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
   """Favorite or unfavorite a studio"""
-  favoriteStudio(id: ID!, favorite: Boolean!): Boolean!
+  favoriteStudio(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
 }
 
 schema {

@@ -26,6 +26,12 @@ type Fingerprint {
   user_submitted: Boolean!
 }
 
+type DraftFingerprint {
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
+}
+
 input FingerprintInput {
   """assumes current user if omitted. Ignored for non-modify Users"""
   user_ids: [ID!]
@@ -120,6 +126,8 @@ input SceneEditDetailsInput {
   image_ids: [ID!]
   duration: Int
   director: String
+  fingerprints: [FingerprintInput!]
+  draft_id: ID
 }
 
 input SceneEditInput {
@@ -143,8 +151,11 @@ type SceneEdit {
   removed_tags: [Tag!]
   added_images: [Image!]
   removed_images: [Image!]
+  added_fingerprints: [Fingerprint!]
+  removed_fingerprints: [Fingerprint!]
   duration: Int
   director: String
+  draft_id: ID
 }
 
 type QueryScenesResultType {
@@ -173,4 +184,32 @@ input SceneFilterType {
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
   fingerprints: MultiStringCriterionInput
+}
+
+union SceneDraftStudio = Studio | DraftEntity
+union SceneDraftPerformer = Performer | DraftEntity
+union SceneDraftTag = Tag | DraftEntity
+
+type SceneDraft {
+  title: String
+  details: String
+  url: URL
+  date: Date
+  studio: SceneDraftStudio
+  performers: [SceneDraftPerformer!]!
+  tags: [SceneDraftTag!]
+  image: Image
+  fingerprints: [DraftFingerprint!]!
+}
+
+input SceneDraftInput {
+  title: String
+  details: String
+  url: String
+  date: Date
+  studio: DraftEntityInput
+  performers: [DraftEntityInput!]!
+  tags: [DraftEntityInput!]
+  image: Upload
+  fingerprints: [FingerprintInput!]!
 }

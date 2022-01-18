@@ -22,4 +22,5 @@ type Repo interface {
 	Invite() InviteKeyRepo
 	User() UserRepo
 	Site() SiteRepo
+	Draft() DraftRepo
 }

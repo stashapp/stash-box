@@ -18,6 +18,8 @@ type Tag struct {
 	Deleted     bool            `db:"deleted" json:"deleted"`
 }
 
+func (Tag) IsSceneDraftTag() {}
+
 func (p Tag) GetID() uuid.UUID {
 	return p.ID
 }
