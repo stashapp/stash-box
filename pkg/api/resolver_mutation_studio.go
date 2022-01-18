@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -140,5 +141,28 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		return nil
 	})
 
+	return err == nil, err
+}
+
+func (r *mutationResolver) FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error) {
+	fac := r.getRepoFactory(ctx)
+	user := getCurrentUser(ctx)
+
+	err := fac.WithTxn(func() error {
+		jqb := fac.Joins()
+		studio, err := fac.Studio().Find(id)
+		if err != nil {
+			return err
+		}
+		if studio.Deleted {
+			return fmt.Errorf("studio is deleted, unable to make favorite")
+		}
+
+		if favorite {
+			err := jqb.AddStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+			return err
+		}
+		return jqb.DestroyStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+	})
 	return err == nil, err
 }

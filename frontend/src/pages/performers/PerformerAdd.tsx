@@ -64,6 +64,7 @@ const PerformerAdd: FC = () => {
     urls: [],
     images: [],
     deleted: false,
+    is_favorite: false,
     __typename: "Performer",
   } as Performer;
 

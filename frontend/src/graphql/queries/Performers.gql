@@ -43,6 +43,7 @@ query Performers($filter: QuerySpec, $performerFilter: PerformerFilterType) {
       images {
         ...ImageFragment
       }
+      is_favorite
     }
   }
 }

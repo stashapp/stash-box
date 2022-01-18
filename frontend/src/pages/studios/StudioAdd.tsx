@@ -41,6 +41,7 @@ const StudioAdd: FC = () => {
     parent: null,
     child_studios: [],
     deleted: false,
+    is_favorite: false,
     __typename: "Studio",
   };
 

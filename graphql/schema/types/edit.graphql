@@ -116,6 +116,8 @@ input EditFilterType {
   target_type: TargetTypeEnum
   """Filter by target id"""
   target_id: ID
+  """Filter by favorite status"""
+  is_favorite: Boolean
 }
 
 input ApplyEditInput {

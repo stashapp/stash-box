@@ -130,6 +130,7 @@ export interface PerformerEdit_performerEdit_target_Performer {
   piercings: PerformerEdit_performerEdit_target_Performer_piercings[] | null;
   urls: PerformerEdit_performerEdit_target_Performer_urls[];
   images: PerformerEdit_performerEdit_target_Performer_images[];
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_target_Studio_child_studios {
@@ -174,6 +175,7 @@ export interface PerformerEdit_performerEdit_target_Studio {
   urls: PerformerEdit_performerEdit_target_Studio_urls[];
   images: PerformerEdit_performerEdit_target_Studio_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_target_Scene_urls_site {
@@ -442,6 +444,7 @@ export interface PerformerEdit_performerEdit_details_StudioEdit_parent {
   urls: PerformerEdit_performerEdit_details_StudioEdit_parent_urls[];
   images: PerformerEdit_performerEdit_details_StudioEdit_parent_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_details_StudioEdit_added_images {
@@ -541,6 +544,7 @@ export interface PerformerEdit_performerEdit_details_SceneEdit_studio {
   urls: PerformerEdit_performerEdit_details_SceneEdit_studio_urls[];
   images: PerformerEdit_performerEdit_details_SceneEdit_studio_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_birthdate {
@@ -616,6 +620,7 @@ export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers_
   piercings: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_piercings[] | null;
   urls: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_urls[];
   images: PerformerEdit_performerEdit_details_SceneEdit_added_performers_performer_images[];
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_details_SceneEdit_added_performers {
@@ -700,6 +705,7 @@ export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performer
   piercings: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_piercings[] | null;
   urls: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_urls[];
   images: PerformerEdit_performerEdit_details_SceneEdit_removed_performers_performer_images[];
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_details_SceneEdit_removed_performers {
@@ -859,6 +865,7 @@ export interface PerformerEdit_performerEdit_old_details_StudioEdit_parent {
   urls: PerformerEdit_performerEdit_old_details_StudioEdit_parent_urls[];
   images: PerformerEdit_performerEdit_old_details_StudioEdit_parent_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_old_details_StudioEdit {
@@ -935,6 +942,7 @@ export interface PerformerEdit_performerEdit_old_details_SceneEdit_studio {
   urls: PerformerEdit_performerEdit_old_details_SceneEdit_studio_urls[];
   images: PerformerEdit_performerEdit_old_details_SceneEdit_studio_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_birthdate {
@@ -1010,6 +1018,7 @@ export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_perform
   piercings: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_piercings[] | null;
   urls: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_urls[];
   images: PerformerEdit_performerEdit_old_details_SceneEdit_added_performers_performer_images[];
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_old_details_SceneEdit_added_performers {
@@ -1094,6 +1103,7 @@ export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_perfo
   piercings: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_piercings[] | null;
   urls: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_urls[];
   images: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers_performer_images[];
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers {
@@ -1262,6 +1272,7 @@ export interface PerformerEdit_performerEdit_merge_sources_Performer {
   piercings: PerformerEdit_performerEdit_merge_sources_Performer_piercings[] | null;
   urls: PerformerEdit_performerEdit_merge_sources_Performer_urls[];
   images: PerformerEdit_performerEdit_merge_sources_Performer_images[];
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_merge_sources_Studio_child_studios {
@@ -1306,6 +1317,7 @@ export interface PerformerEdit_performerEdit_merge_sources_Studio {
   urls: PerformerEdit_performerEdit_merge_sources_Studio_urls[];
   images: PerformerEdit_performerEdit_merge_sources_Studio_images[];
   deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface PerformerEdit_performerEdit_merge_sources_Scene_urls_site {

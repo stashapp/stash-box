@@ -216,3 +216,13 @@ func ParseURLInput(input []*URLInput) []*URL {
 	}
 	return ret
 }
+
+type PerformerFavorite struct {
+	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	UserID      uuid.UUID `db:"user_id" json:"user_id"`
+}
+
+type StudioFavorite struct {
+	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+	UserID   uuid.UUID `db:"user_id" json:"user_id"`
+}

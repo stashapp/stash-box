@@ -20,6 +20,7 @@ import {
   getUrlBySite,
 } from "src/utils";
 import { ROUTE_STUDIO_EDIT, ROUTE_STUDIO_DELETE } from "src/constants/route";
+import { FavoriteStar } from "src/components/fragments";
 import AuthContext from "src/AuthContext";
 
 const DEFAULT_TAB = "scenes";
@@ -62,6 +63,12 @@ const StudioComponent: FC<Props> = ({ studio }) => {
             ) : (
               <span>{studio.name}</span>
             )}
+            <FavoriteStar
+              entity={studio}
+              entityType="studio"
+              interactable
+              className="ps-2"
+            />
           </h3>
           {homeURL && (
             <h6>

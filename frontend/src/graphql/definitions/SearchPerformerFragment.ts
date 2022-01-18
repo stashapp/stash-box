@@ -51,4 +51,5 @@ export interface SearchPerformerFragment {
   birthdate: SearchPerformerFragment_birthdate | null;
   urls: SearchPerformerFragment_urls[];
   images: SearchPerformerFragment_images[];
+  is_favorite: boolean;
 }

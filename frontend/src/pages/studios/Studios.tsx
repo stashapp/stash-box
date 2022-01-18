@@ -10,6 +10,7 @@ import querystring from "query-string";
 import { useStudios, SortDirectionEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { List } from "src/components/list";
+import { FavoriteStar } from "src/components/fragments";
 
 const PER_PAGE = 40;
 
@@ -18,6 +19,10 @@ const StudiosComponent: FC = () => {
   const auth = useContext(AuthContext);
   const queries = querystring.parse(history.location.search);
   const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
+  const favorite =
+    (Array.isArray(queries.favorite)
+      ? queries.favorite[0]
+      : queries.favorite) === "true";
   const { page, setPage } = usePagination();
   const { loading, data } = useStudios({
     filter: {
@@ -27,6 +32,7 @@ const StudiosComponent: FC = () => {
     },
     studioFilter: {
       names: query,
+      is_favorite: favorite || undefined,
     },
   });
 
@@ -38,13 +44,14 @@ const StudiosComponent: FC = () => {
           <Link to={studioHref(s.parent)}>{s.parent.name}</Link>
         </small>
       )}
+      <FavoriteStar entity={s} entityType="studio" className="ps-2" />
     </li>
   ));
 
-  const handleQuery = (q: string) => {
+  const handleQuery = (name: string, value?: string) => {
     const qs = querystring.stringify({
       ...querystring.parse(history.location.search),
-      query: q || undefined,
+      [name]: value || undefined,
       page: undefined,
     });
     history.replace(`${history.location.pathname}?${qs}`);
@@ -52,13 +59,29 @@ const StudiosComponent: FC = () => {
   const debouncedHandler = debounce(handleQuery, 200);
 
   const filters = (
-    <Form.Control
-      id="studio-query"
-      onChange={(e) => debouncedHandler(e.currentTarget.value)}
-      placeholder="Filter studio name"
-      defaultValue={query ?? ""}
-      className="w-25"
-    />
+    <>
+      <Form.Control
+        id="studio-query"
+        onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
+        placeholder="Filter studio name"
+        defaultValue={query ?? ""}
+        className="w-25 me-3"
+      />
+      <Form.Group controlId="favorite">
+        <Form.Check
+          className="mt-2"
+          type="switch"
+          label="Only favorites"
+          defaultChecked={favorite}
+          onChange={(e) =>
+            handleQuery(
+              "favorite",
+              e.currentTarget.checked ? "true" : undefined
+            )
+          }
+        />
+      </Form.Group>
+    </>
   );
 
   return (

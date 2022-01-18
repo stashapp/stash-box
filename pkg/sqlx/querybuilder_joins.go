@@ -33,6 +33,14 @@ var (
 	studioImageTable = newTableJoin(studioTable, "studio_images", studioJoinKey, func() interface{} {
 		return &models.StudioImage{}
 	})
+
+	studioFavoriteTable = newTableJoin(studioTable, "studio_favorites", studioJoinKey, func() interface{} {
+		return &models.StudioFavorite{}
+	})
+
+	performerFavoriteTable = newTableJoin(performerTable, "performer_favorites", performerJoinKey, func() interface{} {
+		return &models.PerformerFavorite{}
+	})
 )
 
 type joinsQueryBuilder struct {
@@ -103,4 +111,48 @@ func (qb *joinsQueryBuilder) UpdateStudiosImages(studioID uuid.UUID, updatedJoin
 
 func (qb *joinsQueryBuilder) DestroyStudiosImages(studioID uuid.UUID) error {
 	return qb.dbi.DeleteJoins(studioImageTable, studioID)
+}
+
+func (qb *joinsQueryBuilder) AddStudioFavorite(join models.StudioFavorite) error {
+	conflictHandling := "ON CONFLICT DO NOTHING"
+	return qb.dbi.InsertJoin(studioFavoriteTable, join, &conflictHandling)
+}
+
+func (qb *joinsQueryBuilder) AddPerformerFavorite(join models.PerformerFavorite) error {
+	conflictHandling := "ON CONFLICT DO NOTHING"
+	return qb.dbi.InsertJoin(performerFavoriteTable, join, &conflictHandling)
+}
+
+func (qb *joinsQueryBuilder) DestroyStudioFavorite(join models.StudioFavorite) error {
+	query := "DELETE FROM " + studioFavoriteTable.name + " WHERE studio_id = $1 AND user_id = $2"
+	args := []interface{}{join.StudioID, join.UserID}
+	return qb.dbi.RawExec(query, args)
+}
+
+func (qb *joinsQueryBuilder) DestroyPerformerFavorite(join models.PerformerFavorite) error {
+	query := "DELETE FROM " + performerFavoriteTable.name + " WHERE performer_id = $1 AND user_id = $2"
+	args := []interface{}{join.PerformerID, join.UserID}
+	return qb.dbi.RawExec(query, args)
+}
+
+func (qb *joinsQueryBuilder) IsPerformerFavorite(favorite models.PerformerFavorite) (bool, error) {
+	query := `
+		SELECT COUNT(*) FROM ` + performerFavoriteTable.name + `
+		WHERE performer_id = $1
+		AND user_id = $2
+	`
+	args := []interface{}{favorite.PerformerID, favorite.UserID}
+	res, err := runCountQuery(qb.dbi.db(), query, args)
+	return res > 0, err
+}
+
+func (qb *joinsQueryBuilder) IsStudioFavorite(favorite models.StudioFavorite) (bool, error) {
+	query := `
+		SELECT COUNT(*) FROM ` + studioFavoriteTable.name + `
+		WHERE studio_id = $1
+		AND user_id = $2
+	`
+	args := []interface{}{favorite.StudioID, favorite.UserID}
+	res, err := runCountQuery(qb.dbi.db(), query, args)
+	return res > 0, err
 }

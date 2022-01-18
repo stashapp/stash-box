@@ -82,6 +82,7 @@ export interface Performers_queryPerformers_performers {
   piercings: Performers_queryPerformers_performers_piercings[] | null;
   urls: Performers_queryPerformers_performers_urls[];
   images: Performers_queryPerformers_performers_images[];
+  is_favorite: boolean;
 }
 
 export interface Performers_queryPerformers {

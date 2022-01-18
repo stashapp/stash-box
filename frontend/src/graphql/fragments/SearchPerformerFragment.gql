@@ -21,4 +21,5 @@ fragment SearchPerformerFragment on Performer {
   images {
     ...ImageFragment
   }
+  is_favorite
 }

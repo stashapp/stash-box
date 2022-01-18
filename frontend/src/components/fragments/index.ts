@@ -7,3 +7,4 @@ export { default as PerformerName } from "./PerformerName";
 export { default as ErrorMessage } from "./ErrorMessage";
 export { default as Help } from "./Help";
 export { default as Tooltip } from "./Tooltip";
+export { FavoriteStar } from "./Favorite";
