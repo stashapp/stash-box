@@ -366,7 +366,7 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 			JOIN (
 				SELECT scene_id, COUNT(*) AS count
 				FROM scene_fingerprints
-				WHERE created_at >= (now()::DATE - 180)
+				WHERE created_at >= (now()::DATE - 7)
 				GROUP BY scene_id
 				` + limit + `
 			) T ON scenes.id = T.scene_id
