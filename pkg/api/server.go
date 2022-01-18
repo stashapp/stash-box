@@ -1,6 +1,7 @@
 package api
 
 import (
+	"compress/flate"
 	"context"
 	"crypto/tls"
 	"embed"
@@ -19,8 +20,8 @@ import (
 	gqlExtension "github.com/99designs/gqlgen/graphql/handler/extension"
 	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/logger"
@@ -127,7 +128,8 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 
-	r.Use(middleware.DefaultCompress)
+	compressor := middleware.NewCompressor(flate.DefaultCompression)
+	r.Use(compressor.Handler)
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
 
