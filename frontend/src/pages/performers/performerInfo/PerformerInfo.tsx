@@ -36,11 +36,13 @@ import {
 } from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 
+const CLASSNAME = 'PerformerInfo';
+
 const PerformerInfo: FC<{ performer: Performer }> = ({ performer }) => {
   const auth = useContext(AuthContext);
 
   return (
-    <Row>
+    <Row className={CLASSNAME}>
       <Col xs={6}>
         {canEdit(auth?.user) && !performer.deleted && (
           <div className="text-end">
