@@ -113,12 +113,12 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
             fingerprint:
           </h6>
           {existingScenes.map((s) => (
-            <>
+            <div key={s.id}>
               <Icon icon={faExclamationTriangle} color="orange" />
               <Link to={sceneHref(s)} className="ms-2">
                 {s.title}
               </Link>
-            </>
+            </div>
           ))}
           <div className="my-2">
             Please verify your draft is not already in the database before

@@ -116,6 +116,7 @@ export const parsePerformerDraft = (
     tattoos: null,
     piercings: null,
     urls: [],
+    is_favorite: false,
     __typename: "Performer",
   };
 

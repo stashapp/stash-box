@@ -3,14 +3,16 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import { formatDuration, parseDuration } from "src/utils";
+import { formatDuration, parseDuration, filterData } from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
-import { GenderIcon } from "src/components/fragments";
+import { GenderIcon, Icon } from "src/components/fragments";
 import SearchField, {
   SearchType,
   PerformerResult,
@@ -220,6 +222,13 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     </Row>
   ));
 
+  const metadataErrors = filterData([
+    errors.title?.message,
+    errors.date?.message,
+    errors.duration?.message,
+    errors.studio?.id?.message,
+  ]);
+
   return (
     <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
       <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
@@ -297,7 +306,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 initialStudio={scene.studio}
                 control={control}
                 isClearable
-                className={cx({ "is-invalid": errors.studio?.id })}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.studio?.id?.message}
@@ -323,15 +331,11 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               <Form.Label>Director</Form.Label>
               <Form.Control
                 as="input"
-                className={cx({ "is-invalid": errors.director })}
                 type="text"
                 placeholder="Director"
                 defaultValue={scene?.director ?? ""}
                 {...register("director")}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors?.director?.message}
-              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group className="col-8 mb-3" />
@@ -381,6 +385,21 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
             </Col>
           </Row>
 
+          {metadataErrors.length > 0 && (
+            <div className="text-end my-4">
+              <h6>
+                <Icon icon={faExclamationTriangle} color="red" />
+                <span className="ms-1">Errors</span>
+              </h6>
+              <div className="d-flex flex-column text-danger">
+                {metadataErrors.map((e) => (
+                  <Link to="#" key={e} onClick={() => setActiveTab("details")}>
+                    {e}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
           <SubmitButtons disabled={saving} />
         </Tab>
       </Tabs>
