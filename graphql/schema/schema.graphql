@@ -154,9 +154,9 @@ type Mutation {
   destroyDraft(id: ID!): Boolean! @hasRole(role: EDIT)
 
   """Favorite or unfavorite a performer"""
-  favoritePerformer(id: ID!, favorite: Boolean!): Boolean!
+  favoritePerformer(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
   """Favorite or unfavorite a studio"""
-  favoriteStudio(id: ID!, favorite: Boolean!): Boolean!
+  favoriteStudio(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
 }
 
 schema {

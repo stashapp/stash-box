@@ -1,6 +1,8 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
+import { sceneHref } from "src/utils/route";
 import {
   Draft_findDraft as Draft,
   Draft_findDraft_data_SceneDraft as SceneDraft,
@@ -10,7 +12,10 @@ import {
   useSceneEdit,
   OperationEnum,
   SceneEditDetailsInput,
+  useScenesWithoutCount,
+  CriterionModifier,
 } from "src/graphql";
+import { Icon } from "src/components/fragments";
 import { editHref } from "src/utils";
 import { parseSceneDraft } from "./parse";
 
@@ -21,7 +26,6 @@ interface Props {
 }
 
 const SceneDraftAdd: FC<Props> = ({ draft }) => {
-  console.log("scene draft");
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
   const [submitSceneEdit, { loading: saving }] = useSceneEdit({
@@ -30,6 +34,14 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       if (data.sceneEdit.id) history.push(editHref(data.sceneEdit));
     },
     onError: (error) => setSubmissionError(error.message),
+  });
+  const { data: fingerprintMatches } = useScenesWithoutCount({
+    sceneFilter: {
+      fingerprints: {
+        modifier: CriterionModifier.INCLUDES,
+        value: draft.data.fingerprints.map((f) => f.hash),
+      },
+    },
   });
 
   const doInsert = (updateData: SceneEditDetailsInput, editNote: string) => {
@@ -81,6 +93,8 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
     __typename: "Scene",
   };
 
+  const existingScenes = fingerprintMatches?.queryScenes?.scenes ?? [];
+
   return (
     <div>
       <h3>Add new scene draft</h3>
@@ -90,6 +104,26 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
           <h6>Unmatched data:</h6>
           <ul>{remainder}</ul>
           <hr />
+        </>
+      )}
+      {existingScenes.length > 0 && (
+        <>
+          <h6>
+            <b>Warning</b>: Scenes already exist in the database with the same
+            fingerprint:
+          </h6>
+          {existingScenes.map((s) => (
+            <>
+              <Icon icon={faExclamationTriangle} color="orange" />
+              <Link to={sceneHref(s)} className="ms-2">
+                {s.title}
+              </Link>
+            </>
+          ))}
+          <div className="my-2">
+            Please verify your draft is not already in the database before
+            submitting.
+          </div>
         </>
       )}
       <SceneForm
