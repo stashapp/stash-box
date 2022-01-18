@@ -297,10 +297,10 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 initialStudio={scene.studio}
                 control={control}
                 isClearable
+                className={cx({ "is-invalid": errors.studio?.id })}
               />
               <Form.Control.Feedback type="invalid">
-                {/* Workaround for typing error in react-hook-form */}
-                {(errors.studio as { message: string })?.message}
+                {errors.studio?.id?.message}
               </Form.Control.Feedback>
             </Form.Group>
           </Row>
