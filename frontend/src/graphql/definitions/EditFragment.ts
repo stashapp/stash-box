@@ -17,6 +17,7 @@ export interface EditFragment_comments_user {
 
 export interface EditFragment_comments {
   __typename: "EditComment";
+  id: string;
   user: EditFragment_comments_user | null;
   date: any;
   comment: string;

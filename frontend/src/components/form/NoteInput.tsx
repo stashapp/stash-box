@@ -29,6 +29,7 @@ const NoteInput: FC<IProps> = ({
   };
 
   const textareaProps = register ? register("note") : { name: "note" };
+  const now = new Date().toISOString();
 
   return (
     <div className={cx("NoteInput", { "is-invalid": hasError })}>
@@ -44,8 +45,9 @@ const NoteInput: FC<IProps> = ({
         </Tab>
         <Tab eventKey="preview" title="Preview" unmountOnExit mountOnEnter>
           <EditComment
+            id={`${auth.user?.id}-${now}`}
             comment={comment}
-            date={new Date().toString()}
+            date={now}
             user={auth.user}
           />
         </Tab>
