@@ -22,6 +22,12 @@ const DraftList: React.FC = () => {
       <Card>
         <Card.Body className="p-4">
           {loading && <LoadingIndicator message="Loading drafts..." />}
+          {!loading && data !== undefined && !data?.findDrafts.length && (
+            <>
+              <h6>No drafts saved.</h6>
+              <p>Scene and performer drafts can be submitted from Stash.</p>
+            </>
+          )}
           <ul className="ps-0">
             {sortBy(data?.findDrafts ?? [], "expires").map((draft) => {
               const expirationDate = new Date(draft.expires as string);

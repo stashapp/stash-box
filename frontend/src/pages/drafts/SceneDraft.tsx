@@ -97,7 +97,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
 
   return (
     <div>
-      <h3>Add new scene draft</h3>
+      <h3>Add new scene from draft</h3>
       <hr />
       {remainder.length > 0 && (
         <>
