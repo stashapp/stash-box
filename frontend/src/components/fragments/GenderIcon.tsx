@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import {
   faVenus,
   faTransgenderAlt,
@@ -11,7 +11,7 @@ interface IconProps {
   gender?: string | null;
 }
 
-const GenderIcon: React.FC<IconProps> = ({ gender }) => {
+const GenderIcon: FC<IconProps> = ({ gender }) => {
   if (gender) {
     const icon =
       gender.toLowerCase() === "male"

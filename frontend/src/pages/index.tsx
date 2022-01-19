@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Route, Switch } from "react-router-dom";
 
 import {
@@ -16,6 +16,9 @@ import {
   ROUTE_FORGOT_PASSWORD,
   ROUTE_RESET_PASSWORD,
   ROUTE_SEARCH,
+  ROUTE_VERSION,
+  ROUTE_SITES,
+  ROUTE_DRAFTS,
 } from "src/constants/route";
 
 import Home from "src/pages/home";
@@ -32,50 +35,68 @@ import ActivateUser from "src/pages/activateUser";
 import ForgotPassword from "src/pages/forgotPassword";
 import ResetPassword from "src/pages/resetPassword";
 import Search from "src/pages/search";
+import Version from "src/pages/version";
+import Sites from "src/pages/sites";
+import Drafts from "src/pages/drafts";
 
-const Pages: React.FC = () => (
+const Pages: FC = () => (
   <Switch>
     <Route exact path={ROUTE_HOME}>
       <Home />
     </Route>
-    <Route exact path={ROUTE_LOGIN}>
-      <Login />
-    </Route>
-    <Route path={ROUTE_USERS}>
-      <Users />
-    </Route>
-    <Route path={ROUTE_PERFORMERS}>
-      <Performers />
-    </Route>
-    <Route path={ROUTE_SCENES}>
-      <Scenes />
-    </Route>
-    <Route path={ROUTE_STUDIOS}>
-      <Studios />
-    </Route>
-    <Route path={ROUTE_TAGS}>
-      <Tags />
-    </Route>
-    <Route path={ROUTE_EDITS}>
-      <Edits />
-    </Route>
-    <Route path={ROUTE_CATEGORIES}>
-      <Categories />
-    </Route>
-    <Route exact path={ROUTE_REGISTER}>
-      <RegisterUser />
-    </Route>
-    <Route exact path={ROUTE_ACTIVATE}>
-      <ActivateUser />
-    </Route>
-    <Route exact path={ROUTE_FORGOT_PASSWORD}>
-      <ForgotPassword />
-    </Route>
-    <Route exact path={ROUTE_RESET_PASSWORD}>
-      <ResetPassword />
-    </Route>
-    <Route exact path={ROUTE_SEARCH}>
-      <Search />
+    <Route>
+      <div className="NarrowPage">
+        <Switch>
+          <Route exact path={ROUTE_LOGIN}>
+            <Login />
+          </Route>
+          <Route path={ROUTE_USERS}>
+            <Users />
+          </Route>
+          <Route path={ROUTE_PERFORMERS}>
+            <Performers />
+          </Route>
+          <Route path={ROUTE_SCENES}>
+            <Scenes />
+          </Route>
+          <Route path={ROUTE_STUDIOS}>
+            <Studios />
+          </Route>
+          <Route path={ROUTE_TAGS}>
+            <Tags />
+          </Route>
+          <Route path={ROUTE_EDITS}>
+            <Edits />
+          </Route>
+          <Route path={ROUTE_CATEGORIES}>
+            <Categories />
+          </Route>
+          <Route exact path={ROUTE_REGISTER}>
+            <RegisterUser />
+          </Route>
+          <Route exact path={ROUTE_ACTIVATE}>
+            <ActivateUser />
+          </Route>
+          <Route exact path={ROUTE_FORGOT_PASSWORD}>
+            <ForgotPassword />
+          </Route>
+          <Route exact path={ROUTE_RESET_PASSWORD}>
+            <ResetPassword />
+          </Route>
+          <Route exact path={ROUTE_SEARCH}>
+            <Search />
+          </Route>
+          <Route exact path={ROUTE_VERSION}>
+            <Version />
+          </Route>
+          <Route path={ROUTE_SITES}>
+            <Sites />
+          </Route>
+          <Route path={ROUTE_DRAFTS}>
+            <Drafts />
+          </Route>
+        </Switch>
+      </div>
     </Route>
   </Switch>
 );

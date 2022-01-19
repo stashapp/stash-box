@@ -1,7 +1,8 @@
 package edit
 
 import (
-	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/gofrs/uuid"
 
@@ -9,16 +10,40 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-// InputSpecifiedFunc is function that returns true if the qualified field name
-// was specified in the input. Used to distinguish between nil/empty fields and
-// unspecified fields
-type InputSpecifiedFunc func(qualifiedField string) bool
+type TagEditProcessor struct {
+	mutator
+}
 
-func ModifyTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
-	tqb := fac.Tag()
+func Tag(fac models.Repo, edit *models.Edit) *TagEditProcessor {
+	return &TagEditProcessor{
+		mutator{
+			fac:  fac,
+			edit: edit,
+		},
+	}
+}
+
+func (m *TagEditProcessor) Edit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	var err error
+	switch input.Edit.Operation {
+	case models.OperationEnumModify:
+		err = m.modifyEdit(input, inputSpecified)
+	case models.OperationEnumMerge:
+		err = m.mergeEdit(input, inputSpecified)
+	case models.OperationEnumDestroy:
+		err = m.destroyEdit(input, inputSpecified)
+	case models.OperationEnumCreate:
+		err = m.createEdit(input, inputSpecified)
+	}
+
+	return err
+}
+
+func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tqb := m.fac.Tag()
 
 	// get the existing tag
-	tagID, _ := uuid.FromString(*input.Edit.ID)
+	tagID := *input.Edit.ID
 	tag, err := tqb.Find(tagID)
 
 	if err != nil {
@@ -26,7 +51,7 @@ func ModifyTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput
 	}
 
 	if tag == nil {
-		return errors.New("tag with id " + tagID.String() + " not found")
+		return fmt.Errorf("%w: tag %s", ErrEntityNotFound, tagID.String())
 	}
 
 	// perform a diff against the input and the current object
@@ -43,46 +68,49 @@ func ModifyTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput
 		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
-	return edit.SetData(tagEdit)
+	if reflect.DeepEqual(tagEdit.Old, tagEdit.New) {
+		return ErrNoChanges
+	}
+
+	return m.edit.SetData(tagEdit)
 }
 
-func MergeTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
-	tqb := fac.Tag()
+func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tqb := m.fac.Tag()
 
 	// get the existing tag
 	if input.Edit.ID == nil {
-		return errors.New("Merge target ID is required")
+		return ErrMergeIDMissing
 	}
-	tagID, _ := uuid.FromString(*input.Edit.ID)
-	tag, err := tqb.Find(tagID)
+	tagID := *input.Edit.ID
+	tag, err := tqb.Find(*input.Edit.ID)
 
 	if err != nil {
 		return err
 	}
 
 	if tag == nil {
-		return errors.New("tag with id " + tagID.String() + " not found")
+		return fmt.Errorf("%w: target tag %s", ErrEntityNotFound, tagID.String())
 	}
 
-	mergeSources := []string{}
-	for _, mergeSourceID := range input.Edit.MergeSourceIds {
-		sourceID, _ := uuid.FromString(mergeSourceID)
+	var mergeSources []uuid.UUID
+	for _, sourceID := range input.Edit.MergeSourceIds {
 		sourceTag, err := tqb.Find(sourceID)
 		if err != nil {
 			return err
 		}
 
 		if sourceTag == nil {
-			return errors.New("tag with id " + sourceID.String() + " not found")
+			return fmt.Errorf("%w: source tag %s", ErrEntityNotFound, sourceID.String())
 		}
 		if tagID == sourceID {
-			return errors.New("merge target cannot be used as source")
+			return ErrMergeTargetIsSource
 		}
-		mergeSources = append(mergeSources, mergeSourceID)
+		mergeSources = append(mergeSources, sourceID)
 	}
 
 	if len(mergeSources) < 1 {
-		return errors.New("No merge sources found")
+		return ErrNoMergeSources
 	}
 
 	// perform a diff against the input and the current object
@@ -99,10 +127,10 @@ func MergeTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput,
 		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
-	return edit.SetData(tagEdit)
+	return m.edit.SetData(tagEdit)
 }
 
-func CreateTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *TagEditProcessor) createEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tagEdit := input.Details.TagEditFromCreate()
 
 	// determine unspecified aliases vs no aliases
@@ -110,18 +138,70 @@ func CreateTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput
 		tagEdit.New.AddedAliases = input.Details.Aliases
 	}
 
-	return edit.SetData(tagEdit)
+	return m.edit.SetData(tagEdit)
 }
 
-func DestroyTagEdit(fac models.Repo, edit *models.Edit, input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
-	tqb := fac.Tag()
+func (m *TagEditProcessor) destroyEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+	tqb := m.fac.Tag()
 
-	// get the existing tag
-	tagID, _ := uuid.FromString(*input.Edit.ID)
-	_, err := tqb.Find(tagID)
+	// Get the existing tag
+	tag, err := tqb.Find(*input.Edit.ID)
+	if tag == nil {
+		return fmt.Errorf("tag with id %v not found", *input.Edit.ID)
+	}
 
+	return err
+}
+
+func (m *TagEditProcessor) CreateJoin(input models.TagEditInput) error {
+	if input.Edit.ID != nil {
+		editTag := models.EditTag{
+			EditID: m.edit.ID,
+			TagID:  *input.Edit.ID,
+		}
+
+		return m.fac.Edit().CreateEditTag(editTag)
+	}
+
+	return nil
+}
+
+func (m *TagEditProcessor) apply() error {
+	tqb := m.fac.Tag()
+	eqb := m.fac.Edit()
+	operation := m.operation()
+	isCreate := operation == models.OperationEnumCreate
+
+	var tag *models.Tag
+	if !isCreate {
+		tagID, err := eqb.FindTagID(m.edit.ID)
+		if err != nil {
+			return err
+		}
+		tag, err = tqb.Find(*tagID)
+		if err != nil {
+			return err
+		}
+		if tag == nil {
+			return fmt.Errorf("%w: tag %s", ErrEntityNotFound, tagID.String())
+		}
+	}
+
+	newTag, err := tqb.ApplyEdit(*m.edit, operation, tag)
 	if err != nil {
 		return err
+	}
+
+	if isCreate {
+		editTag := models.EditTag{
+			EditID: m.edit.ID,
+			TagID:  newTag.ID,
+		}
+
+		err = eqb.CreateEditTag(editTag)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

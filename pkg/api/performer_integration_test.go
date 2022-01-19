@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -17,7 +17,7 @@ type performerTestRunner struct {
 
 func createPerformerTestRunner(t *testing.T) *performerTestRunner {
 	return &performerTestRunner{
-		testRunner: *asModify(t),
+		testRunner: *asAdmin(t),
 	}
 }
 
@@ -34,6 +34,10 @@ func (s *performerTestRunner) testCreatePerformer() {
 	eyeColor := models.EyeColorEnumBlue
 	hairColor := models.HairColorEnumBlonde
 	breastType := models.BreastTypeEnumNatural
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
 
 	input := models.PerformerCreateInput{
 		Name:           s.generatePerformerName(),
@@ -42,8 +46,8 @@ func (s *performerTestRunner) testCreatePerformer() {
 		Gender:         &gender,
 		Urls: []*models.URLInput{
 			&models.URLInput{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		Birthdate: &models.FuzzyDateInput{
@@ -120,8 +124,7 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 
 	r := s.resolver.Performer()
 
-	id, _ := r.ID(s.ctx, performer)
-	if id == "" {
+	if performer.ID == uuid.Nil {
 		s.t.Errorf("Expected created performer id to be non-zero")
 	}
 
@@ -206,7 +209,7 @@ func (s *performerTestRunner) testFindPerformer() {
 		return
 	}
 
-	performer, err := s.resolver.Query().FindPerformer(s.ctx, createdPerformer.ID.String())
+	performer, err := s.resolver.Query().FindPerformer(s.ctx, createdPerformer.UUID())
 	if err != nil {
 		s.t.Errorf("Error finding performer: %s", err.Error())
 		return
@@ -228,14 +231,18 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	cupSize := "C"
 	bandSize := 32
 	tattooDesc := "Foobar"
+	site, err := s.createTestSite(nil)
+	if err != nil {
+		return
+	}
 
 	input := &models.PerformerCreateInput{
 		Name:    s.generatePerformerName(),
 		Aliases: []string{"Alias1", "Alias2"},
 		Urls: []*models.URLInput{
 			&models.URLInput{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		Birthdate: &models.FuzzyDateInput{
@@ -267,15 +274,15 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		return
 	}
 
-	performerID := createdPerformer.ID.String()
+	performerID := createdPerformer.UUID()
 
 	updateInput := models.PerformerUpdateInput{
 		ID:      performerID,
 		Aliases: []string{"Alias3", "Alias4"},
 		Urls: []*models.URLInput{
 			&models.URLInput{
-				URL:  "URL",
-				Type: "Type",
+				URL:    "URL",
+				SiteID: site.ID,
 			},
 		},
 		Birthdate: &models.FuzzyDateInput{
@@ -369,7 +376,7 @@ func (s *performerTestRunner) testDestroyPerformer() {
 		return
 	}
 
-	performerID := createdPerformer.ID.String()
+	performerID := createdPerformer.UUID()
 
 	destroyed, err := s.resolver.Mutation().PerformerDestroy(s.ctx, models.PerformerDestroyInput{
 		ID: performerID,
@@ -398,37 +405,6 @@ func (s *performerTestRunner) testDestroyPerformer() {
 	// TODO - ensure scene was not removed
 }
 
-func (s *performerTestRunner) testUnauthorisedPerformerModify() {
-	// test each api interface - all require modify so all should fail
-	_, err := s.resolver.Mutation().PerformerCreate(s.ctx, models.PerformerCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("PerformerCreate: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().PerformerUpdate(s.ctx, models.PerformerUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("PerformerUpdate: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().PerformerDestroy(s.ctx, models.PerformerDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("PerformerDestroy: got %v want %v", err, api.ErrUnauthorized)
-	}
-}
-
-func (s *performerTestRunner) testUnauthorisedPerformerQuery() {
-	// test each api interface - all require read so all should fail
-	_, err := s.resolver.Query().FindPerformer(s.ctx, "")
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("FindPerformer: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Query().QueryPerformers(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("QueryPerformers: got %v want %v", err, api.ErrUnauthorized)
-	}
-}
-
 func TestCreatePerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testCreatePerformer()
@@ -450,18 +426,4 @@ func TestUpdatePerformer(t *testing.T) {
 func TestDestroyPerformer(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testDestroyPerformer()
-}
-
-func TestUnauthorisedPerformerModify(t *testing.T) {
-	pt := &performerTestRunner{
-		testRunner: *asRead(t),
-	}
-	pt.testUnauthorisedPerformerModify()
-}
-
-func TestUnauthorisedPerformerQuery(t *testing.T) {
-	pt := &performerTestRunner{
-		testRunner: *asNone(t),
-	}
-	pt.testUnauthorisedPerformerQuery()
 }

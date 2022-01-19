@@ -9,10 +9,16 @@ import { SceneUpdateInput, GenderEnum, FingerprintAlgorithm } from "./globalType
 // GraphQL mutation operation: UpdateScene
 // ====================================================
 
+export interface UpdateScene_sceneUpdate_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+}
+
 export interface UpdateScene_sceneUpdate_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: UpdateScene_sceneUpdate_urls_site;
 }
 
 export interface UpdateScene_sceneUpdate_studio {

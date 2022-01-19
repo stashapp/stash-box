@@ -1,5 +1,5 @@
-import React from "react";
-import { Row } from "react-bootstrap";
+import { FC } from "react";
+import { Col, Row } from "react-bootstrap";
 
 import { ImageFragment as Image } from "src/graphql/definitions/ImageFragment";
 
@@ -7,51 +7,60 @@ const CLASSNAME = "ImageChangeRow";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 
 export interface ImageChangeRowProps {
-  newImages?: (Image | null)[] | null;
-  oldImages?: (Image | null)[] | null;
+  newImages?: (Pick<Image, "id" | "url"> | null)[] | null;
+  oldImages?: (Pick<Image, "id" | "url"> | null)[] | null;
+  showDiff?: boolean;
 }
 
-const Images: React.FC<{ images: (Image | null)[] | null | undefined }> = ({
-  images,
-}) => (
+const Images: FC<{
+  images: (Pick<Image, "id" | "url"> | null)[] | null | undefined;
+}> = ({ images }) => (
   <>
-    {(images ?? []).map((image) =>
+    {(images ?? []).map((image, i) =>
       image === null ? (
-        <img className={CLASSNAME_IMAGE} alt="Deleted" />
+        <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
       ) : (
-        <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
+        <img
+          src={image.url}
+          className={CLASSNAME_IMAGE}
+          alt=""
+          key={image.id}
+        />
       )
     )}
   </>
 );
 
-const ImageChangeRow: React.FC<ImageChangeRowProps> = ({
+const ImageChangeRow: FC<ImageChangeRowProps> = ({
   newImages,
   oldImages,
+  showDiff = false,
 }) =>
   (newImages ?? []).length > 0 || (oldImages ?? []).length > 0 ? (
     <Row className={CLASSNAME}>
-      <b className="col-2 text-right">Images</b>
-      <div className="col-5">
-        {(oldImages ?? []).length > 0 && (
-          <>
-            <h6>Removed</h6>
-            <div className={CLASSNAME}>
-              <Images images={oldImages} />
-            </div>
-          </>
-        )}
-      </div>
-      <span className="col-5">
+      <b className="col-2 text-end">Images</b>
+      {showDiff && (
+        <Col xs={5}>
+          {(oldImages ?? []).length > 0 && (
+            <>
+              <h6>Removed</h6>
+              <div className={CLASSNAME}>
+                <Images images={oldImages} />
+              </div>
+            </>
+          )}
+        </Col>
+      )}
+      <Col xs={showDiff ? 5 : 10}>
         {(newImages ?? []).length > 0 && (
           <>
-            <h6>Added</h6>
+            {showDiff && <h6>Added</h6>}
             <div className={CLASSNAME}>
               <Images images={newImages} />
             </div>
           </>
         )}
-      </span>
+      </Col>
     </Row>
   ) : (
     <></>

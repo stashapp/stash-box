@@ -1,0 +1,78 @@
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/PerformerFragment.gql"
+#import "../fragments/TagFragment.gql"
+#import "../fragments/StudioFragment.gql"
+#import "../fragments/URLFragment.gql"
+query Draft($id: ID!) {
+  findDraft(id: $id) {
+    id
+    created
+    expires
+    data {
+      ... on PerformerDraft {
+        name
+        aliases
+        gender
+        birthdate
+        urls
+        ethnicity
+        country
+        eye_color
+        hair_color
+        height
+        measurements
+        breast_type
+        tattoos
+        piercings
+        career_start_year
+        career_end_year
+        image {
+          ...ImageFragment
+        }
+      }
+      ... on SceneDraft {
+        title
+        details
+        date
+        url {
+          ...URLFragment
+        }
+        studio {
+          ...on Studio {
+            ...StudioFragment
+          }
+          ... on DraftEntity { 
+            draftID: id
+            name
+          }
+        }
+        performers {
+          ...on Performer {
+            ...PerformerFragment
+          }
+          ... on DraftEntity { 
+            draftID: id
+            name
+          }
+        }
+        tags {
+          ...on Tag {
+            ...TagFragment
+          }
+          ... on DraftEntity { 
+            draftID: id
+            name
+          }
+        }
+        fingerprints {
+          hash
+          algorithm
+          duration
+        }
+        image {
+          ...ImageFragment
+        }
+      }
+    }
+  }
+}

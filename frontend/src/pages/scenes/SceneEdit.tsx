@@ -1,34 +1,62 @@
-import React from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { FC, useState } from "react";
+import { useHistory } from "react-router-dom";
 
-import { useScene, useUpdateScene, SceneUpdateInput } from "src/graphql";
-import { LoadingIndicator } from "src/components/fragments";
-import { sceneHref } from "src/utils";
+import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
+import {
+  useSceneEdit,
+  SceneEditDetailsInput,
+  OperationEnum,
+} from "src/graphql";
+import { createHref } from "src/utils";
+import { ROUTE_EDIT } from "src/constants";
 import SceneForm from "./sceneForm";
 
-const SceneEdit: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  scene: Scene;
+}
+
+const SceneEdit: FC<Props> = ({ scene }) => {
   const history = useHistory();
-  const { loading, data } = useScene({ id });
-  const [updateScene] = useUpdateScene({
-    onCompleted: () => {
-      if (data?.findScene?.id) history.push(sceneHref(data.findScene));
+  const [submissionError, setSubmissionError] = useState("");
+  const [insertSceneEdit, { loading: saving }] = useSceneEdit({
+    onCompleted: (result) => {
+      if (submissionError) setSubmissionError("");
+      if (result.sceneEdit.id)
+        history.push(createHref(ROUTE_EDIT, result.sceneEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
-  const doUpdate = (updateData: SceneUpdateInput) => {
-    updateScene({ variables: { updateData } });
+  const doUpdate = (updateData: SceneEditDetailsInput, editNote: string) => {
+    insertSceneEdit({
+      variables: {
+        sceneData: {
+          edit: {
+            id: scene.id,
+            operation: OperationEnum.MODIFY,
+            comment: editNote,
+          },
+          details: updateData,
+        },
+      },
+    });
   };
-
-  if (loading) return <LoadingIndicator message="Loading studio..." />;
-
-  if (!data?.findScene) return <div>Scene not found!</div>;
 
   return (
     <div>
-      <h3>Edit “{data.findScene.title}”</h3>
+      <h3>
+        Edit scene{" "}
+        <i>
+          <b>{scene.title}</b>
+        </i>
+      </h3>
       <hr />
-      <SceneForm scene={data.findScene} callback={doUpdate} />
+      <SceneForm scene={scene} callback={doUpdate} saving={saving} />
+      {submissionError && (
+        <div className="text-danger text-end col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </div>
   );
 };

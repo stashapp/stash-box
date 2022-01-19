@@ -18,6 +18,8 @@ type Tag struct {
 	Deleted     bool            `db:"deleted" json:"deleted"`
 }
 
+func (Tag) IsSceneDraftTag() {}
+
 func (p Tag) GetID() uuid.UUID {
 	return p.ID
 }
@@ -32,11 +34,6 @@ func (p Tags) Each(fn func(interface{})) {
 
 func (p *Tags) Add(o interface{}) {
 	*p = append(*p, o.(*Tag))
-}
-
-type TagRedirect struct {
-	SourceID uuid.UUID `db:"source_id" json:"source_id"`
-	TargetID uuid.UUID `db:"target_id" json:"target_id"`
 }
 
 type TagAlias struct {
@@ -123,10 +120,7 @@ func (p *Tag) CopyFromCreateInput(input TagCreateInput) {
 	CopyFull(p, input)
 
 	if input.CategoryID != nil {
-		UUID, err := uuid.FromString(*input.CategoryID)
-		if err == nil {
-			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
-		}
+		p.CategoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
 	}
 }
 
@@ -134,42 +128,25 @@ func (p *Tag) CopyFromUpdateInput(input TagUpdateInput) {
 	CopyFull(p, input)
 
 	if input.CategoryID != nil {
-		UUID, err := uuid.FromString(*input.CategoryID)
-		if err == nil {
-			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
-		}
+		p.CategoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
 	} else {
 		p.CategoryID = uuid.NullUUID{UUID: uuid.UUID{}, Valid: false}
 	}
 }
 
 func (p *Tag) CopyFromTagEdit(input TagEdit, existing *TagEdit) {
-	if input.Name != nil {
-		p.Name = *input.Name
-	}
-	if input.Description != nil {
-		p.Description = sql.NullString{String: *input.Description, Valid: true}
-	}
-	if input.CategoryID != nil {
-		UUID, err := uuid.FromString(*input.CategoryID)
-		if err == nil {
-			p.CategoryID = uuid.NullUUID{UUID: UUID, Valid: true}
-		}
-	} else if existing != nil && existing.CategoryID != nil {
-		p.CategoryID = uuid.NullUUID{UUID: uuid.UUID{}, Valid: false}
-	}
+	fe := fromEdit{}
+	fe.string(&p.Name, input.Name)
+	fe.nullString(&p.Description, input.Description, existing.Description)
+	fe.nullUUID(&p.CategoryID, input.CategoryID, existing.CategoryID)
 }
 
 func (p *Tag) ValidateModifyEdit(edit TagEditData) error {
-	if edit.Old.Name != nil && *edit.Old.Name != p.Name {
-		return errors.New("Invalid name. Expected '" + *edit.Old.Name + "'  but was '" + p.Name + "'")
-	}
-	if edit.Old.Description != nil && *edit.Old.Description != p.Description.String {
-		return errors.New("Invalid description. Expected '" + *edit.Old.Description + "'  but was '" + p.Description.String + "'")
-	}
-	if edit.Old.CategoryID != nil && (!p.CategoryID.Valid || (*edit.Old.CategoryID != p.CategoryID.UUID.String())) {
-		return errors.New("Invalid CategoryID. Expected '" + *edit.Old.CategoryID)
-	}
+	v := editValidator{}
 
-	return nil
+	v.string("name", edit.Old.Name, p.Name)
+	v.string("description", edit.Old.Description, p.Description.String)
+	v.uuid("CategoryID", edit.Old.CategoryID, p.CategoryID)
+
+	return v.err
 }

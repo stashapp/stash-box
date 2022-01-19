@@ -25,10 +25,26 @@
     background: transparent;
     border: none;
     color: white;
-    opacity: 1;
+    opacity: 100%;
 
     &:hover {
-      opacity: 0.8;
+      opacity: 80%;
+    }
+  }
+
+  &-performer-change {
+    width: 5rem;
+  }
+
+  .SearchField {
+    flex-grow: 1;
+    max-width: 400px;
+    width: auto;
+    position: relative;
+
+    .react-select__control {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
     }
   }
 
@@ -41,12 +57,6 @@
       margin-left: auto;
       padding-top: 0.5rem;
     }
-  }
-
-  .SearchField {
-    flex-grow: 1;
-    max-width: 400px;
-    width: auto;
   }
 
   .description {

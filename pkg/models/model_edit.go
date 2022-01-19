@@ -30,11 +30,18 @@ type EditComment struct {
 	Text      string          `db:"text" json:"text"`
 }
 
-func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
+type EditVote struct {
+	EditID    uuid.UUID       `db:"edit_id" json:"edit_id"`
+	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
+	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
+	Vote      string          `db:"vote" json:"vote"`
+}
+
+func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
 	currentTime := time.Now()
 
 	ret := &Edit{
-		ID:         UUID,
+		ID:         uuid,
 		UserID:     user.ID,
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
@@ -46,11 +53,11 @@ func NewEdit(UUID uuid.UUID, user *User, targetType TargetTypeEnum, input *EditI
 	return ret
 }
 
-func NewEditComment(UUID uuid.UUID, user *User, edit *Edit, text string) *EditComment {
+func NewEditComment(uuid uuid.UUID, user *User, edit *Edit, text string) *EditComment {
 	currentTime := time.Now()
 
 	ret := &EditComment{
-		ID:        UUID,
+		ID:        uuid,
 		EditID:    edit.ID,
 		UserID:    user.ID,
 		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
@@ -64,6 +71,25 @@ func (e Edit) GetID() uuid.UUID {
 	return e.ID
 }
 
+func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
+	currentTime := time.Now()
+
+	ret := &EditVote{
+		EditID:    edit.ID,
+		UserID:    user.ID,
+		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		Vote:      vote.String(),
+	}
+
+	return ret
+}
+
+func (e *Edit) Accept() {
+	e.Status = VoteStatusEnumAccepted.String()
+	e.Applied = true
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
 func (e *Edit) ImmediateAccept() {
 	e.Status = VoteStatusEnumImmediateAccepted.String()
 	e.Applied = true
@@ -72,6 +98,21 @@ func (e *Edit) ImmediateAccept() {
 
 func (e *Edit) ImmediateReject() {
 	e.Status = VoteStatusEnumImmediateRejected.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
+func (e *Edit) Reject() {
+	e.Status = VoteStatusEnumRejected.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
+func (e *Edit) Fail() {
+	e.Status = VoteStatusEnumFailed.String()
+	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+}
+
+func (e *Edit) Cancel() {
+	e.Status = VoteStatusEnumCanceled.String()
 	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
@@ -108,6 +149,25 @@ func (e *Edit) GetPerformerData() (*PerformerEditData, error) {
 	return &data, nil
 }
 
+func (e *Edit) GetStudioData() (*StudioEditData, error) {
+	data := StudioEditData{}
+	_ = json.Unmarshal(e.Data, &data)
+	return &data, nil
+}
+
+func (e *Edit) GetSceneData() (*SceneEditData, error) {
+	data := SceneEditData{}
+	_ = json.Unmarshal(e.Data, &data)
+	return &data, nil
+}
+
+func (e *Edit) IsDestructive() bool {
+	if e.Operation == OperationEnumDestroy.String() || e.Operation == OperationEnumMerge.String() {
+		return true
+	}
+	return false
+}
+
 type Edits []*Edit
 
 func (p Edits) Each(fn func(interface{})) {
@@ -118,6 +178,23 @@ func (p Edits) Each(fn func(interface{})) {
 
 func (p *Edits) Add(o interface{}) {
 	*p = append(*p, o.(*Edit))
+}
+
+type Redirect struct {
+	SourceID uuid.UUID `db:"source_id" json:"source_id"`
+	TargetID uuid.UUID `db:"target_id" json:"target_id"`
+}
+
+type Redirects []*Redirect
+
+func (p *Redirects) Add(o interface{}) {
+	*p = append(*p, o.(*Redirect))
+}
+
+func (p Redirects) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
 }
 
 type EditTag struct {
@@ -154,45 +231,54 @@ func (p *EditPerformers) Add(o interface{}) {
 	*p = append(*p, o.(*EditPerformer))
 }
 
-// type VoteComment struct {
-// 	ID      uuid.UUID      `db:"id" json:"id"`
-// 	EditID  uuid.UUID      `db:"edit_id" json:"edit_id"`
-// 	UserID  uuid.UUID      `db:"user_id" json:"user_id"`
-// 	Date    SQLiteDate     `db:"date" json:"date"`
-// 	Comment sql.NullString `db:"comment" json:"comment"`
-// 	Type    string         `db:"type" json:"type"`
-// }
+type EditStudio struct {
+	EditID   uuid.UUID `db:"edit_id" json:"edit_id"`
+	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+}
 
-// func (p *Scene) CopyFromCreateInput(input SceneCreateInput) {
-// 	CopyFull(p, input)
+type EditStudios []*EditStudio
 
-// 	if input.Date != nil {
-// 		p.setDate(*input.Date)
-// 	}
-// }
+func (p EditStudios) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
 
-// func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) {
-// 	CopyFull(p, input)
+func (p *EditStudios) Add(o interface{}) {
+	*p = append(*p, o.(*EditStudio))
+}
 
-// 	if input.Date != nil {
-// 		p.setDate(*input.Date)
-// 	}
-// }
+type EditScene struct {
+	EditID  uuid.UUID `db:"edit_id" json:"edit_id"`
+	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
+}
+
+type EditScenes []*EditScene
+
+func (p EditScenes) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditScenes) Add(o interface{}) {
+	*p = append(*p, o.(*EditScene))
+}
 
 type TagEdit struct {
-	Name           *string  `json:"name,omitempty"`
-	Description    *string  `json:"description,omitempty"`
-	AddedAliases   []string `json:"added_aliases,omitempty"`
-	RemovedAliases []string `json:"removed_aliases,omitempty"`
-	CategoryID     *string  `json:"category_id,omitempty"`
+	Name           *string    `json:"name,omitempty"`
+	Description    *string    `json:"description,omitempty"`
+	AddedAliases   []string   `json:"added_aliases,omitempty"`
+	RemovedAliases []string   `json:"removed_aliases,omitempty"`
+	CategoryID     *uuid.UUID `json:"category_id,omitempty"`
 }
 
 func (TagEdit) IsEditDetails() {}
 
 type TagEditData struct {
-	New          *TagEdit `json:"new_data,omitempty"`
-	Old          *TagEdit `json:"old_data,omitempty"`
-	MergeSources []string `json:"merge_sources,omitempty"`
+	New          *TagEdit    `json:"new_data,omitempty"`
+	Old          *TagEdit    `json:"old_data,omitempty"`
+	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
 }
 
 func (PerformerEdit) IsEditDetails() {}
@@ -223,22 +309,69 @@ type PerformerEdit struct {
 	RemovedTattoos    []*BodyModification `json:"removed_tattoos,omitempty"`
 	AddedPiercings    []*BodyModification `json:"added_piercings,omitempty"`
 	RemovedPiercings  []*BodyModification `json:"removed_piercings,omitempty"`
-	AddedImages       []string            `json:"added_images,omitempty"`
-	RemovedImages     []string            `json:"removed_images,omitempty"`
+	AddedImages       []uuid.UUID         `json:"added_images,omitempty"`
+	RemovedImages     []uuid.UUID         `json:"removed_images,omitempty"`
+	DraftID           *uuid.UUID          `json:"draft_id,omitempty"`
 }
 
 type PerformerEditData struct {
 	New              *PerformerEdit `json:"new_data,omitempty"`
 	Old              *PerformerEdit `json:"old_data,omitempty"`
-	MergeSources     []string       `json:"merge_sources,omitempty"`
+	MergeSources     []uuid.UUID    `json:"merge_sources,omitempty"`
 	SetModifyAliases bool           `json:"modify_aliases,omitempty"`
 	SetMergeAliases  bool           `json:"merge_aliases,omitempty"`
+}
+
+type StudioEdit struct {
+	Name *string `json:"name"`
+	// Added and modified URLs
+	AddedUrls     []*URL      `json:"added_urls,omitempty"`
+	RemovedUrls   []*URL      `json:"removed_urls,omitempty"`
+	ParentID      *uuid.UUID  `json:"parent_id,omitempty"`
+	AddedImages   []uuid.UUID `json:"added_images,omitempty"`
+	RemovedImages []uuid.UUID `json:"removed_images,omitempty"`
+}
+
+func (StudioEdit) IsEditDetails() {}
+
+type StudioEditData struct {
+	New          *StudioEdit `json:"new_data,omitempty"`
+	Old          *StudioEdit `json:"old_data,omitempty"`
+	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
+}
+
+type SceneEdit struct {
+	Title               *string                     `json:"title,omitempty"`
+	Details             *string                     `json:"details,omitempty"`
+	AddedUrls           []*URL                      `json:"added_urls,omitempty"`
+	RemovedUrls         []*URL                      `json:"removed_urls,omitempty"`
+	Date                *string                     `json:"date,omitempty"`
+	StudioID            *uuid.UUID                  `json:"studio_id,omitempty"`
+	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
+	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`
+	AddedTags           []uuid.UUID                 `json:"added_tags,omitempty"`
+	RemovedTags         []uuid.UUID                 `json:"removed_tags,omitempty"`
+	AddedImages         []uuid.UUID                 `json:"added_images,omitempty"`
+	RemovedImages       []uuid.UUID                 `json:"removed_images,omitempty"`
+	AddedFingerprints   []*FingerprintInput         `json:"added_fingerprints,omitempty"`
+	RemovedFingerprints []*FingerprintInput         `json:"removed_fingerprints,omitempty"`
+	Duration            *int64                      `json:"duration,omitempty"`
+	Director            *string                     `json:"director,omitempty"`
+	DraftID             *uuid.UUID                  `json:"draft_id,omitempty"`
+}
+
+func (SceneEdit) IsEditDetails() {}
+
+type SceneEditData struct {
+	New          *SceneEdit  `json:"new_data,omitempty"`
+	Old          *SceneEdit  `json:"old_data,omitempty"`
+	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
 }
 
 type EditData struct {
 	New          *json.RawMessage `json:"new_data,omitempty"`
 	Old          *json.RawMessage `json:"old_data,omitempty"`
-	MergeSources []string         `json:"merge_sources,omitempty"`
+	MergeSources []uuid.UUID      `json:"merge_sources,omitempty"`
 }
 
 type EditComments []*EditComment
@@ -251,4 +384,21 @@ func (p EditComments) Each(fn func(interface{})) {
 
 func (p *EditComments) Add(o interface{}) {
 	*p = append(*p, o.(*EditComment))
+}
+
+type EditVotes []*EditVote
+
+func (p EditVotes) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditVotes) Add(o interface{}) {
+	*p = append(*p, o.(*EditVote))
+}
+
+type EditQuery struct {
+	EditFilter *EditFilterType
+	Filter     *QuerySpec
 }

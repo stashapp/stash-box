@@ -1,7 +1,9 @@
-import React from "react";
+import { FC } from "react";
 import { Badge, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 
 interface IProps {
   title: string;
@@ -11,18 +13,18 @@ interface IProps {
   disabled?: boolean;
 }
 
-const TagLink: React.FC<IProps> = ({
+const TagLink: FC<IProps> = ({
   title,
   link,
   className,
   onRemove,
   disabled = false,
 }) => (
-  <Badge className={`tag-item ${className}`} variant="secondary">
+  <Badge className={cx("tag-item", className)} bg="none">
     {link && !disabled ? <Link to={link}>{title}</Link> : title}
     {onRemove && (
       <Button onClick={onRemove}>
-        <Icon icon="times" />
+        <Icon icon={faTimes} />
       </Button>
     )}
   </Badge>

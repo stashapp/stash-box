@@ -1,0 +1,8 @@
+query Version {
+  version {
+    hash
+    version
+    build_time
+    build_type
+  }
+}

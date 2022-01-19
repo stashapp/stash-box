@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory, useLocation } from "react-router-dom";
@@ -9,9 +9,17 @@ import cx from "classnames";
 
 import { useActivateUser } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
+import Title from "src/components/title";
 
 const schema = yup.object({
-  name: yup.string().required("Username is required"),
+  name: yup
+    .string()
+    .required("Username is required")
+    .test(
+      "excludeEmail",
+      "The username is public and should not be the same as your email",
+      (value, { parent }) => value?.trim() !== parent.email
+    ),
   email: yup.string().email().required("Email is required"),
   activationKey: yup.string().required("Activation Key is required"),
   password: yup.string().required("Password is required"),
@@ -22,7 +30,7 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-const ActivateNewUserPage: React.FC = () => {
+const ActivateNewUserPage: FC = () => {
   const query = useQuery();
   const history = useHistory();
   const Auth = useContext<ContextType>(AuthContext);
@@ -61,6 +69,7 @@ const ActivateNewUserPage: React.FC = () => {
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
+      <Title page="Active User" />
       <form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
@@ -84,7 +93,7 @@ const ActivateNewUserPage: React.FC = () => {
             placeholder="Username"
             {...register("name")}
           />
-          <div className="invalid-feedback">{errors?.name?.message}</div>
+          <div className="col invalid-feedback">{errors?.name?.message}</div>
         </label>
 
         <label className="row" htmlFor="password">
@@ -95,10 +104,12 @@ const ActivateNewUserPage: React.FC = () => {
             placeholder="Password"
             {...register("password")}
           />
-          <div className="invalid-feedback">{errors?.password?.message}</div>
+          <div className="col invalid-feedback">
+            {errors?.password?.message}
+          </div>
         </label>
         <div className="row">
-          <div className="col-3 offset-9 d-flex justify-content-end pr-0">
+          <div className="col-3 offset-9 d-flex justify-content-end">
             <div>
               <button type="submit" className="register-button btn btn-primary">
                 Create Account

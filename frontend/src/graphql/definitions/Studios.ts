@@ -15,27 +15,36 @@ export interface Studios_queryStudios_studios_parent {
   name: string;
 }
 
+export interface Studios_queryStudios_studios_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface Studios_queryStudios_studios_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: Studios_queryStudios_studios_urls_site;
 }
 
 export interface Studios_queryStudios_studios_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface Studios_queryStudios_studios {
   __typename: "Studio";
   id: string;
   name: string;
+  deleted: boolean;
   parent: Studios_queryStudios_studios_parent | null;
-  urls: (Studios_queryStudios_studios_urls | null)[];
+  urls: Studios_queryStudios_studios_urls[];
   images: Studios_queryStudios_studios_images[];
+  is_favorite: boolean;
 }
 
 export interface Studios_queryStudios {

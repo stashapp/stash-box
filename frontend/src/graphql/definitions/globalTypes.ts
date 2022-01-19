@@ -107,6 +107,7 @@ export enum OperationEnum {
 
 export enum RoleEnum {
   ADMIN = "ADMIN",
+  BOT = "BOT",
   EDIT = "EDIT",
   INVITE = "INVITE",
   MANAGE_INVITES = "MANAGE_INVITES",
@@ -133,12 +134,28 @@ export enum TargetTypeEnum {
   TAG = "TAG",
 }
 
+export enum ValidSiteTypeEnum {
+  PERFORMER = "PERFORMER",
+  SCENE = "SCENE",
+  STUDIO = "STUDIO",
+}
+
 export enum VoteStatusEnum {
   ACCEPTED = "ACCEPTED",
+  CANCELED = "CANCELED",
+  FAILED = "FAILED",
   IMMEDIATE_ACCEPTED = "IMMEDIATE_ACCEPTED",
   IMMEDIATE_REJECTED = "IMMEDIATE_REJECTED",
   PENDING = "PENDING",
   REJECTED = "REJECTED",
+}
+
+export enum VoteTypeEnum {
+  ABSTAIN = "ABSTAIN",
+  ACCEPT = "ACCEPT",
+  IMMEDIATE_ACCEPT = "IMMEDIATE_ACCEPT",
+  IMMEDIATE_REJECT = "IMMEDIATE_REJECT",
+  REJECT = "REJECT",
 }
 
 export interface ActivateNewUserInput {
@@ -190,6 +207,7 @@ export interface EditFilterType {
   applied?: boolean | null;
   target_type?: TargetTypeEnum | null;
   target_id?: string | null;
+  is_favorite?: boolean | null;
 }
 
 export interface EditInput {
@@ -200,18 +218,31 @@ export interface EditInput {
   comment?: string | null;
 }
 
+export interface EditVoteInput {
+  id: string;
+  vote: VoteTypeEnum;
+}
+
 export interface EyeColorCriterionInput {
   value?: EyeColorEnum | null;
   modifier: CriterionModifier;
 }
 
 export interface FingerprintEditInput {
+  user_ids?: string[] | null;
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
-  submissions: number;
   created: any;
-  updated: any;
+  submissions?: number | null;
+  updated?: any | null;
+}
+
+export interface FingerprintInput {
+  user_ids?: string[] | null;
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+  duration: number;
 }
 
 export interface FuzzyDateInput {
@@ -256,6 +287,11 @@ export interface MultiIDCriterionInput {
   modifier: CriterionModifier;
 }
 
+export interface MultiStringCriterionInput {
+  value: string[];
+  modifier: CriterionModifier;
+}
+
 export interface NewUserInput {
   email: string;
   invite_key?: string | null;
@@ -285,6 +321,7 @@ export interface PerformerEditDetailsInput {
   tattoos?: BodyModificationInput[] | null;
   piercings?: BodyModificationInput[] | null;
   image_ids?: string[] | null;
+  draft_id?: string | null;
 }
 
 export interface PerformerEditInput {
@@ -322,6 +359,7 @@ export interface PerformerFilterType {
   career_end_year?: IntCriterionInput | null;
   tattoos?: BodyModificationCriterionInput | null;
   piercings?: BodyModificationCriterionInput | null;
+  is_favorite?: boolean | null;
 }
 
 export interface QuerySpec {
@@ -363,6 +401,27 @@ export interface SceneDestroyInput {
   id: string;
 }
 
+export interface SceneEditDetailsInput {
+  title?: string | null;
+  details?: string | null;
+  urls?: URLInput[] | null;
+  date?: any | null;
+  studio_id?: string | null;
+  performers?: PerformerAppearanceInput[] | null;
+  tag_ids?: string[] | null;
+  image_ids?: string[] | null;
+  duration?: number | null;
+  director?: string | null;
+  fingerprints?: FingerprintInput[] | null;
+  draft_id?: string | null;
+}
+
+export interface SceneEditInput {
+  edit: EditInput;
+  details?: SceneEditDetailsInput | null;
+  duration?: number | null;
+}
+
 export interface SceneFilterType {
   text?: string | null;
   title?: string | null;
@@ -373,7 +432,7 @@ export interface SceneFilterType {
   tags?: MultiIDCriterionInput | null;
   performers?: MultiIDCriterionInput | null;
   alias?: StringCriterionInput | null;
-  fingerprints?: MultiIDCriterionInput | null;
+  fingerprints?: MultiStringCriterionInput | null;
 }
 
 export interface SceneUpdateInput {
@@ -391,6 +450,27 @@ export interface SceneUpdateInput {
   director?: string | null;
 }
 
+export interface SiteCreateInput {
+  name: string;
+  description?: string | null;
+  url?: string | null;
+  regex?: string | null;
+  valid_types: ValidSiteTypeEnum[];
+}
+
+export interface SiteDestroyInput {
+  id: string;
+}
+
+export interface SiteUpdateInput {
+  id: string;
+  name: string;
+  description?: string | null;
+  url?: string | null;
+  regex?: string | null;
+  valid_types: ValidSiteTypeEnum[];
+}
+
 export interface StringCriterionInput {
   value: string;
   modifier: CriterionModifier;
@@ -400,12 +480,23 @@ export interface StudioCreateInput {
   name: string;
   urls?: URLInput[] | null;
   parent_id?: string | null;
-  child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
 }
 
 export interface StudioDestroyInput {
   id: string;
+}
+
+export interface StudioEditDetailsInput {
+  name?: string | null;
+  urls?: URLInput[] | null;
+  parent_id?: string | null;
+  image_ids?: string[] | null;
+}
+
+export interface StudioEditInput {
+  edit: EditInput;
+  details?: StudioEditDetailsInput | null;
 }
 
 export interface StudioFilterType {
@@ -414,6 +505,7 @@ export interface StudioFilterType {
   url?: string | null;
   parent?: IDCriterionInput | null;
   has_parent?: boolean | null;
+  is_favorite?: boolean | null;
 }
 
 export interface StudioUpdateInput {
@@ -421,7 +513,6 @@ export interface StudioUpdateInput {
   name?: string | null;
   urls?: URLInput[] | null;
   parent_id?: string | null;
-  child_studio_ids?: string[] | null;
   image_ids?: string[] | null;
 }
 
@@ -463,7 +554,7 @@ export interface TagFilterType {
 
 export interface URLInput {
   url: string;
-  type: string;
+  site_id: string;
 }
 
 export interface UserChangePasswordInput {

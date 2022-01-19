@@ -1,27 +1,39 @@
-import React from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import { useAddScene, SceneUpdateInput, SceneCreateInput } from "src/graphql";
-import { sceneHref } from "src/utils";
+import {
+  useSceneEdit,
+  OperationEnum,
+  SceneEditDetailsInput,
+} from "src/graphql";
+import { editHref } from "src/utils";
 
 import SceneForm from "./sceneForm";
 
-const SceneAdd: React.FC = () => {
+const SceneAdd: FC = () => {
   const history = useHistory();
-  const [insertScene] = useAddScene({
+  const [submissionError, setSubmissionError] = useState("");
+  const [submitSceneEdit, { loading: saving }] = useSceneEdit({
     onCompleted: (data) => {
-      if (data?.sceneCreate?.id) history.push(sceneHref(data.sceneCreate));
+      if (submissionError) setSubmissionError("");
+      if (data.sceneEdit.id) history.push(editHref(data.sceneEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
-  const doInsert = (updateData: SceneUpdateInput) => {
-    const { id, ...sceneData } = updateData;
-    const insertData: SceneCreateInput = {
-      ...sceneData,
-      fingerprints: updateData.fingerprints || [],
-    };
-    insertScene({ variables: { sceneData: insertData } });
+  const doInsert = (updateData: SceneEditDetailsInput, editNote: string) => {
+    submitSceneEdit({
+      variables: {
+        sceneData: {
+          edit: {
+            operation: OperationEnum.CREATE,
+            comment: editNote,
+          },
+          details: updateData,
+        },
+      },
+    });
   };
 
   const emptyScene: Scene = {
@@ -37,6 +49,7 @@ const SceneAdd: React.FC = () => {
     tags: [],
     fingerprints: [],
     performers: [],
+    deleted: false,
     __typename: "Scene",
   };
 
@@ -44,7 +57,12 @@ const SceneAdd: React.FC = () => {
     <div>
       <h3>Add new scene</h3>
       <hr />
-      <SceneForm scene={emptyScene} callback={doInsert} />
+      <SceneForm scene={emptyScene} callback={doInsert} saving={saving} />
+      {submissionError && (
+        <div className="text-danger text-end col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </div>
   );
 };

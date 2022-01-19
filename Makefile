@@ -1,7 +1,3 @@
-LINTERS := \
-	github.com/kisielk/errcheck \
-	honnef.co/go/tools/cmd/staticcheck@latest
-
 LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
@@ -17,15 +13,27 @@ ifndef GITHASH
 endif
 
 ifndef STASH_BOX_VERSION
-	$(eval STASH_BOX_VERSION := 0.0.0)
+	$(eval STASH_BOX_VERSION := $(shell git describe --tags --abbrev=0 --exclude latest-develop))
+endif
+
+ifndef BUILD_TYPE
+	$(eval BUILD_TYPE := LOCAL)
+endif
+
+ifeq ($(BUILD_TYPE),OFFICIAL)
+	$(eval SNAPSHOT :=)
+else
+	$(eval SNAPSHOT := --snapshot)
 endif
 
 build: pre-build
-	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)'"
+	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)'"
 
 # Regenerates GraphQL files
-.PHONY: generate
-generate:
+generate: generate-backend generate-ui
+
+.PHONY: generate-backend
+generate-backend:
 	go generate
 
 .PHONY: generate-ui
@@ -44,7 +52,8 @@ generate-dataloaders:
 		go run github.com/vektah/dataloaden ImageLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Image"; \
 		go run github.com/vektah/dataloaden FingerprintsLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.Fingerprint"; \
 		go run github.com/vektah/dataloaden BodyModificationsLoader github.com/gofrs/uuid.UUID "[]*github.com/stashapp/stash-box/pkg/models.BodyModification"; \
-		go run github.com/vektah/dataloaden TagCategoryLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.TagCategory";
+		go run github.com/vektah/dataloaden TagCategoryLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.TagCategory"; \
+		go run github.com/vektah/dataloaden SiteLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Site";
 
 .PHONY: test
 test:
@@ -61,25 +70,10 @@ it:
 fmt:
 	go fmt ./...
 
-# Runs go vet on the project's source code.
-.PHONY: vet
-vet:
-	go vet ./...
-
-.PHONY: linterdeps
-linterdeps:
-	go get -v $(LINTERS)
-
-.PHONY: errcheck
-errcheck: linterdeps
-	errcheck -ignore 'fmt:[FS]?[Pp]rint*' ./...
-
-.PHONY: staticcheck
-staticcheck: linterdeps
-	staticcheck ./...
-
+# Runs all configured linuters. golangci-lint needs to be installed locally first.
 .PHONY: lint
-lint: vet staticcheck errcheck
+lint:
+	golangci-lint run
 
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile
@@ -88,20 +82,30 @@ pre-ui:
 ui:
 	cd frontend && yarn build
 
+.PHONY: ui-start
+ui-start:
+	cd frontend && yarn start
+
+.PHONY: ui-fmt
+ui-fmt:
+	cd frontend && yarn format
+
 # runs tests and checks on the UI and builds it
 .PHONY: ui-validate
 ui-validate:
 	cd frontend && yarn run validate
 
 .PHONY: cross-compile
-cross-compile:
+cross-compile: pre-build
 ifdef CI
 	$(eval CI_ARGS := -v $(PWD)/.go-cache:/root/.cache/go-build)
 endif
 	docker run --rm --privileged $(CI_ARGS) \
 				-v $(PWD):/go/src/github.com/stashapp/stash-box \
 				-v /var/run/docker.sock:/var/run/docker.sock \
+				-e GORELEASER_CURRENT_TAG=$(STASH_BOX_VERSION) \
+				-e STASH_BOX_BUILD_TYPE=$(BUILD_TYPE) \
 				-w /go/src/github.com/stashapp/stash-box \
-				ghcr.io/gythialy/golang-cross:latest --snapshot --rm-dist
+				ghcr.io/gythialy/golang-cross:latest $(SNAPSHOT) --rm-dist
 	# goreleaser outputs an unreadable file which trips up docker
 	sudo chmod 644 ./dist/artifacts.json

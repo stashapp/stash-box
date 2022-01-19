@@ -37,7 +37,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.16.x
+        go-version: 1.17.x
 
     - name: Install Node
       uses: actions/setup-node@v2
@@ -59,26 +59,32 @@ jobs:
         cache-name: cache-ui
       with:
         path: frontend/build
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock', 'frontend/public/**', 'frontend/src/**', 'graphql/**/*.graphql') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock', 'frontend/vite.config.js', 'frontend/src/**', 'graphql/**/*.graphql') }}
 
     - name: Cache go build
       uses: actions/cache@v2
       env:
-        cache-name: cache-go-cache
+        cache-name: cache-go-cache-2
       with:
-        path: .go-cache
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+        path: |
+          ~/go/pkg/mod
+          .go-cache
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.mod', '**/go.sum') }}
 
     - name: Pre-install
       run: make pre-ui
+
+    - name: Generate
+      # Make sure generate does not need to be run
+      run: |
+        make generate
+        git add --intent-to-add .
+        git diff --stat --exit-code
 
     - name: Validate UI
       # skip UI validation for pull requests if UI is unchanged
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-validate
-
-    - name: Generate
-      run: make generate
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
@@ -90,17 +96,28 @@ jobs:
     - name: Run tests
       env:
         POSTGRES_DB: postgres:postgres@localhost/postgres?sslmode=disable
-      run: make lint it
+      run: make it
+
+    - name: Set PR version
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      run: echo "BUILD_TYPE=PR" >> $GITHUB_ENV
+    - name: Set Official version
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest-develop' }}
+      run: echo "BUILD_TYPE=OFFICIAL" >> $GITHUB_ENV
+    - name: Set Development version
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      run: echo "BUILD_TYPE=DEVELOPMENT" >> $GITHUB_ENV
 
     - name: Crosscompile binaries
       run: make cross-compile
+      env: 
+        BUILD_TYPE: "${{ env.BUILD_TYPE }}"
 
     - name: Generate checksums
       run: |
-        git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
+        git describe --tags --exclude latest-develop | tee CHECKSUMS_SHA1
         sha1sum dist/*/stash-box-* | sed 's/dist\/.*\///g' | tee -a CHECKSUMS_SHA1
-        echo "STASH_BOX_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
-        echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
+        echo "STASH_BOX_VERSION=$(git describe --tags --exclude latest-develop)" >> $GITHUB_ENV
 
     - name: Upload Windows binary
       # only upload binaries for pull requests
@@ -124,27 +141,26 @@ jobs:
         name: stash-box-linux
         path: dist/stash-box_static_linux_amd64/stash-box-linux
 
-    - name: Update latest_develop tag
+    - name: Update latest-develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
-      run : git tag -f latest_develop; git push -f --tags
+      run : git tag -f latest-develop; git push -f --tags
+
     - name: Development Release
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
-      uses: meeDamian/github-release@2.0
+      uses: marvinpinto/action-automatic-releases@v1.1.2
       with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
-        allow_override: true
-        tag: latest_develop
-        name: "${{ env.STASH_BOX_VERSION }}: Latest development build"
-        body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
+        automatic_release_tag: latest-develop
+        title: "${{ env.STASH_BOX_VERSION }}: Latest development build"
         files: |
           dist/stash-box_windows_amd64/stash-box-windows.exe
           dist/stash-box_static_linux_amd64/stash-box-linux
           dist/stash-box_darwin_amd64/stash-box-darwin
           CHECKSUMS_SHA1
-        gzip: false
+
     - name: Master release
-      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest-develop' }}
       uses: meeDamian/github-release@2.0
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
@@ -170,7 +186,7 @@ jobs:
         docker push stashapp/stash-box:development
 
     - name: Release Docker
-      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest-develop' }}
       run: |
         docker build -t stashapp/stash-box:latest -f ./docker/ci/x86_64/Dockerfile ./dist
         docker push stashapp/stash-box:latest

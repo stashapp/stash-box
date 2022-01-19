@@ -5,6 +5,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -64,7 +65,7 @@ func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*in
 	thisYear := now.Year()
 	age := thisYear - birthYear
 	if now.YearDay() < birthdate.YearDay() {
-		age = age - 1
+		age--
 	}
 
 	return &age, nil
@@ -160,17 +161,17 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 	return sqb.CountByPerformer(obj.ID)
 }
 
-func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]string, error) {
-	mergedIDs, err := dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
-
-	var ids []string
-	for _, id := range mergedIDs {
-		ids = append(ids, id.String())
-	}
-	return ids, err
+func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
+	return dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {
 	sqb := r.getRepoFactory(ctx).Studio()
 	return sqb.CountByPerformer(obj.ID)
+}
+
+func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performer) (bool, error) {
+	jqb := r.getRepoFactory(ctx).Joins()
+	user := getCurrentUser(ctx)
+	return jqb.IsPerformerFavorite(models.PerformerFavorite{PerformerID: obj.ID, UserID: user.ID})
 }

@@ -35,18 +35,25 @@ export interface Performers_queryPerformers_performers_piercings {
   description: string | null;
 }
 
+export interface Performers_queryPerformers_performers_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface Performers_queryPerformers_performers_urls {
   __typename: "URL";
-  type: string;
   url: string;
+  site: Performers_queryPerformers_performers_urls_site;
 }
 
 export interface Performers_queryPerformers_performers_images {
   __typename: "Image";
   id: string;
   url: string;
-  height: number;
   width: number;
+  height: number;
 }
 
 export interface Performers_queryPerformers_performers {
@@ -75,6 +82,7 @@ export interface Performers_queryPerformers_performers {
   piercings: Performers_queryPerformers_performers_piercings[] | null;
   urls: Performers_queryPerformers_performers_urls[];
   images: Performers_queryPerformers_performers_images[];
+  is_favorite: boolean;
 }
 
 export interface Performers_queryPerformers {

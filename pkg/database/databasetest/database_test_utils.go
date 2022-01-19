@@ -1,7 +1,6 @@
 package databasetest
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -32,7 +31,7 @@ func pgDropAll(conn *sqlx.DB) {
 	// the schema
 	rows, err := conn.Queryx(`select 'drop table if exists "' || tablename || '" cascade;' from pg_tables`)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		panic("Error dropping tables: " + err.Error())
 	}
 	defer func() {
@@ -101,23 +100,6 @@ func runTests(m *testing.M, populater DatabasePopulater) int {
 func TestWithDatabase(m *testing.M, populater DatabasePopulater) {
 	ret := runTests(m, populater)
 	os.Exit(ret)
-}
-
-func WithTransientTransaction(ctx context.Context, fn func() error) error {
-	rollbackErr := errors.New("expected rollback")
-	err := repo.WithTxn(func() error {
-		if err := fn(); err != nil {
-			return err
-		}
-
-		return rollbackErr
-	})
-
-	if err != rollbackErr {
-		return err
-	}
-
-	return nil
 }
 
 func Repo() models.Repo {

@@ -10,23 +10,14 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *queryResolver) FindScene(ctx context.Context, id string) (*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
+func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Scene, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
 
-	idUUID, _ := uuid.FromString(id)
-	return qb.Find(idUUID)
+	return qb.Find(id)
 }
 
 func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint models.FingerprintQueryInput) ([]*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
 
@@ -34,10 +25,6 @@ func (r *queryResolver) FindSceneByFingerprint(ctx context.Context, fingerprint 
 }
 
 func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	if len(fingerprints) > 100 {
 		return nil, errors.New("Too many fingerprints")
 	}
@@ -49,10 +36,6 @@ func (r *queryResolver) FindScenesByFingerprints(ctx context.Context, fingerprin
 }
 
 func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, fingerprints []*models.FingerprintQueryInput) ([]*models.Scene, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	if len(fingerprints) > 100 {
 		return nil, errors.New("Too many fingerprints")
 	}
@@ -71,17 +54,23 @@ func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, finger
 	return qb.FindByFullFingerprints(fingerprints)
 }
 
-func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.SceneFilterType, filter *models.QuerySpec) (*models.QueryScenesResultType, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
+func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.SceneFilterType, filter *models.QuerySpec) (*models.SceneQuery, error) {
+	return &models.SceneQuery{
+		SceneFilter: sceneFilter,
+		Filter:      filter,
+	}, nil
+}
 
+type querySceneResolver struct{ *Resolver }
+
+func (r *querySceneResolver) Count(ctx context.Context, obj *models.SceneQuery) (int, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
+	return qb.QueryCount(obj.SceneFilter, obj.Filter)
+}
 
-	scenes, count := qb.Query(sceneFilter, filter)
-	return &models.QueryScenesResultType{
-		Scenes: scenes,
-		Count:  count,
-	}, nil
+func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery) ([]*models.Scene, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
+	return qb.QueryScenes(obj.SceneFilter, obj.Filter)
 }

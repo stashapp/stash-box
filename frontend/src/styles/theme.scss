@@ -1,0 +1,346 @@
+// 1. Include functions first (so you can manipulate colors, SVGs, calc, etc)
+@import "bootstrap/scss/functions";
+
+// 2. Include any default variable overrides here
+$primary: #137cbd;
+$secondary: #394b59;
+$success: #0f9960;
+$warning: #d9822b;
+$danger: #db3737;
+$dark: #394b59;
+$text-color: #f5f8fa;
+$muted-gray: #bfccd6;
+$text-muted: $muted-gray;
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "success": $success,
+  "warning": $warning,
+  "danger": $danger,
+  "dark": $dark,
+);
+$link-color: #48aff0;
+$link-hover-color: $link-color;
+$pre-color: $text-color;
+$popover-bg: $secondary;
+
+// Custom variables
+$dark-text: #182026;
+$textfield-bg: rgba(16 22 26 / 30%);
+
+// 3. Include remainder of required Bootstrap stylesheets
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
+// 4. Include any optional Bootstrap components as you like
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities";
+@import "bootstrap/scss/utilities/api";
+
+// Layout & components
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/pagination";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/modal";
+@import "bootstrap/scss/tooltip";
+@import "bootstrap/scss/popover";
+@import "bootstrap/scss/spinners";
+@import "bootstrap/scss/close";
+
+/*
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/button-group";
+@import "bootstrap/scss/accordion";
+@import "bootstrap/scss/breadcrumb";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/toasts";
+@import "bootstrap/scss/carousel";
+@import "bootstrap/scss/offcanvas";
+*/
+
+:root {
+  --bs-primary: #{$primary};
+  --bs-secondary: #{$secondary};
+  --bs-success: #{$success};
+  --bs-warning: #{$warning};
+  --bs-danger: #{$danger};
+  --bs-body-bg: #202b33;
+  --bs-dark: #{$dark};
+  --bs-dark-rgb: 57, 75, 89;
+}
+
+body {
+  color: $text-color;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-width: 1210px;
+}
+
+.table {
+  color: #f5f8fa;
+
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(92 112 128 / 15%);
+  --bs-table-striped-color: #f5f8fa;
+
+  td {
+    border: none;
+    padding: 0.25rem 0.75rem;
+    vertical-align: middle;
+
+    &:first-child {
+      padding-left: 1rem;
+    }
+  }
+}
+
+.btn.active:not(.disabled),
+.btn.active.minimal:not(.disabled) {
+  background-color: rgba(138 155 168 / 30%);
+  color: $text-color;
+}
+
+.btn-link {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+a {
+  color: unset;
+  text-decoration: none;
+
+  &:hover {
+    color: unset;
+    text-decoration: underline;
+  }
+}
+
+a.minimal,
+button.minimal {
+  background: none;
+  border: none;
+  color: $text-color;
+  transition: none;
+
+  &:hover {
+    background: rgba(138 155 168 / 15%);
+    color: $text-color;
+  }
+
+  &:active {
+    background: rgba(138 155 168 / 30%);
+    color: $text-color;
+  }
+}
+
+a[aria-current] {
+  font-weight: bold;
+}
+
+label.is-invalid {
+  .error-message {
+    color: red;
+  }
+}
+
+hr {
+  margin: 5px 0;
+  background-color: rgba(0 0 0 / 10%);
+  opacity: 100%;
+}
+
+.dropdown-toggle::after {
+  content: none;
+}
+
+.nav-tabs {
+  border: none;
+  margin: auto;
+  margin-bottom: 0.5rem;
+
+  .nav-link {
+    border: none;
+    color: $text-color;
+    padding: 8px;
+
+    &.active {
+      background-color: transparent;
+      border-bottom: 2px solid;
+      color: $link-color;
+
+      &:hover {
+        border-bottom-color: $link-color;
+        cursor: default;
+      }
+    }
+
+    &:hover {
+      border-bottom: 2px solid white;
+    }
+  }
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: $text-color;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.tab-content {
+  padding-bottom: 2rem;
+}
+
+.form-floating {
+  .form-label {
+    color: var(--bs-body-color);
+  }
+}
+
+.form-control {
+  &-plaintext {
+    color: $text-color;
+    margin: 0;
+    padding: 0;
+
+    option {
+      color: black;
+    }
+
+    &::placeholder {
+      color: transparent;
+    }
+
+    &:hover {
+      cursor: default;
+    }
+  }
+}
+
+.popover {
+  max-width: inherit;
+
+  &-body {
+    color: $text-color;
+    white-space: pre-wrap;
+  }
+}
+
+.modal {
+  color: $dark-text;
+
+  .modal-body,
+  .modal-footer {
+    background-color: rgb(235 241 245);
+  }
+}
+
+.card {
+  background-color: #30404d;
+  border: none;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(16 22 26 / 40%), 0 0 0 rgba(16 22 26 / 0%),
+    0 0 0 rgba(16 22 26 / 0%);
+  overflow: hidden;
+  padding: 0;
+  margin: calc($grid-gutter-width * 0.5) 0;
+
+  &-footer,
+  &-header {
+    background-color: transparent;
+    border: none;
+  }
+}
+
+.page-link {
+  background-color: var(--bs-secondary);
+  border-bottom: none;
+  border-left-color: var(--bs-body-bg);
+  border-right-color: var(--bs-body-bg);
+  border-top: none;
+  color: white;
+}
+
+.page-link:focus {
+  background-color: var(--bs-secondary);
+  color: white;
+}
+
+.page-link:hover,
+.page-item.active .page-link {
+  background-color: #2a3742;
+  border-color: #25313a;
+  color: white;
+  z-index: 1;
+}
+
+.page-item:first-child .page-link {
+  border-left-color: var(--bs-secondary);
+}
+
+.page-item:last-child .page-link {
+  border-right-color: var(--bs-secondary);
+}
+
+.page-item.disabled .page-link {
+  background-color: var(--bs-secondary);
+  color: $gray-400;
+}
+
+.text-input,
+.input-control {
+  border: 0;
+  box-shadow: 0 0 0 0 rgba(19 124 189 / 0%), 0 0 0 0 rgba(19 124 189 / 0%),
+    0 0 0 0 rgba(19 124 189 / 0%), inset 0 0 0 1px rgba(16 22 26 / 30%),
+    inset 0 1px 1px rgba(16 22 26 / 40%);
+  color: $text-color;
+
+  &:focus {
+    border: 0;
+    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary,
+      0 0 0 3px rgba(19 124 189 / 30%), inset 0 0 0 1px rgba(16 22 26 / 30%),
+      inset 0 1px 1px rgba(16 22 26 / 40%);
+    color: $text-color;
+  }
+}
+
+/* stylelint-disable no-descending-specificity */
+.text-input,
+.text-input[readonly],
+.text-input:focus {
+  background-color: $textfield-bg;
+}
+
+.input-control,
+.input-control:focus {
+  background-color: $secondary;
+}
+/* stylelint-enable no-descending-specificity */
+
+textarea.text-input {
+  line-height: 2.5ex;
+  min-height: 12ex;
+  overflow-y: scroll;
+}
+
+.sr-only {
+  @include visually-hidden;
+}

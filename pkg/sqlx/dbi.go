@@ -109,34 +109,44 @@ func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 	return q.db().Queryx(query, args...)
 }
 
+func (q dbi) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
+	rows, err := q.queryx(query, args...)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		// TODO - log error instead of returning SQL
+		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
+		return err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	for rows.Next() {
+		if err := f(rows); err != nil {
+			return err
+		}
+	}
+
+	return rows.Err()
+}
+
 // Find returns the row object with the provided id, or returns nil if not
 // found.
 func (q dbi) Find(id uuid.UUID, t table) (interface{}, error) {
 	query := selectStatement(t) + " WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 
-	var rows *sqlx.Rows
-	var err error
-	rows, err = q.queryx(query, args...)
+	var output interface{}
 
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	output := t.NewObject()
-	if rows.Next() {
+	// just get the first row
+	if err := q.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		output = t.NewObject()
 		if err := rows.StructScan(output); err != nil {
-			return nil, err
+			return err
 		}
-	} else {
-		// not found
-		return nil, nil
-	}
 
-	if err := rows.Err(); err != nil {
+		return rows.Close()
+	}); err != nil {
 		return nil, err
 	}
 
@@ -185,9 +195,7 @@ func (q dbi) InsertJoinsWithConflictHandling(tj tableJoin, joins Joins, conflict
 // ReplaceJoins replaces table join objects with the provided primary table
 // id value with the provided join objects.
 func (q dbi) ReplaceJoins(tj tableJoin, id uuid.UUID, joins Joins) error {
-	err := q.DeleteJoins(tj, id)
-
-	if err != nil {
+	if err := q.DeleteJoins(tj, id); err != nil {
 		return err
 	}
 
@@ -221,12 +229,26 @@ func (q dbi) FindAllJoins(tj tableJoin, ids []uuid.UUID, output Joins) error {
 // RawQuery performs a query on the provided table using the query string
 // and argument slice. It outputs the results to the output slice.
 func (q dbi) RawQuery(t table, query string, args []interface{}, output Models) error {
+	return q.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		o := t.NewObject()
+		if err := rows.StructScan(o); err != nil {
+			return err
+		}
+
+		output.Add(o)
+		return nil
+	})
+}
+
+// RawExec performs a query on the provided table using the query string
+// and argument slice.
+func (q dbi) RawExec(query string, args []interface{}) error {
 	var rows *sqlx.Rows
 	var err error
 
 	rows, err = q.queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		// TODO - log error instead of returning SQL
 		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", query, args))
 		return err
@@ -234,15 +256,6 @@ func (q dbi) RawQuery(t table, query string, args []interface{}, output Models) 
 	defer func() {
 		_ = rows.Close()
 	}()
-
-	for rows.Next() {
-		o := t.NewObject()
-		if err := rows.StructScan(o); err != nil {
-			return err
-		}
-
-		output.Add(o)
-	}
 
 	return rows.Err()
 }
@@ -260,7 +273,7 @@ func (q dbi) Count(query queryBuilder) (int, error) {
 	rawQuery = q.db().Rebind(rawQuery)
 	err = q.db().Get(&result, rawQuery, query.args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		// TODO - log error instead of returning SQL
 		err = errors.Wrap(err, fmt.Sprintf("Error executing query: %s, with args: %v", rawQuery, query.args))
 		return 0, err
@@ -282,6 +295,14 @@ func (q dbi) Query(query queryBuilder, output Models) (int, error) {
 	err = q.RawQuery(query.Table, query.buildQuery(), query.args, output)
 
 	return count, err
+}
+
+func (q dbi) CountOnly(query queryBuilder) (int, error) {
+	return q.Count(query)
+}
+
+func (q dbi) QueryOnly(query queryBuilder, output Models) error {
+	return q.RawQuery(query.Table, query.buildQuery(), query.args, output)
 }
 
 // DeleteQuery deletes table rows that match the query provided.

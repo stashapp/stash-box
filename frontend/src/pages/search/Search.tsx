@@ -1,7 +1,16 @@
-import React, { useMemo } from "react";
+import { FC, useMemo } from "react";
 import { useHistory, useParams, Link } from "react-router-dom";
 import { Card, Col, Form, Row } from "react-bootstrap";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
+import {
+  faBirthdayCake,
+  faFlag,
+  faVideo,
+  faCalendar,
+  faUsers,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 
 import {
   SearchAll_searchPerformer as Performer,
@@ -10,10 +19,12 @@ import {
 import { useSearchAll } from "src/graphql";
 import {
   Icon,
+  FavoriteStar,
   GenderIcon,
   LoadingIndicator,
   PerformerName,
 } from "src/components/fragments";
+import Title from "src/components/title";
 import {
   formatFuzzyDate,
   getImage,
@@ -32,7 +43,7 @@ const CLASSNAME_PERFORMER_IMAGE = `${CLASSNAME_PERFORMER}-image`;
 const CLASSNAME_SCENE = `${CLASSNAME}-scene`;
 const CLASSNAME_SCENE_IMAGE = `${CLASSNAME_SCENE}-image`;
 
-const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
+const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
   <Link to={performerHref(performer)} className={CLASSNAME_PERFORMER}>
     <Card>
       <img
@@ -40,10 +51,15 @@ const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
         className={CLASSNAME_PERFORMER_IMAGE}
         alt=""
       />
-      <div className="ml-3">
+      <div className="ms-3">
         <h4>
           <GenderIcon gender={performer?.gender} />
           <PerformerName performer={performer} />
+          <FavoriteStar
+            entity={performer}
+            entityType="performer"
+            className="ps-2"
+          />
           {performer.aliases.length > 0 && (
             <h6>
               <small>Aliases: {performer.aliases.join(", ")}</small>
@@ -53,18 +69,18 @@ const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
         <div>
           {performer.birthdate?.date && (
             <div>
-              <Icon icon="birthday-cake" />
+              <Icon icon={faBirthdayCake} />
               {formatFuzzyDate(performer.birthdate)}
             </div>
           )}
           {performer.country && (
             <div>
-              <Icon icon="flag" />
+              <Icon icon={faFlag} />
               {getCountryByISO(performer.country)}
             </div>
           )}
           <div>
-            <Icon icon="video" />
+            <Icon icon={faVideo} />
             {performer.scene_count} scene{performer.scene_count > 1 && "s"}
           </div>
         </div>
@@ -73,7 +89,7 @@ const PerformerCard: React.FC<{ performer: Performer }> = ({ performer }) => (
   </Link>
 );
 
-const SceneCard: React.FC<{ scene: Scene }> = ({ scene }) => (
+const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
   <Link to={sceneHref(scene)} className={CLASSNAME_SCENE}>
     <Card>
       <img
@@ -81,25 +97,25 @@ const SceneCard: React.FC<{ scene: Scene }> = ({ scene }) => (
         className={CLASSNAME_SCENE_IMAGE}
         alt=""
       />
-      <div className="ml-3 w-100">
+      <div className="ms-3 w-100">
         <h5>
           {scene.title}
-          <small className="text-muted ml-2">
+          <small className="text-muted ms-2">
             {formatDuration(scene.duration)}
           </small>
         </h5>
         <div>
           <div>
-            <Icon icon="calendar" />
+            <Icon icon={faCalendar} />
             {scene.date}
           </div>
           <div>
-            <Icon icon="video" />
+            <Icon icon={faVideo} />
             {scene.studio?.name ?? "Unknown"}
           </div>
           {scene.performers.length > 0 && (
             <div>
-              <Icon icon="users" />
+              <Icon icon={faUsers} />
               {scene.performers.map((p) => p.as ?? p.performer.name).join(", ")}
             </div>
           )}
@@ -113,7 +129,7 @@ interface IParams {
   term?: string;
 }
 
-const Search: React.FC = () => {
+const Search: FC = () => {
   const { term } = useParams<IParams>();
   const history = useHistory();
   const { loading, data } = useSearchAll(
@@ -138,8 +154,9 @@ const Search: React.FC = () => {
 
   return (
     <div className={CLASSNAME}>
-      <Form.Group className={CLASSNAME_INPUT}>
-        <Icon icon="search" />
+      <Title page={term} />
+      <Form.Group className={cx(CLASSNAME_INPUT, "mb-3")}>
+        <Icon icon={faSearch} />
         <Form.Control
           defaultValue={term}
           onChange={(e) => debouncedSearch(e.currentTarget.value)}

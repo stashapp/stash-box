@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	tagCategoryTable   = "tag_categories"
-	tagCategoryJoinKey = "category_id"
+	tagCategoryTable = "tag_categories"
 )
 
 var (
@@ -91,11 +90,11 @@ func (qb *tagCategoryQueryBuilder) Query(findFilter *models.QuerySpec) ([]*model
 
 	query := newQueryBuilder(tagCategoryDBTable)
 
-	query.SortAndPagination = qb.getTagCategorySort(findFilter) + getPagination(findFilter)
+	query.Sort = qb.getTagCategorySort(findFilter)
+	query.Pagination = getPagination(findFilter)
+
 	var categories models.TagCategories
-
 	countResult, err := qb.dbi.Query(*query, &categories)
-
 	if err != nil {
 		return nil, 0, err
 	}

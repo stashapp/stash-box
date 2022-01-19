@@ -1,11 +1,13 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
 
 import AuthContext, { ContextType } from "src/AuthContext";
+import { ROUTE_REGISTER, ROUTE_FORGOT_PASSWORD } from "src/constants/route";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 
 import "./App.scss";
@@ -21,7 +23,7 @@ const Messages: Record<string, string> = {
   "account-created": "Account successfully created",
 };
 
-const Login: React.FC = () => {
+const Login: FC = () => {
   const [loading, setLoading] = useState(false);
   const history = useHistory();
   const [loginError, setLoginError] = useState("");
@@ -53,66 +55,63 @@ const Login: React.FC = () => {
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
-      <form
+      <Form
         className="align-self-center col-4 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <label className="row" htmlFor="username">
-          <span className="col-4">Username: </span>
-          <input
-            type="text"
-            className={cx("col-8", { "is-invalid": errors?.username })}
+        <Form.Floating>
+          <Form.Control
+            className={cx({ "is-invalid": errors?.username })}
+            placeholder="Username"
             {...register("username")}
           />
-          <div className="invalid-feedback text-right">
+          <Form.Label>Username</Form.Label>
+          <div className="invalid-feedback text-end">
             {errors?.username?.message}
           </div>
-        </label>
-        <label className="row" htmlFor="password">
-          <span className="col-4">Password:</span>
-          <input
+        </Form.Floating>
+        <Form.Floating className="my-3">
+          <Form.Control
             type="password"
-            className={cx("col-8", { "is-invalid": errors?.password })}
+            className={cx({ "is-invalid": errors?.password })}
+            placeholder="Password"
             {...register("password")}
           />
-          <div className="invalid-feedback text-right">
+          <Form.Label>Password</Form.Label>
+          <div className="invalid-feedback text-end">
             {errors?.password?.message}
           </div>
-        </label>
-        <div className="row">
-          <div className="col-9">
+        </Form.Floating>
+        <Row>
+          <Col xs={9}>
             <div>
-              <Link to="/register">
+              <Link to={ROUTE_REGISTER}>
                 <small>Register</small>
               </Link>
             </div>
             <div>
-              <Link to="/forgotPassword">
+              <Link to={ROUTE_FORGOT_PASSWORD}>
                 <small>Forgot Password</small>
               </Link>
             </div>
-          </div>
-          <div className="col-3 d-flex justify-content-end pr-0">
+          </Col>
+          <Col xs={3} className="d-flex justify-content-end">
             <div>
-              <button
-                type="submit"
-                className="login-button btn btn-primary"
-                disabled={loading}
-              >
+              <Button type="submit" className="login-button" disabled={loading}>
                 Login
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
-        <div className="row">
-          <p className="col text-right text-danger">{loginError}</p>
-        </div>
-        <div className="row">
-          <p className="col text-right text-success">
+          </Col>
+        </Row>
+        <Row>
+          <p className="col text-end text-danger">{loginError}</p>
+        </Row>
+        <Row>
+          <p className="col text-end text-success">
             {Messages[msg ?? ""] ?? ""}
           </p>
-        </div>
-      </form>
+        </Row>
+      </Form>
     </div>
   );
 };

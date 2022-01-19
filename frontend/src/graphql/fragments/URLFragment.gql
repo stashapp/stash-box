@@ -1,0 +1,8 @@
+fragment URLFragment on URL {
+  url
+  site {
+    id
+    name
+    icon
+  }
+}

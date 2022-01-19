@@ -1,7 +1,7 @@
-import React from "react";
+import { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Card, Form, Row } from "react-bootstrap";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import querystring from "query-string";
 
 import { useTags, SortDirectionEnum, TagFilterType } from "src/graphql";
@@ -18,10 +18,7 @@ interface TagListProps {
   showCategoryLink?: boolean;
 }
 
-const TagList: React.FC<TagListProps> = ({
-  tagFilter,
-  showCategoryLink = false,
-}) => {
+const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
   const history = useHistory();
   const queries = querystring.parse(history.location.search);
   const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
@@ -43,9 +40,9 @@ const TagList: React.FC<TagListProps> = ({
     <li key={tag.id}>
       <Link to={tagHref(tag)}>{tag.name}</Link>
       {tag.description && (
-        <span className="ml-2">
+        <span className="ms-2">
           &bull;
-          <small className="ml-2">{tag.description}</small>
+          <small className="ms-2">{tag.description}</small>
         </span>
       )}
     </li>
@@ -66,12 +63,12 @@ const TagList: React.FC<TagListProps> = ({
       id="tag-query"
       onChange={(e) => debouncedHandler(e.currentTarget.value)}
       placeholder="Filter tag name"
+      defaultValue={query ?? ""}
       className="w-25"
     />
   );
 
-  if (!loading && !data)
-    return <ErrorMessage error="Failed to load performers" />;
+  if (!loading && !data) return <ErrorMessage error="Failed to load tags." />;
 
   return (
     <List
@@ -85,9 +82,9 @@ const TagList: React.FC<TagListProps> = ({
     >
       <Card>
         <Card.Body className="pt-4">
-          <Row noGutters>
+          <Row className="g-0">
             {showCategoryLink && (
-              <Link to={createHref(ROUTE_CATEGORIES)} className="ml-4">
+              <Link to={createHref(ROUTE_CATEGORIES)} className="ms-2">
                 <h5>List of Categories</h5>
               </Link>
             )}

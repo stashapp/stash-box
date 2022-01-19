@@ -1,5 +1,5 @@
-directive @isAdmin on FIELD_DEFINITION
-directive @isOwner on FIELD_DEFINITION
+directive @isUserOwner on FIELD_DEFINITION
+directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION
 
 enum RoleEnum {
   READ
@@ -11,27 +11,29 @@ enum RoleEnum {
   INVITE
   """May grant and rescind invite tokens and resind invite keys"""
   MANAGE_INVITES
+  BOT
 }
 
 type User {
   id: ID!
   name: String!
   """Should not be visible to other users"""
-  roles: [RoleEnum!] @isOwner
+  roles: [RoleEnum!] @isUserOwner
   """Should not be visible to other users"""
-  email: String @isOwner
+  email: String @isUserOwner
   """Should not be visible to other users"""
-  api_key: String @isOwner
-  successful_edits: Int!
-  unsuccessful_edits: Int!
-  successful_votes: Int!
-  """Votes on unsuccessful edits"""
-  unsuccessful_votes: Int!
+  api_key: String @isUserOwner
+
+  """ Vote counts by type """
+  vote_count: UserVoteCount!
+  """ Edit counts by status """
+  edit_count: UserEditCount!
+
   """Calls to the API from this user over a configurable time period"""
-  api_calls: Int! @isOwner
-  invited_by: User @isOwner
-  invite_tokens: Int @isOwner
-  active_invite_codes: [String!] @isOwner
+  api_calls: Int! @isUserOwner
+  invited_by: User @isUserOwner
+  invite_tokens: Int @isUserOwner
+  active_invite_codes: [String!] @isUserOwner
 }
 
 input UserCreateInput {
@@ -121,4 +123,22 @@ input UserFilterType {
   api_calls: IntCriterionInput
   """Filter by user that invited"""
   invited_by: ID
+}
+
+type UserEditCount {
+  accepted: Int!
+  rejected: Int!
+  pending: Int!
+  immediate_accepted: Int!
+  immediate_rejected: Int!
+  failed: Int!
+  canceled: Int!
+}
+
+type UserVoteCount {
+  abstain: Int!
+  accept: Int!
+  reject: Int!
+  immediate_accept: Int!
+  immediate_reject: Int!
 }

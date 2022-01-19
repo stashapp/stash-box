@@ -39,6 +39,17 @@ type config struct {
 	EmailCooldown     int      `mapstructure:"email_cooldown"`
 	DefaultUserRoles  []string `mapstructure:"default_user_roles"`
 
+	// Number of approved edits before user automatically gets VOTE role
+	VotePromotionThreshold int `mapstructure:"vote_promotion_threshold"`
+	// Number of positive votes required for immediate approval
+	VoteApplicationThreshold int `mapstructure:"vote_application_threshold"`
+	// Duration, in seconds, of the voting period
+	VotingPeriod int `mapstructure:"voting_period"`
+	// Duration, in seconds, of the minimum voting period for destructive edits
+	MinDestructiveVotingPeriod int `mapstructure:"min_destructive_voting_period"`
+	// Interval between checks for completed voting periods
+	VoteCronInterval string `mapstructure:"vote_cron_interval"`
+
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
 	EmailPort int    `mapstructure:"email_port"`
@@ -50,6 +61,7 @@ type config struct {
 	// Image storage settings
 	ImageLocation string `mapstructure:"image_location"`
 	ImageBackend  string `mapstructure:"image_backend"`
+	FaviconPath   string `mapstructure:"favicon_path"`
 
 	// Logging options
 	LogFile     string `mapstructure:"logFile"`
@@ -62,6 +74,10 @@ type config struct {
 	}
 
 	PHashDistance int `mapstructure:"phash_distance"`
+
+	Title string `mapstructure:"title"`
+
+	DraftTimeLimit int `mapstructure:"draft_time_limit"`
 }
 
 var JWTSignKey = "jwt_secret_key"
@@ -77,13 +93,19 @@ const (
 
 var defaultUserRoles = []string{"READ", "VOTE", "EDIT"}
 var C = &config{
-	RequireInvite:     true,
-	RequireActivation: true,
-	ActivationExpiry:  2 * 60 * 60,
-	EmailCooldown:     5 * 60,
-	EmailPort:         25,
-	ImageBackend:      string(FileBackend),
-	PHashDistance:     0,
+	RequireInvite:              true,
+	RequireActivation:          true,
+	ActivationExpiry:           2 * 60 * 60,
+	EmailCooldown:              5 * 60,
+	EmailPort:                  25,
+	ImageBackend:               string(FileBackend),
+	PHashDistance:              0,
+	VoteApplicationThreshold:   3,
+	VotePromotionThreshold:     10,
+	VoteCronInterval:           "5m",
+	VotingPeriod:               345600,
+	MinDestructiveVotingPeriod: 172800,
+	DraftTimeLimit:             86400,
 }
 
 func GetDatabasePath() string {
@@ -288,4 +310,45 @@ func GetMissingEmailSettings() []string {
 	}
 
 	return missing
+}
+
+func GetVotePromotionThreshold() *int {
+	if C.VotePromotionThreshold == 0 {
+		return nil
+	}
+	return &C.VotePromotionThreshold
+}
+
+func GetVoteApplicationThreshold() int {
+	return C.VoteApplicationThreshold
+}
+
+func GetVotingPeriod() int {
+	return C.VotingPeriod
+}
+
+func GetMinDestructiveVotingPeriod() int {
+	return C.MinDestructiveVotingPeriod
+}
+
+func GetVoteCronInterval() string {
+	return C.VoteCronInterval
+}
+
+func GetTitle() string {
+	if C.Title == "" {
+		return "Stash-Box"
+	}
+	return C.Title
+}
+
+func GetFaviconPath() *string {
+	if len(C.FaviconPath) == 0 {
+		return nil
+	}
+	return &C.FaviconPath
+}
+
+func GetDraftTimeLimit() int {
+	return C.DraftTimeLimit
 }
