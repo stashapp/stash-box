@@ -38,5 +38,8 @@ builds:
 archives:
   - format: binary
 
+release:
+  disable: true
+
 snapshot:
   name_template: '{{ .Version }}'
