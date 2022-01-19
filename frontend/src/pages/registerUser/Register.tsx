@@ -1,9 +1,10 @@
-import React, { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import cx from "classnames";
 
+import Title from "src/components/title";
 import { useNewUser } from "src/graphql";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
@@ -16,7 +17,7 @@ const schema = yup.object({
 });
 type RegisterFormData = yup.Asserts<typeof schema>;
 
-const Register: React.FC = () => {
+const Register: FC = () => {
   const history = useHistory();
   const [awaitingActivation, setAwaitingActivation] = useState(false);
   const Auth = useContext<ContextType>(AuthContext);
@@ -70,6 +71,7 @@ const Register: React.FC = () => {
 
   return (
     <div className="LoginPrompt mx-auto d-flex">
+      <Title page="Register Account" />
       <form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
@@ -82,7 +84,7 @@ const Register: React.FC = () => {
             placeholder="Email"
             {...register("email")}
           />
-          <div className="invalid-feedback text-right">
+          <div className="invalid-feedback text-end">
             {errors?.email?.message}
           </div>
         </label>
@@ -94,12 +96,12 @@ const Register: React.FC = () => {
             placeholder="Invite Key"
             {...register("inviteKey")}
           />
-          <div className="invalid-feedback text-right">
+          <div className="invalid-feedback text-end">
             {errors?.inviteKey?.message}
           </div>
         </label>
         <div className="row">
-          <div className="col-3 offset-9 d-flex justify-content-end pr-0">
+          <div className="col-3 offset-9 d-flex justify-content-end">
             <div>
               <button type="submit" className="register-button btn btn-primary">
                 Register
@@ -108,7 +110,7 @@ const Register: React.FC = () => {
           </div>
         </div>
         <div className="row">
-          <p className="col text-danger text-right">{submitError}</p>
+          <p className="col text-danger text-end">{submitError}</p>
         </div>
       </form>
     </div>

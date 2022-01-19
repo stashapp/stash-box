@@ -1,0 +1,8 @@
+#import "../fragments/QuerySceneFragment.gql"
+query ScenesWithoutCount($filter: QuerySpec, $sceneFilter: SceneFilterType) {
+  queryScenes(filter: $filter, scene_filter: $sceneFilter) {
+    scenes {
+      ...QuerySceneFragment
+    }
+  }
+}

@@ -1,7 +1,7 @@
-import React from "react";
+import { FC, ChangeEvent } from "react";
 import Creatable from "react-select/creatable";
 import { components } from "react-select";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { Control, useFieldArray } from "react-hook-form";
 
 interface BodyModificationProps {
@@ -22,7 +22,7 @@ type BodyModificationFieldArray = {
 
 const CLASSNAME = "BodyModification";
 
-const BodyModification: React.FC<BodyModificationProps> = ({
+const BodyModification: FC<BodyModificationProps> = ({
   name,
   locationPlaceholder,
   descriptionPlaceholder,
@@ -34,10 +34,10 @@ const BodyModification: React.FC<BodyModificationProps> = ({
     append,
     remove,
     update,
-  } = useFieldArray<BodyModificationFieldArray, string, "location">({
+  } = useFieldArray<BodyModificationFieldArray, string, "key">({
     control,
     name,
-    keyName: "location",
+    keyName: "key",
   });
   const isNewLocationValid = (inputValue: string): boolean =>
     !!inputValue &&
@@ -48,34 +48,28 @@ const BodyModification: React.FC<BodyModificationProps> = ({
   };
 
   const modificationList = modifications.map((mod, index) => (
-    <Form.Row key={mod.location} className="mb-1">
+    <Row key={mod.location} className="mb-1">
       <InputGroup className="col">
-        <InputGroup.Prepend>
-          <InputGroup.Text className="font-weight-bold">
-            Location
-          </InputGroup.Text>
-        </InputGroup.Prepend>
+        <InputGroup.Text className="fw-bold">Location</InputGroup.Text>
         <Form.Control defaultValue={mod.location} readOnly />
         <Form.Control
           defaultValue={mod.description ?? ""}
           placeholder={descriptionPlaceholder}
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onInput={(e: ChangeEvent<HTMLInputElement>) =>
             update(index, { ...mod, description: e.currentTarget.value })
           }
         />
-        <InputGroup.Append>
-          <Button variant="danger" onClick={() => remove(index)}>
-            Remove
-          </Button>
-        </InputGroup.Append>
+        <Button variant="danger" onClick={() => remove(index)}>
+          Remove
+        </Button>
       </InputGroup>
-    </Form.Row>
+    </Row>
   ));
 
   return (
     <>
-      <Form.Row className={CLASSNAME}>
-        <Form.Group className="col">
+      <Row className={CLASSNAME}>
+        <Col className="mb-3">
           <Form.Label className="text-capitalize">{name}</Form.Label>
           <Creatable
             classNamePrefix="react-select"
@@ -91,8 +85,8 @@ const BodyModification: React.FC<BodyModificationProps> = ({
                 data.options.length > 0 ? <components.Menu {...data} /> : <></>,
             }}
           />
-        </Form.Group>
-      </Form.Row>
+        </Col>
+      </Row>
       {modificationList}
     </>
   );

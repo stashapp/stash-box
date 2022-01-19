@@ -1,8 +1,9 @@
-import React from "react";
+import { FC } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
+import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
 import querystring from "query-string";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 
 import { useUsers, SortDirectionEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
@@ -17,7 +18,7 @@ import {
 
 const PER_PAGE = 20;
 
-const UsersComponent: React.FC = () => {
+const UsersComponent: FC = () => {
   const history = useHistory();
   const queries = querystring.parse(history.location.search);
   const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
@@ -38,10 +39,10 @@ const UsersComponent: React.FC = () => {
 
   const users = data?.queryUsers.users.map((user) => (
     <tr key={user.id}>
-      <td>
+      <td className="text-nowrap">
         <Link to={createHref(ROUTE_USER_EDIT, user)}>
           <Button variant="secondary" className="minimal">
-            <Icon icon="user-edit" />
+            <Icon icon={faUserEdit} />
           </Button>
         </Link>
         <Link to={createHref(ROUTE_USER, user)}>
@@ -81,7 +82,7 @@ const UsersComponent: React.FC = () => {
     <>
       <div className="d-flex">
         <h3>Users</h3>
-        <Link to={ROUTE_USER_ADD} className="ml-auto">
+        <Link to={ROUTE_USER_ADD} className="ms-auto">
           <Button>Add User</Button>
         </Link>
       </div>
@@ -93,7 +94,7 @@ const UsersComponent: React.FC = () => {
         listCount={data?.queryUsers.count}
         filters={filters}
       >
-        <Table striped className="users-table">
+        <Table striped className="users-table" variant="dark">
           <thead>
             <tr>
               <th>Username</th>

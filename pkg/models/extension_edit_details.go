@@ -1,38 +1,17 @@
 package models
 
 import (
-	"errors"
+	"github.com/gofrs/uuid"
 )
 
 func (e TagEditDetailsInput) TagEditFromDiff(orig Tag) TagEditData {
 	newData := &TagEdit{}
 	oldData := &TagEdit{}
 
-	if e.Name != nil && *e.Name != orig.Name {
-		newName := *e.Name
-		newData.Name = &newName
-		oldData.Name = &orig.Name
-	}
-
-	if e.Description != nil && (!orig.Description.Valid || *e.Description != orig.Description.String) {
-		newDesc := *e.Description
-		newData.Description = &newDesc
-		if orig.Description.Valid {
-			oldData.Description = &orig.Description.String
-		}
-	}
-
-	if e.CategoryID == nil && orig.CategoryID.Valid {
-		oldCategory := orig.CategoryID.UUID.String()
-		oldData.CategoryID = &oldCategory
-	} else if e.CategoryID != nil && (!orig.CategoryID.Valid || *e.CategoryID != orig.CategoryID.UUID.String()) {
-		newCategory := *e.CategoryID
-		newData.CategoryID = &newCategory
-		if orig.CategoryID.Valid {
-			oldCategory := orig.CategoryID.UUID.String()
-			oldData.CategoryID = &oldCategory
-		}
-	}
+	ed := editDiff{}
+	oldData.Name, newData.Name = ed.string(&orig.Name, e.Name)
+	oldData.Description, newData.Description = ed.nullString(orig.Description, e.Description)
+	oldData.CategoryID, newData.CategoryID = ed.nullUUID(orig.CategoryID, e.CategoryID)
 
 	return TagEditData{
 		New: newData,
@@ -40,7 +19,7 @@ func (e TagEditDetailsInput) TagEditFromDiff(orig Tag) TagEditData {
 	}
 }
 
-func (e TagEditDetailsInput) TagEditFromMerge(orig Tag, sources []string) TagEditData {
+func (e TagEditDetailsInput) TagEditFromMerge(orig Tag, sources []uuid.UUID) TagEditData {
 	data := e.TagEditFromDiff(orig)
 	data.MergeSources = sources
 
@@ -48,25 +27,10 @@ func (e TagEditDetailsInput) TagEditFromMerge(orig Tag, sources []string) TagEdi
 }
 
 func (e TagEditDetailsInput) TagEditFromCreate() TagEditData {
-	newData := &TagEdit{}
-
-	if e.Name != nil {
-		newName := *e.Name
-		newData.Name = &newName
-	}
-
-	if e.Description != nil {
-		newDesc := *e.Description
-		newData.Description = &newDesc
-	}
-
-	if e.CategoryID != nil {
-		newCategory := *e.CategoryID
-		newData.CategoryID = &newCategory
-	}
+	ret := e.TagEditFromDiff(Tag{})
 
 	return TagEditData{
-		New: newData,
+		New: ret.New,
 	}
 }
 
@@ -74,165 +38,30 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 	newData := &PerformerEdit{}
 	oldData := &PerformerEdit{}
 
-	if e.Name != nil && *e.Name != orig.Name {
-		newName := *e.Name
-		newData.Name = &newName
-		oldData.Name = &orig.Name
+	ed := editDiff{}
+	oldData.Name, newData.Name = ed.string(&orig.Name, e.Name)
+	oldData.Disambiguation, newData.Disambiguation = ed.nullString(orig.Disambiguation, e.Disambiguation)
+	oldData.Gender, newData.Gender = ed.nullStringEnum(orig.Gender, e.Gender)
+	oldData.Birthdate, oldData.BirthdateAccuracy, newData.Birthdate, newData.BirthdateAccuracy = ed.fuzzyDate(orig.Birthdate, orig.BirthdateAccuracy, e.Birthdate)
+	oldData.Ethnicity, newData.Ethnicity = ed.nullStringEnum(orig.Ethnicity, e.Ethnicity)
+	oldData.Country, newData.Country = ed.nullString(orig.Country, e.Country)
+	oldData.EyeColor, newData.EyeColor = ed.nullStringEnum(orig.EyeColor, e.EyeColor)
+	oldData.HairColor, newData.HairColor = ed.nullStringEnum(orig.HairColor, e.HairColor)
+	oldData.Height, newData.Height = ed.nullInt64(orig.Height, e.Height)
+
+	measurements := e.Measurements
+	if measurements == nil {
+		measurements = &MeasurementsInput{}
 	}
 
-	if e.Disambiguation == nil && orig.Disambiguation.Valid {
-		oldData.Disambiguation = &orig.Disambiguation.String
-	} else if e.Disambiguation != nil && (!orig.Disambiguation.Valid || *e.Disambiguation != orig.Disambiguation.String) {
-		newDisambiguation := *e.Disambiguation
-		newData.Disambiguation = &newDisambiguation
-		if orig.Disambiguation.Valid {
-			oldData.Disambiguation = &orig.Disambiguation.String
-		}
-	}
+	oldData.CupSize, newData.CupSize = ed.nullString(orig.CupSize, measurements.CupSize)
+	oldData.BandSize, newData.BandSize = ed.nullInt64(orig.BandSize, measurements.BandSize)
+	oldData.WaistSize, newData.WaistSize = ed.nullInt64(orig.WaistSize, measurements.Waist)
+	oldData.HipSize, newData.HipSize = ed.nullInt64(orig.HipSize, measurements.Hip)
 
-	if e.Gender == nil && orig.Gender.Valid {
-		oldData.Gender = &orig.Gender.String
-	} else if e.Gender != nil && (!orig.Gender.Valid || e.Gender.String() != orig.Gender.String) {
-		newGender := e.Gender.String()
-		newData.Gender = &newGender
-		if orig.Gender.Valid {
-			oldData.Gender = &orig.Gender.String
-		}
-	}
-
-	if e.Birthdate == nil && orig.Birthdate.Valid {
-		oldData.Birthdate = &orig.Birthdate.String
-	} else if e.Birthdate != nil && (!orig.Birthdate.Valid || e.Birthdate.Date != orig.Birthdate.String || e.Birthdate.Accuracy.String() != orig.BirthdateAccuracy.String) {
-		newData.Birthdate = &e.Birthdate.Date
-		newAccuracy := e.Birthdate.Accuracy.String()
-		newData.BirthdateAccuracy = &newAccuracy
-		if orig.Birthdate.Valid {
-			oldData.Birthdate = &orig.Birthdate.String
-			oldData.BirthdateAccuracy = &orig.BirthdateAccuracy.String
-		}
-	}
-
-	if e.Ethnicity == nil && orig.Ethnicity.Valid {
-		oldData.Ethnicity = &orig.Ethnicity.String
-	} else if e.Ethnicity != nil && (!orig.Ethnicity.Valid || e.Ethnicity.String() != orig.Ethnicity.String) {
-		newEthnicity := e.Ethnicity.String()
-		newData.Ethnicity = &newEthnicity
-		if orig.Ethnicity.Valid {
-			oldData.Ethnicity = &orig.Ethnicity.String
-		}
-	}
-
-	if e.Country == nil && orig.Country.Valid {
-		oldData.Country = &orig.Country.String
-	} else if e.Country != nil && (!orig.Country.Valid || *e.Country != orig.Country.String) {
-		newCountry := *e.Country
-		newData.Country = &newCountry
-		if orig.Country.Valid {
-			oldData.Country = &orig.Country.String
-		}
-	}
-
-	if e.EyeColor == nil && orig.EyeColor.Valid {
-		oldData.EyeColor = &orig.EyeColor.String
-	} else if e.EyeColor != nil && (!orig.EyeColor.Valid || e.EyeColor.String() != orig.EyeColor.String) {
-		newEyeColor := e.EyeColor.String()
-		newData.EyeColor = &newEyeColor
-		if orig.EyeColor.Valid {
-			oldData.EyeColor = &orig.EyeColor.String
-		}
-	}
-
-	if e.HairColor == nil && orig.HairColor.Valid {
-		oldData.HairColor = &orig.HairColor.String
-	} else if e.HairColor != nil && (!orig.HairColor.Valid || e.HairColor.String() != orig.HairColor.String) {
-		newHairColor := e.HairColor.String()
-		newData.HairColor = &newHairColor
-		if orig.HairColor.Valid {
-			oldData.HairColor = &orig.HairColor.String
-		}
-	}
-
-	if e.Height == nil && orig.Height.Valid {
-		oldData.Height = &orig.Height.Int64
-	} else if e.Height != nil && (!orig.Height.Valid || int64(*e.Height) != orig.Height.Int64) {
-		newHeight := int64(*e.Height)
-		newData.Height = &newHeight
-		if orig.Height.Valid {
-			oldData.Height = &orig.Height.Int64
-		}
-	}
-
-	if e.Measurements != nil {
-		if e.Measurements.CupSize == nil && orig.CupSize.Valid {
-			oldData.CupSize = &orig.CupSize.String
-		} else if e.Measurements.CupSize != nil && (!orig.CupSize.Valid || *e.Measurements.CupSize != orig.CupSize.String) {
-			newCup := *e.Measurements.CupSize
-			newData.CupSize = &newCup
-			if orig.CupSize.Valid {
-				oldData.CupSize = &orig.CupSize.String
-			}
-		}
-
-		if e.Measurements.BandSize == nil && orig.BandSize.Valid {
-			oldData.BandSize = &orig.BandSize.Int64
-		} else if e.Measurements.BandSize != nil && (!orig.BandSize.Valid || int64(*e.Measurements.BandSize) != orig.BandSize.Int64) {
-			newBand := int64(*e.Measurements.BandSize)
-			newData.BandSize = &newBand
-			if orig.BandSize.Valid {
-				oldData.BandSize = &orig.BandSize.Int64
-			}
-		}
-
-		if e.Measurements.Waist == nil && orig.WaistSize.Valid {
-			oldData.WaistSize = &orig.WaistSize.Int64
-		} else if e.Measurements.Waist != nil && (!orig.WaistSize.Valid || int64(*e.Measurements.Waist) != orig.WaistSize.Int64) {
-			newWaist := int64(*e.Measurements.Waist)
-			newData.WaistSize = &newWaist
-			if orig.WaistSize.Valid {
-				oldData.WaistSize = &orig.WaistSize.Int64
-			}
-		}
-
-		if e.Measurements.Hip == nil && orig.HipSize.Valid {
-			oldData.HipSize = &orig.HipSize.Int64
-		} else if e.Measurements.Hip != nil && (!orig.HipSize.Valid || int64(*e.Measurements.Hip) != orig.HipSize.Int64) {
-			newHip := int64(*e.Measurements.Hip)
-			newData.HipSize = &newHip
-			if orig.HipSize.Valid {
-				oldData.HipSize = &orig.HipSize.Int64
-			}
-		}
-	}
-
-	if e.BreastType == nil && orig.BreastType.Valid {
-		oldData.BreastType = &orig.BreastType.String
-	} else if e.BreastType != nil && (!orig.BreastType.Valid || e.BreastType.String() != orig.BreastType.String) {
-		newBreastType := e.BreastType.String()
-		newData.BreastType = &newBreastType
-		if orig.BreastType.Valid {
-			oldData.BreastType = &orig.BreastType.String
-		}
-	}
-
-	if e.CareerStartYear == nil && orig.CareerStartYear.Valid {
-		oldData.CareerStartYear = &orig.CareerStartYear.Int64
-	} else if e.CareerStartYear != nil && (!orig.CareerStartYear.Valid || int64(*e.CareerStartYear) != orig.CareerStartYear.Int64) {
-		newCareerStartYear := int64(*e.CareerStartYear)
-		newData.CareerStartYear = &newCareerStartYear
-		if orig.CareerStartYear.Valid {
-			oldData.CareerStartYear = &orig.CareerStartYear.Int64
-		}
-	}
-
-	if e.CareerEndYear == nil && orig.CareerEndYear.Valid {
-		oldData.CareerEndYear = &orig.CareerEndYear.Int64
-	} else if e.CareerEndYear != nil && (!orig.CareerEndYear.Valid || int64(*e.CareerEndYear) != orig.CareerEndYear.Int64) {
-		newCareerStartEnd := int64(*e.CareerEndYear)
-		newData.CareerEndYear = &newCareerStartEnd
-		if orig.CareerEndYear.Valid {
-			oldData.CareerEndYear = &orig.CareerEndYear.Int64
-		}
-	}
+	oldData.BreastType, newData.BreastType = ed.nullStringEnum(orig.BreastType, e.BreastType)
+	oldData.CareerStartYear, newData.CareerStartYear = ed.nullInt64(orig.CareerStartYear, e.CareerStartYear)
+	oldData.CareerEndYear, newData.CareerEndYear = ed.nullInt64(orig.CareerEndYear, e.CareerEndYear)
 
 	return PerformerEditData{
 		New: newData,
@@ -240,7 +69,7 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 	}
 }
 
-func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, sources []string) PerformerEditData {
+func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, sources []uuid.UUID) PerformerEditData {
 	data := e.PerformerEditFromDiff(orig)
 	data.MergeSources = sources
 
@@ -248,93 +77,76 @@ func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, source
 }
 
 func (e PerformerEditDetailsInput) PerformerEditFromCreate() PerformerEditData {
-	newData := &PerformerEdit{}
-
-	if e.Name != nil {
-		newName := *e.Name
-		newData.Name = &newName
-	}
-
-	if e.Disambiguation != nil {
-		newDisambiguation := *e.Disambiguation
-		newData.Disambiguation = &newDisambiguation
-	}
-
-	if e.Gender != nil {
-		newGender := e.Gender.String()
-		newData.Gender = &newGender
-	}
-
-	if e.Birthdate != nil {
-		newData.Birthdate = &e.Birthdate.Date
-		newAccuracy := e.Birthdate.Accuracy.String()
-		newData.BirthdateAccuracy = &newAccuracy
-	}
-
-	if e.Ethnicity != nil {
-		newEthnicity := e.Ethnicity.String()
-		newData.Ethnicity = &newEthnicity
-	}
-
-	if e.Country != nil {
-		newCountry := *e.Country
-		newData.Country = &newCountry
-	}
-
-	if e.EyeColor != nil {
-		newEyeColor := e.EyeColor.String()
-		newData.EyeColor = &newEyeColor
-	}
-
-	if e.HairColor != nil {
-		newHairColor := e.HairColor.String()
-		newData.HairColor = &newHairColor
-	}
-
-	if e.Height != nil {
-		newHeight := int64(*e.Height)
-		newData.Height = &newHeight
-	}
-
-	if e.Measurements != nil {
-		if e.Measurements.CupSize != nil {
-			newCup := *e.Measurements.CupSize
-			newData.CupSize = &newCup
-		}
-
-		if e.Measurements.BandSize != nil {
-			newBand := int64(*e.Measurements.BandSize)
-			newData.BandSize = &newBand
-		}
-
-		if e.Measurements.Waist != nil {
-			newWaist := int64(*e.Measurements.Waist)
-			newData.WaistSize = &newWaist
-		}
-
-		if e.Measurements.Hip != nil {
-			newHip := int64(*e.Measurements.Hip)
-			newData.HipSize = &newHip
-		}
-	}
-
-	if e.BreastType != nil {
-		newBreastType := e.BreastType.String()
-		newData.BreastType = &newBreastType
-	}
-
-	if e.CareerStartYear != nil {
-		newCareerStartYear := int64(*e.CareerStartYear)
-		newData.CareerStartYear = &newCareerStartYear
-	}
-
-	if e.CareerEndYear != nil {
-		newCareerStartEnd := int64(*e.CareerEndYear)
-		newData.CareerEndYear = &newCareerStartEnd
-	}
+	ret := e.PerformerEditFromDiff(Performer{})
 
 	return PerformerEditData{
+		New: ret.New,
+	}
+}
+
+func (e StudioEditDetailsInput) StudioEditFromDiff(orig Studio) StudioEditData {
+	newData := &StudioEdit{}
+	oldData := &StudioEdit{}
+
+	ed := editDiff{}
+	oldData.Name, newData.Name = ed.string(&orig.Name, e.Name)
+	oldData.ParentID, newData.ParentID = ed.nullUUID(orig.ParentStudioID, e.ParentID)
+
+	return StudioEditData{
 		New: newData,
+		Old: oldData,
+	}
+}
+
+func (e StudioEditDetailsInput) StudioEditFromMerge(orig Studio, sources []uuid.UUID) StudioEditData {
+	data := e.StudioEditFromDiff(orig)
+	data.MergeSources = sources
+
+	return data
+}
+
+func (e StudioEditDetailsInput) StudioEditFromCreate() StudioEditData {
+	newData := &StudioEdit{}
+
+	ed := editDiff{}
+	_, newData.Name = ed.string(nil, e.Name)
+	_, newData.ParentID = ed.nullUUID(uuid.NullUUID{}, e.ParentID)
+
+	return StudioEditData{
+		New: newData,
+	}
+}
+
+func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) SceneEditData {
+	newData := &SceneEdit{}
+	oldData := &SceneEdit{}
+
+	ed := editDiff{}
+	oldData.Title, newData.Title = ed.nullString(orig.Title, e.Title)
+	oldData.Details, newData.Details = ed.nullString(orig.Details, e.Details)
+	oldData.Date, newData.Date = ed.sqliteDate(orig.Date, e.Date)
+	oldData.StudioID, newData.StudioID = ed.nullUUID(orig.StudioID, e.StudioID)
+	oldData.Duration, newData.Duration = ed.nullInt64(orig.Duration, e.Duration)
+	oldData.Director, newData.Director = ed.nullString(orig.Director, e.Director)
+
+	return SceneEditData{
+		New: newData,
+		Old: oldData,
+	}
+}
+
+func (e SceneEditDetailsInput) SceneEditFromMerge(orig Scene, sources []uuid.UUID) SceneEditData {
+	data := e.SceneEditFromDiff(orig)
+	data.MergeSources = sources
+
+	return data
+}
+
+func (e SceneEditDetailsInput) SceneEditFromCreate() SceneEditData {
+	ret := e.SceneEditFromDiff(Scene{})
+
+	return SceneEditData{
+		New: ret.New,
 	}
 }
 
@@ -349,31 +161,25 @@ type EditSlice interface {
 	Remove(v string)
 }
 
-func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice) error {
+func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityType string) {
 	idMap := map[string]bool{}
 	current.Each(func(v interface{}) {
 		idMap[v.(EditSliceValue).ID()] = true
 	})
 
-	var err error
-
 	removed.Each(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
-		if !idMap[id] {
-			err = errors.New("Invalid removal. ID does not exist: '" + id + "'")
+		if idMap[id] {
+			current.Remove(id)
+			idMap[id] = false
 		}
-		current.Remove(id)
-		idMap[id] = false
 	})
 
 	added.EachPtr(func(v interface{}) {
 		id := v.(EditSliceValue).ID()
-		if idMap[id] {
-			err = errors.New("Invalid addition. ID already exists '" + id + "'")
+		if !idMap[id] {
+			current.Add(v)
+			idMap[id] = true
 		}
-		current.Add(v)
-		idMap[id] = true
 	})
-
-	return err
 }

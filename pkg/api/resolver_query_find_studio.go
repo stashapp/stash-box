@@ -6,19 +6,15 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
-func (r *queryResolver) FindStudio(ctx context.Context, id *string, name *string) (*models.Studio, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
+func (r *queryResolver) FindStudio(ctx context.Context, id *uuid.UUID, name *string) (*models.Studio, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Studio()
 
 	if id != nil {
-		idUUID, _ := uuid.FromString(*id)
-		return qb.Find(idUUID)
+		return qb.Find(*id)
 	} else if name != nil {
 		return qb.FindByName(*name)
 	}
@@ -27,16 +23,13 @@ func (r *queryResolver) FindStudio(ctx context.Context, id *string, name *string
 }
 
 func (r *queryResolver) QueryStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.QuerySpec) (*models.QueryStudiosResultType, error) {
-	if err := validateRead(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Studio()
+	user := user.GetCurrentUser(ctx)
 
-	studios, count := qb.Query(studioFilter, filter)
+	studios, count, err := qb.Query(studioFilter, filter, user.ID)
 	return &models.QueryStudiosResultType{
 		Studios: studios,
 		Count:   count,
-	}, nil
+	}, err
 }

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -37,22 +38,23 @@ func buildCountQuery(query string) string {
 }
 
 func getPagination(findFilter *models.QuerySpec) string {
-	if findFilter == nil {
-		panic("nil find filter for pagination")
+	filter := findFilter
+	if filter == nil {
+		filter = &models.QuerySpec{}
 	}
 
 	var page int
-	if findFilter.Page == nil || *findFilter.Page < 1 {
+	if filter.Page == nil || *filter.Page < 1 {
 		page = 1
 	} else {
-		page = *findFilter.Page
+		page = *filter.Page
 	}
 
 	var perPage int
-	if findFilter.PerPage == nil {
+	if filter.PerPage == nil {
 		perPage = 25
 	} else {
-		perPage = *findFilter.PerPage
+		perPage = *filter.PerPage
 	}
 	if perPage > 10000 {
 		perPage = 10000
@@ -69,20 +71,21 @@ func getSort(dialect Dialect, sort string, direction string, tableName string, s
 		direction = "ASC"
 	}
 
-	if strings.Contains(sort, "_count") {
+	switch {
+	case strings.Contains(sort, "_count"):
 		var relationTableName = strings.Split(sort, "_")[0] // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
-	} else if strings.Compare(sort, "filesize") == 0 {
+	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
 		return " ORDER BY cast(" + colName + " as integer) " + direction
-	} else if strings.Compare(sort, "random") == 0 {
+	case strings.Compare(sort, "random") == 0:
 		// https://stackoverflow.com/a/24511461
 		// TODO seed as a parameter from the UI
 		colName := getColumn(tableName, "id")
 		randomSortString := strconv.FormatFloat(randomSortFloat, 'f', 16, 32)
 		return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
-	} else {
+	default:
 		colName := getColumn(tableName, sort)
 		var additional string
 		if tableName == "scene_markers" {
@@ -146,7 +149,7 @@ func runCountQuery(db db, query string, args []interface{}) (int, error) {
 	}{0}
 
 	query = db.Rebind(query)
-	if err := db.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
+	if err := db.Get(&result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return 0, err
 	}
 

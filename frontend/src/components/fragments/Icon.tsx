@@ -1,14 +1,14 @@
-import React from "react";
+import { FC } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
-interface IIcon {
-  icon: IconName;
+interface Props {
+  icon: IconDefinition;
   className?: string;
   color?: string;
 }
 
-const Icon: React.FC<IIcon> = ({ icon, className, color }) => (
+const Icon: FC<Props> = ({ icon, className, color }) => (
   <FontAwesomeIcon
     icon={icon}
     className={`fa-icon ${className}`}

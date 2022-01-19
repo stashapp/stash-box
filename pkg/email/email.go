@@ -21,9 +21,8 @@ func NewManager() *Manager {
 
 func (m *Manager) validateEmailCooldown(email string) error {
 	m.clearExpired()
-	_, found := m.lastEmailed[email]
 
-	if found {
+	if _, found := m.lastEmailed[email]; found {
 		return errors.New("try again later")
 	}
 

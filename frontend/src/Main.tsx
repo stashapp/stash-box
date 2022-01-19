@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import { FC, useEffect } from "react";
 import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useHistory } from "react-router-dom";
 
-import { useMe } from "src/graphql";
-import { RoleEnum } from "src/graphql/definitions/globalTypes";
 import SearchField, { SearchType } from "src/components/searchField";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
-import { userHref } from "src/utils";
+import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
+import { useAuth } from "src/hooks";
 import {
   ROUTE_SCENES,
   ROUTE_PERFORMERS,
@@ -19,57 +18,35 @@ import {
   ROUTE_ACTIVATE,
   ROUTE_RESET_PASSWORD,
   ROUTE_HOME,
+  ROUTE_REGISTER,
+  ROUTE_FORGOT_PASSWORD,
+  ROUTE_SITES,
+  ROUTE_DRAFTS,
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
-interface User {
-  id: string;
-  name: string;
-  roles: RoleEnum[] | null;
-}
-
-const Main: React.FC = ({ children }) => {
+const Main: FC = ({ children }) => {
   const history = useHistory();
-  const [user, setUser] = useState<User | null>();
-  const prevUser = useRef<User | null>();
-  const { loading } = useMe({
-    onCompleted: (data) => {
-      if (data?.me) setUser(data.me);
-    },
-    onError: () => setUser(null),
-  });
+  const { loading, user } = useAuth();
 
   useEffect(() => {
-    function noLogin() {
-      return (
-        history.location.pathname === ROUTE_ACTIVATE ||
-        history.location.pathname === ROUTE_RESET_PASSWORD
-      );
+    if (loading || user) return;
+
+    if (
+      history.location.pathname !== ROUTE_ACTIVATE &&
+      history.location.pathname !== ROUTE_REGISTER &&
+      history.location.pathname !== ROUTE_LOGIN &&
+      history.location.pathname !== ROUTE_FORGOT_PASSWORD &&
+      history.location.pathname !== ROUTE_RESET_PASSWORD
+    ) {
+      history.push(ROUTE_LOGIN);
     }
+  }, [loading, user, history]);
 
-    if (user === null) {
-      if (!noLogin()) {
-        history.push(ROUTE_LOGIN);
-      }
-    } else if (prevUser.current === null) history.push(ROUTE_HOME);
-    prevUser.current = user;
-  }, [user, history]);
-
-  if (loading) return <></>;
-
-  const isRole = (role: string) =>
-    (user?.roles ?? []).includes(role as RoleEnum);
-
-  const contextValue = user
-    ? {
-        authenticated: true,
-        user,
-        isRole,
-      }
-    : {
-        authenticated: false,
-        setUser,
-      };
+  const contextValue = {
+    authenticated: user !== undefined,
+    user,
+  };
 
   if (!contextValue.authenticated)
     return (
@@ -82,21 +59,23 @@ const Main: React.FC = ({ children }) => {
     const res = await fetch(`${getPlatformURL()}logout`, {
       credentials: getCredentialsSetting(),
     });
-    if (res.ok) window.location.href = ROUTE_HOME;
+    setCachedUser();
+    if (res.ok) window.location.href = ROUTE_LOGIN;
     return false;
   };
 
   const renderUserNav = () =>
-    contextValue.authenticated && (
+    contextValue.authenticated &&
+    contextValue.user && (
       <>
         <span>Logged in as</span>
         <NavLink
-          to={userHref(contextValue.user!)}
-          className="nav-link ml-auto mr-2"
+          to={userHref(contextValue.user)}
+          className="nav-link ms-auto me-2"
         >
-          {contextValue!.user!.name}
+          {contextValue.user.name}
         </NavLink>
-        {isRole("ADMIN") && (
+        {isAdmin(user) && (
           <NavLink exact to={ROUTE_USERS} className="nav-link">
             Users
           </NavLink>
@@ -104,7 +83,7 @@ const Main: React.FC = ({ children }) => {
         <NavLink
           to={ROUTE_LOGOUT}
           onClick={handleLogout}
-          className="nav-link mr-4"
+          className="nav-link me-4"
         >
           Logout
         </NavLink>
@@ -114,7 +93,7 @@ const Main: React.FC = ({ children }) => {
   return (
     <div>
       <Navbar bg="dark" variant="dark" className="px-4">
-        <Nav className="row mr-auto">
+        <Nav className="me-auto">
           <NavLink exact to={ROUTE_HOME} className="nav-link">
             Home
           </NavLink>
@@ -133,17 +112,25 @@ const Main: React.FC = ({ children }) => {
           <NavLink to={ROUTE_EDITS} className="nav-link">
             Edits
           </NavLink>
+          {canEdit(user) && (
+            <NavLink to={ROUTE_DRAFTS} className="nav-link">
+              Drafts
+            </NavLink>
+          )}
+          {isAdmin(user) && (
+            <NavLink to={ROUTE_SITES} className="nav-link">
+              Sites
+            </NavLink>
+          )}
         </Nav>
         <Nav className="align-items-center">
           {contextValue.authenticated && renderUserNav()}
           <SearchField searchType={SearchType.Combined} navigate showAllLink />
         </Nav>
       </Navbar>
-      <div className="StashDBContent container-fluid">
-        <AuthContext.Provider value={contextValue}>
-          {children}
-        </AuthContext.Provider>
-      </div>
+      <AuthContext.Provider value={contextValue}>
+        <main className="MainContent container-fluid">{children}</main>
+      </AuthContext.Provider>
     </div>
   );
 };

@@ -10,16 +10,6 @@ import (
 )
 
 func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreateInput) (*models.Tag, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
-	var err error
-
-	if err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -47,11 +37,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 
 		// Save the aliases
 		tagAliases := models.CreateTagAliases(tag.ID, input.Aliases)
-		if err := qb.CreateAliases(tagAliases); err != nil {
-			return err
-		}
-
-		return nil
+		return qb.CreateAliases(tagAliases)
 	})
 
 	if err != nil {
@@ -62,18 +48,13 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 }
 
 func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdateInput) (*models.Tag, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	var tag *models.Tag
 	err := fac.WithTxn(func() error {
 		qb := fac.Tag()
 
 		// get the existing tag and modify it
-		tagID, _ := uuid.FromString(input.ID)
-		updatedTag, err := qb.Find(tagID)
+		updatedTag, err := qb.Find(input.ID)
 
 		if err != nil {
 			return err
@@ -92,11 +73,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		// Save the aliases
 		// TODO - only do this if provided
 		tagAliases := models.CreateTagAliases(tag.ID, input.Aliases)
-		if err := qb.UpdateAliases(tag.ID, tagAliases); err != nil {
-			return err
-		}
-
-		return nil
+		return qb.UpdateAliases(tag.ID, tagAliases)
 	})
 
 	if err != nil {
@@ -107,10 +84,6 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 }
 
 func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		qb := fac.Tag()
@@ -118,15 +91,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly
 
-		tagID, err := uuid.FromString(input.ID)
-		if err != nil {
-			return err
-		}
-		if err = qb.Destroy(tagID); err != nil {
-			return err
-		}
-
-		return nil
+		return qb.Destroy(input.ID)
 	})
 
 	if err != nil {

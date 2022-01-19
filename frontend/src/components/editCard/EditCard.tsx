@@ -1,46 +1,33 @@
-import React from "react";
-import { Badge, BadgeProps, Card, Col, Row } from "react-bootstrap";
+import { FC } from "react";
+import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import cx from "classnames";
 
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
-import { OperationEnum, VoteStatusEnum } from "src/graphql";
+import { OperationEnum } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
-import { EditStatusTypes } from "src/constants/enums";
 import ModifyEdit from "./ModifyEdit";
-import DestroyEdit from "./DestroyEdit";
-import MergeEdit from "./MergeEdit";
 import EditComment from "./EditComment";
 import EditHeader from "./EditHeader";
 import AddComment from "./AddComment";
+import VoteBar from "./VoteBar";
+import EditExpiration from "./EditExpiration";
+import EditStatus from "./EditStatus";
+import Votes from "./Votes";
 
-interface EditsProps {
+const CLASSNAME = "EditCard";
+
+interface Props {
   edit: Edit;
+  showVotes?: boolean;
 }
 
-const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
+const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
-  const created = new Date(edit.created);
-  const updated = new Date(edit.updated);
-  let editVariant: BadgeProps["variant"] = "warning";
-  if (
-    edit.status === VoteStatusEnum.REJECTED ||
-    edit.status === VoteStatusEnum.IMMEDIATE_REJECTED
-  )
-    editVariant = "danger";
-  else if (
-    edit.status === VoteStatusEnum.ACCEPTED ||
-    edit.status === VoteStatusEnum.IMMEDIATE_ACCEPTED
-  )
-    editVariant = "success";
+  const created = new Date(edit.created as string);
+  const updated = new Date(edit.updated as string);
 
-  const merges = edit.operation === OperationEnum.MERGE && (
-    <MergeEdit
-      merges={edit.merge_sources}
-      target={edit.target}
-      options={edit.options ?? undefined}
-    />
-  );
   const creation = edit.operation === OperationEnum.CREATE && (
     <ModifyEdit details={edit.details} />
   );
@@ -51,22 +38,19 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
       options={edit.options ?? undefined}
     />
   );
-  const destruction = edit.operation === OperationEnum.DESTROY && (
-    <DestroyEdit target={edit.target} />
-  );
   const comments = (edit.comments ?? []).map((comment) => (
-    <EditComment {...comment} />
+    <EditComment {...comment} key={comment.id} />
   ));
 
   return (
-    <Card>
+    <Card className={cx(CLASSNAME, "mb-3")}>
       <Card.Header className="row">
         <div className="flex-column col-4">
           <Link to={editHref(edit)}>
             <h5 className="text-capitalize">{title.toLowerCase()}</h5>
           </Link>
           <div>
-            <b className="mr-2">Author:</b>
+            <b className="me-2">Author:</b>
             {edit.user ? (
               <Link to={userHref(edit.user)}>
                 <span>{edit.user.name}</span>
@@ -75,33 +59,32 @@ const EditCardComponent: React.FC<EditsProps> = ({ edit }) => {
               <span>Deleted User</span>
             )}
           </div>
-        </div>
-        <div className="flex-column col-4 ml-auto text-right">
           <div>
-            <b className="mr-2">Created:</b>
+            <b className="me-2">Created:</b>
             <span>{formatDateTime(created)}</span>
           </div>
           <div>
-            <b className="mr-2">Updated:</b>
+            <b className="me-2">Updated:</b>
             <span>{formatDateTime(updated)}</span>
           </div>
+        </div>
+        <div className="flex-column col-4 ms-auto text-end">
           <div>
-            <b className="mr-2">Status:</b>
-            <Badge className="text-uppercase" variant={editVariant}>
-              {EditStatusTypes[edit.status]}
-            </Badge>
+            <b className="me-2">Status:</b>
+            <EditStatus {...edit} />
+            <EditExpiration edit={edit} />
+            <VoteBar edit={edit} />
           </div>
         </div>
       </Card.Header>
       <hr />
       <Card.Body>
         <EditHeader edit={edit} />
-        {merges}
         {creation}
         {modifications}
-        {destruction}
         <Row className="mt-2">
           <Col md={{ offset: 4, span: 8 }}>
+            {showVotes && <Votes edit={edit} />}
             {comments}
             <AddComment editID={edit.id} />
           </Col>

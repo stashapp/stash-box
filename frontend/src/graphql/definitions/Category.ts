@@ -19,7 +19,7 @@ export interface Category_findTagCategory {
 
 export interface Category {
   /**
-   * Find a tag cateogry by ID
+   * Find a tag category by ID
    */
   findTagCategory: Category_findTagCategory | null;
 }

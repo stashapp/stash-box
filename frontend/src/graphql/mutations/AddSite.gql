@@ -1,0 +1,10 @@
+mutation AddSite($siteData: SiteCreateInput!) {
+  siteCreate(input: $siteData) {
+    id
+    name
+    description
+    url
+    regex
+    valid_types
+  }
+}

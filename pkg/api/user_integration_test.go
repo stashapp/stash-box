@@ -8,8 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 type userTestRunner struct {
@@ -63,10 +64,7 @@ func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *m
 		s.t.Errorf("Password was not set")
 	}
 
-	r := s.resolver.User()
-
-	id, _ := r.ID(s.ctx, user)
-	if id == "" {
+	if user.ID == uuid.Nil {
 		s.t.Errorf("Expected created user id to be non-zero")
 	}
 
@@ -75,13 +73,12 @@ func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *m
 }
 
 func (s *userTestRunner) testFindUserById() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
 
-	userID := createdUser.ID.String()
-	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
+	user, err := s.resolver.Query().FindUser(s.ctx, &createdUser.ID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding user: %s", err.Error())
 		return
@@ -100,7 +97,7 @@ func (s *userTestRunner) testFindUserById() {
 }
 
 func (s *userTestRunner) testFindUserByName() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -125,7 +122,7 @@ func (s *userTestRunner) testFindUserByName() {
 }
 
 func (s *userTestRunner) testQueryUserByName() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
@@ -170,12 +167,12 @@ func (s *userTestRunner) testUpdateUserName() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 
 	updatedName := s.generateUserName()
 	updateInput := models.UserUpdateInput{
@@ -205,12 +202,12 @@ func (s *userTestRunner) testUpdatePassword() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 	oldPassword := createdUser.PasswordHash
 
 	updatedPassword := s.generateUserName() + "newpassword"
@@ -247,12 +244,12 @@ func (s *userTestRunner) verifyUpdatedUser(input models.UserUpdateInput, user *m
 }
 
 func (s *userTestRunner) testDestroyUser() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 
 	destroyed, err := s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{
 		ID: userID,
@@ -276,24 +273,6 @@ func (s *userTestRunner) testDestroyUser() {
 
 	if foundUser != nil {
 		s.t.Error("Found user after destruction")
-	}
-}
-
-func (s *userTestRunner) testUnauthorisedUserMutate() {
-	// test each api interface - all require admin so all should fail
-	_, err := s.resolver.Mutation().UserCreate(s.ctx, models.UserCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserCreate: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().UserUpdate(s.ctx, models.UserUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserUpdate: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("UserDestroy: got %v want %v", err, api.ErrUnauthorized)
 	}
 }
 
@@ -331,14 +310,14 @@ func (s *userTestRunner) testChangePassword() {
 		Password: oldPassword,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
 
 	// change password as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
 	updatedPassword := name + "newpassword"
 	existingPassword := "incorrect password"
@@ -375,7 +354,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 		Password: "password" + name,
 	}
 
-	createdUser, err := s.createTestUser(input)
+	createdUser, err := s.createTestUser(input, nil)
 	if err != nil {
 		return
 	}
@@ -384,9 +363,9 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	// regenerate as the test user
 	ctx := context.TODO()
-	ctx = context.WithValue(ctx, api.ContextUser, createdUser)
+	ctx = context.WithValue(ctx, user.ContextUser, createdUser)
 
-	adminID := userDB.admin.ID.String()
+	adminID := userDB.admin.ID
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
 	if err == nil {
 		s.t.Error("Expected error for changing other user API key")
@@ -410,7 +389,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding user: %s", err.Error())
@@ -423,12 +402,12 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 }
 
 func (s *userTestRunner) testUserEditQuery() {
-	createdUser, err := s.createTestUser(nil)
+	createdUser, err := s.createTestUser(nil, nil)
 	if err != nil {
 		return
 	}
 
-	userID := createdUser.ID.String()
+	userID := createdUser.ID
 	filter := models.EditFilterType{
 		UserID: &userID,
 	}
@@ -474,13 +453,6 @@ func TestUpdateUserPassword(t *testing.T) {
 func TestDestroyUser(t *testing.T) {
 	pt := createUserTestRunner(t)
 	pt.testDestroyUser()
-}
-
-func TestUnauthorisedUserMutate(t *testing.T) {
-	pt := &userTestRunner{
-		testRunner: *asModify(t),
-	}
-	pt.testUnauthorisedUserMutate()
 }
 
 func TestUserQuery(t *testing.T) {

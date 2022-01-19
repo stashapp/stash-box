@@ -10,8 +10,6 @@ type PerformerRepo interface {
 	CreateAliases(newJoins PerformerAliases) error
 	UpdateAliases(performerID uuid.UUID, updatedJoins PerformerAliases) error
 	CreateUrls(newJoins PerformerURLs) error
-	CreateImages(newJoins PerformersImages) error
-	UpdateImages(performerID uuid.UUID, updatedJoins PerformersImages) error
 	UpdateUrls(performerID uuid.UUID, updatedJoins PerformerURLs) error
 	CreateTattoos(newJoins PerformerBodyMods) error
 	UpdateTattoos(performerID uuid.UUID, updatedJoins PerformerBodyMods) error
@@ -19,13 +17,9 @@ type PerformerRepo interface {
 	UpdatePiercings(performerID uuid.UUID, updatedJoins PerformerBodyMods) error
 	Find(id uuid.UUID) (*Performer, error)
 	FindByIds(ids []uuid.UUID) ([]*Performer, []error)
-	FindBySceneID(sceneID uuid.UUID) (Performers, error)
-	FindByNames(names []string) (Performers, error)
-	FindByAliases(names []string) (Performers, error)
-	FindByName(name string) (Performers, error)
-	FindByAlias(name string) (Performers, error)
 	Count() (int, error)
-	Query(performerFilter *PerformerFilterType, findFilter *QuerySpec) ([]*Performer, int)
+	QueryPerformers(performerFilter *PerformerFilterType, findFilter *QuerySpec, userID uuid.UUID) ([]*Performer, error)
+	QueryCount(performerFilter *PerformerFilterType, findFilter *QuerySpec, userID uuid.UUID) (int, error)
 	GetAliases(id uuid.UUID) (PerformerAliases, error)
 	GetImages(id uuid.UUID) (PerformersImages, error)
 	GetAllAliases(ids []uuid.UUID) ([][]string, []error)
@@ -36,14 +30,10 @@ type PerformerRepo interface {
 	GetPiercings(id uuid.UUID) (PerformerBodyMods, error)
 	GetAllPiercings(ids []uuid.UUID) ([][]*BodyModification, []error)
 	SearchPerformers(term string, limit int) (Performers, error)
-	DeleteScenePerformers(id uuid.UUID) error
-	SoftDelete(performer Performer) (*Performer, error)
-	CreateRedirect(newJoin PerformerRedirect) error
-	UpdateRedirects(oldTargetID uuid.UUID, newTargetID uuid.UUID) error
-	UpdateScenePerformers(oldPerformer *Performer, newTargetID uuid.UUID, setAliases bool) error
-	UpdateScenePerformerAlias(performerID uuid.UUID, name string) error
-	MergeInto(sourceID uuid.UUID, targetID uuid.UUID, setAliases bool) error
-	ApplyEdit(edit Edit, operation OperationEnum, performer *Performer) (*Performer, error)
-	ApplyModifyEdit(performer *Performer, data *PerformerEditData) (*Performer, error)
+	ApplyEdit(performer *Performer, create bool, data *PerformerEditData) (*Performer, error)
 	FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error)
+	SoftDelete(performer Performer) (*Performer, error)
+	MergeInto(source *Performer, target *Performer, setAlias bool) error
+	DeleteScenePerformers(id uuid.UUID) error
+	DeletePerformerFavorites(id uuid.UUID) error
 }

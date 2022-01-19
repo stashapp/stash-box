@@ -8,7 +8,10 @@ mutation UpdateScene($updateData: SceneUpdateInput!) {
       title
       urls {
         url
-        type
+        site {
+          id
+          name
+        }
       }
       studio {
         id

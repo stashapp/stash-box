@@ -1,50 +1,44 @@
-import React, { useContext } from "react";
-import { Link, useHistory, useParams } from "react-router-dom";
-import { Button } from "react-bootstrap";
-import { sortBy } from "lodash";
+import { FC, useContext } from "react";
+import { Link, useHistory } from "react-router-dom";
+import { Button, Tab, Tabs } from "react-bootstrap";
+import { sortBy } from "lodash-es";
 
-import { useStudio, useDeleteStudio } from "src/graphql";
-import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import DeleteButton from "src/components/deleteButton";
-import { SceneList } from "src/components/list";
+import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
+import {
+  usePendingEditsCount,
+  TargetTypeEnum,
+  CriterionModifier,
+} from "src/graphql";
+import { EditList, SceneList, URLList } from "src/components/list";
 
 import {
-  isAdmin,
   getImage,
-  getUrlByType,
   createHref,
   studioHref,
+  canEdit,
+  formatPendingEdits,
+  getUrlBySite,
 } from "src/utils";
-import { ROUTE_STUDIO_EDIT, ROUTE_STUDIOS } from "src/constants/route";
+import { ROUTE_STUDIO_EDIT, ROUTE_STUDIO_DELETE } from "src/constants/route";
+import { FavoriteStar } from "src/components/fragments";
 import AuthContext from "src/AuthContext";
 
-const StudioComponent: React.FC = () => {
+const DEFAULT_TAB = "scenes";
+
+interface Props {
+  studio: Studio;
+}
+
+const StudioComponent: FC<Props> = ({ studio }) => {
   const auth = useContext(AuthContext);
   const history = useHistory();
-  const { id = "" } = useParams<{ id?: string }>();
-  const { loading, data } = useStudio({ id }, id === "");
+  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
 
-  const [deleteStudio, { loading: deleting }] = useDeleteStudio({
-    onCompleted: (result) => {
-      if (result.studioDestroy) history.push(ROUTE_STUDIOS);
-    },
+  const { data: editData } = usePendingEditsCount({
+    type: TargetTypeEnum.STUDIO,
+    id: studio.id,
   });
-
-  if (loading) return <LoadingIndicator message="Loading studio..." />;
-  if (id === "" || !data?.findStudio)
-    return <ErrorMessage error="Studio not found." />;
-
-  const studio = data.findStudio;
-
-  const handleDelete = () => {
-    deleteStudio({
-      variables: {
-        input: {
-          id: studio.id,
-        },
-      },
-    });
-  };
+  const pendingEditCount = editData?.queryEdits.count;
 
   const studioImage = getImage(studio.images, "landscape");
 
@@ -54,20 +48,35 @@ const StudioComponent: React.FC = () => {
     </li>
   ));
 
+  const setTab = (tab: string | null) =>
+    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+
+  const homeURL = getUrlBySite(studio.urls, "Home");
+
   return (
     <>
       <div className="d-flex">
-        <div className="studio-title mr-auto">
-          <h3>{studio.name}</h3>
-          <h6>
-            <a
-              href={getUrlByType(studio.urls, "HOME")}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              {getUrlByType(studio.urls, "HOME")}
-            </a>
-          </h6>
+        <div className="studio-title me-auto">
+          <h3>
+            {studio.deleted ? (
+              <del>{studio.name}</del>
+            ) : (
+              <span>{studio.name}</span>
+            )}
+            <FavoriteStar
+              entity={studio}
+              entityType="studio"
+              interactable
+              className="ps-2"
+            />
+          </h3>
+          {homeURL && (
+            <h6>
+              <a href={homeURL} target="_blank" rel="noreferrer noopener">
+                {homeURL}
+              </a>
+            </h6>
+          )}
           {studio.parent && (
             <span>
               Part of{" "}
@@ -83,17 +92,17 @@ const StudioComponent: React.FC = () => {
           </div>
         )}
         <div>
-          {isAdmin(auth.user) && (
+          {canEdit(auth.user) && !studio.deleted && (
             <>
-              <Link to={createHref(ROUTE_STUDIO_EDIT, { id })} className="ml-2">
+              <Link to={createHref(ROUTE_STUDIO_EDIT, studio)} className="ms-2">
                 <Button>Edit</Button>
               </Link>
-              <DeleteButton
-                onClick={handleDelete}
-                disabled={deleting}
-                className="ml-2"
-                message="Do you want to delete studio? This cannot be undone."
-              />
+              <Link
+                to={createHref(ROUTE_STUDIO_DELETE, studio)}
+                className="ms-2"
+              >
+                <Button variant="danger">Delete</Button>
+              </Link>
             </>
           )}
         </div>
@@ -106,10 +115,41 @@ const StudioComponent: React.FC = () => {
           </div>
         </>
       )}
-      <>
-        {subStudios.length > 0 && <h4>Scenes</h4>}
-        <SceneList filter={{ parentStudio: id }} />
-      </>
+      <Tabs
+        activeKey={activeTab}
+        id="studio-tabs"
+        mountOnEnter
+        onSelect={setTab}
+      >
+        <Tab
+          eventKey="scenes"
+          title={subStudios.length > 0 ? "All Scenes" : "Scenes"}
+        >
+          <SceneList filter={{ parentStudio: studio.id }} />
+        </Tab>
+        {subStudios.length > 0 && (
+          <Tab eventKey="studio-scenes" title="Studio Scenes">
+            <SceneList
+              filter={{
+                studios: {
+                  value: [studio.id],
+                  modifier: CriterionModifier.INCLUDES,
+                },
+              }}
+            />
+          </Tab>
+        )}
+        <Tab eventKey="links" title="Links">
+          <URLList urls={studio.urls} />
+        </Tab>
+        <Tab
+          eventKey="edits"
+          title={`Edits${formatPendingEdits(pendingEditCount)}`}
+          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
+        >
+          <EditList type={TargetTypeEnum.STUDIO} id={studio.id} />
+        </Tab>
+      </Tabs>
     </>
   );
 };

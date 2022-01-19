@@ -1,23 +1,23 @@
+#import "../fragments/URLFragment.gql"
+#import "../fragments/ImageFragment.gql"
 query Studios($filter: QuerySpec, $studioFilter: StudioFilterType) {
   queryStudios(filter: $filter, studio_filter: $studioFilter) {
       count
       studios {
         id
         name
+        deleted
         parent {
             id,
             name
         }
         urls {
-            url
-            type
+          ...URLFragment
         }
         images {
-            id
-            url
-            height
-            width
+          ...ImageFragment
         }
+        is_favorite
       }
   }
 }

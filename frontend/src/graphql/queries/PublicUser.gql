@@ -1,6 +1,22 @@
-#import "../fragments/PublicUserFragment.gql"
 query PublicUser($name: String!) {
   findUser(username: $name) {
-    ...PublicUserFragment
+    id
+    name
+    vote_count {
+      accept
+      reject
+      immediate_accept
+      immediate_reject
+      abstain
+    }
+    edit_count {
+      immediate_accepted
+      immediate_rejected
+      accepted
+      rejected
+      failed
+      canceled
+      pending
+    }
   }
 }

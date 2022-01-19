@@ -12,5 +12,21 @@ query User($name: String!) {
     }
     invite_tokens
     active_invite_codes
+    vote_count {
+      accept
+      reject
+      immediate_accept
+      immediate_reject
+      abstain
+    }
+    edit_count {
+      immediate_accepted
+      immediate_rejected
+      accepted
+      rejected
+      failed
+      canceled
+      pending
+    }
   }
 }

@@ -21,4 +21,6 @@ type Repo interface {
 	PendingActivation() PendingActivationRepo
 	Invite() InviteKeyRepo
 	User() UserRepo
+	Site() SiteRepo
+	Draft() DraftRepo
 }

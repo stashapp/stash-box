@@ -1,0 +1,3 @@
+mutation FavoriteStudio($id: ID!, $favorite: Boolean!) {
+  favoriteStudio(id: $id, favorite: $favorite)
+}

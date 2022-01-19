@@ -17,8 +17,17 @@ autobind:
   - "github.com/stashapp/stash-box/pkg/models"
 
 models:
+  ID:
+    model: github.com/stashapp/stash-box/pkg/models.ID
+    #model: github.com/gofrs/uuid.UUID
   Image:
     model: github.com/stashapp/stash-box/pkg/models.Image
     fields:
       url:
         resolver: true
+  QueryPerformersResultType:
+    model: github.com/stashapp/stash-box/pkg/models.PerformerQuery
+  QueryEditsResultType:
+    model: github.com/stashapp/stash-box/pkg/models.EditQuery
+  QueryScenesResultType:
+    model: github.com/stashapp/stash-box/pkg/models.SceneQuery

@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	imageTable   = "images"
-	imageJoinKey = "image_id"
+	imageTable = "images"
 )
 
 var (

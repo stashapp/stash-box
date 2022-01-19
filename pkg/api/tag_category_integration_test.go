@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -48,8 +48,7 @@ func (s *tagCategoryTestRunner) verifyCreatedTagCategory(input models.TagCategor
 
 	r := s.resolver.TagCategory()
 
-	id, _ := r.ID(s.ctx, category)
-	if id == "" {
+	if category.ID == uuid.Nil {
 		s.t.Errorf("Expected created tagCategory id to be non-zero")
 	}
 
@@ -67,8 +66,7 @@ func (s *tagCategoryTestRunner) testFindTagCategoryById() {
 		return
 	}
 
-	catID := createdCategory.ID.String()
-	category, err := s.resolver.Query().FindTagCategory(s.ctx, catID)
+	category, err := s.resolver.Query().FindTagCategory(s.ctx, createdCategory.ID)
 	if err != nil {
 		s.t.Errorf("Error finding tagCategory: %s", err.Error())
 		return
@@ -92,7 +90,7 @@ func (s *tagCategoryTestRunner) testUpdateTagCategory() {
 		return
 	}
 
-	catID := createdCategory.ID.String()
+	catID := createdCategory.ID
 
 	newDescription := "newDescription"
 
@@ -129,7 +127,7 @@ func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 		return
 	}
 
-	catID := createdCategory.ID.String()
+	catID := createdCategory.ID
 
 	destroyed, err := s.resolver.Mutation().TagCategoryDestroy(s.ctx, models.TagCategoryDestroyInput{
 		ID: catID,
@@ -156,36 +154,6 @@ func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 	}
 }
 
-func (s *tagCategoryTestRunner) testUnauthorisedTagCategoryModify() {
-	// test each api interface - all require admin so all should fail
-	_, err := s.resolver.Mutation().TagCategoryCreate(s.ctx, models.TagCategoryCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCategoryCreate: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().TagCategoryUpdate(s.ctx, models.TagCategoryUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCategoryUpdate: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().TagCategoryDestroy(s.ctx, models.TagCategoryDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("TagCategoryDestroy: got %v want %v", err, api.ErrUnauthorized)
-	}
-}
-
-func (s *tagTestRunner) testUnauthorisedTagCategoryQuery() {
-	_, err := s.resolver.Query().FindTagCategory(s.ctx, "")
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("FindTagCategory: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Query().QueryTagCategories(s.ctx, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("QueryTagCategories: got %v want %v", err, api.ErrUnauthorized)
-	}
-}
-
 func TestCreateTagCategory(t *testing.T) {
 	pt := createTagCategoryTestRunner(t)
 	pt.testCreateTagCategory()
@@ -199,18 +167,4 @@ func TestUpdateTagCategory(t *testing.T) {
 func TestDestroyTagCategory(t *testing.T) {
 	pt := createTagCategoryTestRunner(t)
 	pt.testDestroyTagCategory()
-}
-
-func TestUnauthorisedTagCategoryAdmin(t *testing.T) {
-	pt := &tagCategoryTestRunner{
-		testRunner: *asEdit(t),
-	}
-	pt.testUnauthorisedTagCategoryModify()
-}
-
-func TestUnauthorisedTagCategoryQuery(t *testing.T) {
-	pt := &tagTestRunner{
-		testRunner: *asNone(t),
-	}
-	pt.testUnauthorisedTagCategoryQuery()
 }

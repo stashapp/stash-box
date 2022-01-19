@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stashapp/stash-box/pkg/api"
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -48,10 +48,7 @@ func (s *studioTestRunner) verifyCreatedStudio(input models.StudioCreateInput, s
 		s.fieldMismatch(input.Name, studio.Name, "Name")
 	}
 
-	r := s.resolver.Studio()
-
-	id, _ := r.ID(s.ctx, studio)
-	if id == "" {
+	if studio.ID == uuid.Nil {
 		s.t.Errorf("Expected created studio id to be non-zero")
 	}
 }
@@ -62,7 +59,7 @@ func (s *studioTestRunner) testFindStudioById() {
 		return
 	}
 
-	studioID := createdStudio.ID.String()
+	studioID := createdStudio.UUID()
 	studio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
 	if err != nil {
 		s.t.Errorf("Error finding studio: %s", err.Error())
@@ -116,7 +113,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 		return
 	}
 
-	studioID := createdStudio.ID.String()
+	studioID := createdStudio.UUID()
 
 	updatedName := s.generateStudioName()
 	updateInput := models.StudioUpdateInput{
@@ -151,7 +148,7 @@ func (s *studioTestRunner) testDestroyStudio() {
 		return
 	}
 
-	studioID := createdStudio.ID.String()
+	studioID := createdStudio.UUID()
 
 	destroyed, err := s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{
 		ID: studioID,
@@ -180,37 +177,6 @@ func (s *studioTestRunner) testDestroyStudio() {
 	// TODO - ensure scene was not removed
 }
 
-func (s *studioTestRunner) testUnauthorisedStudioModify() {
-	// test each api interface - all require modify so all should fail
-	_, err := s.resolver.Mutation().StudioCreate(s.ctx, models.StudioCreateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("StudioCreate: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().StudioUpdate(s.ctx, models.StudioUpdateInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("StudioUpdate: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{})
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("StudioDestroy: got %v want %v", err, api.ErrUnauthorized)
-	}
-}
-
-func (s *studioTestRunner) testUnauthorisedStudioQuery() {
-	// test each api interface - all require read so all should fail
-	_, err := s.resolver.Query().FindStudio(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("FindStudio: got %v want %v", err, api.ErrUnauthorized)
-	}
-
-	_, err = s.resolver.Query().QueryStudios(s.ctx, nil, nil)
-	if err != api.ErrUnauthorized {
-		s.t.Errorf("QueryStudios: got %v want %v", err, api.ErrUnauthorized)
-	}
-}
-
 func TestCreateStudio(t *testing.T) {
 	pt := createStudioTestRunner(t)
 	pt.testCreateStudio()
@@ -237,17 +203,3 @@ func TestDestroyStudio(t *testing.T) {
 }
 
 // TODO - test parent/children studios
-
-func TestUnauthorisedStudioModify(t *testing.T) {
-	pt := &studioTestRunner{
-		testRunner: *asRead(t),
-	}
-	pt.testUnauthorisedStudioModify()
-}
-
-func TestUnauthorisedStudioQuery(t *testing.T) {
-	pt := &studioTestRunner{
-		testRunner: *asNone(t),
-	}
-	pt.testUnauthorisedStudioQuery()
-}

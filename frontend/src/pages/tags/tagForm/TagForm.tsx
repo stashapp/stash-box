@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { FC, useEffect } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -6,7 +6,7 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
-import { groupBy, sortBy } from "lodash";
+import { groupBy, sortBy } from "lodash-es";
 
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 import { useCategories, TagEditDetailsInput } from "src/graphql";
@@ -21,7 +21,7 @@ const schema = yup.object({
   name: yup.string().required("Name is required"),
   description: yup.string(),
   aliases: yup.array().of(yup.string().required()),
-  categoryId: yup.string().nullable(),
+  categoryId: yup.string().nullable().defined(),
   note: yup.string().required("Edit note is required"),
 });
 
@@ -33,7 +33,7 @@ interface TagProps {
   saving: boolean;
 }
 
-const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
+const TagForm: FC<TagProps> = ({ tag, callback, saving }) => {
   const history = useHistory();
   const {
     register,
@@ -84,11 +84,11 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
 
   return (
     <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name">
+      <Form.Group controlId="name" className="mb-3">
         <Form.Label>Name</Form.Label>
-        <input
+        <Form.Control
           type="text"
-          className={cx("form-control", { "is-invalid": errors.name })}
+          className={cx({ "is-invalid": errors.name })}
           placeholder="Name"
           defaultValue={tag.name}
           {...register("name", { required: true })}
@@ -96,7 +96,7 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
         <div className="invalid-feedback">{errors?.name?.message}</div>
       </Form.Group>
 
-      <Form.Group controlId="description">
+      <Form.Group controlId="description" className="mb-3">
         <Form.Label>Description</Form.Label>
         <Form.Control
           placeholder="Description"
@@ -105,31 +105,27 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
         />
       </Form.Group>
 
-      <Form.Group>
+      <Form.Group className="mb-3">
         <Form.Label>Aliases</Form.Label>
         <MultiSelect values={tag.aliases} onChange={handleAliasChange} />
       </Form.Group>
 
-      <Form.Group>
+      <Form.Group className="mb-3">
         <Form.Label>Category</Form.Label>
         <Controller
           name="categoryId"
           control={control}
-          defaultValue={tag.category?.id ?? null}
-          render={({ field: { onChange } }) => (
+          defaultValue={tag.category?.id || null}
+          render={({ field: { onChange, value } }) => (
             <Select
               classNamePrefix="react-select"
               className={cx({ "is-invalid": errors.categoryId })}
               name="categoryId"
-              onChange={(opt) => onChange(opt?.value)}
+              onChange={(opt) => onChange(opt?.value || null)}
               options={categoryObj}
               isClearable
               placeholder="Category"
-              defaultValue={
-                tag?.category?.id
-                  ? categories.find((s) => s.value === tag.category?.id)
-                  : null
-              }
+              defaultValue={categories.find((s) => s.value === value)}
             />
           )}
         />
@@ -138,12 +134,12 @@ const TagForm: React.FC<TagProps> = ({ tag, callback, saving }) => {
 
       <EditNote register={register} error={errors.note} />
 
-      <Form.Group className="d-flex">
+      <Form.Group className="d-flex mb-3">
         <Button type="submit" disabled className="d-none" aria-hidden="true" />
-        <Button type="submit" className="col-2" disabled={saving}>
-          Save
+        <Button type="submit" disabled={saving}>
+          Submit Edit
         </Button>
-        <Button type="reset" className="ml-auto mr-2">
+        <Button type="reset" className="ms-auto me-2">
           Reset
         </Button>
         <Link to={tag.name ? tagHref(tag) : createHref(ROUTE_TAGS)}>

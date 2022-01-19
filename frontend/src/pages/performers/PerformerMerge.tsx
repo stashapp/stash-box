@@ -1,17 +1,16 @@
-import React, { useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { FC, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { flatMap } from "lodash";
+import { flatMap } from "lodash-es";
 
+import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 import {
-  usePerformer,
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
 } from "src/graphql";
 
-import { LoadingIndicator } from "src/components/fragments";
 import PerformerSelect from "src/components/performerSelect";
 import PerformerCard from "src/components/performerCard";
 import { editHref } from "src/utils";
@@ -19,22 +18,20 @@ import PerformerForm from "./performerForm";
 
 const CLASSNAME = "PerformerMerge";
 
-const PerformerMerge: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  performer: Performer;
+}
+
+const PerformerMerge: FC<Props> = ({ performer }) => {
   const history = useHistory();
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
   const [aliasUpdating, setAliasUpdating] = useState(true);
-  const { data: performer, loading: loadingPerformer } = usePerformer({ id });
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
   });
-
-  if (loadingPerformer)
-    return <LoadingIndicator message="Loading performer..." />;
-  if (!performer?.findPerformer?.id) return <div>Performer not found</div>;
 
   const doUpdate = (
     insertData: PerformerEditDetailsInput,
@@ -45,7 +42,7 @@ const PerformerMerge: React.FC = () => {
       variables: {
         performerData: {
           edit: {
-            id: performer.findPerformer?.id,
+            id: performer.id,
             operation: OperationEnum.MERGE,
             merge_source_ids: mergeSources.map((p) => p.id),
             comment: editNote,
@@ -63,10 +60,10 @@ const PerformerMerge: React.FC = () => {
   return (
     <div className={CLASSNAME}>
       <h3>
-        Merge performers into <em>{performer.findPerformer.name}</em>
+        Merge performers into <em>{performer.name}</em>
       </h3>
       <hr />
-      <div className="row no-gutters">
+      <div className="row">
         <div className="col-6">
           {!mergeActive && (
             <>
@@ -75,14 +72,14 @@ const PerformerMerge: React.FC = () => {
                 onChange={(performers) => setMergeSources(performers)}
                 message="Search for performers to merge..."
                 excludePerformers={[
-                  performer.findPerformer.id,
+                  performer.id,
                   ...mergeSources.map((p) => p.id),
                 ]}
               />
               {mergeSources.length > 0 && (
                 <Button
                   onClick={() => setMergeActive(true)}
-                  className="ml-auto"
+                  className="ms-auto"
                 >
                   Continue
                 </Button>
@@ -93,16 +90,13 @@ const PerformerMerge: React.FC = () => {
             <Row>
               <Col xs={3}>
                 <h6 className="text-center">Merge Target</h6>
-                <PerformerCard
-                  performer={performer.findPerformer}
-                  className="TargetCard"
-                />
+                <PerformerCard performer={performer} className="TargetCard" />
               </Col>
               <Col xs={9}>
                 <Row className="mt-4">
                   {mergeSources.map((source) => (
                     <Col xs={4} key={source.id}>
-                      <PerformerCard performer={source} className="col-4" />
+                      <PerformerCard performer={source} />
                     </Col>
                   ))}
                 </Row>
@@ -132,11 +126,10 @@ const PerformerMerge: React.FC = () => {
             label="Update scene performance aliases on merged performers to old performer name."
           />
           <h5 className="mt-4">
-            Update performer metadata for{" "}
-            <em>{performer.findPerformer.name}</em>
+            Update performer metadata for <em>{performer.name}</em>
           </h5>
           <PerformerForm
-            performer={performer.findPerformer}
+            performer={performer}
             initialAliases={[
               ...mergeSources.map((p) => p.name),
               ...flatMap(mergeSources, (p) => p.aliases),

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { FC, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 
@@ -28,40 +28,61 @@ import {
   ROUTE_PERFORMER_DELETE,
 } from "src/constants/route";
 
-import { GenderIcon, PerformerName } from "src/components/fragments";
+import {
+  FavoriteStar,
+  GenderIcon,
+  PerformerName,
+  Tooltip,
+} from "src/components/fragments";
 import ImageCarousel from "src/components/imageCarousel";
 
-const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
+const CLASSNAME = "PerformerInfo";
+
+const PerformerInfo: FC<{ performer: Performer }> = ({ performer }) => {
   const auth = useContext(AuthContext);
 
   return (
-    <Row>
+    <Row className={CLASSNAME}>
       <Col xs={6}>
+        {canEdit(auth?.user) && !performer.deleted && (
+          <div className="text-end">
+            <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
+              <Button>Edit</Button>
+            </Link>
+            <Link
+              to={createHref(ROUTE_PERFORMER_MERGE, performer)}
+              className="ms-2"
+            >
+              <Tooltip
+                text={
+                  <>
+                    Merge other performers into <b>{performer.name}</b>
+                  </>
+                }
+              >
+                <Button>Merge</Button>
+              </Tooltip>
+            </Link>
+            <Link
+              to={createHref(ROUTE_PERFORMER_DELETE, performer)}
+              className="ms-2"
+            >
+              <Button variant="danger">Delete</Button>
+            </Link>
+          </div>
+        )}
         <Card>
           <Card.Header className="d-flex">
             <h3>
               <GenderIcon gender={performer?.gender} />
               <PerformerName performer={performer} />
+              <FavoriteStar
+                entity={performer}
+                entityType="performer"
+                interactable
+                className="ps-2"
+              />
             </h3>
-            {canEdit(auth?.user) && !performer.deleted && (
-              <div className="ml-auto flex-shrink-0">
-                <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
-                  <Button>Edit</Button>
-                </Link>
-                <Link
-                  to={createHref(ROUTE_PERFORMER_MERGE, performer)}
-                  className="ml-2"
-                >
-                  <Button>Merge into</Button>
-                </Link>
-                <Link
-                  to={createHref(ROUTE_PERFORMER_DELETE, performer)}
-                  className="ml-2"
-                >
-                  <Button variant="danger">Delete</Button>
-                </Link>
-              </div>
-            )}
           </Card.Header>
           <Card.Body className="p-0">
             <Table striped>

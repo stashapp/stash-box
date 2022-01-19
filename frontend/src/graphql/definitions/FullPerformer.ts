@@ -35,10 +35,17 @@ export interface FullPerformer_findPerformer_piercings {
   description: string | null;
 }
 
+export interface FullPerformer_findPerformer_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface FullPerformer_findPerformer_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: FullPerformer_findPerformer_urls_site;
 }
 
 export interface FullPerformer_findPerformer_images {
@@ -94,6 +101,7 @@ export interface FullPerformer_findPerformer {
   piercings: FullPerformer_findPerformer_piercings[] | null;
   urls: FullPerformer_findPerformer_urls[];
   images: FullPerformer_findPerformer_images[];
+  is_favorite: boolean;
   studios: FullPerformer_findPerformer_studios[];
 }
 

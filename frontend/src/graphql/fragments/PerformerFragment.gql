@@ -1,4 +1,5 @@
 #import "../fragments/ImageFragment.gql"
+#import "../fragments/URLFragment.gql"
 fragment PerformerFragment on Performer {
   id
   name
@@ -34,10 +35,10 @@ fragment PerformerFragment on Performer {
     description
   }
   urls {
-      url
-      type
+    ...URLFragment
   }
   images {
     ... ImageFragment
   }
+  is_favorite
 }

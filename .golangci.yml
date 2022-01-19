@@ -1,0 +1,73 @@
+run:
+  timeout: 3m
+  skip-files:
+    - "pkg/models/generated_.*.go$"
+
+linters:
+  enable:
+    # Default
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    # additional
+    - gofmt
+    - revive
+    - dogsled
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - gocritic
+    - ifshort
+    #- goerr113
+    - misspell
+    - noctx
+    - rowserrcheck
+    - sqlclosecheck
+
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    severity: error
+    confidence: 0.8
+    error-code: 1
+    warning-code: 1
+    rules:
+      - name: blank-imports
+        disabled: true
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+        enabled: true
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+        disabled: true
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unused-parameter
+        disabled: true
+      - name: unreachable-code
+      - name: redefines-builtin-id
+  staticcheck:
+    go: "1.17"
+  exhaustive:
+    default-signifies-exhaustive: true
