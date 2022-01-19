@@ -112,7 +112,6 @@ jobs:
       run: make cross-compile
       env: 
         BUILD_TYPE: "${{ env.BUILD_TYPE }}"
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
     - name: Generate checksums
       run: |
