@@ -343,7 +343,11 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
 
           <Form.Group className="mb-3">
             <Form.Label>Tags</Form.Label>
-            <TagSelect tags={scene.tags} onChange={onTagChange} />
+            <TagSelect
+              tags={scene.tags}
+              onChange={onTagChange}
+              menuPlacement="top"
+            />
           </Form.Group>
 
           <NavButtons onNext={() => setActiveTab("links")} />

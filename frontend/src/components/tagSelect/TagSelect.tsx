@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import Async from "react-select/async";
-import { OnChangeValue } from "react-select";
+import { OnChangeValue, MenuPlacement } from "react-select";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
@@ -20,6 +20,7 @@ interface TagSelectProps {
   onChange: (tags: Tag[]) => void;
   message?: string;
   excludeTags?: string[];
+  menuPlacement?: MenuPlacement;
 }
 
 interface SearchResult {
@@ -38,6 +39,7 @@ const TagSelect: FC<TagSelectProps> = ({
   onChange,
   message = "Add tag:",
   excludeTags = [],
+  menuPlacement = "auto",
 }) => {
   const client = useApolloClient();
   const [tags, setTags] = useState(initialTags);
@@ -103,6 +105,8 @@ const TagSelect: FC<TagSelectProps> = ({
           noOptionsMessage={({ inputValue }) =>
             inputValue === "" ? null : `No tags found for "${inputValue}"`
           }
+          menuPlacement={menuPlacement}
+          controlShouldRenderValue={false}
         />
       </div>
     </div>
