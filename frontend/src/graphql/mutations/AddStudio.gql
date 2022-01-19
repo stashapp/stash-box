@@ -4,7 +4,10 @@ mutation AddStudio($studioData: StudioCreateInput!) {
       name
       urls {
           url
-          type
+          site {
+              id
+              name
+          }
       }
   }
 }

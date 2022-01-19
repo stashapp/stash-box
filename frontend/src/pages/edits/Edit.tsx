@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { FC, useState, useContext } from "react";
 import { Button } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 
@@ -7,14 +7,22 @@ import {
   useCancelEdit,
   useApplyEdit,
   VoteStatusEnum,
+  OperationEnum,
 } from "src/graphql";
 import AuthContext from "src/AuthContext";
-import { LoadingIndicator } from "src/components/fragments";
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import EditCard from "src/components/editCard";
 import Modal from "src/components/modal";
-import { isAdmin, isTag, isPerformer, tagHref, performerHref } from "src/utils";
+import Title from "src/components/title";
+import { EditOperationTypes, EditTargetTypes } from "src/constants";
+import {
+  isAdmin,
+  getEditTargetRoute,
+  getEditTargetName,
+  getEditDetailsName,
+} from "src/utils";
 
-const EditComponent: React.FC = () => {
+const EditComponent: FC = () => {
   const auth = useContext(AuthContext);
   const { id } = useParams<{ id: string }>();
   const [showApply, setShowApply] = useState(false);
@@ -23,10 +31,10 @@ const EditComponent: React.FC = () => {
   const [cancelEdit, { loading: cancelling }] = useCancelEdit();
   const [applyEdit, { loading: applying }] = useApplyEdit();
 
-  if (loading || !data?.findEdit)
-    return <LoadingIndicator message="Loading..." />;
+  if (loading) return <LoadingIndicator message="Loading..." />;
 
-  const edit = data.findEdit;
+  const edit = data?.findEdit;
+  if (!edit) return <ErrorMessage error="Failed to load edit." />;
 
   const toggleCancelModal = () => setShowCancel(true);
   const toggleApplyModal = () => setShowApply(true);
@@ -41,11 +49,7 @@ const EditComponent: React.FC = () => {
         const target = result.data?.applyEdit.target;
         if (!target) return;
 
-        let url = "";
-        if (isTag(target)) url = `${tagHref(target)}#edits`;
-        else if (isPerformer(target)) url = `${performerHref(target)}#edits`;
-
-        window.location.href = url;
+        window.location.href = `${getEditTargetRoute(target)}#edits`;
       });
     setShowApply(false);
   };
@@ -73,7 +77,7 @@ const EditComponent: React.FC = () => {
       <div className="d-flex justify-content-end">
         <Button
           variant="danger"
-          className="mr-2"
+          className="me-2"
           disabled={showCancel || mutating}
           onClick={toggleCancelModal}
         >
@@ -91,9 +95,19 @@ const EditComponent: React.FC = () => {
       </div>
     );
 
+  const targetName =
+    edit.operation === OperationEnum.CREATE
+      ? getEditDetailsName(edit.details)
+      : getEditTargetName(edit.target);
+
   return (
     <div>
-      <EditCard edit={edit} />
+      <Title
+        page={`${EditOperationTypes[edit.operation]} ${
+          EditTargetTypes[edit.target_type]
+        } "${targetName}"`}
+      />
+      <EditCard edit={edit} showVotes />
       {buttons}
       {cancelModal}
       {applyModal}

@@ -1,18 +1,18 @@
 type Studio {
   id: ID!
   name: String!
-  urls: [URL]!
+  urls: [URL!]!
   parent: Studio
   child_studios: [Studio!]!
   images: [Image!]!
   deleted: Boolean!
+  is_favorite: Boolean!
 }
 
 input StudioCreateInput {
   name: String!
   urls: [URLInput!]
   parent_id: ID
-  child_studio_ids: [ID!]
   image_ids: [ID!]
 }
 
@@ -21,7 +21,6 @@ input StudioUpdateInput {
   name: String
   urls: [URLInput!]
   parent_id: ID
-  child_studio_ids: [ID!]
   image_ids: [ID!]
 }
 
@@ -33,7 +32,6 @@ input StudioEditDetailsInput {
   name: String
   urls: [URLInput!]
   parent_id: ID
-  child_studio_ids: [ID!]
   image_ids: [ID!]
 }
 
@@ -49,10 +47,8 @@ type StudioEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   parent: Studio
-  added_child_studios: [Studio!]
-  removed_child_studios: [Studio!]
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
 }
 
 type QueryStudiosResultType {
@@ -70,4 +66,6 @@ input StudioFilterType {
   
   parent: IDCriterionInput
   has_parent: Boolean
+  """Filter by studio favorite status for the current user"""
+  is_favorite: Boolean
 }

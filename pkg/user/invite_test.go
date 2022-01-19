@@ -23,7 +23,11 @@ func (u *testUserFinderUpdater) Find(id uuid.UUID) (*models.User, error) {
 }
 
 func (u *testUserFinderUpdater) FindByEmail(email string) (*models.User, error) {
-	return nil, nil
+	if u.findErr != nil {
+		return nil, u.findErr
+	}
+
+	return u.user, nil
 }
 
 func (u *testUserFinderUpdater) UpdateFull(updatedUser models.User) (*models.User, error) {
@@ -72,7 +76,7 @@ func TestGrantInviteTokens(t *testing.T) {
 
 		tokens, err := GrantInviteTokens(uf, userID, v.toAdd)
 
-		if err != v.expectedErr {
+		if !errors.Is(err, v.expectedErr) {
 			t.Errorf("scenario: %v+ - (error) got %v; want %v", v, err, v.expectedErr)
 			continue
 		}
@@ -125,7 +129,7 @@ func TestRepealInviteTokens(t *testing.T) {
 
 		tokens, err := RepealInviteTokens(uf, userID, v.toAdd)
 
-		if err != v.expectedErr {
+		if !errors.Is(err, v.expectedErr) {
 			t.Errorf("scenario: %v+ - (error) got %v; want %v", v, err, v.expectedErr)
 			continue
 		}

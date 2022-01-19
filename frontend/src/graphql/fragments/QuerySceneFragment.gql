@@ -1,0 +1,25 @@
+#import "../fragments/URLFragment.gql"
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/ScenePerformerFragment.gql"
+fragment QuerySceneFragment on Scene {
+  id
+  date
+  title
+  duration
+  urls {
+    ...URLFragment
+  }
+  images {
+    ...ImageFragment
+  }
+  studio {
+    id
+    name
+  }
+  performers {
+    as
+    performer {
+      ...ScenePerformerFragment
+    }
+  }
+}

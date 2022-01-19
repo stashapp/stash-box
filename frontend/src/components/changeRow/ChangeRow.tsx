@@ -1,33 +1,34 @@
-import React from "react";
+import { FC } from "react";
+import { Col, Row } from "react-bootstrap";
 import cx from "classnames";
 
 export interface ChangeRowProps {
-  name: string;
+  name?: string;
   newValue?: string | number | null;
   oldValue?: string | number | null;
   showDiff?: boolean;
 }
 
-const ChangeRow: React.FC<ChangeRowProps> = ({
+const ChangeRow: FC<ChangeRowProps> = ({
   name,
   newValue,
   oldValue,
   showDiff = false,
 }) =>
-  newValue || oldValue ? (
-    <div className="row mb-2">
-      <b className="col-2 text-right">{name}</b>
+  name && (newValue || oldValue) ? (
+    <Row className="mb-2">
+      <b className="col-2 text-end pt-1">{name}</b>
       {showDiff && (
-        <span className="col-5">
+        <Col xs={5}>
           <div className="EditDiff bg-danger">{oldValue}</div>
-        </span>
+        </Col>
       )}
-      <span className="col-5">
+      <Col xs={showDiff ? 5 : 10}>
         <div className={cx("EditDiff", { "bg-success": showDiff })}>
           {newValue}
         </div>
-      </span>
-    </div>
+      </Col>
+    </Row>
   ) : (
     <></>
   );

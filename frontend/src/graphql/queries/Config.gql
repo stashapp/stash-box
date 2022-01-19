@@ -1,0 +1,12 @@
+query Config {
+  getConfig {
+    host_url
+    require_invite
+    require_activation
+    vote_promotion_threshold
+    vote_application_threshold
+    voting_period
+    min_destructive_voting_period
+    vote_cron_interval
+  }
+}

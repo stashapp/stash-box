@@ -32,6 +32,8 @@ type Performer struct {
 	Deleted           bool            `db:"deleted" json:"deleted"`
 }
 
+func (Performer) IsSceneDraftPerformer() {}
+
 func (p Performer) GetID() uuid.UUID {
 	return p.ID
 }
@@ -46,23 +48,6 @@ func (p Performers) Each(fn func(interface{})) {
 
 func (p *Performers) Add(o interface{}) {
 	*p = append(*p, o.(*Performer))
-}
-
-type PerformerRedirect struct {
-	SourceID uuid.UUID `db:"source_id" json:"source_id"`
-	TargetID uuid.UUID `db:"target_id" json:"target_id"`
-}
-
-type PerformerRedirects []*PerformerRedirect
-
-func (p *PerformerRedirects) Add(o interface{}) {
-	*p = append(*p, o.(*PerformerRedirect))
-}
-
-func (p PerformerRedirects) Each(fn func(interface{})) {
-	for _, v := range p {
-		fn(*v)
-	}
 }
 
 type PerformerAlias struct {
@@ -103,7 +88,7 @@ func (p PerformerAliases) ToAliases() []string {
 
 func (p *PerformerAliases) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -155,20 +140,20 @@ func CreatePerformerAliases(performerID uuid.UUID, aliases []string) PerformerAl
 
 type PerformerURL struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
+	SiteID      uuid.UUID `db:"site_id" json:"site_id"`
 	URL         string    `db:"url" json:"url"`
-	Type        string    `db:"type" json:"type"`
 }
 
 func (p *PerformerURL) ToURL() URL {
 	url := URL{
-		URL:  p.URL,
-		Type: p.Type,
+		URL:    p.URL,
+		SiteID: p.SiteID,
 	}
 	return url
 }
 
 func (p PerformerURL) ID() string {
-	return p.URL + p.Type
+	return p.URL
 }
 
 type PerformerURLs []*PerformerURL
@@ -191,7 +176,7 @@ func (p *PerformerURLs) Add(o interface{}) {
 
 func (p *PerformerURLs) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -206,7 +191,7 @@ func CreatePerformerURLs(performerID uuid.UUID, urls []*URL) PerformerURLs {
 		ret = append(ret, &PerformerURL{
 			PerformerID: performerID,
 			URL:         urlInput.URL,
-			Type:        urlInput.Type,
+			SiteID:      urlInput.SiteID,
 		})
 	}
 
@@ -261,7 +246,7 @@ func (p *PerformerBodyMods) Add(o interface{}) {
 
 func (p *PerformerBodyMods) Remove(id string) {
 	for i, v := range *p {
-		if (*v).ID() == id {
+		if v.ID() == id {
 			(*p)[i] = (*p)[len(*p)-1]
 			*p = (*p)[:len(*p)-1]
 			break
@@ -387,13 +372,12 @@ func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
 	return nil
 }
 
-func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformersImages {
+func CreatePerformerImages(performerID uuid.UUID, imageIds []uuid.UUID) PerformersImages {
 	var imageJoins PerformersImages
 	for _, iid := range imageIds {
-		imageID := uuid.FromStringOrNil(iid)
 		imageJoin := &PerformerImage{
 			PerformerID: performerID,
-			ImageID:     imageID,
+			ImageID:     iid,
 		}
 		imageJoins = append(imageJoins, imageJoin)
 	}
@@ -402,146 +386,53 @@ func CreatePerformerImages(performerID uuid.UUID, imageIds []string) PerformersI
 }
 
 func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit) {
-	if input.Name != nil {
-		p.Name = *input.Name
-	}
-	if input.Disambiguation != nil {
-		p.Disambiguation = sql.NullString{String: *input.Disambiguation, Valid: true}
-	} else if old.Disambiguation != nil {
-		p.Disambiguation = sql.NullString{String: "", Valid: false}
-	}
-	if input.Gender != nil {
-		p.Gender = sql.NullString{String: *input.Gender, Valid: true}
-	} else if old.Gender != nil {
-		p.Gender = sql.NullString{String: "", Valid: false}
-	}
-	if input.Ethnicity != nil {
-		p.Ethnicity = sql.NullString{String: *input.Ethnicity, Valid: true}
-	} else if old.Ethnicity != nil {
-		p.Ethnicity = sql.NullString{String: "", Valid: false}
-	}
-	if input.Country != nil {
-		p.Country = sql.NullString{String: *input.Country, Valid: true}
-	} else if old.Country != nil {
-		p.Country = sql.NullString{String: "", Valid: false}
-	}
-	if input.EyeColor != nil {
-		p.EyeColor = sql.NullString{String: *input.EyeColor, Valid: true}
-	} else if old.EyeColor != nil {
-		p.EyeColor = sql.NullString{String: "", Valid: false}
-	}
-	if input.HairColor != nil {
-		p.HairColor = sql.NullString{String: *input.HairColor, Valid: true}
-	} else if old.HairColor != nil {
-		p.HairColor = sql.NullString{String: "", Valid: false}
-	}
-	if input.Height != nil {
-		p.Height = sql.NullInt64{Int64: *input.Height, Valid: true}
-	} else if old.Height != nil {
-		p.Height = sql.NullInt64{Int64: 0, Valid: false}
-	}
-	if input.BreastType != nil {
-		p.BreastType = sql.NullString{String: *input.BreastType, Valid: true}
-	} else if old.BreastType != nil {
-		p.BreastType = sql.NullString{String: "", Valid: false}
-	}
-	if input.CareerStartYear != nil {
-		p.CareerStartYear = sql.NullInt64{Int64: *input.CareerStartYear, Valid: true}
-	} else if old.CareerStartYear != nil {
-		p.CareerStartYear = sql.NullInt64{Int64: 0, Valid: false}
-	}
-	if input.CareerEndYear != nil {
-		p.CareerEndYear = sql.NullInt64{Int64: *input.CareerEndYear, Valid: true}
-	} else if old.CareerEndYear != nil {
-		p.CareerEndYear = sql.NullInt64{Int64: 0, Valid: false}
-	}
-	if input.CupSize != nil {
-		p.CupSize = sql.NullString{String: *input.CupSize, Valid: *input.CupSize != ""}
-	} else if old.CupSize != nil {
-		p.CupSize = sql.NullString{String: "", Valid: false}
-	}
-	if input.BandSize != nil {
-		p.BandSize = sql.NullInt64{Int64: *input.BandSize, Valid: *input.BandSize != 0}
-	} else if old.BandSize != nil {
-		p.BandSize = sql.NullInt64{Int64: 0, Valid: false}
-	}
-	if input.HipSize != nil {
-		p.HipSize = sql.NullInt64{Int64: *input.HipSize, Valid: *input.HipSize != 0}
-	} else if old.HipSize != nil {
-		p.HipSize = sql.NullInt64{Int64: 0, Valid: false}
-	}
-	if input.WaistSize != nil {
-		p.WaistSize = sql.NullInt64{Int64: *input.WaistSize, Valid: *input.WaistSize != 0}
-	} else if old.WaistSize != nil {
-		p.WaistSize = sql.NullInt64{Int64: 0, Valid: false}
-	}
-
-	if input.Birthdate != nil {
-		p.Birthdate = SQLiteDate{String: *input.Birthdate, Valid: *input.Birthdate != ""}
-
-		if input.BirthdateAccuracy != nil {
-			p.BirthdateAccuracy = sql.NullString{String: *input.BirthdateAccuracy, Valid: *input.BirthdateAccuracy != ""}
-		}
-	} else if old.Birthdate != nil {
-		p.Birthdate = SQLiteDate{String: "", Valid: false}
-		p.BirthdateAccuracy = sql.NullString{String: "", Valid: false}
-	}
+	fe := fromEdit{}
+	fe.string(&p.Name, input.Name)
+	fe.nullString(&p.Disambiguation, input.Disambiguation, old.Disambiguation)
+	fe.nullString(&p.Gender, input.Gender, old.Gender)
+	fe.nullString(&p.Ethnicity, input.Ethnicity, old.Ethnicity)
+	fe.nullString(&p.Country, input.Country, old.Country)
+	fe.nullString(&p.EyeColor, input.EyeColor, old.EyeColor)
+	fe.nullString(&p.HairColor, input.HairColor, old.HairColor)
+	fe.nullInt64(&p.Height, input.Height, old.Height)
+	fe.nullString(&p.BreastType, input.BreastType, old.BreastType)
+	fe.nullInt64(&p.CareerStartYear, input.CareerStartYear, old.CareerStartYear)
+	fe.nullInt64(&p.CareerEndYear, input.CareerEndYear, old.CareerEndYear)
+	fe.nullString(&p.CupSize, input.CupSize, old.CupSize)
+	fe.nullInt64(&p.BandSize, input.BandSize, old.BandSize)
+	fe.nullInt64(&p.HipSize, input.HipSize, old.HipSize)
+	fe.nullInt64(&p.WaistSize, input.WaistSize, old.WaistSize)
+	fe.sqliteDate(&p.Birthdate, input.Birthdate, old.Birthdate)
+	fe.nullString(&p.BirthdateAccuracy, input.BirthdateAccuracy, old.BirthdateAccuracy)
 
 	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
-	if edit.Old.Name != nil && *edit.Old.Name != p.Name {
-		return fmt.Errorf("Invalid name. Expected '%v' but was '%v'", *edit.Old.Name, p.Name)
-	}
-	if edit.Old.Disambiguation != nil && *edit.Old.Disambiguation != p.Disambiguation.String {
-		return fmt.Errorf("Invalid disambiguation. Expected '%v' but was '%v'", *edit.Old.Disambiguation, p.Disambiguation.String)
-	}
-	if edit.Old.Gender != nil && *edit.Old.Gender != p.Gender.String {
-		return fmt.Errorf("Invalid gender. Expected '%v' but was '%v'", *edit.Old.Gender, p.Gender.String)
-	}
-	if edit.Old.Ethnicity != nil && *edit.Old.Ethnicity != p.Ethnicity.String {
-		return fmt.Errorf("Invalid ethnicity. Expected '%v' but was '%v'", *edit.Old.Ethnicity, p.Ethnicity.String)
-	}
-	if edit.Old.Country != nil && *edit.Old.Country != p.Country.String {
-		return fmt.Errorf("Invalid country. Expected '%v' but was '%v'", *edit.Old.Country, p.Country.String)
-	}
-	if edit.Old.EyeColor != nil && *edit.Old.EyeColor != p.EyeColor.String {
-		return fmt.Errorf("Invalid eye color. Expected '%v' but was '%v'", *edit.Old.EyeColor, p.EyeColor.String)
-	}
-	if edit.Old.HairColor != nil && *edit.Old.HairColor != p.HairColor.String {
-		return fmt.Errorf("Invalid hair color. Expected '%v' but was '%v'", *edit.Old.HairColor, p.HairColor.String)
-	}
-	if edit.Old.Height != nil && *edit.Old.Height != p.Height.Int64 {
-		return fmt.Errorf("Invalid height. Expected %d but was %d", *edit.Old.Height, p.Height.Int64)
-	}
-	if edit.Old.BreastType != nil && *edit.Old.BreastType != p.BreastType.String {
-		return fmt.Errorf("Invalid breast type. Expected '%v' but was '%v'", *edit.Old.BreastType, p.BreastType.String)
-	}
-	if edit.Old.CareerStartYear != nil && *edit.Old.CareerStartYear != p.CareerStartYear.Int64 {
-		return fmt.Errorf("Invalid career start year. Expected %d but was %d", *edit.Old.CareerStartYear, p.CareerStartYear.Int64)
-	}
-	if edit.Old.CareerEndYear != nil && *edit.Old.CareerEndYear != p.CareerEndYear.Int64 {
-		return fmt.Errorf("Invalid career end year. Expected %d but was %d", *edit.Old.CareerEndYear, p.CareerEndYear.Int64)
-	}
-	if edit.Old.CupSize != nil && *edit.Old.CupSize != p.CupSize.String {
-		return fmt.Errorf("Invalid cup size. Expected '%v' but was '%v'", *edit.Old.CupSize, p.CupSize.String)
-	}
-	if edit.Old.BandSize != nil && *edit.Old.BandSize != p.BandSize.Int64 {
-		return fmt.Errorf("Invalid band size. Expected %d but was %d", *edit.Old.BandSize, p.BandSize.Int64)
-	}
-	if edit.Old.HipSize != nil && *edit.Old.HipSize != p.HipSize.Int64 {
-		return fmt.Errorf("Invalid hip size. Expected %d but was %d", *edit.Old.HipSize, p.HipSize.Int64)
-	}
-	if edit.Old.WaistSize != nil && *edit.Old.WaistSize != p.WaistSize.Int64 {
-		return fmt.Errorf("Invalid waist size. Expected %d but was %d", *edit.Old.WaistSize, p.WaistSize.Int64)
-	}
-	if edit.Old.Birthdate != nil && *edit.Old.Birthdate != p.Birthdate.String {
-		return fmt.Errorf("Invalid birthdate. Expected '%v' but was '%v'", *edit.Old.Birthdate, p.Birthdate.String)
-	}
-	if edit.Old.BirthdateAccuracy != nil && *edit.Old.BirthdateAccuracy != p.BirthdateAccuracy.String {
-		return fmt.Errorf("Invalid birthdate accuracy. Expected '%v' but was '%v'", *edit.Old.BirthdateAccuracy, p.BirthdateAccuracy.String)
-	}
+	v := editValidator{}
 
-	return nil
+	v.string("name", edit.Old.Name, p.Name)
+	v.string("disambiguation", edit.Old.Disambiguation, p.Disambiguation.String)
+	v.string("gender", edit.Old.Gender, p.Gender.String)
+	v.string("ethnicity", edit.Old.Ethnicity, p.Ethnicity.String)
+	v.string("country", edit.Old.Country, p.Country.String)
+	v.string("eye color", edit.Old.EyeColor, p.EyeColor.String)
+	v.string("hair color", edit.Old.HairColor, p.HairColor.String)
+	v.int64("height", edit.Old.Height, p.Height.Int64)
+	v.string("breast type", edit.Old.BreastType, p.BreastType.String)
+	v.int64("career start year", edit.Old.CareerStartYear, p.CareerStartYear.Int64)
+	v.int64("career end year", edit.Old.CareerEndYear, p.CareerEndYear.Int64)
+	v.string("cup size", edit.Old.CupSize, p.CupSize.String)
+	v.int64("band size", edit.Old.BandSize, p.BandSize.Int64)
+	v.int64("hip size", edit.Old.HipSize, p.HipSize.Int64)
+	v.int64("waist size", edit.Old.WaistSize, p.WaistSize.Int64)
+	v.string("birthdate", edit.Old.Birthdate, p.Birthdate.String)
+	v.string("birthdate accuracy", edit.Old.BirthdateAccuracy, p.BirthdateAccuracy.String)
+
+	return v.err
+}
+
+type PerformerQuery struct {
+	PerformerFilter *PerformerFilterType
+	Filter          *QuerySpec
 }

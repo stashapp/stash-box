@@ -23,21 +23,35 @@ type Fingerprint {
   submissions: Int!
   created: Time!
   updated: Time!
+  user_submitted: Boolean!
+}
+
+type DraftFingerprint {
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
 }
 
 input FingerprintInput {
+  """assumes current user if omitted. Ignored for non-modify Users"""
+  user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
 }
 
 input FingerprintEditInput {
+  user_ids: [ID!]
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
-  submissions: Int!
   created: Time!
-  updated: Time!
+  # v0.14.0 of gqlgen does not allow deprecated on input fields
+  # https://github.com/99designs/gqlgen/issues/1636
+  """@deprecated(reason: "unused")"""
+  submissions: Int 
+  """@deprecated(reason: "unused")"""
+  updated: Time 
 }
 
 input FingerprintQueryInput {
@@ -48,6 +62,7 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
+  unmatch: Boolean
 }
 
 type Scene {
@@ -64,6 +79,7 @@ type Scene {
   duration: Int
   director: String
   deleted: Boolean!
+  edits: [Edit!]!
 }
 
 input SceneCreateInput {
@@ -108,9 +124,10 @@ input SceneEditDetailsInput {
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
   image_ids: [ID!]
-  fingerprints: [FingerprintEditInput!]
   duration: Int
   director: String
+  fingerprints: [FingerprintInput!]
+  draft_id: ID
 }
 
 input SceneEditInput {
@@ -126,18 +143,19 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: Date
-  studio_id: ID
+  studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
   removed_performers: [PerformerAppearance!]
   added_tags: [Tag!]
   removed_tags: [Tag!]
-  added_images: [Image]
-  removed_images: [Image]
+  added_images: [Image!]
+  removed_images: [Image!]
   added_fingerprints: [Fingerprint!]
   removed_fingerprints: [Fingerprint!]
   duration: Int
   director: String
+  draft_id: ID
 }
 
 type QueryScenesResultType {
@@ -165,5 +183,33 @@ input SceneFilterType {
   """Filter to include scenes with performer appearing as alias"""
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
-  fingerprints: MultiIDCriterionInput
+  fingerprints: MultiStringCriterionInput
+}
+
+union SceneDraftStudio = Studio | DraftEntity
+union SceneDraftPerformer = Performer | DraftEntity
+union SceneDraftTag = Tag | DraftEntity
+
+type SceneDraft {
+  title: String
+  details: String
+  url: URL
+  date: Date
+  studio: SceneDraftStudio
+  performers: [SceneDraftPerformer!]!
+  tags: [SceneDraftTag!]
+  image: Image
+  fingerprints: [DraftFingerprint!]!
+}
+
+input SceneDraftInput {
+  title: String
+  details: String
+  url: String
+  date: Date
+  studio: DraftEntityInput
+  performers: [DraftEntityInput!]!
+  tags: [DraftEntityInput!]
+  image: Upload
+  fingerprints: [FingerprintInput!]!
 }

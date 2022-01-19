@@ -1,133 +1,157 @@
-import React from "react";
-import { useHistory, Link } from "react-router-dom";
-import { Button, Form } from "react-bootstrap";
+import { FC, useMemo, useState } from "react";
+import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import cx from "classnames";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { StudioCreateInput } from "src/graphql";
+import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
-import { getUrlByType, createHref } from "src/utils";
-import { ROUTE_STUDIOS, ROUTE_STUDIO } from "src/constants/route";
+import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
+import URLInput from "src/components/urlInput";
+import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
-const nullCheck = (input: string | null) =>
-  input === "" || input === "null" ? null : input;
-
-const schema = yup.object({
-  title: yup.string().required("Title is required"),
-  url: yup.string().url("Invalid URL").transform(nullCheck).nullable(),
-  images: yup
-    .array()
-    .of(
-      yup.object({
-        id: yup.string().required(),
-        url: yup.string().required(),
-      })
-    )
-    .required(),
-  studio: yup.string().nullable(),
-});
-
-type StudioFormData = yup.Asserts<typeof schema>;
+import { StudioSchema, StudioFormData } from "./schema";
+import DiffStudio from "./diff";
 
 interface StudioProps {
   studio: Studio;
-  callback: (data: StudioCreateInput) => void;
+  callback: (data: StudioEditDetailsInput, editNote: string) => void;
   showNetworkSelect?: boolean;
+  saving: boolean;
 }
 
-const StudioForm: React.FC<StudioProps> = ({
+const StudioForm: FC<StudioProps> = ({
   studio,
   callback,
   showNetworkSelect = true,
+  saving,
 }) => {
-  const history = useHistory();
   const {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<StudioFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(StudioSchema),
     defaultValues: {
+      name: studio.name,
       images: studio.images,
+      urls: studio.urls ?? [],
+      studio: studio.parent
+        ? {
+            id: studio.parent.id,
+            name: studio.parent.name,
+          }
+        : undefined,
     },
   });
 
+  const [file, setFile] = useState<File | undefined>();
+  const fieldData = watch();
+  const [oldStudioChanges, newStudioChanges] = useMemo(
+    () => DiffStudio(StudioSchema.cast(fieldData), studio),
+    [fieldData, studio]
+  );
+
+  const [activeTab, setActiveTab] = useState("details");
+
   const onSubmit = (data: StudioFormData) => {
-    const urls = [];
-    if (data.url) urls.push({ url: data.url, type: "HOME" });
-    const callbackData: StudioCreateInput = {
-      name: data.title,
-      urls,
+    const callbackData: StudioEditDetailsInput = {
+      name: data.name,
+      urls: data.urls.map((u) => ({
+        url: u.url,
+        site_id: u.site.id,
+      })),
       image_ids: data.images.map((i) => i.id),
-      parent_id: data.studio,
+      parent_id: data.studio?.id,
     };
-    callback(callbackData);
+    callback(callbackData, data.note);
   };
 
   return (
     <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
-          className={cx({ "is-invalid": errors.title })}
-          placeholder="Title"
-          defaultValue={studio.name}
-          {...register("title")}
-        />
-        <Form.Control.Feedback type="invalid">
-          {errors?.title?.message}
-        </Form.Control.Feedback>
-      </Form.Group>
+      <Tabs
+        activeKey={activeTab}
+        onSelect={(key) => key && setActiveTab(key)}
+        className="d-flex"
+      >
+        <Tab eventKey="details" title="Details" className="col-xl-6">
+          <Form.Group controlId="name" className="mb-3">
+            <Form.Label>Name</Form.Label>
+            <Form.Control
+              className={cx({ "is-invalid": errors.name })}
+              placeholder="Name"
+              defaultValue={studio.name}
+              {...register("name")}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors?.name?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-      <Form.Group controlId="url">
-        <Form.Label>URL</Form.Label>
-        <Form.Control
-          className={cx({ "is-invalid": errors.url })}
-          placeholder="URL"
-          defaultValue={getUrlByType(studio.urls, "HOME")}
-          {...register("url")}
-        />
-        <Form.Control.Feedback type="invalid">
-          {errors?.url?.message}
-        </Form.Control.Feedback>
-      </Form.Group>
+          {showNetworkSelect && (
+            <Form.Group controlId="network" className="mb-3">
+              <Form.Label>Network</Form.Label>
+              <StudioSelect
+                excludeStudio={studio.id}
+                control={control}
+                initialStudio={studio.parent}
+                isClearable
+                networkSelect
+              />
+            </Form.Group>
+          )}
 
-      {showNetworkSelect && (
-        <Form.Group controlId="network">
-          <Form.Label>Network</Form.Label>
-          <StudioSelect
-            excludeStudio={studio.id}
+          <NavButtons onNext={() => setActiveTab("links")} />
+        </Tab>
+
+        <Tab eventKey="links" title="Links" className="col-xl-9">
+          <Form.Group className="mb-3">
+            <Form.Label>Links</Form.Label>
+            <URLInput control={control} type={ValidSiteTypeEnum.STUDIO} />
+          </Form.Group>
+
+          <NavButtons onNext={() => setActiveTab("images")} />
+        </Tab>
+
+        <Tab eventKey="images" title="Images" className="col-xl-6">
+          <EditImages
             control={control}
-            initialStudio={studio.parent}
-            isClearable
-            networkSelect
+            maxImages={1}
+            file={file}
+            setFile={(f) => setFile(f)}
           />
-        </Form.Group>
-      )}
 
-      <Form.Group>
-        <Form.Label>Images</Form.Label>
-        <EditImages control={control} maxImages={1} />
-      </Form.Group>
+          <NavButtons
+            onNext={() => setActiveTab("confirm")}
+            disabled={!!file}
+          />
 
-      <Form.Group className="d-flex">
-        <Button className="col-2" type="submit">
-          Save
-        </Button>
-        <Button type="reset" variant="secondary" className="ml-auto mr-2">
-          Reset
-        </Button>
-        <Link to={createHref(studio.id ? ROUTE_STUDIO : ROUTE_STUDIOS, studio)}>
-          <Button variant="danger" onClick={() => history.goBack()}>
-            Cancel
-          </Button>
-        </Link>
-      </Form.Group>
+          <div className="d-flex">
+            {/* dummy element for feedback */}
+            <div className="ms-auto">
+              <span className={file ? "is-invalid" : ""} />
+              <Form.Control.Feedback type="invalid">
+                Upload or remove image to continue.
+              </Form.Control.Feedback>
+            </div>
+          </div>
+        </Tab>
+
+        <Tab eventKey="confirm" title="Confirm" className="mt-3 col-xl-9">
+          {renderStudioDetails(newStudioChanges, oldStudioChanges, true)}
+          <Row className="my-4">
+            <Col md={{ span: 8, offset: 4 }}>
+              <EditNote register={register} error={errors.note} />
+            </Col>
+          </Row>
+
+          <SubmitButtons disabled={!!file || saving} />
+        </Tab>
+      </Tabs>
     </Form>
   );
 };

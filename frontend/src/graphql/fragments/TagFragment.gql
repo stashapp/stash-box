@@ -1,0 +1,10 @@
+fragment TagFragment on Tag {
+  id
+  name
+  description
+  deleted
+  category {
+  id
+  name
+  }
+}

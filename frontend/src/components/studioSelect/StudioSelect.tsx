@@ -1,18 +1,23 @@
-import React from "react";
+import { FC } from "react";
 import Async from "react-select/async";
 import { Controller } from "react-hook-form";
 import { useApolloClient } from "@apollo/client";
-import { loader } from "graphql.macro";
 import debounce from "p-debounce";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
+import StudiosQuery from "src/graphql/queries/Studios.gql";
+import StudioQuery from "src/graphql/queries/Studio.gql";
+
+import {
+  Studio_findStudio,
+  Studio,
+  StudioVariables,
+} from "src/graphql/definitions/Studio";
 import { Studios, StudiosVariables } from "src/graphql/definitions/Studios";
 import { SortDirectionEnum } from "src/graphql";
-
-const StudiosQuery = loader("src/graphql/queries/Studios.gql");
+import { isUUID } from "src/utils";
 
 interface StudioSelectProps {
-  initialStudio?: Pick<Studio, "id" | "name"> | null;
+  initialStudio?: Pick<Studio_findStudio, "id" | "name"> | null;
   excludeStudio?: string;
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   control: any;
@@ -23,7 +28,7 @@ interface StudioSelectProps {
 const CLASSNAME = "StudioSelect";
 const CLASSNAME_SELECT = `${CLASSNAME}-select`;
 
-const StudioSelect: React.FC<StudioSelectProps> = ({
+const StudioSelect: FC<StudioSelectProps> = ({
   initialStudio,
   excludeStudio,
   control,
@@ -33,6 +38,25 @@ const StudioSelect: React.FC<StudioSelectProps> = ({
   const client = useApolloClient();
 
   const fetchStudios = async (term: string) => {
+    const value = term.trim();
+    if (isUUID(value)) {
+      if (value === excludeStudio) {
+        return [];
+      }
+
+      const { data } = await client.query<Studio, StudioVariables>({
+        query: StudioQuery,
+        variables: { id: value },
+      });
+
+      const studio = data?.findStudio;
+      if (!studio || (networkSelect && studio.parent !== null)) {
+        return [];
+      }
+
+      return [{ value: studio.id, label: studio.name }];
+    }
+
     const { data } = await client.query<Studios, StudiosVariables>({
       query: StudiosQuery,
       variables: {
@@ -66,17 +90,20 @@ const StudioSelect: React.FC<StudioSelectProps> = ({
       <Controller
         name="studio"
         control={control}
-        defaultValue={initialStudio?.id ?? null}
+        defaultValue={defaultValue}
+        rules={{ validate: () => true }}
         render={({ field: { onChange } }) => (
           <Async
             classNamePrefix="react-select"
             className={`react-select ${CLASSNAME_SELECT}`}
-            onChange={(s) => onChange(s?.value ?? null)}
+            onChange={(s) =>
+              onChange(s ? { id: s.value, name: s.label } : undefined)
+            }
             defaultValue={defaultValue}
             loadOptions={debouncedLoad}
             placeholder="Search for studio"
             noOptionsMessage={({ inputValue }) =>
-              inputValue === "" ? null : `No studios found for "${inputValue}`
+              inputValue === "" ? null : `No studios found for "${inputValue}"`
             }
             isClearable={isClearable}
           />

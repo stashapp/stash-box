@@ -30,7 +30,7 @@ func NewUser(fac models.Repo, em *email.Manager, email, inviteKey string) (*stri
 		return nil, err
 	}
 
-	if err := validateExistingEmail(uqb, aqb, email); err != nil {
+	if err := validateExistingEmail(uqb, email); err != nil {
 		return nil, err
 	}
 
@@ -69,7 +69,7 @@ func NewUser(fac models.Repo, em *email.Manager, email, inviteKey string) (*stri
 	return nil, nil
 }
 
-func validateExistingEmail(f models.UserFinder, aqb models.PendingActivationFinder, email string) error {
+func validateExistingEmail(f models.UserFinder, email string) error {
 	u, err := f.FindByEmail(email)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 		return nil, errors.New("cannot find invite key")
 	}
 
-	invitedBy := i.GeneratedBy.String()
+	invitedBy := i.GeneratedBy
 
 	createInput := models.UserCreateInput{
 		Name:        name,

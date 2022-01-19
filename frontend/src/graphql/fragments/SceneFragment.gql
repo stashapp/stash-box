@@ -1,15 +1,16 @@
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/ScenePerformerFragment.gql"
+#import "../fragments/URLFragment.gql"
 fragment SceneFragment on Scene {
   id
   date
-  title,
-  details,
-  director,
+  title
+  deleted
+  details
+  director
   duration
   urls {
-    url,
-    type
+    ...URLFragment
   }
   images {
     ...ImageFragment
@@ -29,6 +30,7 @@ fragment SceneFragment on Scene {
     algorithm
     duration
     submissions
+    user_submitted
     created
     updated
   }

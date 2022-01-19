@@ -9,10 +9,17 @@ import { GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 // GraphQL fragment: SceneFragment
 // ====================================================
 
+export interface SceneFragment_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface SceneFragment_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: SceneFragment_urls_site;
 }
 
 export interface SceneFragment_images {
@@ -54,6 +61,7 @@ export interface SceneFragment_fingerprints {
   algorithm: FingerprintAlgorithm;
   duration: number;
   submissions: number;
+  user_submitted: boolean;
   created: any;
   updated: any;
 }
@@ -70,6 +78,7 @@ export interface SceneFragment {
   id: string;
   date: any | null;
   title: string | null;
+  deleted: boolean;
   details: string | null;
   director: string | null;
   duration: number | null;

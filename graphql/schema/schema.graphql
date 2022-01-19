@@ -4,114 +4,118 @@ type Query {
 
   # performer names may not be unique
   """Find a performer by ID"""
-  findPerformer(id: ID!): Performer
-
-  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType!
-
+  findPerformer(id: ID!): Performer @hasRole(role: READ)
+  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType! @hasRole(role: READ)
 
   #### Studios ####
 
   # studio names should be unique
   """Find a studio by ID or name"""
-  findStudio(id: ID, name: String): Studio
-
-  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType!
-
+  findStudio(id: ID, name: String): Studio @hasRole(role: READ)
+  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType! @hasRole(role: READ)
 
   #### Tags ####
 
   # tag names will be unique
   """Find a tag by ID or name, or aliases"""
-  findTag(id: ID, name: String): Tag
+  findTag(id: ID, name: String): Tag @hasRole(role: READ)
+  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType! @hasRole(role: READ)
 
-  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType!
-
-  """Find a tag cateogry by ID"""
-  findTagCategory(id: ID!): TagCategory
-
-  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType!
+  """Find a tag category by ID"""
+  findTagCategory(id: ID!): TagCategory @hasRole(role: READ)
+  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType! @hasRole(role: READ)
 
   #### Scenes ####
 
   # ids should be unique
   """Find a scene by ID"""
-  findScene(id: ID!): Scene
+  findScene(id: ID!): Scene @hasRole(role: READ)
 
   """Finds a scene by an algorithm-specific checksum"""
-  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]!
+  findSceneByFingerprint(fingerprint: FingerprintQueryInput!): [Scene!]! @hasRole(role: READ)
   """Finds scenes that match a list of hashes"""
-  findScenesByFingerprints(fingerprints: [String!]!): [Scene!]!
-  findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]!
+  findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ)
+  findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ)
+  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType! @hasRole(role: READ)
 
-  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType!
-
+  """Find an external site by ID"""
+  findSite(id: ID!): Site @hasRole(role: READ)
+  querySites(filter: QuerySpec): QuerySitesResultType! @hasRole(role: READ)
 
   #### Edits ####
 
-  findEdit(id: ID): Edit
-
-  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType!
-
+  findEdit(id: ID!): Edit @hasRole(role: READ)
+  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @hasRole(role: READ)
 
   #### Users ####
 
   """Find user by ID or username"""
-  findUser(id: ID, username: String): User
-
-  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @isAdmin
+  findUser(id: ID, username: String): User @hasRole(role: READ)
+  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @hasRole(role: ADMIN)
 
   """Returns currently authenticated user"""
   me: User
 
   ### Full text search ###
-  searchPerformer(term: String!, limit: Int): [Performer!]!
-  searchScene(term: String!, limit: Int): [Scene!]!
+  searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
+  searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
+
+  ### Drafts ###
+  findDraft(id: ID!): Draft @hasRole(role: READ)
+  findDrafts: [Draft!]! @hasRole(role: READ)
 
   #### Version ####
-  version: Version!
+  version: Version! @hasRole(role: READ)
+
+  ### Instance Config ###
+  getConfig: StashBoxConfig! @hasRole(role: READ)
 }
 
 type Mutation {
   # Admin-only interface
-  sceneCreate(input: SceneCreateInput!): Scene
-  sceneUpdate(input: SceneUpdateInput!): Scene
-  sceneDestroy(input: SceneDestroyInput!): Boolean!
+  sceneCreate(input: SceneCreateInput!): Scene @hasRole(role: MODIFY)
+  sceneUpdate(input: SceneUpdateInput!): Scene @hasRole(role: MODIFY)
+  sceneDestroy(input: SceneDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
-  performerCreate(input: PerformerCreateInput!): Performer
-  performerUpdate(input: PerformerUpdateInput!): Performer
-  performerDestroy(input: PerformerDestroyInput!): Boolean!
+  performerCreate(input: PerformerCreateInput!): Performer @hasRole(role: MODIFY)
+  performerUpdate(input: PerformerUpdateInput!): Performer @hasRole(role: MODIFY)
+  performerDestroy(input: PerformerDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
-  studioCreate(input: StudioCreateInput!): Studio
-  studioUpdate(input: StudioUpdateInput!): Studio
-  studioDestroy(input: StudioDestroyInput!): Boolean!
+  studioCreate(input: StudioCreateInput!): Studio @hasRole(role: MODIFY)
+  studioUpdate(input: StudioUpdateInput!): Studio @hasRole(role: MODIFY)
+  studioDestroy(input: StudioDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
-  tagCreate(input: TagCreateInput!): Tag
-  tagUpdate(input: TagUpdateInput!): Tag
-  tagDestroy(input: TagDestroyInput!): Boolean!
+  tagCreate(input: TagCreateInput!): Tag @hasRole(role: MODIFY)
+  tagUpdate(input: TagUpdateInput!): Tag @hasRole(role: MODIFY)
+  tagDestroy(input: TagDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
-  userCreate(input: UserCreateInput!): User
-  userUpdate(input: UserUpdateInput!): User
-  userDestroy(input: UserDestroyInput!): Boolean!
+  userCreate(input: UserCreateInput!): User @hasRole(role: ADMIN)
+  userUpdate(input: UserUpdateInput!): User @hasRole(role: ADMIN)
+  userDestroy(input: UserDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
-  imageCreate(input: ImageCreateInput!): Image
-  imageDestroy(input: ImageDestroyInput!): Boolean!
+  imageCreate(input: ImageCreateInput!): Image @hasRole(role: EDIT)
+  imageDestroy(input: ImageDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   """User interface for registering"""
   newUser(input: NewUserInput!): String
   activateNewUser(input: ActivateNewUserInput!): User
 
   """Generates an invite code using an invite token"""
-  generateInviteCode: String!
+  generateInviteCode: ID
   """Removes a pending invite code - refunding the token"""
-  rescindInviteCode(code: String!): Boolean!
+  rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""
   grantInvite(input: GrantInviteInput!): Int!
   """Removes invite tokens from a user"""
   revokeInvite(input: RevokeInviteInput!): Int!
 
-  tagCategoryCreate(input: TagCategoryCreateInput!): TagCategory
-  tagCategoryUpdate(input: TagCategoryUpdateInput!): TagCategory
-  tagCategoryDestroy(input: TagCategoryDestroyInput!): Boolean!
+  tagCategoryCreate(input: TagCategoryCreateInput!): TagCategory @hasRole(role: ADMIN)
+  tagCategoryUpdate(input: TagCategoryUpdateInput!): TagCategory @hasRole(role: ADMIN)
+  tagCategoryDestroy(input: TagCategoryDestroyInput!): Boolean! @hasRole(role: ADMIN)
+
+  siteCreate(input: SiteCreateInput!): Site @hasRole(role: ADMIN)
+  siteUpdate(input: SiteUpdateInput!): Site @hasRole(role: ADMIN)
+  siteDestroy(input: SiteDestroyInput!): Boolean! @hasRole(role: ADMIN)
 
   """Regenerates the api key for the given user, or the current user if id not provided"""
   regenerateAPIKey(userID: ID): String!
@@ -124,24 +128,35 @@ type Mutation {
 
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
-  sceneEdit(input: SceneEditInput!): Edit!
+  sceneEdit(input: SceneEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new performer or modification to a performer"""
-  performerEdit(input: PerformerEditInput!): Edit!
+  performerEdit(input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new studio or modification to a studio"""
-  studioEdit(input: StudioEditInput!): Edit!
+  studioEdit(input: StudioEditInput!): Edit! @hasRole(role: EDIT)
   """Propose a new tag or modification to a tag"""
-  tagEdit(input: TagEditInput!): Edit!
+  tagEdit(input: TagEditInput!): Edit! @hasRole(role: EDIT)
 
   """Vote to accept/reject an edit"""
-  editVote(input: EditVoteInput!): Edit!
+  editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
-  editComment(input: EditCommentInput!): Edit!
+  editComment(input: EditCommentInput!): Edit! @hasRole(role: EDIT)
   """Apply edit without voting"""
-  applyEdit(input: ApplyEditInput!): Edit!
+  applyEdit(input: ApplyEditInput!): Edit! @hasRole(role: ADMIN)
   """Cancel edit without voting"""
-  cancelEdit(input: CancelEditInput!): Edit!
+  cancelEdit(input: CancelEditInput!): Edit! @hasRole(role: EDIT)
 
-  submitFingerprint(input: FingerprintSubmission!): Boolean!
+  """Matches/unmatches a scene to fingerprint"""
+  submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
+
+  """Draft submissions"""
+  submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
+  submitPerformerDraft(input: PerformerDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
+  destroyDraft(id: ID!): Boolean! @hasRole(role: EDIT)
+
+  """Favorite or unfavorite a performer"""
+  favoritePerformer(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
+  """Favorite or unfavorite a studio"""
+  favoriteStudio(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
 }
 
 schema {

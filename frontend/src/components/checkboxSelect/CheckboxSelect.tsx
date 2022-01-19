@@ -1,9 +1,5 @@
-import React, { useState } from "react";
-import Select, {
-  ValueType,
-  OptionTypeBase,
-  FormatOptionLabelMeta,
-} from "react-select";
+import { FC, useState } from "react";
+import Select, { OnChangeValue } from "react-select";
 import { Form } from "react-bootstrap";
 
 interface MultiSelectProps {
@@ -13,13 +9,13 @@ interface MultiSelectProps {
   plural?: string;
 }
 
-interface IOptionType extends OptionTypeBase {
+interface IOptionType {
   label: string;
   value: string;
   subValues: string[] | null;
 }
 
-const CheckboxSelect: React.FC<MultiSelectProps> = ({
+const CheckboxSelect: FC<MultiSelectProps> = ({
   values,
   onChange,
   placeholder = "Select...",
@@ -27,7 +23,7 @@ const CheckboxSelect: React.FC<MultiSelectProps> = ({
 }) => {
   const [unselected, setUnselected] = useState<string[]>([]);
 
-  const handleChange = (vals: ValueType<IOptionType, true>) => {
+  const handleChange = (vals: OnChangeValue<IOptionType, true>) => {
     const selected = vals.map((v) => [v.value, ...(v.subValues ?? [])]).flat();
 
     setUnselected(selected);
@@ -36,17 +32,23 @@ const CheckboxSelect: React.FC<MultiSelectProps> = ({
 
   const formatLabel = (
     option: IOptionType,
-    meta: FormatOptionLabelMeta<IOptionType, true>
+    meta: { context: "menu" | "value" }
   ) => {
     if (meta.context === "menu")
       return option.subValues === null ? (
-        <div className="d-flex ml-3">
-          <Form.Check checked={unselected.includes(option.value)} />
+        <div className="d-flex ms-3">
+          <Form.Check
+            className="me-2"
+            checked={unselected.includes(option.value)}
+          />
           {option.label}
         </div>
       ) : (
         <div className="d-flex">
-          <Form.Check checked={unselected.includes(option.value)} />
+          <Form.Check
+            className="me-2"
+            checked={unselected.includes(option.value)}
+          />
           <span className="text-muted">{option.label}</span>
         </div>
       );

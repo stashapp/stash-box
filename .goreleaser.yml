@@ -19,6 +19,7 @@ builds:
       - -X github.com/stashapp/stash-box/pkg/api.version={{.Version}}
       - -X github.com/stashapp/stash-box/pkg/api.buildstamp={{.Date}}
       - -X github.com/stashapp/stash-box/pkg/api.githash={{.ShortCommit}}
+      - -X github.com/stashapp/stash-box/pkg/api.buildtype={{.Env.STASH_BOX_BUILD_TYPE}}
   - id: stash-box_static
     binary: stash-box-{{.Os}}
     goos:
@@ -32,6 +33,10 @@ builds:
       - -X github.com/stashapp/stash-box/pkg/api.version={{.Version}}
       - -X github.com/stashapp/stash-box/pkg/api.buildstamp={{.Date}}
       - -X github.com/stashapp/stash-box/pkg/api.githash={{.ShortCommit}}
+      - -X github.com/stashapp/stash-box/pkg/api.buildtype={{.Env.STASH_BOX_BUILD_TYPE}}
 
 archives:
   - format: binary
+
+snapshot:
+  name_template: '{{ .Version }}'

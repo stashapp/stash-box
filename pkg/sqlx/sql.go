@@ -18,7 +18,8 @@ type queryBuilder struct {
 	havingClauses []string
 	args          []interface{}
 
-	SortAndPagination string
+	Sort       string
+	Pagination string
 }
 
 func newQueryBuilder(t table) *queryBuilder {
@@ -45,9 +46,11 @@ func newDeleteQueryBuilder(t table) *queryBuilder {
 	return ret
 }
 
-func (qb *queryBuilder) AddJoin(jt table, on string) {
+func (qb *queryBuilder) AddJoin(jt table, on string, isOneToMany bool) {
 	qb.Body += " JOIN " + jt.Name() + " ON " + on
-	qb.Distinct = true
+	if isOneToMany {
+		qb.Distinct = true
+	}
 }
 
 func (qb *queryBuilder) AddWhere(clauses ...string) {
@@ -83,28 +86,33 @@ func (qb *queryBuilder) AddArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
 }
 
-func (qb queryBuilder) buildBody() string {
+func (qb queryBuilder) buildBody(isCount bool) string {
 	body := qb.Body
 
 	if len(qb.whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(qb.whereClauses, " AND ") // TODO handle AND or OR
 	}
-	if qb.Distinct {
-		body = body + " GROUP BY " + qb.Table.Name() + ".id "
-	}
 	if len(qb.havingClauses) > 0 {
-		body = body + " HAVING " + strings.Join(qb.havingClauses, " AND ") // TODO handle AND or OR
+		body = body + " GROUP BY " + qb.Table.Name() + ".id HAVING " + strings.Join(qb.havingClauses, " AND ") // TODO handle AND or OR
+	}
+
+	if !isCount {
+		body += qb.Sort
+	}
+
+	if qb.Distinct {
+		body = "SELECT DISTINCT ON (query.id) query.* FROM (" + body + ") query"
 	}
 
 	return body
 }
 
 func (qb queryBuilder) buildCountQuery() string {
-	return "SELECT COUNT(*) as count FROM (" + qb.buildBody() + ") as temp"
+	return "SELECT COUNT(*) as count FROM (" + qb.buildBody(true) + ") as temp"
 }
 
 func (qb queryBuilder) buildQuery() string {
-	return qb.buildBody() + qb.SortAndPagination
+	return qb.buildBody(false) + qb.Pagination
 }
 
 type optionalValue interface {
@@ -190,7 +198,7 @@ func sqlGenKeysCreate(dialect Dialect, i interface{}) (string, string) {
 
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
+		// get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		switch t := v.Field(i).Interface().(type) {
@@ -252,7 +260,7 @@ func sqlGenKeys(dialect Dialect, i interface{}, partial bool) string {
 
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
+		// get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		if key == "id" {

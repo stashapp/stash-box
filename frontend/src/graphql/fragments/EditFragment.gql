@@ -1,7 +1,11 @@
 #import "../fragments/PerformerFragment.gql"
+#import "../fragments/StudioFragment.gql"
 #import "../fragments/ImageFragment.gql"
+#import "../fragments/SceneFragment.gql"
+#import "../fragments/TagFragment.gql"
 #import "../fragments/CommentFragment.gql"
-#import "../fragments/PublicUserFragment.gql"
+#import "../fragments/URLFragment.gql"
+#import "../fragments/FingerprintFragment.gql"
 fragment EditFragment on Edit {
   id
   target_type
@@ -10,11 +14,22 @@ fragment EditFragment on Edit {
   applied
   created
   updated
+  vote_count
+  destructive
   comments {
     ...CommentFragment
   }
+  votes {
+    user {
+      id
+      name
+    }
+    date
+    vote
+  }
   user {
-    ...PublicUserFragment
+    id
+    name
   }
   target {
     ... on Tag {
@@ -30,6 +45,12 @@ fragment EditFragment on Edit {
     ... on Performer {
       ...PerformerFragment
     }
+    ... on Studio {
+      ...StudioFragment
+    }
+    ... on Scene {
+      ...SceneFragment
+    }
   }
   details {
     ... on TagEdit {
@@ -37,7 +58,10 @@ fragment EditFragment on Edit {
       description
       added_aliases
       removed_aliases
-      category_id
+      category {
+        id
+        name
+      }
     }
     ... on PerformerEdit {
       name
@@ -46,12 +70,10 @@ fragment EditFragment on Edit {
       removed_aliases
       gender
       added_urls {
-        url
-        type
+        ...URLFragment
       }
       removed_urls {
-        url
-        type
+        ...URLFragment
       }
       birthdate
       birthdate_accuracy
@@ -89,13 +111,82 @@ fragment EditFragment on Edit {
       removed_images {
         ...ImageFragment
       }
+      draft_id
+    }
+    ... on StudioEdit {
+      name
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      parent {
+        ...StudioFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+    }
+    ... on SceneEdit {
+      title
+      details
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      date
+      studio {
+        ...StudioFragment
+      }
+      added_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      removed_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      added_tags {
+        ...TagFragment
+      }
+      removed_tags {
+        ...TagFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+      added_fingerprints {
+        ...FingerprintFragment
+      }
+      removed_fingerprints {
+        ...FingerprintFragment
+      }
+      duration
+      director
+      draft_id
     }
   }
   old_details {
     ... on TagEdit {
       name
       description
-      category_id
+      category {
+        id
+        name
+      }
     }
     ... on PerformerEdit {
       name
@@ -116,6 +207,58 @@ fragment EditFragment on Edit {
       career_start_year
       career_end_year
     }
+    ... on StudioEdit {
+      name
+      parent {
+        ...StudioFragment
+      }
+    }
+    ... on SceneEdit {
+      title
+      details
+      added_urls {
+        ...URLFragment
+      }
+      removed_urls {
+        ...URLFragment
+      }
+      date
+      studio {
+        ...StudioFragment
+      }
+      added_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      removed_performers {
+        performer {
+          ...PerformerFragment
+        }
+        as
+      }
+      added_tags {
+        ...TagFragment
+      }
+      removed_tags {
+        ...TagFragment
+      }
+      added_images {
+        ...ImageFragment
+      }
+      removed_images {
+        ...ImageFragment
+      }
+      added_fingerprints {
+        ...FingerprintFragment
+      }
+      removed_fingerprints {
+        ...FingerprintFragment
+      }
+      duration
+      director
+    }
   }
   merge_sources {
     ... on Tag {
@@ -130,6 +273,12 @@ fragment EditFragment on Edit {
     }
     ... on Performer {
       ...PerformerFragment
+    }
+    ... on Studio {
+      ...StudioFragment
+    }
+    ... on Scene {
+      ...SceneFragment
     }
   }
   options {

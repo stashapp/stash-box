@@ -21,10 +21,17 @@ export interface UpdateStudio_studioUpdate_parent {
   name: string;
 }
 
+export interface UpdateStudio_studioUpdate_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface UpdateStudio_studioUpdate_urls {
   __typename: "URL";
   url: string;
-  type: string;
+  site: UpdateStudio_studioUpdate_urls_site;
 }
 
 export interface UpdateStudio_studioUpdate_images {
@@ -41,8 +48,10 @@ export interface UpdateStudio_studioUpdate {
   name: string;
   child_studios: UpdateStudio_studioUpdate_child_studios[];
   parent: UpdateStudio_studioUpdate_parent | null;
-  urls: (UpdateStudio_studioUpdate_urls | null)[];
+  urls: UpdateStudio_studioUpdate_urls[];
   images: UpdateStudio_studioUpdate_images[];
+  deleted: boolean;
+  is_favorite: boolean;
 }
 
 export interface UpdateStudio {

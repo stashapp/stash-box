@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
@@ -11,7 +11,7 @@ import { editHref } from "src/utils";
 
 import PerformerForm from "./performerForm";
 
-const PerformerAdd: React.FC = () => {
+const PerformerAdd: FC = () => {
   const history = useHistory();
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
@@ -64,6 +64,7 @@ const PerformerAdd: React.FC = () => {
     urls: [],
     images: [],
     deleted: false,
+    is_favorite: false,
     __typename: "Performer",
   } as Performer;
 

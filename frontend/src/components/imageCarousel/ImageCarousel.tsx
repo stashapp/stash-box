@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import { Button } from "react-bootstrap";
 import cx from "classnames";
+import {
+  faChevronLeft,
+  faChevronRight,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { Icon, LoadingIndicator } from "src/components/fragments";
 import { Image, sortImageURLs } from "src/utils";
@@ -11,7 +16,7 @@ interface ImageCarouselProps {
   onDeleteImage?: (toDelete: Image) => void;
 }
 
-const ImageCarousel: React.FC<ImageCarouselProps> = ({
+const ImageCarousel: FC<ImageCarouselProps> = ({
   images,
   orientation,
   onDeleteImage,
@@ -62,7 +67,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
           disabled={sortedImages.length === 1}
           variant="link"
         >
-          <Icon icon="chevron-left" />
+          <Icon icon={faChevronLeft} />
         </Button>
         <div className="image-carousel-img">
           <img
@@ -83,7 +88,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
           {onDeleteImage ? (
             <div className="delete-image-overlay">
               <Button variant="danger" size="sm" onClick={handleDelete}>
-                <Icon icon="times" />
+                <Icon icon={faTimes} />
               </Button>
             </div>
           ) : undefined}
@@ -94,7 +99,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
           disabled={sortedImages.length === 1}
           variant="link"
         >
-          <Icon icon="chevron-right" />
+          <Icon icon={faChevronRight} />
         </Button>
       </div>
 

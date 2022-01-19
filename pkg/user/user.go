@@ -20,6 +20,7 @@ const (
 	minUniqueChars    = 5
 
 	rootUserName = "root"
+	modUserName  = "StashBot"
 	unsetEmail   = "none"
 )
 
@@ -36,16 +37,22 @@ var (
 	ErrBannedPassword                  = errors.New("password matches a common password")
 	ErrPasswordUsername                = errors.New("password matches username")
 	ErrPasswordEmail                   = errors.New("password matches email")
-	ErrDeleteRoot                      = errors.New("root user cannot be deleted")
+	ErrDeleteSystemUser                = errors.New("system users cannot be deleted")
+	ErrChangeModUser                   = errors.New("mod user cannot be modified")
 	ErrChangeRootName                  = errors.New("cannot change root username")
 	ErrChangeRootRoles                 = errors.New("cannot change root roles")
-
-	ErrAccessDenied             = errors.New("access denied")
-	ErrCurrentPasswordIncorrect = errors.New("current password incorrect")
+	ErrAccessDenied                    = errors.New("access denied")
+	ErrCurrentPasswordIncorrect        = errors.New("current password incorrect")
 )
+
+// Cached instance of StashBot, which is used for automated edit comments
+var modUser *models.User
 
 var rootUserRoles []models.RoleEnum = []models.RoleEnum{
 	models.RoleEnumAdmin,
+}
+var modUserRoles []models.RoleEnum = []models.RoleEnum{
+	models.RoleEnumBot,
 }
 
 func ValidateCreate(input models.UserCreateInput) error {
@@ -73,6 +80,10 @@ func ValidateCreate(input models.UserCreateInput) error {
 func ValidateUpdate(input models.UserUpdateInput, current models.User) error {
 	currentName := current.Name
 	currentEmail := current.Email
+
+	if currentName == modUserName {
+		return ErrChangeModUser
+	}
 
 	if currentName == rootUserName {
 		if input.Name != nil && *input.Name != rootUserName {
@@ -117,8 +128,8 @@ func ValidateUpdate(input models.UserUpdateInput, current models.User) error {
 }
 
 func ValidateDestroy(user *models.User) error {
-	if user.Name == rootUserName {
-		return ErrDeleteRoot
+	if user.Name == rootUserName || user.Name == modUserName {
+		return ErrDeleteSystemUser
 	}
 
 	return nil
@@ -229,7 +240,7 @@ func Create(fac models.Repo, input models.UserCreateInput) (*models.User, error)
 
 	apiKey, err := GenerateAPIKey(newUser.ID.String())
 	if err != nil {
-		return nil, fmt.Errorf("Error generating APIKey: %s", err.Error())
+		return nil, fmt.Errorf("Error generating APIKey: %w", err)
 	}
 
 	newUser.APIKey = apiKey
@@ -254,8 +265,7 @@ func Update(fac models.Repo, input models.UserUpdateInput) (*models.User, error)
 	qb := fac.User()
 
 	// get the existing user and modify it
-	userID, _ := uuid.FromString(input.ID)
-	updatedUser, err := qb.Find(userID)
+	updatedUser, err := qb.Find(input.ID)
 
 	if err != nil {
 		return nil, err
@@ -290,41 +300,36 @@ func Destroy(fac models.Repo, input models.UserDestroyInput) (bool, error) {
 	// references have on delete cascade, so shouldn't be necessary
 	// to remove them explicitly
 
-	userID, err := uuid.FromString(input.ID)
-	if err != nil {
-		return false, err
-	}
-	if err = qb.Destroy(userID); err != nil {
+	if err := qb.Destroy(input.ID); err != nil {
 		return false, err
 	}
 
 	return true, nil
 }
 
-// CreateRoot creates the initial root user if no users are present
-func CreateRoot(fac models.Repo) {
+// CreateSystemUsers creates mandatory system users if they do not exist
+func CreateSystemUsers(fac models.Repo) {
 	// if there are no users present, then create a root user with a
 	// generated password and api key, outputting them
-	var password string
+	var rootPassword string
 	var createdUser *models.User
 
 	err := fac.WithTxn(func() error {
 		qb := fac.User()
 
-		count, err := qb.Count()
+		root, err := qb.FindByName(rootUserName)
 		if err != nil {
-			panic(fmt.Errorf("Error getting user count: %s", err.Error()))
+			panic(fmt.Errorf("Error getting root user: %w", err))
 		}
 
-		if count == 0 {
-			const passwordLength = 16
-			password, err = utils.GenerateRandomPassword(passwordLength)
+		if root == nil {
+			rootPassword, err = utils.GenerateRandomPassword(16)
 			if err != nil {
-				panic(fmt.Errorf("Error creating root user: %s", err.Error()))
+				panic(fmt.Errorf("Error creating root user: %w", err))
 			}
 			newUser := models.UserCreateInput{
-				Name:     "root",
-				Password: password,
+				Name:     rootUserName,
+				Password: rootPassword,
 				Email:    unsetEmail,
 				Roles:    rootUserRoles,
 			}
@@ -335,16 +340,39 @@ func CreateRoot(fac models.Repo) {
 			}
 		}
 
+		modUser, err := qb.FindByName(modUserName)
+		if err != nil {
+			panic(fmt.Errorf("Error getting mod user: %w", err))
+		}
+
+		if modUser == nil {
+			password, err := utils.GenerateRandomPassword(32)
+			if err != nil {
+				panic(fmt.Errorf("Error creating root user: %w", err))
+			}
+			newUser := models.UserCreateInput{
+				Name:     modUserName,
+				Password: password,
+				Email:    "mod_mail",
+				Roles:    modUserRoles,
+			}
+
+			_, err = Create(fac, newUser)
+			if err != nil {
+				return err
+			}
+		}
+
 		return nil
 	})
 
 	if err != nil {
-		panic(fmt.Errorf("Error creating root user: %s", err.Error()))
+		panic(fmt.Errorf("Error creating system users: %w", err))
 	}
 
 	if createdUser != nil {
 		// print (not log) the details of the created user
-		fmt.Printf("root user has been created.\nUser: root\nPassword: %s\nAPI Key: %s\n", password, createdUser.APIKey)
+		fmt.Printf("root user has been created.\nUser: %s\nPassword: %s\nAPI Key: %s\n", rootUserName, rootPassword, createdUser.APIKey)
 		fmt.Print("These credentials have not been logged. The email should be set and the password should be changed after logging in.\n")
 	}
 }
@@ -362,7 +390,7 @@ func GetRoles(fac models.Repo, id string) ([]models.RoleEnum, error) {
 	roles, err := qb.GetRoles(userID)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error getting user roles: %s", err.Error())
+		return nil, fmt.Errorf("Error getting user roles: %w", err)
 	}
 
 	return roles.ToRoles(), nil
@@ -389,15 +417,14 @@ func Authenticate(fac models.Repo, username string, password string) (string, er
 	return user.ID.String(), nil
 }
 
-func RegenerateAPIKey(fac models.Repo, userID string) (string, error) {
+func RegenerateAPIKey(fac models.Repo, userID uuid.UUID) (string, error) {
 	var err error
 
 	qb := fac.User()
-	userUUID, _ := uuid.FromString(userID)
-	user, err := qb.Find(userUUID)
+	user, err := qb.Find(userID)
 
 	if err != nil {
-		return "", fmt.Errorf("error finding user: %s", err.Error())
+		return "", fmt.Errorf("error finding user: %w", err)
 	}
 
 	if user == nil {
@@ -406,7 +433,7 @@ func RegenerateAPIKey(fac models.Repo, userID string) (string, error) {
 
 	user.APIKey, err = GenerateAPIKey(user.ID.String())
 	if err != nil {
-		return "", fmt.Errorf("Error generating APIKey: %s", err.Error())
+		return "", fmt.Errorf("Error generating APIKey: %w", err)
 	}
 
 	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
@@ -425,7 +452,7 @@ func ChangePassword(fac models.Repo, userID string, currentPassword string, newP
 	user, err := qb.Find(userUUID)
 
 	if err != nil {
-		return fmt.Errorf("error finding user: %s", err.Error())
+		return fmt.Errorf("error finding user: %w", err)
 	}
 
 	if user == nil {
@@ -462,4 +489,56 @@ func getDefaultUserRoles() []models.RoleEnum {
 	}
 
 	return ret
+}
+
+func PromoteUserVoteRights(fac models.Repo, userID uuid.UUID, threshold int) error {
+	qb := fac.User()
+
+	user, err := qb.Find(userID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		// nil user is valid so no need to return error
+		return nil
+	}
+
+	roles, err := qb.GetRoles(userID)
+	if err != nil {
+		return err
+	}
+
+	hasVote := false
+	for _, role := range roles.ToRoles() {
+		if role.Implies(models.RoleEnumVote) {
+			hasVote = true
+		}
+	}
+
+	if !hasVote {
+		editCount, err := qb.CountEditsByStatus(userID)
+		if err != nil {
+			return nil
+		}
+
+		if (editCount.Accepted + editCount.ImmediateAccepted) >= threshold {
+			userRoles := models.CreateUserRoles(userID, []models.RoleEnum{models.RoleEnumVote})
+			return qb.CreateRoles(userRoles)
+		}
+	}
+
+	return nil
+}
+
+func GetModUser(fac models.Repo) *models.User {
+	if modUser == nil {
+		user, err := fac.User().FindByName(modUserName)
+		if err != nil {
+			// If StashBot is not found it's a runtime exception
+			panic(err)
+		}
+		modUser = user
+	}
+
+	return modUser
 }

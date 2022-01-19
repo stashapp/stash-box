@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import { FC, ChangeEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Control, useFieldArray } from "react-hook-form";
+import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
 import { useAddImage } from "src/graphql";
@@ -8,6 +9,8 @@ import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
 const CLASSNAME = "EditImages";
+const CLASSNAME_IMAGES = `${CLASSNAME}-images`;
+const CLASSNAME_INPUT = `${CLASSNAME}-input`;
 const CLASSNAME_DROP = `${CLASSNAME}-drop`;
 const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
@@ -16,19 +19,31 @@ const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
 interface EditImagesProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<any>;
+  file: File | undefined;
+  setFile: (f: File | undefined) => void;
   maxImages?: number;
 }
 
-const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
+const EditImages: FC<EditImagesProps> = ({
+  control,
+  maxImages,
+  file,
+  setFile,
+}) => {
   const {
     fields: images,
     append,
     remove,
-  } = useFieldArray<{ images: Array<{ id: string; url: string }> }>({
+  } = useFieldArray<
+    { images: Array<{ id: string; url: string; key: string }> },
+    "images",
+    "key"
+  >({
     control,
     name: "images",
+    keyName: "key",
   });
-  const [file, setFile] = useState<File | undefined>();
+
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [addImage] = useAddImage();
@@ -59,7 +74,7 @@ const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
     setImageData("");
   };
 
-  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.validity.valid && event.target.files?.[0]) {
       setFile(event.target.files[0]);
 
@@ -75,14 +90,14 @@ const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
   const isDisabled = maxImages !== undefined && images.length >= maxImages;
 
   return (
-    <Form.Row className={CLASSNAME}>
-      <Col xs={7} className="d-flex flex-wrap justify-content-between">
+    <Row className={`${CLASSNAME} w-100`}>
+      <Col xs={7} className={CLASSNAME_IMAGES}>
         {images.map((i, index) => (
           <ImageInput image={i} onRemove={() => remove(index)} key={i.id} />
         ))}
       </Col>
-      <Col xs={5}>
-        <Row>
+      <Col xs={5} className={CLASSNAME_INPUT}>
+        <div className="d-flex">
           {file ? (
             <div
               className={cx(CLASSNAME_IMAGE, {
@@ -95,41 +110,40 @@ const EditImages: React.FC<EditImagesProps> = ({ control, maxImages }) => {
           ) : (
             !isDisabled && (
               <div className={CLASSNAME_DROP}>
-                <Form.File
+                <Form.Control
+                  type="file"
                   onChange={onFileChange}
                   accept=".png,.jpg,.webp,.svg"
                 />
                 <div className={CLASSNAME_PLACEHOLDER}>
-                  <Icon icon="images" />
+                  <Icon icon={faImages} />
                   <span>Add image</span>
                 </div>
               </div>
             )
           )}
-        </Row>
-        <Row className="mt-1">
-          {file && (
-            <>
-              <Button
-                variant="danger"
-                onClick={() => removeImage()}
-                disabled={!file || uploading}
-                className="ml-auto"
-              >
-                Remove
-              </Button>
-              <Button
-                onClick={() => handleAddImage()}
-                disabled={!file || uploading}
-                className="ml-2 mr-auto"
-              >
-                Upload
-              </Button>
-            </>
-          )}
-        </Row>
+        </div>
+        {file && (
+          <>
+            <Button
+              variant="danger"
+              onClick={() => removeImage()}
+              disabled={!file || uploading}
+              className="ms-auto"
+            >
+              Remove
+            </Button>
+            <Button
+              onClick={() => handleAddImage()}
+              disabled={!file || uploading}
+              className="ms-2 me-auto"
+            >
+              Upload
+            </Button>
+          </>
+        )}
       </Col>
-    </Form.Row>
+    </Row>
   );
 };
 

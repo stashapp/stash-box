@@ -23,17 +23,6 @@ CREATE TABLE "edit_comments" (
   FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE SET NULL 
 );
 
---CREATE TABLE "votes" (
---  "id" uuid not null primary key,
---  "user_id" not null uuid,
---  "edit_id" not null uuid,
---  "date" timestamp not null,
---  "comment" text,
---  "type" varchar(20) not null,
---  foreign key("user_id") references "users"("id"),
---  foreign key("edit_id") references "edits"("id")
---)
-
 CREATE TABLE "performer_edits" (
   "edit_id" uuid not null,
   "performer_id" uuid not null,

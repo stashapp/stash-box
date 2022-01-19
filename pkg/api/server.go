@@ -1,11 +1,13 @@
 package api
 
 import (
+	"compress/flate"
 	"context"
 	"crypto/tls"
 	"embed"
 	"errors"
 	"fmt"
+	"html/template"
 	"io/fs"
 	"io/ioutil"
 	"net/http"
@@ -18,8 +20,8 @@ import (
 	gqlExtension "github.com/99designs/gqlgen/graphql/handler/extension"
 	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/logger"
@@ -29,9 +31,10 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-var version = "0.0.0"
+var version string
 var buildstamp string
 var githash string
+var buildtype string
 
 const APIKeyHeader = "ApiKey"
 
@@ -65,6 +68,12 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				userID, err = getSessionUserID(w, r)
 			}
 
+			var u *models.User
+			var roles []models.RoleEnum
+			if err == nil {
+				u, roles, err = getUserAndRoles(getRepo(ctx), userID)
+			}
+
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				_, err = w.Write([]byte(err.Error()))
@@ -74,19 +83,16 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			user, roles, err := getUserAndRoles(getRepo(ctx), userID)
-
 			// ensure api key of the user matches the passed one
-			if apiKey != "" && user != nil && user.APIKey != apiKey {
+			if apiKey != "" && u != nil && u.APIKey != apiKey {
 				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte(err.Error()))
 				return
 			}
 
 			// TODO - increment api key counters
 
-			ctx = context.WithValue(ctx, ContextUser, user)
-			ctx = context.WithValue(ctx, ContextRoles, roles)
+			ctx = context.WithValue(ctx, user.ContextUser, u)
+			ctx = context.WithValue(ctx, user.ContextRoles, roles)
 
 			r = r.WithContext(ctx)
 
@@ -122,7 +128,8 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 
-	r.Use(middleware.DefaultCompress)
+	compressor := middleware.NewCompressor(flate.DefaultCompression)
+	r.Use(compressor.Handler)
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
 
@@ -137,8 +144,8 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	gqlConfig := models.Config{
 		Resolvers: NewResolver(getRepo),
 		Directives: models.DirectiveRoot{
-			IsOwner: isOwnerDirective,
-			IsAdmin: isAdminDirective,
+			IsUserOwner: IsUserOwnerDirective,
+			HasRole:     HasRoleDirective,
 		},
 	}
 	gqlSrv := gqlHandler.New(models.NewExecutableSchema(gqlConfig))
@@ -155,14 +162,12 @@ func Start(rfp RepoProvider, ui embed.FS) {
 		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 	}
 
+	index := getIndex(ui)
+
 	// session handlers
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			data, err := ui.ReadFile("frontend/build/index.html")
-			if err != nil {
-				panic(error.Error(err))
-			}
-			_, _ = w.Write(data)
+			_, _ = w.Write(index)
 			return
 		}
 
@@ -176,11 +181,7 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data, err := ui.ReadFile("frontend/build/index.html")
-			if err != nil {
-				panic(error.Error(err))
-			}
-			_, _ = w.Write(data)
+			_, _ = w.Write(index)
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
@@ -228,7 +229,11 @@ func Start(rfp RepoProvider, ui embed.FS) {
 }
 
 func printVersion() {
-	fmt.Printf("stash-box version: %s (%s)\n", githash, buildstamp)
+	versionString := version
+	if buildtype != "OFFICIAL" {
+		versionString += " (" + githash + ")"
+	}
+	fmt.Printf("stash-box version: %s - %s\n", versionString, buildstamp)
 }
 
 func GetVersion() (string, string, string) {
@@ -283,4 +288,18 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
+}
+
+func getIndex(ui embed.FS) []byte {
+	indexFile, err := ui.ReadFile("frontend/build/index.html")
+	if err != nil {
+		panic(error.Error(err))
+	}
+	tmpl := template.Must(template.New("index").Parse(string(indexFile)))
+	title := template.HTMLEscapeString(config.GetTitle())
+	output := new(strings.Builder)
+	if err := tmpl.Execute(output, template.HTML(title)); err != nil {
+		panic(error.Error(err))
+	}
+	return []byte(output.String())
 }

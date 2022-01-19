@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -11,16 +12,6 @@ import (
 )
 
 func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
-	var err error
-
-	if err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -48,32 +39,21 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 			return err
 		}
 
-		// TODO - save child studios
-
 		// Save the URLs
-		studioUrls := models.CreateStudioURLs(studio.ID, input.Urls)
+		studioUrls := models.CreateStudioURLs(studio.ID, models.ParseURLInput(input.Urls))
 		if err := qb.CreateURLs(studioUrls); err != nil {
 			return err
 		}
 
 		// Save the images
 		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
-
 		return jqb.CreateStudiosImages(studioImages)
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return studio, nil
+	return studio, err
 }
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	var studio *models.Studio
@@ -82,9 +62,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		jqb := fac.Joins()
 		iqb := fac.Image()
 
-		// get the existing studio and modify it
-		studioID, _ := uuid.FromString(input.ID)
-		updatedStudio, err := qb.Find(studioID)
+		// Get the existing studio and modify it
+		updatedStudio, err := qb.Find(input.ID)
 
 		if err != nil {
 			return err
@@ -102,29 +81,25 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 		// Save the URLs
 		// TODO - only do this if provided
-		studioUrls := models.CreateStudioURLs(studio.ID, input.Urls)
-
+		studioUrls := models.CreateStudioURLs(studio.ID, models.ParseURLInput(input.Urls))
 		if err := qb.UpdateURLs(studio.ID, studioUrls); err != nil {
 			return err
 		}
 
-		// TODO - handle child studios
-
-		// Save the images
-		// get the existing images
+		// Get the existing images
 		existingImages, err := iqb.FindByStudioID(studio.ID)
 		if err != nil {
 			return err
 		}
 
+		// Save the images
 		studioImages := models.CreateStudioImages(studio.ID, input.ImageIds)
 		if err := jqb.UpdateStudiosImages(studio.ID, studioImages); err != nil {
 			return err
 		}
 
-		// remove images that are no longer used
+		// Remove images that are no longer used
 		imageService := image.GetService(iqb)
-
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
 				return err
@@ -134,43 +109,29 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return studio, nil
+	return studio, err
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
-		return false, err
-	}
-
-	studioID, err := uuid.FromString(input.ID)
-	if err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
-	err = fac.WithTxn(func() error {
+	err := fac.WithTxn(func() error {
 		qb := fac.Studio()
 		iqb := fac.Image()
 
-		existingImages, err := iqb.FindByStudioID(studioID)
+		existingImages, err := iqb.FindByStudioID(input.ID)
 		if err != nil {
 			return err
 		}
 
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly
-		if err = qb.Destroy(studioID); err != nil {
+		if err = qb.Destroy(input.ID); err != nil {
 			return err
 		}
 
-		// remove images that are no longer used
+		// Remove images that are no longer used
 		imageService := image.GetService(iqb)
-
 		for _, i := range existingImages {
 			if err := imageService.DestroyUnusedImage(i.ID); err != nil {
 				return err
@@ -180,8 +141,28 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		return nil
 	})
 
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+	return err == nil, err
+}
+
+func (r *mutationResolver) FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error) {
+	fac := r.getRepoFactory(ctx)
+	user := getCurrentUser(ctx)
+
+	err := fac.WithTxn(func() error {
+		jqb := fac.Joins()
+		studio, err := fac.Studio().Find(id)
+		if err != nil {
+			return err
+		}
+		if studio.Deleted {
+			return fmt.Errorf("studio is deleted, unable to make favorite")
+		}
+
+		if favorite {
+			err := jqb.AddStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+			return err
+		}
+		return jqb.DestroyStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+	})
+	return err == nil, err
 }

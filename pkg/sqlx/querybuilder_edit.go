@@ -3,16 +3,21 @@ package sqlx
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
 const (
-	editTable   = "edits"
-	editJoinKey = "edit_id"
-
-	//voteTable = "votes"
+	editTable          = "edits"
+	editJoinKey        = "edit_id"
+	performerEditTable = "performer_edits"
+	tagEditTable       = "tag_edits"
+	studioEditTable    = "studio_edits"
+	sceneEditTable     = "scene_edits"
+	commentTable       = "edit_comments"
+	voteTable          = "edit_votes"
 )
 
 var (
@@ -20,21 +25,29 @@ var (
 		return &models.Edit{}
 	})
 
-	editTagTable = newTableJoin(editTable, "tag_edits", editJoinKey, func() interface{} {
+	editTagTable = newTableJoin(editTable, tagEditTable, editJoinKey, func() interface{} {
 		return &models.EditTag{}
 	})
 
-	editPerformerTable = newTableJoin(editTable, "performer_edits", editJoinKey, func() interface{} {
+	editPerformerTable = newTableJoin(editTable, performerEditTable, editJoinKey, func() interface{} {
 		return &models.EditPerformer{}
 	})
 
-	editCommentTable = newTableJoin(editTable, "edit_comments", editJoinKey, func() interface{} {
+	editStudioTable = newTableJoin(editTable, studioEditTable, editJoinKey, func() interface{} {
+		return &models.EditStudio{}
+	})
+
+	editSceneTable = newTableJoin(editTable, sceneEditTable, editJoinKey, func() interface{} {
+		return &models.EditScene{}
+	})
+
+	editCommentTable = newTableJoin(editTable, commentTable, editJoinKey, func() interface{} {
 		return &models.EditComment{}
 	})
 
-	// voteDBTable = database.NewTable(editTable, func() interface{} {
-	// 	return &Edit{}
-	// })
+	editVoteTable = newTableJoin(editTable, voteTable, editJoinKey, func() interface{} {
+		return &models.EditVote{}
+	})
 )
 
 type editQueryBuilder struct {
@@ -82,6 +95,14 @@ func (qb *editQueryBuilder) CreateEditPerformer(newJoin models.EditPerformer) er
 	return qb.dbi.InsertJoin(editPerformerTable, newJoin, nil)
 }
 
+func (qb *editQueryBuilder) CreateEditStudio(newJoin models.EditStudio) error {
+	return qb.dbi.InsertJoin(editStudioTable, newJoin, nil)
+}
+
+func (qb *editQueryBuilder) CreateEditScene(newJoin models.EditScene) error {
+	return qb.dbi.InsertJoin(editSceneTable, newJoin, nil)
+}
+
 func (qb *editQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
 	joins := models.EditTags{}
 	err := qb.dbi.FindJoins(editTagTable, id, &joins)
@@ -104,6 +125,30 @@ func (qb *editQueryBuilder) FindPerformerID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, errors.New("performer edit not found")
 	}
 	return &joins[0].PerformerID, nil
+}
+
+func (qb *editQueryBuilder) FindStudioID(id uuid.UUID) (*uuid.UUID, error) {
+	joins := models.EditStudios{}
+	err := qb.dbi.FindJoins(editStudioTable, id, &joins)
+	if err != nil {
+		return nil, err
+	}
+	if len(joins) == 0 {
+		return nil, errors.New("studio edit not found")
+	}
+	return &joins[0].StudioID, nil
+}
+
+func (qb *editQueryBuilder) FindSceneID(id uuid.UUID) (*uuid.UUID, error) {
+	joins := models.EditScenes{}
+	err := qb.dbi.FindJoins(editSceneTable, id, &joins)
+	if err != nil {
+		return nil, err
+	}
+	if len(joins) == 0 {
+		return nil, errors.New("scene edit not found")
+	}
+	return &joins[0].SceneID, nil
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
@@ -149,7 +194,7 @@ func (qb *editQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edits.id FROM edits"), nil)
 }
 
-func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter *models.QuerySpec) ([]*models.Edit, int) {
+func (qb *editQueryBuilder) buildQuery(editFilter *models.EditFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (*queryBuilder, error) {
 	if editFilter == nil {
 		editFilter = &models.EditFilterType{}
 	}
@@ -159,27 +204,32 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 
 	query := newQueryBuilder(editDBTable)
 
-	if q := editFilter.UserID; q != nil && *q != "" {
+	if q := editFilter.UserID; q != nil {
 		query.Eq(editDBTable.Name()+".user_id", *q)
 	}
 
-	if q := editFilter.TargetID; q != nil && *q != "" {
+	if targetID := editFilter.TargetID; targetID != nil {
 		if editFilter.TargetType == nil || *editFilter.TargetType == "" {
-			panic("TargetType is required when TargetID filter is used")
+			return nil, errors.New("TargetType is required when TargetID filter is used")
 		}
-		if *editFilter.TargetType == "TAG" {
-			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
+		switch *editFilter.TargetType {
+		case models.TargetTypeEnumTag:
+			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-			jsonID, _ := json.Marshal(*q)
-			query.AddArg(*q, jsonID)
-		} else if *editFilter.TargetType == "PERFORMER" {
-			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
+		case models.TargetTypeEnumPerformer:
+			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id", false)
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-			jsonID, _ := json.Marshal(*q)
-			query.AddArg(*q, jsonID)
-		} else {
-			panic("TargetType is not yet supported: " + *editFilter.TargetType)
+		case models.TargetTypeEnumStudio:
+			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id", false)
+			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
+		case models.TargetTypeEnumScene:
+			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id", false)
+			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
+		default:
+			return nil, fmt.Errorf("TargetType is not yet supported: %s", *editFilter.TargetType)
 		}
+		jsonID, _ := json.Marshal(*targetID)
+		query.AddArg(*targetID, jsonID)
 	} else if q := editFilter.TargetType; q != nil && *q != "" {
 		query.Eq("target_type", q.String())
 	}
@@ -194,17 +244,67 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 		query.Eq("applied", *q)
 	}
 
-	query.SortAndPagination = qb.getEditSort(findFilter) + getPagination(findFilter)
-
-	var edits models.Edits
-	countResult, err := qb.dbi.Query(*query, &edits)
-
-	if err != nil {
-		// TODO
-		panic(err)
+	if q := editFilter.IsFavorite; q != nil && *q {
+		q := `
+			(edits.id IN (
+			 -- Edits on studio
+			 (SELECT TE.edit_id FROM studio_favorites TF JOIN studio_edits TE ON TF.studio_id = TE.studio_id WHERE TF.user_id = ?)
+			 UNION
+			 -- Edits on performer
+			 (SELECT PE.edit_id FROM performer_favorites PF JOIN performer_edits PE ON PF.performer_id = PE.performer_id WHERE PF.user_id = ?)
+			 UNION
+			 -- Edits on scene currently set to studio
+			 (SELECT SE.edit_id FROM studio_favorites TF JOIN scenes S ON TF.studio_id = S.studio_id JOIN scene_edits SE ON S.id = SE.scene_id WHERE TF.user_id = ?)
+			 UNION
+			 -- Edits that merge performer
+			 (SELECT E.id FROM performer_favorites PF JOIN edits E
+			 ON E.data->'merge_sources' @> to_jsonb(PF.performer_id::TEXT)
+			 WHERE E.target_type = 'PERFORMER' AND E.operation = 'MERGE'
+			 AND PF.user_id = ?)
+			 UNION
+			 -- Edits that add/remove performer to scene
+			 (SELECT E.id FROM performer_favorites PF JOIN edits E
+			 ON jsonb_path_query_array(E.data, '$.new_data.added_performers[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
+			 OR jsonb_path_query_array(E.data, '$.new_data.removed_performers[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
+			 WHERE E.target_type = 'SCENE'
+			 AND PF.user_id = ?)
+			 UNION
+			 -- Edits that add/remove studio from scene
+			 (SELECT E.id FROM studio_favorites TF JOIN edits E
+			 ON jsonb_path_query_first(E.data, '$.new_data.studio_id') = to_jsonb(TF.studio_id::TEXT)
+			 OR jsonb_path_query_first(E.data, '$.old_data.studio_id') = to_jsonb(TF.studio_id::TEXT)
+			 WHERE E.target_type = 'SCENE'
+			 AND TF.user_id = ?)
+			))
+		`
+		query.AddWhere(q)
+		query.AddArg(userID, userID, userID, userID, userID, userID)
 	}
 
-	return edits, countResult
+	query.Sort = qb.getEditSort(findFilter)
+
+	return query, nil
+}
+
+func (qb *editQueryBuilder) QueryEdits(editFilter *models.EditFilterType, findFilter *models.QuerySpec, userID uuid.UUID) ([]*models.Edit, error) {
+	query, err := qb.buildQuery(editFilter, findFilter, userID)
+	if err != nil {
+		return nil, err
+	}
+	query.Pagination = getPagination(findFilter)
+
+	var edits models.Edits
+	err = qb.dbi.QueryOnly(*query, &edits)
+
+	return edits, err
+}
+
+func (qb *editQueryBuilder) QueryCount(editFilter *models.EditFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (int, error) {
+	query, err := qb.buildQuery(editFilter, findFilter, userID)
+	if err != nil {
+		return 0, err
+	}
+	return qb.dbi.CountOnly(*query)
 }
 
 func (qb *editQueryBuilder) getEditSort(findFilter *models.QuerySpec) string {
@@ -237,22 +337,65 @@ func (qb *editQueryBuilder) GetComments(id uuid.UUID) (models.EditComments, erro
 	return joins, err
 }
 
-func (qb *editQueryBuilder) FindByTagID(id uuid.UUID) ([]*models.Edit, error) {
-	query := `
-        SELECT edits.* FROM edits
-        JOIN tag_edits
-        ON tag_edits.edit_id = edits.id
-        WHERE tag_edits.tag_id = ?`
+func (qb *editQueryBuilder) CreateVote(newJoin models.EditVote) error {
+	conflictHandling := `
+		ON CONFLICT(edit_id, user_id)
+		DO UPDATE SET (vote, created_at) = (:vote, NOW())
+	`
+	return qb.dbi.InsertJoin(editVoteTable, newJoin, &conflictHandling)
+}
+
+func (qb *editQueryBuilder) GetVotes(id uuid.UUID) (models.EditVotes, error) {
+	joins := models.EditVotes{}
+	err := qb.dbi.FindJoins(editVoteTable, id, &joins)
+
+	return joins, err
+}
+
+func (qb *editQueryBuilder) findByJoin(id uuid.UUID, table tableJoin, idColumn string) ([]*models.Edit, error) {
+	query := fmt.Sprintf(`
+SELECT edits.* FROM edits
+JOIN %s as edit_join
+ON edit_join.edit_id = edits.id
+WHERE edit_join.%s = ?`, table.name, idColumn)
+
 	args := []interface{}{id}
 	return qb.queryEdits(query, args)
 }
 
+func (qb *editQueryBuilder) FindByTagID(id uuid.UUID) ([]*models.Edit, error) {
+	return qb.findByJoin(id, editTagTable, "tag_id")
+}
+
 func (qb *editQueryBuilder) FindByPerformerID(id uuid.UUID) ([]*models.Edit, error) {
+	return qb.findByJoin(id, editPerformerTable, "performer_id")
+}
+
+func (qb *editQueryBuilder) FindByStudioID(id uuid.UUID) ([]*models.Edit, error) {
+	return qb.findByJoin(id, editStudioTable, "studio_id")
+}
+
+func (qb *editQueryBuilder) FindBySceneID(id uuid.UUID) ([]*models.Edit, error) {
+	return qb.findByJoin(id, editSceneTable, "scene_id")
+}
+
+// Returns pending edits that fulfill one of the criteria for being closed:
+// * The full voting period has passed
+// * The minimum voting period has passed, and the number of votes has crossed the voting threshold.
+// The latter only applies for destructive edits. Non-destructive edits get auto-applied when sufficient votes are cast.
+func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPeriod int, minimumVotes int) ([]*models.Edit, error) {
 	query := `
-        SELECT edits.* FROM edits
-        JOIN performer_edits
-        ON performer_edits.edit_id = edits.id
-        WHERE performer_edits.performer_id = ?`
-	args := []interface{}{id}
+		SELECT edits.* FROM edits
+		WHERE status = 'PENDING'
+		AND (
+			created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))
+			OR (
+				VOTES >= $2
+				AND created_at <= (now()::timestamp - (INTERVAL '1 second' * $3))
+			)
+		)
+	`
+
+	args := []interface{}{votingPeriod, minimumVotes, minimumVotingPeriod}
 	return qb.queryEdits(query, args)
 }

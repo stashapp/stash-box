@@ -14,10 +14,6 @@ import (
 )
 
 func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCreateInput) (*models.User, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	if err := user.ValidateCreate(input); err != nil {
 		return nil, err
 	}
@@ -43,19 +39,14 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 }
 
 func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpdateInput) (*models.User, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return nil, err
-	}
-
 	var u *models.User
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		qb := fac.User()
-		userID, _ := uuid.FromString(input.ID)
-		current, err := qb.Find(userID)
+		current, err := qb.Find(input.ID)
 
 		if err != nil {
-			return fmt.Errorf("error finding user: %s", err.Error())
+			return fmt.Errorf("error finding user: %w", err)
 		}
 
 		if current == nil {
@@ -88,19 +79,14 @@ func (r *mutationResolver) UserUpdate(ctx context.Context, input models.UserUpda
 }
 
 func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDestroyInput) (bool, error) {
-	if err := validateAdmin(ctx); err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 	var ret bool
 	err := fac.WithTxn(func() error {
 		qb := fac.User()
-		userID, _ := uuid.FromString(input.ID)
-		u, err := qb.Find(userID)
+		u, err := qb.Find(input.ID)
 
 		if err != nil {
-			return fmt.Errorf("error finding user: %s", err.Error())
+			return fmt.Errorf("error finding user: %w", err)
 		}
 
 		if u == nil {
@@ -127,14 +113,14 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 	return ret, nil
 }
 
-func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string) (string, error) {
+func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error) {
 	currentUser := getCurrentUser(ctx)
 	if currentUser == nil {
-		return "", ErrUnauthorized
+		return "", user.ErrUnauthorized
 	}
 
 	if userID != nil {
-		if currentUser.ID.String() != *userID {
+		if currentUser.ID != *userID {
 			// changing another user api key
 			// must be admin
 			if err := validateAdmin(ctx); err != nil {
@@ -143,8 +129,7 @@ func (r *mutationResolver) RegenerateAPIKey(ctx context.Context, userID *string)
 		}
 	} else {
 		// changing current user api key
-		userIDStr := currentUser.ID.String()
-		userID = &userIDStr
+		userID = &currentUser.ID
 	}
 
 	fac := r.getRepoFactory(ctx)
@@ -198,7 +183,7 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 
 	// just setting password
 	if currentUser == nil {
-		return false, ErrUnauthorized
+		return false, user.ErrUnauthorized
 	}
 
 	if input.ExistingPassword == nil {
@@ -222,7 +207,7 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 		return false, err
 	}
 
-	return true, nil
+	return err == nil, err
 }
 
 func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInput) (*string, error) {
@@ -239,11 +224,7 @@ func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInpu
 		return txnErr
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return ret, err
 }
 
 func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.ActivateNewUserInput) (*models.User, error) {
@@ -255,14 +236,10 @@ func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.Act
 		return txnErr
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return ret, err
 }
 
-func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (string, error) {
+func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (*uuid.UUID, error) {
 	// INVITE role allows generating invite keys without tokens
 	requireToken := true
 	if err := validateInvite(ctx); err == nil {
@@ -270,7 +247,7 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (string, erro
 	}
 
 	currentUser := getCurrentUser(ctx)
-	var ret string
+	var ret *uuid.UUID
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		uqb := fac.User()
@@ -282,20 +259,16 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (string, erro
 			return txnErr
 		}
 
-		// log the operation
+		// Log the operation
 		logger.Userf(currentUser.Name, "GenerateInviteCode", "%s", ret)
 
 		return nil
 	})
 
-	if err != nil {
-		return "", err
-	}
-
-	return ret, nil
+	return ret, err
 }
 
-func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (bool, error) {
+func (r *mutationResolver) RescindInviteCode(ctx context.Context, inviteKeyID uuid.UUID) (bool, error) {
 	// INVITE role allows generating invite keys without tokens
 	requireToken := true
 	if err := validateInvite(ctx); err == nil {
@@ -310,10 +283,9 @@ func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (
 		uqb := fac.User()
 		ikqb := fac.Invite()
 
-		inviteKeyID, _ := uuid.FromString(code)
 		userID := currentUser.ID
 
-		// non-token managers may only rescind their own invite code
+		// Non-token managers may only rescind their own invite code
 		if tokenManagerErr == nil {
 			inviteKey, err := ikqb.Find(inviteKeyID)
 			if err != nil {
@@ -332,17 +304,13 @@ func (r *mutationResolver) RescindInviteCode(ctx context.Context, code string) (
 			return txnErr
 		}
 
-		// log the operation
-		logger.Userf(currentUser.Name, "RescindInviteCode", "%s", code)
+		// Log the operation
+		logger.Userf(currentUser.Name, "RescindInviteCode", "%v", inviteKeyID)
 
 		return nil
 	})
 
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return err == nil, err
 }
 
 func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantInviteInput) (int, error) {
@@ -350,30 +318,25 @@ func (r *mutationResolver) GrantInvite(ctx context.Context, input models.GrantIn
 		return 0, err
 	}
 
-	currentUser := getCurrentUser(ctx)
 	var ret int
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		qb := fac.User()
-		userID, _ := uuid.FromString(input.UserID)
 
 		var txnErr error
-		ret, txnErr = user.GrantInviteTokens(qb, userID, input.Amount)
+		ret, txnErr = user.GrantInviteTokens(qb, input.UserID, input.Amount)
 		if txnErr != nil {
 			return txnErr
 		}
 
-		// log the operation
-		logger.Userf(currentUser.Name, "GrantInvite", "+ %d to %s = %d", input.Amount, userID.String(), ret)
+		// Log the operation
+		currentUser := getCurrentUser(ctx)
+		logger.Userf(currentUser.Name, "GrantInvite", "+ %d to %v = %d", input.Amount, input.UserID, ret)
 
 		return nil
 	})
 
-	if err != nil {
-		return 0, err
-	}
-
-	return ret, nil
+	return ret, err
 }
 
 func (r *mutationResolver) RevokeInvite(ctx context.Context, input models.RevokeInviteInput) (int, error) {
@@ -381,28 +344,23 @@ func (r *mutationResolver) RevokeInvite(ctx context.Context, input models.Revoke
 		return 0, err
 	}
 
-	currentUser := getCurrentUser(ctx)
 	var ret int
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		qb := fac.User()
-		userID, _ := uuid.FromString(input.UserID)
 
 		var txnErr error
-		ret, txnErr = user.RepealInviteTokens(qb, userID, input.Amount)
+		ret, txnErr = user.RepealInviteTokens(qb, input.UserID, input.Amount)
 		if txnErr != nil {
 			return txnErr
 		}
 
-		// log the operation
-		logger.Userf(currentUser.Name, "RevokeInvite", "- %d to %s = %d", input.Amount, userID.String(), ret)
+		// Log the operation
+		currentUser := getCurrentUser(ctx)
+		logger.Userf(currentUser.Name, "RevokeInvite", "- %d to %v = %d", input.Amount, input.UserID, ret)
 
 		return nil
 	})
 
-	if err != nil {
-		return 0, err
-	}
-
-	return ret, nil
+	return ret, err
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC, MouseEvent } from "react";
 import { Pagination } from "react-bootstrap";
 
 interface PaginationProps {
@@ -9,7 +9,7 @@ interface PaginationProps {
   showCount?: boolean;
 }
 
-const PaginationComponent: React.FC<PaginationProps> = ({
+const PaginationComponent: FC<PaginationProps> = ({
   active,
   perPage,
   onClick,
@@ -38,7 +38,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
     );
   });
 
-  const handleClick = (e: React.MouseEvent<HTMLUListElement>): void => {
+  const handleClick = (e: MouseEvent<HTMLUListElement>): void => {
     const page = (e.target as HTMLElement).closest("a")?.dataset.page;
     if (!page) return;
 
@@ -47,9 +47,9 @@ const PaginationComponent: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div className="ml-auto mt-auto d-flex">
+    <div className="ms-auto mt-auto d-flex">
       {showCount && count > 0 && (
-        <b className="mr-4 mt-2">
+        <b className="me-4 mt-2">
           {new Intl.NumberFormat().format(count)} results
         </b>
       )}

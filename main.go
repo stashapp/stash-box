@@ -8,11 +8,13 @@ import (
 	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/manager/cron"
 	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/sqlx/postgres"
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
+//nolint
 //go:embed frontend/build
 var ui embed.FS
 
@@ -22,8 +24,9 @@ func main() {
 	const databaseProvider = "postgres"
 	db := database.Initialize(databaseProvider, config.GetDatabasePath())
 	txnMgr := sqlx.NewTxnMgr(db, &postgres.Dialect{})
-	user.CreateRoot(txnMgr.Repo())
+	user.CreateSystemUsers(txnMgr.Repo())
 	api.Start(txnMgr, ui)
+	cron.Init(txnMgr)
 	blockForever()
 }
 

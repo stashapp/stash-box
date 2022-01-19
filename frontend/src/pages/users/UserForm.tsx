@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, Form } from "react-bootstrap";
+import { FC } from "react";
+import { Button, Form, Row } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import Select from "react-select";
 import * as yup from "yup";
@@ -29,7 +29,7 @@ const schema = yup.object({
           .join("").length >= 5
     )
     .required("Password is required"),
-  roles: yup.array().of(yup.string()),
+  roles: yup.array().of(yup.string().required()).ensure(),
 });
 
 type UserFormData = yup.Asserts<typeof schema>;
@@ -52,7 +52,7 @@ const roles = Object.keys(RoleEnum).map((role) => ({
   value: role,
 }));
 
-const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
+const UserForm: FC<UserProps> = ({ user, callback, error }) => {
   const history = useHistory();
   const {
     register,
@@ -76,9 +76,9 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      <Form.Row>
+      <Row>
         <Form.Control type="hidden" value={user.id} />
-        <Form.Group controlId="username" className="col">
+        <Form.Group controlId="username" className="col mb-3">
           <Form.Label>Username</Form.Label>
           <Form.Control
             className={cx({ "is-invalid": errors.name })}
@@ -88,9 +88,9 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
           />
           <div className="invalid-feedback">{errors?.name?.message}</div>
         </Form.Group>
-      </Form.Row>
-      <Form.Row>
-        <Form.Group controlId="email" className="col">
+      </Row>
+      <Row>
+        <Form.Group controlId="email" className="col mb-3">
           <Form.Label>Email</Form.Label>
           <Form.Control
             className={cx({ "is-invalid": errors.email })}
@@ -101,9 +101,9 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
           />
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </Form.Group>
-      </Form.Row>
-      <Form.Row>
-        <Form.Group controlId="password" className="col">
+      </Row>
+      <Row>
+        <Form.Group controlId="password" className="col mb-3">
           <Form.Label>Password</Form.Label>
           <Form.Control
             className={cx({ "is-invalid": errors.password })}
@@ -114,14 +114,14 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
           />
           <div className="invalid-feedback">{errors?.password?.message}</div>
         </Form.Group>
-      </Form.Row>
-      <Form.Row>
-        <Form.Group className="col">
+      </Row>
+      <Row>
+        <Form.Group className="col mb-3">
           <Form.Label>Roles</Form.Label>
           <Controller
             name="roles"
             control={control}
-            defaultValue={user.roles ?? []}
+            defaultValue={(user.roles ?? []) as string[]}
             render={({ field: { onChange, value } }) => (
               <Select
                 classNamePrefix="react-select"
@@ -129,26 +129,26 @@ const UserForm: React.FC<UserProps> = ({ user, callback, error }) => {
                 options={roles}
                 placeholder="User roles"
                 onChange={(vals) => onChange(vals.map((v) => v.value) ?? [])}
-                defaultValue={value}
+                defaultValue={roles.filter((r) => value.includes(r.value))}
                 isMulti
               />
             )}
           />
         </Form.Group>
-      </Form.Row>
-      <Form.Row>
+      </Row>
+      <Row>
         <div className="col">
           <Button type="submit">Create</Button>
           <Button
             variant="secondary"
-            className="ml-2"
+            className="ms-2"
             onClick={() => history.goBack()}
           >
             Cancel
           </Button>
           <div className="invalid-feedback d-block">{error}</div>
         </div>
-      </Form.Row>
+      </Row>
     </Form>
   );
 };

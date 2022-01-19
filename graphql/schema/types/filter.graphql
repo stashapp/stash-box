@@ -13,6 +13,11 @@ input StringCriterionInput {
   modifier: CriterionModifier!
 }
 
+input MultiStringCriterionInput {
+  value: [String!]!
+  modifier: CriterionModifier!
+}
+
 input IntCriterionInput {
   value: Int!
   modifier: CriterionModifier!

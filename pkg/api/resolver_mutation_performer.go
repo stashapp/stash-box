@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -11,10 +12,6 @@ import (
 )
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
@@ -52,7 +49,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		}
 
 		// Save the URLs
-		performerUrls := models.CreatePerformerURLs(performer.ID, input.Urls)
+		performerUrls := models.CreatePerformerURLs(performer.ID, models.ParseURLInput(input.Urls))
 		if err := qb.CreateUrls(performerUrls); err != nil {
 			return err
 		}
@@ -84,10 +81,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
-	if err := validateModify(ctx); err != nil {
-		return nil, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
 	var performer *models.Performer
@@ -97,15 +90,14 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		iqb := fac.Image()
 
 		// get the existing performer and modify it
-		performerID, _ := uuid.FromString(input.ID)
-		updatedPerformer, err := qb.Find(performerID)
+		updatedPerformer, err := qb.Find(input.ID)
 
 		if err != nil {
 			return err
 		}
 
 		if updatedPerformer == nil {
-			return models.NotFoundError(performerID)
+			return models.NotFoundError(input.ID)
 		}
 
 		updatedPerformer.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
@@ -127,7 +119,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		}
 
 		// Save the URLs
-		performerUrls := models.CreatePerformerURLs(performer.ID, input.Urls)
+		performerUrls := models.CreatePerformerURLs(performer.ID, models.ParseURLInput(input.Urls))
 		if err := qb.UpdateUrls(performer.ID, performerUrls); err != nil {
 			return err
 		}
@@ -177,30 +169,21 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
-	if err := validateModify(ctx); err != nil {
-		return false, err
-	}
-
-	performerID, err := uuid.FromString(input.ID)
-	if err != nil {
-		return false, err
-	}
-
 	fac := r.getRepoFactory(ctx)
 
-	err = fac.WithTxn(func() error {
+	err := fac.WithTxn(func() error {
 		qb := fac.Performer()
 		iqb := fac.Image()
 
 		// references have on delete cascade, so shouldn't be necessary
 		// to remove them explicitly
 
-		existingImages, err := iqb.FindByPerformerID(performerID)
+		existingImages, err := iqb.FindByPerformerID(input.ID)
 		if err != nil {
 			return err
 		}
 
-		if err = qb.Destroy(performerID); err != nil {
+		if err = qb.Destroy(input.ID); err != nil {
 			return err
 		}
 
@@ -220,4 +203,28 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 		return false, err
 	}
 	return true, nil
+}
+
+func (r *mutationResolver) FavoritePerformer(ctx context.Context, id uuid.UUID, favorite bool) (bool, error) {
+	fac := r.getRepoFactory(ctx)
+	user := getCurrentUser(ctx)
+
+	err := fac.WithTxn(func() error {
+		jqb := fac.Joins()
+		performer, err := fac.Performer().Find(id)
+		if err != nil {
+			return err
+		}
+		if performer.Deleted {
+			return fmt.Errorf("performer is deleted, unable to make favorite")
+		}
+
+		if favorite {
+			pf := models.PerformerFavorite{PerformerID: id, UserID: user.ID}
+			err := jqb.AddPerformerFavorite(pf)
+			return err
+		}
+		return jqb.DestroyPerformerFavorite(models.PerformerFavorite{PerformerID: id, UserID: user.ID})
+	})
+	return err == nil, err
 }

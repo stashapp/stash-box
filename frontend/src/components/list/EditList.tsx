@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 
 import { useEditFilter, usePagination } from "src/hooks";
 import {
@@ -24,7 +24,7 @@ interface EditsProps {
 
 const PER_PAGE = 20;
 
-const EditListComponent: React.FC<EditsProps> = ({
+const EditListComponent: FC<EditsProps> = ({
   id,
   sort,
   direction,
@@ -41,6 +41,7 @@ const EditListComponent: React.FC<EditsProps> = ({
     selectedType,
     selectedOperation,
     selectedStatus,
+    selectedFavorite,
   } = useEditFilter({
     sort,
     direction,
@@ -61,6 +62,7 @@ const EditListComponent: React.FC<EditsProps> = ({
       status: selectedStatus,
       operation: selectedOperation,
       user_id: userId,
+      is_favorite: selectedFavorite,
     },
   });
 

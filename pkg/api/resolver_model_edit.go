@@ -6,7 +6,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -51,7 +50,9 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(obj.TargetType, &targetType)
-	if targetType == "TAG" {
+
+	switch targetType {
+	case models.TargetTypeEnumTag:
 		tagID, err := eqb.FindTagID(obj.ID)
 		if err != nil {
 			return nil, err
@@ -64,7 +65,7 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 
 		return target, nil
-	} else if targetType == "PERFORMER" {
+	case models.TargetTypeEnumPerformer:
 		performerID, err := eqb.FindPerformerID(obj.ID)
 		if err != nil {
 			return nil, err
@@ -77,7 +78,33 @@ func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.Edi
 		}
 
 		return target, nil
-	} else {
+	case models.TargetTypeEnumStudio:
+		studioID, err := eqb.FindStudioID(obj.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		sqb := fac.Studio()
+		target, err := sqb.Find(*studioID)
+		if err != nil {
+			return nil, err
+		}
+
+		return target, nil
+	case models.TargetTypeEnumScene:
+		sceneID, err := eqb.FindSceneID(obj.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		sqb := fac.Scene()
+		target, err := sqb.Find(*sceneID)
+		if err != nil {
+			return nil, err
+		}
+
+		return target, nil
+	default:
 		return nil, errors.New("not implemented")
 	}
 }
@@ -102,25 +129,41 @@ func (r *editResolver) MergeSources(ctx context.Context, obj *models.Edit) ([]mo
 		fac := r.getRepoFactory(ctx)
 		var ret models.TargetTypeEnum
 		utils.ResolveEnumString(obj.TargetType, &ret)
-		if ret == "TAG" {
+
+		switch ret {
+		case models.TargetTypeEnumTag:
 			tqb := fac.Tag()
-			for _, tagStringID := range editData.MergeSources {
-				tagID, _ := uuid.FromString(tagStringID)
+			for _, tagID := range editData.MergeSources {
 				tag, err := tqb.Find(tagID)
 				if err == nil {
 					mergeSources = append(mergeSources, tag)
 				}
 			}
-		} else if ret == "PERFORMER" {
+		case models.TargetTypeEnumPerformer:
 			pqb := fac.Performer()
-			for _, performerStringID := range editData.MergeSources {
-				performerID, _ := uuid.FromString(performerStringID)
+			for _, performerID := range editData.MergeSources {
 				performer, err := pqb.Find(performerID)
 				if err == nil {
 					mergeSources = append(mergeSources, performer)
 				}
 			}
-		} else {
+		case models.TargetTypeEnumStudio:
+			pqb := fac.Studio()
+			for _, studioID := range editData.MergeSources {
+				studio, err := pqb.Find(studioID)
+				if err == nil {
+					mergeSources = append(mergeSources, studio)
+				}
+			}
+		case models.TargetTypeEnumScene:
+			qb := fac.Scene()
+			for _, sceneID := range editData.MergeSources {
+				scene, err := qb.Find(sceneID)
+				if err == nil {
+					mergeSources = append(mergeSources, scene)
+				}
+			}
+		default:
 			return nil, errors.New("not implemented")
 		}
 	}
@@ -140,18 +183,32 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 	var ret models.EditDetails
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(obj.TargetType, &targetType)
-	if targetType == "TAG" {
+
+	switch targetType {
+	case models.TargetTypeEnumTag:
 		tagData, err := obj.GetTagData()
 		if err != nil {
 			return nil, err
 		}
 		ret = tagData.New
-	} else if targetType == "PERFORMER" {
+	case models.TargetTypeEnumPerformer:
 		performerData, err := obj.GetPerformerData()
 		if err != nil {
 			return nil, err
 		}
 		ret = performerData.New
+	case models.TargetTypeEnumStudio:
+		studioData, err := obj.GetStudioData()
+		if err != nil {
+			return nil, err
+		}
+		ret = studioData.New
+	case models.TargetTypeEnumScene:
+		sceneData, err := obj.GetSceneData()
+		if err != nil {
+			return nil, err
+		}
+		ret = sceneData.New
 	}
 
 	return ret, nil
@@ -161,18 +218,32 @@ func (r *editResolver) OldDetails(ctx context.Context, obj *models.Edit) (models
 	var ret models.EditDetails
 	var targetType models.TargetTypeEnum
 	utils.ResolveEnumString(obj.TargetType, &targetType)
-	if targetType == "TAG" {
+
+	switch targetType {
+	case models.TargetTypeEnumTag:
 		tagData, err := obj.GetTagData()
 		if err != nil {
 			return nil, err
 		}
 		ret = tagData.Old
-	} else if targetType == "PERFORMER" {
+	case models.TargetTypeEnumPerformer:
 		performerData, err := obj.GetPerformerData()
 		if err != nil {
 			return nil, err
 		}
 		ret = performerData.Old
+	case models.TargetTypeEnumStudio:
+		studioData, err := obj.GetStudioData()
+		if err != nil {
+			return nil, err
+		}
+		ret = studioData.Old
+	case models.TargetTypeEnumScene:
+		sceneData, err := obj.GetSceneData()
+		if err != nil {
+			return nil, err
+		}
+		ret = sceneData.Old
 	}
 
 	return ret, nil
@@ -199,9 +270,21 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*model
 	return ret, nil
 }
 
-func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]*models.VoteComment, error) {
-	// TODO
-	return nil, nil
+func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]*models.EditVote, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
+	votes, err := qb.GetVotes(obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.EditVote
+	for _, vote := range votes {
+		ret = append(ret, vote)
+	}
+
+	return ret, nil
 }
 
 func (r *editResolver) Status(ctx context.Context, obj *models.Edit) (models.VoteStatusEnum, error) {
@@ -214,7 +297,7 @@ func (r *editResolver) Status(ctx context.Context, obj *models.Edit) (models.Vot
 }
 
 func (r *editResolver) Options(ctx context.Context, obj *models.Edit) (*models.PerformerEditOptions, error) {
-	if obj.TargetType == "PERFORMER" {
+	if obj.TargetType == models.TargetTypeEnumPerformer.String() {
 		data, err := obj.GetPerformerData()
 		if err != nil {
 			return nil, err
@@ -227,4 +310,8 @@ func (r *editResolver) Options(ctx context.Context, obj *models.Edit) (*models.P
 		return &options, nil
 	}
 	return nil, nil
+}
+
+func (r *editResolver) Destructive(ctx context.Context, obj *models.Edit) (bool, error) {
+	return obj.IsDestructive(), nil
 }

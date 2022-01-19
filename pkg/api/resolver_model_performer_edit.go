@@ -3,11 +3,8 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
-
-	"github.com/gofrs/uuid"
 )
 
 type performerEditResolver struct{ *Resolver }
@@ -58,39 +55,9 @@ func (r *performerEditResolver) BreastType(ctx context.Context, obj *models.Perf
 }
 
 func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
-	if len(obj.AddedImages) == 0 {
-		return nil, nil
-	}
-
-	var uuids []uuid.UUID
-	for _, id := range obj.AddedImages {
-		imageID, _ := uuid.FromString(id)
-		uuids = append(uuids, imageID)
-	}
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return images, nil
+	return imageList(ctx, obj.AddedImages)
 }
 
 func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
-	if len(obj.RemovedImages) == 0 {
-		return nil, nil
-	}
-
-	var uuids []uuid.UUID
-	for _, id := range obj.RemovedImages {
-		imageID, _ := uuid.FromString(id)
-		uuids = append(uuids, imageID)
-	}
-	images, errors := dataloader.For(ctx).ImageByID.LoadAll(uuids)
-	for _, err := range errors {
-		if err != nil {
-			return nil, err
-		}
-	}
-	return images, nil
+	return imageList(ctx, obj.RemovedImages)
 }

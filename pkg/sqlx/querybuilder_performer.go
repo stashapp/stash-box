@@ -1,7 +1,7 @@
 package sqlx
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -39,10 +39,10 @@ var (
 	})
 
 	performerSourceRedirectTable = newTableJoin(performerTable, "performer_redirects", "source_id", func() interface{} {
-		return &models.PerformerRedirect{}
+		return &models.Redirect{}
 	})
 	performerTargetRedirectTable = newTableJoin(performerTable, "performer_redirects", "target_id", func() interface{} {
-		return &models.PerformerRedirect{}
+		return &models.Redirect{}
 	})
 )
 
@@ -151,7 +151,7 @@ func (qb *performerQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Performer
 func (qb *performerQueryBuilder) FindBySceneID(sceneID uuid.UUID) (models.Performers, error) {
 	query := `
 		SELECT performers.* FROM performers
-		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
+		LEFT JOIN scene_performers as scenes_join on scenes_join.performer_id = performers.id
 		WHERE scenes_join.scene_id = ?
 		GROUP BY performers.id
 	`
@@ -201,7 +201,7 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec) ([]*models.Performer, int) {
+func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) *queryBuilder {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
 	}
@@ -247,43 +247,63 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 		}
 	}
 
-	handleStringCriterion("country", performerFilter.Country, query)
-	//handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
-	//handleStringCriterion("height", performerFilter.Height, &query)
-	//handleStringCriterion("measurements", performerFilter.Measurements, &query)
-	//handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
-	//handleStringCriterion("career_length", performerFilter.CareerLength, &query)
-	//handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
-	//handleStringCriterion("piercings", performerFilter.Piercings, &query)
-	//handleStringCriterion("aliases", performerFilter.Aliases, &query)
+	if performerFilter.IsFavorite != nil {
+		// userID is internal based on user context so it is safe to append rather than bind
+		q := fmt.Sprintf(" JOIN performer_favorites F ON performers.id = F.performer_id AND F.user_id = '%s'", userID)
+		if *performerFilter.IsFavorite {
+			query.Body += q
+		} else {
+			query.Body += " LEFT" + q
+			query.AddWhere("F.performer_id IS NULL")
+		}
+	}
 
-	if findFilter != nil && findFilter.GetSort("") == "debut" {
+	handleStringCriterion("country", performerFilter.Country, query)
+	/*
+		handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
+		handleStringCriterion("height", performerFilter.Height, &query)
+		handleStringCriterion("measurements", performerFilter.Measurements, &query)
+		handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
+		handleStringCriterion("career_length", performerFilter.CareerLength, &query)
+		handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
+		handleStringCriterion("piercings", performerFilter.Piercings, &query)
+		handleStringCriterion("aliases", performerFilter.Aliases, &query)
+	*/
+
+	switch {
+	case findFilter != nil && findFilter.GetSort("") == "debut":
 		query.Body += `
 			JOIN (SELECT performer_id, MIN(date) as debut FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
-		query.SortAndPagination = "ORDER BY debut " + direction + ", name " + direction + getPagination(findFilter)
-	} else if findFilter != nil && findFilter.GetSort("") == "scene_count" {
+		query.Sort = "ORDER BY debut " + direction + ", name " + direction
+	case findFilter != nil && findFilter.GetSort("") == "scene_count":
 		query.Body += `
 			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
 		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
-		query.SortAndPagination = " ORDER BY scene_count " + direction + ", name " + direction + getPagination(findFilter)
-	} else {
-		query.SortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+		query.Sort = " ORDER BY scene_count " + direction + ", name " + direction
+	default:
+		query.Sort = qb.getPerformerSort(findFilter)
 	}
+
+	return query
+}
+
+func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) ([]*models.Performer, error) {
+	query := qb.buildQuery(performerFilter, findFilter, userID)
+	query.Pagination = getPagination(findFilter)
 
 	var performers models.Performers
-	countResult, err := qb.dbi.Query(*query, &performers)
+	err := qb.dbi.QueryOnly(*query, &performers)
+	return performers, err
+}
 
-	if err != nil {
-		// TODO
-		panic(err)
-	}
-
-	return performers, countResult
+func (qb *performerQueryBuilder) QueryCount(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (int, error) {
+	query := qb.buildQuery(performerFilter, findFilter, userID)
+	return qb.dbi.CountOnly(*query)
 }
 
 func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {
@@ -421,8 +441,8 @@ func (qb *performerQueryBuilder) GetURLs(id uuid.UUID) ([]*models.URL, error) {
 	urls := make([]*models.URL, len(joins))
 	for i, u := range joins {
 		url := models.URL{
-			URL:  u.URL,
-			Type: u.Type,
+			URL:    u.URL,
+			SiteID: u.SiteID,
 		}
 		urls[i] = &url
 	}
@@ -440,8 +460,8 @@ func (qb *performerQueryBuilder) GetAllURLs(ids []uuid.UUID) ([][]*models.URL, [
 	m := make(map[uuid.UUID][]*models.URL)
 	for _, join := range joins {
 		url := models.URL{
-			URL:  join.URL,
-			Type: join.Type,
+			URL:    join.URL,
+			SiteID: join.SiteID,
 		}
 		m[join.PerformerID] = append(m[join.PerformerID], &url)
 	}
@@ -523,12 +543,28 @@ func (qb *performerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*models.B
 
 func (qb *performerQueryBuilder) SearchPerformers(term string, limit int) (models.Performers, error) {
 	query := `
-        SELECT * FROM performers
-        WHERE name % $1
-        AND similarity(name, $1) > 0.5
-        AND deleted = FALSE
-        ORDER BY similarity(name, $1) DESC
-        LIMIT $2`
+		SELECT P.* FROM (
+			SELECT id, SUM(similarity) AS score FROM (
+				SELECT P.id, similarity(P.name, $1) AS similarity
+				FROM performers P
+				WHERE P.deleted = FALSE AND P.name % $1 AND similarity(P.name, $1) > 0.5
+			UNION
+				SELECT P.id, (similarity(COALESCE(PA.alias, ''), $1) * 0.7) AS similarity
+				FROM performers P
+				LEFT JOIN performer_aliases PA on PA.performer_id = P.id
+				WHERE P.deleted = FALSE AND PA.alias % $1 AND similarity(COALESCE(PA.alias, ''), $1) > 0.6
+			UNION
+				SELECT P.id, (similarity(COALESCE(P.disambiguation, ''), $1) * 0.3) AS similarity
+				FROM performers P
+				WHERE P.deleted = FALSE AND P.disambiguation % $1 AND similarity(COALESCE(P.disambiguation), $1) > 0.7
+			) A
+			GROUP BY id
+			ORDER BY score DESC
+			LIMIT $2
+		) T
+		JOIN performers P ON P.id = T.id
+		ORDER BY score DESC;
+	`
 	args := []interface{}{term, limit}
 	return qb.queryPerformers(query, args)
 }
@@ -536,6 +572,11 @@ func (qb *performerQueryBuilder) SearchPerformers(term string, limit int) (model
 func (qb *performerQueryBuilder) DeleteScenePerformers(id uuid.UUID) error {
 	// Delete scene_performers joins
 	return qb.dbi.DeleteJoins(performerSceneTable, id)
+}
+
+func (qb *performerQueryBuilder) DeletePerformerFavorites(id uuid.UUID) error {
+	// Delete performer_favorites joins
+	return qb.dbi.DeleteJoins(performerFavoriteTable, id)
 }
 
 func (qb *performerQueryBuilder) SoftDelete(performer models.Performer) (*models.Performer, error) {
@@ -560,7 +601,7 @@ func (qb *performerQueryBuilder) SoftDelete(performer models.Performer) (*models
 	return qb.toModel(ret), err
 }
 
-func (qb *performerQueryBuilder) CreateRedirect(newJoin models.PerformerRedirect) error {
+func (qb *performerQueryBuilder) CreateRedirect(newJoin models.Redirect) error {
 	return qb.dbi.InsertJoin(performerSourceRedirectTable, newJoin, nil)
 }
 
@@ -595,6 +636,24 @@ func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Perf
 	return qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 }
 
+func (qb *performerQueryBuilder) reassignFavorites(oldPerformer *models.Performer, newTargetID uuid.UUID) error {
+	// Reassign performer favorites to new id where it isn't already assigned
+	query := `UPDATE performer_favorites
+					 SET performer_id = ?
+					 WHERE performer_id = ?
+					 AND user_id NOT IN (SELECT user_id from performer_favorites WHERE performer_id = ?)`
+	args := []interface{}{newTargetID, oldPerformer.ID, newTargetID}
+	err := qb.dbi.RawQuery(performerFavoriteTable.table, query, args, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete any remaining joins with the old performer
+	query = `DELETE FROM performer_favorites WHERE performer_id = ?`
+	args = []interface{}{oldPerformer.ID}
+	return qb.dbi.RawQuery(performerFavoriteTable.table, query, args, nil)
+}
+
 func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID, name string) error {
 	query := `UPDATE scene_performers
             SET "as" = ?
@@ -608,206 +667,66 @@ func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID
 	return nil
 }
 
-func (qb *performerQueryBuilder) MergeInto(sourceID uuid.UUID, targetID uuid.UUID, setAliases bool) error {
-	performer, err := qb.Find(sourceID)
-	if err != nil {
+func (qb *performerQueryBuilder) MergeInto(source *models.Performer, target *models.Performer, setAliases bool) error {
+	if source.Deleted {
+		return fmt.Errorf("merge source performer is deleted: %s", source.ID.String())
+	}
+	if target.Deleted {
+		return fmt.Errorf("merge target performer is deleted: %s", target.ID.String())
+	}
+
+	if _, err := qb.SoftDelete(*source); err != nil {
 		return err
 	}
-	if performer == nil {
-		return errors.New("Merge source performer not found: " + sourceID.String())
-	}
-	if performer.Deleted {
-		return errors.New("Merge source performer is deleted: " + sourceID.String())
-	}
-	_, err = qb.SoftDelete(*performer)
-	if err != nil {
+
+	if err := qb.UpdateRedirects(source.ID, target.ID); err != nil {
 		return err
 	}
-	if err := qb.UpdateRedirects(sourceID, targetID); err != nil {
+	if err := qb.UpdateScenePerformers(source, target.ID, setAliases); err != nil {
 		return err
 	}
-	if err := qb.UpdateScenePerformers(performer, targetID, setAliases); err != nil {
+	if err := qb.reassignFavorites(source, target.ID); err != nil {
 		return err
 	}
-	redirect := models.PerformerRedirect{SourceID: sourceID, TargetID: targetID}
+	redirect := models.Redirect{SourceID: source.ID, TargetID: target.ID}
 	return qb.CreateRedirect(redirect)
 }
 
-func (qb *performerQueryBuilder) ApplyEdit(edit models.Edit, operation models.OperationEnum, performer *models.Performer) (*models.Performer, error) {
-	data, err := edit.GetPerformerData()
+func (qb *performerQueryBuilder) ApplyEdit(performer *models.Performer, create bool, data *models.PerformerEditData) (*models.Performer, error) {
+	old := data.Old
+	if old == nil {
+		old = &models.PerformerEdit{}
+	}
+	performer.CopyFromPerformerEdit(*data.New, *old)
+
+	var updatedPerformer *models.Performer
+	var err error
+	if create {
+		updatedPerformer, err = qb.Create(*performer)
+	} else {
+		updatedPerformer, err = qb.Update(*performer)
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	switch operation {
-	case models.OperationEnumCreate:
-		now := time.Now()
-		UUID, err := uuid.NewV4()
-		if err != nil {
-			return nil, err
-		}
-		newPerformer := models.Performer{
-			ID:        UUID,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-		}
-		if data.New.Name == nil {
-			return nil, errors.New("Missing performer name")
-		}
-
-		newPerformer.CopyFromPerformerEdit(*data.New, models.PerformerEdit{})
-
-		performer, err = qb.Create(newPerformer)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(data.New.AddedAliases) > 0 {
-			aliases := models.CreatePerformerAliases(UUID, data.New.AddedAliases)
-			if err := qb.CreateAliases(aliases); err != nil {
-				return nil, err
-			}
-		}
-
-		if len(data.New.AddedTattoos) > 0 {
-			tattoos := models.CreatePerformerBodyMods(UUID, data.New.AddedTattoos)
-			if err := qb.CreateTattoos(tattoos); err != nil {
-				return nil, err
-			}
-		}
-
-		if len(data.New.AddedPiercings) > 0 {
-			piercings := models.CreatePerformerBodyMods(UUID, data.New.AddedPiercings)
-			if err := qb.CreatePiercings(piercings); err != nil {
-				return nil, err
-			}
-		}
-
-		if len(data.New.AddedUrls) > 0 {
-			urls := models.CreatePerformerURLs(UUID, data.New.AddedUrls)
-			if err := qb.CreateUrls(urls); err != nil {
-				return nil, err
-			}
-		}
-
-		if len(data.New.AddedImages) > 0 {
-			images := models.CreatePerformerImages(UUID, data.New.AddedImages)
-			if err := qb.CreateImages(images); err != nil {
-				return nil, err
-			}
-		}
-
-		return performer, nil
-	case models.OperationEnumDestroy:
-		updatedPerformer, err := qb.SoftDelete(*performer)
-		if err != nil {
-			return nil, err
-		}
-		err = qb.DeleteScenePerformers(performer.ID)
-
-		// TODO: Delete images
-
-		return updatedPerformer, err
-	case models.OperationEnumModify:
-		return qb.ApplyModifyEdit(performer, data)
-	case models.OperationEnumMerge:
-		updatedPerformer, err := qb.ApplyModifyEdit(performer, data)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, v := range data.MergeSources {
-			sourceUUID, _ := uuid.FromString(v)
-			if err := qb.MergeInto(sourceUUID, performer.ID, data.SetMergeAliases); err != nil {
-				return nil, err
-			}
-		}
-
-		return updatedPerformer, nil
-	default:
-		return nil, errors.New("Unsupported operation: " + operation.String())
-	}
-}
-
-func (qb *performerQueryBuilder) ApplyModifyEdit(performer *models.Performer, data *models.PerformerEditData) (*models.Performer, error) {
-	if err := performer.ValidateModifyEdit(*data); err != nil {
+	if err := qb.updateAliasesFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
-	performer.CopyFromPerformerEdit(*data.New, *data.Old)
-	updatedPerformer, err := qb.Update(*performer)
-	if err != nil {
+	if err := qb.updateTattoosFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
-	currentAliases, err := qb.GetAliases(updatedPerformer.ID)
-	if err != nil {
-		return nil, err
-	}
-	newAliases := models.CreatePerformerAliases(updatedPerformer.ID, data.New.AddedAliases)
-	oldAliases := models.CreatePerformerAliases(updatedPerformer.ID, data.New.RemovedAliases)
-	if err := models.ProcessSlice(&currentAliases, &newAliases, &oldAliases); err != nil {
-		return nil, err
-	}
-	if err := qb.UpdateAliases(updatedPerformer.ID, currentAliases); err != nil {
+	if err := qb.updatePiercingsFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
-	currentTattoos, err := qb.GetTattoos(updatedPerformer.ID)
-	if err != nil {
-		return nil, err
-	}
-	newTattoos := models.CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedTattoos)
-	oldTattoos := models.CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedTattoos)
-
-	if err := models.ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos); err != nil {
-		return nil, err
-	}
-	if err := qb.UpdateTattoos(updatedPerformer.ID, currentTattoos); err != nil {
+	if err := qb.updateURLsFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
-	currentPiercings, err := qb.GetPiercings(updatedPerformer.ID)
-	if err != nil {
-		return nil, err
-	}
-	newPiercings := models.CreatePerformerBodyMods(updatedPerformer.ID, data.New.AddedPiercings)
-	oldPiercings := models.CreatePerformerBodyMods(updatedPerformer.ID, data.New.RemovedPiercings)
-
-	if err := models.ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings); err != nil {
-		return nil, err
-	}
-	if err := qb.UpdatePiercings(updatedPerformer.ID, currentPiercings); err != nil {
-		return nil, err
-	}
-
-	urls, err := qb.GetURLs(updatedPerformer.ID)
-	currentUrls := models.CreatePerformerURLs(updatedPerformer.ID, urls)
-	if err != nil {
-		return nil, err
-	}
-	newUrls := models.CreatePerformerURLs(updatedPerformer.ID, data.New.AddedUrls)
-	oldUrls := models.CreatePerformerURLs(updatedPerformer.ID, data.New.RemovedUrls)
-
-	if err := models.ProcessSlice(&currentUrls, &newUrls, &oldUrls); err != nil {
-		return nil, err
-	}
-
-	if err := qb.UpdateUrls(updatedPerformer.ID, currentUrls); err != nil {
-		return nil, err
-	}
-
-	currentImages, err := qb.GetImages(updatedPerformer.ID)
-	if err != nil {
-		return nil, err
-	}
-	newImages := models.CreatePerformerImages(updatedPerformer.ID, data.New.AddedImages)
-	oldImages := models.CreatePerformerImages(updatedPerformer.ID, data.New.RemovedImages)
-
-	if err := models.ProcessSlice(&currentImages, &newImages, &oldImages); err != nil {
-		return nil, err
-	}
-
-	if err := qb.UpdateImages(updatedPerformer.ID, currentImages); err != nil {
+	if err := qb.updateImagesFromEdit(updatedPerformer, data); err != nil {
 		return nil, err
 	}
 
@@ -820,8 +739,70 @@ func (qb *performerQueryBuilder) ApplyModifyEdit(performer *models.Performer, da
 	return updatedPerformer, err
 }
 
+func (qb *performerQueryBuilder) updateAliasesFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	currentAliases, err := qb.GetAliases(performer.ID)
+	if err != nil {
+		return err
+	}
+
+	newAliases := models.CreatePerformerAliases(performer.ID, data.New.AddedAliases)
+	oldAliases := models.CreatePerformerAliases(performer.ID, data.New.RemovedAliases)
+	models.ProcessSlice(&currentAliases, &newAliases, &oldAliases, "alias")
+
+	return qb.UpdateAliases(performer.ID, currentAliases)
+}
+
+func (qb *performerQueryBuilder) updateTattoosFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	currentTattoos, err := qb.GetTattoos(performer.ID)
+	if err != nil {
+		return err
+	}
+	newTattoos := models.CreatePerformerBodyMods(performer.ID, data.New.AddedTattoos)
+	oldTattoos := models.CreatePerformerBodyMods(performer.ID, data.New.RemovedTattoos)
+	models.ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos, "tattoo")
+
+	return qb.UpdateTattoos(performer.ID, currentTattoos)
+}
+
+func (qb *performerQueryBuilder) updatePiercingsFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	currentPiercings, err := qb.GetPiercings(performer.ID)
+	if err != nil {
+		return err
+	}
+	newPiercings := models.CreatePerformerBodyMods(performer.ID, data.New.AddedPiercings)
+	oldPiercings := models.CreatePerformerBodyMods(performer.ID, data.New.RemovedPiercings)
+	models.ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings, "piercing")
+
+	return qb.UpdatePiercings(performer.ID, currentPiercings)
+}
+
+func (qb *performerQueryBuilder) updateURLsFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	urls, err := qb.GetURLs(performer.ID)
+	currentUrls := models.CreatePerformerURLs(performer.ID, urls)
+	if err != nil {
+		return err
+	}
+	newUrls := models.CreatePerformerURLs(performer.ID, data.New.AddedUrls)
+	oldUrls := models.CreatePerformerURLs(performer.ID, data.New.RemovedUrls)
+	models.ProcessSlice(&currentUrls, &newUrls, &oldUrls, "URL")
+
+	return qb.UpdateUrls(performer.ID, currentUrls)
+}
+
+func (qb *performerQueryBuilder) updateImagesFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
+	currentImages, err := qb.GetImages(performer.ID)
+	if err != nil {
+		return err
+	}
+	newImages := models.CreatePerformerImages(performer.ID, data.New.AddedImages)
+	oldImages := models.CreatePerformerImages(performer.ID, data.New.RemovedImages)
+	models.ProcessSlice(&currentImages, &newImages, &oldImages, "image")
+
+	return qb.UpdateImages(performer.ID, currentImages)
+}
+
 func (qb *performerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error) {
-	redirects := models.PerformerRedirects{}
+	redirects := models.Redirects{}
 	err := qb.dbi.FindAllJoins(performerTargetRedirectTable, ids, &redirects)
 
 	if err != nil {

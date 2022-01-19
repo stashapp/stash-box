@@ -12,11 +12,13 @@ type UserRepo interface {
 	UpdateFull(updatedUser User) (*User, error)
 	Destroy(id uuid.UUID) error
 	CreateRoles(newJoins UserRoles) error
-	UpdateRoles(studioID uuid.UUID, updatedJoins UserRoles) error
+	UpdateRoles(userID uuid.UUID, updatedJoins UserRoles) error
 
 	Count() (int, error)
-	Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int)
+	Query(userFilter *UserFilterType, findFilter *QuerySpec) (Users, int, error)
 	GetRoles(id uuid.UUID) (UserRoles, error)
+	CountVotesByType(id uuid.UUID) (*UserVoteCount, error)
+	CountEditsByStatus(id uuid.UUID) (*UserEditCount, error)
 }
 
 // UserFinder is an interface to find and update User objects.

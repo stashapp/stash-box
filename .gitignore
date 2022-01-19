@@ -57,6 +57,5 @@ dist
 
 stash-box-config.yml
 
-pkg/models/generated_*.go
 # TODO - we'll add this in later
 vendor

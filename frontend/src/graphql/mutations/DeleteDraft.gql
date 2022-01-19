@@ -1,0 +1,3 @@
+mutation DeleteDraft($id: ID!) {
+  destroyDraft(id: $id)
+}

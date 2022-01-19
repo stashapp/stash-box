@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 
 interface PerformerNameProps {
@@ -6,7 +6,7 @@ interface PerformerNameProps {
   as?: string | null;
 }
 
-const PerformerName: React.FC<PerformerNameProps> = ({ performer, as }) => {
+const PerformerName: FC<PerformerNameProps> = ({ performer, as }) => {
   if (!as)
     return (
       <>
@@ -16,7 +16,7 @@ const PerformerName: React.FC<PerformerNameProps> = ({ performer, as }) => {
           <span>{performer.name}</span>
         )}
         {performer.disambiguation && (
-          <small className="ml-1 text-small text-muted">
+          <small className="ms-1 text-small text-muted">
             ({performer.disambiguation})
           </small>
         )}
@@ -25,10 +25,10 @@ const PerformerName: React.FC<PerformerNameProps> = ({ performer, as }) => {
   return (
     <>
       <span>{as}</span>
-      <small className="ml-1 text-small text-muted">
+      <small className="ms-1 text-small text-muted">
         ({performer.name})
         {performer.disambiguation && (
-          <small className="ml-1 text-small text-muted">
+          <small className="ms-1 text-small text-muted">
             ({performer.disambiguation})
           </small>
         )}
