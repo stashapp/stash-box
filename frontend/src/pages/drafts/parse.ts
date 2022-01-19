@@ -25,7 +25,7 @@ export const parseSceneDraft = (
     title: draft.title,
     details: draft.details,
     urls: draft.url ? [draft.url] : [],
-    studio: draft.studio?.__typename == "Studio" ? draft.studio : null,
+    studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
     director: null,
     duration: draft.fingerprints?.[0].duration ?? null,
     images: draft.image ? [draft.image] : [],
@@ -50,7 +50,7 @@ export const parseSceneDraft = (
 
   const remainder = {
     Studio:
-      draft.studio?.__typename == "DraftEntity" ? draft.studio.name : null,
+      draft.studio?.__typename === "DraftEntity" ? draft.studio.name : null,
     Performers: (draft.performers ?? [])
       .reduce<string[]>(
         (res, p) => (p.__typename === "DraftEntity" ? [...res, p.name] : res),

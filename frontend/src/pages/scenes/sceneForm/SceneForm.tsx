@@ -36,6 +36,9 @@ interface SceneProps {
 }
 
 const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
+  const initialStudio = initial?.studio ?? scene.studio ?? undefined;
+  const initialTags = initial?.tags ?? scene.tags;
+
   const {
     register,
     control,
@@ -53,8 +56,8 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       director: initial?.director ?? scene?.director,
       urls: initial?.urls ?? scene.urls ?? [],
       images: initial?.images ?? scene.images,
-      studio: initial?.studio ?? scene.studio ?? undefined,
-      tags: initial?.tags ?? scene.tags,
+      studio: initialStudio,
+      tags: initialTags,
       performers: (initial?.performers ?? scene.performers).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
@@ -241,7 +244,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 className={cx({ "is-invalid": errors.title })}
                 type="text"
                 placeholder="Title"
-                defaultValue={scene?.title ?? ""}
                 {...register("title", { required: true })}
               />
               <Form.Control.Feedback type="invalid">
@@ -256,7 +258,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 className={cx({ "is-invalid": errors.date })}
                 type="text"
                 placeholder="YYYY-MM-DD"
-                defaultValue={scene.date}
                 {...register("date")}
               />
               <Form.Control.Feedback type="invalid">
@@ -270,7 +271,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 as="input"
                 className={cx({ "is-invalid": errors.duration })}
                 placeholder="Duration"
-                defaultValue={scene?.duration ?? ""}
                 {...register("duration")}
               />
               <Form.Control.Feedback type="invalid">
@@ -303,7 +303,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
             >
               <Form.Label>Studio</Form.Label>
               <StudioSelect
-                initialStudio={scene.studio}
+                initialStudio={initialStudio}
                 control={control}
                 isClearable
               />
@@ -320,7 +320,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 as="textarea"
                 className="description"
                 placeholder="Details"
-                defaultValue={scene?.details ?? ""}
                 {...register("details")}
               />
             </Form.Group>
@@ -333,7 +332,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 as="input"
                 type="text"
                 placeholder="Director"
-                defaultValue={scene?.director ?? ""}
                 {...register("director")}
               />
             </Form.Group>
@@ -344,7 +342,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
           <Form.Group className="mb-3">
             <Form.Label>Tags</Form.Label>
             <TagSelect
-              tags={scene.tags}
+              tags={initialTags}
               onChange={onTagChange}
               menuPlacement="top"
             />
