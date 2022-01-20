@@ -14,11 +14,15 @@ import {
   EyeColorEnum,
   BreastTypeEnum,
   EthnicityEnum,
-  DateAccuracyEnum,
   PerformerEditDetailsInput,
   ValidSiteTypeEnum,
 } from "src/graphql";
-import { getBraSize, parseBraSize, formatFuzzyDate } from "src/utils";
+import {
+  getBraSize,
+  parseBraSize,
+  formatFuzzyDate,
+  parseFuzzyDate,
+} from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { Image } from "src/utils/transforms";
 
@@ -230,22 +234,8 @@ const PerformerForm: FC<PerformerProps> = ({
       data.gender === GenderEnum.TRANSGENDER_MALE
     )
       performerData.breast_type = BreastTypeEnum.NA;
-    if (data.birthdate !== null)
-      if (data.birthdate.length === 10)
-        performerData.birthdate = {
-          date: data.birthdate,
-          accuracy: DateAccuracyEnum.DAY,
-        };
-      else if (data.birthdate.length === 7)
-        performerData.birthdate = {
-          date: `${data.birthdate}-01`,
-          accuracy: DateAccuracyEnum.MONTH,
-        };
-      else
-        performerData.birthdate = {
-          date: `${data.birthdate}-01-01`,
-          accuracy: DateAccuracyEnum.YEAR,
-        };
+
+    performerData.birthdate = parseFuzzyDate(data.birthdate);
 
     callback(performerData, data.note, updateAliases, data.id);
   };
