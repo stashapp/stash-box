@@ -25,9 +25,16 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
 
   if (!config || edit.status !== VoteStatusEnum.PENDING) return <></>;
 
+  // Destructive edits must be open for the minimum voting period
+  // before being applied.
+  const destructiveApplication =
+    edit.destructive &&
+    config.vote_application_threshold > 0 &&
+    edit.vote_count >= config.vote_application_threshold;
+
   const expirationTime = addSeconds(
     new Date(edit.created as string),
-    edit.destructive
+    destructiveApplication
       ? config.min_destructive_voting_period
       : config.voting_period
   );
@@ -37,7 +44,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
       : " a moment";
 
   const threshold = edit.destructive ? 1 : 0;
-  const pass = edit.vote_count >= threshold;
+  const pass = destructiveApplication || edit.vote_count >= threshold;
 
   return (
     <div>
