@@ -37,40 +37,55 @@ import {
 import ImageCarousel from "src/components/imageCarousel";
 
 const CLASSNAME = "PerformerInfo";
+const CLASSNAME_ACTIONS = "PerformerInfo-actions";
 
-const PerformerInfo: FC<{ performer: Performer }> = ({ performer }) => {
+interface Props {
+  performer: Performer;
+}
+
+const Actions: FC<Props> = ({ performer }) => {
   const auth = useContext(AuthContext);
 
+  if (!canEdit(auth?.user) || performer.deleted) return null;
+
   return (
-    <Row className={CLASSNAME}>
+    <Row className={CLASSNAME_ACTIONS}>
       <Col xs={6}>
-        {canEdit(auth?.user) && !performer.deleted && (
-          <div className="text-end">
-            <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
-              <Button>Edit</Button>
-            </Link>
-            <Link
-              to={createHref(ROUTE_PERFORMER_MERGE, performer)}
-              className="ms-2"
+        <div className="text-end">
+          <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
+            <Button>Edit</Button>
+          </Link>
+          <Link
+            to={createHref(ROUTE_PERFORMER_MERGE, performer)}
+            className="ms-2"
+          >
+            <Tooltip
+              text={
+                <>
+                  Merge other performers into <b>{performer.name}</b>
+                </>
+              }
             >
-              <Tooltip
-                text={
-                  <>
-                    Merge other performers into <b>{performer.name}</b>
-                  </>
-                }
-              >
-                <Button>Merge</Button>
-              </Tooltip>
-            </Link>
-            <Link
-              to={createHref(ROUTE_PERFORMER_DELETE, performer)}
-              className="ms-2"
-            >
-              <Button variant="danger">Delete</Button>
-            </Link>
-          </div>
-        )}
+              <Button>Merge</Button>
+            </Tooltip>
+          </Link>
+          <Link
+            to={createHref(ROUTE_PERFORMER_DELETE, performer)}
+            className="ms-2"
+          >
+            <Button variant="danger">Delete</Button>
+          </Link>
+        </div>
+      </Col>
+    </Row>
+  );
+};
+
+const PerformerInfo: FC<Props> = ({ performer }) => (
+  <div className={CLASSNAME}>
+    <Actions performer={performer} />
+    <Row>
+      <Col xs={6}>
         <Card>
           <Card.Header className="d-flex">
             <h3>
@@ -171,7 +186,7 @@ const PerformerInfo: FC<{ performer: Performer }> = ({ performer }) => {
         <ImageCarousel images={performer.images} orientation="portrait" />
       </Col>
     </Row>
-  );
-};
+  </div>
+);
 
 export default PerformerInfo;
