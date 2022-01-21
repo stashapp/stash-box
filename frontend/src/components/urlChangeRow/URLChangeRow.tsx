@@ -19,7 +19,14 @@ const URLChanges: FC<{ urls: URL[] }> = ({ urls }) => (
       {urls.map((url) => (
         <li key={url.url} className="d-flex align-items-start">
           <SiteLink site={url.site} />
-          <span className="d-inline-block w-50 flex-grow-1">{url.url}</span>
+          <a
+            href={url.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="d-inline-block w-50 flex-grow-1"
+          >
+            {url.url}
+          </a>
         </li>
       ))}
     </ul>

@@ -25,9 +25,15 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
 
   if (!config || edit.status !== VoteStatusEnum.PENDING) return <></>;
 
+  // Pending edits that have reached the voting threshold have shorter voting periods.
+  // This will happen for destructive edits, or when votes are not unanimous.
+  const shortVotingPeriod =
+    config.vote_application_threshold > 0 &&
+    edit.vote_count >= config.vote_application_threshold;
+
   const expirationTime = addSeconds(
     new Date(edit.created as string),
-    edit.destructive
+    shortVotingPeriod
       ? config.min_destructive_voting_period
       : config.voting_period
   );
@@ -37,7 +43,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
       : " a moment";
 
   const threshold = edit.destructive ? 1 : 0;
-  const pass = edit.vote_count >= threshold;
+  const pass = shortVotingPeriod || edit.vote_count >= threshold;
 
   return (
     <div>
