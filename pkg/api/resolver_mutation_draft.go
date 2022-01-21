@@ -34,7 +34,6 @@ func (r *mutationResolver) SubmitSceneDraft(ctx context.Context, input models.Sc
 		Date:         input.Date,
 		Studio:       translateDraftEntity(input.Studio),
 		Performers:   translateDraftEntitySlice(input.Performers),
-		Tags:         translateDraftEntitySlice(input.Tags),
 		Fingerprints: fingerprints,
 	}
 
@@ -51,6 +50,14 @@ func (r *mutationResolver) SubmitSceneDraft(ctx context.Context, input models.Sc
 				return err
 			}
 			data.Image = &img.ID
+		}
+
+		if len(input.Tags) > 0 {
+			tags, err := resolveTags(input.Tags, fac)
+			if err != nil {
+				return err
+			}
+			data.Tags = tags
 		}
 
 		if err := newDraft.SetData(data); err != nil {
@@ -156,4 +163,31 @@ func translateDraftEntitySlice(entities []*models.DraftEntityInput) []models.Dra
 	}
 
 	return ret
+}
+
+func resolveTags(tags []*models.DraftEntityInput, fac models.Repo) ([]models.DraftEntity, error) {
+	tqb := fac.Tag()
+
+	var results []models.DraftEntity
+	resultMap := make(map[string]bool)
+	for _, tag := range tags {
+		foundTag, err := tqb.FindByNameOrAlias(tag.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		res := models.DraftEntity{
+			Name: tag.Name,
+		}
+		if foundTag != nil {
+			res.Name = foundTag.Name
+			res.ID = &foundTag.ID
+		}
+		if _, exists := resultMap[res.Name]; !exists {
+			resultMap[res.Name] = true
+			results = append(results, res)
+		}
+	}
+
+	return results, nil
 }
