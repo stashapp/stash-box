@@ -11,6 +11,8 @@ import {
   diffURLs,
   filterData,
   parseBraSize,
+  parseFuzzyDate,
+  formatFuzzyDate,
 } from "src/utils";
 
 import { CastedPerformerFormData } from "./schema";
@@ -61,10 +63,10 @@ const selectPerformerDetails = (
     {
       name: diffValue(original.name, data.name),
       gender: diffValue(original.gender, genderEnum(data.gender)),
-      birthdate: diffValue(original.birthdate?.date, data.birthdate),
+      birthdate: diffValue(formatFuzzyDate(original.birthdate), data.birthdate),
       birthdate_accuracy: diffValue(
         original.birthdate?.accuracy,
-        data.birthdate
+        parseFuzzyDate(data.birthdate)?.accuracy
       ),
       career_start_year: diffValue(
         original.career_start_year,
@@ -88,9 +90,9 @@ const selectPerformerDetails = (
     {
       name: diffValue(data.name, original.name),
       gender: diffValue(genderEnum(data.gender), original.gender),
-      birthdate: diffValue(data.birthdate, original.birthdate?.date),
+      birthdate: diffValue(data.birthdate, formatFuzzyDate(original.birthdate)),
       birthdate_accuracy: diffValue(
-        data.birthdate,
+        parseFuzzyDate(data.birthdate)?.accuracy,
         original.birthdate?.accuracy
       ),
       career_start_year: diffValue(
