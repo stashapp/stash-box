@@ -83,7 +83,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const fingerprints = scene.fingerprints.map((fingerprint) => (
     <tr key={fingerprint.hash}>
       <td>{fingerprint.algorithm}</td>
-      <td>
+      <td className="font-monospace">
         <Link
           to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
         >
