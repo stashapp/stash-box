@@ -1,6 +1,7 @@
 import { FC, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card } from "react-bootstrap";
+import { sortBy } from "lodash-es";
 
 import { useSites } from "src/graphql";
 import { LoadingIndicator, SiteLink } from "src/components/fragments";
@@ -11,6 +12,10 @@ import AuthContext from "src/AuthContext";
 const SiteList: FC = () => {
   const auth = useContext(AuthContext);
   const { loading, data } = useSites();
+
+  const sites = sortBy(data?.querySites.sites ?? [], (s) =>
+    s.name.toLowerCase()
+  );
 
   return (
     <>
@@ -26,7 +31,7 @@ const SiteList: FC = () => {
         <Card.Body className="p-4">
           {loading && <LoadingIndicator message="Loading sites..." />}
           <ul className="ps-0">
-            {(data?.querySites.sites ?? []).map((site) => (
+            {sites.map((site) => (
               <li key={site.id} className="d-block">
                 <SiteLink site={site} noMargin />
                 {site.description && (
