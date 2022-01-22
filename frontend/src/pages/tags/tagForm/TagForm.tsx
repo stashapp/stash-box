@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
-import { groupBy, sortBy } from "lodash-es";
+import { groupBy, sortBy, uniq } from "lodash-es";
 
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 import { useCategories, TagEditDetailsInput } from "src/graphql";
@@ -19,10 +19,11 @@ import { TagSchema, TagFormData } from "./schema";
 interface TagProps {
   tag: Tag;
   callback: (data: TagEditDetailsInput, editNote: string) => void;
+  initial?: Partial<Tag>;
   saving: boolean;
 }
 
-const TagForm: FC<TagProps> = ({ tag, callback, saving }) => {
+const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
   const history = useHistory();
   const {
     register,
@@ -32,10 +33,10 @@ const TagForm: FC<TagProps> = ({ tag, callback, saving }) => {
   } = useForm<TagFormData>({
     resolver: yupResolver(TagSchema),
     defaultValues: {
-      name: tag.name,
-      description: tag.description ?? "",
-      aliases: tag.aliases,
-      categoryId: tag.category?.id || null,
+      name: initial?.name ?? tag.name,
+      description: initial?.description ?? tag.description ?? "",
+      aliases: uniq([...tag.aliases, ...(initial?.aliases ?? [])]),
+      categoryId: initial?.category?.id ?? tag.category?.id ?? null,
     },
   });
 
