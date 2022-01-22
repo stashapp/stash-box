@@ -26,13 +26,12 @@ export const StudioSchema = yup.object({
       })
     )
     .required(),
-  studio: yup
+  parent: yup
     .object({
       id: yup.string().required(),
       name: yup.string().required(),
     })
-    .optional()
-    .default(undefined),
+    .nullable(),
   note: yup.string().required("Edit note is required"),
 });
 

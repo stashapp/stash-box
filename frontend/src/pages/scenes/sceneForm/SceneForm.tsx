@@ -1,5 +1,5 @@
 import { FC, useState, useMemo } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
@@ -37,7 +37,6 @@ interface SceneProps {
 }
 
 const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
-  const initialStudio = initial?.studio ?? scene.studio ?? undefined;
   const initialTags = initial?.tags ?? scene.tags;
 
   const {
@@ -61,7 +60,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
         (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
       ),
       images: initial?.images ?? scene.images,
-      studio: initialStudio,
+      studio: initial?.studio ?? scene.studio ?? undefined,
       tags: initialTags,
       performers: (initial?.performers ?? scene.performers).map((p) => ({
         performerId: p.performer.id,
@@ -316,10 +315,16 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               className="studio-select col-6 mb-3"
             >
               <Form.Label>Studio</Form.Label>
-              <StudioSelect
-                initialStudio={initialStudio}
+              <Controller
+                name="studio"
                 control={control}
-                isClearable
+                render={({ field: { onChange, value } }) => (
+                  <StudioSelect
+                    initialStudio={value}
+                    onChange={onChange}
+                    isClearable
+                  />
+                )}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.studio?.id?.message}

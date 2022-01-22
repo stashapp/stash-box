@@ -17,7 +17,7 @@ const selectStudioDetails = (
     {
       name: diffValue(original.name, data.name),
       parent:
-        original.parent?.id !== data.studio?.id &&
+        original.parent?.id !== data.parent?.id &&
         original.parent?.id &&
         original.parent.name
           ? {
@@ -29,12 +29,12 @@ const selectStudioDetails = (
     {
       name: diffValue(data.name, original.name),
       parent:
-        data.studio?.id !== original.parent?.id &&
-        data.studio?.id &&
-        data.studio?.name
+        data.parent?.id !== original.parent?.id &&
+        data.parent?.id &&
+        data.parent?.name
           ? {
-              id: data.studio.id,
-              name: data.studio.name,
+              id: data.parent.id,
+              name: data.parent.name,
             }
           : null,
       added_urls: addedUrls,

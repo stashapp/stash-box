@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Link } from "react-router-dom";
@@ -43,7 +43,7 @@ const StudioForm: FC<StudioProps> = ({
       name: studio.name,
       images: studio.images,
       urls: studio.urls ?? [],
-      studio: studio.parent
+      parent: studio.parent
         ? {
             id: studio.parent.id,
             name: studio.parent.name,
@@ -69,7 +69,7 @@ const StudioForm: FC<StudioProps> = ({
         site_id: u.site.id,
       })),
       image_ids: data.images.map((i) => i.id),
-      parent_id: data.studio?.id,
+      parent_id: data.parent?.id,
     };
     callback(callbackData, data.note);
   };
@@ -106,12 +106,18 @@ const StudioForm: FC<StudioProps> = ({
           {showNetworkSelect && (
             <Form.Group controlId="network" className="mb-3">
               <Form.Label>Network</Form.Label>
-              <StudioSelect
-                excludeStudio={studio.id}
+              <Controller
+                name="parent"
                 control={control}
-                initialStudio={studio.parent}
-                isClearable
-                networkSelect
+                render={({ field: { onChange, value } }) => (
+                  <StudioSelect
+                    excludeStudio={studio.id}
+                    initialStudio={value}
+                    onChange={onChange}
+                    isClearable
+                    networkSelect
+                  />
+                )}
               />
             </Form.Group>
           )}
