@@ -241,7 +241,7 @@ const PerformerForm: FC<PerformerProps> = ({
       ethnicity:
         EthnicityEnum[data.ethnicity as keyof typeof EthnicityEnum] || null,
       country: data.country,
-      aliases: data.aliases.map((p: string) => p.trim()),
+      aliases: data.aliases,
       piercings: data.piercings ?? [],
       tattoos: data.tattoos ?? [],
       breast_type:

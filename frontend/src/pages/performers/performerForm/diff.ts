@@ -12,7 +12,6 @@ import {
   diffValue,
   diffImages,
   diffURLs,
-  filterData,
   parseBraSize,
   parseFuzzyDate,
   formatFuzzyDate,
@@ -59,7 +58,7 @@ const selectPerformerDetails = (
     original.piercings
   );
   const [addedAliases, removedAliases] = diffArray(
-    filterData(data.aliases),
+    data.aliases,
     original.aliases,
     (a) => a
   );

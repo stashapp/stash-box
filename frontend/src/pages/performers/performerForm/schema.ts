@@ -97,10 +97,7 @@ export const PerformerSchema = yup.object({
       description: yup.string().trim().transform(nullCheck).nullable(),
     })
   ),
-  aliases: yup
-    .array()
-    .of(yup.string().trim().transform(nullCheck).required())
-    .required(),
+  aliases: yup.array().of(yup.string().ensure().trim()).ensure().default([]),
   images: yup
     .array()
     .of(

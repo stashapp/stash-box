@@ -3,7 +3,7 @@ import * as yup from "yup";
 export const TagSchema = yup.object({
   name: yup.string().trim().required("Name is required"),
   description: yup.string().trim(),
-  aliases: yup.array().of(yup.string().trim().required()).ensure(),
+  aliases: yup.array().of(yup.string().trim().ensure()).ensure().default([]),
   category: yup
     .object({
       id: yup.string().required(),
