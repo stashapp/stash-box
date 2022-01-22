@@ -31,7 +31,7 @@ const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
   scene: Scene;
-  initial?: Scene;
+  initial?: Partial<Scene>;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
 }
