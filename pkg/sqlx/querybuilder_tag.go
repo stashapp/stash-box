@@ -124,7 +124,7 @@ func (qb *tagQueryBuilder) Find(id uuid.UUID) (*models.Tag, error) {
 func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*models.Tag, error) {
 	query := `SELECT tags.* FROM tags
 		left join tag_aliases on tags.id = tag_aliases.tag_id
-		WHERE tag_aliases.alias = ? OR tags.name = ?`
+		WHERE LOWER(tag_aliases.alias) = LOWER(?) OR LOWER(tags.name) = LOWER(?)`
 
 	args := []interface{}{name, name}
 	results, err := qb.queryTags(query, args)
