@@ -21,6 +21,7 @@ interface StudioSelectProps {
   initialStudio?: StudioSlim | null;
   excludeStudio?: string;
   onChange: (studio: StudioSlim | null) => void;
+  onBlur?: React.FocusEventHandler;
   networkSelect?: boolean;
   isClearable?: boolean;
 }
@@ -32,6 +33,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
   initialStudio,
   excludeStudio,
   onChange,
+  onBlur,
   networkSelect = false,
   isClearable = false,
 }) => {
@@ -94,6 +96,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
         classNamePrefix="react-select"
         className={`react-select ${CLASSNAME_SELECT}`}
         onChange={(s) => onChange(s ? { id: s.value, name: s.label } : null)}
+        onBlur={onBlur}
         defaultValue={defaultValue}
         loadOptions={debouncedLoad}
         placeholder="Search for studio"

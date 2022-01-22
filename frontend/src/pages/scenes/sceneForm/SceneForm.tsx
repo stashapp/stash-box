@@ -1,5 +1,10 @@
 import { FC, useState, useMemo } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  FieldError,
+} from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
@@ -227,7 +232,10 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     { error: errors.title?.message, tab: "details" },
     { error: errors.date?.message, tab: "details" },
     { error: errors.duration?.message, tab: "details" },
-    { error: errors.studio?.id?.message, tab: "details" },
+    {
+      error: (errors.studio as FieldError | undefined)?.message,
+      tab: "details",
+    },
     {
       error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
       tab: "links",
@@ -307,16 +315,17 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               <Controller
                 name="studio"
                 control={control}
-                render={({ field: { onChange, value } }) => (
+                render={({ field: { onChange, onBlur, value } }) => (
                   <StudioSelect
                     initialStudio={value}
                     onChange={onChange}
+                    onBlur={onBlur}
                     isClearable
                   />
                 )}
               />
               <Form.Control.Feedback type="invalid">
-                {errors.studio?.id?.message}
+                {(errors.studio as FieldError | undefined)?.message}
               </Form.Control.Feedback>
             </Form.Group>
 
