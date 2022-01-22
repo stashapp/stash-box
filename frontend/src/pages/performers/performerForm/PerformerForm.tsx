@@ -26,7 +26,6 @@ import {
   parseFuzzyDate,
 } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
-import { ImageFragment } from "src/graphql/definitions/ImageFragment";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
 import { Help, Icon } from "src/components/fragments";
@@ -121,9 +120,7 @@ interface PerformerProps {
     updateAliases: boolean,
     id?: string
   ) => void;
-  initialAliases?: string[];
-  initialImages?: ImageFragment[];
-  initial?: Performer;
+  initial?: Partial<Performer>;
   changeType: "modify" | "create" | "merge";
   saving: boolean;
 }
@@ -131,13 +128,12 @@ interface PerformerProps {
 const PerformerForm: FC<PerformerProps> = ({
   performer,
   callback,
-  initialAliases = [],
-  initialImages = [],
   initial,
   saving,
 }) => {
+  const aliases = uniq([...performer.aliases, ...(initial?.aliases ?? [])]);
   const images = uniqBy(
-    [...performer.images, ...initialImages, ...(initial?.images ?? [])],
+    [...performer.images, ...(initial?.images ?? [])],
     (i) => i.id
   );
   const tattoos = (performer?.tattoos ?? []).map(
@@ -157,6 +153,7 @@ const PerformerForm: FC<PerformerProps> = ({
     resolver: yupResolver(PerformerSchema),
     mode: "onBlur",
     defaultValues: {
+      aliases,
       tattoos,
       piercings,
       images,
@@ -164,11 +161,6 @@ const PerformerForm: FC<PerformerProps> = ({
     },
   });
 
-  const aliases = uniq([
-    ...performer.aliases,
-    ...initialAliases,
-    ...(initial?.aliases ?? []),
-  ]);
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState(false);
   const [file, setFile] = useState<File | undefined>();
@@ -341,10 +333,9 @@ const PerformerForm: FC<PerformerProps> = ({
               <Controller
                 control={control}
                 name="aliases"
-                defaultValue={aliases}
-                render={({ field: { onChange } }) => (
+                render={({ field: { onChange, value } }) => (
                   <MultiSelect
-                    values={aliases}
+                    values={value}
                     onChange={onChange}
                     placeholder="Enter name..."
                   />
