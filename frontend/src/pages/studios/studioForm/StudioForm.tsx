@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { uniqBy } from "lodash-es";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
@@ -22,6 +23,7 @@ interface StudioProps {
   studio: Studio;
   callback: (data: StudioEditDetailsInput, editNote: string) => void;
   showNetworkSelect?: boolean;
+  initial?: Partial<Studio>;
   saving: boolean;
 }
 
@@ -29,6 +31,7 @@ const StudioForm: FC<StudioProps> = ({
   studio,
   callback,
   showNetworkSelect = true,
+  initial,
   saving,
 }) => {
   const {
@@ -40,15 +43,16 @@ const StudioForm: FC<StudioProps> = ({
   } = useForm<StudioFormData>({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
-      name: studio.name,
-      images: studio.images,
-      urls: studio.urls ?? [],
-      parent: studio.parent
-        ? {
-            id: studio.parent.id,
-            name: studio.parent.name,
-          }
-        : undefined,
+      name: initial?.name ?? studio.name,
+      images: uniqBy(
+        [...studio.images, ...(initial?.images ?? [])],
+        (i) => i.id
+      ),
+      urls: uniqBy(
+        [...(studio.urls ?? []), ...(initial?.urls ?? [])],
+        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
+      ),
+      parent: initial?.parent ?? studio.parent,
     },
   });
 
@@ -95,7 +99,6 @@ const StudioForm: FC<StudioProps> = ({
             <Form.Control
               className={cx({ "is-invalid": errors.name })}
               placeholder="Name"
-              defaultValue={studio.name}
               {...register("name")}
             />
             <Form.Control.Feedback type="invalid">
