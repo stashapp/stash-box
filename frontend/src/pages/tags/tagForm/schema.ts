@@ -4,7 +4,13 @@ export const TagSchema = yup.object({
   name: yup.string().trim().required("Name is required"),
   description: yup.string().trim(),
   aliases: yup.array().of(yup.string().trim().required()).ensure(),
-  categoryId: yup.string().nullable().defined(),
+  category: yup
+    .object({
+      id: yup.string().required(),
+      name: yup.string().required(),
+    })
+    .nullable()
+    .defined(),
   note: yup.string().required("Edit note is required"),
 });
 

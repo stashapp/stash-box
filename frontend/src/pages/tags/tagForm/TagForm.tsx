@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { useHistory } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, FieldError } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
@@ -36,7 +36,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
       name: initial?.name ?? tag.name,
       description: initial?.description ?? tag.description ?? "",
       aliases: uniq([...tag.aliases, ...(initial?.aliases ?? [])]),
-      categoryId: initial?.category?.id ?? tag.category?.id ?? null,
+      category: initial?.category ?? tag.category,
     },
   });
 
@@ -50,7 +50,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
       name: data.name,
       description: data.description ?? null,
       aliases: data.aliases ?? [],
-      category_id: data.categoryId,
+      category_id: data.category?.id,
     };
     callback(callbackData, data.note);
   };
@@ -104,21 +104,27 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
       <Form.Group className="mb-3">
         <Form.Label>Category</Form.Label>
         <Controller
-          name="categoryId"
+          name="category"
           control={control}
           render={({ field: { onChange, value } }) => (
             <Select
               classNamePrefix="react-select"
-              className={cx({ "is-invalid": errors.categoryId })}
-              onChange={(opt) => onChange(opt?.value || null)}
+              className={cx({ "is-invalid": errors.category })}
+              onChange={(opt) =>
+                onChange(opt ? { id: opt.value, name: opt.label } : null)
+              }
               options={categoryObj}
               isClearable
               placeholder="Category"
-              defaultValue={categories.find((s) => s.value === value)}
+              defaultValue={
+                value ? categories.find((s) => s.value === value.id) : null
+              }
             />
           )}
         />
-        <div className="invalid-feedback">{errors?.categoryId?.message}</div>
+        <div className="invalid-feedback">
+          {(errors?.category as FieldError | undefined)?.message}
+        </div>
       </Form.Group>
 
       <EditNote register={register} error={errors.note} />
