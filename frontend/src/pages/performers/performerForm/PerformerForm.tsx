@@ -137,12 +137,14 @@ const PerformerForm: FC<PerformerProps> = ({
     [...performer.images, ...(initial?.images ?? [])],
     (i) => i.id
   );
-  const tattoos = (performer?.tattoos ?? []).map(
-    ({ __typename, ...mod }) => mod
-  );
-  const piercings = (performer?.piercings ?? []).map(
-    ({ __typename, ...mod }) => mod
-  );
+  const tattoos = uniqBy(
+    [...(performer.tattoos ?? []), ...(initial?.tattoos ?? [])],
+    (mod) => `${mod.location}${mod.description}`
+  ).map(({ __typename, ...mod }) => mod);
+  const piercings = uniqBy(
+    [...(performer.piercings ?? []), ...(initial?.piercings ?? [])],
+    (mod) => `${mod.location}${mod.description}`
+  ).map(({ __typename, ...mod }) => mod);
   const {
     register,
     control,
@@ -183,7 +185,10 @@ const PerformerForm: FC<PerformerProps> = ({
       tattoos,
       piercings,
       images,
-      urls: performer.urls ?? [],
+      urls: uniqBy(
+        [...(performer.urls ?? []), ...(initial?.urls ?? [])],
+        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
+      ),
     },
   });
 

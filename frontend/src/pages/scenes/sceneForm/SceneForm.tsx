@@ -5,6 +5,7 @@ import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { uniqBy } from "lodash-es";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
@@ -55,7 +56,10 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
-      urls: initial?.urls ?? scene.urls ?? [],
+      urls: uniqBy(
+        [...(scene.urls ?? []), ...(initial?.urls ?? [])],
+        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
+      ),
       images: initial?.images ?? scene.images,
       studio: initialStudio,
       tags: initialTags,
