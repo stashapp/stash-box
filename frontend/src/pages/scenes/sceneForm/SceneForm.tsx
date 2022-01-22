@@ -8,7 +8,6 @@ import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { uniqBy } from "lodash-es";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 import { formatDuration, parseDuration } from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
@@ -37,8 +36,6 @@ interface SceneProps {
 }
 
 const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
-  const initialTags = initial?.tags ?? scene.tags;
-
   const {
     register,
     control,
@@ -61,7 +58,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       ),
       images: initial?.images ?? scene.images,
       studio: initial?.studio ?? scene.studio ?? undefined,
-      tags: initialTags,
+      tags: initial?.tags ?? scene.tags,
       performers: (initial?.performers ?? scene.performers).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
@@ -82,11 +79,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     name: "performers",
     keyName: "key",
   });
-  const { replace: replaceTags } = useFieldArray({
-    control,
-    name: "tags",
-    keyName: "key",
-  });
 
   const fieldData = watch();
   const [oldSceneChanges, newSceneChanges] = useMemo(
@@ -97,9 +89,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
   const [isChanging, setChange] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState("details");
   const [file, setFile] = useState<File | undefined>();
-
-  const onTagChange = (selectedTags: Tag[]) =>
-    replaceTags(selectedTags.map((t) => ({ id: t.id, name: t.name })));
 
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneEditDetailsInput = {
@@ -370,10 +359,16 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
 
           <Form.Group className="mb-3">
             <Form.Label>Tags</Form.Label>
-            <TagSelect
-              tags={initialTags}
-              onChange={onTagChange}
-              menuPlacement="top"
+            <Controller
+              name="tags"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <TagSelect
+                  tags={value}
+                  onChange={onChange}
+                  menuPlacement="top"
+                />
+              )}
             />
           </Form.Group>
 
