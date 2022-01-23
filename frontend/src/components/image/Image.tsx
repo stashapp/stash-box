@@ -32,7 +32,7 @@ const Image: FC<Props> = ({ images, orientation = "landscape" }) => {
         onError={() => setImageState("error")}
       />
       {imageState === "loading" && (
-        <LoadingIndicator message="Loading image..." delay={400} />
+        <LoadingIndicator message="Loading image..." delay={200} />
       )}
       {imageState === "error" && (
         <div>
