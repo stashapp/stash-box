@@ -1,3 +1,4 @@
+import { ImageFragment } from "src/graphql/definitions/ImageFragment";
 import { URLFragment } from "src/graphql/definitions/URLFragment";
 import { Performer_findPerformer_measurements as Measurements } from "src/graphql/definitions/Performer";
 
@@ -22,15 +23,8 @@ export const getBraSize = (measurements: Measurements): string | undefined =>
     `${measurements.band_size}${measurements.cup_size}`) ??
   undefined;
 
-export interface Image {
-  url: string;
-  id: string;
-  width: number;
-  height: number;
-}
-
 export const sortImageURLs = (
-  urls: Image[],
+  urls: ImageFragment[],
   orientation: "portrait" | "landscape"
 ) =>
   urls
@@ -52,7 +46,7 @@ export const sortImageURLs = (
     });
 
 export const getImage = (
-  urls: Image[],
+  urls: ImageFragment[],
   orientation: "portrait" | "landscape"
 ) => {
   const images = sortImageURLs(urls, orientation);

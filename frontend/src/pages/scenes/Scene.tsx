@@ -11,7 +11,6 @@ import { usePendingEditsCount, TargetTypeEnum } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   canEdit,
-  getImage,
   tagHref,
   performerHref,
   studioHref,
@@ -33,6 +32,7 @@ import {
   Icon,
 } from "src/components/fragments";
 import { EditList, URLList } from "src/components/list";
+import Image from "src/components/image";
 
 const DEFAULT_TAB = "description";
 
@@ -153,12 +153,8 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             {scene.date}
           </h6>
         </Card.Header>
-        <Card.Body className="scene-photo">
-          <img
-            alt=""
-            src={getImage(scene.images, "landscape")}
-            className="scene-photo-element"
-          />
+        <Card.Body className="ScenePhoto">
+          <Image images={scene.images} />
         </Card.Body>
         <Card.Footer className="d-flex mx-1">
           <div className="scene-performers me-auto">{performers}</div>

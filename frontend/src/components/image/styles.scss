@@ -1,0 +1,22 @@
+.Image {
+  width: 100%;
+  height: 100%;
+  flex-grow: 1;
+  font-size: 2rem;
+  line-height: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &-image {
+    width: 100%;
+    z-index: 1;
+  }
+
+  .LoadingIndicator {
+    position: absolute;
+    height: unset;
+  }
+}
