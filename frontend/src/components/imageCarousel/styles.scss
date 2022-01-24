@@ -10,12 +10,6 @@
     justify-content: center;
     position: relative;
     width: 100%;
-
-    .delete-image-overlay {
-      left: 5px;
-      position: absolute;
-      top: 5px;
-    }
   }
 
   &-img {
@@ -24,10 +18,6 @@
     height: 100%;
     justify-content: center;
     width: 0;
-
-    .LoadingIndicator {
-      height: 100%;
-    }
 
     img {
       border-radius: 3px;

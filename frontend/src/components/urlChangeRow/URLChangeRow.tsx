@@ -23,7 +23,7 @@ const URLChanges: FC<{ urls: URL[] }> = ({ urls }) => (
             href={url.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="d-inline-block w-50 flex-grow-1"
+            className="d-inline-block w-50 flex-grow-1 text-break"
           >
             {url.url}
           </a>
