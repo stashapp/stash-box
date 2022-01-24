@@ -1,4 +1,7 @@
-import { PerformerDetails } from "src/components/editCard/ModifyEdit";
+import {
+  OldPerformerDetails,
+  PerformerDetails,
+} from "src/components/editCard/ModifyEdit";
 
 import { PerformerFragment } from "src/graphql";
 import {
@@ -41,7 +44,10 @@ const diffBodyMods = (
 const selectPerformerDetails = (
   data: CastedPerformerFormData,
   original: PerformerFragment
-): [PerformerDetails, PerformerDetails] => {
+): [
+  Required<OldPerformerDetails>,
+  Required<Omit<PerformerDetails, "draft_id">>
+] => {
   const [addedImages, removedImages] = diffImages(data.images, original.images);
   const [addedUrls, removedUrls] = diffURLs(data.urls, original.urls);
   const [addedTattoos, removedTattoos] = diffBodyMods(
