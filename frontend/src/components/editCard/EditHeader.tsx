@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
-import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes, faVideo } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits as Edit,
@@ -14,6 +14,7 @@ import {
   isPerformer,
   isScene,
   performerHref,
+  studioHref,
 } from "src/utils";
 import { Icon } from "src/components/fragments";
 
@@ -35,6 +36,18 @@ const renderTargetLink = (obj: Target | null) => {
   }
 };
 
+const renderTargetAddendum = (obj: Target | null) => {
+  if (isScene(obj) && obj.studio)
+    return (
+      <>
+        <span className="mx-2">•</span>
+        <Icon icon={faVideo} className="me-1" />
+        <Link to={studioHref(obj.studio)}>{obj.studio.name}</Link>
+      </>
+    );
+  return null;
+};
+
 interface EditHeaderProps {
   edit: Edit;
 }
@@ -48,7 +61,10 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
             <Col xs={2} className="fw-bold text-end">
               Modifying {edit.target_type.toLowerCase()}
             </Col>
-            <Col>{renderTargetLink(edit.target)}</Col>
+            <Col>
+              {renderTargetLink(edit.target)}
+              {renderTargetAddendum(edit.target)}
+            </Col>
           </>
         );
 
@@ -58,7 +74,10 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
             <Col xs={2} className="fw-bold text-end">
               Created {edit.target_type.toLowerCase()}
             </Col>
-            <Col className="ps-3">{renderTargetLink(edit.target)}</Col>
+            <Col className="ps-3">
+              {renderTargetLink(edit.target)}
+              {renderTargetAddendum(edit.target)}
+            </Col>
           </>
         ) : null;
 
@@ -71,7 +90,10 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
               </Col>
               <Col xs={10}>
                 {edit.merge_sources?.map((target) => (
-                  <div key={target.id}>{renderTargetLink(target)}</div>
+                  <div key={target.id}>
+                    {renderTargetLink(target)}
+                    {renderTargetAddendum(edit.target)}
+                  </div>
                 ))}
               </Col>
             </Row>
@@ -79,7 +101,10 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
               <Col xs={2} className="fw-bold text-end">
                 Into
               </Col>
-              <Col xs={10}>{renderTargetLink(edit.target)}</Col>
+              <Col xs={10}>
+                {renderTargetLink(edit.target)}
+                {renderTargetAddendum(edit.target)}
+              </Col>
             </Row>
             {isPerformer(edit.target) && (
               <Row>
@@ -107,6 +132,7 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
               <span className="EditDiff bg-danger">
                 {renderTargetLink(edit.target)}
               </span>
+              {renderTargetAddendum(edit.target)}
             </Col>
           </>
         );
