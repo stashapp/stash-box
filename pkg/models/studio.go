@@ -9,6 +9,7 @@ type StudioRepo interface {
 	CreateURLs(newJoins StudioURLs) error
 	UpdateURLs(studioID uuid.UUID, updatedJoins StudioURLs) error
 	Find(id uuid.UUID) (*Studio, error)
+	FindWithRedirect(id uuid.UUID) (*Studio, error)
 	FindByName(name string) (*Studio, error)
 	FindByParentID(id uuid.UUID) (Studios, error)
 	Count() (int, error)

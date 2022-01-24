@@ -339,7 +339,7 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 	}
 
 	if q := sceneFilter.Fingerprints; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
+		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id", true)
 		whereClause, havingClause, err := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
 		if err != nil {
 			return nil, err

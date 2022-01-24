@@ -27,7 +27,7 @@ func (r *sceneDraftResolver) Performers(ctx context.Context, obj *models.SceneDr
 	for _, p := range obj.Performers {
 		var sp models.SceneDraftPerformer
 		if p.ID != nil {
-			performer, err := qb.Find(*p.ID)
+			performer, err := qb.FindWithRedirect(*p.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -76,7 +76,7 @@ func (r *sceneDraftResolver) Studio(ctx context.Context, obj *models.SceneDraft)
 	if obj.Studio != nil {
 		var ret models.SceneDraftStudio
 		if obj.Studio.ID != nil {
-			studio, err := qb.Find(*obj.Studio.ID)
+			studio, err := qb.FindWithRedirect(*obj.Studio.ID)
 			if err != nil {
 				return nil, err
 			}

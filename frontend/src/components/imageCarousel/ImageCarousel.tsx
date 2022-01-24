@@ -1,31 +1,22 @@
 import { FC, useState } from "react";
 import { Button } from "react-bootstrap";
-import cx from "classnames";
 import {
   faChevronLeft,
   faChevronRight,
-  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Icon, LoadingIndicator } from "src/components/fragments";
-import { Image, sortImageURLs } from "src/utils";
+import { ImageFragment } from "src/graphql";
+import Image from "src/components/image";
+import { Icon } from "src/components/fragments";
+import { sortImageURLs } from "src/utils";
 
 interface ImageCarouselProps {
-  images: Image[];
+  images: ImageFragment[];
   orientation?: "portrait" | "landscape";
-  onDeleteImage?: (toDelete: Image) => void;
 }
 
-const ImageCarousel: FC<ImageCarouselProps> = ({
-  images,
-  orientation,
-  onDeleteImage,
-}) => {
+const ImageCarousel: FC<ImageCarouselProps> = ({ images, orientation }) => {
   const [imageIndex, setImageIndex] = useState(0);
-  const [imageState, setImageState] = useState<
-    "loading" | "error" | "loaded" | "empty"
-  >("empty");
-  const [loadDict, setLoadDict] = useState<Record<number, boolean>>({});
   const sortedImages = orientation
     ? sortImageURLs(images, orientation)
     : images;
@@ -34,29 +25,11 @@ const ImageCarousel: FC<ImageCarouselProps> = ({
 
   const changeImage = (index: number) => {
     setImageIndex(index);
-    if (!loadDict[index]) setImageState("loading");
   };
   const setNext = () =>
     changeImage(imageIndex === sortedImages.length - 1 ? 0 : imageIndex + 1);
   const setPrev = () =>
     changeImage(imageIndex === 0 ? sortedImages.length - 1 : imageIndex - 1);
-
-  const handleLoad = (index: number) => {
-    setLoadDict({
-      ...loadDict,
-      [index]: true,
-    });
-    setImageState("loaded");
-  };
-  const handleError = () => setImageState("error");
-
-  const handleDelete = () => {
-    const deletedImage = sortedImages[imageIndex];
-    if (onDeleteImage && deletedImage) {
-      onDeleteImage(deletedImage);
-      setImageIndex(imageIndex === 0 ? 0 : imageIndex - 1);
-    }
-  };
 
   return (
     <div className="image-carousel">
@@ -70,28 +43,10 @@ const ImageCarousel: FC<ImageCarouselProps> = ({
           <Icon icon={faChevronLeft} />
         </Button>
         <div className="image-carousel-img">
-          <img
-            src={sortedImages[imageIndex].url}
-            alt=""
-            className={cx({ "d-none": imageState !== "loaded" })}
-            onLoad={() => handleLoad(imageIndex)}
-            onError={handleError}
+          <Image
+            images={sortedImages[imageIndex]}
+            key={sortedImages[imageIndex].url}
           />
-          {imageState === "loading" && (
-            <LoadingIndicator message="Loading image..." />
-          )}
-          {imageState === "error" && (
-            <div className="h-100 d-flex justify-content-center align-items-center">
-              <b>Error loading image.</b>
-            </div>
-          )}
-          {onDeleteImage ? (
-            <div className="delete-image-overlay">
-              <Button variant="danger" size="sm" onClick={handleDelete}>
-                <Icon icon={faTimes} />
-              </Button>
-            </div>
-          ) : undefined}
         </div>
         <Button
           className="next-button minimal"

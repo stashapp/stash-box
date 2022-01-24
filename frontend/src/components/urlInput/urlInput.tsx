@@ -65,22 +65,33 @@ const URLInput: FC<URLInputProps> = ({ control, type }) => {
     setNewURL("");
   };
 
-  const handleBlur = () => {
+  const handleInput = (url: string) => {
     if (!inputRef.current || !selectRef.current) return;
 
-    const url = inputRef.current.value;
     const site =
       selectedSite ??
       sites.find((s) => s.regex && new RegExp(s.regex).test(url));
 
-    if (site?.regex && url) {
-      const updatedURL = cleanURL(site.regex, url);
-      if (updatedURL) inputRef.current.value = updatedURL;
-    }
-
     if (site && selectedSite?.id !== site.id) {
       setSelectedSite(site);
       selectRef.current.value = site.id;
+    }
+
+    if (site?.regex && url) {
+      const updatedURL = cleanURL(site.regex, url);
+      if (updatedURL) {
+        inputRef.current.value = updatedURL;
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const match = handleInput(e.clipboardData.getData("text/plain"));
+    if (match) {
+      e.preventDefault();
+      setNewURL(e.currentTarget.value);
     }
   };
 
@@ -137,11 +148,10 @@ const URLInput: FC<URLInputProps> = ({ control, type }) => {
         </Form.Control>
         <Form.Control
           ref={inputRef}
-          onBlur={handleBlur}
+          onBlur={(e) => handleInput(e.currentTarget.value)}
           placeholder="URL"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setNewURL(e.currentTarget.value)
-          }
+          onChange={(e) => setNewURL(e.currentTarget.value)}
+          onPaste={handlePaste}
           className="w-50"
         />
         <Button onClick={handleAdd} disabled={!newURL || !selectedSite}>
