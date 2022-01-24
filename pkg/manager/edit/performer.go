@@ -263,6 +263,8 @@ func (m *PerformerEditProcessor) apply() error {
 		if performer == nil {
 			return fmt.Errorf("%w: performer %s", ErrEntityNotFound, performerID.String())
 		}
+
+		performer.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 	}
 	newPerformer, err := m.applyEdit(performer)
 	if err != nil {
