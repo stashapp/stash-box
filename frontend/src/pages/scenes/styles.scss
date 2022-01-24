@@ -16,13 +16,11 @@
   color: #c8a2c8;
 }
 
-.scene-photo {
-  min-height: 200px;
+.ScenePhoto {
   padding: 0;
-
-  &-element {
-    width: 100%;
-  }
+  min-height: 450px;
+  display: flex;
+  flex-direction: column;
 }
 
 .scene-performer {
