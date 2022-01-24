@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -111,4 +112,12 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]*models.
 func (r *sceneResolver) Edits(ctx context.Context, obj *models.Scene) ([]*models.Edit, error) {
 	eqb := r.getRepoFactory(ctx).Edit()
 	return eqb.FindBySceneID(obj.ID)
+}
+
+func (r *sceneResolver) Created(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *sceneResolver) Updated(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

@@ -7,6 +7,8 @@ type Studio {
   images: [Image!]!
   deleted: Boolean!
   is_favorite: Boolean!
+  created: Time!
+  updated: Time!
 }
 
 input StudioCreateInput {
