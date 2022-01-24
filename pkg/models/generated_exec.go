@@ -215,6 +215,7 @@ type ComplexityRoot struct {
 		CareerEndYear   func(childComplexity int) int
 		CareerStartYear func(childComplexity int) int
 		Country         func(childComplexity int) int
+		Created         func(childComplexity int) int
 		Deleted         func(childComplexity int) int
 		Disambiguation  func(childComplexity int) int
 		Edits           func(childComplexity int) int
@@ -233,6 +234,7 @@ type ComplexityRoot struct {
 		SceneCount      func(childComplexity int) int
 		Studios         func(childComplexity int) int
 		Tattoos         func(childComplexity int) int
+		Updated         func(childComplexity int) int
 		Urls            func(childComplexity int) int
 	}
 
@@ -372,6 +374,7 @@ type ComplexityRoot struct {
 	}
 
 	Scene struct {
+		Created      func(childComplexity int) int
 		Date         func(childComplexity int) int
 		Deleted      func(childComplexity int) int
 		Details      func(childComplexity int) int
@@ -385,6 +388,7 @@ type ComplexityRoot struct {
 		Studio       func(childComplexity int) int
 		Tags         func(childComplexity int) int
 		Title        func(childComplexity int) int
+		Updated      func(childComplexity int) int
 		Urls         func(childComplexity int) int
 	}
 
@@ -445,12 +449,14 @@ type ComplexityRoot struct {
 
 	Studio struct {
 		ChildStudios func(childComplexity int) int
+		Created      func(childComplexity int) int
 		Deleted      func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Images       func(childComplexity int) int
 		IsFavorite   func(childComplexity int) int
 		Name         func(childComplexity int) int
 		Parent       func(childComplexity int) int
+		Updated      func(childComplexity int) int
 		Urls         func(childComplexity int) int
 	}
 
@@ -466,11 +472,13 @@ type ComplexityRoot struct {
 	Tag struct {
 		Aliases     func(childComplexity int) int
 		Category    func(childComplexity int) int
+		Created     func(childComplexity int) int
 		Deleted     func(childComplexity int) int
 		Description func(childComplexity int) int
 		Edits       func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
+		Updated     func(childComplexity int) int
 	}
 
 	TagCategory struct {
@@ -643,6 +651,8 @@ type PerformerResolver interface {
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer) ([]*PerformerStudio, error)
 	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
+	Created(ctx context.Context, obj *Performer) (*time.Time, error)
+	Updated(ctx context.Context, obj *Performer) (*time.Time, error)
 }
 type PerformerDraftResolver interface {
 	Image(ctx context.Context, obj *PerformerDraft) (*Image, error)
@@ -714,6 +724,8 @@ type SceneResolver interface {
 	Director(ctx context.Context, obj *Scene) (*string, error)
 
 	Edits(ctx context.Context, obj *Scene) ([]*Edit, error)
+	Created(ctx context.Context, obj *Scene) (*time.Time, error)
+	Updated(ctx context.Context, obj *Scene) (*time.Time, error)
 }
 type SceneDraftResolver interface {
 	URL(ctx context.Context, obj *SceneDraft) (*URL, error)
@@ -750,6 +762,8 @@ type StudioResolver interface {
 	Images(ctx context.Context, obj *Studio) ([]*Image, error)
 
 	IsFavorite(ctx context.Context, obj *Studio) (bool, error)
+	Created(ctx context.Context, obj *Studio) (*time.Time, error)
+	Updated(ctx context.Context, obj *Studio) (*time.Time, error)
 }
 type StudioEditResolver interface {
 	Parent(ctx context.Context, obj *StudioEdit) (*Studio, error)
@@ -762,6 +776,8 @@ type TagResolver interface {
 
 	Edits(ctx context.Context, obj *Tag) ([]*Edit, error)
 	Category(ctx context.Context, obj *Tag) (*TagCategory, error)
+	Created(ctx context.Context, obj *Tag) (*time.Time, error)
+	Updated(ctx context.Context, obj *Tag) (*time.Time, error)
 }
 type TagCategoryResolver interface {
 	Group(ctx context.Context, obj *TagCategory) (TagGroupEnum, error)
@@ -1767,6 +1783,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Performer.Country(childComplexity), true
 
+	case "Performer.created":
+		if e.complexity.Performer.Created == nil {
+			break
+		}
+
+		return e.complexity.Performer.Created(childComplexity), true
+
 	case "Performer.deleted":
 		if e.complexity.Performer.Deleted == nil {
 			break
@@ -1892,6 +1915,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Performer.Tattoos(childComplexity), true
+
+	case "Performer.updated":
+		if e.complexity.Performer.Updated == nil {
+			break
+		}
+
+		return e.complexity.Performer.Updated(childComplexity), true
 
 	case "Performer.urls":
 		if e.complexity.Performer.Urls == nil {
@@ -2661,6 +2691,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.QueryUsersResultType.Users(childComplexity), true
 
+	case "Scene.created":
+		if e.complexity.Scene.Created == nil {
+			break
+		}
+
+		return e.complexity.Scene.Created(childComplexity), true
+
 	case "Scene.date":
 		if e.complexity.Scene.Date == nil {
 			break
@@ -2751,6 +2788,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Scene.Title(childComplexity), true
+
+	case "Scene.updated":
+		if e.complexity.Scene.Updated == nil {
+			break
+		}
+
+		return e.complexity.Scene.Updated(childComplexity), true
 
 	case "Scene.urls":
 		if e.complexity.Scene.Urls == nil {
@@ -3067,6 +3111,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Studio.ChildStudios(childComplexity), true
 
+	case "Studio.created":
+		if e.complexity.Studio.Created == nil {
+			break
+		}
+
+		return e.complexity.Studio.Created(childComplexity), true
+
 	case "Studio.deleted":
 		if e.complexity.Studio.Deleted == nil {
 			break
@@ -3108,6 +3159,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Studio.Parent(childComplexity), true
+
+	case "Studio.updated":
+		if e.complexity.Studio.Updated == nil {
+			break
+		}
+
+		return e.complexity.Studio.Updated(childComplexity), true
 
 	case "Studio.urls":
 		if e.complexity.Studio.Urls == nil {
@@ -3172,6 +3230,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tag.Category(childComplexity), true
 
+	case "Tag.created":
+		if e.complexity.Tag.Created == nil {
+			break
+		}
+
+		return e.complexity.Tag.Created(childComplexity), true
+
 	case "Tag.deleted":
 		if e.complexity.Tag.Deleted == nil {
 			break
@@ -3206,6 +3271,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tag.Name(childComplexity), true
+
+	case "Tag.updated":
+		if e.complexity.Tag.Updated == nil {
+			break
+		}
+
+		return e.complexity.Tag.Updated(childComplexity), true
 
 	case "TagCategory.description":
 		if e.complexity.TagCategory.Description == nil {
@@ -3940,6 +4012,8 @@ type Performer {
   merged_ids: [ID!]!
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
+  created: Time!
+  updated: Time!
 }
 
 type PerformerStudio {
@@ -4261,6 +4335,8 @@ type Scene {
   director: String
   deleted: Boolean!
   edits: [Edit!]!
+  created: Time!
+  updated: Time!
 }
 
 input SceneCreateInput {
@@ -4448,6 +4524,8 @@ enum ValidSiteTypeEnum {
   images: [Image!]!
   deleted: Boolean!
   is_favorite: Boolean!
+  created: Time!
+  updated: Time!
 }
 
 input StudioCreateInput {
@@ -4525,6 +4603,8 @@ type Tag {
   deleted: Boolean!
   edits: [Edit!]!
   category: TagCategory
+  created: Time!
+  updated: Time!
 }
 
 input TagCreateInput {
@@ -11567,6 +11647,76 @@ func (ec *executionContext) _Performer_is_favorite(ctx context.Context, field gr
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Performer_created(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().Created(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Performer_updated(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().Updated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PerformerAppearance_performer(ctx context.Context, field graphql.CollectedField, obj *PerformerAppearance) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15954,6 +16104,76 @@ func (ec *executionContext) _Scene_edits(ctx context.Context, field graphql.Coll
 	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Scene_created(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().Created(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Scene_updated(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().Updated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _SceneDraft_title(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -17652,6 +17872,76 @@ func (ec *executionContext) _Studio_is_favorite(ctx context.Context, field graph
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Studio_created(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Studio",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studio().Created(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Studio_updated(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Studio",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studio().Updated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _StudioEdit_name(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -18081,6 +18371,76 @@ func (ec *executionContext) _Tag_category(ctx context.Context, field graphql.Col
 	res := resTmp.(*TagCategory)
 	fc.Result = res
 	return ec.marshalOTagCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tag_created(ctx context.Context, field graphql.CollectedField, obj *Tag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tag().Created(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tag_updated(ctx context.Context, field graphql.CollectedField, obj *Tag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tag().Updated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TagCategory_id(ctx context.Context, field graphql.CollectedField, obj *TagCategory) (ret graphql.Marshaler) {
@@ -26551,6 +26911,46 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				return innerFunc(ctx)
 
 			})
+		case "created":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_created(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "updated":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_updated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -28374,6 +28774,46 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				return innerFunc(ctx)
 
 			})
+		case "created":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_created(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "updated":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_updated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -29162,6 +29602,46 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 				return innerFunc(ctx)
 
 			})
+		case "created":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studio_created(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "updated":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studio_updated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -29373,6 +29853,46 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 					}
 				}()
 				res = ec._Tag_category(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "created":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tag_created(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "updated":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tag_updated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 

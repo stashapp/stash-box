@@ -3,6 +3,7 @@ package edit
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -218,6 +219,7 @@ func (m *StudioEditProcessor) apply() error {
 		if studio == nil {
 			return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
 		}
+		studio.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 	}
 
 	newStudio, err := sqb.ApplyEdit(*m.edit, operation, studio)
