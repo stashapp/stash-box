@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -60,4 +61,12 @@ func (r *studioResolver) IsFavorite(ctx context.Context, obj *models.Studio) (bo
 	jqb := r.getRepoFactory(ctx).Joins()
 	user := getCurrentUser(ctx)
 	return jqb.IsStudioFavorite(models.StudioFavorite{StudioID: obj.ID, UserID: user.ID})
+}
+
+func (r *studioResolver) Created(ctx context.Context, obj *models.Studio) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *studioResolver) Updated(ctx context.Context, obj *models.Studio) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

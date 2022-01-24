@@ -32,6 +32,11 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
     updateData: PerformerEditDetailsInput,
     editNote: string
   ) => {
+    const details: PerformerEditDetailsInput = {
+      ...updateData,
+      draft_id: draft.id,
+    };
+
     submitPerformerEdit({
       variables: {
         performerData: {
@@ -39,7 +44,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
             operation: OperationEnum.CREATE,
             comment: editNote,
           },
-          details: updateData,
+          details,
         },
       },
     });

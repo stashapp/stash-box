@@ -61,13 +61,16 @@ func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 
 	// if height is longer then resize by height instead of width
 	if dim := srcImage.Bounds().Max; dim.Y > dim.X {
-		resizedImage = imaging.Resize(srcImage, 0, int(maxDimension), imaging.Box)
+		resizedImage = imaging.Resize(srcImage, 0, int(maxDimension), imaging.MitchellNetravali)
 	} else {
-		resizedImage = imaging.Resize(srcImage, int(maxDimension), 0, imaging.Box)
+		resizedImage = imaging.Resize(srcImage, int(maxDimension), 0, imaging.MitchellNetravali)
 	}
 
 	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, resizedImage, nil)
+	options := jpeg.Options{
+		Quality: 90,
+	}
+	err = jpeg.Encode(buf, resizedImage, &options)
 	if err != nil {
 		return nil, err
 	}

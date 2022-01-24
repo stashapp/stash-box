@@ -320,6 +320,8 @@ func (m *SceneEditProcessor) apply() error {
 		if scene == nil {
 			return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
 		}
+
+		scene.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 	}
 
 	newScene, err := m.applyEdit(scene)

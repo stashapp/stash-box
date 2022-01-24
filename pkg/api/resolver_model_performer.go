@@ -175,3 +175,11 @@ func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performe
 	user := getCurrentUser(ctx)
 	return jqb.IsPerformerFavorite(models.PerformerFavorite{PerformerID: obj.ID, UserID: user.ID})
 }
+
+func (r *performerResolver) Created(ctx context.Context, obj *models.Performer) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *performerResolver) Updated(ctx context.Context, obj *models.Performer) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
+}
