@@ -24,7 +24,7 @@ import {
   parseFuzzyDate,
 } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
-import { Image } from "src/utils/transforms";
+import { ImageFragment } from "src/graphql/definitions/ImageFragment";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
 import { Help } from "src/components/fragments";
@@ -118,7 +118,7 @@ interface PerformerProps {
     id?: string
   ) => void;
   initialAliases?: string[];
-  initialImages?: Image[];
+  initialImages?: ImageFragment[];
   initial?: Performer;
   changeType: "modify" | "create" | "merge";
   saving: boolean;
