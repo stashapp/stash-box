@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"sort"
+	"time"
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -39,4 +40,12 @@ func (r *tagResolver) Category(ctx context.Context, obj *models.Tag) (*models.Ta
 		return dataloader.For(ctx).TagCategoryByID.Load(obj.CategoryID.UUID)
 	}
 	return nil, nil
+}
+
+func (r *tagResolver) Created(ctx context.Context, obj *models.Tag) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *tagResolver) Updated(ctx context.Context, obj *models.Tag) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

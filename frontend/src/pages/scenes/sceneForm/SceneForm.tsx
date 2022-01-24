@@ -360,6 +360,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
         <Tab eventKey="images" title="Images">
           <EditImages
             control={control}
+            maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}
           />

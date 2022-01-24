@@ -80,6 +80,8 @@ type Scene {
   director: String
   deleted: Boolean!
   edits: [Edit!]!
+  created: Time!
+  updated: Time!
 }
 
 input SceneCreateInput {
