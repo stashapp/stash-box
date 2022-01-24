@@ -9,9 +9,14 @@ const CLASSNAME = "Image";
 interface Props {
   images: ImageFragment[] | ImageFragment;
   orientation?: "landscape" | "portrait";
+  emptyMessage?: string;
 }
 
-const Image: FC<Props> = ({ images, orientation = "landscape" }) => {
+const Image: FC<Props> = ({
+  images,
+  orientation = "landscape",
+  emptyMessage = "No image",
+}) => {
   const url = Array.isArray(images)
     ? getImage(images, orientation)
     : images.url;
@@ -19,8 +24,7 @@ const Image: FC<Props> = ({ images, orientation = "landscape" }) => {
     "loading"
   );
 
-  if (!url)
-    return <div className={`${CLASSNAME}-missing`}>Scene has no image.</div>;
+  if (!url) return <div className={`${CLASSNAME}-missing`}>{emptyMessage}</div>;
 
   return (
     <>
