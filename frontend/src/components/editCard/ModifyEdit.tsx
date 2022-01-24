@@ -38,6 +38,13 @@ import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
 import { renderPerformer, renderTag, renderFingerprint } from "./renderEntity";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
+type TargetOldDetails<T> = Omit<
+  T,
+  StartingWith<keyof T, "added_" | "removed_"> | "draft_id"
+>;
+
 export interface TagDetails {
   name: string | null;
   description?: string | null;
@@ -46,9 +53,11 @@ export interface TagDetails {
   removed_aliases?: string[] | null;
 }
 
+export type OldTagDetails = TargetOldDetails<TagDetails>;
+
 const renderTagDetails = (
   tagDetails: TagDetails,
-  oldTagDetails: TagDetails | undefined,
+  oldTagDetails: OldTagDetails | undefined,
   showDiff: boolean
 ) => (
   <>
@@ -132,9 +141,11 @@ export interface PerformerDetails {
   draft_id?: string | null;
 }
 
+export type OldPerformerDetails = TargetOldDetails<PerformerDetails>;
+
 export const renderPerformerDetails = (
   performerDetails: PerformerDetails,
-  oldPerformerDetails: PerformerDetails | undefined,
+  oldPerformerDetails: OldPerformerDetails | undefined,
   showDiff: boolean,
   setModifyAliases = false
 ) => (
@@ -147,16 +158,17 @@ export const renderPerformerDetails = (
         showDiff={showDiff}
       />
     )}
-    {oldPerformerDetails && performerDetails.name !== oldPerformerDetails.name && (
-      <div className="d-flex mb-2 align-items-center">
-        <Icon
-          icon={setModifyAliases ? faCheck : faTimes}
-          color={setModifyAliases ? "green" : "red"}
-          className="ms-auto"
-        />
-        <span className="ms-2">Set performance aliases to old name</span>
-      </div>
-    )}
+    {oldPerformerDetails?.name &&
+      performerDetails.name !== oldPerformerDetails.name && (
+        <div className="d-flex mb-2 align-items-center">
+          <Icon
+            icon={setModifyAliases ? faCheck : faTimes}
+            color={setModifyAliases ? "green" : "red"}
+            className="ms-auto"
+          />
+          <span className="ms-2">Set performance aliases to old name</span>
+        </div>
+      )}
     <ChangeRow
       name="Disambiguation"
       newValue={performerDetails.disambiguation}
@@ -343,9 +355,11 @@ export interface SceneDetails {
   draft_id?: string | null;
 }
 
+export type OldSceneDetails = TargetOldDetails<SceneDetails>;
+
 export const renderSceneDetails = (
   sceneDetails: SceneDetails,
-  oldSceneDetails: SceneDetails | undefined,
+  oldSceneDetails: OldSceneDetails | undefined,
   showDiff: boolean
 ) => (
   <>
@@ -452,9 +466,11 @@ export interface StudioDetails {
   removed_urls?: URL[] | null;
 }
 
+export type OldStudioDetails = TargetOldDetails<StudioDetails>;
+
 export const renderStudioDetails = (
   studioDetails: StudioDetails,
-  oldStudioDetails: StudioDetails | undefined,
+  oldStudioDetails: OldStudioDetails | undefined,
   showDiff: boolean
 ) => (
   <>

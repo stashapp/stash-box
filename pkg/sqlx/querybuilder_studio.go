@@ -83,6 +83,23 @@ func (qb *studioQueryBuilder) Find(id uuid.UUID) (*models.Studio, error) {
 	return qb.toModel(ret), err
 }
 
+func (qb *studioQueryBuilder) FindWithRedirect(id uuid.UUID) (*models.Studio, error) {
+	query := `
+		SELECT S.* FROM studios S
+		WHERE S.id = $1 AND S.deleted = FALSE
+		UNION
+		SELECT T.* FROM studio_redirects R
+		JOIN studios T ON T.id = R.target_id
+		WHERE R.source_id = $1 AND T.deleted = FALSE
+	`
+	args := []interface{}{id}
+	studios, err := qb.queryStudios(query, args)
+	if len(studios) > 0 {
+		return studios[0], err
+	}
+	return nil, err
+}
+
 func (qb *studioQueryBuilder) FindBySceneID(sceneID int) (models.Studios, error) {
 	query := `
 		SELECT studios.* FROM studios
