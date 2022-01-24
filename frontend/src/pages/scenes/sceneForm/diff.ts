@@ -1,4 +1,7 @@
-import { SceneDetails } from "src/components/editCard/ModifyEdit";
+import {
+  OldSceneDetails,
+  SceneDetails,
+} from "src/components/editCard/ModifyEdit";
 
 import { SceneFragment } from "src/graphql";
 import {
@@ -12,10 +15,12 @@ import {
 
 import { CastedSceneFormData } from "./schema";
 
+type OmittedKeys = "draft_id" | "added_fingerprints" | "removed_fingerprints";
+
 const selectSceneDetails = (
   data: CastedSceneFormData,
   original: SceneFragment
-): [SceneDetails, SceneDetails] => {
+): [Required<OldSceneDetails>, Required<Omit<SceneDetails, OmittedKeys>>] => {
   const [addedPerformers, removedPerformers] = diffArray(
     (data.performers ?? []).flatMap((p) =>
       p.performerId && p.name
