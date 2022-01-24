@@ -62,6 +62,7 @@ const selectPerformerDetails = (
   return [
     {
       name: diffValue(original.name, data.name),
+      disambiguation: diffValue(original.disambiguation, data.disambiguation),
       gender: diffValue(original.gender, genderEnum(data.gender)),
       birthdate: diffValue(formatFuzzyDate(original.birthdate), data.birthdate),
       birthdate_accuracy: diffValue(
@@ -89,6 +90,7 @@ const selectPerformerDetails = (
     },
     {
       name: diffValue(data.name, original.name),
+      disambiguation: diffValue(data.disambiguation, original.disambiguation),
       gender: diffValue(genderEnum(data.gender), original.gender),
       birthdate: diffValue(data.birthdate, formatFuzzyDate(original.birthdate)),
       birthdate_accuracy: diffValue(
