@@ -12,6 +12,8 @@ type Tag {
   deleted: Boolean!
   edits: [Edit!]!
   category: TagCategory
+  created: Time!
+  updated: Time!
 }
 
 input TagCreateInput {

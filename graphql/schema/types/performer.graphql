@@ -116,6 +116,8 @@ type Performer {
   merged_ids: [ID!]!
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
+  created: Time!
+  updated: Time!
 }
 
 type PerformerStudio {
