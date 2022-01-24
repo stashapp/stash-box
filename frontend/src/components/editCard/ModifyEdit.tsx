@@ -147,16 +147,17 @@ export const renderPerformerDetails = (
         showDiff={showDiff}
       />
     )}
-    {oldPerformerDetails && performerDetails.name !== oldPerformerDetails.name && (
-      <div className="d-flex mb-2 align-items-center">
-        <Icon
-          icon={setModifyAliases ? faCheck : faTimes}
-          color={setModifyAliases ? "green" : "red"}
-          className="ms-auto"
-        />
-        <span className="ms-2">Set performance aliases to old name</span>
-      </div>
-    )}
+    {oldPerformerDetails?.name &&
+      performerDetails.name !== oldPerformerDetails.name && (
+        <div className="d-flex mb-2 align-items-center">
+          <Icon
+            icon={setModifyAliases ? faCheck : faTimes}
+            color={setModifyAliases ? "green" : "red"}
+            className="ms-auto"
+          />
+          <span className="ms-2">Set performance aliases to old name</span>
+        </div>
+      )}
     <ChangeRow
       name="Disambiguation"
       newValue={performerDetails.disambiguation}
