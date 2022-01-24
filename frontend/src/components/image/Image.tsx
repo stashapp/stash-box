@@ -28,13 +28,6 @@ const Image: FC<Props> = ({
 
   return (
     <>
-      <img
-        alt=""
-        src={url}
-        className={`${CLASSNAME}-image`}
-        onLoad={() => setImageState("done")}
-        onError={() => setImageState("error")}
-      />
       {imageState === "loading" && (
         <LoadingIndicator message="Loading image..." delay={200} />
       )}
@@ -46,6 +39,13 @@ const Image: FC<Props> = ({
           <span>Failed to load image</span>
         </div>
       )}
+      <img
+        alt=""
+        src={url}
+        className={`${CLASSNAME}-image`}
+        onLoad={() => setImageState("done")}
+        onError={() => setImageState("error")}
+      />
     </>
   );
 };
