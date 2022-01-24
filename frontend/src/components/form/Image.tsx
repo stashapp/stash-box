@@ -3,10 +3,10 @@ import { Button } from "react-bootstrap";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import { Icon } from "src/components/fragments";
-import { Image } from "src/utils/transforms";
+import { ImageFragment } from "src/graphql";
 
 interface ImageProps {
-  image: Pick<Image, "id" | "url">;
+  image: Pick<ImageFragment, "id" | "url">;
   onRemove: () => void;
 }
 
