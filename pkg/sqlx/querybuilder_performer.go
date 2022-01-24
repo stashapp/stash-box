@@ -128,6 +128,23 @@ func (qb *performerQueryBuilder) Find(id uuid.UUID) (*models.Performer, error) {
 	return qb.toModel(ret), err
 }
 
+func (qb *performerQueryBuilder) FindWithRedirect(id uuid.UUID) (*models.Performer, error) {
+	query := `
+		SELECT P.* FROM performers P
+		WHERE P.id = $1 AND P.deleted = FALSE
+		UNION
+		SELECT T.* FROM performer_redirects R
+		JOIN performers T ON T.id = R.target_id
+		WHERE R.source_id = $1 AND T.deleted = FALSE
+	`
+	args := []interface{}{id}
+	performers, err := qb.queryPerformers(query, args)
+	if len(performers) > 0 {
+		return performers[0], err
+	}
+	return nil, err
+}
+
 func (qb *performerQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Performer, []error) {
 	query := "SELECT performers.* FROM performers WHERE id IN (?)"
 	query, args, _ := sqlx.In(query, ids)

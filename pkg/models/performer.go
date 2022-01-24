@@ -17,6 +17,7 @@ type PerformerRepo interface {
 	UpdatePiercings(performerID uuid.UUID, updatedJoins PerformerBodyMods) error
 	Find(id uuid.UUID) (*Performer, error)
 	FindByIds(ids []uuid.UUID) ([]*Performer, []error)
+	FindWithRedirect(id uuid.UUID) (*Performer, error)
 	Count() (int, error)
 	QueryPerformers(performerFilter *PerformerFilterType, findFilter *QuerySpec, userID uuid.UUID) ([]*Performer, error)
 	QueryCount(performerFilter *PerformerFilterType, findFilter *QuerySpec, userID uuid.UUID) (int, error)
