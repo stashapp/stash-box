@@ -16,6 +16,7 @@ type TagRepo interface {
 	FindByNames(names []string) ([]*Tag, error)
 	FindByName(name string) (*Tag, error)
 	FindByNameOrAlias(name string) (*Tag, error)
+	FindWithRedirect(id uuid.UUID) (*Tag, error)
 	Count() (int, error)
 	Query(tagFilter *TagFilterType, findFilter *QuerySpec) ([]*Tag, int, error)
 	GetAliases(id uuid.UUID) ([]string, error)

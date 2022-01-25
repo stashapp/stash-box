@@ -229,6 +229,23 @@ func (qb *tagQueryBuilder) FindByAlias(name string) ([]*models.Tag, error) {
 	return qb.queryTags(query, args)
 }
 
+func (qb *tagQueryBuilder) FindWithRedirect(id uuid.UUID) (*models.Tag, error) {
+	query := `
+		SELECT T.* FROM tags T
+		WHERE T.id = $1 AND T.deleted = FALSE
+		UNION
+		SELECT T2.* FROM tag_redirects R
+		JOIN tags T2 ON T2.id = R.target_id
+		WHERE R.source_id = $1 AND T2.deleted = FALSE
+	`
+	args := []interface{}{id}
+	tags, err := qb.queryTags(query, args)
+	if len(tags) > 0 {
+		return tags[0], err
+	}
+	return nil, err
+}
+
 func (qb *tagQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
