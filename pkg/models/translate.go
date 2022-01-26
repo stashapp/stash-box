@@ -220,6 +220,10 @@ func (v *editValidator) uuid(field string, old *uuid.UUID, current uuid.NullUUID
 	}
 
 	if old != nil && (!current.Valid || (*old != current.UUID)) {
-		v.err = v.error(field, *old, current)
+		currentUUID := ""
+		if current.Valid {
+			currentUUID = current.UUID.String()
+		}
+		v.err = v.error(field, old.String(), currentUUID)
 	}
 }
