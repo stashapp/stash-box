@@ -17,11 +17,11 @@ type ErrEditPrerequisiteFailed struct {
 func (e *ErrEditPrerequisiteFailed) Error() string {
 	expected := "_blank_"
 	if e.expected != "" {
-		expected = fmt.Sprintf("“**%s**”", e.expected)
+		expected = fmt.Sprintf("“**%v**”", e.expected)
 	}
 	actual := "_blank_"
 	if e.actual != "" {
-		actual = fmt.Sprintf("“**%s**”", e.actual)
+		actual = fmt.Sprintf("“**%v**”", e.actual)
 	}
 	return fmt.Sprintf("Expected %s to be %s, but was %s.", e.field, expected, actual)
 }
