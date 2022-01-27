@@ -99,8 +99,8 @@ const ETHNICITY: OptionEnum[] = [
   { value: "OTHER", label: "Other" },
 ];
 
-const UPDATE_ALIAS_MESSAGE = `When changing from alias A to B, it may be desirable to enable this so all unset performances will continue to have the old name.
-If however a typo in the name is corrected, this should not be used.
+const UPDATE_ALIAS_MESSAGE = `Enabling this option sets the current name as an alias on every scene that this performer does not have an alias on.
+In most cases, it should be enabled when renaming a performer to a different alias, and disabled when correcting a typo in the name.
 `;
 
 const getEnumValue = (enumArray: OptionEnum[], val: string) => {
