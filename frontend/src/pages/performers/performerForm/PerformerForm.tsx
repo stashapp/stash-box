@@ -175,6 +175,14 @@ const PerformerForm: FC<PerformerProps> = ({
     [fieldData, performer]
   );
 
+  const changedName =
+    !!performer.id &&
+    fieldData.name !== undefined &&
+    performer.name !== fieldData.name;
+  useEffect(() => {
+    setUpdateAliases(changedName);
+  }, [changedName, setUpdateAliases]);
+
   const showBreastType =
     fieldData.gender !== GenderEnum.MALE &&
     fieldData.gender !== GenderEnum.TRANSGENDER_MALE;
@@ -296,22 +304,20 @@ const PerformerForm: FC<PerformerProps> = ({
             </Form.Group>
           </Row>
 
-          {performer.id &&
-            fieldData.name !== undefined &&
-            performer.name !== fieldData.name && (
-              <Row>
-                <Form.Group className="col mb-3">
-                  <Form.Check
-                    id="update-modify-aliases"
-                    checked={updateAliases}
-                    onChange={() => setUpdateAliases(!updateAliases)}
-                    label="Set unset performance aliases to old name"
-                    className="d-inline-block"
-                  />
-                  <Help message={UPDATE_ALIAS_MESSAGE} />
-                </Form.Group>
-              </Row>
-            )}
+          {changedName && (
+            <Row>
+              <Form.Group className="col mb-3">
+                <Form.Check
+                  id="update-modify-aliases"
+                  checked={updateAliases}
+                  onChange={() => setUpdateAliases(!updateAliases)}
+                  label="Set unset performance aliases to old name"
+                  className="d-inline-block"
+                />
+                <Help message={UPDATE_ALIAS_MESSAGE} />
+              </Form.Group>
+            </Row>
+          )}
 
           <Row>
             <Form.Group controlId="aliases" className="col mb-3">
