@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { flatMap } from "lodash-es";
@@ -37,6 +37,16 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
   });
+
+  useEffect(() => {
+    if (!mergeActive) return;
+    const sameName = mergeSources.every(
+      ({ name }) => name.trim() === performer.name.trim()
+    );
+    // Don't update aliases by default if the names match
+    setAliasUpdating(!sameName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mergeActive]);
 
   const doUpdate = (
     insertData: PerformerEditDetailsInput,
