@@ -15,6 +15,11 @@ import PerformerSelect from "src/components/performerSelect";
 import PerformerCard from "src/components/performerCard";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
+import { Help } from "src/components/fragments";
+
+const UPDATE_ALIAS_MESSAGE = `Enabling this option sets each merged performer's name as an alias on every scene that performer does not have an alias on.
+In most cases, it should be enabled when merging aliases of a performer, and disabled when the performers share the same name.
+`;
 
 const CLASSNAME = "PerformerMerge";
 
@@ -124,7 +129,9 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
             checked={aliasUpdating}
             onChange={() => setAliasUpdating(!aliasUpdating)}
             label="Update scene performance aliases on merged performers to old performer name."
+            className="d-inline-block"
           />
+          <Help message={UPDATE_ALIAS_MESSAGE} />
           <h5 className="mt-4">
             Update performer metadata for <em>{performer.name}</em>
           </h5>
