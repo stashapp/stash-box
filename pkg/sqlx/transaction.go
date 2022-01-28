@@ -40,13 +40,14 @@ func (m *txnState) WithTxn(fn func() error) (err error) {
 
 	defer func() {
 		m.tx = nil
+		//nolint:gocritic
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			tx.Rollback()
+			_ = tx.Rollback()
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			tx.Rollback()
+			_ = tx.Rollback()
 		} else {
 			err = tx.Commit()
 		}
