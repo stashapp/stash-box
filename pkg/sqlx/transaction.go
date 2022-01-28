@@ -25,30 +25,35 @@ type txnState struct {
 	dialect Dialect
 }
 
-func (m *txnState) WithTxn(fn func() error) (txErr error) {
+func (m *txnState) WithTxn(fn func() error) (err error) {
 	if m.InTxn() {
-		return fn()
+		err = fn()
+		return
 	}
 
 	tx, err := m.rootDB.Beginx()
 	if err != nil {
-		return err
+		return
 	}
 
 	m.tx = tx
 
-	var txErr error
 	defer func() {
 		m.tx = nil
-		if txErr != nil {
-			// ignore rollback errors
-			_ = tx.Rollback()
+		if p := recover(); p != nil {
+			// a panic occurred, rollback and repanic
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			// something went wrong, rollback
+			tx.Rollback()
 		} else {
-			txErr = tx.Commit()
+			err = tx.Commit()
 		}
 	}()
 
-	return fn()
+	err = fn()
+	return
 }
 
 func (m *txnState) InTxn() bool {
