@@ -122,9 +122,12 @@ func (qb *tagQueryBuilder) Find(id uuid.UUID) (*models.Tag, error) {
 }
 
 func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*models.Tag, error) {
-	query := `SELECT tags.* FROM tags
-		left join tag_aliases on tags.id = tag_aliases.tag_id
-		WHERE LOWER(tag_aliases.alias) = LOWER(?) OR LOWER(tags.name) = LOWER(?)`
+	query := `
+		SELECT T.* FROM tags T
+		LEFT JOIN tag_aliases TA ON T.id = TA.tag_id
+		WHERE LOWER(TA.alias) = LOWER($1) OR LOWER(T.name) = LOWER($1)
+		ORDER BY T.deleted ASC
+	`
 
 	args := []interface{}{name, name}
 	results, err := qb.queryTags(query, args)
@@ -227,6 +230,23 @@ func (qb *tagQueryBuilder) FindByAlias(name string) ([]*models.Tag, error) {
 	var args []interface{}
 	args = append(args, name)
 	return qb.queryTags(query, args)
+}
+
+func (qb *tagQueryBuilder) FindWithRedirect(id uuid.UUID) (*models.Tag, error) {
+	query := `
+		SELECT T.* FROM tags T
+		WHERE T.id = $1 AND T.deleted = FALSE
+		UNION
+		SELECT T2.* FROM tag_redirects R
+		JOIN tags T2 ON T2.id = R.target_id
+		WHERE R.source_id = $1 AND T2.deleted = FALSE
+	`
+	args := []interface{}{id}
+	tags, err := qb.queryTags(query, args)
+	if len(tags) > 0 {
+		return tags[0], err
+	}
+	return nil, err
 }
 
 func (qb *tagQueryBuilder) Count() (int, error) {

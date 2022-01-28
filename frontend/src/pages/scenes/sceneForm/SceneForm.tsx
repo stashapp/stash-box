@@ -199,7 +199,11 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
             ) : (
               <InputGroup.Text className="flex-grow-1 text-start text-truncate">
                 <GenderIcon gender={p.gender} />
-                <span className="performer-name text-truncate">
+                <span
+                  className={cx("performer-name text-truncate", {
+                    "text-decoration-line-through": p.deleted,
+                  })}
+                >
                   <b>{p.name}</b>
                   {p.disambiguation && (
                     <small className="ms-1">({p.disambiguation})</small>

@@ -165,6 +165,11 @@ func (e *Edit) IsDestructive() bool {
 	if e.Operation == OperationEnumDestroy.String() || e.Operation == OperationEnumMerge.String() {
 		return true
 	}
+	// When renaming a performer and not updating the performance aliases
+	if (e.Operation == OperationEnumModify.String() || e.Operation == OperationEnumMerge.String()) && e.TargetType == TargetTypeEnumPerformer.String() {
+		data, _ := e.GetPerformerData()
+		return data.New.Name != nil && !data.SetModifyAliases
+	}
 	return false
 }
 

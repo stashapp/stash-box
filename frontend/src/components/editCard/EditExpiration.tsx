@@ -23,7 +23,12 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   const { data } = useConfig();
   const config = data?.getConfig;
 
-  if (!config || edit.status !== VoteStatusEnum.PENDING) return <></>;
+  if (
+    !config ||
+    !config.vote_cron_interval ||
+    edit.status !== VoteStatusEnum.PENDING
+  )
+    return <></>;
 
   // Pending edits that have reached the voting threshold have shorter voting periods.
   // This will happen for destructive edits, or when votes are not unanimous.

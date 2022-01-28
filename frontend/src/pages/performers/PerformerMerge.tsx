@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { flatMap } from "lodash-es";
@@ -15,6 +15,11 @@ import PerformerSelect from "src/components/performerSelect";
 import PerformerCard from "src/components/performerCard";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
+import { Help } from "src/components/fragments";
+
+const UPDATE_ALIAS_MESSAGE = `Enabling this option sets each merged performer's name as an alias on every scene that performer does not have an alias on.
+In most cases, it should be enabled when merging aliases of a performer, and disabled when the performers share the same name.
+`;
 
 const CLASSNAME = "PerformerMerge";
 
@@ -32,6 +37,15 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
   });
+
+  const toggleMerge = () => {
+    setMergeActive(true);
+    const sameName = mergeSources.every(
+      ({ name }) => name.trim() === performer.name.trim()
+    );
+    // Don't update aliases by default if the names match
+    setAliasUpdating(!sameName);
+  };
 
   const doUpdate = (
     insertData: PerformerEditDetailsInput,
@@ -77,10 +91,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
                 ]}
               />
               {mergeSources.length > 0 && (
-                <Button
-                  onClick={() => setMergeActive(true)}
-                  className="ms-auto"
-                >
+                <Button onClick={toggleMerge} className="ms-auto">
                   Continue
                 </Button>
               )}
@@ -124,7 +135,9 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
             checked={aliasUpdating}
             onChange={() => setAliasUpdating(!aliasUpdating)}
             label="Update scene performance aliases on merged performers to old performer name."
+            className="d-inline-block"
           />
+          <Help message={UPDATE_ALIAS_MESSAGE} />
           <h5 className="mt-4">
             Update performer metadata for <em>{performer.name}</em>
           </h5>
