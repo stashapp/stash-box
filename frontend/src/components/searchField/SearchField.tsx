@@ -52,11 +52,13 @@ interface SearchResult {
 
 const Option = (props: OptionProps<SearchResult, false>) => {
   const {
-    data: { label, subLabel },
+    data: { label, subLabel, value },
   } = props;
   return (
     <components.Option {...props}>
-      <div className="search-value">{label}</div>
+      <div className="search-value">
+        {value?.deleted ? <del>{label}</del> : label}
+      </div>
       <div className="search-subvalue">{subLabel}</div>
     </components.Option>
   );

@@ -105,6 +105,7 @@ export interface SearchAll_searchScene {
   id: string;
   date: any | null;
   title: string | null;
+  deleted: boolean;
   duration: number | null;
   urls: SearchAll_searchScene_urls[];
   images: SearchAll_searchScene_images[];
