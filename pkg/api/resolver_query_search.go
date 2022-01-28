@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -51,5 +52,8 @@ func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int
 		searchLimit = *limit
 	}
 
-	return qb.SearchScenes(trimmedQuery, searchLimit)
+	strippedChars := regexp.MustCompile("[^a-zA-Z0-9 ]+")
+	strippedQuery := strippedChars.ReplaceAllString(trimmedQuery, "")
+
+	return qb.SearchScenes(strippedQuery, searchLimit)
 }
