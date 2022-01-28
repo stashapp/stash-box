@@ -31,7 +31,7 @@ const selectSceneDetails = (
                 name: p.name,
                 gender: genderEnum(p.gender),
                 disambiguation: p.disambiguation ?? null,
-                deleted: false,
+                deleted: p.deleted ?? false,
               },
               as: p.alias ?? null,
             },
