@@ -52,7 +52,7 @@ func (r *sceneDraftResolver) Tags(ctx context.Context, obj *models.SceneDraft) (
 	for _, t := range obj.Tags {
 		var st models.SceneDraftTag
 		if t.ID != nil {
-			tag, err := qb.Find(*t.ID)
+			tag, err := qb.FindWithRedirect(*t.ID)
 			if err != nil {
 				return nil, err
 			}

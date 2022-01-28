@@ -14,6 +14,9 @@ func Destroy(fac models.Repo, id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
+	if draft == nil {
+		return fmt.Errorf("Draft not found: %v", id)
+	}
 
 	var imageID *uuid.UUID
 	switch draft.Type {
