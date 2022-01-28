@@ -38,15 +38,14 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
     },
   });
 
-  useEffect(() => {
-    if (!mergeActive) return;
+  const toggleMerge = () => {
+    setMergeActive(true);
     const sameName = mergeSources.every(
       ({ name }) => name.trim() === performer.name.trim()
     );
     // Don't update aliases by default if the names match
     setAliasUpdating(!sameName);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mergeActive]);
+  };
 
   const doUpdate = (
     insertData: PerformerEditDetailsInput,
@@ -92,10 +91,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
                 ]}
               />
               {mergeSources.length > 0 && (
-                <Button
-                  onClick={() => setMergeActive(true)}
-                  className="ms-auto"
-                >
+                <Button onClick={toggleMerge} className="ms-auto">
                   Continue
                 </Button>
               )}
