@@ -9,6 +9,7 @@ query SearchAll($term: String!, $limit: Int = 5) {
         id
         date
         title
+        deleted
         duration
         urls {
           ...URLFragment
