@@ -23,7 +23,7 @@ const ListChangeRow = <T extends unknown>({
   showDiff,
 }: PropsWithChildren<ListChangeRowProps<T>>) =>
   (added ?? []).length > 0 || (removed ?? []).length > 0 ? (
-    <Row className={CLASSNAME}>
+    <Row className={`${CLASSNAME}-${name}`}>
       <b className="col-2 text-end">{name}</b>
       {showDiff && (
         <Col xs={5}>
