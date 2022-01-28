@@ -26,27 +26,27 @@ type txnState struct {
 }
 
 func (m *txnState) WithTxn(fn func() error) (txErr error) {
-	if !m.InTxn() {
-		tx, err := m.rootDB.Beginx()
-		if err != nil {
-			return err
-		}
-
-		m.tx = tx
-
-		var txErr error
-		defer func() {
-			m.tx = nil
-			if txErr != nil {
-				// ignore rollback errors
-				_ = tx.Rollback()
-			} else {
-				txErr = tx.Commit()
-			}
-		}()
-
+	if m.InTxn() {
 		return fn()
 	}
+
+	tx, err := m.rootDB.Beginx()
+	if err != nil {
+		return err
+	}
+
+	m.tx = tx
+
+	var txErr error
+	defer func() {
+		m.tx = nil
+		if txErr != nil {
+			// ignore rollback errors
+			_ = tx.Rollback()
+		} else {
+			txErr = tx.Commit()
+		}
+	}()
 
 	return fn()
 }
