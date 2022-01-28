@@ -17,11 +17,11 @@ type ErrEditPrerequisiteFailed struct {
 func (e *ErrEditPrerequisiteFailed) Error() string {
 	expected := "_blank_"
 	if e.expected != "" {
-		expected = fmt.Sprintf("“**%s**”", e.expected)
+		expected = fmt.Sprintf("“**%v**”", e.expected)
 	}
 	actual := "_blank_"
 	if e.actual != "" {
-		actual = fmt.Sprintf("“**%s**”", e.actual)
+		actual = fmt.Sprintf("“**%v**”", e.actual)
 	}
 	return fmt.Sprintf("Expected %s to be %s, but was %s.", e.field, expected, actual)
 }
@@ -220,6 +220,10 @@ func (v *editValidator) uuid(field string, old *uuid.UUID, current uuid.NullUUID
 	}
 
 	if old != nil && (!current.Valid || (*old != current.UUID)) {
-		v.err = v.error(field, *old, current)
+		currentUUID := ""
+		if current.Valid {
+			currentUUID = current.UUID.String()
+		}
+		v.err = v.error(field, old.String(), currentUUID)
 	}
 }
