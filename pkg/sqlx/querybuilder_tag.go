@@ -129,7 +129,7 @@ func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*models.Tag, error) {
 		ORDER BY T.deleted ASC
 	`
 
-	args := []interface{}{name, name}
+	args := []interface{}{name}
 	results, err := qb.queryTags(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
