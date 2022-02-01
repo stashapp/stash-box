@@ -372,8 +372,8 @@ export interface TagEdit_tagEdit_details_PerformerEdit {
   removed_tattoos: TagEdit_tagEdit_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: TagEdit_tagEdit_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: TagEdit_tagEdit_details_PerformerEdit_removed_piercings[] | null;
-  added_images: TagEdit_tagEdit_details_PerformerEdit_added_images[] | null;
-  removed_images: TagEdit_tagEdit_details_PerformerEdit_removed_images[] | null;
+  added_images: (TagEdit_tagEdit_details_PerformerEdit_added_images | null)[] | null;
+  removed_images: (TagEdit_tagEdit_details_PerformerEdit_removed_images | null)[] | null;
   draft_id: string | null;
 }
 
@@ -473,8 +473,8 @@ export interface TagEdit_tagEdit_details_StudioEdit {
   added_urls: TagEdit_tagEdit_details_StudioEdit_added_urls[] | null;
   removed_urls: TagEdit_tagEdit_details_StudioEdit_removed_urls[] | null;
   parent: TagEdit_tagEdit_details_StudioEdit_parent | null;
-  added_images: TagEdit_tagEdit_details_StudioEdit_added_images[] | null;
-  removed_images: TagEdit_tagEdit_details_StudioEdit_removed_images[] | null;
+  added_images: (TagEdit_tagEdit_details_StudioEdit_added_images | null)[] | null;
+  removed_images: (TagEdit_tagEdit_details_StudioEdit_removed_images | null)[] | null;
 }
 
 export interface TagEdit_tagEdit_details_SceneEdit_added_urls_site {
@@ -793,8 +793,8 @@ export interface TagEdit_tagEdit_details_SceneEdit {
   removed_performers: TagEdit_tagEdit_details_SceneEdit_removed_performers[] | null;
   added_tags: TagEdit_tagEdit_details_SceneEdit_added_tags[] | null;
   removed_tags: TagEdit_tagEdit_details_SceneEdit_removed_tags[] | null;
-  added_images: TagEdit_tagEdit_details_SceneEdit_added_images[] | null;
-  removed_images: TagEdit_tagEdit_details_SceneEdit_removed_images[] | null;
+  added_images: (TagEdit_tagEdit_details_SceneEdit_added_images | null)[] | null;
+  removed_images: (TagEdit_tagEdit_details_SceneEdit_removed_images | null)[] | null;
   added_fingerprints: TagEdit_tagEdit_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: TagEdit_tagEdit_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
@@ -1208,8 +1208,8 @@ export interface TagEdit_tagEdit_old_details_SceneEdit {
   removed_performers: TagEdit_tagEdit_old_details_SceneEdit_removed_performers[] | null;
   added_tags: TagEdit_tagEdit_old_details_SceneEdit_added_tags[] | null;
   removed_tags: TagEdit_tagEdit_old_details_SceneEdit_removed_tags[] | null;
-  added_images: TagEdit_tagEdit_old_details_SceneEdit_added_images[] | null;
-  removed_images: TagEdit_tagEdit_old_details_SceneEdit_removed_images[] | null;
+  added_images: (TagEdit_tagEdit_old_details_SceneEdit_added_images | null)[] | null;
+  removed_images: (TagEdit_tagEdit_old_details_SceneEdit_removed_images | null)[] | null;
   added_fingerprints: TagEdit_tagEdit_old_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: TagEdit_tagEdit_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
