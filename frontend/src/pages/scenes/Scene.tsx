@@ -158,7 +158,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
         </Card.Body>
         <Card.Footer className="d-flex mx-1">
           <div className="scene-performers me-auto">{performers}</div>
-          {scene.duration && (
+          {!!scene.duration && (
             <div title={`${scene.duration} seconds`}>
               Duration: <b>{formatDuration(scene.duration)}</b>
             </div>
