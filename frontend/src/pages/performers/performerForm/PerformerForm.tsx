@@ -7,6 +7,8 @@ import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
 import { sortBy, uniq, uniqBy } from "lodash-es";
+import { Link } from "react-router-dom";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import {
   GenderEnum,
@@ -27,7 +29,7 @@ import { Performer_findPerformer as Performer } from "src/graphql/definitions/Pe
 import { ImageFragment } from "src/graphql/definitions/ImageFragment";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
-import { Help } from "src/components/fragments";
+import { Help, Icon } from "src/components/fragments";
 import {
   BodyModification,
   EditNote,
@@ -265,6 +267,20 @@ const PerformerForm: FC<PerformerProps> = ({
     ),
   ];
 
+  const metadataErrors = [
+    { error: errors.name?.message, tab: "personal" },
+    { error: errors.birthdate?.message, tab: "personal" },
+    { error: errors.career_start_year?.message, tab: "personal" },
+    { error: errors.career_end_year?.message, tab: "personal" },
+    { error: errors.height?.message, tab: "personal" },
+    { error: errors.braSize?.message, tab: "personal" },
+    { error: errors.waistSize?.message, tab: "personal" },
+    {
+      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      tab: "links",
+    },
+  ].filter((e) => e.error) as { error: string; tab: string }[];
+
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" value={performer.id} {...register("id")} />
@@ -294,14 +310,10 @@ const PerformerForm: FC<PerformerProps> = ({
             <Form.Group controlId="disambiguation" className="col-6 mb-3">
               <Form.Label>Disambiguation</Form.Label>
               <Form.Control
-                className={cx({ "is-invalid": errors.disambiguation })}
                 defaultValue={performer.disambiguation ?? ""}
                 {...register("disambiguation")}
               />
               <Form.Text>Required if the primary name is not unique.</Form.Text>
-              <Form.Control.Feedback type="invalid">
-                {errors?.disambiguation?.message}
-              </Form.Control.Feedback>
             </Form.Group>
           </Row>
 
@@ -627,7 +639,11 @@ const PerformerForm: FC<PerformerProps> = ({
         </Tab>
 
         <Tab eventKey="links" title="Links" className="col-xl-9">
-          <URLInput control={control} type={ValidSiteTypeEnum.PERFORMER} />
+          <URLInput
+            control={control}
+            type={ValidSiteTypeEnum.PERFORMER}
+            errors={errors.urls}
+          />
 
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
@@ -662,6 +678,22 @@ const PerformerForm: FC<PerformerProps> = ({
               <EditNote register={register} error={errors.note} />
             </Col>
           </Row>
+
+          {metadataErrors.length > 0 && (
+            <div className="text-end my-4">
+              <h6>
+                <Icon icon={faExclamationTriangle} color="red" />
+                <span className="ms-1">Errors</span>
+              </h6>
+              <div className="d-flex flex-column text-danger">
+                {metadataErrors.map(({ error, tab }) => (
+                  <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
+                    {error}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           <SubmitButtons disabled={!!file || saving} />
         </Tab>
