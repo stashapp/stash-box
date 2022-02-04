@@ -178,7 +178,7 @@ const PerformerForm: FC<PerformerProps> = ({
   const changedName =
     !!performer.id &&
     fieldData.name !== undefined &&
-    performer.name !== fieldData.name;
+    performer.name.trim() !== fieldData.name;
 
   useEffect(() => {
     setUpdateAliases(changedName);
@@ -556,7 +556,6 @@ const PerformerForm: FC<PerformerProps> = ({
                 className={cx({ "is-invalid": errors.career_start_year })}
                 type="year"
                 placeholder="Year"
-                defaultValue={performer?.career_start_year ?? ""}
                 {...register("career_start_year")}
               />
               <Form.Control.Feedback type="invalid">
@@ -570,7 +569,6 @@ const PerformerForm: FC<PerformerProps> = ({
                 className={cx({ "is-invalid": errors.career_end_year })}
                 type="year"
                 placeholder="Year"
-                defaultValue={performer?.career_end_year ?? ""}
                 {...register("career_end_year")}
               />
               <Form.Control.Feedback type="invalid">

@@ -15,7 +15,7 @@ const zeroCheck = (input: number | null) =>
 
 export const PerformerSchema = yup.object({
   id: yup.string(),
-  name: yup.string().required("Name is required"),
+  name: yup.string().trim().required("Name is required"),
   gender: yup
     .string()
     .transform(nullCheck)

@@ -1,7 +1,7 @@
 import * as yup from "yup";
 
 export const StudioSchema = yup.object({
-  name: yup.string().required("Name is required"),
+  name: yup.string().trim().required("Name is required"),
   urls: yup
     .array()
     .of(
