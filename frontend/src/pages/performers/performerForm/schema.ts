@@ -64,7 +64,7 @@ export const PerformerSchema = yup.object({
     .max(50, "Invalid waist size")
     .nullable(),
   hipSize: yup.number().transform(zeroCheck).nullable(),
-  boobJob: yup
+  breastType: yup
     .string()
     .transform(nullCheck)
     .nullable()
