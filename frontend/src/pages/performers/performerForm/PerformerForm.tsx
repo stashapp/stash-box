@@ -177,8 +177,8 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const changedName =
     !!performer.id &&
-    fieldData.name !== undefined &&
-    performer.name.trim() !== fieldData.name;
+    newChanges.name !== null &&
+    performer.name.trim() !== newChanges.name;
 
   useEffect(() => {
     setUpdateAliases(changedName);
