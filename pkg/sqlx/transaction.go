@@ -20,9 +20,8 @@ type db interface {
 }
 
 type txnState struct {
-	rootDB  *sqlx.DB
-	tx      *sqlx.Tx
-	dialect Dialect
+	rootDB *sqlx.DB
+	tx     *sqlx.Tx
 }
 
 func (m *txnState) WithTxn(fn func() error) (err error) {
@@ -70,14 +69,12 @@ func (m *txnState) DB() db {
 
 // TxnMgr manages transaction boundaries and provides access to Repo objects.
 type TxnMgr struct {
-	db      *sqlx.DB
-	dialect Dialect
+	db *sqlx.DB
 }
 
 func (m *TxnMgr) New() txn.State {
 	return &txnState{
-		rootDB:  m.db,
-		dialect: m.dialect,
+		rootDB: m.db,
 	}
 }
 
@@ -90,9 +87,8 @@ func (m *TxnMgr) Repo() models.Repo {
 }
 
 // NewTxnMgr returns a new instance of TxnMgr.
-func NewTxnMgr(db *sqlx.DB, dialect Dialect) *TxnMgr {
+func NewTxnMgr(db *sqlx.DB) *TxnMgr {
 	return &TxnMgr{
-		db:      db,
-		dialect: dialect,
+		db: db,
 	}
 }

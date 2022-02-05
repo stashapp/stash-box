@@ -13,11 +13,12 @@ import {
   usePerformers,
   SortDirectionEnum,
   GenderFilterEnum,
+  PerformerSortEnum,
 } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
-import { canEdit } from "src/utils";
+import { canEdit, resolveEnum } from "src/utils";
 import AuthContext from "src/AuthContext";
 import { List } from "src/components/list";
 import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
@@ -30,11 +31,11 @@ const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
 }));
 const sortOptions = [
   { value: "", label: "Name" },
-  { value: "birthdate", label: "Birthdate" },
-  { value: "scene_count", label: "Scene Count" },
-  { value: "career_start_year", label: "Career Start" },
-  { value: "debut", label: "Scene Debut" },
-  { value: "created_at", label: "Created At" },
+  { value: PerformerSortEnum.BIRTHDATE, label: "Birthdate" },
+  { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
+  { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
+  { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
+  { value: PerformerSortEnum.CREATED_AT, label: "Created At" },
 ];
 
 const PerformersComponent: FC = () => {
@@ -50,23 +51,24 @@ const PerformersComponent: FC = () => {
     SortDirectionEnum.DESC
       ? SortDirectionEnum.DESC
       : SortDirectionEnum.ASC;
-  const sort = Array.isArray(queries.sort) ? queries.sort[0] : queries.sort;
+  const sort = resolveEnum(
+    PerformerSortEnum,
+    Array.isArray(queries.sort) ? queries.sort[0] : queries.sort
+  );
   const favorite =
     (Array.isArray(queries.favorite)
       ? queries.favorite[0]
       : queries.favorite) === "true";
   const { page, setPage } = usePagination();
   const { loading, data } = usePerformers({
-    filter: {
-      page,
-      per_page: PER_PAGE,
-      sort: sort || "name",
-      direction,
-    },
-    performerFilter: {
+    input: {
       name: query || undefined,
       gender: gender ? (gender as GenderFilterEnum) : undefined,
       is_favorite: favorite || undefined,
+      page,
+      per_page: PER_PAGE,
+      sort: sort ?? PerformerSortEnum.NAME,
+      direction,
     },
   });
 
@@ -111,7 +113,9 @@ const PerformersComponent: FC = () => {
       />
       <InputGroup className="performer-sort ms-2 me-3">
         <Form.Select
-          onChange={(e) => handleQuery("sort", e.currentTarget.value)}
+          onChange={(e) =>
+            handleQuery("sort", e.currentTarget.value.toLowerCase())
+          }
           defaultValue={sort ?? "name"}
         >
           {sortOptions.map((s) => (

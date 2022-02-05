@@ -320,14 +320,14 @@ type ComplexityRoot struct {
 		FindUser                     func(childComplexity int, id *uuid.UUID, username *string) int
 		GetConfig                    func(childComplexity int) int
 		Me                           func(childComplexity int) int
-		QueryEdits                   func(childComplexity int, editFilter *EditFilterType, filter *QuerySpec) int
-		QueryPerformers              func(childComplexity int, performerFilter *PerformerFilterType, filter *QuerySpec) int
-		QueryScenes                  func(childComplexity int, sceneFilter *SceneFilterType, filter *QuerySpec) int
-		QuerySites                   func(childComplexity int, filter *QuerySpec) int
-		QueryStudios                 func(childComplexity int, studioFilter *StudioFilterType, filter *QuerySpec) int
-		QueryTagCategories           func(childComplexity int, filter *QuerySpec) int
-		QueryTags                    func(childComplexity int, tagFilter *TagFilterType, filter *QuerySpec) int
-		QueryUsers                   func(childComplexity int, userFilter *UserFilterType, filter *QuerySpec) int
+		QueryEdits                   func(childComplexity int, input EditQueryInput) int
+		QueryPerformers              func(childComplexity int, input PerformerQueryInput) int
+		QueryScenes                  func(childComplexity int, input SceneQueryInput) int
+		QuerySites                   func(childComplexity int) int
+		QueryStudios                 func(childComplexity int, input StudioQueryInput) int
+		QueryTagCategories           func(childComplexity int) int
+		QueryTags                    func(childComplexity int, input TagQueryInput) int
+		QueryUsers                   func(childComplexity int, input UserQueryInput) int
 		SearchPerformer              func(childComplexity int, term string, limit *int) int
 		SearchScene                  func(childComplexity int, term string, limit *int) int
 		Version                      func(childComplexity int) int
@@ -672,24 +672,24 @@ type PerformerEditResolver interface {
 }
 type QueryResolver interface {
 	FindPerformer(ctx context.Context, id uuid.UUID) (*Performer, error)
-	QueryPerformers(ctx context.Context, performerFilter *PerformerFilterType, filter *QuerySpec) (*PerformerQuery, error)
+	QueryPerformers(ctx context.Context, input PerformerQueryInput) (*PerformerQuery, error)
 	FindStudio(ctx context.Context, id *uuid.UUID, name *string) (*Studio, error)
-	QueryStudios(ctx context.Context, studioFilter *StudioFilterType, filter *QuerySpec) (*QueryStudiosResultType, error)
+	QueryStudios(ctx context.Context, input StudioQueryInput) (*QueryStudiosResultType, error)
 	FindTag(ctx context.Context, id *uuid.UUID, name *string) (*Tag, error)
-	QueryTags(ctx context.Context, tagFilter *TagFilterType, filter *QuerySpec) (*QueryTagsResultType, error)
+	QueryTags(ctx context.Context, input TagQueryInput) (*QueryTagsResultType, error)
 	FindTagCategory(ctx context.Context, id uuid.UUID) (*TagCategory, error)
-	QueryTagCategories(ctx context.Context, filter *QuerySpec) (*QueryTagCategoriesResultType, error)
+	QueryTagCategories(ctx context.Context) (*QueryTagCategoriesResultType, error)
 	FindScene(ctx context.Context, id uuid.UUID) (*Scene, error)
 	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]*Scene, error)
 	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*Scene, error)
 	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput) ([]*Scene, error)
-	QueryScenes(ctx context.Context, sceneFilter *SceneFilterType, filter *QuerySpec) (*SceneQuery, error)
+	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
-	QuerySites(ctx context.Context, filter *QuerySpec) (*QuerySitesResultType, error)
+	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
-	QueryEdits(ctx context.Context, editFilter *EditFilterType, filter *QuerySpec) (*EditQuery, error)
+	QueryEdits(ctx context.Context, input EditQueryInput) (*EditQuery, error)
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
-	QueryUsers(ctx context.Context, userFilter *UserFilterType, filter *QuerySpec) (*QueryUsersResultType, error)
+	QueryUsers(ctx context.Context, input UserQueryInput) (*QueryUsersResultType, error)
 	Me(ctx context.Context) (*User, error)
 	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
 	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
@@ -2462,7 +2462,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.QueryEdits(childComplexity, args["edit_filter"].(*EditFilterType), args["filter"].(*QuerySpec)), true
+		return e.complexity.Query.QueryEdits(childComplexity, args["input"].(EditQueryInput)), true
 
 	case "Query.queryPerformers":
 		if e.complexity.Query.QueryPerformers == nil {
@@ -2474,7 +2474,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.QueryPerformers(childComplexity, args["performer_filter"].(*PerformerFilterType), args["filter"].(*QuerySpec)), true
+		return e.complexity.Query.QueryPerformers(childComplexity, args["input"].(PerformerQueryInput)), true
 
 	case "Query.queryScenes":
 		if e.complexity.Query.QueryScenes == nil {
@@ -2486,19 +2486,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.QueryScenes(childComplexity, args["scene_filter"].(*SceneFilterType), args["filter"].(*QuerySpec)), true
+		return e.complexity.Query.QueryScenes(childComplexity, args["input"].(SceneQueryInput)), true
 
 	case "Query.querySites":
 		if e.complexity.Query.QuerySites == nil {
 			break
 		}
 
-		args, err := ec.field_Query_querySites_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.QuerySites(childComplexity, args["filter"].(*QuerySpec)), true
+		return e.complexity.Query.QuerySites(childComplexity), true
 
 	case "Query.queryStudios":
 		if e.complexity.Query.QueryStudios == nil {
@@ -2510,19 +2505,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.QueryStudios(childComplexity, args["studio_filter"].(*StudioFilterType), args["filter"].(*QuerySpec)), true
+		return e.complexity.Query.QueryStudios(childComplexity, args["input"].(StudioQueryInput)), true
 
 	case "Query.queryTagCategories":
 		if e.complexity.Query.QueryTagCategories == nil {
 			break
 		}
 
-		args, err := ec.field_Query_queryTagCategories_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.QueryTagCategories(childComplexity, args["filter"].(*QuerySpec)), true
+		return e.complexity.Query.QueryTagCategories(childComplexity), true
 
 	case "Query.queryTags":
 		if e.complexity.Query.QueryTags == nil {
@@ -2534,7 +2524,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.QueryTags(childComplexity, args["tag_filter"].(*TagFilterType), args["filter"].(*QuerySpec)), true
+		return e.complexity.Query.QueryTags(childComplexity, args["input"].(TagQueryInput)), true
 
 	case "Query.queryUsers":
 		if e.complexity.Query.QueryUsers == nil {
@@ -2546,7 +2536,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.QueryUsers(childComplexity, args["user_filter"].(*UserFilterType), args["filter"].(*QuerySpec)), true
+		return e.complexity.Query.QueryUsers(childComplexity, args["input"].(UserQueryInput)), true
 
 	case "Query.searchPerformer":
 		if e.complexity.Query.SearchPerformer == nil {
@@ -3753,7 +3743,12 @@ type QueryEditsResultType {
   edits: [Edit!]!
 }
 
-input EditFilterType {
+enum EditSortEnum {
+  CREATED_AT
+  UPDATED_AT
+}
+
+input EditQueryInput {
   """Filter by user id"""
   user_id: ID
   """Filter by status"""
@@ -3770,6 +3765,11 @@ input EditFilterType {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = DESC
+  sort: EditSortEnum! = CREATED_AT
 }
 
 input ApplyEditInput {
@@ -3884,14 +3884,6 @@ type URL {
 input URLInput {
   url: String!
   site_id: ID!
-}
-
-input QuerySpec {
-  # TODO - specify by page or start/limit?
-  page: Int
-  per_page: Int
-  sort: String
-  direction: SortDirectionEnum
 }
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/performer.graphql", Input: `enum GenderEnum {
@@ -4171,7 +4163,17 @@ input BodyModificationCriterionInput {
   modifier: CriterionModifier!
 }
 
-input PerformerFilterType {
+enum PerformerSortEnum {
+  NAME
+  BIRTHDATE
+  SCENE_COUNT
+  CAREER_START_YEAR
+  DEBUT
+  CREATED_AT
+  UPDATED_AT
+}
+
+input PerformerQueryInput {
   """Searches name and aliases - assumes like query unless quoted"""
   names: String
 
@@ -4211,6 +4213,11 @@ input PerformerFilterType {
   piercings: BodyModificationCriterionInput
   """Filter by performerfavorite status for the current user"""
   is_favorite: Boolean
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = DESC
+  sort: PerformerSortEnum! = CREATED_AT
 }
 
 type PerformerDraft {
@@ -4420,7 +4427,15 @@ type QueryScenesResultType {
   scenes: [Scene!]!
 }
 
-input SceneFilterType {
+enum SceneSortEnum {
+  TITLE
+  DATE
+  TRENDING
+  CREATED_AT
+  UPDATED_AT
+}
+
+input SceneQueryInput {
   """Filter to search title and details - assumes like query unless quoted"""
   text: String
   """Filter to search title - assumes like query unless quoted"""
@@ -4441,6 +4456,11 @@ input SceneFilterType {
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
   fingerprints: MultiStringCriterionInput
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = DESC
+  sort: SceneSortEnum! = RELEASE_DATE
 }
 
 union SceneDraftStudio = Studio | DraftEntity
@@ -4588,6 +4608,30 @@ input StudioFilterType {
   """Filter by studio favorite status for the current user"""
   is_favorite: Boolean
 }
+
+enum StudioSortEnum {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+}
+
+input StudioQueryInput {
+  """Filter to search name - assumes like query unless quoted"""
+  name: String
+  """Filter to search studio and parent studio name - assumes like query unless quoted"""
+  names: String
+  """Filter to search url - assumes like query unless quoted"""
+  url: String
+  parent: IDCriterionInput
+  has_parent: Boolean
+  """Filter by studio favorite status for the current user"""
+  is_favorite: Boolean
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = ASC
+  sort: StudioSortEnum! = NAME
+}
 `, BuiltIn: false},
 	{Name: "graphql/schema/types/tag.graphql", Input: `enum TagGroupEnum {
   PEOPLE
@@ -4657,7 +4701,13 @@ type QueryTagCategoriesResultType {
   tag_categories: [TagCategory!]!
 }
 
-input TagFilterType {
+enum TagSortEnum {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+}
+
+input TagQueryInput {
   """Filter to search name, aliases and description - assumes like query unless quoted"""
   text: String
   """Searches name and aliases - assumes like query unless quoted"""
@@ -4666,6 +4716,11 @@ input TagFilterType {
   name: String
   """Filter to category ID"""
   category_id: ID
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = ASC
+  sort: TagSortEnum! = NAME
 }
 
 type TagCategory {
@@ -4795,7 +4850,7 @@ input RoleCriterionInput {
   modifier: CriterionModifier!
 }
 
-input UserFilterType {
+input UserQueryInput {
   """Filter to search user name - assumes like query unless quoted"""
   name: String
   """Filter to search email - assumes like query unless quoted"""
@@ -4817,6 +4872,9 @@ input UserFilterType {
   api_calls: IntCriterionInput
   """Filter by user that invited"""
   invited_by: ID
+
+  page: Int! = 1
+  per_page: Int! = 25
 }
 
 type UserEditCount {
@@ -4851,25 +4909,25 @@ type Query {
   # performer names may not be unique
   """Find a performer by ID"""
   findPerformer(id: ID!): Performer @hasRole(role: READ)
-  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType! @hasRole(role: READ)
+  queryPerformers(input: PerformerQueryInput!): QueryPerformersResultType! @hasRole(role: READ)
 
   #### Studios ####
 
   # studio names should be unique
   """Find a studio by ID or name"""
   findStudio(id: ID, name: String): Studio @hasRole(role: READ)
-  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType! @hasRole(role: READ)
+  queryStudios(input: StudioQueryInput!): QueryStudiosResultType! @hasRole(role: READ)
 
   #### Tags ####
 
   # tag names will be unique
   """Find a tag by ID or name, or aliases"""
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
-  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType! @hasRole(role: READ)
+  queryTags(input: TagQueryInput!): QueryTagsResultType! @hasRole(role: READ)
 
   """Find a tag category by ID"""
   findTagCategory(id: ID!): TagCategory @hasRole(role: READ)
-  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType! @hasRole(role: READ)
+  queryTagCategories: QueryTagCategoriesResultType! @hasRole(role: READ)
 
   #### Scenes ####
 
@@ -4882,22 +4940,22 @@ type Query {
   """Finds scenes that match a list of hashes"""
   findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ)
   findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ)
-  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType! @hasRole(role: READ)
+  queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
 
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)
-  querySites(filter: QuerySpec): QuerySitesResultType! @hasRole(role: READ)
+  querySites: QuerySitesResultType! @hasRole(role: READ)
 
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
-  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @hasRole(role: READ)
+  queryEdits(input: EditQueryInput!): QueryEditsResultType! @hasRole(role: READ)
 
   #### Users ####
 
   """Find user by ID or username"""
   findUser(id: ID, username: String): User @hasRole(role: READ)
-  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @hasRole(role: ADMIN)
+  queryUsers(input: UserQueryInput!): QueryUsersResultType! @hasRole(role: ADMIN)
 
   """Returns currently authenticated user"""
   me: User
@@ -5950,174 +6008,90 @@ func (ec *executionContext) field_Query_findUser_args(ctx context.Context, rawAr
 func (ec *executionContext) field_Query_queryEdits_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *EditFilterType
-	if tmp, ok := rawArgs["edit_filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("edit_filter"))
-		arg0, err = ec.unmarshalOEditFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditFilterType(ctx, tmp)
+	var arg0 EditQueryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNEditQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["edit_filter"] = arg0
-	var arg1 *QuerySpec
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg1, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Query_queryPerformers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *PerformerFilterType
-	if tmp, ok := rawArgs["performer_filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performer_filter"))
-		arg0, err = ec.unmarshalOPerformerFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerFilterType(ctx, tmp)
+	var arg0 PerformerQueryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNPerformerQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["performer_filter"] = arg0
-	var arg1 *QuerySpec
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg1, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Query_queryScenes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *SceneFilterType
-	if tmp, ok := rawArgs["scene_filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scene_filter"))
-		arg0, err = ec.unmarshalOSceneFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneFilterType(ctx, tmp)
+	var arg0 SceneQueryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSceneQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["scene_filter"] = arg0
-	var arg1 *QuerySpec
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg1, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_querySites_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *QuerySpec
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg0, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Query_queryStudios_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *StudioFilterType
-	if tmp, ok := rawArgs["studio_filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_filter"))
-		arg0, err = ec.unmarshalOStudioFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioFilterType(ctx, tmp)
+	var arg0 StudioQueryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNStudioQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["studio_filter"] = arg0
-	var arg1 *QuerySpec
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg1, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_queryTagCategories_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *QuerySpec
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg0, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Query_queryTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *TagFilterType
-	if tmp, ok := rawArgs["tag_filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_filter"))
-		arg0, err = ec.unmarshalOTagFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagFilterType(ctx, tmp)
+	var arg0 TagQueryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNTagQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["tag_filter"] = arg0
-	var arg1 *QuerySpec
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg1, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Query_queryUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *UserFilterType
-	if tmp, ok := rawArgs["user_filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_filter"))
-		arg0, err = ec.unmarshalOUserFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserFilterType(ctx, tmp)
+	var arg0 UserQueryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUserQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["user_filter"] = arg0
-	var arg1 *QuerySpec
-	if tmp, ok := rawArgs["filter"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
-		arg1, err = ec.unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["filter"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -13456,7 +13430,7 @@ func (ec *executionContext) _Query_queryPerformers(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QueryPerformers(rctx, args["performer_filter"].(*PerformerFilterType), args["filter"].(*QuerySpec))
+			return ec.resolvers.Query().QueryPerformers(rctx, args["input"].(PerformerQueryInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
@@ -13585,7 +13559,7 @@ func (ec *executionContext) _Query_queryStudios(ctx context.Context, field graph
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QueryStudios(rctx, args["studio_filter"].(*StudioFilterType), args["filter"].(*QuerySpec))
+			return ec.resolvers.Query().QueryStudios(rctx, args["input"].(StudioQueryInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
@@ -13714,7 +13688,7 @@ func (ec *executionContext) _Query_queryTags(ctx context.Context, field graphql.
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QueryTags(rctx, args["tag_filter"].(*TagFilterType), args["filter"].(*QuerySpec))
+			return ec.resolvers.Query().QueryTags(rctx, args["input"].(TagQueryInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
@@ -13833,17 +13807,10 @@ func (ec *executionContext) _Query_queryTagCategories(ctx context.Context, field
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_queryTagCategories_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QueryTagCategories(rctx, args["filter"].(*QuerySpec))
+			return ec.resolvers.Query().QueryTagCategories(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
@@ -14170,7 +14137,7 @@ func (ec *executionContext) _Query_queryScenes(ctx context.Context, field graphq
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QueryScenes(rctx, args["scene_filter"].(*SceneFilterType), args["filter"].(*QuerySpec))
+			return ec.resolvers.Query().QueryScenes(rctx, args["input"].(SceneQueryInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
@@ -14289,17 +14256,10 @@ func (ec *executionContext) _Query_querySites(ctx context.Context, field graphql
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_querySites_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QuerySites(rctx, args["filter"].(*QuerySpec))
+			return ec.resolvers.Query().QuerySites(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
@@ -14428,7 +14388,7 @@ func (ec *executionContext) _Query_queryEdits(ctx context.Context, field graphql
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QueryEdits(rctx, args["edit_filter"].(*EditFilterType), args["filter"].(*QuerySpec))
+			return ec.resolvers.Query().QueryEdits(rctx, args["input"].(EditQueryInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
@@ -14557,7 +14517,7 @@ func (ec *executionContext) _Query_queryUsers(ctx context.Context, field graphql
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QueryUsers(rctx, args["user_filter"].(*UserFilterType), args["filter"].(*QuerySpec))
+			return ec.resolvers.Query().QueryUsers(rctx, args["input"].(UserQueryInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
@@ -21321,11 +21281,79 @@ func (ec *executionContext) unmarshalInputEditCommentInput(ctx context.Context, 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputEditFilterType(ctx context.Context, obj interface{}) (EditFilterType, error) {
-	var it EditFilterType
+func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj interface{}) (EditInput, error) {
+	var it EditInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "operation":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operation"))
+			it.Operation, err = ec.unmarshalNOperationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "edit_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("edit_id"))
+			it.EditID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "merge_source_ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("merge_source_ids"))
+			it.MergeSourceIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "comment":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("comment"))
+			it.Comment, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, obj interface{}) (EditQueryInput, error) {
+	var it EditQueryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "DESC"
+	}
+	if _, present := asMap["sort"]; !present {
+		asMap["sort"] = "CREATED_AT"
 	}
 
 	for k, v := range asMap {
@@ -21394,58 +21422,35 @@ func (ec *executionContext) unmarshalInputEditFilterType(ctx context.Context, ob
 			if err != nil {
 				return it, err
 			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj interface{}) (EditInput, error) {
-	var it EditInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	for k, v := range asMap {
-		switch k {
-		case "id":
+		case "page":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "operation":
+		case "per_page":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operation"))
-			it.Operation, err = ec.unmarshalNOperationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			it.PerPage, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "edit_id":
+		case "direction":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("edit_id"))
-			it.EditID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNSortDirectionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "merge_source_ids":
+		case "sort":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("merge_source_ids"))
-			it.MergeSourceIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "comment":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("comment"))
-			it.Comment, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+			it.Sort, err = ec.unmarshalNEditSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditSortEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -22701,11 +22706,24 @@ func (ec *executionContext) unmarshalInputPerformerEditOptionsInput(ctx context.
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPerformerFilterType(ctx context.Context, obj interface{}) (PerformerFilterType, error) {
-	var it PerformerFilterType
+func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Context, obj interface{}) (PerformerQueryInput, error) {
+	var it PerformerQueryInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "DESC"
+	}
+	if _, present := asMap["sort"]; !present {
+		asMap["sort"] = "CREATED_AT"
 	}
 
 	for k, v := range asMap {
@@ -22902,6 +22920,38 @@ func (ec *executionContext) unmarshalInputPerformerFilterType(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
+		case "page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "per_page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			it.PerPage, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNSortDirectionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sort":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+			it.Sort, err = ec.unmarshalNPerformerSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerSortEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -23066,53 +23116,6 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_ids"))
 			it.ImageIds, err = ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputQuerySpec(ctx context.Context, obj interface{}) (QuerySpec, error) {
-	var it QuerySpec
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	for k, v := range asMap {
-		switch k {
-		case "page":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-			it.Page, err = ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "per_page":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
-			it.PerPage, err = ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "sort":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
-			it.Sort, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "direction":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
-			it.Direction, err = ec.unmarshalOSortDirectionEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -23570,11 +23573,24 @@ func (ec *executionContext) unmarshalInputSceneEditInput(ctx context.Context, ob
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSceneFilterType(ctx context.Context, obj interface{}) (SceneFilterType, error) {
-	var it SceneFilterType
+func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, obj interface{}) (SceneQueryInput, error) {
+	var it SceneQueryInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "DESC"
+	}
+	if _, present := asMap["sort"]; !present {
+		asMap["sort"] = "RELEASE_DATE"
 	}
 
 	for k, v := range asMap {
@@ -23656,6 +23672,38 @@ func (ec *executionContext) unmarshalInputSceneFilterType(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
 			it.Fingerprints, err = ec.unmarshalOMultiStringCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiStringCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "per_page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			it.PerPage, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNSortDirectionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sort":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+			it.Sort, err = ec.unmarshalNSceneSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneSortEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -24159,6 +24207,114 @@ func (ec *executionContext) unmarshalInputStudioFilterType(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputStudioQueryInput(ctx context.Context, obj interface{}) (StudioQueryInput, error) {
+	var it StudioQueryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+	if _, present := asMap["sort"]; !present {
+		asMap["sort"] = "NAME"
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "names":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("names"))
+			it.Names, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			it.URL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "parent":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent"))
+			it.Parent, err = ec.unmarshalOIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIDCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "has_parent":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("has_parent"))
+			it.HasParent, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_favorite":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
+			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "per_page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			it.PerPage, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNSortDirectionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sort":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+			it.Sort, err = ec.unmarshalNStudioSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioSortEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context, obj interface{}) (StudioUpdateInput, error) {
 	var it StudioUpdateInput
 	asMap := map[string]interface{}{}
@@ -24471,11 +24627,24 @@ func (ec *executionContext) unmarshalInputTagEditInput(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTagFilterType(ctx context.Context, obj interface{}) (TagFilterType, error) {
-	var it TagFilterType
+func (ec *executionContext) unmarshalInputTagQueryInput(ctx context.Context, obj interface{}) (TagQueryInput, error) {
+	var it TagQueryInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+	if _, present := asMap["sort"]; !present {
+		asMap["sort"] = "NAME"
 	}
 
 	for k, v := range asMap {
@@ -24509,6 +24678,38 @@ func (ec *executionContext) unmarshalInputTagFilterType(ctx context.Context, obj
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category_id"))
 			it.CategoryID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "per_page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			it.PerPage, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNSortDirectionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sort":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
+			it.Sort, err = ec.unmarshalNTagSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagSortEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -24721,11 +24922,18 @@ func (ec *executionContext) unmarshalInputUserDestroyInput(ctx context.Context, 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUserFilterType(ctx context.Context, obj interface{}) (UserFilterType, error) {
-	var it UserFilterType
+func (ec *executionContext) unmarshalInputUserQueryInput(ctx context.Context, obj interface{}) (UserQueryInput, error) {
+	var it UserQueryInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
 	}
 
 	for k, v := range asMap {
@@ -24807,6 +25015,22 @@ func (ec *executionContext) unmarshalInputUserFilterType(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("invited_by"))
 			it.InvitedBy, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "per_page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			it.PerPage, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -31271,6 +31495,21 @@ func (ec *executionContext) unmarshalNEditInput2ᚖgithubᚗcomᚋstashappᚋsta
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNEditQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditQueryInput(ctx context.Context, v interface{}) (EditQueryInput, error) {
+	res, err := ec.unmarshalInputEditQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNEditSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditSortEnum(ctx context.Context, v interface{}) (EditSortEnum, error) {
+	var res EditSortEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNEditSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditSortEnum(ctx context.Context, sel ast.SelectionSet, v EditSortEnum) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNEditTarget2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditTarget(ctx context.Context, sel ast.SelectionSet, v EditTarget) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -31832,6 +32071,21 @@ func (ec *executionContext) unmarshalNPerformerEditInput2githubᚗcomᚋstashapp
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNPerformerQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQueryInput(ctx context.Context, v interface{}) (PerformerQueryInput, error) {
+	res, err := ec.unmarshalInputPerformerQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPerformerSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerSortEnum(ctx context.Context, v interface{}) (PerformerSortEnum, error) {
+	var res PerformerSortEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPerformerSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerSortEnum(ctx context.Context, sel ast.SelectionSet, v PerformerSortEnum) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNPerformerStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerStudioᚄ(ctx context.Context, sel ast.SelectionSet, v []*PerformerStudio) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -32222,6 +32476,21 @@ func (ec *executionContext) unmarshalNSceneEditInput2githubᚗcomᚋstashappᚋs
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNSceneQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneQueryInput(ctx context.Context, v interface{}) (SceneQueryInput, error) {
+	res, err := ec.unmarshalInputSceneQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNSceneSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneSortEnum(ctx context.Context, v interface{}) (SceneSortEnum, error) {
+	var res SceneSortEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSceneSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneSortEnum(ctx context.Context, sel ast.SelectionSet, v SceneSortEnum) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNSceneUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneUpdateInput(ctx context.Context, v interface{}) (SceneUpdateInput, error) {
 	res, err := ec.unmarshalInputSceneUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -32298,6 +32567,16 @@ func (ec *executionContext) unmarshalNSiteDestroyInput2githubᚗcomᚋstashapp�
 func (ec *executionContext) unmarshalNSiteUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSiteUpdateInput(ctx context.Context, v interface{}) (SiteUpdateInput, error) {
 	res, err := ec.unmarshalInputSiteUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNSortDirectionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx context.Context, v interface{}) (SortDirectionEnum, error) {
+	var res SortDirectionEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSortDirectionEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx context.Context, sel ast.SelectionSet, v SortDirectionEnum) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNStashBoxConfig2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStashBoxConfig(ctx context.Context, sel ast.SelectionSet, v StashBoxConfig) graphql.Marshaler {
@@ -32432,6 +32711,21 @@ func (ec *executionContext) unmarshalNStudioDestroyInput2githubᚗcomᚋstashapp
 func (ec *executionContext) unmarshalNStudioEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioEditInput(ctx context.Context, v interface{}) (StudioEditInput, error) {
 	res, err := ec.unmarshalInputStudioEditInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNStudioQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioQueryInput(ctx context.Context, v interface{}) (StudioQueryInput, error) {
+	res, err := ec.unmarshalInputStudioQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNStudioSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioSortEnum(ctx context.Context, v interface{}) (StudioSortEnum, error) {
+	var res StudioSortEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNStudioSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioSortEnum(ctx context.Context, sel ast.SelectionSet, v StudioSortEnum) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNStudioUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioUpdateInput(ctx context.Context, v interface{}) (StudioUpdateInput, error) {
@@ -32584,6 +32878,21 @@ func (ec *executionContext) unmarshalNTagGroupEnum2githubᚗcomᚋstashappᚋsta
 }
 
 func (ec *executionContext) marshalNTagGroupEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagGroupEnum(ctx context.Context, sel ast.SelectionSet, v TagGroupEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNTagQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagQueryInput(ctx context.Context, v interface{}) (TagQueryInput, error) {
+	res, err := ec.unmarshalInputTagQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNTagSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagSortEnum(ctx context.Context, v interface{}) (TagSortEnum, error) {
+	var res TagSortEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTagSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagSortEnum(ctx context.Context, sel ast.SelectionSet, v TagSortEnum) graphql.Marshaler {
 	return v
 }
 
@@ -32778,6 +33087,11 @@ func (ec *executionContext) marshalNUserEditCount2ᚖgithubᚗcomᚋstashappᚋs
 		return graphql.Null
 	}
 	return ec._UserEditCount(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUserQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserQueryInput(ctx context.Context, v interface{}) (UserQueryInput, error) {
+	res, err := ec.unmarshalInputUserQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUserUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserUpdateInput(ctx context.Context, v interface{}) (UserUpdateInput, error) {
@@ -33355,14 +33669,6 @@ func (ec *executionContext) marshalOEditDetails2githubᚗcomᚋstashappᚋstash�
 	return ec._EditDetails(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOEditFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditFilterType(ctx context.Context, v interface{}) (*EditFilterType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputEditFilterType(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalOEditTarget2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditTarget(ctx context.Context, sel ast.SelectionSet, v EditTarget) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -33887,22 +34193,6 @@ func (ec *executionContext) unmarshalOPerformerEditOptionsInput2ᚖgithubᚗcom�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOPerformerFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerFilterType(ctx context.Context, v interface{}) (*PerformerFilterType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputPerformerFilterType(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOQuerySpec2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQuerySpec(ctx context.Context, v interface{}) (*QuerySpec, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputQuerySpec(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalORoleCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleCriterionInput(ctx context.Context, v interface{}) (*RoleCriterionInput, error) {
 	if v == nil {
 		return nil, nil
@@ -34047,35 +34337,11 @@ func (ec *executionContext) unmarshalOSceneEditDetailsInput2ᚖgithubᚗcomᚋst
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOSceneFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneFilterType(ctx context.Context, v interface{}) (*SceneFilterType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputSceneFilterType(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalOSite2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSite(ctx context.Context, sel ast.SelectionSet, v *Site) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Site(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOSortDirectionEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx context.Context, v interface{}) (*SortDirectionEnum, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(SortDirectionEnum)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOSortDirectionEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSortDirectionEnum(ctx context.Context, sel ast.SelectionSet, v *SortDirectionEnum) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
@@ -34165,14 +34431,6 @@ func (ec *executionContext) unmarshalOStudioEditDetailsInput2ᚖgithubᚗcomᚋs
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOStudioFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioFilterType(ctx context.Context, v interface{}) (*StudioFilterType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputStudioFilterType(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalOTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*Tag) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -34239,14 +34497,6 @@ func (ec *executionContext) unmarshalOTagEditDetailsInput2ᚖgithubᚗcomᚋstas
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputTagEditDetailsInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOTagFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagFilterType(ctx context.Context, v interface{}) (*TagFilterType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputTagFilterType(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -34393,14 +34643,6 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋstashappᚋstashᚑbo
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOUserFilterType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserFilterType(ctx context.Context, v interface{}) (*UserFilterType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputUserFilterType(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOVoteStatusEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteStatusEnum(ctx context.Context, v interface{}) (*VoteStatusEnum, error) {

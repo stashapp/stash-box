@@ -404,6 +404,5 @@ func (p *EditVotes) Add(o interface{}) {
 }
 
 type EditQuery struct {
-	EditFilter *EditFilterType
-	Filter     *QuerySpec
+	Filter EditQueryInput
 }

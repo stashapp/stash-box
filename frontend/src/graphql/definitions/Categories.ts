@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { QuerySpec, TagGroupEnum } from "./globalTypes";
+import { TagGroupEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Categories
@@ -25,8 +25,4 @@ export interface Categories_queryTagCategories {
 
 export interface Categories {
   queryTagCategories: Categories_queryTagCategories;
-}
-
-export interface CategoriesVariables {
-  filter?: QuerySpec | null;
 }
