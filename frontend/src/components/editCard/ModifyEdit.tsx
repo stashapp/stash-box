@@ -424,7 +424,7 @@ export const renderSceneDetails = (
       showDiff={showDiff}
     />
     <ChangeRow
-      name="Scene Code"
+      name="Studio Code"
       newValue={sceneDetails.code}
       oldValue={oldSceneDetails?.code}
       showDiff={showDiff}
