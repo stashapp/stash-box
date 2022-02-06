@@ -132,7 +132,7 @@ func (qb *studioQueryBuilder) FindByName(name string) (*models.Studio, error) {
 }
 
 func (qb *studioQueryBuilder) FindByParentID(id uuid.UUID) (models.Studios, error) {
-	query := "SELECT * FROM studios WHERE parent_studio_id = ?"
+	query := "SELECT * FROM studios WHERE parent_studio_id = ? AND deleted = FALSE"
 	var args []interface{}
 	args = append(args, id)
 	return qb.queryStudios(query, args)
