@@ -20,9 +20,10 @@ type S3Config struct {
 }
 
 type config struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	Database string `mapstructure:"database"`
+	Host         string `mapstructure:"host"`
+	Port         int    `mapstructure:"port"`
+	Database     string `mapstructure:"database"`
+	ProfilerPort int    `mapstructure:"profiler_port"`
 
 	HTTPUpgrade  bool `mapstructure:"http_upgrade"`
 	IsProduction bool `mapstructure:"is_production"`
@@ -118,6 +119,13 @@ func GetHost() string {
 
 func GetPort() int {
 	return C.Port
+}
+
+func GetProfilerPort() *int {
+	if C.ProfilerPort == 0 {
+		return nil
+	}
+	return &C.ProfilerPort
 }
 
 func GetJWTSignKey() []byte {

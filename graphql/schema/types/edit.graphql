@@ -101,7 +101,12 @@ type QueryEditsResultType {
   edits: [Edit!]!
 }
 
-input EditFilterType {
+enum EditSortEnum {
+  CREATED_AT
+  UPDATED_AT
+}
+
+input EditQueryInput {
   """Filter by user id"""
   user_id: ID
   """Filter by status"""
@@ -118,6 +123,11 @@ input EditFilterType {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = DESC
+  sort: EditSortEnum! = CREATED_AT
 }
 
 input ApplyEditInput {

@@ -218,37 +218,30 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) *queryBuilder {
-	if performerFilter == nil {
-		performerFilter = &models.PerformerFilterType{}
-	}
-	if findFilter == nil {
-		findFilter = &models.QuerySpec{}
-	}
-
+func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, userID uuid.UUID) *queryBuilder {
 	query := newQueryBuilder(performerDBTable)
 	query.Eq("deleted", false)
 
-	if q := performerFilter.Name; q != nil && *q != "" {
+	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"performers.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
-	if birthYear := performerFilter.BirthYear; birthYear != nil {
+	if birthYear := filter.BirthYear; birthYear != nil {
 		clauses, thisArgs := getBirthYearFilterClause(birthYear.Modifier, birthYear.Value)
 		query.AddWhere(clauses...)
 		query.AddArg(thisArgs...)
 	}
 
-	if age := performerFilter.Age; age != nil {
+	if age := filter.Age; age != nil {
 		clauses, thisArgs := getAgeFilterClause(age.Modifier, age.Value)
 		query.AddWhere(clauses...)
 		query.AddArg(thisArgs...)
 	}
 
-	if q := performerFilter.Gender; q != nil && *q != "" {
+	if q := filter.Gender; q != nil && *q != "" {
 		if *q == models.GenderFilterEnumUnknown {
 			query.AddWhere("performers.gender IS NULL")
 		} else {
@@ -256,7 +249,7 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 		}
 	}
 
-	if q := performerFilter.Ethnicity; q != nil && *q != "" {
+	if q := filter.Ethnicity; q != nil && *q != "" {
 		if *q == models.EthnicityFilterEnumUnknown {
 			query.AddWhere("performers.ethnicity IS NULL")
 		} else {
@@ -264,10 +257,10 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 		}
 	}
 
-	if performerFilter.IsFavorite != nil {
+	if filter.IsFavorite != nil {
 		// userID is internal based on user context so it is safe to append rather than bind
 		q := fmt.Sprintf(" JOIN performer_favorites F ON performers.id = F.performer_id AND F.user_id = '%s'", userID)
-		if *performerFilter.IsFavorite {
+		if *filter.IsFavorite {
 			query.Body += q
 		} else {
 			query.Body += " LEFT" + q
@@ -275,12 +268,12 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 		}
 	}
 
-	handleStringCriterion("country", performerFilter.Country, query)
+	handleStringCriterion("country", filter.Country, query)
 	/*
 		handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
 		handleStringCriterion("height", performerFilter.Height, &query)
 		handleStringCriterion("measurements", performerFilter.Measurements, &query)
-		handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
+		handleStringCriterion("breast_type", performerFilter.BreastType, &query)
 		handleStringCriterion("career_length", performerFilter.CareerLength, &query)
 		handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
 		handleStringCriterion("piercings", performerFilter.Piercings, &query)
@@ -288,38 +281,38 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 	*/
 
 	switch {
-	case findFilter != nil && findFilter.GetSort("") == "debut":
+	case filter.Sort == models.PerformerSortEnumDebut:
 		query.Body += `
 			JOIN (SELECT performer_id, MIN(date) as debut FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
-		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
+		direction := filter.Direction.String() + nullsLast()
 		query.Sort = "ORDER BY debut " + direction + ", name " + direction
-	case findFilter != nil && findFilter.GetSort("") == "scene_count":
+	case filter.Sort == models.PerformerSortEnumSceneCount:
 		query.Body += `
 			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
 			ON performers.id = D.performer_id
 		`
-		direction := findFilter.GetDirection() + qb.dbi.txn.dialect.NullsLast()
+		direction := filter.Direction.String() + nullsLast()
 		query.Sort = " ORDER BY scene_count " + direction + ", name " + direction
 	default:
-		query.Sort = qb.getPerformerSort(findFilter)
+		query.Sort = qb.getPerformerSort(filter)
 	}
 
 	return query
 }
 
-func (qb *performerQueryBuilder) QueryPerformers(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) ([]*models.Performer, error) {
-	query := qb.buildQuery(performerFilter, findFilter, userID)
-	query.Pagination = getPagination(findFilter)
+func (qb *performerQueryBuilder) QueryPerformers(filter models.PerformerQueryInput, userID uuid.UUID) ([]*models.Performer, error) {
+	query := qb.buildQuery(filter, userID)
+	query.Pagination = getPagination(filter.Page, filter.PerPage)
 
 	var performers models.Performers
 	err := qb.dbi.QueryOnly(*query, &performers)
 	return performers, err
 }
 
-func (qb *performerQueryBuilder) QueryCount(performerFilter *models.PerformerFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (int, error) {
-	query := qb.buildQuery(performerFilter, findFilter, userID)
+func (qb *performerQueryBuilder) QueryCount(filter models.PerformerQueryInput, userID uuid.UUID) (int, error) {
+	query := qb.buildQuery(filter, userID)
 	return qb.dbi.CountOnly(*query)
 }
 
@@ -394,22 +387,12 @@ func getAgeFilterClause(criterionModifier models.CriterionModifier, value int) (
 	return clauses, args
 }
 
-func (qb *performerQueryBuilder) getPerformerSort(findFilter *models.QuerySpec) string {
-	var sort string
-	var direction string
-	var secondary *string
-	if findFilter == nil {
-		sort = "name"
-		direction = "ASC"
-	} else {
-		sort = findFilter.GetSort("name")
-		direction = findFilter.GetDirection()
+func (qb *performerQueryBuilder) getPerformerSort(filter models.PerformerQueryInput) string {
+	secondary := "name"
+	if filter.Sort == models.PerformerSortEnumName {
+		secondary = "id"
 	}
-	if sort != "name" {
-		name := "name"
-		secondary = &name
-	}
-	return getSort(qb.dbi.txn.dialect, sort, direction, "performers", secondary)
+	return getSort(filter.Sort.String(), filter.Direction.String(), "performers", &secondary)
 }
 
 func (qb *performerQueryBuilder) queryPerformers(query string, args []interface{}) (models.Performers, error) {

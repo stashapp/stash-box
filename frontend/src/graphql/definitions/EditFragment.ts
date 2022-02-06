@@ -373,8 +373,8 @@ export interface EditFragment_details_PerformerEdit {
   removed_tattoos: EditFragment_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: EditFragment_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: EditFragment_details_PerformerEdit_removed_piercings[] | null;
-  added_images: EditFragment_details_PerformerEdit_added_images[] | null;
-  removed_images: EditFragment_details_PerformerEdit_removed_images[] | null;
+  added_images: (EditFragment_details_PerformerEdit_added_images | null)[] | null;
+  removed_images: (EditFragment_details_PerformerEdit_removed_images | null)[] | null;
   draft_id: string | null;
 }
 
@@ -474,8 +474,8 @@ export interface EditFragment_details_StudioEdit {
   added_urls: EditFragment_details_StudioEdit_added_urls[] | null;
   removed_urls: EditFragment_details_StudioEdit_removed_urls[] | null;
   parent: EditFragment_details_StudioEdit_parent | null;
-  added_images: EditFragment_details_StudioEdit_added_images[] | null;
-  removed_images: EditFragment_details_StudioEdit_removed_images[] | null;
+  added_images: (EditFragment_details_StudioEdit_added_images | null)[] | null;
+  removed_images: (EditFragment_details_StudioEdit_removed_images | null)[] | null;
 }
 
 export interface EditFragment_details_SceneEdit_added_urls_site {
@@ -794,8 +794,8 @@ export interface EditFragment_details_SceneEdit {
   removed_performers: EditFragment_details_SceneEdit_removed_performers[] | null;
   added_tags: EditFragment_details_SceneEdit_added_tags[] | null;
   removed_tags: EditFragment_details_SceneEdit_removed_tags[] | null;
-  added_images: EditFragment_details_SceneEdit_added_images[] | null;
-  removed_images: EditFragment_details_SceneEdit_removed_images[] | null;
+  added_images: (EditFragment_details_SceneEdit_added_images | null)[] | null;
+  removed_images: (EditFragment_details_SceneEdit_removed_images | null)[] | null;
   added_fingerprints: EditFragment_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: EditFragment_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
@@ -1210,8 +1210,8 @@ export interface EditFragment_old_details_SceneEdit {
   removed_performers: EditFragment_old_details_SceneEdit_removed_performers[] | null;
   added_tags: EditFragment_old_details_SceneEdit_added_tags[] | null;
   removed_tags: EditFragment_old_details_SceneEdit_removed_tags[] | null;
-  added_images: EditFragment_old_details_SceneEdit_added_images[] | null;
-  removed_images: EditFragment_old_details_SceneEdit_removed_images[] | null;
+  added_images: (EditFragment_old_details_SceneEdit_added_images | null)[] | null;
+  removed_images: (EditFragment_old_details_SceneEdit_removed_images | null)[] | null;
   added_fingerprints: EditFragment_old_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: EditFragment_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;

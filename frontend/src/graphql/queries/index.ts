@@ -10,7 +10,7 @@ import AuthContext from "src/AuthContext";
 import { isAdmin } from "src/utils";
 
 import { Category, CategoryVariables } from "../definitions/Category";
-import { Categories, CategoriesVariables } from "../definitions/Categories";
+import { Categories } from "../definitions/Categories";
 import { Edit, EditVariables } from "../definitions/Edit";
 import { Edits, EditsVariables } from "../definitions/Edits";
 import { Me } from "../definitions/Me";
@@ -83,10 +83,7 @@ export const useCategory = (variables: CategoryVariables, skip = false) =>
     skip,
   });
 
-export const useCategories = (variables?: CategoriesVariables) =>
-  useQuery<Categories, CategoriesVariables>(CategoriesQuery, {
-    variables,
-  });
+export const useCategories = () => useQuery<Categories>(CategoriesQuery);
 
 export const useEdit = (variables: EditVariables) =>
   useQuery<Edit, EditVariables>(EditQuery, {

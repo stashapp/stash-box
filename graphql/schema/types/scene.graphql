@@ -155,8 +155,8 @@ type SceneEdit {
   removed_performers: [PerformerAppearance!]
   added_tags: [Tag!]
   removed_tags: [Tag!]
-  added_images: [Image!]
-  removed_images: [Image!]
+  added_images: [Image]
+  removed_images: [Image]
   added_fingerprints: [Fingerprint!]
   removed_fingerprints: [Fingerprint!]
   duration: Int
@@ -170,7 +170,15 @@ type QueryScenesResultType {
   scenes: [Scene!]!
 }
 
-input SceneFilterType {
+enum SceneSortEnum {
+  TITLE
+  DATE
+  TRENDING
+  CREATED_AT
+  UPDATED_AT
+}
+
+input SceneQueryInput {
   """Filter to search title and details - assumes like query unless quoted"""
   text: String
   """Filter to search title - assumes like query unless quoted"""
@@ -191,6 +199,11 @@ input SceneFilterType {
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
   fingerprints: MultiStringCriterionInput
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = DESC
+  sort: SceneSortEnum! = RELEASE_DATE
 }
 
 union SceneDraftStudio = Studio | DraftEntity

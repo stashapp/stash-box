@@ -15,11 +15,11 @@ func (r *queryResolver) FindTagCategory(ctx context.Context, id uuid.UUID) (*mod
 	return qb.Find(id)
 }
 
-func (r *queryResolver) QueryTagCategories(ctx context.Context, filter *models.QuerySpec) (*models.QueryTagCategoriesResultType, error) {
+func (r *queryResolver) QueryTagCategories(ctx context.Context) (*models.QueryTagCategoriesResultType, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.TagCategory()
 
-	categories, count, err := qb.Query(filter)
+	categories, count, err := qb.Query()
 	if err != nil {
 		return nil, err
 	}

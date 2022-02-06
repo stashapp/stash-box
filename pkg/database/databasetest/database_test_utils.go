@@ -12,7 +12,6 @@ import (
 	"github.com/stashapp/stash-box/pkg/database"
 	"github.com/stashapp/stash-box/pkg/models"
 	sqlxx "github.com/stashapp/stash-box/pkg/sqlx"
-	"github.com/stashapp/stash-box/pkg/sqlx/postgres"
 )
 
 var (
@@ -59,7 +58,7 @@ func initPostgres(connString string) func() {
 	pgDropAll(conn)
 
 	db = database.Initialize(databaseType, connString)
-	txnMgr := sqlxx.NewTxnMgr(db, &postgres.Dialect{})
+	txnMgr := sqlxx.NewTxnMgr(db)
 	repo = txnMgr.Repo()
 
 	return teardownPostgres

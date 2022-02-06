@@ -373,8 +373,8 @@ export interface PerformerEdit_performerEdit_details_PerformerEdit {
   removed_tattoos: PerformerEdit_performerEdit_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: PerformerEdit_performerEdit_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: PerformerEdit_performerEdit_details_PerformerEdit_removed_piercings[] | null;
-  added_images: PerformerEdit_performerEdit_details_PerformerEdit_added_images[] | null;
-  removed_images: PerformerEdit_performerEdit_details_PerformerEdit_removed_images[] | null;
+  added_images: (PerformerEdit_performerEdit_details_PerformerEdit_added_images | null)[] | null;
+  removed_images: (PerformerEdit_performerEdit_details_PerformerEdit_removed_images | null)[] | null;
   draft_id: string | null;
 }
 
@@ -474,8 +474,8 @@ export interface PerformerEdit_performerEdit_details_StudioEdit {
   added_urls: PerformerEdit_performerEdit_details_StudioEdit_added_urls[] | null;
   removed_urls: PerformerEdit_performerEdit_details_StudioEdit_removed_urls[] | null;
   parent: PerformerEdit_performerEdit_details_StudioEdit_parent | null;
-  added_images: PerformerEdit_performerEdit_details_StudioEdit_added_images[] | null;
-  removed_images: PerformerEdit_performerEdit_details_StudioEdit_removed_images[] | null;
+  added_images: (PerformerEdit_performerEdit_details_StudioEdit_added_images | null)[] | null;
+  removed_images: (PerformerEdit_performerEdit_details_StudioEdit_removed_images | null)[] | null;
 }
 
 export interface PerformerEdit_performerEdit_details_SceneEdit_added_urls_site {
@@ -794,8 +794,8 @@ export interface PerformerEdit_performerEdit_details_SceneEdit {
   removed_performers: PerformerEdit_performerEdit_details_SceneEdit_removed_performers[] | null;
   added_tags: PerformerEdit_performerEdit_details_SceneEdit_added_tags[] | null;
   removed_tags: PerformerEdit_performerEdit_details_SceneEdit_removed_tags[] | null;
-  added_images: PerformerEdit_performerEdit_details_SceneEdit_added_images[] | null;
-  removed_images: PerformerEdit_performerEdit_details_SceneEdit_removed_images[] | null;
+  added_images: (PerformerEdit_performerEdit_details_SceneEdit_added_images | null)[] | null;
+  removed_images: (PerformerEdit_performerEdit_details_SceneEdit_removed_images | null)[] | null;
   added_fingerprints: PerformerEdit_performerEdit_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: PerformerEdit_performerEdit_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
@@ -1210,8 +1210,8 @@ export interface PerformerEdit_performerEdit_old_details_SceneEdit {
   removed_performers: PerformerEdit_performerEdit_old_details_SceneEdit_removed_performers[] | null;
   added_tags: PerformerEdit_performerEdit_old_details_SceneEdit_added_tags[] | null;
   removed_tags: PerformerEdit_performerEdit_old_details_SceneEdit_removed_tags[] | null;
-  added_images: PerformerEdit_performerEdit_old_details_SceneEdit_added_images[] | null;
-  removed_images: PerformerEdit_performerEdit_old_details_SceneEdit_removed_images[] | null;
+  added_images: (PerformerEdit_performerEdit_old_details_SceneEdit_added_images | null)[] | null;
+  removed_images: (PerformerEdit_performerEdit_old_details_SceneEdit_removed_images | null)[] | null;
   added_fingerprints: PerformerEdit_performerEdit_old_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: PerformerEdit_performerEdit_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;

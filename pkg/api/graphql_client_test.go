@@ -227,10 +227,10 @@ func (c *graphqlClient) findScenesByFingerprints(fingerprints []string) ([]*scen
 	return resp.FindScenesByFingerprints, nil
 }
 
-func (c *graphqlClient) queryScenes(sceneFilter *models.SceneFilterType, filter *models.QuerySpec) (*queryScenesResultType, error) {
+func (c *graphqlClient) queryScenes(input models.SceneQueryInput) (*queryScenesResultType, error) {
 	q := `
-	query QueryScenes($sceneFilter: SceneFilterType, $filter: QuerySpec) {
-		queryScenes(scene_filter: $sceneFilter, filter: $filter) {
+	query QueryScenes($input: SceneQueryInput!) {
+		queryScenes(input: $input) {
 			` + makeFragment(reflect.TypeOf(queryScenesResultType{})) + `
 		}
 	}`
@@ -238,7 +238,7 @@ func (c *graphqlClient) queryScenes(sceneFilter *models.SceneFilterType, filter 
 	var resp struct {
 		QueryScenes *queryScenesResultType
 	}
-	if err := c.Post(q, &resp, client.Var("sceneFilter", sceneFilter), client.Var("filter", filter)); err != nil {
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
 		return nil, err
 	}
 

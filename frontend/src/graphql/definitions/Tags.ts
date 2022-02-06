@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { QuerySpec, TagFilterType } from "./globalTypes";
+import { TagQueryInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Tags
@@ -27,6 +27,5 @@ export interface Tags {
 }
 
 export interface TagsVariables {
-  filter?: QuerySpec | null;
-  tagFilter?: TagFilterType | null;
+  input: TagQueryInput;
 }

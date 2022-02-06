@@ -21,12 +21,12 @@ func (r *queryResolver) FindTag(ctx context.Context, id *uuid.UUID, name *string
 	return nil, nil
 }
 
-func (r *queryResolver) QueryTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.QuerySpec) (*models.QueryTagsResultType, error) {
+func (r *queryResolver) QueryTags(ctx context.Context, input models.TagQueryInput) (*models.QueryTagsResultType, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Tag()
 
-	if tagFilter.Name != nil {
-		tagID, err := uuid.FromString(*tagFilter.Name)
+	if input.Name != nil {
+		tagID, err := uuid.FromString(*input.Name)
 		if err == nil {
 			var tags []*models.Tag
 			tag, _ := qb.Find(tagID)
@@ -40,7 +40,7 @@ func (r *queryResolver) QueryTags(ctx context.Context, tagFilter *models.TagFilt
 		}
 	}
 
-	tags, count, err := qb.Query(tagFilter, filter)
+	tags, count, err := qb.Query(input)
 	if err != nil {
 		return nil, err
 	}

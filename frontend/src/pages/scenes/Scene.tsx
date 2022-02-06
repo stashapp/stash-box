@@ -163,7 +163,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
               Studio Code: <strong>{scene.code}</strong>
             </div>
           )}
-          {scene.duration && (
+          {!!scene.duration && (
             <div title={`${scene.duration} seconds`} className="ms-3">
               Duration: <b>{formatDuration(scene.duration)}</b>
             </div>
