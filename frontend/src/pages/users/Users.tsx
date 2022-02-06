@@ -5,7 +5,7 @@ import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
 import querystring from "query-string";
 import { debounce } from "lodash-es";
 
-import { useUsers, SortDirectionEnum } from "src/graphql";
+import { useUsers } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
@@ -24,14 +24,10 @@ const UsersComponent: FC = () => {
   const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
   const { page, setPage } = usePagination();
   const { loading, data } = useUsers({
-    filter: {
+    input: {
+      name: query,
       page,
       per_page: PER_PAGE,
-      sort: "name",
-      direction: SortDirectionEnum.ASC,
-    },
-    userFilter: {
-      name: query,
     },
   });
 

@@ -129,17 +129,13 @@ func (s *userTestRunner) testQueryUserByName() {
 
 	userName := createdUser.Name
 
-	userFilter := models.UserFilterType{
-		Name: &userName,
-	}
-	page := 1
-	perPage := 1
-	filter := models.QuerySpec{
-		Page:    &page,
-		PerPage: &perPage,
+	input := models.UserQueryInput{
+		Name:    &userName,
+		Page:    1,
+		PerPage: 1,
 	}
 
-	result, err := s.resolver.Query().QueryUsers(s.ctx, &userFilter, &filter)
+	result, err := s.resolver.Query().QueryUsers(s.ctx, input)
 	if err != nil {
 		s.t.Errorf("Error querying user: %s", err.Error())
 		return
@@ -279,17 +275,13 @@ func (s *userTestRunner) testDestroyUser() {
 func (s *userTestRunner) testUserQuery() {
 	userName := userDB.admin.Name
 
-	userFilter := models.UserFilterType{
-		Name: &userName,
-	}
-	page := 1
-	perPage := 1
-	filter := models.QuerySpec{
-		Page:    &page,
-		PerPage: &perPage,
+	input := models.UserQueryInput{
+		Name:    &userName,
+		Page:    1,
+		PerPage: 1,
 	}
 
-	users, err := s.resolver.Query().QueryUsers(s.ctx, &userFilter, &filter)
+	users, err := s.resolver.Query().QueryUsers(s.ctx, input)
 	if err != nil {
 		s.t.Errorf("QueryUsers: got %v want %v", err, nil)
 		return
@@ -408,10 +400,10 @@ func (s *userTestRunner) testUserEditQuery() {
 	}
 
 	userID := createdUser.ID
-	filter := models.EditFilterType{
+	filter := models.EditQueryInput{
 		UserID: &userID,
 	}
-	_, err = s.resolver.Query().QueryEdits(s.ctx, &filter, nil)
+	_, err = s.resolver.Query().QueryEdits(s.ctx, filter)
 	if err != nil {
 		s.t.Errorf("Error finding user edits: %s", err.Error())
 		return

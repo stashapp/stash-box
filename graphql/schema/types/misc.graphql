@@ -33,11 +33,3 @@ input URLInput {
   url: String!
   site_id: ID!
 }
-
-input QuerySpec {
-  # TODO - specify by page or start/limit?
-  page: Int
-  per_page: Int
-  sort: String
-  direction: SortDirectionEnum
-}

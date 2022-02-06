@@ -13,7 +13,7 @@ import {
   StudioVariables,
 } from "src/graphql/definitions/Studio";
 import { Studios, StudiosVariables } from "src/graphql/definitions/Studios";
-import { SortDirectionEnum } from "src/graphql";
+import { SortDirectionEnum, StudioSortEnum } from "src/graphql";
 import { isUUID } from "src/utils";
 
 interface StudioSelectProps {
@@ -60,11 +60,14 @@ const StudioSelect: FC<StudioSelectProps> = ({
     const { data } = await client.query<Studios, StudiosVariables>({
       query: StudiosQuery,
       variables: {
-        studioFilter: {
+        input: {
           name: term,
           has_parent: networkSelect ? false : undefined,
+          page: 1,
+          per_page: 25,
+          sort: StudioSortEnum.NAME,
+          direction: SortDirectionEnum.ASC,
         },
-        filter: { page: 0, per_page: 2000, direction: SortDirectionEnum.ASC },
       },
     });
 

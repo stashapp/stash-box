@@ -96,43 +96,23 @@ func (qb *userQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT users.id FROM users"), nil)
 }
 
-func (qb *userQueryBuilder) Query(userFilter *models.UserFilterType, findFilter *models.QuerySpec) (models.Users, int, error) {
-	if userFilter == nil {
-		userFilter = &models.UserFilterType{}
-	}
-	if findFilter == nil {
-		findFilter = &models.QuerySpec{}
-	}
-
+func (qb *userQueryBuilder) Query(filter models.UserQueryInput) (models.Users, int, error) {
 	query := newQueryBuilder(userDBTable)
 
-	if q := userFilter.Name; q != nil && *q != "" {
+	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"users.name", "users.email"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
-	query.Sort = qb.getUserSort(findFilter)
-	query.Pagination = getPagination(findFilter)
+	query.Sort = getSort("name", "ASC", "users", nil)
+	query.Pagination = getPagination(filter.Page, filter.PerPage)
 
 	var studios models.Users
 	countResult, err := qb.dbi.Query(*query, &studios)
 
 	return studios, countResult, err
-}
-
-func (qb *userQueryBuilder) getUserSort(findFilter *models.QuerySpec) string {
-	var sort string
-	var direction string
-	if findFilter == nil {
-		sort = "name"
-		direction = "ASC"
-	} else {
-		sort = findFilter.GetSort("name")
-		direction = findFilter.GetDirection()
-	}
-	return getSort(qb.dbi.txn.dialect, sort, direction, "users", nil)
 }
 
 func (qb *userQueryBuilder) queryUsers(query string, args []interface{}) (models.Users, error) {

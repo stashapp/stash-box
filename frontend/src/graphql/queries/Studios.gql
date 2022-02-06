@@ -1,7 +1,7 @@
 #import "../fragments/URLFragment.gql"
 #import "../fragments/ImageFragment.gql"
-query Studios($filter: QuerySpec, $studioFilter: StudioFilterType) {
-  queryStudios(filter: $filter, studio_filter: $studioFilter) {
+query Studios($input: StudioQueryInput!) {
+  queryStudios(input: $input) {
       count
       studios {
         id

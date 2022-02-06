@@ -1,6 +1,6 @@
 #import "../fragments/QuerySceneFragment.gql"
-query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
-  queryScenes(filter: $filter, scene_filter: $sceneFilter) {
+query Scenes($input: SceneQueryInput!) {
+  queryScenes(input: $input) {
     count
     scenes {
       ...QuerySceneFragment
