@@ -24,6 +24,7 @@ export const SceneSchema = yup.object({
     })
     .nullable(),
   director: yup.string().trim().transform(nullCheck).nullable(),
+  code: yup.string().trim().transform(nullCheck).nullable(),
   studio: yup
     .object({
       id: yup.string().required("Studio is required"),
