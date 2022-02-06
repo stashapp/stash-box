@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -168,7 +169,13 @@ func (e *Edit) IsDestructive() bool {
 	// When renaming a performer and not updating the performance aliases
 	if (e.Operation == OperationEnumModify.String() || e.Operation == OperationEnumMerge.String()) && e.TargetType == TargetTypeEnumPerformer.String() {
 		data, _ := e.GetPerformerData()
-		return data.New.Name != nil && !data.SetModifyAliases
+		if data.New.Name != nil {
+			oldName := ""
+			if data.Old.Name != nil {
+				oldName = strings.TrimSpace(*data.Old.Name)
+			}
+			return oldName != *data.New.Name && !data.SetModifyAliases
+		}
 	}
 	return false
 }

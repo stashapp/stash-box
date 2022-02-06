@@ -18,10 +18,9 @@ export const formatMeasurements = (val?: Measurements): string | undefined => {
 };
 
 export const getBraSize = (measurements: Measurements): string | undefined =>
-  (measurements.cup_size &&
-    measurements.cup_size &&
-    `${measurements.band_size}${measurements.cup_size}`) ??
-  undefined;
+  measurements.band_size && measurements.cup_size
+    ? `${measurements.band_size}${measurements.cup_size}`
+    : undefined;
 
 export const sortImageURLs = (
   urls: ImageFragment[],
