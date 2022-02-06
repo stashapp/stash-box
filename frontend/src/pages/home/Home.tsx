@@ -3,7 +3,11 @@ import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
-import { useScenesWithoutCount } from "src/graphql";
+import {
+  useScenesWithoutCount,
+  SceneSortEnum,
+  SortDirectionEnum,
+} from "src/graphql";
 
 import SceneCard from "src/components/sceneCard";
 import { LoadingIndicator } from "src/components/fragments";
@@ -14,18 +18,20 @@ const CLASSNAME_SCENES = `${CLASSNAME}-scenes`;
 
 const ScenesComponent: FC = () => {
   const { data: sceneData, loading: loadingRecent } = useScenesWithoutCount({
-    filter: {
+    input: {
       page: 1,
       per_page: 20,
-      sort: "created_at",
+      sort: SceneSortEnum.CREATED_AT,
+      direction: SortDirectionEnum.DESC,
     },
   });
   const { data: trendingData, loading: loadingTrending } =
     useScenesWithoutCount({
-      filter: {
+      input: {
         page: 1,
         per_page: 20,
-        sort: "trending",
+        sort: SceneSortEnum.TRENDING,
+        direction: SortDirectionEnum.DESC,
       },
     });
 

@@ -37,36 +37,17 @@ func buildCountQuery(query string) string {
 	return "SELECT COUNT(*) as count FROM (" + query + ") as temp"
 }
 
-func getPagination(findFilter *models.QuerySpec) string {
-	filter := findFilter
-	if filter == nil {
-		filter = &models.QuerySpec{}
+func getPagination(page int, perPage int) string {
+	count := perPage
+	if count > 100 {
+		count = 100
 	}
 
-	var page int
-	if filter.Page == nil || *filter.Page < 1 {
-		page = 1
-	} else {
-		page = *filter.Page
-	}
-
-	var perPage int
-	if filter.PerPage == nil {
-		perPage = 25
-	} else {
-		perPage = *filter.PerPage
-	}
-	if perPage > 10000 {
-		perPage = 10000
-	} else if perPage < 1 {
-		perPage = 1
-	}
-
-	page = (page - 1) * perPage
-	return " LIMIT " + strconv.Itoa(perPage) + " OFFSET " + strconv.Itoa(page) + " "
+	offset := (page - 1) * perPage
+	return " LIMIT " + strconv.Itoa(count) + " OFFSET " + strconv.Itoa(offset) + " "
 }
 
-func getSort(dialect Dialect, sort string, direction string, tableName string, secondarySort *string) string {
+func getSort(sort string, direction string, tableName string, secondarySort *string) string {
 	if direction != "ASC" && direction != "DESC" {
 		direction = "ASC"
 	}
@@ -94,7 +75,7 @@ func getSort(dialect Dialect, sort string, direction string, tableName string, s
 			additional = ", " + getColumn(tableName, *secondarySort) + " " + direction
 		}
 
-		return " ORDER BY " + colName + " " + direction + dialect.NullsLast() + additional
+		return " ORDER BY " + colName + " " + direction + nullsLast() + additional
 	}
 }
 

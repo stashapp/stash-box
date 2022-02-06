@@ -87,7 +87,18 @@ type EditCommentInput struct {
 	Comment string    `json:"comment"`
 }
 
-type EditFilterType struct {
+type EditInput struct {
+	// Not required for create type
+	ID        *uuid.UUID    `json:"id"`
+	Operation OperationEnum `json:"operation"`
+	// Required for amending an existing edit
+	EditID *uuid.UUID `json:"edit_id"`
+	// Only required for merge type
+	MergeSourceIds []uuid.UUID `json:"merge_source_ids"`
+	Comment        *string     `json:"comment"`
+}
+
+type EditQueryInput struct {
 	// Filter by user id
 	UserID *uuid.UUID `json:"user_id"`
 	// Filter by status
@@ -103,18 +114,11 @@ type EditFilterType struct {
 	// Filter by target id
 	TargetID *uuid.UUID `json:"target_id"`
 	// Filter by favorite status
-	IsFavorite *bool `json:"is_favorite"`
-}
-
-type EditInput struct {
-	// Not required for create type
-	ID        *uuid.UUID    `json:"id"`
-	Operation OperationEnum `json:"operation"`
-	// Required for amending an existing edit
-	EditID *uuid.UUID `json:"edit_id"`
-	// Only required for merge type
-	MergeSourceIds []uuid.UUID `json:"merge_source_ids"`
-	Comment        *string     `json:"comment"`
+	IsFavorite *bool             `json:"is_favorite"`
+	Page       int               `json:"page"`
+	PerPage    int               `json:"per_page"`
+	Direction  SortDirectionEnum `json:"direction"`
+	Sort       EditSortEnum      `json:"sort"`
 }
 
 type EditVoteInput struct {
@@ -343,7 +347,7 @@ type PerformerEditOptionsInput struct {
 	SetMergeAliases *bool `json:"set_merge_aliases"`
 }
 
-type PerformerFilterType struct {
+type PerformerQueryInput struct {
 	// Searches name and aliases - assumes like query unless quoted
 	Names *string `json:"names"`
 	// Searches name only - assumes like query unless quoted
@@ -372,7 +376,11 @@ type PerformerFilterType struct {
 	Tattoos         *BodyModificationCriterionInput `json:"tattoos"`
 	Piercings       *BodyModificationCriterionInput `json:"piercings"`
 	// Filter by performerfavorite status for the current user
-	IsFavorite *bool `json:"is_favorite"`
+	IsFavorite *bool             `json:"is_favorite"`
+	Page       int               `json:"page"`
+	PerPage    int               `json:"per_page"`
+	Direction  SortDirectionEnum `json:"direction"`
+	Sort       PerformerSortEnum `json:"sort"`
 }
 
 type PerformerUpdateInput struct {
@@ -400,13 +408,6 @@ type PerformerUpdateInput struct {
 type QuerySitesResultType struct {
 	Count int     `json:"count"`
 	Sites []*Site `json:"sites"`
-}
-
-type QuerySpec struct {
-	Page      *int               `json:"page"`
-	PerPage   *int               `json:"per_page"`
-	Sort      *string            `json:"sort"`
-	Direction *SortDirectionEnum `json:"direction"`
 }
 
 type QueryStudiosResultType struct {
@@ -495,7 +496,7 @@ type SceneEditInput struct {
 	Duration *int                   `json:"duration"`
 }
 
-type SceneFilterType struct {
+type SceneQueryInput struct {
 	// Filter to search title and details - assumes like query unless quoted
 	Text *string `json:"text"`
 	// Filter to search title - assumes like query unless quoted
@@ -516,6 +517,10 @@ type SceneFilterType struct {
 	Alias *StringCriterionInput `json:"alias"`
 	// Filter to only include scenes with these fingerprints
 	Fingerprints *MultiStringCriterionInput `json:"fingerprints"`
+	Page         int                        `json:"page"`
+	PerPage      int                        `json:"per_page"`
+	Direction    SortDirectionEnum          `json:"direction"`
+	Sort         SceneSortEnum              `json:"sort"`
 }
 
 type SceneUpdateInput struct {
@@ -594,7 +599,7 @@ type StudioEditInput struct {
 	Details *StudioEditDetailsInput `json:"details"`
 }
 
-type StudioFilterType struct {
+type StudioQueryInput struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name"`
 	// Filter to search studio and parent studio name - assumes like query unless quoted
@@ -604,7 +609,11 @@ type StudioFilterType struct {
 	Parent    *IDCriterionInput `json:"parent"`
 	HasParent *bool             `json:"has_parent"`
 	// Filter by studio favorite status for the current user
-	IsFavorite *bool `json:"is_favorite"`
+	IsFavorite *bool             `json:"is_favorite"`
+	Page       int               `json:"page"`
+	PerPage    int               `json:"per_page"`
+	Direction  SortDirectionEnum `json:"direction"`
+	Sort       StudioSortEnum    `json:"sort"`
 }
 
 type StudioUpdateInput struct {
@@ -656,7 +665,7 @@ type TagEditInput struct {
 	Details *TagEditDetailsInput `json:"details"`
 }
 
-type TagFilterType struct {
+type TagQueryInput struct {
 	// Filter to search name, aliases and description - assumes like query unless quoted
 	Text *string `json:"text"`
 	// Searches name and aliases - assumes like query unless quoted
@@ -664,7 +673,11 @@ type TagFilterType struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name"`
 	// Filter to category ID
-	CategoryID *uuid.UUID `json:"category_id"`
+	CategoryID *uuid.UUID        `json:"category_id"`
+	Page       int               `json:"page"`
+	PerPage    int               `json:"per_page"`
+	Direction  SortDirectionEnum `json:"direction"`
+	Sort       TagSortEnum       `json:"sort"`
 }
 
 type TagUpdateInput struct {
@@ -705,7 +718,7 @@ type UserEditCount struct {
 	Canceled          int `json:"canceled"`
 }
 
-type UserFilterType struct {
+type UserQueryInput struct {
 	// Filter to search user name - assumes like query unless quoted
 	Name *string `json:"name"`
 	// Filter to search email - assumes like query unless quoted
@@ -726,6 +739,8 @@ type UserFilterType struct {
 	APICalls *IntCriterionInput `json:"api_calls"`
 	// Filter by user that invited
 	InvitedBy *uuid.UUID `json:"invited_by"`
+	Page      int        `json:"page"`
+	PerPage   int        `json:"per_page"`
 }
 
 type UserUpdateInput struct {
@@ -897,6 +912,47 @@ func (e *DateAccuracyEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e DateAccuracyEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type EditSortEnum string
+
+const (
+	EditSortEnumCreatedAt EditSortEnum = "CREATED_AT"
+	EditSortEnumUpdatedAt EditSortEnum = "UPDATED_AT"
+)
+
+var AllEditSortEnum = []EditSortEnum{
+	EditSortEnumCreatedAt,
+	EditSortEnumUpdatedAt,
+}
+
+func (e EditSortEnum) IsValid() bool {
+	switch e {
+	case EditSortEnumCreatedAt, EditSortEnumUpdatedAt:
+		return true
+	}
+	return false
+}
+
+func (e EditSortEnum) String() string {
+	return string(e)
+}
+
+func (e *EditSortEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = EditSortEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid EditSortEnum", str)
+	}
+	return nil
+}
+
+func (e EditSortEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -1296,6 +1352,57 @@ func (e OperationEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type PerformerSortEnum string
+
+const (
+	PerformerSortEnumName            PerformerSortEnum = "NAME"
+	PerformerSortEnumBirthdate       PerformerSortEnum = "BIRTHDATE"
+	PerformerSortEnumSceneCount      PerformerSortEnum = "SCENE_COUNT"
+	PerformerSortEnumCareerStartYear PerformerSortEnum = "CAREER_START_YEAR"
+	PerformerSortEnumDebut           PerformerSortEnum = "DEBUT"
+	PerformerSortEnumCreatedAt       PerformerSortEnum = "CREATED_AT"
+	PerformerSortEnumUpdatedAt       PerformerSortEnum = "UPDATED_AT"
+)
+
+var AllPerformerSortEnum = []PerformerSortEnum{
+	PerformerSortEnumName,
+	PerformerSortEnumBirthdate,
+	PerformerSortEnumSceneCount,
+	PerformerSortEnumCareerStartYear,
+	PerformerSortEnumDebut,
+	PerformerSortEnumCreatedAt,
+	PerformerSortEnumUpdatedAt,
+}
+
+func (e PerformerSortEnum) IsValid() bool {
+	switch e {
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+		return true
+	}
+	return false
+}
+
+func (e PerformerSortEnum) String() string {
+	return string(e)
+}
+
+func (e *PerformerSortEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PerformerSortEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PerformerSortEnum", str)
+	}
+	return nil
+}
+
+func (e PerformerSortEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type RoleEnum string
 
 const (
@@ -1351,6 +1458,53 @@ func (e RoleEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type SceneSortEnum string
+
+const (
+	SceneSortEnumTitle     SceneSortEnum = "TITLE"
+	SceneSortEnumDate      SceneSortEnum = "DATE"
+	SceneSortEnumTrending  SceneSortEnum = "TRENDING"
+	SceneSortEnumCreatedAt SceneSortEnum = "CREATED_AT"
+	SceneSortEnumUpdatedAt SceneSortEnum = "UPDATED_AT"
+)
+
+var AllSceneSortEnum = []SceneSortEnum{
+	SceneSortEnumTitle,
+	SceneSortEnumDate,
+	SceneSortEnumTrending,
+	SceneSortEnumCreatedAt,
+	SceneSortEnumUpdatedAt,
+}
+
+func (e SceneSortEnum) IsValid() bool {
+	switch e {
+	case SceneSortEnumTitle, SceneSortEnumDate, SceneSortEnumTrending, SceneSortEnumCreatedAt, SceneSortEnumUpdatedAt:
+		return true
+	}
+	return false
+}
+
+func (e SceneSortEnum) String() string {
+	return string(e)
+}
+
+func (e *SceneSortEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SceneSortEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SceneSortEnum", str)
+	}
+	return nil
+}
+
+func (e SceneSortEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type SortDirectionEnum string
 
 const (
@@ -1389,6 +1543,49 @@ func (e *SortDirectionEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e SortDirectionEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type StudioSortEnum string
+
+const (
+	StudioSortEnumName      StudioSortEnum = "NAME"
+	StudioSortEnumCreatedAt StudioSortEnum = "CREATED_AT"
+	StudioSortEnumUpdatedAt StudioSortEnum = "UPDATED_AT"
+)
+
+var AllStudioSortEnum = []StudioSortEnum{
+	StudioSortEnumName,
+	StudioSortEnumCreatedAt,
+	StudioSortEnumUpdatedAt,
+}
+
+func (e StudioSortEnum) IsValid() bool {
+	switch e {
+	case StudioSortEnumName, StudioSortEnumCreatedAt, StudioSortEnumUpdatedAt:
+		return true
+	}
+	return false
+}
+
+func (e StudioSortEnum) String() string {
+	return string(e)
+}
+
+func (e *StudioSortEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = StudioSortEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid StudioSortEnum", str)
+	}
+	return nil
+}
+
+func (e StudioSortEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -1432,6 +1629,49 @@ func (e *TagGroupEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e TagGroupEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type TagSortEnum string
+
+const (
+	TagSortEnumName      TagSortEnum = "NAME"
+	TagSortEnumCreatedAt TagSortEnum = "CREATED_AT"
+	TagSortEnumUpdatedAt TagSortEnum = "UPDATED_AT"
+)
+
+var AllTagSortEnum = []TagSortEnum{
+	TagSortEnumName,
+	TagSortEnumCreatedAt,
+	TagSortEnumUpdatedAt,
+}
+
+func (e TagSortEnum) IsValid() bool {
+	switch e {
+	case TagSortEnumName, TagSortEnumCreatedAt, TagSortEnumUpdatedAt:
+		return true
+	}
+	return false
+}
+
+func (e TagSortEnum) String() string {
+	return string(e)
+}
+
+func (e *TagSortEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TagSortEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TagSortEnum", str)
+	}
+	return nil
+}
+
+func (e TagSortEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

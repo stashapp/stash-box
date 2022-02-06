@@ -764,17 +764,15 @@ func (s *sceneTestRunner) testSubmitFingerprintUnmatchModify() {
 	}
 }
 
-func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneFilterType, ids []uuid.UUID) {
+func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneQueryInput, ids []uuid.UUID) {
 	s.t.Helper()
 
-	page := 1
-	pageSize := 10
-	querySpec := models.QuerySpec{
-		Page:    &page,
-		PerPage: &pageSize,
-	}
+	filter.Page = 1
+	filter.PerPage = 10
+	filter.Sort = models.SceneSortEnumTitle
+	filter.Direction = models.SortDirectionEnumAsc
 
-	results, err := s.client.queryScenes(&filter, &querySpec)
+	results, err := s.client.queryScenes(filter)
 	if err != nil {
 		s.t.Errorf("Error querying scenes: %s", err.Error())
 		return
@@ -801,17 +799,13 @@ func (s *sceneTestRunner) verifyQueryScenesResult(filter models.SceneFilterType,
 	}
 }
 
-func (s *sceneTestRunner) verifyInvalidModifier(filter models.SceneFilterType) {
+func (s *sceneTestRunner) verifyInvalidModifier(filter models.SceneQueryInput) {
 	s.t.Helper()
 
-	page := 1
-	pageSize := 10
-	querySpec := models.QuerySpec{
-		Page:    &page,
-		PerPage: &pageSize,
-	}
+	filter.Page = 1
+	filter.PerPage = 10
 
-	resolver, _ := s.resolver.Query().QueryScenes(s.ctx, &filter, &querySpec)
+	resolver, _ := s.resolver.Query().QueryScenes(s.ctx, filter)
 	_, err := s.resolver.QueryScenesResultType().Scenes(s.ctx, resolver)
 
 	if err == nil {
@@ -860,7 +854,7 @@ func (s *sceneTestRunner) testQueryScenesByStudio() {
 	scene3ID := scene3.UUID()
 
 	// test equals
-	filter := models.SceneFilterType{
+	filter := models.SceneQueryInput{
 		Studios: &models.MultiIDCriterionInput{
 			Value:    []uuid.UUID{studio1ID},
 			Modifier: models.CriterionModifierEquals,
@@ -949,7 +943,7 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	scene3ID := scene3.UUID()
 
 	titleSearch := prefix
-	filter := models.SceneFilterType{
+	filter := models.SceneQueryInput{
 		Performers: &models.MultiIDCriterionInput{
 			Value:    []uuid.UUID{performer1ID},
 			Modifier: models.CriterionModifierIncludes,
@@ -1029,7 +1023,7 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 	scene3ID := scene3.UUID()
 
 	titleSearch := prefix
-	filter := models.SceneFilterType{
+	filter := models.SceneQueryInput{
 		Tags: &models.MultiIDCriterionInput{
 			Value:    []uuid.UUID{tag1ID},
 			Modifier: models.CriterionModifierIncludes,
