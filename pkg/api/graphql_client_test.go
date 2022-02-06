@@ -50,6 +50,7 @@ type sceneOutput struct {
 	Fingerprints []*fingerprint         `json:"fingerprints"`
 	Duration     *int                   `json:"duration"`
 	Director     *string                `json:"director"`
+	Code         *string                `json:"code"`
 	Deleted      bool                   `json:"deleted"`
 }
 

@@ -78,6 +78,7 @@ type Scene {
   fingerprints: [Fingerprint!]!
   duration: Int
   director: String
+  code: String
   deleted: Boolean!
   edits: [Edit!]!
   created: Time!
@@ -96,6 +97,7 @@ input SceneCreateInput {
   fingerprints: [FingerprintEditInput!]!
   duration: Int
   director: String
+  code: String
 }
 
 input SceneUpdateInput {
@@ -111,6 +113,7 @@ input SceneUpdateInput {
   fingerprints: [FingerprintEditInput!]
   duration: Int
   director: String
+  code: String
 }
 
 input SceneDestroyInput {
@@ -128,6 +131,7 @@ input SceneEditDetailsInput {
   image_ids: [ID!]
   duration: Int
   director: String
+  code: String
   fingerprints: [FingerprintInput!]
   draft_id: ID
 }
@@ -157,6 +161,7 @@ type SceneEdit {
   removed_fingerprints: [Fingerprint!]
   duration: Int
   director: String
+  code: String
   draft_id: ID
 }
 

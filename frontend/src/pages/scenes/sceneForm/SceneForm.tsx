@@ -54,6 +54,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       date: initial?.date ?? scene?.date,
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
+      code: initial?.code ?? scene?.code,
       urls: initial?.urls ?? scene.urls ?? [],
       images: initial?.images ?? scene.images,
       studio: initialStudio,
@@ -103,6 +104,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       date: data.date,
       duration: parseDuration(data.duration),
       director: data.director,
+      code: data.code,
       details: data.details,
       studio_id: data.studio?.id,
       performers: (data.performers ?? []).map((performance) => ({
@@ -314,6 +316,16 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               <Form.Control.Feedback type="invalid">
                 {errors.studio?.id?.message}
               </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group controlId="code" className="col-6 mb-3">
+              <Form.Label>Studio Code</Form.Label>
+              <Form.Control
+                as="input"
+                type="text"
+                placeholder="Unique code used by studio to identify scene"
+                {...register("code")}
+              />
             </Form.Group>
           </Row>
 

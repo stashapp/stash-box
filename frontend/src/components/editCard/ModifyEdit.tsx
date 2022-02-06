@@ -316,6 +316,7 @@ export interface SceneDetails {
   duration?: number | null;
   details?: string | null;
   director?: string | null;
+  code?: string | null;
   studio: {
     id: string;
     name: string;
@@ -418,6 +419,12 @@ export const renderSceneDetails = (
       name="Director"
       newValue={sceneDetails.director}
       oldValue={oldSceneDetails?.director}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Scene Code"
+      newValue={sceneDetails.code}
+      oldValue={oldSceneDetails?.code}
       showDiff={showDiff}
     />
     <ListChangeRow

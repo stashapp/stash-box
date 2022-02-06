@@ -362,6 +362,7 @@ type SceneEdit struct {
 	RemovedFingerprints []*FingerprintInput         `json:"removed_fingerprints,omitempty"`
 	Duration            *int64                      `json:"duration,omitempty"`
 	Director            *string                     `json:"director,omitempty"`
+	Code                *string                     `json:"code,omitempty"`
 	DraftID             *uuid.UUID                  `json:"draft_id,omitempty"`
 }
 

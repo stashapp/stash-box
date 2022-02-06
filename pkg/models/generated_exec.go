@@ -374,6 +374,7 @@ type ComplexityRoot struct {
 	}
 
 	Scene struct {
+		Code         func(childComplexity int) int
 		Created      func(childComplexity int) int
 		Date         func(childComplexity int) int
 		Deleted      func(childComplexity int) int
@@ -410,6 +411,7 @@ type ComplexityRoot struct {
 		AddedPerformers     func(childComplexity int) int
 		AddedTags           func(childComplexity int) int
 		AddedUrls           func(childComplexity int) int
+		Code                func(childComplexity int) int
 		Date                func(childComplexity int) int
 		Details             func(childComplexity int) int
 		Director            func(childComplexity int) int
@@ -722,6 +724,7 @@ type SceneResolver interface {
 	Fingerprints(ctx context.Context, obj *Scene) ([]*Fingerprint, error)
 	Duration(ctx context.Context, obj *Scene) (*int, error)
 	Director(ctx context.Context, obj *Scene) (*string, error)
+	Code(ctx context.Context, obj *Scene) (*string, error)
 
 	Edits(ctx context.Context, obj *Scene) ([]*Edit, error)
 	Created(ctx context.Context, obj *Scene) (*time.Time, error)
@@ -2691,6 +2694,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.QueryUsersResultType.Users(childComplexity), true
 
+	case "Scene.code":
+		if e.complexity.Scene.Code == nil {
+			break
+		}
+
+		return e.complexity.Scene.Code(childComplexity), true
+
 	case "Scene.created":
 		if e.complexity.Scene.Created == nil {
 			break
@@ -2900,6 +2910,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneEdit.AddedUrls(childComplexity), true
+
+	case "SceneEdit.code":
+		if e.complexity.SceneEdit.Code == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Code(childComplexity), true
 
 	case "SceneEdit.date":
 		if e.complexity.SceneEdit.Date == nil {
@@ -4333,6 +4350,7 @@ type Scene {
   fingerprints: [Fingerprint!]!
   duration: Int
   director: String
+  code: String
   deleted: Boolean!
   edits: [Edit!]!
   created: Time!
@@ -4351,6 +4369,7 @@ input SceneCreateInput {
   fingerprints: [FingerprintEditInput!]!
   duration: Int
   director: String
+  code: String
 }
 
 input SceneUpdateInput {
@@ -4366,6 +4385,7 @@ input SceneUpdateInput {
   fingerprints: [FingerprintEditInput!]
   duration: Int
   director: String
+  code: String
 }
 
 input SceneDestroyInput {
@@ -4383,6 +4403,7 @@ input SceneEditDetailsInput {
   image_ids: [ID!]
   duration: Int
   director: String
+  code: String
   fingerprints: [FingerprintInput!]
   draft_id: ID
 }
@@ -4412,6 +4433,7 @@ type SceneEdit {
   removed_fingerprints: [Fingerprint!]
   duration: Int
   director: String
+  code: String
   draft_id: ID
 }
 
@@ -16034,6 +16056,38 @@ func (ec *executionContext) _Scene_director(ctx context.Context, field graphql.C
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Scene_code(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().Code(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Scene_deleted(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -16967,6 +17021,38 @@ func (ec *executionContext) _SceneEdit_director(ctx context.Context, field graph
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Director, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_code(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Code, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23304,6 +23390,14 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			if err != nil {
 				return it, err
 			}
+		case "code":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			it.Code, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -23506,6 +23600,14 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("director"))
 			it.Director, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "code":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			it.Code, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -23767,6 +23869,14 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("director"))
 			it.Director, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "code":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			it.Code, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -28744,6 +28854,23 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				return innerFunc(ctx)
 
 			})
+		case "code":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_code(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "deleted":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Scene_deleted(ctx, field, obj)
@@ -29173,6 +29300,13 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 		case "director":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._SceneEdit_director(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "code":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SceneEdit_code(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

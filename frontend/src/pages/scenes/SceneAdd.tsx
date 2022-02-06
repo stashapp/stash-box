@@ -44,6 +44,7 @@ const SceneAdd: FC = () => {
     urls: [],
     studio: null,
     director: null,
+    code: null,
     duration: null,
     images: [],
     tags: [],

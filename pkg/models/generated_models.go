@@ -455,6 +455,7 @@ type SceneCreateInput struct {
 	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
+	Code         *string                     `json:"code"`
 }
 
 type SceneDestroyInput struct {
@@ -484,6 +485,7 @@ type SceneEditDetailsInput struct {
 	ImageIds     []uuid.UUID                 `json:"image_ids"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
+	Code         *string                     `json:"code"`
 	Fingerprints []*FingerprintInput         `json:"fingerprints"`
 	DraftID      *uuid.UUID                  `json:"draft_id"`
 }
@@ -531,6 +533,7 @@ type SceneUpdateInput struct {
 	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
+	Code         *string                     `json:"code"`
 }
 
 type SiteCreateInput struct {

@@ -60,6 +60,7 @@ export interface UpdateScene_sceneUpdate {
   date: any | null;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   title: string | null;
   urls: UpdateScene_sceneUpdate_urls[];

@@ -4,6 +4,7 @@ mutation UpdateScene($updateData: SceneUpdateInput!) {
       date
       details
       director
+      code
       duration
       title
       urls {

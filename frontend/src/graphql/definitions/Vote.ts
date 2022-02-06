@@ -250,6 +250,7 @@ export interface Vote_editVote_target_Scene {
   deleted: boolean;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   urls: Vote_editVote_target_Scene_urls[];
   images: Vote_editVote_target_Scene_images[];
@@ -799,6 +800,7 @@ export interface Vote_editVote_details_SceneEdit {
   removed_fingerprints: Vote_editVote_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
+  code: string | null;
   draft_id: string | null;
 }
 
@@ -1214,6 +1216,7 @@ export interface Vote_editVote_old_details_SceneEdit {
   removed_fingerprints: Vote_editVote_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
+  code: string | null;
 }
 
 export type Vote_editVote_old_details = Vote_editVote_old_details_TagEdit | Vote_editVote_old_details_PerformerEdit | Vote_editVote_old_details_StudioEdit | Vote_editVote_old_details_SceneEdit;
@@ -1426,6 +1429,7 @@ export interface Vote_editVote_merge_sources_Scene {
   deleted: boolean;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   urls: Vote_editVote_merge_sources_Scene_urls[];
   images: Vote_editVote_merge_sources_Scene_images[];

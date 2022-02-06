@@ -395,6 +395,7 @@ export interface SceneCreateInput {
   fingerprints: FingerprintEditInput[];
   duration?: number | null;
   director?: string | null;
+  code?: string | null;
 }
 
 export interface SceneDestroyInput {
@@ -412,6 +413,7 @@ export interface SceneEditDetailsInput {
   image_ids?: string[] | null;
   duration?: number | null;
   director?: string | null;
+  code?: string | null;
   fingerprints?: FingerprintInput[] | null;
   draft_id?: string | null;
 }
@@ -448,6 +450,7 @@ export interface SceneUpdateInput {
   fingerprints?: FingerprintEditInput[] | null;
   duration?: number | null;
   director?: string | null;
+  code?: string | null;
 }
 
 export interface SiteCreateInput {

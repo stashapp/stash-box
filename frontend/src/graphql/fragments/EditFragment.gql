@@ -176,6 +176,7 @@ fragment EditFragment on Edit {
       }
       duration
       director
+      code
       draft_id
     }
   }
@@ -258,6 +259,7 @@ fragment EditFragment on Edit {
       }
       duration
       director
+      code
     }
   }
   merge_sources {
