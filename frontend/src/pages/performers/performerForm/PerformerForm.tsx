@@ -177,8 +177,8 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const changedName =
     !!performer.id &&
-    fieldData.name !== undefined &&
-    performer.name !== fieldData.name;
+    newChanges.name !== null &&
+    performer.name.trim() !== newChanges.name;
 
   useEffect(() => {
     setUpdateAliases(changedName);
@@ -189,7 +189,7 @@ const PerformerForm: FC<PerformerProps> = ({
     fieldData.gender !== GenderEnum.TRANSGENDER_MALE;
   // Update breast type based on gender
   useEffect(() => {
-    if (!showBreastType) setValue("boobJob", BreastTypeEnum.NA);
+    if (!showBreastType) setValue("breastType", BreastTypeEnum.NA);
   }, [showBreastType, setValue]);
 
   const enumOptions = (enums: OptionEnum[]) =>
@@ -218,7 +218,7 @@ const PerformerForm: FC<PerformerProps> = ({
       piercings: data.piercings ?? [],
       tattoos: data.tattoos ?? [],
       breast_type:
-        BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum] || null,
+        BreastTypeEnum[data.breastType as keyof typeof BreastTypeEnum] || null,
       image_ids: data.images.map((i) => i.id),
       urls: data.urls.map((u) => ({
         url: u.url,
@@ -438,21 +438,21 @@ const PerformerForm: FC<PerformerProps> = ({
 
             {fieldData.gender !== "MALE" &&
               fieldData.gender !== "TRANSGENDER_MALE" && (
-                <Form.Group controlId="boobJob" className="col-6 mb-3">
+                <Form.Group controlId="breastType" className="col-6 mb-3">
                   <Form.Label>Breast type</Form.Label>
                   <Form.Select
-                    className={cx({ "is-invalid": errors.boobJob })}
+                    className={cx({ "is-invalid": errors.breastType })}
                     defaultValue={
                       performer.breast_type
                         ? getEnumValue(BREAST, performer.breast_type)
                         : ""
                     }
-                    {...register("boobJob")}
+                    {...register("breastType")}
                   >
                     {enumOptions(BREAST)}
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">
-                    {errors?.boobJob?.message}
+                    {errors?.breastType?.message}
                   </Form.Control.Feedback>
                 </Form.Group>
               )}
