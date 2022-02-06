@@ -774,6 +774,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 	date := "2000-02-03"
 	duration := 123
 	director := "Director"
+	code := "SomeCode"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
@@ -794,6 +795,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 		},
 		Duration: &duration,
 		Director: &director,
+		Code:     &code,
 	}
 }
 
@@ -803,6 +805,7 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 	date := "2000-02-03"
 	duration := 123
 	director := "Director"
+	code := "SomeCode"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
@@ -820,6 +823,7 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 		Date:     &date,
 		Duration: &duration,
 		Director: &director,
+		Code:     &code,
 	}
 }
 
@@ -840,6 +844,7 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 	date := "2000-02-03"
 	duration := 123
 	director := "Director"
+	code := "SomeCode"
 	as := "Alias"
 	site, err := s.createTestSite(nil)
 	if err != nil {
@@ -867,6 +872,7 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 		},
 		Duration: &duration,
 		Director: &director,
+		Code:     &code,
 	}
 }
 

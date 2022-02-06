@@ -81,6 +81,7 @@ export interface SceneFragment {
   deleted: boolean;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   urls: SceneFragment_urls[];
   images: SceneFragment_images[];
