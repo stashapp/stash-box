@@ -14,6 +14,7 @@ type Mgr interface {
 type State interface {
 	WithTxn(fn func() error) error
 	InTxn() bool
+	ResetTxn() error
 }
 
 func MustBeIn(m State) {
