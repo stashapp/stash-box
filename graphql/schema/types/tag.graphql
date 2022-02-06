@@ -66,7 +66,13 @@ type QueryTagCategoriesResultType {
   tag_categories: [TagCategory!]!
 }
 
-input TagFilterType {
+enum TagSortEnum {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+}
+
+input TagQueryInput {
   """Filter to search name, aliases and description - assumes like query unless quoted"""
   text: String
   """Searches name and aliases - assumes like query unless quoted"""
@@ -75,6 +81,11 @@ input TagFilterType {
   name: String
   """Filter to category ID"""
   category_id: ID
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = ASC
+  sort: TagSortEnum! = NAME
 }
 
 type TagCategory {

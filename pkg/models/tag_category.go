@@ -8,5 +8,5 @@ type TagCategoryRepo interface {
 	Destroy(id uuid.UUID) error
 	Find(id uuid.UUID) (*TagCategory, error)
 	FindByIds(ids []uuid.UUID) ([]*TagCategory, []error)
-	Query(findFilter *QuerySpec) ([]*TagCategory, int, error)
+	Query() ([]*TagCategory, int, error)
 }

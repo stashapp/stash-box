@@ -13,7 +13,7 @@ type StudioRepo interface {
 	FindByName(name string) (*Studio, error)
 	FindByParentID(id uuid.UUID) (Studios, error)
 	Count() (int, error)
-	Query(studioFilter *StudioFilterType, findFilter *QuerySpec, userID uuid.UUID) (Studios, int, error)
+	Query(query StudioQueryInput, userID uuid.UUID) (Studios, int, error)
 	GetURLs(id uuid.UUID) ([]*URL, error)
 	GetAllURLs(ids []uuid.UUID) ([][]*URL, []error)
 	CountByPerformer(performerID uuid.UUID) ([]*PerformerStudio, error)

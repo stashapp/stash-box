@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { QuerySpec, SceneFilterType, GenderEnum } from "./globalTypes";
+import { SceneQueryInput, GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Scenes
@@ -78,6 +78,5 @@ export interface Scenes {
 }
 
 export interface ScenesVariables {
-  filter?: QuerySpec | null;
-  sceneFilter?: SceneFilterType | null;
+  input: SceneQueryInput;
 }

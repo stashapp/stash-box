@@ -22,12 +22,12 @@ func (r *queryResolver) FindStudio(ctx context.Context, id *uuid.UUID, name *str
 	return nil, nil
 }
 
-func (r *queryResolver) QueryStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.QuerySpec) (*models.QueryStudiosResultType, error) {
+func (r *queryResolver) QueryStudios(ctx context.Context, input models.StudioQueryInput) (*models.QueryStudiosResultType, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Studio()
 	user := user.GetCurrentUser(ctx)
 
-	studios, count, err := qb.Query(studioFilter, filter, user.ID)
+	studios, count, err := qb.Query(input, user.ID)
 	return &models.QueryStudiosResultType{
 		Studios: studios,
 		Count:   count,

@@ -142,45 +142,38 @@ func (qb *studioQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.QuerySpec, userID uuid.UUID) (models.Studios, int, error) {
-	if studioFilter == nil {
-		studioFilter = &models.StudioFilterType{}
-	}
-	if findFilter == nil {
-		findFilter = &models.QuerySpec{}
-	}
-
+func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.UUID) (models.Studios, int, error) {
 	query := newQueryBuilder(studioDBTable)
 	query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
 
 	query.Eq("studios.deleted", false)
 
-	if q := studioFilter.Name; q != nil && *q != "" {
+	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
-	if q := studioFilter.Names; q != nil && *q != "" {
+	if q := filter.Names; q != nil && *q != "" {
 		searchColumns := []string{"studios.name", "parent_studio.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
-	if studioFilter.HasParent != nil {
-		if *studioFilter.HasParent {
+	if filter.HasParent != nil {
+		if *filter.HasParent {
 			query.AddWhere("parent_studio.id IS NOT NULL")
 		} else {
 			query.AddWhere("parent_studio.id IS NULL")
 		}
 	}
 
-	if studioFilter.IsFavorite != nil {
+	if filter.IsFavorite != nil {
 		// userID is internal based on user context so it is safe to append rather than bind
 		q := fmt.Sprintf(" JOIN studio_favorites F ON studios.id = F.studio_id AND F.user_id = '%s'", userID)
-		if *studioFilter.IsFavorite {
+		if *filter.IsFavorite {
 			query.Body += q
 		} else {
 			query.Body += " LEFT" + q
@@ -188,8 +181,8 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		}
 	}
 
-	query.Sort = qb.getStudioSort(findFilter)
-	query.Pagination = getPagination(findFilter)
+	query.Sort = qb.getStudioSort(filter)
+	query.Pagination = getPagination(filter.Page, filter.PerPage)
 
 	var studios models.Studios
 	countResult, err := qb.dbi.Query(*query, &studios)
@@ -197,22 +190,9 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	return studios, countResult, err
 }
 
-func (qb *studioQueryBuilder) getStudioSort(findFilter *models.QuerySpec) string {
-	var sort string
-	var direction string
-	var secondary *string
-	if findFilter == nil {
-		sort = "name"
-		direction = "ASC"
-	} else {
-		sort = findFilter.GetSort("name")
-		direction = findFilter.GetDirection()
-	}
-	if sort != "id" {
-		field := "id"
-		secondary = &field
-	}
-	return getSort(qb.dbi.txn.dialect, sort, direction, "studios", secondary)
+func (qb *studioQueryBuilder) getStudioSort(filter models.StudioQueryInput) string {
+	secondary := "id"
+	return getSort(filter.Sort.String(), filter.Direction.String(), "studios", &secondary)
 }
 
 func (qb *studioQueryBuilder) queryStudios(query string, args []interface{}) (models.Studios, error) {

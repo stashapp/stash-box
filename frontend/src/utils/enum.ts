@@ -70,3 +70,13 @@ export const breastType = (
       return null;
   }
 };
+
+export const resolveEnum = <T>(
+  enm: { [s: string]: T },
+  value: string | null,
+  defaultValue?: T
+): T | undefined =>
+  value &&
+  (Object.values(enm) as unknown as string[]).includes(value.toUpperCase())
+    ? (value.toUpperCase() as unknown as T)
+    : defaultValue;

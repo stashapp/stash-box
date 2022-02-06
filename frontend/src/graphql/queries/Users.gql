@@ -1,5 +1,5 @@
-query Users($userFilter: UserFilterType, $filter: QuerySpec) {
-  queryUsers(user_filter: $userFilter, filter: $filter) {
+query Users($input: UserQueryInput!) {
+  queryUsers(input: $input) {
     count
     users {
       id

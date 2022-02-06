@@ -7,7 +7,7 @@ import { debounce } from "lodash-es";
 import AuthContext from "src/AuthContext";
 import querystring from "query-string";
 
-import { useStudios, SortDirectionEnum } from "src/graphql";
+import { useStudios, SortDirectionEnum, StudioSortEnum } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { List } from "src/components/list";
 import { FavoriteStar } from "src/components/fragments";
@@ -25,14 +25,13 @@ const StudiosComponent: FC = () => {
       : queries.favorite) === "true";
   const { page, setPage } = usePagination();
   const { loading, data } = useStudios({
-    filter: {
+    input: {
+      names: query,
+      is_favorite: favorite || undefined,
       page,
       per_page: PER_PAGE,
       direction: SortDirectionEnum.ASC,
-    },
-    studioFilter: {
-      names: query,
-      is_favorite: favorite || undefined,
+      sort: StudioSortEnum.NAME,
     },
   });
 

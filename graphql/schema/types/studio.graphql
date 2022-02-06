@@ -58,16 +58,26 @@ type QueryStudiosResultType {
   studios: [Studio!]!
 }
 
-input StudioFilterType {
+enum StudioSortEnum {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+}
+
+input StudioQueryInput {
   """Filter to search name - assumes like query unless quoted"""
   name: String
   """Filter to search studio and parent studio name - assumes like query unless quoted"""
   names: String
   """Filter to search url - assumes like query unless quoted"""
   url: String
-  
   parent: IDCriterionInput
   has_parent: Boolean
   """Filter by studio favorite status for the current user"""
   is_favorite: Boolean
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = ASC
+  sort: StudioSortEnum! = NAME
 }
