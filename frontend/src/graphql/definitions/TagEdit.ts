@@ -250,6 +250,7 @@ export interface TagEdit_tagEdit_target_Scene {
   deleted: boolean;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   urls: TagEdit_tagEdit_target_Scene_urls[];
   images: TagEdit_tagEdit_target_Scene_images[];
@@ -799,6 +800,7 @@ export interface TagEdit_tagEdit_details_SceneEdit {
   removed_fingerprints: TagEdit_tagEdit_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
+  code: string | null;
   draft_id: string | null;
 }
 
@@ -1214,6 +1216,7 @@ export interface TagEdit_tagEdit_old_details_SceneEdit {
   removed_fingerprints: TagEdit_tagEdit_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
+  code: string | null;
 }
 
 export type TagEdit_tagEdit_old_details = TagEdit_tagEdit_old_details_TagEdit | TagEdit_tagEdit_old_details_PerformerEdit | TagEdit_tagEdit_old_details_StudioEdit | TagEdit_tagEdit_old_details_SceneEdit;
@@ -1426,6 +1429,7 @@ export interface TagEdit_tagEdit_merge_sources_Scene {
   deleted: boolean;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   urls: TagEdit_tagEdit_merge_sources_Scene_urls[];
   images: TagEdit_tagEdit_merge_sources_Scene_images[];

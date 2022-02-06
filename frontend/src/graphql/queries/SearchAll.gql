@@ -11,6 +11,7 @@ query SearchAll($term: String!, $limit: Int = 5) {
         title
         deleted
         duration
+        code
         urls {
           ...URLFragment
         }

@@ -90,6 +90,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
     urls: [],
     studio: null,
     director: null,
+    code: null,
     duration: null,
     images: [],
     tags: [],
