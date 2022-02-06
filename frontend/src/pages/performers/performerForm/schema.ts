@@ -15,7 +15,7 @@ const zeroCheck = (input: number | null) =>
 
 export const PerformerSchema = yup.object({
   id: yup.string(),
-  name: yup.string().required("Name is required"),
+  name: yup.string().trim().required("Name is required"),
   gender: yup
     .string()
     .transform(nullCheck)
@@ -64,7 +64,7 @@ export const PerformerSchema = yup.object({
     .max(50, "Invalid waist size")
     .nullable(),
   hipSize: yup.number().transform(zeroCheck).nullable(),
-  boobJob: yup
+  breastType: yup
     .string()
     .transform(nullCheck)
     .nullable()

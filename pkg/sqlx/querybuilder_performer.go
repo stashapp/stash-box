@@ -280,7 +280,7 @@ func (qb *performerQueryBuilder) buildQuery(performerFilter *models.PerformerFil
 		handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
 		handleStringCriterion("height", performerFilter.Height, &query)
 		handleStringCriterion("measurements", performerFilter.Measurements, &query)
-		handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
+		handleStringCriterion("breast_type", performerFilter.BreastType, &query)
 		handleStringCriterion("career_length", performerFilter.CareerLength, &query)
 		handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
 		handleStringCriterion("piercings", performerFilter.Piercings, &query)
