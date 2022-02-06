@@ -599,19 +599,6 @@ type StudioEditInput struct {
 	Details *StudioEditDetailsInput `json:"details"`
 }
 
-type StudioFilterType struct {
-	// Filter to search name - assumes like query unless quoted
-	Name *string `json:"name"`
-	// Filter to search studio and parent studio name - assumes like query unless quoted
-	Names *string `json:"names"`
-	// Filter to search url - assumes like query unless quoted
-	URL       *string           `json:"url"`
-	Parent    *IDCriterionInput `json:"parent"`
-	HasParent *bool             `json:"has_parent"`
-	// Filter by studio favorite status for the current user
-	IsFavorite *bool `json:"is_favorite"`
-}
-
 type StudioQueryInput struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name"`

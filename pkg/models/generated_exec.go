@@ -4595,20 +4595,6 @@ type QueryStudiosResultType {
   studios: [Studio!]!
 }
 
-input StudioFilterType {
-  """Filter to search name - assumes like query unless quoted"""
-  name: String
-  """Filter to search studio and parent studio name - assumes like query unless quoted"""
-  names: String
-  """Filter to search url - assumes like query unless quoted"""
-  url: String
-  
-  parent: IDCriterionInput
-  has_parent: Boolean
-  """Filter by studio favorite status for the current user"""
-  is_favorite: Boolean
-}
-
 enum StudioSortEnum {
   NAME
   CREATED_AT
@@ -24135,69 +24121,6 @@ func (ec *executionContext) unmarshalInputStudioEditInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
 			it.Details, err = ec.unmarshalOStudioEditDetailsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioEditDetailsInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputStudioFilterType(ctx context.Context, obj interface{}) (StudioFilterType, error) {
-	var it StudioFilterType
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	for k, v := range asMap {
-		switch k {
-		case "name":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "names":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("names"))
-			it.Names, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "url":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
-			it.URL, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "parent":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent"))
-			it.Parent, err = ec.unmarshalOIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIDCriterionInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "has_parent":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("has_parent"))
-			it.HasParent, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "is_favorite":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
-			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
