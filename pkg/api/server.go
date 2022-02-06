@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"net/http"
+	"net/http/pprof"
 	"path"
 	"runtime/debug"
 	"strconv"
@@ -194,6 +195,25 @@ func Start(rfp RepoProvider, ui embed.FS) {
 			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
 		}
 	})
+
+	if config.GetProfilerPort() != nil {
+		go func() {
+			mux := http.NewServeMux()
+			mux.HandleFunc("/", pprof.Index)
+			mux.HandleFunc("/cmdline", pprof.Cmdline)
+			mux.HandleFunc("/profile", pprof.Profile)
+			mux.HandleFunc("/symbol", pprof.Symbol)
+			mux.HandleFunc("/trace", pprof.Trace)
+			mux.Handle("/allocs", pprof.Handler("allocs"))
+			mux.Handle("/block", pprof.Handler("block"))
+			mux.Handle("/goroutine", pprof.Handler("goroutine"))
+			mux.Handle("/heap", pprof.Handler("heap"))
+			mux.Handle("/mutex", pprof.Handler("mutex"))
+			mux.Handle("/threadcreate", pprof.Handler("threadcreate"))
+			logger.Infof("profiler is running at http://localhost:%d/", *config.GetProfilerPort())
+			logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*config.GetProfilerPort()), mux))
+		}()
+	}
 
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
