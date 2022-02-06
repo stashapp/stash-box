@@ -1,6 +1,6 @@
 import { FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import { Control, useFieldArray } from "react-hook-form";
+import { Control, useFieldArray, FieldError } from "react-hook-form";
 
 import { useSites, ValidSiteTypeEnum } from "src/graphql";
 import { Site_findSite as Site } from "src/graphql/definitions/Site";
@@ -11,9 +11,10 @@ interface URLInputProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<any>;
   type: ValidSiteTypeEnum;
+  errors?: { url?: FieldError | undefined }[];
 }
 
-const URLInput: FC<URLInputProps> = ({ control, type }) => {
+const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
   const {
     fields: urls,
     append,
@@ -108,7 +109,7 @@ const URLInput: FC<URLInputProps> = ({ control, type }) => {
   return (
     <div className={CLASSNAME}>
       <ul>
-        {urls.map((u) => (
+        {urls.map((u, i) => (
           <li key={u.url}>
             <InputGroup>
               <Button variant="danger" onClick={() => handleRemove(u.url)}>
@@ -121,6 +122,9 @@ const URLInput: FC<URLInputProps> = ({ control, type }) => {
                 {u.url}
               </InputGroup.Text>
             </InputGroup>
+            {errors?.[i]?.url && (
+              <div className="text-danger">{errors?.[i]?.url?.message}</div>
+            )}
           </li>
         ))}
       </ul>
