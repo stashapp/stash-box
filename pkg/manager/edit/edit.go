@@ -120,6 +120,11 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 
 		success := true
 		if err := applyer.apply(); err != nil {
+			// Failed apply, so we reset the txn in case it was a postgres error which would block further queries
+			if err := fac.ResetTxn(); err != nil {
+				return fmt.Errorf("Failed to reset failed transaction: %w", err)
+			}
+
 			success = false
 			commentID, _ := uuid.NewV4()
 			text := "###### Edit application failed: ######\n"
@@ -130,6 +135,7 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 			}
 			modUser := user.GetModUser(fac)
 			comment := models.NewEditComment(commentID, modUser, edit, text)
+
 			if err := eqb.CreateComment(*comment); err != nil {
 				return err
 			}
