@@ -21,7 +21,13 @@ export const parseSceneDraft = (
 ): [Scene, Record<string, string | null>] => {
   const scene: Scene = {
     id: "",
-    date: draft.date,
+    date: draft.date
+      ? {
+          date: draft.date,
+          accuracy: DateAccuracyEnum.DAY,
+          __typename: "FuzzyDate",
+        }
+      : null,
     title: draft.title,
     details: draft.details,
     urls: draft.url ? [draft.url] : [],

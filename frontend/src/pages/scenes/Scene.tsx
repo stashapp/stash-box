@@ -17,6 +17,7 @@ import {
   createHref,
   formatDuration,
   formatDateTime,
+  formatFuzzyDate,
   formatPendingEdits,
   getUrlBySite,
 } from "src/utils";
@@ -150,7 +151,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
                 <span className="mx-1">•</span>
               </>
             )}
-            {scene.date}
+            {formatFuzzyDate(scene.date)}
           </h6>
         </Card.Header>
         <Card.Body className="ScenePhoto">

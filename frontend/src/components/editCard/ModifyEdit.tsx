@@ -315,6 +315,7 @@ type NullableImage = Image | null;
 export interface SceneDetails {
   title: string | null;
   date: string | null;
+  date_accuracy: string | null;
   duration?: number | null;
   details?: string | null;
   director?: string | null;
@@ -376,8 +377,14 @@ export const renderSceneDetails = (
     )}
     <ChangeRow
       name="Date"
-      newValue={sceneDetails.date}
-      oldValue={oldSceneDetails?.date}
+      newValue={formatFuzzyDateComponents(
+        sceneDetails.date,
+        sceneDetails.date_accuracy
+      )}
+      oldValue={formatFuzzyDateComponents(
+        oldSceneDetails?.date,
+        oldSceneDetails?.date_accuracy
+      )}
       showDiff={showDiff}
     />
     <ChangeRow
