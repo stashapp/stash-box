@@ -9,7 +9,7 @@ const Version: FC = () => {
   let link = "";
   switch (data.version.build_type) {
     case "OFFICIAL":
-      link = `https://github.com/stashapp/stash-box/releases/tag/${data.version.version}`;
+      link = `https://github.com/stashapp/stash-box/releases/tag/v${data.version.version}`;
       break;
     case "DEVELOPMENT":
     case "PR":
