@@ -19,6 +19,7 @@ import {
 } from "src/graphql/definitions/SearchPerformers";
 import { formatFuzzyDate, createHref, filterData } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
+import { GenderIcon } from "src/components/fragments";
 
 export enum SearchType {
   Performer = "performer",
@@ -50,6 +51,10 @@ interface SearchResult {
   subLabel?: string;
 }
 
+const valueIsPerformer = (
+  arg?: SceneResult | PerformerResult
+): arg is PerformerResult => arg?.__typename === "Performer";
+
 const Option = (props: OptionProps<SearchResult, false>) => {
   const {
     data: { label, subLabel, value },
@@ -57,6 +62,7 @@ const Option = (props: OptionProps<SearchResult, false>) => {
   return (
     <components.Option {...props}>
       <div className="search-value">
+        {valueIsPerformer(value) && <GenderIcon gender={value.gender} />}
         {value?.deleted ? <del>{label}</del> : label}
       </div>
       <div className="search-subvalue">{subLabel}</div>
@@ -69,10 +75,6 @@ const resultIsSearchAll = (
 ): arg is SearchAll =>
   (arg as SearchAll).searchPerformer !== undefined &&
   (arg as SearchAll).searchScene !== undefined;
-
-const valueIsPerformer = (
-  arg?: SceneResult | PerformerResult
-): arg is PerformerResult => arg?.__typename === "Performer";
 
 function handleResult(
   result: SearchAll | SearchPerformers,
