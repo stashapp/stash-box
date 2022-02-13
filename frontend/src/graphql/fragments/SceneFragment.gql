@@ -3,7 +3,10 @@
 #import "../fragments/URLFragment.gql"
 fragment SceneFragment on Scene {
   id
-  date
+  date {
+    date
+    accuracy
+  }
   title
   deleted
   details

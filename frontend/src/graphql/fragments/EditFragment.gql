@@ -141,6 +141,7 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       date
+      date_accuracy
       studio {
         ...StudioFragment
       }
@@ -224,6 +225,7 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       date
+      date_accuracy
       studio {
         ...StudioFragment
       }

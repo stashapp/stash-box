@@ -49,9 +49,9 @@ input FingerprintEditInput {
   # v0.14.0 of gqlgen does not allow deprecated on input fields
   # https://github.com/99designs/gqlgen/issues/1636
   """@deprecated(reason: "unused")"""
-  submissions: Int 
+  submissions: Int
   """@deprecated(reason: "unused")"""
-  updated: Time 
+  updated: Time
 }
 
 input FingerprintQueryInput {
@@ -69,7 +69,7 @@ type Scene {
   id: ID!
   title: String
   details: String
-  date: Date
+  date: FuzzyDate
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -89,7 +89,7 @@ input SceneCreateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -105,7 +105,7 @@ input SceneUpdateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -124,7 +124,7 @@ input SceneEditDetailsInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -148,7 +148,8 @@ type SceneEdit {
   details: String
   added_urls: [URL!]
   removed_urls: [URL!]
-  date: Date
+  date: String
+  date_accuracy: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -214,7 +215,7 @@ type SceneDraft {
   title: String
   details: String
   url: URL
-  date: Date
+  date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
   tags: [SceneDraftTag!]
@@ -226,7 +227,7 @@ input SceneDraftInput {
   title: String
   details: String
   url: String
-  date: Date
+  date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!
   tags: [DraftEntityInput!]

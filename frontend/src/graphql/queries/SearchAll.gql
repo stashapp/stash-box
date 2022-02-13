@@ -7,7 +7,10 @@ query SearchAll($term: String!, $limit: Int = 5) {
     }
     searchScene(term: $term, limit: $limit) {
         id
-        date
+        date {
+          date
+          accuracy
+        }
         title
         deleted
         duration

@@ -1,7 +1,10 @@
 mutation AddScene($sceneData: SceneCreateInput!) {
   sceneCreate(input: $sceneData) {
       id
-      date
+      date {
+        date
+        accuracy
+      }
       title,
       details,
       urls {
