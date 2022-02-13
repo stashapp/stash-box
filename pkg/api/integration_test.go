@@ -771,7 +771,10 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 	title := s.generateSceneName()
 	details := "Details"
-	date := "2000-02-03"
+	date := models.FuzzyDateInput{
+		Date:     "2000-02-03",
+		Accuracy: models.DateAccuracyEnumDay,
+	}
 	duration := 123
 	director := "Director"
 	code := "SomeCode"
@@ -802,7 +805,10 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput {
 	title := s.generateSceneName()
 	details := "Details"
-	date := "2000-02-03"
+	date := models.FuzzyDateInput{
+		Date:     "2000-02-03",
+		Accuracy: models.DateAccuracyEnumDay,
+	}
 	duration := 123
 	director := "Director"
 	code := "SomeCode"
@@ -841,7 +847,10 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 
 	title := s.generateSceneName()
 	details := "Details"
-	date := "2000-02-03"
+	date := models.FuzzyDateInput{
+		Date:     "2000-02-03",
+		Accuracy: models.DateAccuracyEnumDay,
+	}
 	duration := 123
 	director := "Director"
 	code := "SomeCode"
