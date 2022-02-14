@@ -96,11 +96,6 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
     }
   };
 
-  const handleRemove = (url: string) => {
-    const index = urls.findIndex((u) => u.url === url);
-    if (index !== -1) remove(index);
-  };
-
   const handleSiteSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const site = sites.find((s) => s.id === e.currentTarget.value);
     if (site) setSelectedSite(site);
@@ -112,7 +107,7 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
         {urls.map((u, i) => (
           <li key={u.url}>
             <InputGroup>
-              <Button variant="danger" onClick={() => handleRemove(u.url)}>
+              <Button variant="danger" onClick={() => remove(i)}>
                 Remove
               </Button>
               <InputGroup.Text>
