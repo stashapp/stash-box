@@ -18,9 +18,9 @@ export const PerformerSchema = yup.object({
   name: yup.string().trim().required("Name is required"),
   gender: yup
     .string()
-    .transform(nullCheck)
+    .transform((val: string) => (val === "null" ? null : val))
     .nullable()
-    .oneOf([null, ...Object.keys(GenderEnum)], "Invalid gender"),
+    .oneOf([null, ...Object.keys(GenderEnum)], "Gender is required"),
   disambiguation: yup.string().trim().transform(nullCheck).nullable(),
   birthdate: yup
     .string()

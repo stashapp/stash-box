@@ -48,9 +48,11 @@ const CountryList = Countries.getNames("en");
 type OptionEnum = {
   value: string;
   label: string;
+  disabled?: boolean;
 };
 
 const GENDER: OptionEnum[] = [
+  { value: "", label: "Select gender...", disabled: true },
   { value: "null", label: "Unknown" },
   { value: "FEMALE", label: "Female" },
   { value: "MALE", label: "Male" },
@@ -196,7 +198,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
-      <option key={obj.value} value={obj.value}>
+      <option key={obj.value} value={obj.value} disabled={!!obj.disabled}>
         {obj.label}
       </option>
     ));
@@ -269,6 +271,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const metadataErrors = [
     { error: errors.name?.message, tab: "personal" },
+    { error: errors.gender?.message, tab: "personal" },
     { error: errors.birthdate?.message, tab: "personal" },
     { error: errors.career_start_year?.message, tab: "personal" },
     { error: errors.career_end_year?.message, tab: "personal" },
@@ -359,6 +362,7 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
                 defaultValue={initial?.gender ?? performer?.gender ?? ""}
+                placeholder="Select gender..."
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
