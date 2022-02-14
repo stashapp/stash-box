@@ -43,6 +43,7 @@ interface EditFilterProps {
   status?: VoteStatusEnum;
   operation?: OperationEnum;
   favorite?: boolean;
+  showFavoriteOption?: boolean;
 }
 
 const useEditFilter = ({
@@ -52,6 +53,7 @@ const useEditFilter = ({
   status: fixedStatus,
   operation: fixedOperation,
   favorite: fixedFavorite,
+  showFavoriteOption = true,
 }: EditFilterProps) => {
   const history = useHistory();
   const query = queryString.parse(history.location.search);
@@ -184,7 +186,7 @@ const useEditFilter = ({
           {enumToOptions(EditOperationTypes)}
         </Form.Select>
       </Form.Group>
-      {!fixedType && (
+      {showFavoriteOption && (
         <Form.Group controlId="favorite">
           <Form.Label>Favorites</Form.Label>
           <Form.Check
