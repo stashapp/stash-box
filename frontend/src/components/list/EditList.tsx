@@ -49,6 +49,7 @@ const EditListComponent: FC<EditsProps> = ({
     type,
     status,
     operation,
+    showFavoriteOption: id === undefined,
   });
   const { data, loading } = useEdits({
     input: {
