@@ -132,7 +132,7 @@ func getByID(txn *txnState, t string, id uuid.UUID, object interface{}) error {
 
 func insertObject(txn *txnState, t string, object interface{}, conflictHandling *string) error {
 	ensureTx(txn)
-	fields, values := sqlGenKeysCreate(txn.dialect, object)
+	fields, values := sqlGenKeysCreate(object)
 
 	conflictClause := ""
 	if conflictHandling != nil {
@@ -153,7 +153,7 @@ func insertObject(txn *txnState, t string, object interface{}, conflictHandling 
 func updateObjectByID(txn *txnState, t string, object interface{}, updateEmptyValues bool) error {
 	ensureTx(txn)
 	_, err := txn.DB().NamedExec(
-		`UPDATE `+t+` SET `+sqlGenKeys(txn.dialect, object, updateEmptyValues)+` WHERE `+t+`.id = :id`,
+		`UPDATE `+t+` SET `+sqlGenKeys(object, updateEmptyValues)+` WHERE `+t+`.id = :id`,
 		object,
 	)
 
@@ -187,12 +187,12 @@ func getColumn(tableName string, columnName string) string {
 	return tableName + "." + columnName
 }
 
-func sqlGenKeysCreate(dialect Dialect, i interface{}) (string, string) {
+func sqlGenKeysCreate(i interface{}) (string, string) {
 	var fields []string
 	var values []string
 
 	addPlaceholder := func(key string) {
-		fields = append(fields, dialect.FieldQuote(key))
+		fields = append(fields, fieldQuote(key))
 		values = append(values, ":"+key)
 	}
 
@@ -251,11 +251,11 @@ func sqlGenKeysCreate(dialect Dialect, i interface{}) (string, string) {
 	return strings.Join(fields, ", "), strings.Join(values, ", ")
 }
 
-func sqlGenKeys(dialect Dialect, i interface{}, partial bool) string {
+func sqlGenKeys(i interface{}, partial bool) string {
 	var query []string
 
 	addKey := func(key string) {
-		query = append(query, fmt.Sprintf("%s=:%s", dialect.FieldQuote(key), key))
+		query = append(query, fmt.Sprintf("%s=:%s", fieldQuote(key), key))
 	}
 
 	v := reflect.ValueOf(i)
@@ -314,4 +314,12 @@ func sqlGenKeys(dialect Dialect, i interface{}, partial bool) string {
 		}
 	}
 	return strings.Join(query, ", ")
+}
+
+func fieldQuote(field string) string {
+	return `"` + field + `"`
+}
+
+func nullsLast() string {
+	return " NULLS LAST "
 }

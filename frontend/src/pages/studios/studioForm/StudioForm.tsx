@@ -3,9 +3,12 @@ import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
+import { Link } from "react-router-dom";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
+import { Icon } from "src/components/fragments";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
@@ -71,6 +74,14 @@ const StudioForm: FC<StudioProps> = ({
     callback(callbackData, data.note);
   };
 
+  const metadataErrors = [
+    { error: errors.name?.message, tab: "details" },
+    {
+      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      tab: "links",
+    },
+  ].filter((e) => e.error) as { error: string; tab: string }[];
+
   return (
     <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
       <Tabs
@@ -111,7 +122,11 @@ const StudioForm: FC<StudioProps> = ({
         <Tab eventKey="links" title="Links" className="col-xl-9">
           <Form.Group className="mb-3">
             <Form.Label>Links</Form.Label>
-            <URLInput control={control} type={ValidSiteTypeEnum.STUDIO} />
+            <URLInput
+              control={control}
+              type={ValidSiteTypeEnum.STUDIO}
+              errors={errors.urls}
+            />
           </Form.Group>
 
           <NavButtons onNext={() => setActiveTab("images")} />
@@ -148,6 +163,22 @@ const StudioForm: FC<StudioProps> = ({
               <EditNote register={register} error={errors.note} />
             </Col>
           </Row>
+
+          {metadataErrors.length > 0 && (
+            <div className="text-end my-4">
+              <h6>
+                <Icon icon={faExclamationTriangle} color="red" />
+                <span className="ms-1">Errors</span>
+              </h6>
+              <div className="d-flex flex-column text-danger">
+                {metadataErrors.map(({ error, tab }) => (
+                  <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
+                    {error}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           <SubmitButtons disabled={!!file || saving} />
         </Tab>

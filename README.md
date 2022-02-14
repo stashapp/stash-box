@@ -8,7 +8,7 @@ The intent of stash-box is to provide a collaborative, crowd-sourced database of
 
 The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
 
-**Note: If you are a [Stash](https://github.com/stashapp/stash) user, you do not need to install stash-box.  The Stash community has a server with many titles from which you can pull data. You can get the login information from the #stash-box-qa2 channel on our Discord server.**
+**Note: If you are a [Stash](https://github.com/stashapp/stash) user, you do not need to install stash-box.  The Stash community has a server with many titles from which you can pull data. You can get the login information from the #stashbox-invites channel on our Discord server.**
 
 # Docker install
 
@@ -91,6 +91,7 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a phash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
 | `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 | `draft_time_limit` | (24h) | Time, in seconds, before a draft is deleted. |
+| `profiler_port` | 0 | Port on which to serve pprof output. Omit to disable entirely. |
 
 ## SSL (HTTPS)
 

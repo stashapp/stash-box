@@ -8,6 +8,7 @@ fragment SceneFragment on Scene {
   deleted
   details
   director
+  code
   duration
   urls {
     ...URLFragment

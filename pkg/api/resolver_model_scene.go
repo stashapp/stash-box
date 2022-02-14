@@ -30,6 +30,10 @@ func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*strin
 	return resolveNullString(obj.Director), nil
 }
 
+func (r *sceneResolver) Code(ctx context.Context, obj *models.Scene) (*string, error) {
+	return resolveNullString(obj.Code), nil
+}
+
 func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
 	return resolveSQLiteDate(obj.Date)
 }

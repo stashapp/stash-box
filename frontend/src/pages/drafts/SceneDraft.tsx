@@ -14,6 +14,8 @@ import {
   SceneEditDetailsInput,
   useScenesWithoutCount,
   CriterionModifier,
+  SortDirectionEnum,
+  SceneSortEnum,
 } from "src/graphql";
 import { Icon } from "src/components/fragments";
 import { editHref } from "src/utils";
@@ -36,11 +38,15 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
     onError: (error) => setSubmissionError(error.message),
   });
   const { data: fingerprintMatches } = useScenesWithoutCount({
-    sceneFilter: {
+    input: {
       fingerprints: {
         modifier: CriterionModifier.INCLUDES,
         value: draft.data.fingerprints.map((f) => f.hash),
       },
+      page: 1,
+      per_page: 100,
+      direction: SortDirectionEnum.DESC,
+      sort: SceneSortEnum.CREATED_AT,
     },
   });
 
@@ -84,6 +90,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
     urls: [],
     studio: null,
     director: null,
+    code: null,
     duration: null,
     images: [],
     tags: [],

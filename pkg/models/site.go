@@ -8,5 +8,5 @@ type SiteRepo interface {
 	Destroy(id uuid.UUID) error
 	Find(id uuid.UUID) (*Site, error)
 	FindByIds(ids []uuid.UUID) ([]*Site, []error)
-	Query(findFilter *QuerySpec) ([]*Site, int, error)
+	Query() ([]*Site, int, error)
 }

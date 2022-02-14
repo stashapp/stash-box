@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { QuerySpec, StudioFilterType } from "./globalTypes";
+import { StudioQueryInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Studios
@@ -58,6 +58,5 @@ export interface Studios {
 }
 
 export interface StudiosVariables {
-  filter?: QuerySpec | null;
-  studioFilter?: StudioFilterType | null;
+  input: StudioQueryInput;
 }

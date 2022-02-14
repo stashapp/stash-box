@@ -11,7 +11,7 @@ import {
   Tags,
   TagsVariables,
 } from "src/graphql/definitions/Tags";
-import { SortDirectionEnum } from "src/graphql";
+import { SortDirectionEnum, TagSortEnum } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 
@@ -75,8 +75,13 @@ const TagSelect: FC<TagSelectProps> = ({
     const { data } = await client.query<Tags, TagsVariables>({
       query: TagsQuery,
       variables: {
-        tagFilter: { name: term },
-        filter: { direction: SortDirectionEnum.ASC },
+        input: {
+          page: 1,
+          per_page: 25,
+          name: term,
+          sort: TagSortEnum.NAME,
+          direction: SortDirectionEnum.ASC,
+        },
       },
     });
 

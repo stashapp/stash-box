@@ -101,7 +101,7 @@ input RoleCriterionInput {
   modifier: CriterionModifier!
 }
 
-input UserFilterType {
+input UserQueryInput {
   """Filter to search user name - assumes like query unless quoted"""
   name: String
   """Filter to search email - assumes like query unless quoted"""
@@ -123,6 +123,9 @@ input UserFilterType {
   api_calls: IntCriterionInput
   """Filter by user that invited"""
   invited_by: ID
+
+  page: Int! = 1
+  per_page: Int! = 25
 }
 
 type UserEditCount {

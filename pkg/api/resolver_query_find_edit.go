@@ -15,10 +15,9 @@ func (r *queryResolver) FindEdit(ctx context.Context, id uuid.UUID) (*models.Edi
 	return qb.Find(id)
 }
 
-func (r *queryResolver) QueryEdits(ctx context.Context, editFilter *models.EditFilterType, filter *models.QuerySpec) (*models.EditQuery, error) {
+func (r *queryResolver) QueryEdits(ctx context.Context, input models.EditQueryInput) (*models.EditQuery, error) {
 	return &models.EditQuery{
-		EditFilter: editFilter,
-		Filter:     filter,
+		Filter: input,
 	}, nil
 }
 
@@ -28,12 +27,12 @@ func (r *queryEditResolver) Count(ctx context.Context, obj *models.EditQuery) (i
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Edit()
 	u := user.GetCurrentUser(ctx)
-	return qb.QueryCount(obj.EditFilter, obj.Filter, u.ID)
+	return qb.QueryCount(obj.Filter, u.ID)
 }
 
 func (r *queryEditResolver) Edits(ctx context.Context, obj *models.EditQuery) ([]*models.Edit, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Edit()
 	u := user.GetCurrentUser(ctx)
-	return qb.QueryEdits(obj.EditFilter, obj.Filter, u.ID)
+	return qb.QueryEdits(obj.Filter, u.ID)
 }

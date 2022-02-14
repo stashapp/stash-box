@@ -109,7 +109,7 @@ const Main: FC = ({ children }) => {
           <NavLink to={ROUTE_TAGS} className="nav-link">
             Tags
           </NavLink>
-          <NavLink to={ROUTE_EDITS} className="nav-link">
+          <NavLink to={`${ROUTE_EDITS}?status=pending`} className="nav-link">
             Edits
           </NavLink>
           {canEdit(user) && (

@@ -250,6 +250,7 @@ export interface StudioEdit_studioEdit_target_Scene {
   deleted: boolean;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   urls: StudioEdit_studioEdit_target_Scene_urls[];
   images: StudioEdit_studioEdit_target_Scene_images[];
@@ -372,8 +373,8 @@ export interface StudioEdit_studioEdit_details_PerformerEdit {
   removed_tattoos: StudioEdit_studioEdit_details_PerformerEdit_removed_tattoos[] | null;
   added_piercings: StudioEdit_studioEdit_details_PerformerEdit_added_piercings[] | null;
   removed_piercings: StudioEdit_studioEdit_details_PerformerEdit_removed_piercings[] | null;
-  added_images: StudioEdit_studioEdit_details_PerformerEdit_added_images[] | null;
-  removed_images: StudioEdit_studioEdit_details_PerformerEdit_removed_images[] | null;
+  added_images: (StudioEdit_studioEdit_details_PerformerEdit_added_images | null)[] | null;
+  removed_images: (StudioEdit_studioEdit_details_PerformerEdit_removed_images | null)[] | null;
   draft_id: string | null;
 }
 
@@ -473,8 +474,8 @@ export interface StudioEdit_studioEdit_details_StudioEdit {
   added_urls: StudioEdit_studioEdit_details_StudioEdit_added_urls[] | null;
   removed_urls: StudioEdit_studioEdit_details_StudioEdit_removed_urls[] | null;
   parent: StudioEdit_studioEdit_details_StudioEdit_parent | null;
-  added_images: StudioEdit_studioEdit_details_StudioEdit_added_images[] | null;
-  removed_images: StudioEdit_studioEdit_details_StudioEdit_removed_images[] | null;
+  added_images: (StudioEdit_studioEdit_details_StudioEdit_added_images | null)[] | null;
+  removed_images: (StudioEdit_studioEdit_details_StudioEdit_removed_images | null)[] | null;
 }
 
 export interface StudioEdit_studioEdit_details_SceneEdit_added_urls_site {
@@ -793,12 +794,13 @@ export interface StudioEdit_studioEdit_details_SceneEdit {
   removed_performers: StudioEdit_studioEdit_details_SceneEdit_removed_performers[] | null;
   added_tags: StudioEdit_studioEdit_details_SceneEdit_added_tags[] | null;
   removed_tags: StudioEdit_studioEdit_details_SceneEdit_removed_tags[] | null;
-  added_images: StudioEdit_studioEdit_details_SceneEdit_added_images[] | null;
-  removed_images: StudioEdit_studioEdit_details_SceneEdit_removed_images[] | null;
+  added_images: (StudioEdit_studioEdit_details_SceneEdit_added_images | null)[] | null;
+  removed_images: (StudioEdit_studioEdit_details_SceneEdit_removed_images | null)[] | null;
   added_fingerprints: StudioEdit_studioEdit_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: StudioEdit_studioEdit_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
+  code: string | null;
   draft_id: string | null;
 }
 
@@ -1208,12 +1210,13 @@ export interface StudioEdit_studioEdit_old_details_SceneEdit {
   removed_performers: StudioEdit_studioEdit_old_details_SceneEdit_removed_performers[] | null;
   added_tags: StudioEdit_studioEdit_old_details_SceneEdit_added_tags[] | null;
   removed_tags: StudioEdit_studioEdit_old_details_SceneEdit_removed_tags[] | null;
-  added_images: StudioEdit_studioEdit_old_details_SceneEdit_added_images[] | null;
-  removed_images: StudioEdit_studioEdit_old_details_SceneEdit_removed_images[] | null;
+  added_images: (StudioEdit_studioEdit_old_details_SceneEdit_added_images | null)[] | null;
+  removed_images: (StudioEdit_studioEdit_old_details_SceneEdit_removed_images | null)[] | null;
   added_fingerprints: StudioEdit_studioEdit_old_details_SceneEdit_added_fingerprints[] | null;
   removed_fingerprints: StudioEdit_studioEdit_old_details_SceneEdit_removed_fingerprints[] | null;
   duration: number | null;
   director: string | null;
+  code: string | null;
 }
 
 export type StudioEdit_studioEdit_old_details = StudioEdit_studioEdit_old_details_TagEdit | StudioEdit_studioEdit_old_details_PerformerEdit | StudioEdit_studioEdit_old_details_StudioEdit | StudioEdit_studioEdit_old_details_SceneEdit;
@@ -1426,6 +1429,7 @@ export interface StudioEdit_studioEdit_merge_sources_Scene {
   deleted: boolean;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   urls: StudioEdit_studioEdit_merge_sources_Scene_urls[];
   images: StudioEdit_studioEdit_merge_sources_Scene_images[];

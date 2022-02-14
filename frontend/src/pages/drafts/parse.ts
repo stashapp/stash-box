@@ -27,6 +27,7 @@ export const parseSceneDraft = (
     urls: draft.url ? [draft.url] : [],
     studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
     director: null,
+    code: null,
     duration: draft.fingerprints?.[0].duration ?? null,
     images: draft.image ? [draft.image] : [],
     tags: (draft.tags ?? []).reduce<Tag[]>(

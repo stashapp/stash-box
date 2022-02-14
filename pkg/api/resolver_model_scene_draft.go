@@ -99,7 +99,7 @@ func (r *sceneDraftResolver) URL(ctx context.Context, obj *models.SceneDraft) (*
 
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Site()
-	sites, _, err := qb.Query(nil)
+	sites, _, err := qb.Query()
 	if err != nil {
 		return nil, nil
 	}

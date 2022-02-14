@@ -5,7 +5,7 @@ const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
 
 export const SceneSchema = yup.object({
-  title: yup.string().required("Title is required"),
+  title: yup.string().trim().required("Title is required"),
   details: yup.string().trim(),
   date: yup
     .string()
@@ -24,6 +24,7 @@ export const SceneSchema = yup.object({
     })
     .nullable(),
   director: yup.string().trim().transform(nullCheck).nullable(),
+  code: yup.string().trim().transform(nullCheck).nullable(),
   studio: yup
     .object({
       id: yup.string().required("Studio is required"),

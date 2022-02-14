@@ -83,15 +83,10 @@ func (qb *tagCategoryQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.TagCate
 	return result, nil
 }
 
-func (qb *tagCategoryQueryBuilder) Query(findFilter *models.QuerySpec) ([]*models.TagCategory, int, error) {
-	if findFilter == nil {
-		findFilter = &models.QuerySpec{}
-	}
-
+func (qb *tagCategoryQueryBuilder) Query() ([]*models.TagCategory, int, error) {
 	query := newQueryBuilder(tagCategoryDBTable)
 
-	query.Sort = qb.getTagCategorySort(findFilter)
-	query.Pagination = getPagination(findFilter)
+	query.Sort = getSort("name", "ASC", tagCategoryTable, nil)
 
 	var categories models.TagCategories
 	countResult, err := qb.dbi.Query(*query, &categories)
@@ -100,17 +95,4 @@ func (qb *tagCategoryQueryBuilder) Query(findFilter *models.QuerySpec) ([]*model
 	}
 
 	return categories, countResult, nil
-}
-
-func (qb *tagCategoryQueryBuilder) getTagCategorySort(findFilter *models.QuerySpec) string {
-	var sort string
-	var direction string
-	if findFilter == nil {
-		sort = "name"
-		direction = "ASC"
-	} else {
-		sort = findFilter.GetSort("name")
-		direction = findFilter.GetDirection()
-	}
-	return getSort(qb.dbi.txn.dialect, sort, direction, tagCategoryTable, nil)
 }

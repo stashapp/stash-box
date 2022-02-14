@@ -258,16 +258,11 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*model
 		return nil, err
 	}
 
-	var ret []*models.EditComment
-	for _, comment := range comments {
-		ret = append(ret, comment)
-	}
-
 	sort.Slice(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Timestamp.Before(comments[j].CreatedAt.Timestamp)
 	})
 
-	return ret, nil
+	return comments, nil
 }
 
 func (r *editResolver) Votes(ctx context.Context, obj *models.Edit) ([]*models.EditVote, error) {

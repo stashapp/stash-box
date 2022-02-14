@@ -1,7 +1,6 @@
 query PendingEditsCount($type: TargetTypeEnum!, $id: ID!) {
   queryEdits(
-    edit_filter: { target_type: $type, target_id: $id, status: PENDING }
-    filter: { per_page: 1 }
+    input: { target_type: $type, target_id: $id, status: PENDING, per_page: 1 }
   ) {
     count
   }
