@@ -31,6 +31,11 @@ export enum DateAccuracyEnum {
   YEAR = "YEAR",
 }
 
+export enum EditSortEnum {
+  CREATED_AT = "CREATED_AT",
+  UPDATED_AT = "UPDATED_AT",
+}
+
 export enum EthnicityEnum {
   ASIAN = "ASIAN",
   BLACK = "BLACK",
@@ -105,6 +110,16 @@ export enum OperationEnum {
   MODIFY = "MODIFY",
 }
 
+export enum PerformerSortEnum {
+  BIRTHDATE = "BIRTHDATE",
+  CAREER_START_YEAR = "CAREER_START_YEAR",
+  CREATED_AT = "CREATED_AT",
+  DEBUT = "DEBUT",
+  NAME = "NAME",
+  SCENE_COUNT = "SCENE_COUNT",
+  UPDATED_AT = "UPDATED_AT",
+}
+
 export enum RoleEnum {
   ADMIN = "ADMIN",
   BOT = "BOT",
@@ -116,15 +131,35 @@ export enum RoleEnum {
   VOTE = "VOTE",
 }
 
+export enum SceneSortEnum {
+  CREATED_AT = "CREATED_AT",
+  DATE = "DATE",
+  TITLE = "TITLE",
+  TRENDING = "TRENDING",
+  UPDATED_AT = "UPDATED_AT",
+}
+
 export enum SortDirectionEnum {
   ASC = "ASC",
   DESC = "DESC",
+}
+
+export enum StudioSortEnum {
+  CREATED_AT = "CREATED_AT",
+  NAME = "NAME",
+  UPDATED_AT = "UPDATED_AT",
 }
 
 export enum TagGroupEnum {
   ACTION = "ACTION",
   PEOPLE = "PEOPLE",
   SCENE = "SCENE",
+}
+
+export enum TagSortEnum {
+  CREATED_AT = "CREATED_AT",
+  NAME = "NAME",
+  UPDATED_AT = "UPDATED_AT",
 }
 
 export enum TargetTypeEnum {
@@ -199,7 +234,15 @@ export interface EditCommentInput {
   comment: string;
 }
 
-export interface EditFilterType {
+export interface EditInput {
+  id?: string | null;
+  operation: OperationEnum;
+  edit_id?: string | null;
+  merge_source_ids?: string[] | null;
+  comment?: string | null;
+}
+
+export interface EditQueryInput {
   user_id?: string | null;
   status?: VoteStatusEnum | null;
   operation?: OperationEnum | null;
@@ -208,14 +251,10 @@ export interface EditFilterType {
   target_type?: TargetTypeEnum | null;
   target_id?: string | null;
   is_favorite?: boolean | null;
-}
-
-export interface EditInput {
-  id?: string | null;
-  operation: OperationEnum;
-  edit_id?: string | null;
-  merge_source_ids?: string[] | null;
-  comment?: string | null;
+  page: number;
+  per_page: number;
+  direction: SortDirectionEnum;
+  sort: EditSortEnum;
 }
 
 export interface EditVoteInput {
@@ -335,7 +374,7 @@ export interface PerformerEditOptionsInput {
   set_merge_aliases?: boolean | null;
 }
 
-export interface PerformerFilterType {
+export interface PerformerQueryInput {
   names?: string | null;
   name?: string | null;
   alias?: string | null;
@@ -360,13 +399,10 @@ export interface PerformerFilterType {
   tattoos?: BodyModificationCriterionInput | null;
   piercings?: BodyModificationCriterionInput | null;
   is_favorite?: boolean | null;
-}
-
-export interface QuerySpec {
-  page?: number | null;
-  per_page?: number | null;
-  sort?: string | null;
-  direction?: SortDirectionEnum | null;
+  page: number;
+  per_page: number;
+  direction: SortDirectionEnum;
+  sort: PerformerSortEnum;
 }
 
 export interface ResetPasswordInput {
@@ -395,6 +431,7 @@ export interface SceneCreateInput {
   fingerprints: FingerprintEditInput[];
   duration?: number | null;
   director?: string | null;
+  code?: string | null;
 }
 
 export interface SceneDestroyInput {
@@ -412,6 +449,7 @@ export interface SceneEditDetailsInput {
   image_ids?: string[] | null;
   duration?: number | null;
   director?: string | null;
+  code?: string | null;
   fingerprints?: FingerprintInput[] | null;
   draft_id?: string | null;
 }
@@ -422,7 +460,7 @@ export interface SceneEditInput {
   duration?: number | null;
 }
 
-export interface SceneFilterType {
+export interface SceneQueryInput {
   text?: string | null;
   title?: string | null;
   url?: string | null;
@@ -433,6 +471,10 @@ export interface SceneFilterType {
   performers?: MultiIDCriterionInput | null;
   alias?: StringCriterionInput | null;
   fingerprints?: MultiStringCriterionInput | null;
+  page: number;
+  per_page: number;
+  direction: SortDirectionEnum;
+  sort: SceneSortEnum;
 }
 
 export interface SceneUpdateInput {
@@ -448,6 +490,7 @@ export interface SceneUpdateInput {
   fingerprints?: FingerprintEditInput[] | null;
   duration?: number | null;
   director?: string | null;
+  code?: string | null;
 }
 
 export interface SiteCreateInput {
@@ -499,13 +542,17 @@ export interface StudioEditInput {
   details?: StudioEditDetailsInput | null;
 }
 
-export interface StudioFilterType {
+export interface StudioQueryInput {
   name?: string | null;
   names?: string | null;
   url?: string | null;
   parent?: IDCriterionInput | null;
   has_parent?: boolean | null;
   is_favorite?: boolean | null;
+  page: number;
+  per_page: number;
+  direction: SortDirectionEnum;
+  sort: StudioSortEnum;
 }
 
 export interface StudioUpdateInput {
@@ -545,11 +592,15 @@ export interface TagEditInput {
   details?: TagEditDetailsInput | null;
 }
 
-export interface TagFilterType {
+export interface TagQueryInput {
   text?: string | null;
   names?: string | null;
   name?: string | null;
   category_id?: string | null;
+  page: number;
+  per_page: number;
+  direction: SortDirectionEnum;
+  sort: TagSortEnum;
 }
 
 export interface URLInput {
@@ -575,7 +626,7 @@ export interface UserDestroyInput {
   id: string;
 }
 
-export interface UserFilterType {
+export interface UserQueryInput {
   name?: string | null;
   email?: string | null;
   roles?: RoleCriterionInput | null;
@@ -586,6 +637,8 @@ export interface UserFilterType {
   unsuccessful_votes?: IntCriterionInput | null;
   api_calls?: IntCriterionInput | null;
   invited_by?: string | null;
+  page: number;
+  per_page: number;
 }
 
 export interface UserUpdateInput {

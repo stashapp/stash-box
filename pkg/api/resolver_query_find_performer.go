@@ -16,10 +16,9 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id uuid.UUID) (*model
 	return qb.Find(id)
 }
 
-func (r *queryResolver) QueryPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.QuerySpec) (*models.PerformerQuery, error) {
+func (r *queryResolver) QueryPerformers(ctx context.Context, input models.PerformerQueryInput) (*models.PerformerQuery, error) {
 	return &models.PerformerQuery{
-		PerformerFilter: performerFilter,
-		Filter:          filter,
+		Filter: input,
 	}, nil
 }
 
@@ -29,12 +28,12 @@ func (r *queryPerformerResolver) Count(ctx context.Context, obj *models.Performe
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
 	user := user.GetCurrentUser(ctx)
-	return qb.QueryCount(obj.PerformerFilter, obj.Filter, user.ID)
+	return qb.QueryCount(obj.Filter, user.ID)
 }
 
 func (r *queryPerformerResolver) Performers(ctx context.Context, obj *models.PerformerQuery) ([]*models.Performer, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Performer()
 	user := user.GetCurrentUser(ctx)
-	return qb.QueryPerformers(obj.PerformerFilter, obj.Filter, user.ID)
+	return qb.QueryPerformers(obj.Filter, user.ID)
 }

@@ -17,8 +17,9 @@ import {
   SearchPerformers,
   SearchPerformers_searchPerformer as PerformerOnlyResult,
 } from "src/graphql/definitions/SearchPerformers";
-import { formatFuzzyDate, createHref } from "src/utils";
+import { formatFuzzyDate, createHref, filterData } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
+import { GenderIcon } from "src/components/fragments";
 
 export enum SearchType {
   Performer = "performer",
@@ -50,6 +51,10 @@ interface SearchResult {
   subLabel?: string;
 }
 
+const valueIsPerformer = (
+  arg?: SceneResult | PerformerResult
+): arg is PerformerResult => arg?.__typename === "Performer";
+
 const Option = (props: OptionProps<SearchResult, false>) => {
   const {
     data: { label, subLabel, value },
@@ -57,6 +62,7 @@ const Option = (props: OptionProps<SearchResult, false>) => {
   return (
     <components.Option {...props}>
       <div className="search-value">
+        {valueIsPerformer(value) && <GenderIcon gender={value.gender} />}
         {value?.deleted ? <del>{label}</del> : label}
       </div>
       <div className="search-subvalue">{subLabel}</div>
@@ -69,10 +75,6 @@ const resultIsSearchAll = (
 ): arg is SearchAll =>
   (arg as SearchAll).searchPerformer !== undefined &&
   (arg as SearchAll).searchScene !== undefined;
-
-const valueIsPerformer = (
-  arg?: SceneResult | PerformerResult
-): arg is PerformerResult => arg?.__typename === "Performer";
 
 function handleResult(
   result: SearchAll | SearchPerformers,
@@ -113,10 +115,13 @@ function handleResult(
         type: "scene",
         value: scene,
         label: `${scene.title} ${scene.date ? `(${scene.date})` : ""}`,
-        subLabel: `${scene?.studio?.name ?? ""}${
-          scene.performers && scene.studio ? " • " : ""
-        }
-          ${scene.performers.map((p) => p.as || p.performer.name).join(", ")}`,
+        subLabel: filterData([
+          scene?.studio?.name,
+          scene?.code ? `Code ${scene.code}` : null,
+          scene.performers
+            ? scene.performers.map((p) => p.as || p.performer.name).join(", ")
+            : null,
+        ]).join(" • "),
       }));
   } else {
     const performerResults =

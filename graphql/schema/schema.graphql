@@ -5,25 +5,25 @@ type Query {
   # performer names may not be unique
   """Find a performer by ID"""
   findPerformer(id: ID!): Performer @hasRole(role: READ)
-  queryPerformers(performer_filter: PerformerFilterType, filter: QuerySpec): QueryPerformersResultType! @hasRole(role: READ)
+  queryPerformers(input: PerformerQueryInput!): QueryPerformersResultType! @hasRole(role: READ)
 
   #### Studios ####
 
   # studio names should be unique
   """Find a studio by ID or name"""
   findStudio(id: ID, name: String): Studio @hasRole(role: READ)
-  queryStudios(studio_filter: StudioFilterType, filter: QuerySpec): QueryStudiosResultType! @hasRole(role: READ)
+  queryStudios(input: StudioQueryInput!): QueryStudiosResultType! @hasRole(role: READ)
 
   #### Tags ####
 
   # tag names will be unique
   """Find a tag by ID or name, or aliases"""
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
-  queryTags(tag_filter: TagFilterType, filter: QuerySpec): QueryTagsResultType! @hasRole(role: READ)
+  queryTags(input: TagQueryInput!): QueryTagsResultType! @hasRole(role: READ)
 
   """Find a tag category by ID"""
   findTagCategory(id: ID!): TagCategory @hasRole(role: READ)
-  queryTagCategories(filter: QuerySpec): QueryTagCategoriesResultType! @hasRole(role: READ)
+  queryTagCategories: QueryTagCategoriesResultType! @hasRole(role: READ)
 
   #### Scenes ####
 
@@ -36,22 +36,22 @@ type Query {
   """Finds scenes that match a list of hashes"""
   findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ)
   findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ)
-  queryScenes(scene_filter: SceneFilterType, filter: QuerySpec): QueryScenesResultType! @hasRole(role: READ)
+  queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
 
   """Find an external site by ID"""
   findSite(id: ID!): Site @hasRole(role: READ)
-  querySites(filter: QuerySpec): QuerySitesResultType! @hasRole(role: READ)
+  querySites: QuerySitesResultType! @hasRole(role: READ)
 
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
-  queryEdits(edit_filter: EditFilterType, filter: QuerySpec): QueryEditsResultType! @hasRole(role: READ)
+  queryEdits(input: EditQueryInput!): QueryEditsResultType! @hasRole(role: READ)
 
   #### Users ####
 
   """Find user by ID or username"""
   findUser(id: ID, username: String): User @hasRole(role: READ)
-  queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType! @hasRole(role: ADMIN)
+  queryUsers(input: UserQueryInput!): QueryUsersResultType! @hasRole(role: ADMIN)
 
   """Returns currently authenticated user"""
   me: User

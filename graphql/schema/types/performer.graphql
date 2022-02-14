@@ -237,8 +237,8 @@ type PerformerEdit {
   removed_tattoos: [BodyModification!]
   added_piercings: [BodyModification!]
   removed_piercings: [BodyModification!]
-  added_images: [Image!]
-  removed_images: [Image!]
+  added_images: [Image]
+  removed_images: [Image]
   draft_id: ID
 }
 
@@ -275,7 +275,17 @@ input BodyModificationCriterionInput {
   modifier: CriterionModifier!
 }
 
-input PerformerFilterType {
+enum PerformerSortEnum {
+  NAME
+  BIRTHDATE
+  SCENE_COUNT
+  CAREER_START_YEAR
+  DEBUT
+  CREATED_AT
+  UPDATED_AT
+}
+
+input PerformerQueryInput {
   """Searches name and aliases - assumes like query unless quoted"""
   names: String
 
@@ -315,6 +325,11 @@ input PerformerFilterType {
   piercings: BodyModificationCriterionInput
   """Filter by performerfavorite status for the current user"""
   is_favorite: Boolean
+
+  page: Int! = 1
+  per_page: Int! = 25
+  direction: SortDirectionEnum! = DESC
+  sort: PerformerSortEnum! = CREATED_AT
 }
 
 type PerformerDraft {

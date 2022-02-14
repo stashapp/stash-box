@@ -7,6 +7,8 @@ import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
 import { sortBy, uniq, uniqBy } from "lodash-es";
+import { Link } from "react-router-dom";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import {
   GenderEnum,
@@ -27,7 +29,7 @@ import { Performer_findPerformer as Performer } from "src/graphql/definitions/Pe
 import { ImageFragment } from "src/graphql/definitions/ImageFragment";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
-import { Help } from "src/components/fragments";
+import { Help, Icon } from "src/components/fragments";
 import {
   BodyModification,
   EditNote,
@@ -46,9 +48,11 @@ const CountryList = Countries.getNames("en");
 type OptionEnum = {
   value: string;
   label: string;
+  disabled?: boolean;
 };
 
 const GENDER: OptionEnum[] = [
+  { value: "", label: "Select gender...", disabled: true },
   { value: "null", label: "Unknown" },
   { value: "FEMALE", label: "Female" },
   { value: "MALE", label: "Male" },
@@ -177,8 +181,8 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const changedName =
     !!performer.id &&
-    fieldData.name !== undefined &&
-    performer.name !== fieldData.name;
+    newChanges.name !== null &&
+    performer.name.trim() !== newChanges.name;
 
   useEffect(() => {
     setUpdateAliases(changedName);
@@ -189,12 +193,12 @@ const PerformerForm: FC<PerformerProps> = ({
     fieldData.gender !== GenderEnum.TRANSGENDER_MALE;
   // Update breast type based on gender
   useEffect(() => {
-    if (!showBreastType) setValue("boobJob", BreastTypeEnum.NA);
+    if (!showBreastType) setValue("breastType", BreastTypeEnum.NA);
   }, [showBreastType, setValue]);
 
   const enumOptions = (enums: OptionEnum[]) =>
     enums.map((obj) => (
-      <option key={obj.value} value={obj.value}>
+      <option key={obj.value} value={obj.value} disabled={!!obj.disabled}>
         {obj.label}
       </option>
     ));
@@ -218,7 +222,7 @@ const PerformerForm: FC<PerformerProps> = ({
       piercings: data.piercings ?? [],
       tattoos: data.tattoos ?? [],
       breast_type:
-        BreastTypeEnum[data.boobJob as keyof typeof BreastTypeEnum] || null,
+        BreastTypeEnum[data.breastType as keyof typeof BreastTypeEnum] || null,
       image_ids: data.images.map((i) => i.id),
       urls: data.urls.map((u) => ({
         url: u.url,
@@ -265,6 +269,21 @@ const PerformerForm: FC<PerformerProps> = ({
     ),
   ];
 
+  const metadataErrors = [
+    { error: errors.name?.message, tab: "personal" },
+    { error: errors.gender?.message, tab: "personal" },
+    { error: errors.birthdate?.message, tab: "personal" },
+    { error: errors.career_start_year?.message, tab: "personal" },
+    { error: errors.career_end_year?.message, tab: "personal" },
+    { error: errors.height?.message, tab: "personal" },
+    { error: errors.braSize?.message, tab: "personal" },
+    { error: errors.waistSize?.message, tab: "personal" },
+    {
+      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      tab: "links",
+    },
+  ].filter((e) => e.error) as { error: string; tab: string }[];
+
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" value={performer.id} {...register("id")} />
@@ -294,14 +313,10 @@ const PerformerForm: FC<PerformerProps> = ({
             <Form.Group controlId="disambiguation" className="col-6 mb-3">
               <Form.Label>Disambiguation</Form.Label>
               <Form.Control
-                className={cx({ "is-invalid": errors.disambiguation })}
                 defaultValue={performer.disambiguation ?? ""}
                 {...register("disambiguation")}
               />
               <Form.Text>Required if the primary name is not unique.</Form.Text>
-              <Form.Control.Feedback type="invalid">
-                {errors?.disambiguation?.message}
-              </Form.Control.Feedback>
             </Form.Group>
           </Row>
 
@@ -347,6 +362,7 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
                 defaultValue={initial?.gender ?? performer?.gender ?? ""}
+                placeholder="Select gender..."
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
@@ -438,21 +454,21 @@ const PerformerForm: FC<PerformerProps> = ({
 
             {fieldData.gender !== "MALE" &&
               fieldData.gender !== "TRANSGENDER_MALE" && (
-                <Form.Group controlId="boobJob" className="col-6 mb-3">
+                <Form.Group controlId="breastType" className="col-6 mb-3">
                   <Form.Label>Breast type</Form.Label>
                   <Form.Select
-                    className={cx({ "is-invalid": errors.boobJob })}
+                    className={cx({ "is-invalid": errors.breastType })}
                     defaultValue={
                       performer.breast_type
                         ? getEnumValue(BREAST, performer.breast_type)
                         : ""
                     }
-                    {...register("boobJob")}
+                    {...register("breastType")}
                   >
                     {enumOptions(BREAST)}
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">
-                    {errors?.boobJob?.message}
+                    {errors?.breastType?.message}
                   </Form.Control.Feedback>
                 </Form.Group>
               )}
@@ -627,7 +643,11 @@ const PerformerForm: FC<PerformerProps> = ({
         </Tab>
 
         <Tab eventKey="links" title="Links" className="col-xl-9">
-          <URLInput control={control} type={ValidSiteTypeEnum.PERFORMER} />
+          <URLInput
+            control={control}
+            type={ValidSiteTypeEnum.PERFORMER}
+            errors={errors.urls}
+          />
 
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
@@ -662,6 +682,22 @@ const PerformerForm: FC<PerformerProps> = ({
               <EditNote register={register} error={errors.note} />
             </Col>
           </Row>
+
+          {metadataErrors.length > 0 && (
+            <div className="text-end my-4">
+              <h6>
+                <Icon icon={faExclamationTriangle} color="red" />
+                <span className="ms-1">Errors</span>
+              </h6>
+              <div className="d-flex flex-column text-danger">
+                {metadataErrors.map(({ error, tab }) => (
+                  <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
+                    {error}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           <SubmitButtons disabled={!!file || saving} />
         </Tab>

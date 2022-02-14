@@ -15,11 +15,11 @@ func (r *queryResolver) FindSite(ctx context.Context, id uuid.UUID) (*models.Sit
 	return qb.Find(id)
 }
 
-func (r *queryResolver) QuerySites(ctx context.Context, filter *models.QuerySpec) (*models.QuerySitesResultType, error) {
+func (r *queryResolver) QuerySites(ctx context.Context) (*models.QuerySitesResultType, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Site()
 
-	sites, count, err := qb.Query(filter)
+	sites, count, err := qb.Query()
 	if err != nil {
 		return nil, err
 	}

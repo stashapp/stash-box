@@ -1,5 +1,5 @@
-query Categories($filter: QuerySpec) {
-  queryTagCategories(filter: $filter) {
+query Categories {
+  queryTagCategories {
     count
     tag_categories {
       id

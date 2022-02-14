@@ -253,29 +253,22 @@ func (qb *tagQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
-func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *models.QuerySpec) ([]*models.Tag, int, error) {
-	if tagFilter == nil {
-		tagFilter = &models.TagFilterType{}
-	}
-	if findFilter == nil {
-		findFilter = &models.QuerySpec{}
-	}
-
+func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, int, error) {
 	query := newQueryBuilder(tagDBTable)
 	query.Eq("deleted", false)
 
-	if q := tagFilter.Name; q != nil && *q != "" {
+	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
-	if catID := tagFilter.CategoryID; catID != nil {
+	if catID := filter.CategoryID; catID != nil {
 		query.Eq("tags.category_id", catID)
 	}
 
-	query.Sort = qb.getTagSort(findFilter)
-	query.Pagination = getPagination(findFilter)
+	query.Sort = getSort(filter.Sort.String(), filter.Direction.String(), tagTable, nil)
+	query.Pagination = getPagination(filter.Page, filter.PerPage)
 
 	var tags models.Tags
 	countResult, err := qb.dbi.Query(*query, &tags)
@@ -284,19 +277,6 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	}
 
 	return tags, countResult, nil
-}
-
-func (qb *tagQueryBuilder) getTagSort(findFilter *models.QuerySpec) string {
-	var sort string
-	var direction string
-	if findFilter == nil {
-		sort = "name"
-		direction = "ASC"
-	} else {
-		sort = findFilter.GetSort("name")
-		direction = findFilter.GetDirection()
-	}
-	return getSort(qb.dbi.txn.dialect, sort, direction, tagTable, nil)
 }
 
 func (qb *tagQueryBuilder) queryTags(query string, args []interface{}) (models.Tags, error) {

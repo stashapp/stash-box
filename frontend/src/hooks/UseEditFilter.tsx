@@ -11,6 +11,7 @@ import {
   SortDirectionEnum,
   TargetTypeEnum,
   VoteStatusEnum,
+  EditSortEnum,
 } from "src/graphql";
 import {
   EditOperationTypes,
@@ -18,6 +19,7 @@ import {
   EditStatusTypes,
 } from "src/constants/enums";
 import { Icon } from "src/components/fragments";
+import { resolveEnum } from "src/utils";
 
 function resolveParam<T>(
   type: T,
@@ -30,17 +32,18 @@ function resolveParam<T>(
 
 const sortOptions = [
   { value: "", label: "Date created" },
-  { value: "updated_at", label: "Date updated" },
+  { value: EditSortEnum.UPDATED_AT, label: "Date updated" },
 ];
-const defaultSort = "created_at";
+const defaultSort = EditSortEnum.CREATED_AT;
 
 interface EditFilterProps {
-  sort?: string;
+  sort?: EditSortEnum;
   direction?: SortDirectionEnum;
   type?: TargetTypeEnum;
   status?: VoteStatusEnum;
   operation?: OperationEnum;
   favorite?: boolean;
+  showFavoriteOption?: boolean;
 }
 
 const useEditFilter = ({
@@ -50,10 +53,14 @@ const useEditFilter = ({
   status: fixedStatus,
   operation: fixedOperation,
   favorite: fixedFavorite,
+  showFavoriteOption = true,
 }: EditFilterProps) => {
   const history = useHistory();
   const query = queryString.parse(history.location.search);
-  const sort = Array.isArray(query.sort) ? query.sort[0] : query.sort;
+  const sort = resolveEnum(
+    EditSortEnum,
+    Array.isArray(query.sort) ? query.sort[0] : query.sort
+  );
   const direction =
     resolveParam(SortDirectionEnum, query.dir) ?? SortDirectionEnum.DESC;
   const operation = resolveParam(OperationEnum, query.operation);
@@ -62,7 +69,7 @@ const useEditFilter = ({
   const favorite =
     (Array.isArray(query.favorite) ? query.favorite[0] : query.favorite) ===
     "true";
-  const selectedSort = fixedSort ?? sort;
+  const selectedSort = fixedSort ?? sort ?? EditSortEnum.CREATED_AT;
   const selectedDirection = fixedDirection ?? direction;
   const selectedStatus = fixedStatus ?? status;
   const selectedType = fixedType ?? type;
@@ -108,7 +115,9 @@ const useEditFilter = ({
         <Form.Label>Order</Form.Label>
         <InputGroup>
           <Form.Select
-            onChange={(e) => handleChange("sort", e.currentTarget.value)}
+            onChange={(e) =>
+              handleChange("sort", e.currentTarget.value.toLowerCase())
+            }
             defaultValue={selectedSort ?? defaultSort}
           >
             {sortOptions.map((s) => (
@@ -177,20 +186,22 @@ const useEditFilter = ({
           {enumToOptions(EditOperationTypes)}
         </Form.Select>
       </Form.Group>
-      <Form.Group controlId="favorite">
-        <Form.Label>Favorites</Form.Label>
-        <Form.Check
-          className="ms-3 mt-2"
-          type="switch"
-          defaultChecked={favorite}
-          onChange={(e) =>
-            handleChange(
-              "favorite",
-              e.currentTarget.checked ? "true" : undefined
-            )
-          }
-        />
-      </Form.Group>
+      {showFavoriteOption && (
+        <Form.Group controlId="favorite">
+          <Form.Label>Favorites</Form.Label>
+          <Form.Check
+            className="ms-3 mt-2"
+            type="switch"
+            defaultChecked={favorite}
+            onChange={(e) =>
+              handleChange(
+                "favorite",
+                e.currentTarget.checked ? "true" : undefined
+              )
+            }
+          />
+        </Form.Group>
+      )}
     </Form>
   );
 

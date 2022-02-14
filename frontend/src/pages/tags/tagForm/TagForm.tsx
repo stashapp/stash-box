@@ -18,9 +18,9 @@ import { createHref, tagHref } from "src/utils";
 import { ROUTE_TAGS } from "src/constants/route";
 
 const schema = yup.object({
-  name: yup.string().required("Name is required"),
-  description: yup.string(),
-  aliases: yup.array().of(yup.string().required()),
+  name: yup.string().trim().required("Name is required"),
+  description: yup.string().trim(),
+  aliases: yup.array().of(yup.string().trim().required()),
   categoryId: yup.string().nullable().defined(),
   note: yup.string().required("Edit note is required"),
 });

@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { UserFilterType, QuerySpec, RoleEnum } from "./globalTypes";
+import { UserQueryInput, RoleEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Users
@@ -50,6 +50,5 @@ export interface Users {
 }
 
 export interface UsersVariables {
-  userFilter?: UserFilterType | null;
-  filter?: QuerySpec | null;
+  input: UserQueryInput;
 }

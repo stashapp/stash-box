@@ -54,10 +54,9 @@ func (r *queryResolver) FindScenesByFullFingerprints(ctx context.Context, finger
 	return qb.FindByFullFingerprints(fingerprints)
 }
 
-func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.SceneFilterType, filter *models.QuerySpec) (*models.SceneQuery, error) {
+func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQueryInput) (*models.SceneQuery, error) {
 	return &models.SceneQuery{
-		SceneFilter: sceneFilter,
-		Filter:      filter,
+		Filter: input,
 	}, nil
 }
 
@@ -66,11 +65,11 @@ type querySceneResolver struct{ *Resolver }
 func (r *querySceneResolver) Count(ctx context.Context, obj *models.SceneQuery) (int, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
-	return qb.QueryCount(obj.SceneFilter, obj.Filter)
+	return qb.QueryCount(obj.Filter)
 }
 
 func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery) ([]*models.Scene, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
-	return qb.QueryScenes(obj.SceneFilter, obj.Filter)
+	return qb.QueryScenes(obj.Filter)
 }
