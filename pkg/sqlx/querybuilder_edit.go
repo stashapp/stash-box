@@ -395,3 +395,39 @@ func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPe
 	args := []interface{}{votingPeriod, minimumVotes, minimumVotingPeriod}
 	return qb.queryEdits(query, args)
 }
+
+func (qb *editQueryBuilder) FindPendingSceneCreation(input models.QueryExistingSceneInput) ([]*models.Edit, error) {
+	query := `
+		SELECT edits.* FROM edits
+		WHERE status = 'PENDING'
+		AND target_type = 'SCENE'
+		AND (
+			created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))
+			OR (
+				VOTES >= $2
+				AND created_at <= (now()::timestamp - (INTERVAL '1 second' * $3))
+			)
+		)
+	`
+	// select jsonb_path_query(data, '$.new_data.added_fingerprints[*].hash') from edits where id = 'aa86c94b-0dbc-4b25-bed4-7688d37fa783';
+	// select data from edits where data->'new_data'->>'title' = 'Sun Rays' AND data->'new_data'->>'studio_id' = 'f66c00ba-a78f-4980-984d-69b59495ed63';
+
+	args := []interface{}{votingPeriod, minimumVotes, minimumVotingPeriod}
+	return qb.queryEdits(query, args)
+}
+func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPeriod int, minimumVotes int) ([]*models.Edit, error) {
+	query := `
+		SELECT edits.* FROM edits
+		WHERE status = 'PENDING'
+		AND (
+			created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))
+			OR (
+				VOTES >= $2
+				AND created_at <= (now()::timestamp - (INTERVAL '1 second' * $3))
+			)
+		)
+	`
+
+	args := []interface{}{votingPeriod, minimumVotes, minimumVotingPeriod}
+	return qb.queryEdits(query, args)
+}

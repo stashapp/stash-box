@@ -350,6 +350,14 @@ type StudioEditData struct {
 	MergeSources []uuid.UUID `json:"merge_sources,omitempty"`
 }
 
+type FingerprintInput struct {
+	// assumes current user if omitted. Ignored for non-modify Users
+	UserIds   []uuid.UUID          `json:"user_ids,omitempty"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+}
+
 type SceneEdit struct {
 	EditID              uuid.UUID                   `json:"-"`
 	Title               *string                     `json:"title,omitempty"`
