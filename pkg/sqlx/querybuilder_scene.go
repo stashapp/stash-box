@@ -362,7 +362,7 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, isCount b
 				` + limit + `
 			) T ON scenes.id = T.scene_id
 		`
-		query.Sort = " ORDER BY T.count DESC "
+		query.Sort = " ORDER BY T.count DESC, T.scene_id DESC "
 	} else {
 		query.Sort = qb.getSceneSort(filter)
 		query.Pagination = getPagination(filter.Page, filter.PerPage)
