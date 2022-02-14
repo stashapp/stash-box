@@ -83,15 +83,10 @@ func (qb *siteQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Site, []error)
 	return result, nil
 }
 
-func (qb *siteQueryBuilder) Query(findFilter *models.QuerySpec) ([]*models.Site, int, error) {
-	if findFilter == nil {
-		findFilter = &models.QuerySpec{}
-	}
-
+func (qb *siteQueryBuilder) Query() ([]*models.Site, int, error) {
 	query := newQueryBuilder(siteDBTable)
 
-	query.Sort = qb.getSiteSort(findFilter)
-	query.Pagination = getPagination(findFilter)
+	query.Sort = getSort("name", "ASC", siteTable, nil)
 	var sites models.Sites
 
 	countResult, err := qb.dbi.Query(*query, &sites)
@@ -101,17 +96,4 @@ func (qb *siteQueryBuilder) Query(findFilter *models.QuerySpec) ([]*models.Site,
 	}
 
 	return sites, countResult, nil
-}
-
-func (qb *siteQueryBuilder) getSiteSort(findFilter *models.QuerySpec) string {
-	var sort string
-	var direction string
-	if findFilter == nil {
-		sort = "name"
-		direction = "ASC"
-	} else {
-		sort = findFilter.GetSort("name")
-		direction = findFilter.GetDirection()
-	}
-	return getSort(qb.dbi.txn.dialect, sort, direction, siteTable, nil)
 }

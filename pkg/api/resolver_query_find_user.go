@@ -24,11 +24,11 @@ func (r *queryResolver) FindUser(ctx context.Context, id *uuid.UUID, username *s
 	return ret, err
 }
 
-func (r *queryResolver) QueryUsers(ctx context.Context, userFilter *models.UserFilterType, filter *models.QuerySpec) (*models.QueryUsersResultType, error) {
+func (r *queryResolver) QueryUsers(ctx context.Context, input models.UserQueryInput) (*models.QueryUsersResultType, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
 
-	users, count, err := qb.Query(userFilter, filter)
+	users, count, err := qb.Query(input)
 	return &models.QueryUsersResultType{
 		Users: users,
 		Count: count,

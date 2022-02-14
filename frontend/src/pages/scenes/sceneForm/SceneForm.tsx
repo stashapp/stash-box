@@ -8,7 +8,7 @@ import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import { formatDuration, parseDuration, filterData } from "src/utils";
+import { formatDuration, parseDuration } from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -54,6 +54,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       date: initial?.date ?? scene?.date,
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
+      code: initial?.code ?? scene?.code,
       urls: initial?.urls ?? scene.urls ?? [],
       images: initial?.images ?? scene.images,
       studio: initialStudio,
@@ -103,6 +104,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       date: data.date,
       duration: parseDuration(data.duration),
       director: data.director,
+      code: data.code,
       details: data.details,
       studio_id: data.studio?.id,
       performers: (data.performers ?? []).map((performance) => ({
@@ -229,12 +231,16 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     </Row>
   ));
 
-  const metadataErrors = filterData([
-    errors.title?.message,
-    errors.date?.message,
-    errors.duration?.message,
-    errors.studio?.id?.message,
-  ]);
+  const metadataErrors = [
+    { error: errors.title?.message, tab: "details" },
+    { error: errors.date?.message, tab: "details" },
+    { error: errors.duration?.message, tab: "details" },
+    { error: errors.studio?.id?.message, tab: "details" },
+    {
+      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      tab: "links",
+    },
+  ].filter((e) => e.error) as { error: string; tab: string }[];
 
   return (
     <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
@@ -315,6 +321,16 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 {errors.studio?.id?.message}
               </Form.Control.Feedback>
             </Form.Group>
+
+            <Form.Group controlId="code" className="col-6 mb-3">
+              <Form.Label>Studio Code</Form.Label>
+              <Form.Control
+                as="input"
+                type="text"
+                placeholder="Unique code used by studio to identify scene"
+                {...register("code")}
+              />
+            </Form.Group>
           </Row>
 
           <Row>
@@ -356,7 +372,11 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
         </Tab>
 
         <Tab eventKey="links" title="Links" className="col-xl-9">
-          <URLInput control={control} type={ValidSiteTypeEnum.SCENE} />
+          <URLInput
+            control={control}
+            type={ValidSiteTypeEnum.SCENE}
+            errors={errors.urls}
+          />
 
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
@@ -399,14 +419,15 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 <span className="ms-1">Errors</span>
               </h6>
               <div className="d-flex flex-column text-danger">
-                {metadataErrors.map((e) => (
-                  <Link to="#" key={e} onClick={() => setActiveTab("details")}>
-                    {e}
+                {metadataErrors.map(({ error, tab }) => (
+                  <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
+                    {error}
                   </Link>
                 ))}
               </div>
             </div>
           )}
+
           <SubmitButtons disabled={saving} />
         </Tab>
       </Tabs>

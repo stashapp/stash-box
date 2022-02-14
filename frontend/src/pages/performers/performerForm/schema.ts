@@ -15,12 +15,12 @@ const zeroCheck = (input: number | null) =>
 
 export const PerformerSchema = yup.object({
   id: yup.string(),
-  name: yup.string().required("Name is required"),
+  name: yup.string().trim().required("Name is required"),
   gender: yup
     .string()
-    .transform(nullCheck)
+    .transform((val: string) => (val === "null" ? null : val))
     .nullable()
-    .oneOf([null, ...Object.keys(GenderEnum)], "Invalid gender"),
+    .oneOf([null, ...Object.keys(GenderEnum)], "Gender is required"),
   disambiguation: yup.string().trim().transform(nullCheck).nullable(),
   birthdate: yup
     .string()
@@ -64,7 +64,7 @@ export const PerformerSchema = yup.object({
     .max(50, "Invalid waist size")
     .nullable(),
   hipSize: yup.number().transform(zeroCheck).nullable(),
-  boobJob: yup
+  breastType: yup
     .string()
     .transform(nullCheck)
     .nullable()

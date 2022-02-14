@@ -240,40 +240,31 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType, findFilter *models.QuerySpec, isCount bool) (*queryBuilder, error) {
-	sceneFilter := &models.SceneFilterType{}
-	if sceneFilterInput != nil {
-		sceneFilter = sceneFilterInput
-	}
-	if findFilter == nil {
-		findFilter = &models.QuerySpec{}
-	}
-
+func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, isCount bool) (*queryBuilder, error) {
 	query := newQueryBuilder(sceneDBTable)
-	query.Eq("scenes.deleted", false)
 
-	if q := sceneFilter.Text; q != nil && *q != "" {
+	if q := filter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
-	if q := sceneFilter.Title; q != nil && *q != "" {
+	if q := filter.Title; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
-	if q := sceneFilter.URL; q != nil && *q != "" {
+	if q := filter.URL; q != nil && *q != "" {
 		searchColumns := []string{"scenes.url"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
 
-	if q := sceneFilter.Studios; q != nil && len(q.Value) > 0 {
+	if q := filter.Studios; q != nil && len(q.Value) > 0 {
 		column := "scenes.studio_id"
 
 		switch q.Modifier {
@@ -304,13 +295,13 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 		}
 	}
 
-	if sceneFilter.ParentStudio != nil {
+	if filter.ParentStudio != nil {
 		query.Body += "LEFT JOIN studios ON scenes.studio_id = studios.id"
 		query.AddWhere("(studios.parent_studio_id = ? OR studios.id = ?)")
-		query.AddArg(*sceneFilter.ParentStudio, *sceneFilter.ParentStudio)
+		query.AddArg(*filter.ParentStudio, *filter.ParentStudio)
 	}
 
-	if q := sceneFilter.Performers; q != nil && len(q.Value) > 0 {
+	if q := filter.Performers; q != nil && len(q.Value) > 0 {
 		query.AddJoin(scenePerformerTable.table, scenePerformerTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
 		whereClause, havingClause, err := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
 		if err != nil {
@@ -324,7 +315,7 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 		}
 	}
 
-	if q := sceneFilter.Tags; q != nil && len(q.Value) > 0 {
+	if q := filter.Tags; q != nil && len(q.Value) > 0 {
 		query.AddJoin(sceneTagTable.table, sceneTagTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
 		whereClause, havingClause, err := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
 		if err != nil {
@@ -338,7 +329,7 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 		}
 	}
 
-	if q := sceneFilter.Fingerprints; q != nil && len(q.Value) > 0 {
+	if q := filter.Fingerprints; q != nil && len(q.Value) > 0 {
 		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id", true)
 		whereClause, havingClause, err := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
 		if err != nil {
@@ -352,14 +343,14 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 		}
 	}
 
-	if findFilter.GetSort("") == "trending" {
+	if filter.Sort == models.SceneSortEnumTrending {
 		limit := ""
-		if sceneFilterInput == nil && !isCount {
+		if len(query.whereClauses) == 0 && !isCount {
 			// If no other filters are applied we can optimize query
 			// by sorting and limiting fingerprint count directly
-			limit = "ORDER BY count DESC " + getPagination(findFilter)
+			limit = "ORDER BY count DESC " + getPagination(filter.Page, filter.PerPage)
 		} else {
-			query.Pagination = getPagination(findFilter)
+			query.Pagination = getPagination(filter.Page, filter.PerPage)
 		}
 
 		query.Body += `
@@ -371,17 +362,19 @@ func (qb *sceneQueryBuilder) buildQuery(sceneFilterInput *models.SceneFilterType
 				` + limit + `
 			) T ON scenes.id = T.scene_id
 		`
-		query.Sort = " ORDER BY T.count DESC "
+		query.Sort = " ORDER BY T.count DESC, T.scene_id DESC "
 	} else {
-		query.Sort = qb.getSceneSort(findFilter)
-		query.Pagination = getPagination(findFilter)
+		query.Sort = qb.getSceneSort(filter)
+		query.Pagination = getPagination(filter.Page, filter.PerPage)
 	}
+
+	query.Eq("scenes.deleted", false)
 
 	return query, nil
 }
 
-func (qb *sceneQueryBuilder) QueryScenes(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) ([]*models.Scene, error) {
-	query, err := qb.buildQuery(sceneFilter, findFilter, false)
+func (qb *sceneQueryBuilder) QueryScenes(filter models.SceneQueryInput) ([]*models.Scene, error) {
+	query, err := qb.buildQuery(filter, false)
 	if err != nil {
 		return nil, err
 	}
@@ -392,8 +385,8 @@ func (qb *sceneQueryBuilder) QueryScenes(sceneFilter *models.SceneFilterType, fi
 	return scenes, err
 }
 
-func (qb *sceneQueryBuilder) QueryCount(sceneFilter *models.SceneFilterType, findFilter *models.QuerySpec) (int, error) {
-	query, err := qb.buildQuery(sceneFilter, findFilter, true)
+func (qb *sceneQueryBuilder) QueryCount(filter models.SceneQueryInput) (int, error) {
+	query, err := qb.buildQuery(filter, true)
 	if err != nil {
 		return 0, err
 	}
@@ -423,22 +416,12 @@ func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criteri
 	return whereClause, havingClause, nil
 }
 
-func (qb *sceneQueryBuilder) getSceneSort(findFilter *models.QuerySpec) string {
-	var sort string
-	var direction string
-	var secondary *string
-	if findFilter == nil {
-		sort = "date"
-		direction = "DESC"
-	} else {
-		sort = findFilter.GetSort("date")
-		direction = findFilter.GetDirection()
+func (qb *sceneQueryBuilder) getSceneSort(filter models.SceneQueryInput) string {
+	secondary := "title"
+	if filter.Sort != models.SceneSortEnumTitle {
+		secondary = "id"
 	}
-	if sort != "title" {
-		title := "title"
-		secondary = &title
-	}
-	return getSort(qb.dbi.txn.dialect, sort, direction, "scenes", secondary)
+	return getSort(filter.Sort.String(), filter.Direction.String(), "scenes", &secondary)
 }
 
 func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}) (models.Scenes, error) {
@@ -625,7 +608,8 @@ func (qb *sceneQueryBuilder) SearchScenes(term string, limit int) ([]*models.Sce
 			to_tsvector('simple', COALESCE(scene_date, '')) ||
 			to_tsvector('english', studio_name) ||
 			to_tsvector('english', COALESCE(performer_names, '')) ||
-			to_tsvector('english', scene_title)
+			to_tsvector('english', scene_title) ||
+			to_tsvector('simple', COALESCE(scene_code, ''))
         ) @@ plainto_tsquery(?)
         AND S.deleted = FALSE
         LIMIT ?`

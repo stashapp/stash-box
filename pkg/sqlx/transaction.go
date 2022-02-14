@@ -2,6 +2,7 @@ package sqlx
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -20,9 +21,8 @@ type db interface {
 }
 
 type txnState struct {
-	rootDB  *sqlx.DB
-	tx      *sqlx.Tx
-	dialect Dialect
+	rootDB *sqlx.DB
+	tx     *sqlx.Tx
 }
 
 func (m *txnState) WithTxn(fn func() error) (err error) {
@@ -39,22 +39,41 @@ func (m *txnState) WithTxn(fn func() error) (err error) {
 	m.tx = tx
 
 	defer func() {
+		transaction := m.tx
 		m.tx = nil
 		//nolint:gocritic
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			_ = tx.Rollback()
+			_ = transaction.Rollback()
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			_ = tx.Rollback()
+			_ = transaction.Rollback()
 		} else {
-			err = tx.Commit()
+			err = transaction.Commit()
 		}
 	}()
 
 	err = fn()
 	return
+}
+
+func (m *txnState) ResetTxn() error {
+	if !m.InTxn() {
+		return fmt.Errorf("not in transaction")
+	}
+
+	if err := m.tx.Rollback(); err != nil {
+		return err
+	}
+
+	tx, err := m.rootDB.Beginx()
+	if err != nil {
+		return err
+	}
+
+	m.tx = tx
+	return nil
 }
 
 func (m *txnState) InTxn() bool {
@@ -70,14 +89,12 @@ func (m *txnState) DB() db {
 
 // TxnMgr manages transaction boundaries and provides access to Repo objects.
 type TxnMgr struct {
-	db      *sqlx.DB
-	dialect Dialect
+	db *sqlx.DB
 }
 
 func (m *TxnMgr) New() txn.State {
 	return &txnState{
-		rootDB:  m.db,
-		dialect: m.dialect,
+		rootDB: m.db,
 	}
 }
 
@@ -90,9 +107,8 @@ func (m *TxnMgr) Repo() models.Repo {
 }
 
 // NewTxnMgr returns a new instance of TxnMgr.
-func NewTxnMgr(db *sqlx.DB, dialect Dialect) *TxnMgr {
+func NewTxnMgr(db *sqlx.DB) *TxnMgr {
 	return &TxnMgr{
-		db:      db,
-		dialect: dialect,
+		db: db,
 	}
 }

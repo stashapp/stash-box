@@ -112,6 +112,7 @@ const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
           <div>
             <Icon icon={faVideo} />
             {scene.studio?.name ?? "Unknown"}
+            <small className="text-muted ms-2">{scene.code}</small>
           </div>
           {scene.performers.length > 0 && (
             <div>

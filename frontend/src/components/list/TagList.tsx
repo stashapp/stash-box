@@ -4,7 +4,12 @@ import { Card, Form, Row } from "react-bootstrap";
 import { debounce } from "lodash-es";
 import querystring from "query-string";
 
-import { useTags, SortDirectionEnum, TagFilterType } from "src/graphql";
+import {
+  useTags,
+  SortDirectionEnum,
+  TagSortEnum,
+  TagQueryInput,
+} from "src/graphql";
 import { usePagination } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import { createHref, tagHref } from "src/utils/route";
@@ -14,7 +19,7 @@ import List from "./List";
 const PER_PAGE = 40;
 
 interface TagListProps {
-  tagFilter: TagFilterType;
+  tagFilter: Partial<TagQueryInput>;
   showCategoryLink?: boolean;
 }
 
@@ -24,14 +29,12 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
   const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
   const { page, setPage } = usePagination();
   const { loading, data } = useTags({
-    filter: {
+    input: {
+      name: query,
       page,
       per_page: PER_PAGE,
-      sort: "name",
+      sort: TagSortEnum.NAME,
       direction: SortDirectionEnum.ASC,
-    },
-    tagFilter: {
-      name: query,
       ...tagFilter,
     },
   });

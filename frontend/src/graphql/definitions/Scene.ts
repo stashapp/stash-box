@@ -81,6 +81,7 @@ export interface Scene_findScene {
   deleted: boolean;
   details: string | null;
   director: string | null;
+  code: string | null;
   duration: number | null;
   urls: Scene_findScene_urls[];
   images: Scene_findScene_images[];

@@ -67,6 +67,7 @@ const selectSceneDetails = (
       date: diffValue(original.date, data.date),
       duration: diffValue(original.duration, parseDuration(data.duration)),
       director: diffValue(original.director, data.director),
+      code: diffValue(original.code, data.code),
       studio:
         original.studio?.id !== data.studio?.id &&
         original.studio?.id &&
@@ -83,6 +84,7 @@ const selectSceneDetails = (
       date: diffValue(data.date, original.date),
       duration: diffValue(parseDuration(data.duration), original.duration),
       director: diffValue(data.director, original.director),
+      code: diffValue(data.code, original.code),
       studio:
         data.studio?.id !== original.studio?.id &&
         data.studio?.id &&

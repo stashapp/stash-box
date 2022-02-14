@@ -10,7 +10,6 @@ import (
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/cron"
 	"github.com/stashapp/stash-box/pkg/sqlx"
-	"github.com/stashapp/stash-box/pkg/sqlx/postgres"
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
@@ -23,7 +22,7 @@ func main() {
 
 	const databaseProvider = "postgres"
 	db := database.Initialize(databaseProvider, config.GetDatabasePath())
-	txnMgr := sqlx.NewTxnMgr(db, &postgres.Dialect{})
+	txnMgr := sqlx.NewTxnMgr(db)
 	user.CreateSystemUsers(txnMgr.Repo())
 	api.Start(txnMgr, ui)
 	cron.Init(txnMgr)

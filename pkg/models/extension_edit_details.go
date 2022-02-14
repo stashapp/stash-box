@@ -128,6 +128,7 @@ func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) SceneEditData {
 	oldData.StudioID, newData.StudioID = ed.nullUUID(orig.StudioID, e.StudioID)
 	oldData.Duration, newData.Duration = ed.nullInt64(orig.Duration, e.Duration)
 	oldData.Director, newData.Director = ed.nullString(orig.Director, e.Director)
+	oldData.Code, newData.Code = ed.nullString(orig.Code, e.Code)
 
 	return SceneEditData{
 		New: newData,

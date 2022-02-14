@@ -7,6 +7,7 @@ import {
   SortDirectionEnum,
   VoteStatusEnum,
   OperationEnum,
+  EditSortEnum,
 } from "src/graphql";
 import { ErrorMessage } from "src/components/fragments";
 import EditCard from "src/components/editCard";
@@ -14,7 +15,7 @@ import List from "./List";
 
 interface EditsProps {
   id?: string;
-  sort?: string;
+  sort?: EditSortEnum;
   direction?: SortDirectionEnum;
   type?: TargetTypeEnum;
   status?: VoteStatusEnum;
@@ -48,21 +49,20 @@ const EditListComponent: FC<EditsProps> = ({
     type,
     status,
     operation,
+    showFavoriteOption: id === undefined,
   });
   const { data, loading } = useEdits({
-    filter: {
-      page,
-      per_page: PER_PAGE,
-      sort: selectedSort || "created_at",
-      direction: selectedDirection,
-    },
-    editFilter: {
+    input: {
       target_type: selectedType,
       target_id: id,
       status: selectedStatus,
       operation: selectedOperation,
       user_id: userId,
       is_favorite: selectedFavorite,
+      page,
+      per_page: PER_PAGE,
+      sort: selectedSort,
+      direction: selectedDirection,
     },
   });
 
