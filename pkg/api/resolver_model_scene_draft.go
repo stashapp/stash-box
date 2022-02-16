@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -103,11 +104,25 @@ func (r *sceneDraftResolver) URL(ctx context.Context, obj *models.SceneDraft) (*
 	if err != nil {
 		return nil, nil
 	}
+	var studioSiteID *uuid.UUID
 	var siteID *uuid.UUID
 	for _, site := range sites {
 		if site.Name == "Studio" && site.ValidTypes[0] == "SCENE" {
-			siteID = &site.ID
+			studioSiteID = &site.ID
+			continue
 		}
+
+		if site.Regex.Valid {
+			re, err := regexp.Compile(site.Regex.String)
+			if err == nil && re.MatchString(*obj.URL) {
+				siteID = &site.ID
+				break
+			}
+		}
+	}
+
+	if siteID == nil && studioSiteID != nil {
+		siteID = studioSiteID
 	}
 
 	if siteID != nil {
