@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type sceneDraftResolver struct{ *Resolver }
@@ -107,7 +108,12 @@ func (r *sceneDraftResolver) URL(ctx context.Context, obj *models.SceneDraft) (*
 	var studioSiteID *uuid.UUID
 	var siteID *uuid.UUID
 	for _, site := range sites {
-		if site.Name == "Studio" && site.ValidTypes[0] == "SCENE" {
+		// Skip any sites not valid for scenes
+		if !utils.StrInclude(site.ValidTypes, models.ValidSiteTypeEnumScene.String()) {
+			continue
+		}
+
+		if site.Name == "Studio" {
 			studioSiteID = &site.ID
 			continue
 		}
