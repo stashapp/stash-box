@@ -34,7 +34,12 @@ func (r *sceneResolver) Code(ctx context.Context, obj *models.Scene) (*string, e
 	return resolveNullString(obj.Code), nil
 }
 
-func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*models.FuzzyDate, error) {
+// Deprecated: use `DateFuzzy`
+func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
+	return &obj.ResolveDate().Date, nil
+}
+
+func (r *sceneResolver) DateFuzzy(ctx context.Context, obj *models.Scene) (*models.FuzzyDate, error) {
 	return obj.ResolveDate(), nil
 }
 

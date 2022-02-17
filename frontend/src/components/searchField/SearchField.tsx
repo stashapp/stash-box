@@ -114,8 +114,8 @@ function handleResult(
       .map((scene) => ({
         type: "scene",
         value: scene,
-        label: `${scene.title} ${
-          scene.date ? `(${formatFuzzyDate(scene.date)})` : ""
+        label: `${scene.title}${
+          scene.date ? ` (${formatFuzzyDate(scene.date)})` : ""
         }`,
         subLabel: filterData([
           scene?.studio?.name,

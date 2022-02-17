@@ -7,7 +7,7 @@ query SearchAll($term: String!, $limit: Int = 5) {
     }
     searchScene(term: $term, limit: $limit) {
         id
-        date {
+        date: date_fuzzy {
           date
           accuracy
         }

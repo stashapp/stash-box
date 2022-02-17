@@ -69,7 +69,8 @@ type Scene {
   id: ID!
   title: String
   details: String
-  date: FuzzyDate
+  date: String @deprecated(reason: "Use the date_fuzzy field instead")
+  date_fuzzy: FuzzyDate
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!

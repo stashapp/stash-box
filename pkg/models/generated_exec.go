@@ -377,6 +377,7 @@ type ComplexityRoot struct {
 		Code         func(childComplexity int) int
 		Created      func(childComplexity int) int
 		Date         func(childComplexity int) int
+		DateFuzzy    func(childComplexity int) int
 		Deleted      func(childComplexity int) int
 		Details      func(childComplexity int) int
 		Director     func(childComplexity int) int
@@ -716,7 +717,8 @@ type QueryScenesResultTypeResolver interface {
 type SceneResolver interface {
 	Title(ctx context.Context, obj *Scene) (*string, error)
 	Details(ctx context.Context, obj *Scene) (*string, error)
-	Date(ctx context.Context, obj *Scene) (*FuzzyDate, error)
+	Date(ctx context.Context, obj *Scene) (*string, error)
+	DateFuzzy(ctx context.Context, obj *Scene) (*FuzzyDate, error)
 	Urls(ctx context.Context, obj *Scene) ([]*URL, error)
 	Studio(ctx context.Context, obj *Scene) (*Studio, error)
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
@@ -2706,6 +2708,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Date(childComplexity), true
 
+	case "Scene.date_fuzzy":
+		if e.complexity.Scene.DateFuzzy == nil {
+			break
+		}
+
+		return e.complexity.Scene.DateFuzzy(childComplexity), true
+
 	case "Scene.deleted":
 		if e.complexity.Scene.Deleted == nil {
 			break
@@ -4356,7 +4365,8 @@ type Scene {
   id: ID!
   title: String
   details: String
-  date: FuzzyDate
+  date: String @deprecated(reason: "Use the date_fuzzy field instead")
+  date_fuzzy: FuzzyDate
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -15727,6 +15737,38 @@ func (ec *executionContext) _Scene_date(ctx context.Context, field graphql.Colle
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Scene().Date(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Scene_date_fuzzy(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().DateFuzzy(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -28884,6 +28926,23 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 					}
 				}()
 				res = ec._Scene_date(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "date_fuzzy":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_date_fuzzy(ctx, field, obj)
 				return res
 			}
 
