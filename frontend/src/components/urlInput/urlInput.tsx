@@ -69,13 +69,14 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
   const handleInput = (url: string) => {
     if (!inputRef.current || !selectRef.current) return;
 
-    const site =
-      selectedSite ??
-      sites.find((s) => s.regex && new RegExp(s.regex).test(url));
+    const site = sites.find((s) => s.regex && new RegExp(s.regex).test(url));
 
     if (site && selectedSite?.id !== site.id) {
       setSelectedSite(site);
       selectRef.current.value = site.id;
+    } else if (url && !site && selectedSite?.regex) {
+      setSelectedSite(undefined);
+      selectRef.current.value = "";
     }
 
     if (site?.regex && url) {
