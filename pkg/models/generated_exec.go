@@ -4482,7 +4482,7 @@ input SceneQueryInput {
   page: Int! = 1
   per_page: Int! = 25
   direction: SortDirectionEnum! = DESC
-  sort: SceneSortEnum! = RELEASE_DATE
+  sort: SceneSortEnum! = DATE
 }
 
 union SceneDraftStudio = Studio | DraftEntity
@@ -23678,7 +23678,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["direction"] = "DESC"
 	}
 	if _, present := asMap["sort"]; !present {
-		asMap["sort"] = "RELEASE_DATE"
+		asMap["sort"] = "DATE"
 	}
 
 	for k, v := range asMap {
