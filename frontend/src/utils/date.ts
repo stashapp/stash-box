@@ -1,7 +1,7 @@
 import { isValid, parseISO } from "date-fns";
 import { FuzzyDateInput, DateAccuracyEnum } from "src/graphql";
 
-export const parseFuzzyDate = (date?: string | null): FuzzyDateInput | null => {
+export const parseFuzzyDate = (date?: string | null) => {
   if (!date) return null;
   if (date.length === 10)
     return {
@@ -56,6 +56,6 @@ export const isValidDate = (date?: string) => !date || isValid(parseISO(date));
 
 export const isValidFuzzyDate = (date?: string) => {
   if (!date) return true;
-  const fullDate = parseFuzzyDate(date)?.date as string;
+  const fullDate = parseFuzzyDate(date)?.date;
   return !fullDate || isValidDate(fullDate);
 };
