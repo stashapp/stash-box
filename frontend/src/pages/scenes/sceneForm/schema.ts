@@ -1,5 +1,6 @@
 import * as yup from "yup";
 import { GenderEnum } from "src/graphql";
+import { isValidDate } from "src/utils";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
@@ -14,6 +15,7 @@ export const SceneSchema = yup.object({
       excludeEmptyString: true,
       message: "Invalid date",
     })
+    .test("valid-date", "Invalid date", isValidDate)
     .nullable()
     .required("Release date is required"),
   duration: yup
