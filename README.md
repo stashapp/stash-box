@@ -92,6 +92,9 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 | `draft_time_limit` | (24h) | Time, in seconds, before a draft is deleted. |
 | `profiler_port` | 0 | Port on which to serve pprof output. Omit to disable entirely. |
+| `postgres.max_open_conns` | (0) | Maximum number of concurrent open connections to the database. |
+| `postgres.max_idle_conns` | (0) | Maximum number of concurrent idle database connections. |
+| `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is released. |
 
 ## SSL (HTTPS)
 
