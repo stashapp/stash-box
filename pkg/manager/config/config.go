@@ -19,6 +19,12 @@ type S3Config struct {
 	MaxDimension int64  `mapstructure:"max_dimension"`
 }
 
+type PostgresConfig struct {
+	MaxOpenConns    int `mapstructure:"max_open_conns"`
+	MaxIdleConns    int `mapstructure:"max_idle_conns"`
+	ConnMaxLifetime int `mapstructure:"conn_max_lifetime"`
+}
+
 type config struct {
 	Host         string `mapstructure:"host"`
 	Port         int    `mapstructure:"port"`
@@ -72,6 +78,10 @@ type config struct {
 
 	S3 struct {
 		S3Config `mapstructure:",squash"`
+	}
+
+	Postgres struct {
+		PostgresConfig `mapstructure:",squash"`
 	}
 
 	PHashDistance int `mapstructure:"phash_distance"`
@@ -359,4 +369,22 @@ func GetFaviconPath() *string {
 
 func GetDraftTimeLimit() int {
 	return C.DraftTimeLimit
+}
+
+func GetMaxOpenConns() int {
+	if C.Postgres.MaxOpenConns == 0 {
+		return 25
+	}
+	return C.Postgres.MaxOpenConns
+}
+
+func GetMaxIdleConns() int {
+	if C.Postgres.MaxIdleConns == 0 {
+		return 10
+	}
+	return C.Postgres.MaxIdleConns
+}
+
+func GetConnMaxLifetime() int {
+	return C.Postgres.MaxIdleConns
 }
