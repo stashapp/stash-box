@@ -19,6 +19,10 @@ fragment SceneFragment on Scene {
   studio {
     id
     name
+    parent {
+      id
+      name
+    }
   }
   performers {
     as

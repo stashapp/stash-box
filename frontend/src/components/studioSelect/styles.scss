@@ -1,17 +1,12 @@
 .StudioSelect {
-  margin-top: 0.5rem;
-
-  &-list {
-    margin-bottom: 1rem;
+  .parent-studio {
+    margin-left: 0.25rem;
+    color: $text-muted;
   }
 
-  &-container {
-    display: flex;
-  }
-
-  &-select {
-    display: inline-block;
-    margin-left: auto;
-    width: 25rem;
+  .react-select__value-container {
+    .parent-studio {
+      color: rgba($black, 0.5);
+    }
   }
 }
