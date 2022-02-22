@@ -43,7 +43,7 @@ func getPagination(page int, perPage int) string {
 		count = 100
 	}
 
-	offset := (page - 1) * perPage
+	offset := (page - 1) * count
 	return " LIMIT " + strconv.Itoa(count) + " OFFSET " + strconv.Itoa(offset) + " "
 }
 
