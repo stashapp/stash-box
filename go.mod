@@ -3,7 +3,7 @@ module github.com/stashapp/stash-box
 go 1.17
 
 require (
-	github.com/99designs/gqlgen v0.16.0
+	github.com/99designs/gqlgen v0.17.2
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/gofrs/uuid v4.2.0+incompatible
@@ -23,7 +23,7 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
 	github.com/vektah/dataloaden v0.3.0
-	github.com/vektah/gqlparser/v2 v2.2.0
+	github.com/vektah/gqlparser/v2 v2.4.0
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
@@ -64,11 +64,11 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	golang.org/x/mod v0.5.0 // indirect
+	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.5 // indirect
+	golang.org/x/tools v0.1.9 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
