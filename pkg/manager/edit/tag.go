@@ -66,7 +66,7 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified 
 			return err
 		}
 
-		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
+		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases)
 	}
 
 	if reflect.DeepEqual(tagEdit.Old, tagEdit.New) {
@@ -125,7 +125,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 			return err
 		}
 
-		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
+		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases)
 	}
 
 	return m.edit.SetData(tagEdit)
