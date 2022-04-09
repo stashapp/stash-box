@@ -18,7 +18,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:13.2
+        image: postgres:14.2
         env:
           POSTGRES_DB: postgres
           POSTGRES_PASSWORD: postgres
@@ -41,12 +41,12 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.17.x
+        go-version: 1.18.x
 
     - name: Install Node
       uses: actions/setup-node@v2
       with:
-        node-version: '14'
+        node-version: '16'
 
     - name: Cache node modules
       uses: actions/cache@v2
