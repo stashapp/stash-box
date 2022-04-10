@@ -68,6 +68,6 @@ linters-settings:
       - name: unreachable-code
       - name: redefines-builtin-id
   staticcheck:
-    go: "1.17"
+    go: "1.18"
   exhaustive:
     default-signifies-exhaustive: true

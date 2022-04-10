@@ -94,7 +94,7 @@ func (m *StudioEditProcessor) diffImages(studioEdit *models.StudioEditData, stud
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(newImageIds, existingImages)
+	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.SliceCompare(newImageIds, existingImages)
 
 	return nil
 }
@@ -156,7 +156,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
+	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.SliceCompare(input.Details.ImageIds, existingImages)
 
 	return m.edit.SetData(studioEdit)
 }
