@@ -109,7 +109,7 @@ func (r *sceneDraftResolver) URL(ctx context.Context, obj *models.SceneDraft) (*
 	var siteID *uuid.UUID
 	for _, site := range sites {
 		// Skip any sites not valid for scenes
-		if !utils.StrInclude(site.ValidTypes, models.ValidSiteTypeEnumScene.String()) {
+		if !utils.Includes(site.ValidTypes, models.ValidSiteTypeEnumScene.String()) {
 			continue
 		}
 
