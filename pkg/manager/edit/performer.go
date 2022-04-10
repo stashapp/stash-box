@@ -62,7 +62,7 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 	if err != nil {
 		return err
 	}
-	performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases.ToAliases())
+	performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases.ToAliases())
 
 	tattoos, err := pqb.GetTattoos(performerID)
 	if err != nil {
@@ -92,7 +92,7 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
+	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.SliceCompare(input.Details.ImageIds, existingImages)
 
 	if input.Options != nil && input.Options.SetModifyAliases != nil {
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
@@ -150,7 +150,7 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 	if err != nil {
 		return err
 	}
-	performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases.ToAliases())
+	performerEdit.New.AddedAliases, performerEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases.ToAliases())
 
 	tattoos, err := pqb.GetTattoos(performerID)
 	if err != nil {
@@ -180,7 +180,7 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
+	performerEdit.New.AddedImages, performerEdit.New.RemovedImages = utils.SliceCompare(input.Details.ImageIds, existingImages)
 
 	if input.Options != nil && input.Options.SetMergeAliases != nil {
 		performerEdit.SetMergeAliases = *input.Options.SetMergeAliases

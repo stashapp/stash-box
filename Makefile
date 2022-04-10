@@ -106,6 +106,6 @@ endif
 				-e GORELEASER_CURRENT_TAG=$(STASH_BOX_VERSION) \
 				-e STASH_BOX_BUILD_TYPE=$(BUILD_TYPE) \
 				-w /go/src/github.com/stashapp/stash-box \
-				ghcr.io/gythialy/golang-cross:latest $(SNAPSHOT) --rm-dist
+				ghcr.io/gythialy/golang-cross:v1.18 $(SNAPSHOT) --rm-dist
 	# goreleaser outputs an unreadable file which trips up docker
 	sudo chmod 644 ./dist/artifacts.json

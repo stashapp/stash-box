@@ -142,15 +142,13 @@ type Fingerprint struct {
 }
 
 type FingerprintEditInput struct {
-	UserIds   []uuid.UUID          `json:"user_ids"`
-	Hash      string               `json:"hash"`
-	Algorithm FingerprintAlgorithm `json:"algorithm"`
-	Duration  int                  `json:"duration"`
-	Created   time.Time            `json:"created"`
-	// @deprecated(reason: "unused")
-	Submissions *int `json:"submissions"`
-	// @deprecated(reason: "unused")
-	Updated *time.Time `json:"updated"`
+	UserIds     []uuid.UUID          `json:"user_ids"`
+	Hash        string               `json:"hash"`
+	Algorithm   FingerprintAlgorithm `json:"algorithm"`
+	Duration    int                  `json:"duration"`
+	Created     time.Time            `json:"created"`
+	Submissions *int                 `json:"submissions"`
+	Updated     *time.Time           `json:"updated"`
 }
 
 type FingerprintInput struct {
