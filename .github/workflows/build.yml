@@ -120,7 +120,7 @@ jobs:
     - name: Generate checksums
       run: |
         git describe --tags --exclude latest-develop | tee CHECKSUMS_SHA1
-        sha1sum dist/*/stash-box-* | sed 's/dist\/.*\///g' | tee -a CHECKSUMS_SHA1
+        sha1sum dist/stash-box-* | sed 's/dist\/.*\///g' | tee -a CHECKSUMS_SHA1
         echo "STASH_BOX_VERSION=$(git describe --tags --exclude latest-develop)" >> $GITHUB_ENV
 
     - name: Upload Windows binary
