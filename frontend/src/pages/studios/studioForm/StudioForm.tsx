@@ -138,6 +138,7 @@ const StudioForm: FC<StudioProps> = ({
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}
+            allowLossless
           />
 
           <NavButtons
