@@ -20,14 +20,14 @@ ifndef BUILD_TYPE
 	$(eval BUILD_TYPE := LOCAL)
 endif
 
-ifeq ($(BUILD_TYPE),OFFICIAL)
-	$(eval SNAPSHOT :=)
-else
-	$(eval SNAPSHOT := --snapshot)
-endif
+export CGO_ENABLED = 0
 
 build: pre-build
-	go build $(OUTPUT) -v -ldflags "-X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)'"
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)')
+	go build $(OUTPUT) -v -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+
+build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
+build-release-static: build
 
 # Regenerates GraphQL files
 generate: generate-backend generate-ui
@@ -95,17 +95,19 @@ ui-fmt:
 ui-validate:
 	cd frontend && yarn run validate
 
-.PHONY: cross-compile
-cross-compile: pre-build
-ifdef CI
-	$(eval CI_ARGS := -v $(PWD)/.go-cache:/root/.cache/go-build)
-endif
-	docker run --rm --privileged $(CI_ARGS) \
-				-v $(PWD):/go/src/github.com/stashapp/stash-box \
-				-v /var/run/docker.sock:/var/run/docker.sock \
-				-e GORELEASER_CURRENT_TAG=$(STASH_BOX_VERSION) \
-				-e STASH_BOX_BUILD_TYPE=$(BUILD_TYPE) \
-				-w /go/src/github.com/stashapp/stash-box \
-				ghcr.io/gythialy/golang-cross:v1.18 $(SNAPSHOT) --rm-dist
-	# goreleaser outputs an unreadable file which trips up docker
-	sudo chmod 644 ./dist/artifacts.json
+# cross-compile- targets should be run within the compiler docker container
+cross-compile-windows: export GOOS := windows
+cross-compile-windows: export GOARCH := amd64
+cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
+cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
+cross-compile-windows: OUTPUT := -o dist/stash-box-windows.exe
+cross-compile-windows: build-release-static
+
+cross-compile-linux: export GOOS := linux
+cross-compile-linux: export GOARCH := amd64
+cross-compile-linux: OUTPUT := -o dist/stash-box-linux
+cross-compile-linux: build-release-static
+
+cross-compile:
+	make cross-compile-windows
+	make cross-compile-linux
