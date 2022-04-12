@@ -1,6 +1,6 @@
-FROM postgres:13.3
+FROM postgres:14.2
 
-RUN buildDeps='git make gcc postgresql-server-dev-13' \
+RUN buildDeps='git make gcc postgresql-server-dev-14' \
 		&& apt update && apt install -y $buildDeps --no-install-recommends --reinstall ca-certificates \
 		&& git clone https://github.com/fake-name/pg-spgist_hamming.git \
 		&& make -C pg-spgist_hamming/bktree \
