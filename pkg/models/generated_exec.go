@@ -377,6 +377,7 @@ type ComplexityRoot struct {
 		Code         func(childComplexity int) int
 		Created      func(childComplexity int) int
 		Date         func(childComplexity int) int
+		DateFuzzy    func(childComplexity int) int
 		Deleted      func(childComplexity int) int
 		Details      func(childComplexity int) int
 		Director     func(childComplexity int) int
@@ -413,6 +414,7 @@ type ComplexityRoot struct {
 		AddedUrls           func(childComplexity int) int
 		Code                func(childComplexity int) int
 		Date                func(childComplexity int) int
+		DateAccuracy        func(childComplexity int) int
 		Details             func(childComplexity int) int
 		Director            func(childComplexity int) int
 		DraftID             func(childComplexity int) int
@@ -716,6 +718,7 @@ type SceneResolver interface {
 	Title(ctx context.Context, obj *Scene) (*string, error)
 	Details(ctx context.Context, obj *Scene) (*string, error)
 	Date(ctx context.Context, obj *Scene) (*string, error)
+	DateFuzzy(ctx context.Context, obj *Scene) (*FuzzyDate, error)
 	Urls(ctx context.Context, obj *Scene) ([]*URL, error)
 	Studio(ctx context.Context, obj *Scene) (*Studio, error)
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
@@ -2705,6 +2708,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Date(childComplexity), true
 
+	case "Scene.date_fuzzy":
+		if e.complexity.Scene.DateFuzzy == nil {
+			break
+		}
+
+		return e.complexity.Scene.DateFuzzy(childComplexity), true
+
 	case "Scene.deleted":
 		if e.complexity.Scene.Deleted == nil {
 			break
@@ -2914,6 +2924,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneEdit.Date(childComplexity), true
+
+	case "SceneEdit.date_accuracy":
+		if e.complexity.SceneEdit.DateAccuracy == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.DateAccuracy(childComplexity), true
 
 	case "SceneEdit.details":
 		if e.complexity.SceneEdit.Details == nil {
@@ -4344,7 +4361,8 @@ type Scene {
   id: ID!
   title: String
   details: String
-  date: Date
+  date: String @deprecated(reason: "Use the date_fuzzy field instead")
+  date_fuzzy: FuzzyDate
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -4364,7 +4382,7 @@ input SceneCreateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -4380,7 +4398,7 @@ input SceneUpdateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -4399,7 +4417,7 @@ input SceneEditDetailsInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -4423,7 +4441,8 @@ type SceneEdit {
   details: String
   added_urls: [URL!]
   removed_urls: [URL!]
-  date: Date
+  date: String
+  date_accuracy: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -4489,7 +4508,7 @@ type SceneDraft {
   title: String
   details: String
   url: URL
-  date: Date
+  date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
   tags: [SceneDraftTag!]
@@ -4501,7 +4520,7 @@ input SceneDraftInput {
   title: String
   details: String
   url: String
-  date: Date
+  date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!
   tags: [DraftEntityInput!]
@@ -15724,7 +15743,39 @@ func (ec *executionContext) _Scene_date(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Scene_date_fuzzy(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().DateFuzzy(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*FuzzyDate)
+	fc.Result = res
+	return ec.marshalOFuzzyDate2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Scene_urls(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
@@ -16295,7 +16346,7 @@ func (ec *executionContext) _SceneDraft_date(ctx context.Context, field graphql.
 	}
 	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneDraft_studio(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
@@ -16621,7 +16672,39 @@ func (ec *executionContext) _SceneEdit_date(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_date_accuracy(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateAccuracy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneEdit_studio(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
@@ -23379,7 +23462,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalODate2ᚖstring(ctx, v)
+			it.Date, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -23513,7 +23596,7 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalODate2ᚖstring(ctx, v)
+			it.Date, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -23600,7 +23683,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalODate2ᚖstring(ctx, v)
+			it.Date, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -23906,7 +23989,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalODate2ᚖstring(ctx, v)
+			it.Date, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -28910,6 +28993,23 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				return innerFunc(ctx)
 
 			})
+		case "date_fuzzy":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_date_fuzzy(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "urls":
 			field := field
 
@@ -29340,6 +29440,13 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 		case "date":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._SceneEdit_date(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "date_accuracy":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SceneEdit_date_accuracy(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -33725,22 +33832,6 @@ func (ec *executionContext) marshalOBreastTypeEnum2ᚖgithubᚗcomᚋstashappᚋ
 		return graphql.Null
 	}
 	return v
-}
-
-func (ec *executionContext) unmarshalODate2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalString(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalODate2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalString(*v)
-	return res
 }
 
 func (ec *executionContext) unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDateCriterionInput(ctx context.Context, v interface{}) (*DateCriterionInput, error) {

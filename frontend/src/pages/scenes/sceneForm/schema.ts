@@ -10,10 +10,11 @@ export const SceneSchema = yup.object({
   details: yup.string().trim(),
   date: yup
     .string()
+    .defined()
     .transform(nullCheck)
-    .matches(/^\d{4}-\d{2}-\d{2}$/, {
+    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
       excludeEmptyString: true,
-      message: "Invalid date",
+      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
     })
     .test("valid-date", "Invalid date", isValidDate)
     .nullable()

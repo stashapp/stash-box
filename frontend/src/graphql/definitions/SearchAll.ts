@@ -54,6 +54,12 @@ export interface SearchAll_searchPerformer {
   is_favorite: boolean;
 }
 
+export interface SearchAll_searchScene_date {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
 export interface SearchAll_searchScene_urls_site {
   __typename: "Site";
   id: string;
@@ -103,7 +109,7 @@ export interface SearchAll_searchScene_performers {
 export interface SearchAll_searchScene {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  date: SearchAll_searchScene_date | null;
   title: string | null;
   deleted: boolean;
   duration: number | null;

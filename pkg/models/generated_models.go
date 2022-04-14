@@ -446,7 +446,7 @@ type SceneCreateInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *string                     `json:"date"`
+	Date         *FuzzyDateInput             `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
@@ -477,7 +477,7 @@ type SceneEditDetailsInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *string                     `json:"date"`
+	Date         *FuzzyDateInput             `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
@@ -528,7 +528,7 @@ type SceneUpdateInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *string                     `json:"date"`
+	Date         *FuzzyDateInput             `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`

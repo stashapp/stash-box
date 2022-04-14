@@ -230,7 +230,7 @@ export interface Draft_findDraft_data_SceneDraft {
   __typename: "SceneDraft";
   title: string | null;
   details: string | null;
-  date: any | null;
+  date: string | null;
   url: Draft_findDraft_data_SceneDraft_url | null;
   studio: Draft_findDraft_data_SceneDraft_studio | null;
   performers: Draft_findDraft_data_SceneDraft_performers[];

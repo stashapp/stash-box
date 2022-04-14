@@ -3,7 +3,10 @@
 #import "../fragments/ScenePerformerFragment.gql"
 fragment QuerySceneFragment on Scene {
   id
-  date
+  date: date_fuzzy {
+    date
+    accuracy
+  }
   title
   duration
   urls {
