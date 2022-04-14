@@ -299,6 +299,16 @@ export const renderPerformerDetails = (
       oldImages={performerDetails.removed_images}
       showDiff={showDiff}
     />
+    {performerDetails.draft_id && (
+      <Row className="mb-2">
+        <Col xs={{ offset: 2 }}>
+          <h6>
+            <Icon icon={faEdit} color="green" />
+            <span className="ms-1">Submitted by draft</span>
+          </h6>
+        </Col>
+      </Row>
+    )}
   </>
 );
 
