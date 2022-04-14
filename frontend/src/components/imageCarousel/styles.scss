@@ -60,7 +60,7 @@
   .next-button {
     .fa-icon {
       height: 4rem;
-      opacity: 40%;
+      opacity: 0.4;
       width: 2rem;
     }
 
@@ -73,7 +73,7 @@
       filter: drop-shadow(2px 2px 2px black);
 
       .fa-icon {
-        opacity: 100%;
+        opacity: 1;
       }
     }
   }
