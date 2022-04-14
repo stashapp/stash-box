@@ -15,16 +15,17 @@ import {
   EthnicityEnum,
   DateAccuracyEnum,
 } from "src/graphql";
+import { parseFuzzyDate } from 'src/utils';
 
 export const parseSceneDraft = (
   draft: SceneDraft
 ): [Scene, Record<string, string | null>] => {
+  const date = parseFuzzyDate(draft.date);
   const scene: Scene = {
     id: "",
-    date: draft.date
+    date: date
       ? {
-          date: draft.date,
-          accuracy: DateAccuracyEnum.DAY,
+          ...date,
           __typename: "FuzzyDate",
         }
       : null,
