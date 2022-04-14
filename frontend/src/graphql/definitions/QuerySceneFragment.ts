@@ -3,11 +3,17 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum } from "./globalTypes";
+import { DateAccuracyEnum, GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: QuerySceneFragment
 // ====================================================
+
+export interface QuerySceneFragment_date {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
 
 export interface QuerySceneFragment_urls_site {
   __typename: "Site";
@@ -58,7 +64,7 @@ export interface QuerySceneFragment_performers {
 export interface QuerySceneFragment {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  date: QuerySceneFragment_date | null;
   title: string | null;
   duration: number | null;
   urls: QuerySceneFragment_urls[];

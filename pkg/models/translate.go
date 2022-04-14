@@ -172,6 +172,7 @@ func (d *editDiff) fuzzyDate(oldDate SQLiteDate, oldAcc sql.NullString, new *Fuz
 	return
 }
 
+//nolint:unused
 func (d *editDiff) sqliteDate(old SQLiteDate, new *string) (oldOut *string, newOut *string) {
 	if old.Valid && (new == nil || *new != old.String) {
 		oldVal := old.String

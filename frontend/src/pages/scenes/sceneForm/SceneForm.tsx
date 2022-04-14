@@ -11,7 +11,13 @@ import {
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import { formatDuration, parseDuration, performerHref } from "src/utils";
+import {
+  formatDuration,
+  formatFuzzyDate,
+  parseDuration,
+  parseFuzzyDate,
+  performerHref,
+} from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -54,7 +60,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     defaultValues: {
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
-      date: initial?.date ?? scene?.date,
+      date: formatFuzzyDate(initial?.date ?? scene?.date),
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
@@ -104,7 +110,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneEditDetailsInput = {
       title: data.title,
-      date: data.date,
+      date: parseFuzzyDate(data.date),
       duration: parseDuration(data.duration),
       director: data.director,
       code: data.code,
@@ -285,6 +291,10 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               <Form.Control.Feedback type="invalid">
                 {errors?.date?.message}
               </Form.Control.Feedback>
+              {/* <Form.Text>
+                If the precise date is unknown the day and/or month can be
+                omitted.
+              </Form.Text> */}
             </Form.Group>
 
             <Form.Group controlId="duration" className="col-2 mb-3">

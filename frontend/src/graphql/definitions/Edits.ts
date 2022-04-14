@@ -178,6 +178,12 @@ export interface Edits_queryEdits_edits_target_Studio {
   is_favorite: boolean;
 }
 
+export interface Edits_queryEdits_edits_target_Scene_date {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
 export interface Edits_queryEdits_edits_target_Scene_urls_site {
   __typename: "Site";
   id: string;
@@ -245,7 +251,7 @@ export interface Edits_queryEdits_edits_target_Scene_tags {
 export interface Edits_queryEdits_edits_target_Scene {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  date: Edits_queryEdits_edits_target_Scene_date | null;
   title: string | null;
   deleted: boolean;
   details: string | null;
@@ -785,7 +791,8 @@ export interface Edits_queryEdits_edits_details_SceneEdit {
   details: string | null;
   added_urls: Edits_queryEdits_edits_details_SceneEdit_added_urls[] | null;
   removed_urls: Edits_queryEdits_edits_details_SceneEdit_removed_urls[] | null;
-  date: any | null;
+  date: string | null;
+  date_accuracy: string | null;
   studio: Edits_queryEdits_edits_details_SceneEdit_studio | null;
   /**
    * Added or modified performer appearance entries
@@ -1201,7 +1208,8 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit {
   details: string | null;
   added_urls: Edits_queryEdits_edits_old_details_SceneEdit_added_urls[] | null;
   removed_urls: Edits_queryEdits_edits_old_details_SceneEdit_removed_urls[] | null;
-  date: any | null;
+  date: string | null;
+  date_accuracy: string | null;
   studio: Edits_queryEdits_edits_old_details_SceneEdit_studio | null;
   /**
    * Added or modified performer appearance entries
@@ -1357,6 +1365,12 @@ export interface Edits_queryEdits_edits_merge_sources_Studio {
   is_favorite: boolean;
 }
 
+export interface Edits_queryEdits_edits_merge_sources_Scene_date {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
+
 export interface Edits_queryEdits_edits_merge_sources_Scene_urls_site {
   __typename: "Site";
   id: string;
@@ -1424,7 +1438,7 @@ export interface Edits_queryEdits_edits_merge_sources_Scene_tags {
 export interface Edits_queryEdits_edits_merge_sources_Scene {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  date: Edits_queryEdits_edits_merge_sources_Scene_date | null;
   title: string | null;
   deleted: boolean;
   details: string | null;
