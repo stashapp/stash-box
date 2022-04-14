@@ -1,7 +1,6 @@
 package api
 
 import (
-	"compress/flate"
 	"context"
 	"crypto/tls"
 	"embed"
@@ -16,6 +15,8 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+
+	"github.com/klauspost/compress/flate"
 
 	gqlHandler "github.com/99designs/gqlgen/graphql/handler"
 	gqlExtension "github.com/99designs/gqlgen/graphql/handler/extension"

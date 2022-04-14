@@ -8,13 +8,17 @@ on:
   release:
     types: [ published ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-20.04
 
     services:
       postgres:
-        image: postgres:13.2
+        image: postgres:14.2
         env:
           POSTGRES_DB: postgres
           POSTGRES_PASSWORD: postgres
@@ -37,12 +41,12 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.17.x
+        go-version: 1.18.x
 
     - name: Install Node
       uses: actions/setup-node@v2
       with:
-        node-version: '14'
+        node-version: '16'
 
     - name: Cache node modules
       uses: actions/cache@v2
@@ -116,7 +120,7 @@ jobs:
     - name: Generate checksums
       run: |
         git describe --tags --exclude latest-develop | tee CHECKSUMS_SHA1
-        sha1sum dist/*/stash-box-* | sed 's/dist\/.*\///g' | tee -a CHECKSUMS_SHA1
+        sha1sum dist/stash-box-* | sed 's/dist\/.*\///g' | tee -a CHECKSUMS_SHA1
         echo "STASH_BOX_VERSION=$(git describe --tags --exclude latest-develop)" >> $GITHUB_ENV
 
     - name: Upload Windows binary
@@ -125,21 +129,14 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: stash-box-win.exe
-        path: dist/stash-box_windows_amd64/stash-box-windows.exe
-    - name: Upload OSX binary
-      # only upload binaries for pull requests
-      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
-      with:
-        name: stash-box-darwin
-        path: dist/stash-box_darwin_amd64/stash-box-darwin
+        path: dist/stash-box-windows.exe
     - name: Upload Linux binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-box-linux
-        path: dist/stash-box_static_linux_amd64/stash-box-linux
+        path: dist/stash-box-linux
 
     - name: Update latest-develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
@@ -154,9 +151,8 @@ jobs:
         automatic_release_tag: latest-develop
         title: "${{ env.STASH_BOX_VERSION }}: Latest development build"
         files: |
-          dist/stash-box_windows_amd64/stash-box-windows.exe
-          dist/stash-box_static_linux_amd64/stash-box-linux
-          dist/stash-box_darwin_amd64/stash-box-darwin
+          dist/stash-box-windows.exe
+          dist/stash-box-linux
           CHECKSUMS_SHA1
 
     - name: Master release
@@ -166,9 +162,8 @@ jobs:
         token: "${{ secrets.GITHUB_TOKEN }}"
         allow_override: true
         files: |
-          dist/stash-box_windows_amd64/stash-box-windows.exe
-          dist/stash-box_static_linux_amd64/stash-box-linux
-          dist/stash-box_darwin_amd64/stash-box-darwin
+          dist/stash-box-windows.exe
+          dist/stash-box-linux
           CHECKSUMS_SHA1
         gzip: false
 
