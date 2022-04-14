@@ -60,6 +60,58 @@ func (r *queryResolver) QueryScenes(ctx context.Context, input models.SceneQuery
 	}, nil
 }
 
+func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, sceneFingerprints [][]*models.FingerprintQueryInput) ([][]*models.Scene, error) {
+	if len(sceneFingerprints) > 40 {
+		return nil, errors.New("Too many scenes")
+	}
+
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
+
+	var fingerprints []*models.FingerprintQueryInput
+	for _, scene := range sceneFingerprints {
+		fingerprints = append(fingerprints, scene...)
+	}
+
+	// Find ids for all scenes matching a fingerprint
+	sceneIds, err := qb.FindIdsBySceneFingerprints(fingerprints)
+	if err != nil {
+		return nil, err
+	}
+
+	var ids []uuid.UUID
+	for _, id := range sceneIds {
+		ids = append(ids, id...)
+	}
+
+	// Fetch all scene ids
+	scenes, err := qb.FindByIds(ids)
+	sceneMap := make(map[uuid.UUID]*models.Scene)
+	for _, scene := range scenes {
+		sceneMap[scene.ID] = scene
+	}
+
+	// Deduplicate list of scenes for each group of fingerprints
+	var result = make([][]*models.Scene, len(sceneFingerprints))
+	for i, scene := range sceneFingerprints {
+		sceneIdMap := make(map[uuid.UUID]bool)
+		for _, fp := range scene {
+			for _, id := range sceneIds[fp.Hash] {
+				sceneIdMap[id] = true
+			}
+		}
+
+		var fpScenes []*models.Scene
+		for id := range sceneIdMap {
+			fpScenes = append(fpScenes, sceneMap[id])
+		}
+
+		result[i] = fpScenes
+	}
+
+	return result, nil
+}
+
 type querySceneResolver struct{ *Resolver }
 
 func (r *querySceneResolver) Count(ctx context.Context, obj *models.SceneQuery) (int, error) {

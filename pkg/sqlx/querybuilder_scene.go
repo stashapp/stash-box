@@ -190,6 +190,100 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 	return qb.queryScenes(query, args)
 }
 
+func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, error) {
+	query := `
+		SELECT scenes.* FROM scenes
+		WHERE id IN (?)
+	`
+	query, args, _ := sqlx.In(query, ids)
+	scenes, err := qb.queryScenes(query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[uuid.UUID]*models.Scene)
+	for _, scene := range scenes {
+		m[scene.ID] = scene
+	}
+
+	result := make([]*models.Scene, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
+func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.FingerprintQueryInput) (map[string][]uuid.UUID, error) {
+	hashClause := `
+		SELECT scene_id, hash
+		FROM scene_fingerprints
+		WHERE hash IN (:hashes)
+		GROUP BY scene_id, hash
+	`
+	phashClause := `
+		SELECT scene_id, phash as hash
+		FROM UNNEST(ARRAY[:phashes]) phash
+		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
+		AND algorithm = 'PHASH'
+		GROUP BY scene_id, phash
+	`
+
+	var phashes []int64
+	var hashes []string
+	for _, fp := range fingerprints {
+		if fp.Algorithm == models.FingerprintAlgorithmPhash {
+			// Postgres only supports signed integers, so we parse
+			// as uint64 and cast to int64 to ensure values are the same.
+			value, err := strconv.ParseUint(fp.Hash, 16, 64)
+			if err == nil {
+				phashes = append(phashes, int64(value))
+			}
+		} else {
+			hashes = append(hashes, fp.Hash)
+		}
+	}
+
+	var clauses []string
+	if len(phashes) > 0 {
+		clauses = append(clauses, phashClause)
+	}
+	if len(hashes) > 0 {
+		clauses = append(clauses, hashClause)
+	}
+	if len(clauses) == 0 {
+		return nil, nil
+	}
+
+	arg := map[string]interface{}{
+		"phashes":  phashes,
+		"hashes":   hashes,
+		"distance": config.GetPHashDistance(),
+	}
+
+	query := strings.Join(clauses, " UNION ")
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, err
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	output := models.SceneFingerprints{}
+	if err := qb.dbi.RawQuery(sceneFingerprintTable.table, query, args, &output); err != nil {
+		return nil, err
+	}
+
+	res := make(map[string][]uuid.UUID)
+	output.Each(func(row interface{}) {
+		fp := row.(models.SceneFingerprint)
+		res[fp.Hash] = append(res[fp.Hash], fp.SceneID)
+	})
+
+	return res, nil
+}
+
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*models.Scene, error) {
 // 	query := `
 // 		SELECT scenes.* FROM scenes

@@ -305,32 +305,33 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		FindDraft                    func(childComplexity int, id uuid.UUID) int
-		FindDrafts                   func(childComplexity int) int
-		FindEdit                     func(childComplexity int, id uuid.UUID) int
-		FindPerformer                func(childComplexity int, id uuid.UUID) int
-		FindScene                    func(childComplexity int, id uuid.UUID) int
-		FindSceneByFingerprint       func(childComplexity int, fingerprint FingerprintQueryInput) int
-		FindScenesByFingerprints     func(childComplexity int, fingerprints []string) int
-		FindScenesByFullFingerprints func(childComplexity int, fingerprints []*FingerprintQueryInput) int
-		FindSite                     func(childComplexity int, id uuid.UUID) int
-		FindStudio                   func(childComplexity int, id *uuid.UUID, name *string) int
-		FindTag                      func(childComplexity int, id *uuid.UUID, name *string) int
-		FindTagCategory              func(childComplexity int, id uuid.UUID) int
-		FindUser                     func(childComplexity int, id *uuid.UUID, username *string) int
-		GetConfig                    func(childComplexity int) int
-		Me                           func(childComplexity int) int
-		QueryEdits                   func(childComplexity int, input EditQueryInput) int
-		QueryPerformers              func(childComplexity int, input PerformerQueryInput) int
-		QueryScenes                  func(childComplexity int, input SceneQueryInput) int
-		QuerySites                   func(childComplexity int) int
-		QueryStudios                 func(childComplexity int, input StudioQueryInput) int
-		QueryTagCategories           func(childComplexity int) int
-		QueryTags                    func(childComplexity int, input TagQueryInput) int
-		QueryUsers                   func(childComplexity int, input UserQueryInput) int
-		SearchPerformer              func(childComplexity int, term string, limit *int) int
-		SearchScene                  func(childComplexity int, term string, limit *int) int
-		Version                      func(childComplexity int) int
+		FindDraft                     func(childComplexity int, id uuid.UUID) int
+		FindDrafts                    func(childComplexity int) int
+		FindEdit                      func(childComplexity int, id uuid.UUID) int
+		FindPerformer                 func(childComplexity int, id uuid.UUID) int
+		FindScene                     func(childComplexity int, id uuid.UUID) int
+		FindSceneByFingerprint        func(childComplexity int, fingerprint FingerprintQueryInput) int
+		FindScenesByFingerprints      func(childComplexity int, fingerprints []string) int
+		FindScenesByFullFingerprints  func(childComplexity int, fingerprints []*FingerprintQueryInput) int
+		FindScenesBySceneFingerprints func(childComplexity int, fingerprints [][]*FingerprintQueryInput) int
+		FindSite                      func(childComplexity int, id uuid.UUID) int
+		FindStudio                    func(childComplexity int, id *uuid.UUID, name *string) int
+		FindTag                       func(childComplexity int, id *uuid.UUID, name *string) int
+		FindTagCategory               func(childComplexity int, id uuid.UUID) int
+		FindUser                      func(childComplexity int, id *uuid.UUID, username *string) int
+		GetConfig                     func(childComplexity int) int
+		Me                            func(childComplexity int) int
+		QueryEdits                    func(childComplexity int, input EditQueryInput) int
+		QueryPerformers               func(childComplexity int, input PerformerQueryInput) int
+		QueryScenes                   func(childComplexity int, input SceneQueryInput) int
+		QuerySites                    func(childComplexity int) int
+		QueryStudios                  func(childComplexity int, input StudioQueryInput) int
+		QueryTagCategories            func(childComplexity int) int
+		QueryTags                     func(childComplexity int, input TagQueryInput) int
+		QueryUsers                    func(childComplexity int, input UserQueryInput) int
+		SearchPerformer               func(childComplexity int, term string, limit *int) int
+		SearchScene                   func(childComplexity int, term string, limit *int) int
+		Version                       func(childComplexity int) int
 	}
 
 	QueryEditsResultType struct {
@@ -685,6 +686,7 @@ type QueryResolver interface {
 	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput) ([]*Scene, error)
 	FindScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*Scene, error)
 	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput) ([]*Scene, error)
+	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]*FingerprintQueryInput) ([][]*Scene, error)
 	QueryScenes(ctx context.Context, input SceneQueryInput) (*SceneQuery, error)
 	FindSite(ctx context.Context, id uuid.UUID) (*Site, error)
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
@@ -2380,6 +2382,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.FindScenesByFullFingerprints(childComplexity, args["fingerprints"].([]*FingerprintQueryInput)), true
+
+	case "Query.findScenesBySceneFingerprints":
+		if e.complexity.Query.FindScenesBySceneFingerprints == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findScenesBySceneFingerprints_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindScenesBySceneFingerprints(childComplexity, args["fingerprints"].([][]*FingerprintQueryInput)), true
 
 	case "Query.findSite":
 		if e.complexity.Query.FindSite == nil {
@@ -4944,6 +4958,7 @@ type Query {
   """Finds scenes that match a list of hashes"""
   findScenesByFingerprints(fingerprints: [String!]!): [Scene!]! @hasRole(role: READ)
   findScenesByFullFingerprints(fingerprints: [FingerprintQueryInput!]!): [Scene!]! @hasRole(role: READ)
+  findScenesBySceneFingerprints(fingerprints: [[FingerprintQueryInput!]!]!): [[Scene!]!]! @hasRole(role: READ)
   queryScenes(input: SceneQueryInput!): QueryScenesResultType! @hasRole(role: READ)
 
   """Find an external site by ID"""
@@ -5899,6 +5914,21 @@ func (ec *executionContext) field_Query_findScenesByFullFingerprints_args(ctx co
 	if tmp, ok := rawArgs["fingerprints"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
 		arg0, err = ec.unmarshalNFingerprintQueryInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["fingerprints"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findScenesBySceneFingerprints_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 [][]*FingerprintQueryInput
+	if tmp, ok := rawArgs["fingerprints"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
+		arg0, err = ec.unmarshalNFingerprintQueryInput2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -14113,6 +14143,72 @@ func (ec *executionContext) _Query_findScenesByFullFingerprints(ctx context.Cont
 	res := resTmp.([]*Scene)
 	fc.Result = res
 	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_findScenesBySceneFingerprints(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_findScenesBySceneFingerprints_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindScenesBySceneFingerprints(rctx, args["fingerprints"].([][]*FingerprintQueryInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([][]*Scene); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be [][]*github.com/stashapp/stash-box/pkg/models.Scene`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([][]*Scene)
+	fc.Result = res
+	return ec.marshalNScene2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_queryScenes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -28119,6 +28215,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "findScenesBySceneFingerprints":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findScenesBySceneFingerprints(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "queryScenes":
 			field := field
 
@@ -31867,6 +31986,23 @@ func (ec *executionContext) unmarshalNFingerprintQueryInput2githubᚗcomᚋstash
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx context.Context, v interface{}) ([][]*FingerprintQueryInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([][]*FingerprintQueryInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNFingerprintQueryInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalNFingerprintQueryInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx context.Context, v interface{}) ([]*FingerprintQueryInput, error) {
 	var vSlice []interface{}
 	if v != nil {
@@ -32450,6 +32586,50 @@ func (ec *executionContext) marshalNRoleEnum2ᚕgithubᚗcomᚋstashappᚋstash�
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNScene2ᚕᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*Scene) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
