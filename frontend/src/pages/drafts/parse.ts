@@ -15,7 +15,7 @@ import {
   EthnicityEnum,
   DateAccuracyEnum,
 } from "src/graphql";
-import { parseFuzzyDate } from 'src/utils';
+import { parseFuzzyDate } from "src/utils";
 
 export const parseSceneDraft = (
   draft: SceneDraft
