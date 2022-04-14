@@ -43,7 +43,7 @@ import { PerformerSchema, PerformerFormData } from "./schema";
 import URLInput from "src/components/urlInput";
 
 Countries.registerLocale(english);
-const CountryList = Countries.getNames("en");
+const CountryList = Countries.getNames("en", { select: "alias" });
 
 type OptionEnum = {
   value: string;
