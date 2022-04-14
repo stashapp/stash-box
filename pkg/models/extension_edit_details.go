@@ -124,7 +124,7 @@ func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) SceneEditData {
 	ed := editDiff{}
 	oldData.Title, newData.Title = ed.nullString(orig.Title, e.Title)
 	oldData.Details, newData.Details = ed.nullString(orig.Details, e.Details)
-	oldData.Date, newData.Date = ed.sqliteDate(orig.Date, e.Date)
+	oldData.Date, oldData.DateAccuracy, newData.Date, newData.DateAccuracy = ed.fuzzyDate(orig.Date, orig.DateAccuracy, e.Date)
 	oldData.StudioID, newData.StudioID = ed.nullUUID(orig.StudioID, e.StudioID)
 	oldData.Duration, newData.Duration = ed.nullInt64(orig.Duration, e.Duration)
 	oldData.Director, newData.Director = ed.nullString(orig.Director, e.Director)

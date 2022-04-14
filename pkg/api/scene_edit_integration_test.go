@@ -101,12 +101,19 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 
 	c := fieldComparator{r: &s.testRunner}
 	c.strPtrStrPtr(input.Title, sceneDetails.Title, "Title")
-	c.strPtrStrPtr(input.Date, sceneDetails.Date, "Date")
 	c.strPtrStrPtr(input.Details, sceneDetails.Details, "Details")
 	c.strPtrStrPtr(input.Director, sceneDetails.Director, "Director")
 	c.strPtrStrPtr(input.Code, sceneDetails.Code, "Code")
 	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
 	c.intPtrInt64Ptr(input.Duration, sceneDetails.Duration, "Duration")
+
+	if !input.Date.Accuracy.IsValid() || (input.Date.Accuracy.String() != *sceneDetails.DateAccuracy) {
+		s.fieldMismatch(input.Date.Accuracy, sceneDetails.DateAccuracy, "DateAccuracy")
+	}
+
+	if input.Date.Date != *sceneDetails.Date {
+		s.fieldMismatch(input.Date.Date, sceneDetails.Date, "Date")
+	}
 
 	s.compareURLs(input.Urls, sceneDetails.AddedUrls)
 
@@ -128,12 +135,27 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 
 	c := fieldComparator{r: &s.testRunner}
 	c.strPtrNullStr(input.Title, scene.Title, "Title")
-	c.strPtrSQLiteDate(input.Date, scene.Date, "Date")
 	c.strPtrNullStr(input.Details, scene.Details, "Details")
 	c.strPtrNullStr(input.Director, scene.Director, "Director")
 	c.strPtrNullStr(input.Code, scene.Code, "Code")
 	c.uuidPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
 	c.intPtrNullInt64(input.Duration, scene.Duration, "Duration")
+
+	if input.Date == nil {
+		if scene.DateAccuracy.Valid {
+			s.fieldMismatch(input.Date, scene.DateAccuracy.String, "DateAccuracy")
+		}
+	} else if input.Date.Accuracy.String() != scene.DateAccuracy.String {
+		s.fieldMismatch(input.Date.Accuracy.String(), scene.DateAccuracy.String, "DateAccuracy")
+	}
+
+	if input.Date == nil {
+		if scene.Date.Valid {
+			s.fieldMismatch(input.Date, scene.Date.String, "Date")
+		}
+	} else if input.Date.Date != scene.Date.String {
+		s.fieldMismatch(input.Date.Date, scene.Date.String, "Date")
+	}
 
 	urls, _ := resolver.Urls(s.ctx, scene)
 	s.compareURLs(input.Urls, urls)

@@ -3,11 +3,17 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { SceneCreateInput, GenderEnum, FingerprintAlgorithm } from "./globalTypes";
+import { SceneCreateInput, DateAccuracyEnum, GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddScene
 // ====================================================
+
+export interface AddScene_sceneCreate_date {
+  __typename: "FuzzyDate";
+  date: any;
+  accuracy: DateAccuracyEnum;
+}
 
 export interface AddScene_sceneCreate_urls_site {
   __typename: "Site";
@@ -57,7 +63,7 @@ export interface AddScene_sceneCreate_tags {
 export interface AddScene_sceneCreate {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  date: AddScene_sceneCreate_date | null;
   title: string | null;
   details: string | null;
   urls: AddScene_sceneCreate_urls[];

@@ -423,7 +423,7 @@ export interface SceneCreateInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: any | null;
+  date?: FuzzyDateInput | null;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
@@ -442,7 +442,7 @@ export interface SceneEditDetailsInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: any | null;
+  date?: FuzzyDateInput | null;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
@@ -482,7 +482,7 @@ export interface SceneUpdateInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: any | null;
+  date?: FuzzyDateInput | null;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
