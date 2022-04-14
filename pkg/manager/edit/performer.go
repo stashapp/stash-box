@@ -219,6 +219,8 @@ func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inp
 		performerEdit.New.AddedImages = input.Details.ImageIds
 	}
 
+	performerEdit.New.DraftID = input.Details.DraftID
+
 	return m.edit.SetData(performerEdit)
 }
 
