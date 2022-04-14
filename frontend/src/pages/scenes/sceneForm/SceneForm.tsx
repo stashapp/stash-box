@@ -4,11 +4,14 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faExclamationTriangle,
+  faExternalLinkAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import { formatDuration, parseDuration } from "src/utils";
+import { formatDuration, parseDuration, performerHref } from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -199,19 +202,28 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 searchType={SearchType.Performer}
               />
             ) : (
-              <InputGroup.Text className="flex-grow-1 text-start text-truncate">
-                <GenderIcon gender={p.gender} />
-                <span
-                  className={cx("performer-name text-truncate", {
-                    "text-decoration-line-through": p.deleted,
-                  })}
+              <>
+                <InputGroup.Text className="flex-grow-1 text-start text-truncate">
+                  <GenderIcon gender={p.gender} />
+                  <span
+                    className={cx("performer-name text-truncate", {
+                      "text-decoration-line-through": p.deleted,
+                    })}
+                  >
+                    <b>{p.name}</b>
+                    {p.disambiguation && (
+                      <small className="ms-1">({p.disambiguation})</small>
+                    )}
+                  </span>
+                </InputGroup.Text>
+                <Button
+                  variant="primary"
+                  href={performerHref({ id: p.performerId })}
+                  target="_blank"
                 >
-                  <b>{p.name}</b>
-                  {p.disambiguation && (
-                    <small className="ms-1">({p.disambiguation})</small>
-                  )}
-                </span>
-              </InputGroup.Text>
+                  <Icon icon={faExternalLinkAlt} />
+                </Button>
+              </>
             )}
           </>
         </InputGroup>
