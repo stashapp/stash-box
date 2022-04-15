@@ -107,7 +107,7 @@ const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
         <div>
           <div>
             <Icon icon={faCalendar} />
-            {scene.date}
+            {formatFuzzyDate(scene.date)}
           </div>
           <div>
             <Icon icon={faVideo} />

@@ -3,10 +3,12 @@ package database
 import (
 	"embed"
 	"fmt"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/logger"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 
 	// Driver used here only
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -29,8 +31,9 @@ func (p *PostgresProvider) Open(databasePath string) *sqlx.DB {
 	p.runMigrations(databasePath)
 
 	conn, err := sqlx.Open(postgresDriver, "postgres://"+databasePath)
-	conn.SetMaxOpenConns(25)
-	conn.SetMaxIdleConns(4)
+	conn.SetMaxOpenConns(config.GetMaxOpenConns())
+	conn.SetMaxIdleConns(config.GetMaxIdleConns())
+	conn.SetConnMaxLifetime(time.Duration(config.GetConnMaxLifetime()) * time.Minute)
 	if err != nil {
 		logger.Fatalf("db.Open(): %q\n", err)
 	}

@@ -46,12 +46,8 @@ input FingerprintEditInput {
   algorithm: FingerprintAlgorithm!
   duration: Int!
   created: Time!
-  # v0.14.0 of gqlgen does not allow deprecated on input fields
-  # https://github.com/99designs/gqlgen/issues/1636
-  """@deprecated(reason: "unused")"""
-  submissions: Int 
-  """@deprecated(reason: "unused")"""
-  updated: Time 
+  submissions: Int @deprecated(reason: "Unused")
+  updated: Time @deprecated(reason: "Unused")
 }
 
 input FingerprintQueryInput {
@@ -69,7 +65,8 @@ type Scene {
   id: ID!
   title: String
   details: String
-  date: Date
+  date: String @deprecated(reason: "Use the date_fuzzy field instead")
+  date_fuzzy: FuzzyDate
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -89,7 +86,7 @@ input SceneCreateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -105,7 +102,7 @@ input SceneUpdateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -124,7 +121,7 @@ input SceneEditDetailsInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: Date
+  date: FuzzyDateInput
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -148,7 +145,8 @@ type SceneEdit {
   details: String
   added_urls: [URL!]
   removed_urls: [URL!]
-  date: Date
+  date: String
+  date_accuracy: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -203,7 +201,7 @@ input SceneQueryInput {
   page: Int! = 1
   per_page: Int! = 25
   direction: SortDirectionEnum! = DESC
-  sort: SceneSortEnum! = RELEASE_DATE
+  sort: SceneSortEnum! = DATE
 }
 
 union SceneDraftStudio = Studio | DraftEntity
@@ -214,7 +212,7 @@ type SceneDraft {
   title: String
   details: String
   url: URL
-  date: Date
+  date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
   tags: [SceneDraftTag!]
@@ -226,7 +224,7 @@ input SceneDraftInput {
   title: String
   details: String
   url: String
-  date: Date
+  date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!
   tags: [DraftEntityInput!]

@@ -9,11 +9,20 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faExclamationTriangle,
+  faExternalLinkAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import { uniqBy } from "lodash-es";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import { formatDuration, parseDuration } from "src/utils";
+import {
+  formatDuration,
+  formatFuzzyDate,
+  parseDuration,
+  parseFuzzyDate,
+  performerHref,
+} from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -53,7 +62,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     defaultValues: {
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
-      date: initial?.date ?? scene?.date,
+      date: formatFuzzyDate(initial?.date ?? scene?.date),
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
@@ -98,7 +107,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneEditDetailsInput = {
       title: data.title,
-      date: data.date,
+      date: parseFuzzyDate(data.date),
       duration: parseDuration(data.duration),
       director: data.director,
       code: data.code,
@@ -196,19 +205,28 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 searchType={SearchType.Performer}
               />
             ) : (
-              <InputGroup.Text className="flex-grow-1 text-start text-truncate">
-                <GenderIcon gender={p.gender} />
-                <span
-                  className={cx("performer-name text-truncate", {
-                    "text-decoration-line-through": p.deleted,
-                  })}
+              <>
+                <InputGroup.Text className="flex-grow-1 text-start text-truncate">
+                  <GenderIcon gender={p.gender} />
+                  <span
+                    className={cx("performer-name text-truncate", {
+                      "text-decoration-line-through": p.deleted,
+                    })}
+                  >
+                    <b>{p.name}</b>
+                    {p.disambiguation && (
+                      <small className="ms-1">({p.disambiguation})</small>
+                    )}
+                  </span>
+                </InputGroup.Text>
+                <Button
+                  variant="primary"
+                  href={performerHref({ id: p.performerId })}
+                  target="_blank"
                 >
-                  <b>{p.name}</b>
-                  {p.disambiguation && (
-                    <small className="ms-1">({p.disambiguation})</small>
-                  )}
-                </span>
-              </InputGroup.Text>
+                  <Icon icon={faExternalLinkAlt} />
+                </Button>
+              </>
             )}
           </>
         </InputGroup>
@@ -273,6 +291,10 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               <Form.Control.Feedback type="invalid">
                 {errors?.date?.message}
               </Form.Control.Feedback>
+              {/* <Form.Text>
+                If the precise date is unknown the day and/or month can be
+                omitted.
+              </Form.Text> */}
             </Form.Group>
 
             <Form.Group controlId="duration" className="col-2 mb-3">

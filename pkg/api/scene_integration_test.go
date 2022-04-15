@@ -24,7 +24,10 @@ func createSceneTestRunner(t *testing.T) *sceneTestRunner {
 func (s *sceneTestRunner) testCreateScene() {
 	title := "Title"
 	details := "Details"
-	date := "2003-02-01"
+	date := models.FuzzyDateInput{
+		Date:     "2003-02-01",
+		Accuracy: models.DateAccuracyEnumDay,
+	}
 
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
@@ -181,8 +184,8 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 
 	s.compareSiteURLs(input.Urls, scene.Urls)
 
-	if !reflect.DeepEqual(scene.Date, input.Date) {
-		s.fieldMismatch(*input.Date, scene.Date, "Date")
+	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || scene.Date.Date != input.Date.Date || scene.Date.Accuracy != input.Date.Accuracy) {
+		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 
 	if !compareFingerprints(input.Fingerprints, scene.Fingerprints) {
@@ -305,7 +308,10 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
-	date := "2003-02-01"
+	date := models.FuzzyDateInput{
+		Date:     "2003-02-01",
+		Accuracy: models.DateAccuracyEnumDay,
+	}
 
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
@@ -356,7 +362,10 @@ func (s *sceneTestRunner) testUpdateScene() {
 
 	newTitle := "NewTitle"
 	newDetails := "NewDetails"
-	newDate := "2001-02-03"
+	newDate := models.FuzzyDateInput{
+		Date:     "2001-02-03",
+		Accuracy: models.DateAccuracyEnumDay,
+	}
 
 	performer, _ = s.createTestPerformer(nil)
 	studio, _ = s.createTestStudio(nil)
@@ -435,7 +444,7 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 		s.fieldMismatch(input.Details, scene.Details, "Details")
 	}
 
-	if !reflect.DeepEqual(scene.Date, input.Date) {
+	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || scene.Date.Date != input.Date.Date || scene.Date.Accuracy != input.Date.Accuracy) {
 		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 

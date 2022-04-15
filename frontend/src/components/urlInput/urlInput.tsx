@@ -1,6 +1,8 @@
 import { FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
+import { Icon } from "src/components/fragments";
 import { Control, useFieldArray, FieldError } from "react-hook-form";
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { useSites, ValidSiteTypeEnum } from "src/graphql";
 import { Site_findSite as Site } from "src/graphql/definitions/Site";
@@ -69,13 +71,14 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
   const handleInput = (url: string) => {
     if (!inputRef.current || !selectRef.current) return;
 
-    const site =
-      selectedSite ??
-      sites.find((s) => s.regex && new RegExp(s.regex).test(url));
+    const site = sites.find((s) => s.regex && new RegExp(s.regex).test(url));
 
     if (site && selectedSite?.id !== site.id) {
       setSelectedSite(site);
       selectRef.current.value = site.id;
+    } else if (url && !site && selectedSite?.regex) {
+      setSelectedSite(undefined);
+      selectRef.current.value = "";
     }
 
     if (site?.regex && url) {
@@ -96,11 +99,6 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
     }
   };
 
-  const handleRemove = (url: string) => {
-    const index = urls.findIndex((u) => u.url === url);
-    if (index !== -1) remove(index);
-  };
-
   const handleSiteSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const site = sites.find((s) => s.id === e.currentTarget.value);
     if (site) setSelectedSite(site);
@@ -112,7 +110,7 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
         {urls.map((u, i) => (
           <li key={u.url}>
             <InputGroup>
-              <Button variant="danger" onClick={() => handleRemove(u.url)}>
+              <Button variant="danger" onClick={() => remove(i)}>
                 Remove
               </Button>
               <InputGroup.Text>
@@ -121,6 +119,9 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
               <InputGroup.Text className="overflow-hidden">
                 {u.url}
               </InputGroup.Text>
+              <Button variant="primary" href={u.url} target="_blank">
+                <Icon icon={faExternalLinkAlt} />
+              </Button>
             </InputGroup>
             {errors?.[i]?.url && (
               <div className="text-danger">{errors?.[i]?.url?.message}</div>

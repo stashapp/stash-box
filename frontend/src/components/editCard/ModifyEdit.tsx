@@ -293,6 +293,16 @@ export const renderPerformerDetails = (
       oldImages={performerDetails.removed_images}
       showDiff={showDiff}
     />
+    {performerDetails.draft_id && (
+      <Row className="mb-2">
+        <Col xs={{ offset: 2 }}>
+          <h6>
+            <Icon icon={faEdit} color="green" />
+            <span className="ms-1">Submitted by draft</span>
+          </h6>
+        </Col>
+      </Row>
+    )}
   </>
 );
 
@@ -309,6 +319,7 @@ type NullableImage = Image | null;
 export interface SceneDetails {
   title: string | null;
   date: string | null;
+  date_accuracy: string | null;
   duration?: number | null;
   details?: string | null;
   director?: string | null;
@@ -370,8 +381,14 @@ export const renderSceneDetails = (
     )}
     <ChangeRow
       name="Date"
-      newValue={sceneDetails.date}
-      oldValue={oldSceneDetails?.date}
+      newValue={formatFuzzyDateComponents(
+        sceneDetails.date,
+        sceneDetails.date_accuracy
+      )}
+      oldValue={formatFuzzyDateComponents(
+        oldSceneDetails?.date,
+        oldSceneDetails?.date_accuracy
+      )}
       showDiff={showDiff}
     />
     <ChangeRow

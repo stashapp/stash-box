@@ -26,7 +26,7 @@ var strSliceTests = []strSliceTest{
 
 func TestStrSliceCompare(t *testing.T) {
 	for _, test := range strSliceTests {
-		added, missing := StrSliceCompare(test.subject, test.against)
+		added, missing := SliceCompare(test.subject, test.against)
 
 		if !reflect.DeepEqual(added, test.expectedAdded) {
 			t.Errorf("added(%v,%v) = %v; want %v", test.subject, test.against, added, test.expectedAdded)

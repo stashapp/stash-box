@@ -96,7 +96,7 @@ func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID u
 	for _, tag := range tags {
 		existingTags = append(existingTags, tag.ID)
 	}
-	sceneEdit.New.AddedTags, sceneEdit.New.RemovedTags = utils.UUIDSliceCompare(newImageIds, existingTags)
+	sceneEdit.New.AddedTags, sceneEdit.New.RemovedTags = utils.SliceCompare(newImageIds, existingTags)
 	return nil
 }
 
@@ -210,7 +210,7 @@ func (m *SceneEditProcessor) diffImages(sceneEdit *models.SceneEditData, sceneID
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	sceneEdit.New.AddedImages, sceneEdit.New.RemovedImages = utils.UUIDSliceCompare(newImageIds, existingImages)
+	sceneEdit.New.AddedImages, sceneEdit.New.RemovedImages = utils.SliceCompare(newImageIds, existingImages)
 	return nil
 }
 

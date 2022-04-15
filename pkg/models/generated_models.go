@@ -142,15 +142,13 @@ type Fingerprint struct {
 }
 
 type FingerprintEditInput struct {
-	UserIds   []uuid.UUID          `json:"user_ids"`
-	Hash      string               `json:"hash"`
-	Algorithm FingerprintAlgorithm `json:"algorithm"`
-	Duration  int                  `json:"duration"`
-	Created   time.Time            `json:"created"`
-	// @deprecated(reason: "unused")
-	Submissions *int `json:"submissions"`
-	// @deprecated(reason: "unused")
-	Updated *time.Time `json:"updated"`
+	UserIds     []uuid.UUID          `json:"user_ids"`
+	Hash        string               `json:"hash"`
+	Algorithm   FingerprintAlgorithm `json:"algorithm"`
+	Duration    int                  `json:"duration"`
+	Created     time.Time            `json:"created"`
+	Submissions *int                 `json:"submissions"`
+	Updated     *time.Time           `json:"updated"`
 }
 
 type FingerprintInput struct {
@@ -448,7 +446,7 @@ type SceneCreateInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *string                     `json:"date"`
+	Date         *FuzzyDateInput             `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
@@ -479,7 +477,7 @@ type SceneEditDetailsInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *string                     `json:"date"`
+	Date         *FuzzyDateInput             `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
@@ -530,7 +528,7 @@ type SceneUpdateInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *string                     `json:"date"`
+	Date         *FuzzyDateInput             `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`

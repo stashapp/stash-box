@@ -41,7 +41,7 @@ type sceneOutput struct {
 	ID           string                 `json:"id"`
 	Title        *string                `json:"title"`
 	Details      *string                `json:"details"`
-	Date         *string                `json:"date"`
+	Date         *fuzzyDate             `json:"date_fuzzy"`
 	Urls         []*siteURL             `json:"urls"`
 	Studio       *idObject              `json:"studio"`
 	Tags         []*idObject            `json:"tags"`
