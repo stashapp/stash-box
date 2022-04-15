@@ -5,7 +5,7 @@ import {
   faMars,
   faVenusMars,
 } from "@fortawesome/free-solid-svg-icons";
-import Icon from './Icon';
+import Icon from "./Icon";
 
 interface IconProps {
   gender?: string | null;
