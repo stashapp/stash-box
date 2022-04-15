@@ -5,7 +5,7 @@ import {
   faMars,
   faVenusMars,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Icon from './Icon';
 
 interface IconProps {
   gender?: string | null;
@@ -19,9 +19,9 @@ const GenderIcon: FC<IconProps> = ({ gender }) => {
         : gender.toLowerCase() === "female"
         ? faVenus
         : faTransgenderAlt;
-    return <FontAwesomeIcon icon={icon} />;
+    return <Icon icon={icon} />;
   }
-  return <FontAwesomeIcon icon={faVenusMars} />;
+  return <Icon icon={faVenusMars} />;
 };
 
 export default GenderIcon;
