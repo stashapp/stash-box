@@ -161,6 +161,12 @@ type SceneEdit {
   director: String
   code: String
   draft_id: ID
+
+  urls: [URL!]!
+  performers: [PerformerAppearance!]!
+  tags: [Tag!]!
+  images: [Images!]!
+  fingerprints: [Fingerprints!]!
 }
 
 type QueryScenesResultType {

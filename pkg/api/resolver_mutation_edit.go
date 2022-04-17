@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 
@@ -10,15 +11,18 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
+var UnauthorizedUpdateErr = fmt.Errorf("Only the creator can update edits")
+var AlreadyUpdatedErr = fmt.Errorf("Edits can only be amended once")
+
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
 	}
 
-	// create the edit
 	currentUser := getCurrentUser(ctx)
 
+	// create the edit
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumScene, input.Edit)
 
 	fac := r.getRepoFactory(ctx)
@@ -53,6 +57,39 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 
 	return newEdit, nil
 }
+
+func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, input models.SceneEditInput) (*models.Edit, error) {
+	currentUser := getCurrentUser(ctx)
+
+	fac := r.getRepoFactory(ctx)
+
+	existingEdit, err := fac.Edit().Find(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if existingEdit.UserID != currentUser.ID {
+		return nil, UnauthorizedUpdateErr
+	}
+
+	if existingEdit.UpdatedAt.IsValid() {
+		return nil, AlreadyUpdatedErr
+	}
+
+	err = fac.WithTxn(func() error {
+		p := edit.Scene(fac, existingEdit)
+		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+			return err
+		}
+
+		_, err := p.UpdateEdit()
+
+		return err
+	})
+
+	return existingEdit, err
+}
+
 func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
 	if err != nil {
@@ -91,6 +128,38 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 	return newEdit, nil
 }
 
+func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, input models.StudioEditInput) (*models.Edit, error) {
+	currentUser := getCurrentUser(ctx)
+
+	fac := r.getRepoFactory(ctx)
+
+	existingEdit, err := fac.Edit().Find(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if existingEdit.UserID != currentUser.ID {
+		return nil, UnauthorizedUpdateErr
+	}
+
+	if existingEdit.UpdatedAt.IsValid() {
+		return nil, AlreadyUpdatedErr
+	}
+
+	err = fac.WithTxn(func() error {
+		p := edit.Studio(fac, existingEdit)
+		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+			return err
+		}
+
+		_, err := p.UpdateEdit()
+
+		return err
+	})
+
+	return existingEdit, err
+}
+
 func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
 	if err != nil {
@@ -127,6 +196,38 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 	}
 
 	return newEdit, nil
+}
+
+func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, input models.TagEditInput) (*models.Edit, error) {
+	currentUser := getCurrentUser(ctx)
+
+	fac := r.getRepoFactory(ctx)
+
+	existingEdit, err := fac.Edit().Find(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if existingEdit.UserID != currentUser.ID {
+		return nil, UnauthorizedUpdateErr
+	}
+
+	if existingEdit.UpdatedAt.IsValid() {
+		return nil, AlreadyUpdatedErr
+	}
+
+	err = fac.WithTxn(func() error {
+		p := edit.Tag(fac, existingEdit)
+		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+			return err
+		}
+
+		_, err := p.UpdateEdit()
+
+		return err
+	})
+
+	return existingEdit, err
 }
 
 func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.PerformerEditInput) (*models.Edit, error) {
@@ -169,6 +270,38 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	}
 
 	return newEdit, nil
+}
+
+func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID, input models.PerformerEditInput) (*models.Edit, error) {
+	currentUser := getCurrentUser(ctx)
+
+	fac := r.getRepoFactory(ctx)
+
+	existingEdit, err := fac.Edit().Find(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if existingEdit.UserID != currentUser.ID {
+		return nil, UnauthorizedUpdateErr
+	}
+
+	if existingEdit.UpdatedAt.IsValid() {
+		return nil, AlreadyUpdatedErr
+	}
+
+	err = fac.WithTxn(func() error {
+		p := edit.Performer(fac, existingEdit)
+		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+			return err
+		}
+
+		_, err := p.UpdateEdit()
+
+		return err
+	})
+
+	return existingEdit, err
 }
 
 func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteInput) (*models.Edit, error) {

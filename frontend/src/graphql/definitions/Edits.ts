@@ -1475,7 +1475,7 @@ export interface Edits_queryEdits_edits {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
-  updated: any;
+  updated: any | null;
   /**
    *  = Accepted - Rejected
    */

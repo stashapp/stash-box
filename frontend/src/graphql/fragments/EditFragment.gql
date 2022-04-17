@@ -33,14 +33,7 @@ fragment EditFragment on Edit {
   }
   target {
     ... on Tag {
-      id
-      name
-      description
-      deleted
-      category {
-        id
-        name
-      }
+      ...TagFragment
     }
     ... on Performer {
       ...PerformerFragment

@@ -136,6 +136,15 @@ type Mutation {
   """Propose a new tag or modification to a tag"""
   tagEdit(input: TagEditInput!): Edit! @hasRole(role: EDIT)
 
+  """Update a pending scene edit"""
+  sceneEditUpdate(id: ID!, input: SceneEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending performer edit"""
+  performerEditUpdate(id: ID!, input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending studio edit"""
+  studioEditUpdate(id: ID!, input: StudioEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending tag edit"""
+  tagEditUpdate(id: ID!, input: TagEditInput!): Edit! @hasRole(role: EDIT)
+
   """Vote to accept/reject an edit"""
   editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""

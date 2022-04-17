@@ -1475,7 +1475,7 @@ export interface Vote_editVote {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
-  updated: any;
+  updated: any | null;
   /**
    *  = Accepted - Rejected
    */

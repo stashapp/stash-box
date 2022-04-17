@@ -98,6 +98,7 @@ type ComplexityRoot struct {
 
 	Edit struct {
 		Applied      func(childComplexity int) int
+		Closed       func(childComplexity int) int
 		Comments     func(childComplexity int) int
 		Created      func(childComplexity int) int
 		Destructive  func(childComplexity int) int
@@ -176,6 +177,7 @@ type ComplexityRoot struct {
 		PerformerCreate      func(childComplexity int, input PerformerCreateInput) int
 		PerformerDestroy     func(childComplexity int, input PerformerDestroyInput) int
 		PerformerEdit        func(childComplexity int, input PerformerEditInput) int
+		PerformerEditUpdate  func(childComplexity int, id uuid.UUID, input PerformerEditInput) int
 		PerformerUpdate      func(childComplexity int, input PerformerUpdateInput) int
 		RegenerateAPIKey     func(childComplexity int, userID *uuid.UUID) int
 		RescindInviteCode    func(childComplexity int, code uuid.UUID) int
@@ -184,6 +186,7 @@ type ComplexityRoot struct {
 		SceneCreate          func(childComplexity int, input SceneCreateInput) int
 		SceneDestroy         func(childComplexity int, input SceneDestroyInput) int
 		SceneEdit            func(childComplexity int, input SceneEditInput) int
+		SceneEditUpdate      func(childComplexity int, id uuid.UUID, input SceneEditInput) int
 		SceneUpdate          func(childComplexity int, input SceneUpdateInput) int
 		SiteCreate           func(childComplexity int, input SiteCreateInput) int
 		SiteDestroy          func(childComplexity int, input SiteDestroyInput) int
@@ -191,6 +194,7 @@ type ComplexityRoot struct {
 		StudioCreate         func(childComplexity int, input StudioCreateInput) int
 		StudioDestroy        func(childComplexity int, input StudioDestroyInput) int
 		StudioEdit           func(childComplexity int, input StudioEditInput) int
+		StudioEditUpdate     func(childComplexity int, id uuid.UUID, input StudioEditInput) int
 		StudioUpdate         func(childComplexity int, input StudioUpdateInput) int
 		SubmitFingerprint    func(childComplexity int, input FingerprintSubmission) int
 		SubmitPerformerDraft func(childComplexity int, input PerformerDraftInput) int
@@ -201,6 +205,7 @@ type ComplexityRoot struct {
 		TagCreate            func(childComplexity int, input TagCreateInput) int
 		TagDestroy           func(childComplexity int, input TagDestroyInput) int
 		TagEdit              func(childComplexity int, input TagEditInput) int
+		TagEditUpdate        func(childComplexity int, id uuid.UUID, input TagEditInput) int
 		TagUpdate            func(childComplexity int, input TagUpdateInput) int
 		UserCreate           func(childComplexity int, input UserCreateInput) int
 		UserDestroy          func(childComplexity int, input UserDestroyInput) int
@@ -568,6 +573,7 @@ type EditResolver interface {
 
 	Created(ctx context.Context, obj *Edit) (*time.Time, error)
 	Updated(ctx context.Context, obj *Edit) (*time.Time, error)
+	Closed(ctx context.Context, obj *Edit) (*time.Time, error)
 }
 type EditCommentResolver interface {
 	User(ctx context.Context, obj *EditComment) (*User, error)
@@ -619,6 +625,10 @@ type MutationResolver interface {
 	PerformerEdit(ctx context.Context, input PerformerEditInput) (*Edit, error)
 	StudioEdit(ctx context.Context, input StudioEditInput) (*Edit, error)
 	TagEdit(ctx context.Context, input TagEditInput) (*Edit, error)
+	SceneEditUpdate(ctx context.Context, id uuid.UUID, input SceneEditInput) (*Edit, error)
+	PerformerEditUpdate(ctx context.Context, id uuid.UUID, input PerformerEditInput) (*Edit, error)
+	StudioEditUpdate(ctx context.Context, id uuid.UUID, input StudioEditInput) (*Edit, error)
+	TagEditUpdate(ctx context.Context, id uuid.UUID, input TagEditInput) (*Edit, error)
 	EditVote(ctx context.Context, input EditVoteInput) (*Edit, error)
 	EditComment(ctx context.Context, input EditCommentInput) (*Edit, error)
 	ApplyEdit(ctx context.Context, input ApplyEditInput) (*Edit, error)
@@ -912,6 +922,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Edit.Applied(childComplexity), true
+
+	case "Edit.closed":
+		if e.complexity.Edit.Closed == nil {
+			break
+		}
+
+		return e.complexity.Edit.Closed(childComplexity), true
 
 	case "Edit.comments":
 		if e.complexity.Edit.Comments == nil {
@@ -1392,6 +1409,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.PerformerEdit(childComplexity, args["input"].(PerformerEditInput)), true
 
+	case "Mutation.performerEditUpdate":
+		if e.complexity.Mutation.PerformerEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_performerEditUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PerformerEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(PerformerEditInput)), true
+
 	case "Mutation.performerUpdate":
 		if e.complexity.Mutation.PerformerUpdate == nil {
 			break
@@ -1488,6 +1517,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SceneEdit(childComplexity, args["input"].(SceneEditInput)), true
 
+	case "Mutation.sceneEditUpdate":
+		if e.complexity.Mutation.SceneEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sceneEditUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SceneEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(SceneEditInput)), true
+
 	case "Mutation.sceneUpdate":
 		if e.complexity.Mutation.SceneUpdate == nil {
 			break
@@ -1571,6 +1612,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.StudioEdit(childComplexity, args["input"].(StudioEditInput)), true
+
+	case "Mutation.studioEditUpdate":
+		if e.complexity.Mutation.StudioEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_studioEditUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.StudioEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(StudioEditInput)), true
 
 	case "Mutation.studioUpdate":
 		if e.complexity.Mutation.StudioUpdate == nil {
@@ -1691,6 +1744,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.TagEdit(childComplexity, args["input"].(TagEditInput)), true
+
+	case "Mutation.tagEditUpdate":
+		if e.complexity.Mutation.TagEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_tagEditUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TagEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(TagEditInput)), true
 
 	case "Mutation.tagUpdate":
 		if e.complexity.Mutation.TagUpdate == nil {
@@ -3748,15 +3813,14 @@ type Edit {
     status: VoteStatusEnum!
     applied: Boolean!
     created: Time!
-    updated: Time!
+    updated: Time
+    closed: Time
 }
 
 input EditInput {
   """Not required for create type"""
   id: ID
   operation: OperationEnum!
-  """Required for amending an existing edit"""
-  edit_id: ID
   """Only required for merge type"""
   merge_source_ids: [ID!]
   comment: String
@@ -5063,6 +5127,15 @@ type Mutation {
   """Propose a new tag or modification to a tag"""
   tagEdit(input: TagEditInput!): Edit! @hasRole(role: EDIT)
 
+  """Update a pending scene edit"""
+  sceneEditUpdate(id: ID!, input: SceneEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending performer edit"""
+  performerEditUpdate(id: ID!, input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending studio edit"""
+  studioEditUpdate(id: ID!, input: StudioEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending tag edit"""
+  tagEditUpdate(id: ID!, input: TagEditInput!): Edit! @hasRole(role: EDIT)
+
   """Vote to accept/reject an edit"""
   editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
@@ -5356,6 +5429,30 @@ func (ec *executionContext) field_Mutation_performerDestroy_args(ctx context.Con
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_performerEditUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 PerformerEditInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNPerformerEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerEditInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_performerEdit_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5476,6 +5573,30 @@ func (ec *executionContext) field_Mutation_sceneDestroy_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_sceneEditUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 SceneEditInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNSceneEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneEditInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_sceneEdit_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5578,6 +5699,30 @@ func (ec *executionContext) field_Mutation_studioDestroy_args(ctx context.Contex
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_studioEditUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 StudioEditInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNStudioEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioEditInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -5728,6 +5873,30 @@ func (ec *executionContext) field_Mutation_tagDestroy_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_tagEditUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 TagEditInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNTagEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagEditInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -7185,14 +7354,43 @@ func (ec *executionContext) _Edit_updated(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Edit_closed(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Edit().Closed(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EditComment_id(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
@@ -10077,6 +10275,270 @@ func (ec *executionContext) _Mutation_tagEdit(ctx context.Context, field graphql
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Mutation().TagEdit(rctx, args["input"].(TagEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_sceneEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_sceneEditUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SceneEditUpdate(rctx, args["id"].(uuid.UUID), args["input"].(SceneEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_performerEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_performerEditUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().PerformerEditUpdate(rctx, args["id"].(uuid.UUID), args["input"].(PerformerEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_studioEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_studioEditUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().StudioEditUpdate(rctx, args["id"].(uuid.UUID), args["input"].(StudioEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_tagEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_tagEditUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagEditUpdate(rctx, args["id"].(uuid.UUID), args["input"].(TagEditInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
@@ -21521,14 +21983,6 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "edit_id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("edit_id"))
-			it.EditID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "merge_source_ids":
 			var err error
 
@@ -25978,9 +26432,23 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Edit_updated(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "closed":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Edit_closed(ctx, field, obj)
 				return res
 			}
 
@@ -26735,6 +27203,46 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "tagEdit":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_tagEdit(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sceneEditUpdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sceneEditUpdate(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "performerEditUpdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_performerEditUpdate(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "studioEditUpdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_studioEditUpdate(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "tagEditUpdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_tagEditUpdate(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)

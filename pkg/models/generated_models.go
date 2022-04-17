@@ -91,8 +91,6 @@ type EditInput struct {
 	// Not required for create type
 	ID        *uuid.UUID    `json:"id"`
 	Operation OperationEnum `json:"operation"`
-	// Required for amending an existing edit
-	EditID *uuid.UUID `json:"edit_id"`
 	// Only required for merge type
 	MergeSourceIds []uuid.UUID `json:"merge_source_ids"`
 	Comment        *string     `json:"comment"`

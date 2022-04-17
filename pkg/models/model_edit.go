@@ -21,6 +21,7 @@ type Edit struct {
 	Data       types.JSONText  `db:"data" json:"data"`
 	CreatedAt  SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt  SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ClosedAt   SQLiteTimestamp `db:"closed_at" json:"closed_at"`
 }
 
 type EditComment struct {
@@ -48,7 +49,6 @@ func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditI
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),
 		CreatedAt:  SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:  SQLiteTimestamp{Timestamp: currentTime},
 	}
 
 	return ret
@@ -88,33 +88,33 @@ func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
 func (e *Edit) Accept() {
 	e.Status = VoteStatusEnumAccepted.String()
 	e.Applied = true
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (e *Edit) ImmediateAccept() {
 	e.Status = VoteStatusEnumImmediateAccepted.String()
 	e.Applied = true
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (e *Edit) ImmediateReject() {
 	e.Status = VoteStatusEnumImmediateRejected.String()
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (e *Edit) Reject() {
 	e.Status = VoteStatusEnumRejected.String()
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (e *Edit) Fail() {
 	e.Status = VoteStatusEnumFailed.String()
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (e *Edit) Cancel() {
 	e.Status = VoteStatusEnumCanceled.String()
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = SQLiteTimestamp{Timestamp: time.Now()}
 }
 
 func (e *Edit) SetData(data interface{}) error {

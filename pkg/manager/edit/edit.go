@@ -48,6 +48,17 @@ func (m *mutator) CreateEdit() (*models.Edit, error) {
 	return created, nil
 }
 
+func (m *mutator) UpdateEdit() (*models.Edit, error) {
+	m.edit.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	updated, err := m.fac.Edit().Update(*m.edit)
+	if err != nil {
+		return nil, err
+	}
+
+	m.edit = updated
+	return updated, nil
+}
+
 func (m *mutator) CreateComment(user *models.User, comment *string) error {
 	if comment != nil && len(*comment) > 0 {
 		commentID, _ := uuid.NewV4()
