@@ -1,5 +1,10 @@
 import { FC, useState, useMemo } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  FieldError,
+} from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
@@ -8,9 +13,9 @@ import {
   faExclamationTriangle,
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import { uniqBy } from "lodash-es";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 import {
   formatDuration,
   formatFuzzyDate,
@@ -39,15 +44,12 @@ const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
   scene: Scene;
-  initial?: Scene;
+  initial?: Partial<Scene>;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
 }
 
 const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
-  const initialStudio = initial?.studio ?? scene.studio ?? undefined;
-  const initialTags = initial?.tags ?? scene.tags;
-
   const {
     register,
     control,
@@ -64,10 +66,13 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
-      urls: initial?.urls ?? scene.urls ?? [],
+      urls: uniqBy(
+        [...(scene.urls ?? []), ...(initial?.urls ?? [])],
+        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
+      ),
       images: initial?.images ?? scene.images,
-      studio: initialStudio,
-      tags: initialTags,
+      studio: initial?.studio ?? scene.studio ?? undefined,
+      tags: initial?.tags ?? scene.tags,
       performers: (initial?.performers ?? scene.performers).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
@@ -88,11 +93,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     name: "performers",
     keyName: "key",
   });
-  const { replace: replaceTags } = useFieldArray({
-    control,
-    name: "tags",
-    keyName: "key",
-  });
 
   const fieldData = watch();
   const [oldSceneChanges, newSceneChanges] = useMemo(
@@ -103,9 +103,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
   const [isChanging, setChange] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState("details");
   const [file, setFile] = useState<File | undefined>();
-
-  const onTagChange = (selectedTags: Tag[]) =>
-    replaceTags(selectedTags.map((t) => ({ id: t.id, name: t.name })));
 
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneEditDetailsInput = {
@@ -253,7 +250,10 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     { error: errors.title?.message, tab: "details" },
     { error: errors.date?.message, tab: "details" },
     { error: errors.duration?.message, tab: "details" },
-    { error: errors.studio?.id?.message, tab: "details" },
+    {
+      error: (errors.studio as FieldError | undefined)?.message,
+      tab: "details",
+    },
     {
       error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
       tab: "links",
@@ -334,13 +334,20 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               className="studio-select col-6 mb-3"
             >
               <Form.Label>Studio</Form.Label>
-              <StudioSelect
-                initialStudio={initialStudio}
+              <Controller
+                name="studio"
                 control={control}
-                isClearable
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <StudioSelect
+                    initialStudio={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    isClearable
+                  />
+                )}
               />
               <Form.Control.Feedback type="invalid">
-                {errors.studio?.id?.message}
+                {(errors.studio as FieldError | undefined)?.message}
               </Form.Control.Feedback>
             </Form.Group>
 
@@ -383,10 +390,16 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
 
           <Form.Group className="mb-3">
             <Form.Label>Tags</Form.Label>
-            <TagSelect
-              tags={initialTags}
-              onChange={onTagChange}
-              menuPlacement="top"
+            <Controller
+              name="tags"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <TagSelect
+                  tags={value}
+                  onChange={onChange}
+                  menuPlacement="top"
+                />
+              )}
             />
           </Form.Group>
 

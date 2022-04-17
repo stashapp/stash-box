@@ -143,11 +143,13 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
           </h5>
           <PerformerForm
             performer={performer}
-            initialAliases={[
-              ...mergeSources.map((p) => p.name),
-              ...flatMap(mergeSources, (p) => p.aliases),
-            ]}
-            initialImages={flatMap(mergeSources, (i) => i.images)}
+            initial={{
+              aliases: [
+                ...mergeSources.map((p) => p.name),
+                ...flatMap(mergeSources, (p) => p.aliases),
+              ],
+              images: flatMap(mergeSources, (i) => i.images),
+            }}
             callback={doUpdate}
             changeType="merge"
             saving={saving}

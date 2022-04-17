@@ -55,7 +55,7 @@ export interface TagDetails {
 
 export type OldTagDetails = TargetOldDetails<TagDetails>;
 
-const renderTagDetails = (
+export const renderTagDetails = (
   tagDetails: TagDetails,
   oldTagDetails: OldTagDetails | undefined,
   showDiff: boolean
@@ -86,15 +86,9 @@ const renderTagDetails = (
       showDiff={showDiff}
     />
     <ChangeRow
-      name="Added Aliases"
+      name="Aliases"
       newValue={tagDetails.added_aliases?.join(", ")}
-      oldValue=""
-      showDiff={showDiff}
-    />
-    <ChangeRow
-      name="Removed Aliases"
-      newValue={tagDetails.removed_aliases?.join(", ")}
-      oldValue=""
+      oldValue={tagDetails.removed_aliases?.join(", ")}
       showDiff={showDiff}
     />
   </>
