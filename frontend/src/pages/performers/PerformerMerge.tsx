@@ -145,9 +145,9 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
             performer={performer}
             initial={{
               aliases: [
-                ...mergeSources.map((p) => p.name),
+                ...mergeSources.map((p) => p.name.trim()),
                 ...flatMap(mergeSources, (p) => p.aliases),
-              ],
+              ].filter((name) => name !== performer.name.trim()),
               images: flatMap(mergeSources, (i) => i.images),
             }}
             callback={doUpdate}
