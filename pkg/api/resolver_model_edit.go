@@ -200,24 +200,28 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 		if err != nil {
 			return nil, err
 		}
+		tagData.New.EditID = obj.ID
 		ret = tagData.New
 	case models.TargetTypeEnumPerformer:
 		performerData, err := obj.GetPerformerData()
 		if err != nil {
 			return nil, err
 		}
+		performerData.New.EditID = obj.ID
 		ret = performerData.New
 	case models.TargetTypeEnumStudio:
 		studioData, err := obj.GetStudioData()
 		if err != nil {
 			return nil, err
 		}
+		studioData.New.EditID = obj.ID
 		ret = studioData.New
 	case models.TargetTypeEnumScene:
 		sceneData, err := obj.GetSceneData()
 		if err != nil {
 			return nil, err
 		}
+		sceneData.New.EditID = obj.ID
 		ret = sceneData.New
 	}
 

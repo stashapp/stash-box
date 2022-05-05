@@ -424,13 +424,18 @@ type ComplexityRoot struct {
 		Director            func(childComplexity int) int
 		DraftID             func(childComplexity int) int
 		Duration            func(childComplexity int) int
+		Fingerprints        func(childComplexity int) int
+		Images              func(childComplexity int) int
+		Performers          func(childComplexity int) int
 		RemovedFingerprints func(childComplexity int) int
 		RemovedImages       func(childComplexity int) int
 		RemovedPerformers   func(childComplexity int) int
 		RemovedTags         func(childComplexity int) int
 		RemovedUrls         func(childComplexity int) int
 		Studio              func(childComplexity int) int
+		Tags                func(childComplexity int) int
 		Title               func(childComplexity int) int
+		Urls                func(childComplexity int) int
 	}
 
 	Site struct {
@@ -761,6 +766,12 @@ type SceneEditResolver interface {
 	RemovedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
 	AddedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
 	RemovedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
+
+	Urls(ctx context.Context, obj *SceneEdit) ([]*URL, error)
+	Performers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
+	Tags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
+	Images(ctx context.Context, obj *SceneEdit) ([]*Image, error)
+	Fingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
 }
 type SiteResolver interface {
 	Description(ctx context.Context, obj *Site) (*string, error)
@@ -3025,6 +3036,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneEdit.Duration(childComplexity), true
 
+	case "SceneEdit.fingerprints":
+		if e.complexity.SceneEdit.Fingerprints == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Fingerprints(childComplexity), true
+
+	case "SceneEdit.images":
+		if e.complexity.SceneEdit.Images == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Images(childComplexity), true
+
+	case "SceneEdit.performers":
+		if e.complexity.SceneEdit.Performers == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Performers(childComplexity), true
+
 	case "SceneEdit.removed_fingerprints":
 		if e.complexity.SceneEdit.RemovedFingerprints == nil {
 			break
@@ -3067,12 +3099,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneEdit.Studio(childComplexity), true
 
+	case "SceneEdit.tags":
+		if e.complexity.SceneEdit.Tags == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Tags(childComplexity), true
+
 	case "SceneEdit.title":
 		if e.complexity.SceneEdit.Title == nil {
 			break
 		}
 
 		return e.complexity.SceneEdit.Title(childComplexity), true
+
+	case "SceneEdit.urls":
+		if e.complexity.SceneEdit.Urls == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Urls(childComplexity), true
 
 	case "Site.created":
 		if e.complexity.Site.Created == nil {
@@ -4521,6 +4567,12 @@ type SceneEdit {
   director: String
   code: String
   draft_id: ID
+
+  urls: [URL!]!
+  performers: [PerformerAppearance!]!
+  tags: [Tag!]!
+  images: [Image!]!
+  fingerprints: [Fingerprint!]!
 }
 
 type QueryScenesResultType {
@@ -17585,6 +17637,181 @@ func (ec *executionContext) _SceneEdit_draft_id(ctx context.Context, field graph
 	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _SceneEdit_urls(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Urls(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*URL)
+	fc.Result = res
+	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_performers(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Performers(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*PerformerAppearance)
+	fc.Result = res
+	return ec.marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_tags(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Tags(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Tag)
+	fc.Result = res
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_images(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Images(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_fingerprints(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Fingerprints(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Fingerprint)
+	fc.Result = res
+	return ec.marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Site_id(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -30140,6 +30367,106 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 
 			out.Values[i] = innerFunc(ctx)
 
+		case "urls":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_urls(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "performers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_performers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "tags":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_tags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "images":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_images(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "fingerprints":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_fingerprints(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

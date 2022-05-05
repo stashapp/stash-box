@@ -278,6 +278,7 @@ func (p *EditScenes) Add(o interface{}) {
 }
 
 type TagEdit struct {
+	EditID         uuid.UUID  `json:"-"`
 	Name           *string    `json:"name,omitempty"`
 	Description    *string    `json:"description,omitempty"`
 	AddedAliases   []string   `json:"added_aliases,omitempty"`
@@ -296,6 +297,7 @@ type TagEditData struct {
 func (PerformerEdit) IsEditDetails() {}
 
 type PerformerEdit struct {
+	EditID            uuid.UUID           `json:"-"`
 	Name              *string             `json:"name,omitempty"`
 	Disambiguation    *string             `json:"disambiguation,omitempty"`
 	AddedAliases      []string            `json:"added_aliases,omitempty"`
@@ -335,7 +337,8 @@ type PerformerEditData struct {
 }
 
 type StudioEdit struct {
-	Name *string `json:"name"`
+	EditID uuid.UUID `json:"-"`
+	Name   *string   `json:"name"`
 	// Added and modified URLs
 	AddedUrls     []*URL      `json:"added_urls,omitempty"`
 	RemovedUrls   []*URL      `json:"removed_urls,omitempty"`
@@ -353,6 +356,7 @@ type StudioEditData struct {
 }
 
 type SceneEdit struct {
+	EditID              uuid.UUID                   `json:"-"`
 	Title               *string                     `json:"title,omitempty"`
 	Details             *string                     `json:"details,omitempty"`
 	AddedUrls           []*URL                      `json:"added_urls,omitempty"`

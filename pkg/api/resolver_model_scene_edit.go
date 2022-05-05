@@ -2,10 +2,12 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type sceneEditResolver struct{ *Resolver }
@@ -111,4 +113,171 @@ func (r *sceneEditResolver) AddedFingerprints(ctx context.Context, obj *models.S
 
 func (r *sceneEditResolver) RemovedFingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
 	return r.fingerprintList(ctx, obj.RemovedFingerprints)
+}
+
+func (r *sceneEditResolver) Fingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
+	var ret []*models.Fingerprint
+	for _, fp := range obj.AddedFingerprints {
+		ret = append(ret, &models.Fingerprint{
+			Hash:          fp.Hash,
+			Algorithm:     fp.Algorithm,
+			Duration:      fp.Duration,
+			Submissions:   0,
+			Created:       time.Now(),
+			Updated:       time.Now(),
+			UserSubmitted: true,
+		})
+	}
+
+	return ret, nil
+}
+
+func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Image()
+	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	currentImages, err := qb.FindBySceneID(*sceneID)
+	if err != nil {
+		return nil, err
+	}
+	var imageIds []uuid.UUID
+	for _, image := range currentImages {
+		imageIds = append(imageIds, image.ID)
+	}
+	utils.ProcessSlice(imageIds, obj.AddedImages, obj.RemovedImages)
+
+	images, errs := qb.FindByIds(imageIds)
+	return images, errs[0]
+}
+
+func (r *sceneEditResolver) Tags(ctx context.Context, obj *models.SceneEdit) ([]*models.Tag, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Tag()
+	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	currentTags, err := qb.FindBySceneID(*sceneID)
+	if err != nil {
+		return nil, err
+	}
+	var tagIds []uuid.UUID
+	for _, tag := range currentTags {
+		tagIds = append(tagIds, tag.ID)
+	}
+	utils.ProcessSlice(tagIds, obj.AddedTags, obj.RemovedTags)
+
+	tags, errs := qb.FindByIds(tagIds)
+	return tags, errs[0]
+}
+
+func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdit) ([]*models.PerformerAppearance, error) {
+	fac := r.getRepoFactory(ctx)
+	pqb := fac.Performer()
+
+	// Pointers aren't compared by value, so we have to use a temporary struct
+	type appearance struct {
+		ID uuid.UUID
+		As string
+	}
+
+	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	currentPerformers, err := fac.Scene().GetPerformers(*sceneID)
+	if err != nil {
+		return nil, err
+	}
+	var appearances []appearance
+	for _, a := range currentPerformers {
+		appearances = append(appearances, appearance{
+			As: a.As.String,
+			ID: a.PerformerID,
+		})
+	}
+	var added []appearance
+	for _, a := range obj.AddedPerformers {
+		as := ""
+		if a.As != nil {
+			as = *a.As
+		}
+		appearances = append(appearances, appearance{
+			As: as,
+			ID: a.PerformerID,
+		})
+	}
+	var removed []appearance
+	for _, a := range obj.RemovedPerformers {
+		as := ""
+		if a.As != nil {
+			as = *a.As
+		}
+		appearances = append(appearances, appearance{
+			As: as,
+			ID: a.PerformerID,
+		})
+	}
+
+	utils.ProcessSlice(appearances, added, removed)
+
+	var performerAppearances []*models.PerformerAppearance
+	for _, v := range appearances {
+		performer, err := pqb.Find(v.ID)
+		if err != nil {
+			return nil, err
+		}
+		alias := &v.As
+		if v.As == "" {
+			alias = nil
+		}
+		performerAppearances = append(performerAppearances, &models.PerformerAppearance{
+			Performer: performer,
+			As:        alias,
+		})
+	}
+
+	return performerAppearances, nil
+}
+
+func (r *sceneEditResolver) Urls(ctx context.Context, obj *models.SceneEdit) ([]*models.URL, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
+	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	currentURLs, err := qb.GetURLs(*sceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	var urls []models.URL
+	for _, v := range currentURLs {
+		urls = append(urls, *v)
+	}
+	var added []models.URL
+	for _, v := range obj.AddedUrls {
+		added = append(added, *v)
+	}
+	var removed []models.URL
+	for _, v := range obj.RemovedUrls {
+		removed = append(removed, *v)
+	}
+
+	utils.ProcessSlice(urls, added, removed)
+
+	var ret []*models.URL
+	for _, v := range urls {
+		ret = append(ret, &v)
+	}
+
+	return ret, nil
 }

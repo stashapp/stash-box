@@ -24,3 +24,21 @@ func SliceCompare[T comparable](subject []T, against []T) (added []T, missing []
 
 	return
 }
+
+func ProcessSlice[T comparable](current []T, added []T, removed []T) {
+	for _, v := range removed {
+		for i, k := range current {
+			if v == k {
+				current[i] = current[len(current)-1]
+				current = current[:len(current)-1]
+				break
+			}
+		}
+	}
+
+	for _, v := range added {
+		if !Includes(current, v) {
+			current = append(current, v)
+		}
+	}
+}

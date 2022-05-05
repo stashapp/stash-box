@@ -165,8 +165,8 @@ type SceneEdit {
   urls: [URL!]!
   performers: [PerformerAppearance!]!
   tags: [Tag!]!
-  images: [Images!]!
-  fingerprints: [Fingerprints!]!
+  images: [Image!]!
+  fingerprints: [Fingerprint!]!
 }
 
 type QueryScenesResultType {
