@@ -38,13 +38,14 @@ import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
+import { InitialScene } from './types';
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
   scene: Scene;
-  initial?: Partial<Scene>;
+  initial?: InitialScene;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
 }

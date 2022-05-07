@@ -72,7 +72,7 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if existingEdit.UpdatedAt.IsValid() {
+	if existingEdit.UpdatedAt.Timestamp != existingEdit.CreatedAt.Timestamp {
 		return nil, AlreadyUpdatedErr
 	}
 

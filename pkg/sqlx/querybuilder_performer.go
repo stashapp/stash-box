@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash-box/pkg/edit"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 
@@ -739,66 +740,107 @@ func (qb *performerQueryBuilder) ApplyEdit(performer *models.Performer, create b
 	return updatedPerformer, err
 }
 
+func (qb *performerQueryBuilder) GetEditAliases(id uuid.UUID, data *models.PerformerEdit) ([]string, error) {
+	currentAliases, err := qb.GetAliases(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var aliases []string
+	for _, v := range currentAliases {
+		aliases = append(aliases, v.Alias)
+	}
+
+	return utils.ProcessSlice(aliases, data.AddedAliases, data.RemovedAliases), nil
+}
+
 func (qb *performerQueryBuilder) updateAliasesFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	currentAliases, err := qb.GetAliases(performer.ID)
+	aliases, err := qb.GetEditAliases(performer.ID, data.New)
 	if err != nil {
 		return err
 	}
 
-	newAliases := models.CreatePerformerAliases(performer.ID, data.New.AddedAliases)
-	oldAliases := models.CreatePerformerAliases(performer.ID, data.New.RemovedAliases)
-	models.ProcessSlice(&currentAliases, &newAliases, &oldAliases, "alias")
+	newAliases := models.CreatePerformerAliases(performer.ID, aliases)
+	return qb.UpdateAliases(performer.ID, newAliases)
+}
 
-	return qb.UpdateAliases(performer.ID, currentAliases)
+func (qb *performerQueryBuilder) GetEditTattoos(id uuid.UUID, data *models.PerformerEdit) ([]*models.BodyModification, error) {
+	currentTattoos, err := qb.GetTattoos(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return edit.MergeBodyMods(currentTattoos, data.AddedTattoos, data.RemovedTattoos), nil
 }
 
 func (qb *performerQueryBuilder) updateTattoosFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	currentTattoos, err := qb.GetTattoos(performer.ID)
+	tattoos, err := qb.GetEditTattoos(performer.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newTattoos := models.CreatePerformerBodyMods(performer.ID, data.New.AddedTattoos)
-	oldTattoos := models.CreatePerformerBodyMods(performer.ID, data.New.RemovedTattoos)
-	models.ProcessSlice(&currentTattoos, &newTattoos, &oldTattoos, "tattoo")
 
-	return qb.UpdateTattoos(performer.ID, currentTattoos)
+	newTattoos := models.CreatePerformerBodyMods(performer.ID, tattoos)
+	return qb.UpdateTattoos(performer.ID, newTattoos)
+}
+
+func (qb *performerQueryBuilder) GetEditPiercings(id uuid.UUID, data *models.PerformerEdit) ([]*models.BodyModification, error) {
+	currentPiercings, err := qb.GetPiercings(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return edit.MergeBodyMods(currentPiercings, data.AddedPiercings, data.RemovedPiercings), nil
 }
 
 func (qb *performerQueryBuilder) updatePiercingsFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	currentPiercings, err := qb.GetPiercings(performer.ID)
+	piercings, err := qb.GetEditPiercings(performer.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newPiercings := models.CreatePerformerBodyMods(performer.ID, data.New.AddedPiercings)
-	oldPiercings := models.CreatePerformerBodyMods(performer.ID, data.New.RemovedPiercings)
-	models.ProcessSlice(&currentPiercings, &newPiercings, &oldPiercings, "piercing")
 
-	return qb.UpdatePiercings(performer.ID, currentPiercings)
+	newPiercings := models.CreatePerformerBodyMods(performer.ID, piercings)
+	return qb.UpdatePiercings(performer.ID, newPiercings)
+}
+
+func (qb *performerQueryBuilder) GetEditURLs(id uuid.UUID, data *models.PerformerEdit) ([]*models.URL, error) {
+	currentURLs, err := qb.GetURLs(id)
+	if err != nil {
+		return nil, err
+	}
+	urls := edit.MergeURLs(currentURLs, data.AddedUrls, data.RemovedUrls)
+	return urls, nil
 }
 
 func (qb *performerQueryBuilder) updateURLsFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	urls, err := qb.GetURLs(performer.ID)
-	currentUrls := models.CreatePerformerURLs(performer.ID, urls)
+	urls, err := qb.GetEditURLs(performer.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newUrls := models.CreatePerformerURLs(performer.ID, data.New.AddedUrls)
-	oldUrls := models.CreatePerformerURLs(performer.ID, data.New.RemovedUrls)
-	models.ProcessSlice(&currentUrls, &newUrls, &oldUrls, "URL")
 
-	return qb.UpdateUrls(performer.ID, currentUrls)
+	newURLs := models.CreatePerformerURLs(performer.ID, urls)
+	return qb.UpdateUrls(performer.ID, newURLs)
+}
+
+func (qb *performerQueryBuilder) GetEditImages(id uuid.UUID, data *models.PerformerEdit) ([]uuid.UUID, error) {
+	currentImages, err := qb.GetImages(id)
+	if err != nil {
+		return nil, err
+	}
+	var imageIds []uuid.UUID
+	for _, v := range currentImages {
+		imageIds = append(imageIds, v.ImageID)
+	}
+	return utils.ProcessSlice(imageIds, data.AddedImages, data.RemovedImages), nil
 }
 
 func (qb *performerQueryBuilder) updateImagesFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	currentImages, err := qb.GetImages(performer.ID)
+	ids, err := qb.GetEditImages(performer.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newImages := models.CreatePerformerImages(performer.ID, data.New.AddedImages)
-	oldImages := models.CreatePerformerImages(performer.ID, data.New.RemovedImages)
-	models.ProcessSlice(&currentImages, &newImages, &oldImages, "image")
 
-	return qb.UpdateImages(performer.ID, currentImages)
+	images := models.CreatePerformerImages(performer.ID, ids)
+	return qb.UpdateImages(performer.ID, images)
 }
 
 func (qb *performerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error) {

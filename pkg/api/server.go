@@ -180,7 +180,7 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	r.Mount("/image", imageRoutes{}.Routes())
 
 	// Serve the web app
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
 			_, _ = w.Write(index)

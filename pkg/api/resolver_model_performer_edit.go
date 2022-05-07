@@ -61,3 +61,61 @@ func (r *performerEditResolver) AddedImages(ctx context.Context, obj *models.Per
 func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
 	return imageList(ctx, obj.RemovedImages)
 }
+
+func (r *performerEditResolver) Images(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
+	fac := r.getRepoFactory(ctx)
+	id, err := fac.Edit().FindPerformerID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	imageIds, err := fac.Performer().GetEditImages(*id, obj)
+	if err != nil {
+		return nil, err
+	}
+	images, errs := fac.Image().FindByIds(imageIds)
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+	return images, nil
+}
+
+func (r *performerEditResolver) Urls(ctx context.Context, obj *models.PerformerEdit) ([]*models.URL, error) {
+	fac := r.getRepoFactory(ctx)
+	id, err := fac.Edit().FindPerformerID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	return fac.Performer().GetEditURLs(*id, obj)
+}
+
+func (r *performerEditResolver) Aliases(ctx context.Context, obj *models.PerformerEdit) ([]string, error) {
+	fac := r.getRepoFactory(ctx)
+	id, err := fac.Edit().FindPerformerID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	return fac.Performer().GetEditAliases(*id, obj)
+}
+
+func (r *performerEditResolver) Tattoos(ctx context.Context, obj *models.PerformerEdit) ([]*models.BodyModification, error) {
+	fac := r.getRepoFactory(ctx)
+	id, err := fac.Edit().FindPerformerID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	return fac.Performer().GetEditTattoos(*id, obj)
+}
+
+func (r *performerEditResolver) Piercings(ctx context.Context, obj *models.PerformerEdit) ([]*models.BodyModification, error) {
+	fac := r.getRepoFactory(ctx)
+	id, err := fac.Edit().FindPerformerID(obj.EditID)
+	if err != nil {
+		return nil, err
+	}
+
+	return fac.Performer().GetEditPiercings(*id, obj)
+}

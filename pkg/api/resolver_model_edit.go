@@ -33,17 +33,14 @@ func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Tim
 }
 
 func (r *editResolver) Updated(ctx context.Context, obj *models.Edit) (*time.Time, error) {
-	if !obj.UpdatedAt.IsValid() {
-		return nil, nil
-	}
 	return &obj.UpdatedAt.Timestamp, nil
 }
 
 func (r *editResolver) Closed(ctx context.Context, obj *models.Edit) (*time.Time, error) {
-	if !obj.ClosedAt.IsValid() {
+	if !obj.ClosedAt.Valid {
 		return nil, nil
 	}
-	return &obj.ClosedAt.Timestamp, nil
+	return &obj.ClosedAt.Time, nil
 }
 
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {

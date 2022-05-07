@@ -30,7 +30,10 @@ import {
   PerformerEditUpdateVariables,
 } from "../definitions/PerformerEditUpdate";
 import { TagEdit, TagEditVariables } from "../definitions/TagEdit";
-import { TagEditUpdate, TagEditUpdateVariables } from "../definitions/TagEditUpdate";
+import {
+  TagEditUpdate,
+  TagEditUpdateVariables,
+} from "../definitions/TagEditUpdate";
 import { AddScene, AddSceneVariables } from "../definitions/AddScene";
 import { DeleteScene, DeleteSceneVariables } from "../definitions/DeleteScene";
 import { UpdateScene, UpdateSceneVariables } from "../definitions/UpdateScene";
@@ -69,9 +72,15 @@ import {
 } from "../definitions/RevokeInvite";
 import { EditComment, EditCommentVariables } from "../definitions/EditComment";
 import { StudioEdit, StudioEditVariables } from "../definitions/StudioEdit";
-import { StudioEditUpdate, StudioEditUpdateVariables } from "../definitions/StudioEditUpdate";
+import {
+  StudioEditUpdate,
+  StudioEditUpdateVariables,
+} from "../definitions/StudioEditUpdate";
 import { SceneEdit, SceneEditVariables } from "../definitions/SceneEdit";
-import { SceneEditUpdate, SceneEditUpdateVariables } from "../definitions/SceneEditUpdate";
+import {
+  SceneEditUpdate,
+  SceneEditUpdateVariables,
+} from "../definitions/SceneEditUpdate";
 import { Vote, VoteVariables } from "../definitions/Vote";
 import { AddSite, AddSiteVariables } from "../definitions/AddSite";
 import { DeleteSite, DeleteSiteVariables } from "../definitions/DeleteSite";
@@ -168,7 +177,10 @@ export const usePerformerEdit = (
 ) => useMutation(PerformerEditMutation, options);
 
 export const usePerformerEditUpdate = (
-  options?: MutationHookOptions<PerformerEditUpdate, PerformerEditUpdateVariables>
+  options?: MutationHookOptions<
+    PerformerEditUpdate,
+    PerformerEditUpdateVariables
+  >
 ) => useMutation(PerformerEditUpdateMutation, options);
 
 export const useAddScene = (

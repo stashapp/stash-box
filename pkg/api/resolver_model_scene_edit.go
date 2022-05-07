@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type sceneEditResolver struct{ *Resolver }
@@ -140,106 +139,60 @@ func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) (
 		return nil, err
 	}
 
-	currentImages, err := qb.FindBySceneID(*sceneID)
+	imageIds, err := fac.Scene().GetEditImages(*sceneID, obj)
 	if err != nil {
 		return nil, err
 	}
-	var imageIds []uuid.UUID
-	for _, image := range currentImages {
-		imageIds = append(imageIds, image.ID)
-	}
-	utils.ProcessSlice(imageIds, obj.AddedImages, obj.RemovedImages)
 
 	images, errs := qb.FindByIds(imageIds)
-	return images, errs[0]
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+	return images, nil
 }
 
 func (r *sceneEditResolver) Tags(ctx context.Context, obj *models.SceneEdit) ([]*models.Tag, error) {
 	fac := r.getRepoFactory(ctx)
-	qb := fac.Tag()
 	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
 	if err != nil {
 		return nil, err
 	}
 
-	currentTags, err := qb.FindBySceneID(*sceneID)
+	tagIds, err := fac.Scene().GetEditTags(*sceneID, obj)
 	if err != nil {
 		return nil, err
 	}
-	var tagIds []uuid.UUID
-	for _, tag := range currentTags {
-		tagIds = append(tagIds, tag.ID)
-	}
-	utils.ProcessSlice(tagIds, obj.AddedTags, obj.RemovedTags)
 
-	tags, errs := qb.FindByIds(tagIds)
-	return tags, errs[0]
+	tags, errs := fac.Tag().FindByIds(tagIds)
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+	return tags, nil
 }
 
 func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdit) ([]*models.PerformerAppearance, error) {
 	fac := r.getRepoFactory(ctx)
 	pqb := fac.Performer()
 
-	// Pointers aren't compared by value, so we have to use a temporary struct
-	type appearance struct {
-		ID uuid.UUID
-		As string
-	}
-
 	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
 	if err != nil {
 		return nil, err
 	}
 
-	currentPerformers, err := fac.Scene().GetPerformers(*sceneID)
+	appearances, err := fac.Scene().GetEditPerformers(*sceneID, obj)
 	if err != nil {
 		return nil, err
 	}
-	var appearances []appearance
-	for _, a := range currentPerformers {
-		appearances = append(appearances, appearance{
-			As: a.As.String,
-			ID: a.PerformerID,
-		})
-	}
-	var added []appearance
-	for _, a := range obj.AddedPerformers {
-		as := ""
-		if a.As != nil {
-			as = *a.As
-		}
-		appearances = append(appearances, appearance{
-			As: as,
-			ID: a.PerformerID,
-		})
-	}
-	var removed []appearance
-	for _, a := range obj.RemovedPerformers {
-		as := ""
-		if a.As != nil {
-			as = *a.As
-		}
-		appearances = append(appearances, appearance{
-			As: as,
-			ID: a.PerformerID,
-		})
-	}
-
-	utils.ProcessSlice(appearances, added, removed)
 
 	var performerAppearances []*models.PerformerAppearance
-	for _, v := range appearances {
-		performer, err := pqb.Find(v.ID)
+	for i := range appearances {
+		performer, err := pqb.Find(appearances[i].PerformerID)
 		if err != nil {
 			return nil, err
 		}
-		alias := &v.As
-		if v.As == "" {
-			alias = nil
-		}
 		performerAppearances = append(performerAppearances, &models.PerformerAppearance{
 			Performer: performer,
-			As:        alias,
+			As:        appearances[i].As,
 		})
 	}
 
@@ -248,36 +201,10 @@ func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdi
 
 func (r *sceneEditResolver) Urls(ctx context.Context, obj *models.SceneEdit) ([]*models.URL, error) {
 	fac := r.getRepoFactory(ctx)
-	qb := fac.Scene()
 	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
 	if err != nil {
 		return nil, err
 	}
 
-	currentURLs, err := qb.GetURLs(*sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	var urls []models.URL
-	for _, v := range currentURLs {
-		urls = append(urls, *v)
-	}
-	var added []models.URL
-	for _, v := range obj.AddedUrls {
-		added = append(added, *v)
-	}
-	var removed []models.URL
-	for _, v := range obj.RemovedUrls {
-		removed = append(removed, *v)
-	}
-
-	utils.ProcessSlice(urls, added, removed)
-
-	var ret []*models.URL
-	for _, v := range urls {
-		ret = append(ret, &v)
-	}
-
-	return ret, nil
+	return fac.Scene().GetEditURLs(*sceneID, obj)
 }

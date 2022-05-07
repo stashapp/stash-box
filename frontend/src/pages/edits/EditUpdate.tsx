@@ -1,111 +1,43 @@
-import { FC, useContext, useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { FC, useContext } from "react";
+import { useParams } from "react-router-dom";
 
 import {
-  useEdit,
-  useStudioEditUpdate,
-  useSceneEditUpdate,
-  usePerformerEditUpdate,
-  useTagEditUpdate,
-  SceneFragment,
-  StudioFragment,
-  PerformerFragment,
-  TagFragment,
-  SceneEditDetailsInput,
+  useEditUpdate,
 } from "src/graphql";
-import { createHref, isPerformer, isStudio, isTag, isScene, isSceneDetails, parseFuzzyDate } from 'src/utils';
-import { ROUTE_EDIT } from "src/constants";
-import { Edit_findEdit as Edit } from "src/graphql/definitions/Edit";
+import {
+  isPerformer,
+  isStudio,
+  isTag,
+  isScene,
+} from "src/utils";
 import AuthContext from "src/AuthContext";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import SceneForm from "src/pages/scenes/sceneForm";
-
-const SceneUpdate: FC<{ edit: Edit }> = ({ edit }) => {
-  const history = useHistory();
-  const [submissionError, setSubmissionError] = useState("");
-  const [insertSceneEdit, { loading: saving }] = useSceneEditUpdate({
-    onCompleted: (result) => {
-      if (submissionError) setSubmissionError("");
-      if (result.sceneEditUpdate.id)
-        history.push(createHref(ROUTE_EDIT, result.sceneEditUpdate));
-    },
-    onError: (error) => setSubmissionError(error.message),
-  });
-
-  if (!isScene(edit.target) || !isSceneDetails(edit.details))
-    return null;
-
-  const doUpdate = (updateData: SceneEditDetailsInput, editNote: string) => {
-    insertSceneEdit({
-      variables: {
-        id: edit.id,
-        sceneData: {
-          edit: {
-            id: edit.target?.id,
-            operation: edit.operation,
-            comment: editNote,
-          },
-          details: updateData,
-        },
-      },
-    });
-  };
-
-  const initial = {
-    ...edit.details,
-    date: parseFuzzyDate(edit.details.date),
-  };
-
-  return (
-    <div>
-      <h3>
-        Edit scene{" "}
-        <i>
-          <b>{edit.target.title}</b>
-        </i>
-      </h3>
-      <hr />
-      <SceneForm scene={edit.target} initial={initial} callback={doUpdate} saving={saving} />
-      {submissionError && (
-        <div className="text-danger text-end col-9">
-          Error: {submissionError}
-        </div>
-      )}
-    </div>
-  );
-}
-
-const PerformerUpdate: FC<{ edit: Edit, target: PerformerFragment }> = ({ edit, target }) => {
-  return <div></div>
-}
-
-const StudioUpdate: FC<{ edit: Edit, target: StudioFragment }> = ({ edit, target }) => {
-  return <div></div>
-}
-
-const TagUpdate: FC<{ edit: Edit, target: TagFragment }> = ({ edit, target }) => {
-  return <div></div>
-}
+import { SceneEditUpdate } from "src/pages/scenes/SceneEditUpdate";
+import { PerformerEditUpdate } from "src/pages/performers/PerformerEditUpdate";
+import { TagEditUpdate } from "src/pages/tags/TagEditUpdate";
+import { StudioEditUpdate } from "src/pages/studios/StudioEditUpdate";
 
 const EditComponent: FC = () => {
   const auth = useContext(AuthContext);
   const { id } = useParams<{ id: string }>();
-  const { data, loading } = useEdit({ id });
+  const { data, loading } = useEditUpdate({ id });
 
   if (loading) return <LoadingIndicator message="Loading..." />;
 
   const edit = data?.findEdit;
   if (!edit) return <ErrorMessage error="Failed to load edit." />;
-  if (edit.user?.id != auth.user?.id) return <ErrorMessage error="Only the creator can amend edits." />;
+  if (edit.user?.id != auth.user?.id)
+    return <ErrorMessage error="Only the creator can amend edits." />;
+  if (edit.created !== edit.updated)
+    return <ErrorMessage error="Edits can only be amended once" />;
 
   if (isScene(edit.target))
-    return <SceneUpdate edit={edit} target={edit.target} />
+    return <SceneEditUpdate edit={edit} />;
   if (isPerformer(edit.target))
-    return <PerformerUpdate edit={edit} target={edit.target} />
-  if (isTag(edit.target))
-    return <TagUpdate edit={edit} target={edit.target} />
+    return <PerformerEditUpdate edit={edit} />;
+  if (isTag(edit.target)) return <TagEditUpdate edit={edit} />;
   if (isStudio(edit.target))
-    return <StudioUpdate edit={edit} target={edit.target} />
+    return <StudioEditUpdate edit={edit} />;
 
   return null;
 };

@@ -1,7 +1,11 @@
 import { FC } from "react";
 import { Route, Switch } from "react-router-dom";
 
-import { ROUTE_EDITS, ROUTE_EDIT, ROUTE_EDIT_UPDATE } from "src/constants/route";
+import {
+  ROUTE_EDITS,
+  ROUTE_EDIT,
+  ROUTE_EDIT_UPDATE,
+} from "src/constants/route";
 
 import Edit from "./Edit";
 import Edits from "./Edits";

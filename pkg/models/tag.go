@@ -21,4 +21,5 @@ type TagRepo interface {
 	Query(input TagQueryInput) ([]*Tag, int, error)
 	GetAliases(id uuid.UUID) ([]string, error)
 	ApplyEdit(edit Edit, operation OperationEnum, tag *Tag) (*Tag, error)
+	GetEditAliases(id uuid.UUID, data *TagEdit) ([]string, error)
 }

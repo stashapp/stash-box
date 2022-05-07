@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/stashapp/stash-box/pkg/edit"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -355,32 +356,56 @@ func (qb *studioQueryBuilder) applyModifyEdit(studio *models.Studio, data *model
 		return nil, err
 	}
 
-	urls, err := qb.GetURLs(updatedStudio.ID)
-	currentUrls := models.CreateStudioURLs(updatedStudio.ID, urls)
-	if err != nil {
-		return nil, err
-	}
-	newUrls := models.CreateStudioURLs(updatedStudio.ID, data.New.AddedUrls)
-	oldUrls := models.CreateStudioURLs(updatedStudio.ID, data.New.RemovedUrls)
-	models.ProcessSlice(&currentUrls, &newUrls, &oldUrls, "URL")
-
-	if err := qb.UpdateURLs(updatedStudio.ID, currentUrls); err != nil {
+	if err := qb.updateURLsFromEdit(updatedStudio, data); err != nil {
 		return nil, err
 	}
 
-	currentImages, err := qb.GetImages(updatedStudio.ID)
-	if err != nil {
-		return nil, err
-	}
-	newImages := models.CreateStudioImages(updatedStudio.ID, data.New.AddedImages)
-	oldImages := models.CreateStudioImages(updatedStudio.ID, data.New.RemovedImages)
-	models.ProcessSlice(&currentImages, &newImages, &oldImages, "image")
-
-	if err := qb.UpdateImages(updatedStudio.ID, currentImages); err != nil {
+	if err := qb.updateImagesFromEdit(updatedStudio, data); err != nil {
 		return nil, err
 	}
 
 	return updatedStudio, err
+}
+
+func (qb *studioQueryBuilder) GetEditURLs(id uuid.UUID, data *models.StudioEdit) ([]*models.URL, error) {
+	currentURLs, err := qb.GetURLs(id)
+	if err != nil {
+		return nil, err
+	}
+	urls := edit.MergeURLs(currentURLs, data.AddedUrls, data.RemovedUrls)
+	return urls, nil
+}
+
+func (qb *studioQueryBuilder) updateURLsFromEdit(studio *models.Studio, data *models.StudioEditData) error {
+	urls, err := qb.GetEditURLs(studio.ID, data.New)
+	if err != nil {
+		return err
+	}
+
+	newURLs := models.CreateStudioURLs(studio.ID, urls)
+	return qb.UpdateURLs(studio.ID, newURLs)
+}
+
+func (qb *studioQueryBuilder) GetEditImages(id uuid.UUID, data *models.StudioEdit) ([]uuid.UUID, error) {
+	currentImages, err := qb.GetImages(id)
+	if err != nil {
+		return nil, err
+	}
+	var imageIds []uuid.UUID
+	for _, v := range currentImages {
+		imageIds = append(imageIds, v.ImageID)
+	}
+	return utils.ProcessSlice(imageIds, data.AddedImages, data.RemovedImages), nil
+}
+
+func (qb *studioQueryBuilder) updateImagesFromEdit(studio *models.Studio, data *models.StudioEditData) error {
+	ids, err := qb.GetEditImages(studio.ID, data.New)
+	if err != nil {
+		return err
+	}
+
+	images := models.CreateStudioImages(studio.ID, ids)
+	return qb.UpdateImages(studio.ID, images)
 }
 
 func (qb *studioQueryBuilder) mergeInto(sourceID uuid.UUID, targetID uuid.UUID) error {
