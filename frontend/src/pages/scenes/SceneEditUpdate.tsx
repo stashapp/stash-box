@@ -20,7 +20,8 @@ export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     onError: (error) => setSubmissionError(error.message),
   });
 
-  if (!isScene(edit.target) || !isSceneDetails(edit.details)) return null;
+  if (!isSceneDetails(edit.details) || (edit.target && !isScene(edit.target)))
+    return null;
 
   const doUpdate = (updateData: SceneEditDetailsInput, editNote: string) => {
     updateSceneEdit({
@@ -43,7 +44,7 @@ export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
       <h3>
         Update scene edit for
         <i>
-          <b>{edit.target.title}</b>
+          <b>{edit.target?.title ?? edit.details.title}</b>
         </i>
       </h3>
       <hr />

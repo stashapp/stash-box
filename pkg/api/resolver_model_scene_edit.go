@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type sceneEditResolver struct{ *Resolver }
@@ -145,18 +146,17 @@ func (r *sceneEditResolver) Date(ctx context.Context, obj *models.SceneEdit) (*s
 
 func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
 	fac := r.getRepoFactory(ctx)
-	qb := fac.Image()
-	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
+	id, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
+		return nil, err
+	}
+
+	imageIds, err := fac.Scene().GetEditImages(id, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	imageIds, err := fac.Scene().GetEditImages(*sceneID, obj)
-	if err != nil {
-		return nil, err
-	}
-
-	images, errs := qb.FindByIds(imageIds)
+	images, errs := fac.Image().FindByIds(imageIds)
 	if len(errs) > 0 {
 		return nil, errs[0]
 	}
@@ -165,12 +165,12 @@ func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) (
 
 func (r *sceneEditResolver) Tags(ctx context.Context, obj *models.SceneEdit) ([]*models.Tag, error) {
 	fac := r.getRepoFactory(ctx)
-	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
-	if err != nil {
+	id, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	tagIds, err := fac.Scene().GetEditTags(*sceneID, obj)
+	tagIds, err := fac.Scene().GetEditTags(id, obj)
 	if err != nil {
 		return nil, err
 	}
@@ -186,12 +186,12 @@ func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdi
 	fac := r.getRepoFactory(ctx)
 	pqb := fac.Performer()
 
-	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
-	if err != nil {
+	id, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	appearances, err := fac.Scene().GetEditPerformers(*sceneID, obj)
+	appearances, err := fac.Scene().GetEditPerformers(id, obj)
 	if err != nil {
 		return nil, err
 	}
@@ -202,6 +202,7 @@ func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdi
 		if err != nil {
 			return nil, err
 		}
+
 		performerAppearances = append(performerAppearances, &models.PerformerAppearance{
 			Performer: performer,
 			As:        appearances[i].As,
@@ -213,10 +214,10 @@ func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdi
 
 func (r *sceneEditResolver) Urls(ctx context.Context, obj *models.SceneEdit) ([]*models.URL, error) {
 	fac := r.getRepoFactory(ctx)
-	sceneID, err := fac.Edit().FindSceneID(obj.EditID)
-	if err != nil {
+	id, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	return fac.Scene().GetEditURLs(*sceneID, obj)
+	return fac.Scene().GetEditURLs(id, obj)
 }

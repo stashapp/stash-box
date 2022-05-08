@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type studioEditResolver struct{ *Resolver }
@@ -34,11 +35,11 @@ func (r *studioEditResolver) RemovedImages(ctx context.Context, obj *models.Stud
 func (r *studioEditResolver) Images(ctx context.Context, obj *models.StudioEdit) ([]*models.Image, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindStudioID(obj.EditID)
-	if err != nil {
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	imageIds, err := fac.Studio().GetEditImages(*id, obj)
+	imageIds, err := fac.Studio().GetEditImages(id, obj)
 	if err != nil {
 		return nil, err
 	}
@@ -52,9 +53,9 @@ func (r *studioEditResolver) Images(ctx context.Context, obj *models.StudioEdit)
 func (r *studioEditResolver) Urls(ctx context.Context, obj *models.StudioEdit) ([]*models.URL, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindStudioID(obj.EditID)
-	if err != nil {
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	return fac.Studio().GetEditURLs(*id, obj)
+	return fac.Studio().GetEditURLs(id, obj)
 }

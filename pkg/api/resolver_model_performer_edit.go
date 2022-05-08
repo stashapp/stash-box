@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
@@ -77,11 +78,11 @@ func (r *performerEditResolver) Birthdate(ctx context.Context, obj *models.Perfo
 func (r *performerEditResolver) Images(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil {
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	imageIds, err := fac.Performer().GetEditImages(*id, obj)
+	imageIds, err := fac.Performer().GetEditImages(id, obj)
 	if err != nil {
 		return nil, err
 	}
@@ -95,39 +96,39 @@ func (r *performerEditResolver) Images(ctx context.Context, obj *models.Performe
 func (r *performerEditResolver) Urls(ctx context.Context, obj *models.PerformerEdit) ([]*models.URL, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil {
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	return fac.Performer().GetEditURLs(*id, obj)
+	return fac.Performer().GetEditURLs(id, obj)
 }
 
 func (r *performerEditResolver) Aliases(ctx context.Context, obj *models.PerformerEdit) ([]string, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil {
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	return fac.Performer().GetEditAliases(*id, obj)
+	return fac.Performer().GetEditAliases(id, obj)
 }
 
 func (r *performerEditResolver) Tattoos(ctx context.Context, obj *models.PerformerEdit) ([]*models.BodyModification, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil {
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	return fac.Performer().GetEditTattoos(*id, obj)
+	return fac.Performer().GetEditTattoos(id, obj)
 }
 
 func (r *performerEditResolver) Piercings(ctx context.Context, obj *models.PerformerEdit) ([]*models.BodyModification, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindPerformerID(obj.EditID)
-	if err != nil {
+	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
 		return nil, err
 	}
 
-	return fac.Performer().GetEditPiercings(*id, obj)
+	return fac.Performer().GetEditPiercings(id, obj)
 }

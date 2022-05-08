@@ -20,7 +20,10 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     onError: (error) => setSubmissionError(error.message),
   });
 
-  if (!isPerformer(edit.target) || !isPerformerDetails(edit.details))
+  if (
+    !isPerformerDetails(edit.details) ||
+    (edit.target && !isPerformer(edit.target))
+  )
     return null;
 
   const doUpdate = (
@@ -42,18 +45,28 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     });
   };
 
+  const initial = {
+    ...edit.details,
+    measurements: {
+      waist: edit.details?.waist_size ?? null,
+      hip: edit.details?.hip_size ?? null,
+      band_size: edit.details?.band_size ?? null,
+      cup_size: edit.details?.cup_size ?? null,
+    }
+  }
+
   return (
     <div>
       <h3>
         Update performer edit for
         <i>
-          <b>{edit.target.name}</b>
+          <b>{edit.target?.name ?? edit.details.name}</b>
         </i>
       </h3>
       <hr />
       <PerformerForm
         performer={edit.target}
-        initial={edit.details}
+        initial={initial}
         callback={doUpdate}
         saving={saving}
       />

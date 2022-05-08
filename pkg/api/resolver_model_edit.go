@@ -33,10 +33,10 @@ func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Tim
 }
 
 func (r *editResolver) Updated(ctx context.Context, obj *models.Edit) (*time.Time, error) {
-	if !obj.ClosedAt.Valid {
+	if !obj.UpdatedAt.Valid {
 		return nil, nil
 	}
-	return &obj.ClosedAt.Time, nil
+	return &obj.UpdatedAt.Time, nil
 }
 
 func (r *editResolver) Closed(ctx context.Context, obj *models.Edit) (*time.Time, error) {

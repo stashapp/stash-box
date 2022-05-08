@@ -21,7 +21,7 @@ import { InitialStudio } from "./types";
 import DiffStudio from "./diff";
 
 interface StudioProps {
-  studio: Studio;
+  studio?: Studio | null;
   callback: (data: StudioEditDetailsInput, editNote: string) => void;
   showNetworkSelect?: boolean;
   initial?: InitialStudio;
@@ -44,16 +44,16 @@ const StudioForm: FC<StudioProps> = ({
   } = useForm<StudioFormData>({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
-      name: initial?.name ?? studio.name,
+      name: initial?.name ?? studio?.name,
       images: uniqBy(
-        [...studio.images, ...(initial?.images ?? [])],
+        [...(studio?.images ?? []), ...(initial?.images ?? [])],
         (i) => i.id
       ),
       urls: uniqBy(
-        [...(studio.urls ?? []), ...(initial?.urls ?? [])],
+        [...(studio?.urls ?? []), ...(initial?.urls ?? [])],
         (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
       ),
-      parent: initial?.parent ?? studio.parent,
+      parent: initial?.parent ?? studio?.parent,
     },
   });
 
@@ -115,7 +115,7 @@ const StudioForm: FC<StudioProps> = ({
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <StudioSelect
-                    excludeStudio={studio.id}
+                    excludeStudio={studio?.id}
                     initialStudio={value}
                     onChange={onChange}
                     isClearable

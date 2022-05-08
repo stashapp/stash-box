@@ -18,6 +18,6 @@ type StudioRepo interface {
 	GetAllURLs(ids []uuid.UUID) ([][]*URL, []error)
 	CountByPerformer(performerID uuid.UUID) ([]*PerformerStudio, error)
 	ApplyEdit(edit Edit, operation OperationEnum, studio *Studio) (*Studio, error)
-	GetEditImages(id uuid.UUID, data *StudioEdit) ([]uuid.UUID, error)
-	GetEditURLs(id uuid.UUID, data *StudioEdit) ([]*URL, error)
+	GetEditImages(id *uuid.UUID, data *StudioEdit) ([]uuid.UUID, error)
+	GetEditURLs(id *uuid.UUID, data *StudioEdit) ([]*URL, error)
 }

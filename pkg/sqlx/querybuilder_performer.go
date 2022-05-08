@@ -740,22 +740,23 @@ func (qb *performerQueryBuilder) ApplyEdit(performer *models.Performer, create b
 	return updatedPerformer, err
 }
 
-func (qb *performerQueryBuilder) GetEditAliases(id uuid.UUID, data *models.PerformerEdit) ([]string, error) {
-	currentAliases, err := qb.GetAliases(id)
-	if err != nil {
-		return nil, err
-	}
-
+func (qb *performerQueryBuilder) GetEditAliases(id *uuid.UUID, data *models.PerformerEdit) ([]string, error) {
 	var aliases []string
-	for _, v := range currentAliases {
-		aliases = append(aliases, v.Alias)
+	if id != nil {
+		currentAliases, err := qb.GetAliases(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range currentAliases {
+			aliases = append(aliases, v.Alias)
+		}
 	}
 
 	return utils.ProcessSlice(aliases, data.AddedAliases, data.RemovedAliases), nil
 }
 
 func (qb *performerQueryBuilder) updateAliasesFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	aliases, err := qb.GetEditAliases(performer.ID, data.New)
+	aliases, err := qb.GetEditAliases(&performer.ID, data.New)
 	if err != nil {
 		return err
 	}
@@ -764,17 +765,21 @@ func (qb *performerQueryBuilder) updateAliasesFromEdit(performer *models.Perform
 	return qb.UpdateAliases(performer.ID, newAliases)
 }
 
-func (qb *performerQueryBuilder) GetEditTattoos(id uuid.UUID, data *models.PerformerEdit) ([]*models.BodyModification, error) {
-	currentTattoos, err := qb.GetTattoos(id)
-	if err != nil {
-		return nil, err
+func (qb *performerQueryBuilder) GetEditTattoos(id *uuid.UUID, data *models.PerformerEdit) ([]*models.BodyModification, error) {
+	var tattoos models.PerformerBodyMods
+	if id != nil {
+		currentTattoos, err := qb.GetTattoos(*id)
+		if err != nil {
+			return nil, err
+		}
+		tattoos = currentTattoos
 	}
 
-	return edit.MergeBodyMods(currentTattoos, data.AddedTattoos, data.RemovedTattoos), nil
+	return edit.MergeBodyMods(tattoos, data.AddedTattoos, data.RemovedTattoos), nil
 }
 
 func (qb *performerQueryBuilder) updateTattoosFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	tattoos, err := qb.GetEditTattoos(performer.ID, data.New)
+	tattoos, err := qb.GetEditTattoos(&performer.ID, data.New)
 	if err != nil {
 		return err
 	}
@@ -783,17 +788,21 @@ func (qb *performerQueryBuilder) updateTattoosFromEdit(performer *models.Perform
 	return qb.UpdateTattoos(performer.ID, newTattoos)
 }
 
-func (qb *performerQueryBuilder) GetEditPiercings(id uuid.UUID, data *models.PerformerEdit) ([]*models.BodyModification, error) {
-	currentPiercings, err := qb.GetPiercings(id)
-	if err != nil {
-		return nil, err
+func (qb *performerQueryBuilder) GetEditPiercings(id *uuid.UUID, data *models.PerformerEdit) ([]*models.BodyModification, error) {
+	var piercings models.PerformerBodyMods
+	if id != nil {
+		currentPiercings, err := qb.GetPiercings(*id)
+		if err != nil {
+			return nil, err
+		}
+		piercings = currentPiercings
 	}
 
-	return edit.MergeBodyMods(currentPiercings, data.AddedPiercings, data.RemovedPiercings), nil
+	return edit.MergeBodyMods(piercings, data.AddedPiercings, data.RemovedPiercings), nil
 }
 
 func (qb *performerQueryBuilder) updatePiercingsFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	piercings, err := qb.GetEditPiercings(performer.ID, data.New)
+	piercings, err := qb.GetEditPiercings(&performer.ID, data.New)
 	if err != nil {
 		return err
 	}
@@ -802,17 +811,21 @@ func (qb *performerQueryBuilder) updatePiercingsFromEdit(performer *models.Perfo
 	return qb.UpdatePiercings(performer.ID, newPiercings)
 }
 
-func (qb *performerQueryBuilder) GetEditURLs(id uuid.UUID, data *models.PerformerEdit) ([]*models.URL, error) {
-	currentURLs, err := qb.GetURLs(id)
-	if err != nil {
-		return nil, err
+func (qb *performerQueryBuilder) GetEditURLs(id *uuid.UUID, data *models.PerformerEdit) ([]*models.URL, error) {
+	var urls []*models.URL
+	if id != nil {
+		currentURLs, err := qb.GetURLs(*id)
+		if err != nil {
+			return nil, err
+		}
+		urls = currentURLs
 	}
-	urls := edit.MergeURLs(currentURLs, data.AddedUrls, data.RemovedUrls)
-	return urls, nil
+
+	return edit.MergeURLs(urls, data.AddedUrls, data.RemovedUrls), nil
 }
 
 func (qb *performerQueryBuilder) updateURLsFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	urls, err := qb.GetEditURLs(performer.ID, data.New)
+	urls, err := qb.GetEditURLs(&performer.ID, data.New)
 	if err != nil {
 		return err
 	}
@@ -821,20 +834,23 @@ func (qb *performerQueryBuilder) updateURLsFromEdit(performer *models.Performer,
 	return qb.UpdateUrls(performer.ID, newURLs)
 }
 
-func (qb *performerQueryBuilder) GetEditImages(id uuid.UUID, data *models.PerformerEdit) ([]uuid.UUID, error) {
-	currentImages, err := qb.GetImages(id)
-	if err != nil {
-		return nil, err
-	}
+func (qb *performerQueryBuilder) GetEditImages(id *uuid.UUID, data *models.PerformerEdit) ([]uuid.UUID, error) {
 	var imageIds []uuid.UUID
-	for _, v := range currentImages {
-		imageIds = append(imageIds, v.ImageID)
+	if id != nil {
+		currentImages, err := qb.GetImages(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range currentImages {
+			imageIds = append(imageIds, v.ImageID)
+		}
 	}
+
 	return utils.ProcessSlice(imageIds, data.AddedImages, data.RemovedImages), nil
 }
 
 func (qb *performerQueryBuilder) updateImagesFromEdit(performer *models.Performer, data *models.PerformerEditData) error {
-	ids, err := qb.GetEditImages(performer.ID, data.New)
+	ids, err := qb.GetEditImages(&performer.ID, data.New)
 	if err != nil {
 		return err
 	}

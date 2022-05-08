@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
-import { groupBy, sortBy, uniq } from "lodash-es";
+import { groupBy, sortBy } from "lodash-es";
 
 import {
   useCategories,
@@ -21,7 +21,7 @@ import { TagSchema, TagFormData } from "./schema";
 import { InitialTag } from "./types";
 
 interface TagProps {
-  tag: Tag;
+  tag?: Tag | null;
   callback: (data: TagEditDetailsInput, editNote: string) => void;
   initial?: InitialTag;
   saving: boolean;
@@ -37,10 +37,10 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
   } = useForm<TagFormData>({
     resolver: yupResolver(TagSchema),
     defaultValues: {
-      name: initial?.name ?? tag.name,
-      description: initial?.description ?? tag.description ?? "",
-      aliases: initial?.aliases ?? tag.aliases ?? [],
-      category: initial?.category ?? tag.category,
+      name: initial?.name ?? tag?.name ?? "",
+      description: initial?.description ?? tag?.description ?? "",
+      aliases: initial?.aliases ?? tag?.aliases ?? [],
+      category: initial?.category ?? tag?.category,
     },
   });
 

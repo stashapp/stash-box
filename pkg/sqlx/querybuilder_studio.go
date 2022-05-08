@@ -367,17 +367,21 @@ func (qb *studioQueryBuilder) applyModifyEdit(studio *models.Studio, data *model
 	return updatedStudio, err
 }
 
-func (qb *studioQueryBuilder) GetEditURLs(id uuid.UUID, data *models.StudioEdit) ([]*models.URL, error) {
-	currentURLs, err := qb.GetURLs(id)
-	if err != nil {
-		return nil, err
+func (qb *studioQueryBuilder) GetEditURLs(id *uuid.UUID, data *models.StudioEdit) ([]*models.URL, error) {
+	var urls []*models.URL
+	if id != nil {
+		currentURLs, err := qb.GetURLs(*id)
+		if err != nil {
+			return nil, err
+		}
+		urls = currentURLs
 	}
-	urls := edit.MergeURLs(currentURLs, data.AddedUrls, data.RemovedUrls)
-	return urls, nil
+
+	return edit.MergeURLs(urls, data.AddedUrls, data.RemovedUrls), nil
 }
 
 func (qb *studioQueryBuilder) updateURLsFromEdit(studio *models.Studio, data *models.StudioEditData) error {
-	urls, err := qb.GetEditURLs(studio.ID, data.New)
+	urls, err := qb.GetEditURLs(&studio.ID, data.New)
 	if err != nil {
 		return err
 	}
@@ -386,20 +390,22 @@ func (qb *studioQueryBuilder) updateURLsFromEdit(studio *models.Studio, data *mo
 	return qb.UpdateURLs(studio.ID, newURLs)
 }
 
-func (qb *studioQueryBuilder) GetEditImages(id uuid.UUID, data *models.StudioEdit) ([]uuid.UUID, error) {
-	currentImages, err := qb.GetImages(id)
-	if err != nil {
-		return nil, err
-	}
+func (qb *studioQueryBuilder) GetEditImages(id *uuid.UUID, data *models.StudioEdit) ([]uuid.UUID, error) {
 	var imageIds []uuid.UUID
-	for _, v := range currentImages {
-		imageIds = append(imageIds, v.ImageID)
+	if id != nil {
+		currentImages, err := qb.GetImages(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range currentImages {
+			imageIds = append(imageIds, v.ImageID)
+		}
 	}
 	return utils.ProcessSlice(imageIds, data.AddedImages, data.RemovedImages), nil
 }
 
 func (qb *studioQueryBuilder) updateImagesFromEdit(studio *models.Studio, data *models.StudioEditData) error {
-	ids, err := qb.GetEditImages(studio.ID, data.New)
+	ids, err := qb.GetEditImages(&studio.ID, data.New)
 	if err != nil {
 		return err
 	}

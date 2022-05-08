@@ -72,7 +72,7 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if !existingEdit.UpdatedAt.Valid {
+	if existingEdit.UpdatedAt.Valid {
 		return nil, AlreadyUpdatedErr
 	}
 
@@ -83,8 +83,11 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 		}
 
 		_, err := p.UpdateEdit()
+		if err != nil {
+			return err
+		}
 
-		return err
+		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
 	return existingEdit, err
@@ -142,7 +145,7 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if !existingEdit.UpdatedAt.Valid {
+	if existingEdit.UpdatedAt.Valid {
 		return nil, AlreadyUpdatedErr
 	}
 
@@ -153,8 +156,11 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 		}
 
 		_, err := p.UpdateEdit()
+		if err != nil {
+			return err
+		}
 
-		return err
+		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
 	return existingEdit, err
@@ -212,7 +218,7 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if !existingEdit.UpdatedAt.Valid {
+	if existingEdit.UpdatedAt.Valid {
 		return nil, AlreadyUpdatedErr
 	}
 
@@ -223,8 +229,11 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 		}
 
 		_, err := p.UpdateEdit()
+		if err != nil {
+			return err
+		}
 
-		return err
+		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
 	return existingEdit, err
@@ -286,7 +295,7 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if !existingEdit.UpdatedAt.Valid {
+	if existingEdit.UpdatedAt.Valid {
 		return nil, AlreadyUpdatedErr
 	}
 
@@ -297,8 +306,11 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 		}
 
 		_, err := p.UpdateEdit()
+		if err != nil {
+			return err
+		}
 
-		return err
+		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
 	return existingEdit, err

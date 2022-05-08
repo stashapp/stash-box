@@ -20,6 +20,8 @@ const (
 	voteTable          = "edit_votes"
 )
 
+var EditTargetIDNotFoundErr = fmt.Errorf("edit target not found")
+
 var (
 	editDBTable = newTable(editTable, func() interface{} {
 		return &models.Edit{}
@@ -110,7 +112,7 @@ func (qb *editQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, err
 	}
 	if len(joins) == 0 {
-		return nil, errors.New("tag edit not found")
+		return nil, EditTargetIDNotFoundErr
 	}
 	return &joins[0].TagID, nil
 }
@@ -122,7 +124,7 @@ func (qb *editQueryBuilder) FindPerformerID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, err
 	}
 	if len(joins) == 0 {
-		return nil, errors.New("performer edit not found")
+		return nil, EditTargetIDNotFoundErr
 	}
 	return &joins[0].PerformerID, nil
 }
@@ -134,7 +136,7 @@ func (qb *editQueryBuilder) FindStudioID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, err
 	}
 	if len(joins) == 0 {
-		return nil, errors.New("studio edit not found")
+		return nil, EditTargetIDNotFoundErr
 	}
 	return &joins[0].StudioID, nil
 }
@@ -146,7 +148,7 @@ func (qb *editQueryBuilder) FindSceneID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, err
 	}
 	if len(joins) == 0 {
-		return nil, errors.New("scene edit not found")
+		return nil, EditTargetIDNotFoundErr
 	}
 	return &joins[0].SceneID, nil
 }

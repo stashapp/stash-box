@@ -33,8 +33,8 @@ type SceneRepo interface {
 	CountByPerformer(id uuid.UUID) (int, error)
 	MergeInto(source *Scene, target *Scene) error
 	ApplyEdit(scene *Scene, create bool, data *SceneEditData, userID *uuid.UUID) (*Scene, error)
-	GetEditTags(id uuid.UUID, data *SceneEdit) ([]uuid.UUID, error)
-	GetEditImages(id uuid.UUID, data *SceneEdit) ([]uuid.UUID, error)
-	GetEditURLs(id uuid.UUID, data *SceneEdit) ([]*URL, error)
-	GetEditPerformers(id uuid.UUID, obj *SceneEdit) ([]*PerformerAppearanceInput, error)
+	GetEditTags(id *uuid.UUID, data *SceneEdit) ([]uuid.UUID, error)
+	GetEditImages(id *uuid.UUID, data *SceneEdit) ([]uuid.UUID, error)
+	GetEditURLs(id *uuid.UUID, data *SceneEdit) ([]*URL, error)
+	GetEditPerformers(id *uuid.UUID, obj *SceneEdit) ([]*PerformerAppearanceInput, error)
 }

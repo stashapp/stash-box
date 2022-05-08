@@ -77,14 +77,17 @@ const EditComponent: FC = () => {
 
   const mutating = cancelling || applying;
 
-  const buttons = (isAdmin(auth.user) || auth.user?.id === edit?.user?.id) &&
+  const buttons = (isAdmin(auth.user) || auth.user?.id === edit.user?.id) &&
     edit.status === VoteStatusEnum.PENDING && (
       <div className="d-flex justify-content-end">
-        <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
-          <Button variant="primary" disabled={mutating}>
-            Update Edit
-          </Button>
-        </Link>
+        {auth.user?.id === edit.user?.id &&
+          edit.operation !== OperationEnum.DESTROY && !edit.updated && (
+            <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
+              <Button variant="primary" disabled={mutating}>
+                Update Edit
+              </Button>
+            </Link>
+          )}
         <Button
           variant="danger"
           className="me-2"

@@ -44,7 +44,7 @@ const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
-  scene: Scene;
+  scene?: Scene | null;
   initial?: InitialScene;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
@@ -68,13 +68,13 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
       urls: uniqBy(
-        [...(scene.urls ?? []), ...(initial?.urls ?? [])],
+        [...(scene?.urls ?? []), ...(initial?.urls ?? [])],
         (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
       ),
-      images: initial?.images ?? scene.images,
-      studio: initial?.studio ?? scene.studio ?? undefined,
-      tags: initial?.tags ?? scene.tags,
-      performers: (initial?.performers ?? scene.performers).map((p) => ({
+      images: initial?.images ?? scene?.images ?? [],
+      studio: initial?.studio ?? scene?.studio ?? undefined,
+      tags: initial?.tags ?? scene?.tags ?? [],
+      performers: (initial?.performers ?? scene?.performers ?? []).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
         alias: p.as ?? "",

@@ -62,7 +62,7 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
             <b className="me-2">Created:</b>
             <span>{formatDateTime(created)}</span>
           </div>
-          { edit.updated && (
+          {edit.updated && (
             <div>
               <b className="me-2">Updated:</b>
               <span>{formatDateTime(edit.updated as string)}</span>

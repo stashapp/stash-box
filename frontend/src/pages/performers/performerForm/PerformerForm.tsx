@@ -115,7 +115,7 @@ const getEnumValue = (enumArray: OptionEnum[], val: string | null) => {
 };
 
 interface PerformerProps {
-  performer: Performer;
+  performer?: Performer | null;
   callback: (
     data: PerformerEditDetailsInput,
     note: string,
@@ -132,18 +132,25 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
 }) => {
-  const aliases = uniq([...performer.aliases, ...(initial?.aliases ?? [])]);
-  const measurements = merge({}, initial?.measurements, performer.measurements);
+  const aliases = uniq([
+    ...(performer?.aliases ?? []),
+    ...(initial?.aliases ?? []),
+  ]);
+  const measurements = merge(
+    {},
+    initial?.measurements,
+    performer?.measurements
+  );
   const images = uniqBy(
-    [...performer.images, ...(initial?.images ?? [])],
+    [...(performer?.images ?? []), ...(initial?.images ?? [])],
     (i) => i.id
   );
   const tattoos = uniqBy(
-    [...(performer.tattoos ?? []), ...(initial?.tattoos ?? [])],
+    [...(performer?.tattoos ?? []), ...(initial?.tattoos ?? [])],
     (mod) => `${mod.location}${mod.description}`
   );
   const piercings = uniqBy(
-    [...(performer.piercings ?? []), ...(initial?.piercings ?? [])],
+    [...(performer?.piercings ?? []), ...(initial?.piercings ?? [])],
     (mod) => `${mod.location}${mod.description}`
   );
   const {
@@ -157,28 +164,31 @@ const PerformerForm: FC<PerformerProps> = ({
     resolver: yupResolver(PerformerSchema),
     mode: "onBlur",
     defaultValues: {
-      name: initial?.name ?? performer.name,
-      disambiguation: initial?.disambiguation ?? performer.disambiguation,
+      name: initial?.name ?? performer?.name ?? "",
+      disambiguation: initial?.disambiguation ?? performer?.disambiguation,
       aliases,
       gender: initial?.gender ?? performer?.gender,
-      birthdate: initial?.birthdate ?? formatFuzzyDate(performer.birthdate),
-      eye_color: getEnumValue(EYE, initial?.eye_color ?? performer.eye_color),
+      birthdate: initial?.birthdate ?? formatFuzzyDate(performer?.birthdate),
+      eye_color: getEnumValue(
+        EYE,
+        initial?.eye_color ?? performer?.eye_color ?? null
+      ),
       hair_color: getEnumValue(
         HAIR,
-        initial?.hair_color ?? performer.hair_color
+        initial?.hair_color ?? performer?.hair_color ?? null
       ),
       height: initial?.height || performer?.height,
       breastType: getEnumValue(
         BREAST,
-        initial?.breast_type ?? performer.breast_type
+        initial?.breast_type ?? performer?.breast_type ?? null
       ),
       braSize: getBraSize(measurements),
       waistSize: measurements.waist,
       hipSize: measurements.hip,
-      country: initial?.country ?? performer.country,
+      country: initial?.country ?? performer?.country,
       ethnicity: getEnumValue(
         ETHNICITY,
-        initial?.ethnicity ?? performer.ethnicity
+        initial?.ethnicity ?? performer?.ethnicity ?? null
       ),
       career_start_year:
         initial?.career_start_year ?? performer?.career_start_year,
@@ -187,7 +197,7 @@ const PerformerForm: FC<PerformerProps> = ({
       piercings,
       images,
       urls: uniqBy(
-        [...(performer.urls ?? []), ...(initial?.urls ?? [])],
+        [...(performer?.urls ?? []), ...(initial?.urls ?? [])],
         (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
       ),
     },
@@ -204,9 +214,9 @@ const PerformerForm: FC<PerformerProps> = ({
   );
 
   const changedName =
-    !!performer.id &&
+    !!performer?.id &&
     newChanges.name !== null &&
-    (initial?.name?.trim() ?? performer.name.trim()) !== newChanges.name;
+    (initial?.name?.trim() ?? performer?.name?.trim()) !== newChanges.name;
 
   useEffect(() => {
     setUpdateAliases(changedName);
@@ -310,7 +320,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
-      <input type="hidden" value={performer.id} {...register("id")} />
+      <input type="hidden" value={performer?.id} {...register("id")} />
       <Tabs
         activeKey={activeTab}
         onSelect={(key) => key && setActiveTab(key)}

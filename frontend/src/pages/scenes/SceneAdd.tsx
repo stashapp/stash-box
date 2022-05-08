@@ -1,7 +1,6 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import {
   useSceneEdit,
   OperationEnum,
@@ -36,29 +35,11 @@ const SceneAdd: FC = () => {
     });
   };
 
-  const emptyScene: Scene = {
-    id: "",
-    date: null,
-    title: null,
-    details: null,
-    urls: [],
-    studio: null,
-    director: null,
-    code: null,
-    duration: null,
-    images: [],
-    tags: [],
-    fingerprints: [],
-    performers: [],
-    deleted: false,
-    __typename: "Scene",
-  };
-
   return (
     <div>
       <h3>Add new scene</h3>
       <hr />
-      <SceneForm scene={emptyScene} callback={doInsert} saving={saving} />
+      <SceneForm callback={doInsert} saving={saving} />
       {submissionError && (
         <div className="text-danger text-end col-9">
           Error: {submissionError}

@@ -42,12 +42,19 @@ const EditStatus: FC<Props> = ({ closed, status }) => {
       break;
   }
 
-  const tooltipContent = (closed || tooltip) ? (
-    <>
-      { closed && <div>Closed <b>{closed}</b></div> }
-      { tooltip }
-    </>
-  ) : "";
+  const tooltipContent =
+    closed || tooltip ? (
+      <>
+        {closed && (
+          <div>
+            Closed <b>{closed}</b>
+          </div>
+        )}
+        {tooltip}
+      </>
+    ) : (
+      ""
+    );
 
   return (
     <Tooltip text={tooltipContent}>

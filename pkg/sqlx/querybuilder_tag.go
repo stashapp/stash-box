@@ -419,17 +419,21 @@ func (qb *tagQueryBuilder) ApplyEdit(edit models.Edit, operation models.Operatio
 	}
 }
 
-func (qb *tagQueryBuilder) GetEditAliases(id uuid.UUID, data *models.TagEdit) ([]string, error) {
-	currentAliases, err := qb.GetAliases(id)
-	if err != nil {
-		return nil, err
+func (qb *tagQueryBuilder) GetEditAliases(id *uuid.UUID, data *models.TagEdit) ([]string, error) {
+	var aliases []string
+	if id != nil {
+		currentAliases, err := qb.GetAliases(*id)
+		if err != nil {
+			return nil, err
+		}
+		aliases = currentAliases
 	}
 
-	return utils.ProcessSlice(currentAliases, data.AddedAliases, data.RemovedAliases), nil
+	return utils.ProcessSlice(aliases, data.AddedAliases, data.RemovedAliases), nil
 }
 
 func (qb *tagQueryBuilder) updateAliasesFromEdit(tag *models.Tag, data *models.TagEditData) error {
-	aliases, err := qb.GetEditAliases(tag.ID, data.New)
+	aliases, err := qb.GetEditAliases(&tag.ID, data.New)
 	if err != nil {
 		return err
 	}
