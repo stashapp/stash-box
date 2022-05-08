@@ -7,4 +7,5 @@ fragment TagFragment on Tag {
     id
     name
   }
+  aliases
 }

@@ -219,7 +219,8 @@ type PerformerEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   birthdate: String
-  birthdate_accuracy: String
+  fuzzy_birthdate: String
+  fuzzy_birthdate_accuracy: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum

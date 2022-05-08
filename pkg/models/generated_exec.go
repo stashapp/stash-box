@@ -269,39 +269,40 @@ type ComplexityRoot struct {
 	}
 
 	PerformerEdit struct {
-		AddedAliases      func(childComplexity int) int
-		AddedImages       func(childComplexity int) int
-		AddedPiercings    func(childComplexity int) int
-		AddedTattoos      func(childComplexity int) int
-		AddedUrls         func(childComplexity int) int
-		Aliases           func(childComplexity int) int
-		BandSize          func(childComplexity int) int
-		Birthdate         func(childComplexity int) int
-		BirthdateAccuracy func(childComplexity int) int
-		BreastType        func(childComplexity int) int
-		CareerEndYear     func(childComplexity int) int
-		CareerStartYear   func(childComplexity int) int
-		Country           func(childComplexity int) int
-		CupSize           func(childComplexity int) int
-		Disambiguation    func(childComplexity int) int
-		DraftID           func(childComplexity int) int
-		Ethnicity         func(childComplexity int) int
-		EyeColor          func(childComplexity int) int
-		Gender            func(childComplexity int) int
-		HairColor         func(childComplexity int) int
-		Height            func(childComplexity int) int
-		HipSize           func(childComplexity int) int
-		Images            func(childComplexity int) int
-		Name              func(childComplexity int) int
-		Piercings         func(childComplexity int) int
-		RemovedAliases    func(childComplexity int) int
-		RemovedImages     func(childComplexity int) int
-		RemovedPiercings  func(childComplexity int) int
-		RemovedTattoos    func(childComplexity int) int
-		RemovedUrls       func(childComplexity int) int
-		Tattoos           func(childComplexity int) int
-		Urls              func(childComplexity int) int
-		WaistSize         func(childComplexity int) int
+		AddedAliases           func(childComplexity int) int
+		AddedImages            func(childComplexity int) int
+		AddedPiercings         func(childComplexity int) int
+		AddedTattoos           func(childComplexity int) int
+		AddedUrls              func(childComplexity int) int
+		Aliases                func(childComplexity int) int
+		BandSize               func(childComplexity int) int
+		Birthdate              func(childComplexity int) int
+		BreastType             func(childComplexity int) int
+		CareerEndYear          func(childComplexity int) int
+		CareerStartYear        func(childComplexity int) int
+		Country                func(childComplexity int) int
+		CupSize                func(childComplexity int) int
+		Disambiguation         func(childComplexity int) int
+		DraftID                func(childComplexity int) int
+		Ethnicity              func(childComplexity int) int
+		EyeColor               func(childComplexity int) int
+		FuzzyBirthdate         func(childComplexity int) int
+		FuzzyBirthdateAccuracy func(childComplexity int) int
+		Gender                 func(childComplexity int) int
+		HairColor              func(childComplexity int) int
+		Height                 func(childComplexity int) int
+		HipSize                func(childComplexity int) int
+		Images                 func(childComplexity int) int
+		Name                   func(childComplexity int) int
+		Piercings              func(childComplexity int) int
+		RemovedAliases         func(childComplexity int) int
+		RemovedImages          func(childComplexity int) int
+		RemovedPiercings       func(childComplexity int) int
+		RemovedTattoos         func(childComplexity int) int
+		RemovedUrls            func(childComplexity int) int
+		Tattoos                func(childComplexity int) int
+		Urls                   func(childComplexity int) int
+		WaistSize              func(childComplexity int) int
 	}
 
 	PerformerEditOptions struct {
@@ -424,12 +425,13 @@ type ComplexityRoot struct {
 		AddedUrls           func(childComplexity int) int
 		Code                func(childComplexity int) int
 		Date                func(childComplexity int) int
-		DateAccuracy        func(childComplexity int) int
 		Details             func(childComplexity int) int
 		Director            func(childComplexity int) int
 		DraftID             func(childComplexity int) int
 		Duration            func(childComplexity int) int
 		Fingerprints        func(childComplexity int) int
+		FuzzyDate           func(childComplexity int) int
+		FuzzyDateAccuracy   func(childComplexity int) int
 		Images              func(childComplexity int) int
 		Performers          func(childComplexity int) int
 		RemovedFingerprints func(childComplexity int) int
@@ -687,6 +689,8 @@ type PerformerDraftResolver interface {
 type PerformerEditResolver interface {
 	Gender(ctx context.Context, obj *PerformerEdit) (*GenderEnum, error)
 
+	FuzzyBirthdate(ctx context.Context, obj *PerformerEdit) (*string, error)
+	FuzzyBirthdateAccuracy(ctx context.Context, obj *PerformerEdit) (*string, error)
 	Ethnicity(ctx context.Context, obj *PerformerEdit) (*EthnicityEnum, error)
 
 	EyeColor(ctx context.Context, obj *PerformerEdit) (*EyeColorEnum, error)
@@ -771,6 +775,8 @@ type SceneDraftResolver interface {
 	Image(ctx context.Context, obj *SceneDraft) (*Image, error)
 }
 type SceneEditResolver interface {
+	FuzzyDate(ctx context.Context, obj *SceneEdit) (*string, error)
+	FuzzyDateAccuracy(ctx context.Context, obj *SceneEdit) (*string, error)
 	Studio(ctx context.Context, obj *SceneEdit) (*Studio, error)
 	AddedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
 	RemovedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
@@ -2218,13 +2224,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PerformerEdit.Birthdate(childComplexity), true
 
-	case "PerformerEdit.birthdate_accuracy":
-		if e.complexity.PerformerEdit.BirthdateAccuracy == nil {
-			break
-		}
-
-		return e.complexity.PerformerEdit.BirthdateAccuracy(childComplexity), true
-
 	case "PerformerEdit.breast_type":
 		if e.complexity.PerformerEdit.BreastType == nil {
 			break
@@ -2287,6 +2286,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerEdit.EyeColor(childComplexity), true
+
+	case "PerformerEdit.fuzzy_birthdate":
+		if e.complexity.PerformerEdit.FuzzyBirthdate == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.FuzzyBirthdate(childComplexity), true
+
+	case "PerformerEdit.fuzzy_birthdate_accuracy":
+		if e.complexity.PerformerEdit.FuzzyBirthdateAccuracy == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.FuzzyBirthdateAccuracy(childComplexity), true
 
 	case "PerformerEdit.gender":
 		if e.complexity.PerformerEdit.Gender == nil {
@@ -3053,13 +3066,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneEdit.Date(childComplexity), true
 
-	case "SceneEdit.date_accuracy":
-		if e.complexity.SceneEdit.DateAccuracy == nil {
-			break
-		}
-
-		return e.complexity.SceneEdit.DateAccuracy(childComplexity), true
-
 	case "SceneEdit.details":
 		if e.complexity.SceneEdit.Details == nil {
 			break
@@ -3094,6 +3100,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneEdit.Fingerprints(childComplexity), true
+
+	case "SceneEdit.fuzzy_date":
+		if e.complexity.SceneEdit.FuzzyDate == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.FuzzyDate(childComplexity), true
+
+	case "SceneEdit.fuzzy_date_accuracy":
+		if e.complexity.SceneEdit.FuzzyDateAccuracy == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.FuzzyDateAccuracy(childComplexity), true
 
 	case "SceneEdit.images":
 		if e.complexity.SceneEdit.Images == nil {
@@ -4324,7 +4344,8 @@ type PerformerEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   birthdate: String
-  birthdate_accuracy: String
+  fuzzy_birthdate: String
+  fuzzy_birthdate_accuracy: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4631,7 +4652,8 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: String
-  date_accuracy: String
+  fuzzy_date: String
+  fuzzy_date_accuracy: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -13182,7 +13204,7 @@ func (ec *executionContext) _PerformerEdit_birthdate(ctx context.Context, field 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _PerformerEdit_birthdate_accuracy(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+func (ec *executionContext) _PerformerEdit_fuzzy_birthdate(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13193,14 +13215,46 @@ func (ec *executionContext) _PerformerEdit_birthdate_accuracy(ctx context.Contex
 		Object:     "PerformerEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.BirthdateAccuracy, nil
+		return ec.resolvers.PerformerEdit().FuzzyBirthdate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerEdit_fuzzy_birthdate_accuracy(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PerformerEdit().FuzzyBirthdateAccuracy(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17448,7 +17502,7 @@ func (ec *executionContext) _SceneEdit_date(ctx context.Context, field graphql.C
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SceneEdit_date_accuracy(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+func (ec *executionContext) _SceneEdit_fuzzy_date(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -17459,14 +17513,46 @@ func (ec *executionContext) _SceneEdit_date_accuracy(ctx context.Context, field 
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.DateAccuracy, nil
+		return ec.resolvers.SceneEdit().FuzzyDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_fuzzy_date_accuracy(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().FuzzyDateAccuracy(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -28728,13 +28814,40 @@ func (ec *executionContext) _PerformerEdit(ctx context.Context, sel ast.Selectio
 
 			out.Values[i] = innerFunc(ctx)
 
-		case "birthdate_accuracy":
+		case "fuzzy_birthdate":
+			field := field
+
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._PerformerEdit_birthdate_accuracy(ctx, field, obj)
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerEdit_fuzzy_birthdate(ctx, field, obj)
+				return res
 			}
 
-			out.Values[i] = innerFunc(ctx)
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
 
+			})
+		case "fuzzy_birthdate_accuracy":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerEdit_fuzzy_birthdate_accuracy(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "ethnicity":
 			field := field
 
@@ -30643,13 +30756,40 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 
 			out.Values[i] = innerFunc(ctx)
 
-		case "date_accuracy":
+		case "fuzzy_date":
+			field := field
+
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._SceneEdit_date_accuracy(ctx, field, obj)
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_fuzzy_date(ctx, field, obj)
+				return res
 			}
 
-			out.Values[i] = innerFunc(ctx)
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
 
+			})
+		case "fuzzy_date_accuracy":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_fuzzy_date_accuracy(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "studio":
 			field := field
 

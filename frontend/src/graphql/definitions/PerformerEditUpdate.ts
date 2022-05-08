@@ -55,6 +55,7 @@ export interface PerformerEditUpdate_performerEditUpdate_target_Tag {
   description: string | null;
   deleted: boolean;
   category: PerformerEditUpdate_performerEditUpdate_target_Tag_category | null;
+  aliases: string[];
 }
 
 export interface PerformerEditUpdate_performerEditUpdate_target_Performer_birthdate {
@@ -359,7 +360,6 @@ export interface PerformerEditUpdate_performerEditUpdate_details_PerformerEdit {
   added_urls: PerformerEditUpdate_performerEditUpdate_details_PerformerEdit_added_urls[] | null;
   removed_urls: PerformerEditUpdate_performerEditUpdate_details_PerformerEdit_removed_urls[] | null;
   birthdate: string | null;
-  birthdate_accuracy: string | null;
   ethnicity: EthnicityEnum | null;
   country: string | null;
   eye_color: EyeColorEnum | null;
@@ -738,6 +738,7 @@ export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit_added
   description: string | null;
   deleted: boolean;
   category: PerformerEditUpdate_performerEditUpdate_details_SceneEdit_added_tags_category | null;
+  aliases: string[];
 }
 
 export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit_removed_tags_category {
@@ -753,6 +754,7 @@ export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit_remov
   description: string | null;
   deleted: boolean;
   category: PerformerEditUpdate_performerEditUpdate_details_SceneEdit_removed_tags_category | null;
+  aliases: string[];
 }
 
 export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit_added_images {
@@ -792,7 +794,6 @@ export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit {
   added_urls: PerformerEditUpdate_performerEditUpdate_details_SceneEdit_added_urls[] | null;
   removed_urls: PerformerEditUpdate_performerEditUpdate_details_SceneEdit_removed_urls[] | null;
   date: string | null;
-  date_accuracy: string | null;
   studio: PerformerEditUpdate_performerEditUpdate_details_SceneEdit_studio | null;
   /**
    * Added or modified performer appearance entries
@@ -832,7 +833,6 @@ export interface PerformerEditUpdate_performerEditUpdate_old_details_PerformerEd
   disambiguation: string | null;
   gender: GenderEnum | null;
   birthdate: string | null;
-  birthdate_accuracy: string | null;
   ethnicity: EthnicityEnum | null;
   country: string | null;
   eye_color: EyeColorEnum | null;
@@ -1155,6 +1155,7 @@ export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_a
   description: string | null;
   deleted: boolean;
   category: PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_added_tags_category | null;
+  aliases: string[];
 }
 
 export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_removed_tags_category {
@@ -1170,6 +1171,7 @@ export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_r
   description: string | null;
   deleted: boolean;
   category: PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_removed_tags_category | null;
+  aliases: string[];
 }
 
 export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_added_images {
@@ -1209,7 +1211,6 @@ export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit {
   added_urls: PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_added_urls[] | null;
   removed_urls: PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_removed_urls[] | null;
   date: string | null;
-  date_accuracy: string | null;
   studio: PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_studio | null;
   /**
    * Added or modified performer appearance entries
@@ -1242,6 +1243,7 @@ export interface PerformerEditUpdate_performerEditUpdate_merge_sources_Tag {
   description: string | null;
   deleted: boolean;
   category: PerformerEditUpdate_performerEditUpdate_merge_sources_Tag_category | null;
+  aliases: string[];
 }
 
 export interface PerformerEditUpdate_performerEditUpdate_merge_sources_Performer_birthdate {

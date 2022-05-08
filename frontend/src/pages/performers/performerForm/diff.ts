@@ -13,7 +13,6 @@ import {
   diffImages,
   diffURLs,
   parseBraSize,
-  parseFuzzyDate,
   formatFuzzyDate,
 } from "src/utils";
 
@@ -70,10 +69,6 @@ const selectPerformerDetails = (
       disambiguation: diffValue(original.disambiguation, data.disambiguation),
       gender: diffValue(original.gender, genderEnum(data.gender)),
       birthdate: diffValue(formatFuzzyDate(original.birthdate), data.birthdate),
-      birthdate_accuracy: diffValue(
-        original.birthdate?.accuracy,
-        parseFuzzyDate(data.birthdate)?.accuracy
-      ),
       career_start_year: diffValue(
         original.career_start_year,
         data.career_start_year
@@ -98,10 +93,6 @@ const selectPerformerDetails = (
       disambiguation: diffValue(data.disambiguation, original.disambiguation),
       gender: diffValue(genderEnum(data.gender), original.gender),
       birthdate: diffValue(data.birthdate, formatFuzzyDate(original.birthdate)),
-      birthdate_accuracy: diffValue(
-        parseFuzzyDate(data.birthdate)?.accuracy,
-        original.birthdate?.accuracy
-      ),
       career_start_year: diffValue(
         data.career_start_year,
         original.career_start_year

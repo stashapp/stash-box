@@ -69,7 +69,6 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       birthdate
-      birthdate_accuracy
       ethnicity
       country
       eye_color
@@ -134,7 +133,6 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       date
-      date_accuracy
       studio {
         ...StudioFragment
       }
@@ -188,7 +186,6 @@ fragment EditFragment on Edit {
       disambiguation
       gender
       birthdate
-      birthdate_accuracy
       ethnicity
       country
       eye_color
@@ -218,7 +215,6 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       date
-      date_accuracy
       studio {
         ...StudioFragment
       }
@@ -259,14 +255,7 @@ fragment EditFragment on Edit {
   }
   merge_sources {
     ... on Tag {
-      id
-      name
-      description
-      deleted
-      category {
-        id
-        name
-      }
+      ...TagFragment
     }
     ... on Performer {
       ...PerformerFragment

@@ -62,6 +62,18 @@ func (r *performerEditResolver) RemovedImages(ctx context.Context, obj *models.P
 	return imageList(ctx, obj.RemovedImages)
 }
 
+func (r *performerEditResolver) FuzzyBirthdate(ctx context.Context, obj *models.PerformerEdit) (*string, error) {
+	return obj.Birthdate, nil
+}
+
+func (r *performerEditResolver) FuzzyBirthdateAccuracy(ctx context.Context, obj *models.PerformerEdit) (*string, error) {
+	return obj.BirthdateAccuracy, nil
+}
+
+func (r *performerEditResolver) Birthdate(ctx context.Context, obj *models.PerformerEdit) (*string, error) {
+	return resolveFuzzyDate(obj.Birthdate, obj.BirthdateAccuracy), nil
+}
+
 func (r *performerEditResolver) Images(ctx context.Context, obj *models.PerformerEdit) ([]*models.Image, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindPerformerID(obj.EditID)

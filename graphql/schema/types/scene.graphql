@@ -146,7 +146,8 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: String
-  date_accuracy: String
+  fuzzy_date: String
+  fuzzy_date_accuracy: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]

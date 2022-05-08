@@ -17,13 +17,14 @@ import URLInput from "src/components/urlInput";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
 import { StudioSchema, StudioFormData } from "./schema";
+import { InitialStudio } from "./types";
 import DiffStudio from "./diff";
 
 interface StudioProps {
   studio: Studio;
   callback: (data: StudioEditDetailsInput, editNote: string) => void;
   showNetworkSelect?: boolean;
-  initial?: Partial<Studio>;
+  initial?: InitialStudio;
   saving: boolean;
 }
 

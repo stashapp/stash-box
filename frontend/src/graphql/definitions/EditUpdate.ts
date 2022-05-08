@@ -28,6 +28,7 @@ export interface EditUpdate_findEdit_target_Tag {
   description: string | null;
   deleted: boolean;
   category: EditUpdate_findEdit_target_Tag_category | null;
+  aliases: string[];
 }
 
 export interface EditUpdate_findEdit_target_Performer_birthdate {
@@ -251,70 +252,36 @@ export interface EditUpdate_findEdit_details_TagEdit {
   __typename: "TagEdit";
   name: string | null;
   description: string | null;
-  added_aliases: string[] | null;
-  removed_aliases: string[] | null;
   category: EditUpdate_findEdit_details_TagEdit_category | null;
+  aliases: string[];
 }
 
-export interface EditUpdate_findEdit_details_PerformerEdit_added_urls_site {
+export interface EditUpdate_findEdit_details_PerformerEdit_urls_site {
   __typename: "Site";
   id: string;
   name: string;
   icon: string;
 }
 
-export interface EditUpdate_findEdit_details_PerformerEdit_added_urls {
+export interface EditUpdate_findEdit_details_PerformerEdit_urls {
   __typename: "URL";
   url: string;
-  site: EditUpdate_findEdit_details_PerformerEdit_added_urls_site;
+  site: EditUpdate_findEdit_details_PerformerEdit_urls_site;
 }
 
-export interface EditUpdate_findEdit_details_PerformerEdit_removed_urls_site {
-  __typename: "Site";
-  id: string;
-  name: string;
-  icon: string;
-}
-
-export interface EditUpdate_findEdit_details_PerformerEdit_removed_urls {
-  __typename: "URL";
-  url: string;
-  site: EditUpdate_findEdit_details_PerformerEdit_removed_urls_site;
-}
-
-export interface EditUpdate_findEdit_details_PerformerEdit_added_tattoos {
+export interface EditUpdate_findEdit_details_PerformerEdit_tattoos {
   __typename: "BodyModification";
   location: string;
   description: string | null;
 }
 
-export interface EditUpdate_findEdit_details_PerformerEdit_removed_tattoos {
+export interface EditUpdate_findEdit_details_PerformerEdit_piercings {
   __typename: "BodyModification";
   location: string;
   description: string | null;
 }
 
-export interface EditUpdate_findEdit_details_PerformerEdit_added_piercings {
-  __typename: "BodyModification";
-  location: string;
-  description: string | null;
-}
-
-export interface EditUpdate_findEdit_details_PerformerEdit_removed_piercings {
-  __typename: "BodyModification";
-  location: string;
-  description: string | null;
-}
-
-export interface EditUpdate_findEdit_details_PerformerEdit_added_images {
-  __typename: "Image";
-  id: string;
-  url: string;
-  width: number;
-  height: number;
-}
-
-export interface EditUpdate_findEdit_details_PerformerEdit_removed_images {
+export interface EditUpdate_findEdit_details_PerformerEdit_images {
   __typename: "Image";
   id: string;
   url: string;
@@ -326,13 +293,8 @@ export interface EditUpdate_findEdit_details_PerformerEdit {
   __typename: "PerformerEdit";
   name: string | null;
   disambiguation: string | null;
-  added_aliases: string[] | null;
-  removed_aliases: string[] | null;
   gender: GenderEnum | null;
-  added_urls: EditUpdate_findEdit_details_PerformerEdit_added_urls[] | null;
-  removed_urls: EditUpdate_findEdit_details_PerformerEdit_removed_urls[] | null;
   birthdate: string | null;
-  birthdate_accuracy: string | null;
   ethnicity: EthnicityEnum | null;
   country: string | null;
   eye_color: EyeColorEnum | null;
@@ -348,39 +310,25 @@ export interface EditUpdate_findEdit_details_PerformerEdit {
   breast_type: BreastTypeEnum | null;
   career_start_year: number | null;
   career_end_year: number | null;
-  added_tattoos: EditUpdate_findEdit_details_PerformerEdit_added_tattoos[] | null;
-  removed_tattoos: EditUpdate_findEdit_details_PerformerEdit_removed_tattoos[] | null;
-  added_piercings: EditUpdate_findEdit_details_PerformerEdit_added_piercings[] | null;
-  removed_piercings: EditUpdate_findEdit_details_PerformerEdit_removed_piercings[] | null;
-  added_images: (EditUpdate_findEdit_details_PerformerEdit_added_images | null)[] | null;
-  removed_images: (EditUpdate_findEdit_details_PerformerEdit_removed_images | null)[] | null;
+  aliases: string[];
+  urls: EditUpdate_findEdit_details_PerformerEdit_urls[];
+  tattoos: EditUpdate_findEdit_details_PerformerEdit_tattoos[];
+  piercings: EditUpdate_findEdit_details_PerformerEdit_piercings[];
+  images: EditUpdate_findEdit_details_PerformerEdit_images[];
   draft_id: string | null;
 }
 
-export interface EditUpdate_findEdit_details_StudioEdit_added_urls_site {
+export interface EditUpdate_findEdit_details_StudioEdit_urls_site {
   __typename: "Site";
   id: string;
   name: string;
   icon: string;
 }
 
-export interface EditUpdate_findEdit_details_StudioEdit_added_urls {
+export interface EditUpdate_findEdit_details_StudioEdit_urls {
   __typename: "URL";
   url: string;
-  site: EditUpdate_findEdit_details_StudioEdit_added_urls_site;
-}
-
-export interface EditUpdate_findEdit_details_StudioEdit_removed_urls_site {
-  __typename: "Site";
-  id: string;
-  name: string;
-  icon: string;
-}
-
-export interface EditUpdate_findEdit_details_StudioEdit_removed_urls {
-  __typename: "URL";
-  url: string;
-  site: EditUpdate_findEdit_details_StudioEdit_removed_urls_site;
+  site: EditUpdate_findEdit_details_StudioEdit_urls_site;
 }
 
 export interface EditUpdate_findEdit_details_StudioEdit_parent_child_studios {
@@ -428,15 +376,7 @@ export interface EditUpdate_findEdit_details_StudioEdit_parent {
   is_favorite: boolean;
 }
 
-export interface EditUpdate_findEdit_details_StudioEdit_added_images {
-  __typename: "Image";
-  id: string;
-  url: string;
-  width: number;
-  height: number;
-}
-
-export interface EditUpdate_findEdit_details_StudioEdit_removed_images {
+export interface EditUpdate_findEdit_details_StudioEdit_images {
   __typename: "Image";
   id: string;
   url: string;
@@ -447,27 +387,9 @@ export interface EditUpdate_findEdit_details_StudioEdit_removed_images {
 export interface EditUpdate_findEdit_details_StudioEdit {
   __typename: "StudioEdit";
   name: string | null;
-  /**
-   * Added and modified URLs
-   */
-  added_urls: EditUpdate_findEdit_details_StudioEdit_added_urls[] | null;
-  removed_urls: EditUpdate_findEdit_details_StudioEdit_removed_urls[] | null;
+  urls: EditUpdate_findEdit_details_StudioEdit_urls[];
   parent: EditUpdate_findEdit_details_StudioEdit_parent | null;
-  added_images: (EditUpdate_findEdit_details_StudioEdit_added_images | null)[] | null;
-  removed_images: (EditUpdate_findEdit_details_StudioEdit_removed_images | null)[] | null;
-}
-
-export interface EditUpdate_findEdit_details_SceneEdit_urls_site {
-  __typename: "Site";
-  id: string;
-  name: string;
-  icon: string;
-}
-
-export interface EditUpdate_findEdit_details_SceneEdit_urls {
-  __typename: "URL";
-  url: string;
-  site: EditUpdate_findEdit_details_SceneEdit_urls_site;
+  images: EditUpdate_findEdit_details_StudioEdit_images[];
 }
 
 export interface EditUpdate_findEdit_details_SceneEdit_studio_child_studios {
@@ -513,6 +435,19 @@ export interface EditUpdate_findEdit_details_SceneEdit_studio {
   images: EditUpdate_findEdit_details_SceneEdit_studio_images[];
   deleted: boolean;
   is_favorite: boolean;
+}
+
+export interface EditUpdate_findEdit_details_SceneEdit_urls_site {
+  __typename: "Site";
+  id: string;
+  name: string;
+  icon: string;
+}
+
+export interface EditUpdate_findEdit_details_SceneEdit_urls {
+  __typename: "URL";
+  url: string;
+  site: EditUpdate_findEdit_details_SceneEdit_urls_site;
 }
 
 export interface EditUpdate_findEdit_details_SceneEdit_performers_performer_birthdate {
@@ -613,6 +548,7 @@ export interface EditUpdate_findEdit_details_SceneEdit_tags {
   description: string | null;
   deleted: boolean;
   category: EditUpdate_findEdit_details_SceneEdit_tags_category | null;
+  aliases: string[];
 }
 
 export interface EditUpdate_findEdit_details_SceneEdit_images {
@@ -634,10 +570,9 @@ export interface EditUpdate_findEdit_details_SceneEdit {
   __typename: "SceneEdit";
   title: string | null;
   details: string | null;
-  urls: EditUpdate_findEdit_details_SceneEdit_urls[];
   date: string | null;
-  date_accuracy: string | null;
   studio: EditUpdate_findEdit_details_SceneEdit_studio | null;
+  urls: EditUpdate_findEdit_details_SceneEdit_urls[];
   performers: EditUpdate_findEdit_details_SceneEdit_performers[];
   tags: EditUpdate_findEdit_details_SceneEdit_tags[];
   images: EditUpdate_findEdit_details_SceneEdit_images[];

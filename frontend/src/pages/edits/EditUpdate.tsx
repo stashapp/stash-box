@@ -1,15 +1,8 @@
 import { FC, useContext } from "react";
 import { useParams } from "react-router-dom";
 
-import {
-  useEditUpdate,
-} from "src/graphql";
-import {
-  isPerformer,
-  isStudio,
-  isTag,
-  isScene,
-} from "src/utils";
+import { useEditUpdate } from "src/graphql";
+import { isPerformer, isStudio, isTag, isScene } from "src/utils";
 import AuthContext from "src/AuthContext";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { SceneEditUpdate } from "src/pages/scenes/SceneEditUpdate";
@@ -31,13 +24,10 @@ const EditComponent: FC = () => {
   if (edit.created !== edit.updated)
     return <ErrorMessage error="Edits can only be amended once" />;
 
-  if (isScene(edit.target))
-    return <SceneEditUpdate edit={edit} />;
-  if (isPerformer(edit.target))
-    return <PerformerEditUpdate edit={edit} />;
+  if (isScene(edit.target)) return <SceneEditUpdate edit={edit} />;
+  if (isPerformer(edit.target)) return <PerformerEditUpdate edit={edit} />;
   if (isTag(edit.target)) return <TagEditUpdate edit={edit} />;
-  if (isStudio(edit.target))
-    return <StudioEditUpdate edit={edit} />;
+  if (isStudio(edit.target)) return <StudioEditUpdate edit={edit} />;
 
   return null;
 };

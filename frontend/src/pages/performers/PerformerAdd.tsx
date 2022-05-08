@@ -75,7 +75,6 @@ const PerformerAdd: FC = () => {
       <PerformerForm
         performer={emptyPerformer}
         callback={doInsert}
-        changeType="create"
         saving={saving}
       />
     </div>

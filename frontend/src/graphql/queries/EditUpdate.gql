@@ -21,6 +21,7 @@ query EditUpdate($id: ID!) {
     target {
       ... on Tag {
         ...TagFragment
+        aliases
       }
       ... on Performer {
         ...PerformerFragment
@@ -36,27 +37,17 @@ query EditUpdate($id: ID!) {
       ... on TagEdit {
         name
         description
-        added_aliases
-        removed_aliases
         category {
           id
           name
         }
+        aliases
       }
       ... on PerformerEdit {
         name
         disambiguation
-        added_aliases
-        removed_aliases
         gender
-        added_urls {
-          ...URLFragment
-        }
-        removed_urls {
-          ...URLFragment
-        }
         birthdate
-        birthdate_accuracy
         ethnicity
         country
         eye_color
@@ -69,58 +60,44 @@ query EditUpdate($id: ID!) {
         breast_type
         career_start_year
         career_end_year
-        added_tattoos {
+        aliases
+        urls {
+          ...URLFragment
+        }
+        tattoos {
           location
           description
         }
-        removed_tattoos {
+        piercings {
           location
           description
         }
-        added_piercings {
-          location
-          description
-        }
-        removed_piercings {
-          location
-          description
-        }
-        added_images {
-          ...ImageFragment
-        }
-        removed_images {
+        images {
           ...ImageFragment
         }
         draft_id
       }
       ... on StudioEdit {
         name
-        added_urls {
-          ...URLFragment
-        }
-        removed_urls {
+        urls {
           ...URLFragment
         }
         parent {
           ...StudioFragment
         }
-        added_images {
-          ...ImageFragment
-        }
-        removed_images {
+        images {
           ...ImageFragment
         }
       }
       ... on SceneEdit {
         title
         details
-        urls {
-          ...URLFragment
-        }
         date
-        date_accuracy
         studio {
           ...StudioFragment
+        }
+        urls {
+          ...URLFragment
         }
         performers {
           performer {

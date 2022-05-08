@@ -1,18 +1,18 @@
-import { FuzzyDateInput, GenderEnum } from 'src/graphql';
+import { GenderEnum } from "src/graphql";
 
 export type InitialScene = {
   title?: string | null;
   details?: string | null;
   duration?: number | null;
   director?: string | null;
-  date?: FuzzyDateInput | null;
+  date?: string | null;
   code?: string | null;
   urls?: {
     url: string;
     site: {
       id: string;
       name: string;
-    }
+    };
   }[];
   images?: {
     id: string;
@@ -28,14 +28,16 @@ export type InitialScene = {
     id: string;
     name: string;
   }[];
-  performers?: {
-    as: string | null;
-    performer: {
-      id: string;
-      name: string;
-      disambiguation: string | null;
-      gender: GenderEnum | null;
-      deleted: boolean;
-    }
-  }[] | null;
-}
+  performers?:
+    | {
+        as: string | null;
+        performer: {
+          id: string;
+          name: string;
+          disambiguation: string | null;
+          gender: GenderEnum | null;
+          deleted: boolean;
+        };
+      }[]
+    | null;
+};

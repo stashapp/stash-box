@@ -38,7 +38,7 @@ import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
-import { InitialScene } from './types';
+import { InitialScene } from "./types";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
@@ -63,7 +63,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     defaultValues: {
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
-      date: formatFuzzyDate(initial?.date ?? scene?.date),
+      date: initial?.date ?? formatFuzzyDate(scene?.date),
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,

@@ -37,9 +37,11 @@ import {
 } from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
 import EditImages from "src/components/editImages";
+import URLInput from "src/components/urlInput";
+
 import DiffPerformer from "./diff";
 import { PerformerSchema, PerformerFormData } from "./schema";
-import URLInput from "src/components/urlInput";
+import { InitialPerformer } from "./types";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en");
@@ -120,8 +122,7 @@ interface PerformerProps {
     updateAliases: boolean,
     id?: string
   ) => void;
-  initial?: Partial<Performer>;
-  changeType: "modify" | "create" | "merge";
+  initial?: InitialPerformer;
   saving: boolean;
 }
 
@@ -140,11 +141,11 @@ const PerformerForm: FC<PerformerProps> = ({
   const tattoos = uniqBy(
     [...(performer.tattoos ?? []), ...(initial?.tattoos ?? [])],
     (mod) => `${mod.location}${mod.description}`
-  ).map(({ __typename, ...mod }) => mod);
+  );
   const piercings = uniqBy(
     [...(performer.piercings ?? []), ...(initial?.piercings ?? [])],
     (mod) => `${mod.location}${mod.description}`
-  ).map(({ __typename, ...mod }) => mod);
+  );
   const {
     register,
     control,
@@ -160,7 +161,7 @@ const PerformerForm: FC<PerformerProps> = ({
       disambiguation: initial?.disambiguation ?? performer.disambiguation,
       aliases,
       gender: initial?.gender ?? performer?.gender,
-      birthdate: formatFuzzyDate(initial?.birthdate ?? performer.birthdate),
+      birthdate: initial?.birthdate ?? formatFuzzyDate(performer.birthdate),
       eye_color: getEnumValue(EYE, initial?.eye_color ?? performer.eye_color),
       hair_color: getEnumValue(
         HAIR,

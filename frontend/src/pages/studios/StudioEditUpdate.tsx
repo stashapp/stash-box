@@ -1,32 +1,32 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useSceneEditUpdate, SceneEditDetailsInput } from "src/graphql";
-import { createHref, isScene, isSceneDetails } from "src/utils";
-import SceneForm from "./sceneForm";
+import { useStudioEditUpdate, StudioEditDetailsInput } from "src/graphql";
+import { createHref, isStudio, isStudioDetails } from "src/utils";
+import StudioForm from "./studioForm";
 
 import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
 import { ROUTE_EDIT } from "src/constants";
 
-export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
+export const StudioEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
-  const [updateSceneEdit, { loading: saving }] = useSceneEditUpdate({
+  const [updateStudioEdit, { loading: saving }] = useStudioEditUpdate({
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
-      if (result.sceneEditUpdate.id)
-        history.push(createHref(ROUTE_EDIT, result.sceneEditUpdate));
+      if (result.studioEditUpdate.id)
+        history.push(createHref(ROUTE_EDIT, result.studioEditUpdate));
     },
     onError: (error) => setSubmissionError(error.message),
   });
 
-  if (!isScene(edit.target) || !isSceneDetails(edit.details)) return null;
+  if (!isStudio(edit.target) || !isStudioDetails(edit.details)) return null;
 
-  const doUpdate = (updateData: SceneEditDetailsInput, editNote: string) => {
-    updateSceneEdit({
+  const doUpdate = (updateData: StudioEditDetailsInput, editNote: string) => {
+    updateStudioEdit({
       variables: {
         id: edit.id,
-        sceneData: {
+        studioData: {
           edit: {
             id: edit.target?.id,
             operation: edit.operation,
@@ -41,14 +41,14 @@ export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
   return (
     <div>
       <h3>
-        Update scene edit for
+        Update studio edit for
         <i>
-          <b>{edit.target.title}</b>
+          <b>{edit.target.name}</b>
         </i>
       </h3>
       <hr />
-      <SceneForm
-        scene={edit.target}
+      <StudioForm
+        studio={edit.target}
         initial={edit.details}
         callback={doUpdate}
         saving={saving}

@@ -151,7 +151,6 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
               images: flatMap(mergeSources, (i) => i.images),
             }}
             callback={doUpdate}
-            changeType="merge"
             saving={saving}
           />
         </>
