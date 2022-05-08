@@ -1478,6 +1478,7 @@ export interface Edits_queryEdits_edits {
   applied: boolean;
   created: any;
   updated: any | null;
+  closed: any | null;
   /**
    *  = Accepted - Rejected
    */

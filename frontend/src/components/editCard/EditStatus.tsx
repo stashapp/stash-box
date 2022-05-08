@@ -7,9 +7,10 @@ import { Tooltip } from "src/components/fragments";
 
 interface Props {
   status: VoteStatusEnum;
+  closed: string | null;
 }
 
-const EditStatus: FC<Props> = ({ status }) => {
+const EditStatus: FC<Props> = ({ closed, status }) => {
   let editVariant: BadgeProps["bg"] = "warning";
   if (
     status === VoteStatusEnum.REJECTED ||
@@ -41,8 +42,15 @@ const EditStatus: FC<Props> = ({ status }) => {
       break;
   }
 
+  const tooltipContent = (closed || tooltip) ? (
+    <>
+      { closed && <div>Closed <b>{closed}</b></div> }
+      { tooltip }
+    </>
+  ) : "";
+
   return (
-    <Tooltip text={tooltip}>
+    <Tooltip text={tooltipContent}>
       <Badge className="text-uppercase" bg={editVariant}>
         {EditStatusTypes[status]}
       </Badge>

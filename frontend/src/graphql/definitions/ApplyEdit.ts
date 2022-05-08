@@ -1478,6 +1478,7 @@ export interface ApplyEdit_applyEdit {
   applied: boolean;
   created: any;
   updated: any | null;
+  closed: any | null;
   /**
    *  = Accepted - Rejected
    */

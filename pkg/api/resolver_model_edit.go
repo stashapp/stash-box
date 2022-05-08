@@ -33,7 +33,10 @@ func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Tim
 }
 
 func (r *editResolver) Updated(ctx context.Context, obj *models.Edit) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
+	if !obj.ClosedAt.Valid {
+		return nil, nil
+	}
+	return &obj.ClosedAt.Time, nil
 }
 
 func (r *editResolver) Closed(ctx context.Context, obj *models.Edit) (*time.Time, error) {
@@ -197,28 +200,36 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 		if err != nil {
 			return nil, err
 		}
-		tagData.New.EditID = obj.ID
+		if tagData.New != nil {
+			tagData.New.EditID = obj.ID
+		}
 		ret = tagData.New
 	case models.TargetTypeEnumPerformer:
 		performerData, err := obj.GetPerformerData()
 		if err != nil {
 			return nil, err
 		}
-		performerData.New.EditID = obj.ID
+		if performerData.New != nil {
+			performerData.New.EditID = obj.ID
+		}
 		ret = performerData.New
 	case models.TargetTypeEnumStudio:
 		studioData, err := obj.GetStudioData()
 		if err != nil {
 			return nil, err
 		}
-		studioData.New.EditID = obj.ID
+		if studioData.New != nil {
+			studioData.New.EditID = obj.ID
+		}
 		ret = studioData.New
 	case models.TargetTypeEnumScene:
 		sceneData, err := obj.GetSceneData()
 		if err != nil {
 			return nil, err
 		}
-		sceneData.New.EditID = obj.ID
+		if sceneData.New != nil {
+			sceneData.New.EditID = obj.ID
+		}
 		ret = sceneData.New
 	}
 

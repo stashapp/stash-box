@@ -1478,6 +1478,7 @@ export interface PerformerEditUpdate_performerEditUpdate {
   applied: boolean;
   created: any;
   updated: any | null;
+  closed: any | null;
   /**
    *  = Accepted - Rejected
    */

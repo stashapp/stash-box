@@ -1,6 +1,7 @@
 package edit
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -49,7 +50,7 @@ func (m *mutator) CreateEdit() (*models.Edit, error) {
 }
 
 func (m *mutator) UpdateEdit() (*models.Edit, error) {
-	m.edit.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	m.edit.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	updated, err := m.fac.Edit().Update(*m.edit)
 	if err != nil {
 		return nil, err

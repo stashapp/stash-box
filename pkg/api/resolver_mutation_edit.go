@@ -72,7 +72,7 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if existingEdit.UpdatedAt.Timestamp != existingEdit.CreatedAt.Timestamp {
+	if !existingEdit.UpdatedAt.Valid {
 		return nil, AlreadyUpdatedErr
 	}
 
@@ -142,7 +142,7 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if existingEdit.UpdatedAt.Timestamp != existingEdit.CreatedAt.Timestamp {
+	if !existingEdit.UpdatedAt.Valid {
 		return nil, AlreadyUpdatedErr
 	}
 
@@ -212,7 +212,7 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if existingEdit.UpdatedAt.Timestamp != existingEdit.CreatedAt.Timestamp {
+	if !existingEdit.UpdatedAt.Valid {
 		return nil, AlreadyUpdatedErr
 	}
 
@@ -286,7 +286,7 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 		return nil, UnauthorizedUpdateErr
 	}
 
-	if existingEdit.UpdatedAt.Timestamp != existingEdit.CreatedAt.Timestamp {
+	if !existingEdit.UpdatedAt.Valid {
 		return nil, AlreadyUpdatedErr
 	}
 

@@ -1478,6 +1478,7 @@ export interface TagEditUpdate_tagEditUpdate {
   applied: boolean;
   created: any;
   updated: any | null;
+  closed: any | null;
   /**
    *  = Accepted - Rejected
    */

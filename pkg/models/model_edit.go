@@ -21,7 +21,7 @@ type Edit struct {
 	Applied    bool            `db:"applied" json:"applied"`
 	Data       types.JSONText  `db:"data" json:"data"`
 	CreatedAt  SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt  SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	UpdatedAt  sql.NullTime    `db:"updated_at" json:"updated_at"`
 	ClosedAt   sql.NullTime    `db:"closed_at" json:"closed_at"`
 }
 
@@ -50,7 +50,6 @@ func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditI
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),
 		CreatedAt:  SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:  SQLiteTimestamp{Timestamp: currentTime},
 	}
 
 	return ret
