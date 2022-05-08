@@ -36,12 +36,13 @@ func resolveFuzzyDate(date *string, accuracy *string) *string {
 		return nil
 	}
 
-	if *accuracy == models.DateAccuracyEnumDay.String() {
+	switch *accuracy {
+	case models.DateAccuracyEnumDay.String():
 		return date
-	} else if *accuracy == models.DateAccuracyEnumMonth.String() {
+	case models.DateAccuracyEnumMonth.String():
 		ret := (*date)[0:7]
 		return &ret
-	} else if *accuracy == models.DateAccuracyEnumYear.String() {
+	case models.DateAccuracyEnumYear.String():
 		ret := (*date)[0:4]
 		return &ret
 	}

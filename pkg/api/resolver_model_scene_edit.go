@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -147,7 +148,7 @@ func (r *sceneEditResolver) Date(ctx context.Context, obj *models.SceneEdit) (*s
 func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindSceneID(obj.EditID)
-	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
 		return nil, err
 	}
 
@@ -166,7 +167,7 @@ func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) (
 func (r *sceneEditResolver) Tags(ctx context.Context, obj *models.SceneEdit) ([]*models.Tag, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindSceneID(obj.EditID)
-	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
 		return nil, err
 	}
 
@@ -187,7 +188,7 @@ func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdi
 	pqb := fac.Performer()
 
 	id, err := fac.Edit().FindSceneID(obj.EditID)
-	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
 		return nil, err
 	}
 
@@ -215,7 +216,7 @@ func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdi
 func (r *sceneEditResolver) Urls(ctx context.Context, obj *models.SceneEdit) ([]*models.URL, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindSceneID(obj.EditID)
-	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
 		return nil, err
 	}
 

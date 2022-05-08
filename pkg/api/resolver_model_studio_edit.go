@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/sqlx"
@@ -35,7 +36,7 @@ func (r *studioEditResolver) RemovedImages(ctx context.Context, obj *models.Stud
 func (r *studioEditResolver) Images(ctx context.Context, obj *models.StudioEdit) ([]*models.Image, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindStudioID(obj.EditID)
-	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
 		return nil, err
 	}
 
@@ -53,7 +54,7 @@ func (r *studioEditResolver) Images(ctx context.Context, obj *models.StudioEdit)
 func (r *studioEditResolver) Urls(ctx context.Context, obj *models.StudioEdit) ([]*models.URL, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindStudioID(obj.EditID)
-	if err != nil && err != sqlx.EditTargetIDNotFoundErr {
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
 		return nil, err
 	}
 

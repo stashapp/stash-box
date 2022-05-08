@@ -11,8 +11,8 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-var UnauthorizedUpdateErr = fmt.Errorf("Only the creator can update edits")
-var AlreadyUpdatedErr = fmt.Errorf("Edits can only be amended once")
+var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
+var ErrAlreadyUpdated = fmt.Errorf("Edits can only be amended once")
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
@@ -69,11 +69,11 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 	}
 
 	if existingEdit.UserID != currentUser.ID {
-		return nil, UnauthorizedUpdateErr
+		return nil, ErrUnauthorizedUpdate
 	}
 
 	if existingEdit.UpdatedAt.Valid {
-		return nil, AlreadyUpdatedErr
+		return nil, ErrAlreadyUpdated
 	}
 
 	err = fac.WithTxn(func() error {
@@ -142,11 +142,11 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 	}
 
 	if existingEdit.UserID != currentUser.ID {
-		return nil, UnauthorizedUpdateErr
+		return nil, ErrUnauthorizedUpdate
 	}
 
 	if existingEdit.UpdatedAt.Valid {
-		return nil, AlreadyUpdatedErr
+		return nil, ErrAlreadyUpdated
 	}
 
 	err = fac.WithTxn(func() error {
@@ -215,11 +215,11 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 	}
 
 	if existingEdit.UserID != currentUser.ID {
-		return nil, UnauthorizedUpdateErr
+		return nil, ErrUnauthorizedUpdate
 	}
 
 	if existingEdit.UpdatedAt.Valid {
-		return nil, AlreadyUpdatedErr
+		return nil, ErrAlreadyUpdated
 	}
 
 	err = fac.WithTxn(func() error {
@@ -292,11 +292,11 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 	}
 
 	if existingEdit.UserID != currentUser.ID {
-		return nil, UnauthorizedUpdateErr
+		return nil, ErrUnauthorizedUpdate
 	}
 
 	if existingEdit.UpdatedAt.Valid {
-		return nil, AlreadyUpdatedErr
+		return nil, ErrAlreadyUpdated
 	}
 
 	err = fac.WithTxn(func() error {
