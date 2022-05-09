@@ -30,6 +30,12 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     updateData: PerformerEditDetailsInput,
     editNote: string
   ) => {
+    if (!isPerformerDetails(edit.details)) return;
+
+    const details: PerformerEditDetailsInput = {
+      ...updateData,
+      draft_id: edit.details.draft_id,
+    };
     updatePerformerEdit({
       variables: {
         id: edit.id,
@@ -39,7 +45,7 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
             operation: edit.operation,
             comment: editNote,
           },
-          details: updateData,
+          details,
         },
       },
     });

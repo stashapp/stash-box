@@ -20,7 +20,11 @@ export const StudioEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     onError: (error) => setSubmissionError(error.message),
   });
 
-  if (!isStudio(edit.target) || !isStudioDetails(edit.details)) return null;
+  if (
+    !isStudioDetails(edit.details) ||
+    (edit.target !== null && !isStudio(edit.target))
+  )
+    return null;
 
   const doUpdate = (updateData: StudioEditDetailsInput, editNote: string) => {
     updateStudioEdit({
@@ -43,7 +47,7 @@ export const StudioEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
       <h3>
         Update studio edit for
         <i>
-          <b>{edit.target.name}</b>
+          <b>{edit?.target?.name ?? edit.details?.name}</b>
         </i>
       </h3>
       <hr />

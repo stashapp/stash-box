@@ -24,6 +24,13 @@ export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     return null;
 
   const doUpdate = (updateData: SceneEditDetailsInput, editNote: string) => {
+    if (!isSceneDetails(edit.details)) return;
+
+    const details: SceneEditDetailsInput = {
+      ...updateData,
+      draft_id: edit.details.draft_id,
+      fingerprints: edit.details.fingerprints,
+    };
     updateSceneEdit({
       variables: {
         id: edit.id,
@@ -33,7 +40,7 @@ export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
             operation: edit.operation,
             comment: editNote,
           },
-          details: updateData,
+          details,
         },
       },
     });
