@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
+import { flatMap, uniq } from "lodash-es";
 
 import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
@@ -13,10 +14,16 @@ interface Props {
   tag: Tag;
 }
 
+type TagSlim = {
+  id: string;
+  name: string;
+  aliases: string[];
+};
+
 const TagMerge: FC<Props> = ({ tag }) => {
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
-  const [mergeSources, setMergeSources] = useState<string[]>([]);
+  const [mergeSources, setMergeSources] = useState<TagSlim[]>([]);
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
@@ -32,7 +39,7 @@ const TagMerge: FC<Props> = ({ tag }) => {
           edit: {
             id: tag.id,
             operation: OperationEnum.MERGE,
-            merge_source_ids: mergeSources,
+            merge_source_ids: mergeSources.map((t) => t.id),
             comment: editNote,
           },
           details: insertData,
@@ -40,6 +47,12 @@ const TagMerge: FC<Props> = ({ tag }) => {
       },
     });
   };
+
+  const aliases = uniq([
+    ...tag.aliases,
+    ...mergeSources.map((t) => t.name),
+    ...flatMap(mergeSources, (t) => t.aliases),
+  ]);
 
   return (
     <div>
@@ -51,9 +64,9 @@ const TagMerge: FC<Props> = ({ tag }) => {
         <Col xs={6}>
           <TagSelect
             tags={[]}
-            onChange={(tags) => setMergeSources(tags.map((t) => t.id))}
+            onChange={(tags) => setMergeSources(tags)}
             message="Select tags to merge:"
-            excludeTags={[tag.id, ...mergeSources]}
+            excludeTags={[tag.id, ...mergeSources.map((t) => t.id)]}
           />
         </Col>
       </Row>
@@ -65,7 +78,12 @@ const TagMerge: FC<Props> = ({ tag }) => {
         {submissionError && (
           <div className="text-danger mb-2">Error: {submissionError}</div>
         )}
-        <TagForm tag={tag} callback={doUpdate} saving={saving} />
+        <TagForm
+          tag={tag}
+          callback={doUpdate}
+          saving={saving}
+          initial={{ aliases }}
+        />
       </Row>
     </div>
   );

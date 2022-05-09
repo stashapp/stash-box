@@ -77,6 +77,7 @@ export interface SceneFragment_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface SceneFragment {

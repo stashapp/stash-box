@@ -13,7 +13,6 @@ import {
   faExclamationTriangle,
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { uniqBy } from "lodash-es";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import {
@@ -67,10 +66,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
-      urls: uniqBy(
-        [...(scene?.urls ?? []), ...(initial?.urls ?? [])],
-        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
-      ),
+      urls: initial?.urls ?? scene?.urls ?? [],
       images: initial?.images ?? scene?.images ?? [],
       studio: initial?.studio ?? scene?.studio ?? undefined,
       tags: initial?.tags ?? scene?.tags ?? [],

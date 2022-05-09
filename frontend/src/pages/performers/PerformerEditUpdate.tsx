@@ -52,8 +52,8 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
       hip: edit.details?.hip_size ?? null,
       band_size: edit.details?.band_size ?? null,
       cup_size: edit.details?.cup_size ?? null,
-    }
-  }
+    },
+  };
 
   return (
     <div>

@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { flatMap } from "lodash-es";
+import { flatMap, uniq, uniqBy } from "lodash-es";
 
 import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
@@ -70,6 +70,16 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
       },
     });
   };
+
+  const aliases = uniq([
+    ...performer.aliases,
+    ...mergeSources.map((p) => p.name),
+    ...flatMap(mergeSources, (p) => p.aliases),
+  ]);
+  const images = uniqBy(
+    [...performer.images, ...flatMap(mergeSources, (i) => i.images)],
+    (image) => image.id
+  );
 
   return (
     <div className={CLASSNAME}>
@@ -144,11 +154,8 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
           <PerformerForm
             performer={performer}
             initial={{
-              aliases: [
-                ...mergeSources.map((p) => p.name),
-                ...flatMap(mergeSources, (p) => p.aliases),
-              ],
-              images: flatMap(mergeSources, (i) => i.images),
+              aliases,
+              images,
             }}
             callback={doUpdate}
             saving={saving}

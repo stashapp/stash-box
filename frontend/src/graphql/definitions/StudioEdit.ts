@@ -247,6 +247,7 @@ export interface StudioEdit_studioEdit_target_Scene_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface StudioEdit_studioEdit_target_Scene {
@@ -1435,6 +1436,7 @@ export interface StudioEdit_studioEdit_merge_sources_Scene_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface StudioEdit_studioEdit_merge_sources_Scene {

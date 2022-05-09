@@ -38,23 +38,43 @@ func MergeURLs(currentURLs []*models.URL, addedURLs []*models.URL, removedURLs [
 }
 
 func MergeBodyMods(currentBodyMods models.PerformerBodyMods, addedMods []*models.BodyModification, removedMods []*models.BodyModification) []*models.BodyModification {
-	var current []models.BodyModification
+	type bodyMod struct {
+		Description string
+		Location    string
+	}
+	var current []bodyMod
 	for _, v := range currentBodyMods {
-		current = append(current, v.ToBodyModification())
+		current = append(current, bodyMod{
+			Description: v.Description.String,
+			Location:    v.Location,
+		})
 	}
-	var added []models.BodyModification
+	var added []bodyMod
 	for _, v := range addedMods {
-		added = append(added, *v)
+		added = append(added, bodyMod{
+			Description: utils.StrPtrToString(v.Description),
+			Location:    v.Location,
+		})
 	}
-	var removed []models.BodyModification
+	var removed []bodyMod
 	for _, v := range removedMods {
-		removed = append(removed, *v)
+		removed = append(removed, bodyMod{
+			Description: utils.StrPtrToString(v.Description),
+			Location:    v.Location,
+		})
 	}
 
 	current = utils.ProcessSlice(current, added, removed)
 	var ret []*models.BodyModification
 	for i := range current {
-		ret = append(ret, &current[i])
+		desc := &current[i].Description
+		if *desc == "" {
+			desc = nil
+		}
+		ret = append(ret, &models.BodyModification{
+			Description: desc,
+			Location:    current[i].Location,
+		})
 	}
 
 	return ret

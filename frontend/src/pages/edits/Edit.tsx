@@ -81,7 +81,8 @@ const EditComponent: FC = () => {
     edit.status === VoteStatusEnum.PENDING && (
       <div className="d-flex justify-content-end">
         {auth.user?.id === edit.user?.id &&
-          edit.operation !== OperationEnum.DESTROY && !edit.updated && (
+          edit.operation !== OperationEnum.DESTROY &&
+          !edit.updated && (
             <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
               <Button variant="primary" disabled={mutating}>
                 Update Edit

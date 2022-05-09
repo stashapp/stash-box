@@ -27,6 +27,7 @@ export type InitialScene = {
   tags?: {
     id: string;
     name: string;
+    aliases: string[];
   }[];
   performers?:
     | {

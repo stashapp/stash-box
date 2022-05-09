@@ -59,6 +59,7 @@ export const SceneSchema = yup.object({
       yup.object({
         id: yup.string().required(),
         name: yup.string().required(),
+        aliases: yup.array().of(yup.string().required()).defined(),
       })
     )
     .ensure(),

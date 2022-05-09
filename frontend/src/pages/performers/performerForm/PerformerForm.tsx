@@ -6,7 +6,7 @@ import { Col, Form, Row, Tabs, Tab } from "react-bootstrap";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
-import { merge, sortBy, uniq, uniqBy } from "lodash-es";
+import { sortBy } from "lodash-es";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
@@ -132,27 +132,7 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
 }) => {
-  const aliases = uniq([
-    ...(performer?.aliases ?? []),
-    ...(initial?.aliases ?? []),
-  ]);
-  const measurements = merge(
-    {},
-    initial?.measurements,
-    performer?.measurements
-  );
-  const images = uniqBy(
-    [...(performer?.images ?? []), ...(initial?.images ?? [])],
-    (i) => i.id
-  );
-  const tattoos = uniqBy(
-    [...(performer?.tattoos ?? []), ...(initial?.tattoos ?? [])],
-    (mod) => `${mod.location}${mod.description}`
-  );
-  const piercings = uniqBy(
-    [...(performer?.piercings ?? []), ...(initial?.piercings ?? [])],
-    (mod) => `${mod.location}${mod.description}`
-  );
+  const measurements = initial?.measurements ?? performer?.measurements;
   const {
     register,
     control,
@@ -166,7 +146,7 @@ const PerformerForm: FC<PerformerProps> = ({
     defaultValues: {
       name: initial?.name ?? performer?.name ?? "",
       disambiguation: initial?.disambiguation ?? performer?.disambiguation,
-      aliases,
+      aliases: initial?.aliases ?? performer?.aliases ?? [],
       gender: initial?.gender ?? performer?.gender,
       birthdate: initial?.birthdate ?? formatFuzzyDate(performer?.birthdate),
       eye_color: getEnumValue(
@@ -183,8 +163,8 @@ const PerformerForm: FC<PerformerProps> = ({
         initial?.breast_type ?? performer?.breast_type ?? null
       ),
       braSize: getBraSize(measurements),
-      waistSize: measurements.waist,
-      hipSize: measurements.hip,
+      waistSize: measurements?.waist,
+      hipSize: measurements?.hip,
       country: initial?.country ?? performer?.country,
       ethnicity: getEnumValue(
         ETHNICITY,
@@ -193,13 +173,10 @@ const PerformerForm: FC<PerformerProps> = ({
       career_start_year:
         initial?.career_start_year ?? performer?.career_start_year,
       career_end_year: initial?.career_end_year ?? performer?.career_end_year,
-      tattoos,
-      piercings,
-      images,
-      urls: uniqBy(
-        [...(performer?.urls ?? []), ...(initial?.urls ?? [])],
-        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
-      ),
+      tattoos: initial?.tattoos ?? performer?.tattoos ?? [],
+      piercings: initial?.piercings ?? performer?.piercings ?? [],
+      images: initial?.images ?? performer?.images ?? [],
+      urls: initial?.urls ?? performer?.urls ?? [],
     },
   });
 

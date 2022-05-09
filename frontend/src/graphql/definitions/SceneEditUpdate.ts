@@ -247,6 +247,7 @@ export interface SceneEditUpdate_sceneEditUpdate_target_Scene_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface SceneEditUpdate_sceneEditUpdate_target_Scene {
@@ -1435,6 +1436,7 @@ export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Scene_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Scene {

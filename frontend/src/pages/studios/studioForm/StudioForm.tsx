@@ -5,7 +5,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { uniqBy } from "lodash-es";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
@@ -45,14 +44,8 @@ const StudioForm: FC<StudioProps> = ({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
       name: initial?.name ?? studio?.name,
-      images: uniqBy(
-        [...(studio?.images ?? []), ...(initial?.images ?? [])],
-        (i) => i.id
-      ),
-      urls: uniqBy(
-        [...(studio?.urls ?? []), ...(initial?.urls ?? [])],
-        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
-      ),
+      images: initial?.images ?? studio?.images ?? [],
+      urls: initial?.urls ?? studio?.urls ?? [],
       parent: initial?.parent ?? studio?.parent,
     },
   });

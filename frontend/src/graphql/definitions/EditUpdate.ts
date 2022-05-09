@@ -220,6 +220,7 @@ export interface EditUpdate_findEdit_target_Scene_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface EditUpdate_findEdit_target_Scene {

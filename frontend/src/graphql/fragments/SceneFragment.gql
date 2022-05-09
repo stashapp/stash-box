@@ -42,5 +42,6 @@ fragment SceneFragment on Scene {
     id
     name
     description
+    aliases
   }
 }
