@@ -20,8 +20,10 @@ export const parseFuzzyDate = (date?: string | null) => {
     };
 };
 
-export const formatFuzzyDate = (date: FuzzyDateInput | null): string => {
-  if (date === null) return "";
+export const formatFuzzyDate = (
+  date: FuzzyDateInput | null | undefined
+): string => {
+  if (!date) return "";
   if (date.accuracy === DateAccuracyEnum.DAY) return date.date as string;
   if (date.accuracy === DateAccuracyEnum.MONTH)
     return date.date.slice(0, 7) as string;
@@ -39,17 +41,6 @@ export const formatDateTime = (dateTime: Date | string, utc = false) => {
   })} ${date.toLocaleTimeString(navigator.languages[0], {
     timeZone,
   })}`;
-};
-
-export const formatFuzzyDateComponents = (
-  date?: string | null,
-  accuracy?: string | null
-) => {
-  if (!date) return "";
-  if (!accuracy) return date;
-  if (accuracy === DateAccuracyEnum.DAY) return date;
-  if (accuracy === DateAccuracyEnum.MONTH) return date.slice(0, 7);
-  return date.slice(0, 4);
 };
 
 export const isValidDate = (date?: string) => !date || isValid(parseISO(date));

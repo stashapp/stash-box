@@ -54,6 +54,8 @@ type TagEdit {
   added_aliases: [String!]
   removed_aliases: [String!]
   category: TagCategory
+
+  aliases: [String!]!
 }
 
 type QueryTagsResultType {

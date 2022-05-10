@@ -5,21 +5,25 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
-import { groupBy, sortBy, uniq } from "lodash-es";
+import { groupBy, sortBy } from "lodash-es";
 
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
-import { useCategories, TagEditDetailsInput } from "src/graphql";
+import {
+  useCategories,
+  TagEditDetailsInput,
+  TagFragment as Tag,
+} from "src/graphql";
 
 import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
 
 import { TagSchema, TagFormData } from "./schema";
+import { InitialTag } from "./types";
 
 interface TagProps {
-  tag: Tag;
+  tag?: Tag | null;
   callback: (data: TagEditDetailsInput, editNote: string) => void;
-  initial?: Partial<Tag>;
+  initial?: InitialTag;
   saving: boolean;
 }
 
@@ -33,10 +37,10 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
   } = useForm<TagFormData>({
     resolver: yupResolver(TagSchema),
     defaultValues: {
-      name: initial?.name ?? tag.name,
-      description: initial?.description ?? tag.description ?? "",
-      aliases: uniq([...tag.aliases, ...(initial?.aliases ?? [])]),
-      category: initial?.category ?? tag.category,
+      name: initial?.name ?? tag?.name ?? "",
+      description: initial?.description ?? tag?.description ?? "",
+      aliases: initial?.aliases ?? tag?.aliases ?? [],
+      category: initial?.category ?? tag?.category,
     },
   });
 

@@ -13,7 +13,6 @@ import {
   faExclamationTriangle,
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { uniqBy } from "lodash-es";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import {
@@ -38,13 +37,14 @@ import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
+import { InitialScene } from "./types";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
-  scene: Scene;
-  initial?: Partial<Scene>;
+  scene?: Scene | null;
+  initial?: InitialScene;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
 }
@@ -62,18 +62,15 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     defaultValues: {
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
-      date: formatFuzzyDate(initial?.date ?? scene?.date),
+      date: initial?.date ?? formatFuzzyDate(scene?.date),
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
-      urls: uniqBy(
-        [...(scene.urls ?? []), ...(initial?.urls ?? [])],
-        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
-      ),
-      images: initial?.images ?? scene.images,
-      studio: initial?.studio ?? scene.studio ?? undefined,
-      tags: initial?.tags ?? scene.tags,
-      performers: (initial?.performers ?? scene.performers).map((p) => ({
+      urls: initial?.urls ?? scene?.urls ?? [],
+      images: initial?.images ?? scene?.images ?? [],
+      studio: initial?.studio ?? scene?.studio ?? undefined,
+      tags: initial?.tags ?? scene?.tags ?? [],
+      performers: (initial?.performers ?? scene?.performers ?? []).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
         alias: p.as ?? "",

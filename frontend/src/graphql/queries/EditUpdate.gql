@@ -1,0 +1,124 @@
+#import "../fragments/PerformerFragment.gql"
+#import "../fragments/StudioFragment.gql"
+#import "../fragments/SceneFragment.gql"
+#import "../fragments/TagFragment.gql"
+#import "../fragments/FingerprintFragment.gql"
+query EditUpdate($id: ID!) {
+  findEdit(id: $id) {
+    id
+    target_type
+    operation
+    status
+    applied
+    created
+    updated
+    vote_count
+    destructive
+    user {
+      id
+      name
+    }
+    target {
+      ... on Tag {
+        ...TagFragment
+        aliases
+      }
+      ... on Performer {
+        ...PerformerFragment
+      }
+      ... on Studio {
+        ...StudioFragment
+      }
+      ... on Scene {
+        ...SceneFragment
+      }
+    }
+    details {
+      ... on TagEdit {
+        name
+        description
+        category {
+          id
+          name
+        }
+        aliases
+      }
+      ... on PerformerEdit {
+        name
+        disambiguation
+        gender
+        birthdate
+        ethnicity
+        country
+        eye_color
+        hair_color
+        height
+        cup_size
+        band_size
+        waist_size
+        hip_size
+        breast_type
+        career_start_year
+        career_end_year
+        aliases
+        urls {
+          ...URLFragment
+        }
+        tattoos {
+          location
+          description
+        }
+        piercings {
+          location
+          description
+        }
+        images {
+          ...ImageFragment
+        }
+        draft_id
+      }
+      ... on StudioEdit {
+        name
+        urls {
+          ...URLFragment
+        }
+        parent {
+          ...StudioFragment
+        }
+        images {
+          ...ImageFragment
+        }
+      }
+      ... on SceneEdit {
+        title
+        details
+        date
+        studio {
+          ...StudioFragment
+        }
+        urls {
+          ...URLFragment
+        }
+        performers {
+          performer {
+            ...PerformerFragment
+          }
+          as
+        }
+        tags {
+          ...TagFragment
+        }
+        images {
+          ...ImageFragment
+        }
+        fingerprints {
+          ...FingerprintFragment
+        }
+        duration
+        director
+        code
+        draft_id
+      }
+    }
+  }
+}

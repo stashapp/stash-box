@@ -12,6 +12,7 @@ import { isAdmin } from "src/utils";
 import { Category, CategoryVariables } from "../definitions/Category";
 import { Categories } from "../definitions/Categories";
 import { Edit, EditVariables } from "../definitions/Edit";
+import { EditUpdate, EditUpdateVariables } from "../definitions/EditUpdate";
 import { Edits, EditsVariables } from "../definitions/Edits";
 import { Me } from "../definitions/Me";
 import { Performer, PerformerVariables } from "../definitions/Performer";
@@ -52,6 +53,7 @@ import { Drafts } from "../definitions/Drafts";
 import CategoryQuery from "./Category.gql";
 import CategoriesQuery from "./Categories.gql";
 import EditQuery from "./Edit.gql";
+import EditUpdateQuery from "./EditUpdate.gql";
 import EditsQuery from "./Edits.gql";
 import MeQuery from "./Me.gql";
 import PerformerQuery from "./Performer.gql";
@@ -87,6 +89,11 @@ export const useCategories = () => useQuery<Categories>(CategoriesQuery);
 
 export const useEdit = (variables: EditVariables) =>
   useQuery<Edit, EditVariables>(EditQuery, {
+    variables,
+  });
+
+export const useEditUpdate = (variables: EditVariables) =>
+  useQuery<EditUpdate, EditUpdateVariables>(EditUpdateQuery, {
     variables,
   });
 

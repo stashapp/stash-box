@@ -5,6 +5,7 @@ query Tags($input: TagQueryInput!) {
       id
       name
       description
+      aliases
     }
   }
 }

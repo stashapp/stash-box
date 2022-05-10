@@ -5,7 +5,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { uniqBy } from "lodash-es";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
@@ -17,13 +16,14 @@ import URLInput from "src/components/urlInput";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
 import { StudioSchema, StudioFormData } from "./schema";
+import { InitialStudio } from "./types";
 import DiffStudio from "./diff";
 
 interface StudioProps {
-  studio: Studio;
+  studio?: Studio | null;
   callback: (data: StudioEditDetailsInput, editNote: string) => void;
   showNetworkSelect?: boolean;
-  initial?: Partial<Studio>;
+  initial?: InitialStudio;
   saving: boolean;
 }
 
@@ -43,16 +43,10 @@ const StudioForm: FC<StudioProps> = ({
   } = useForm<StudioFormData>({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
-      name: initial?.name ?? studio.name,
-      images: uniqBy(
-        [...studio.images, ...(initial?.images ?? [])],
-        (i) => i.id
-      ),
-      urls: uniqBy(
-        [...(studio.urls ?? []), ...(initial?.urls ?? [])],
-        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
-      ),
-      parent: initial?.parent ?? studio.parent,
+      name: initial?.name ?? studio?.name,
+      images: initial?.images ?? studio?.images ?? [],
+      urls: initial?.urls ?? studio?.urls ?? [],
+      parent: initial?.parent ?? studio?.parent,
     },
   });
 
@@ -114,7 +108,7 @@ const StudioForm: FC<StudioProps> = ({
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <StudioSelect
-                    excludeStudio={studio.id}
+                    excludeStudio={studio?.id}
                     initialStudio={value}
                     onChange={onChange}
                     isClearable

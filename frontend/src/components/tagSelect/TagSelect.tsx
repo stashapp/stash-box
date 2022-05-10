@@ -15,7 +15,11 @@ import { SortDirectionEnum, TagSortEnum } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 
-type TagSlim = Pick<Tag, "id" | "name">;
+type TagSlim = {
+  id: string;
+  name: string;
+  aliases: string[];
+};
 
 interface TagSelectProps {
   tags: TagSlim[];

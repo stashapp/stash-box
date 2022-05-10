@@ -98,6 +98,7 @@ type ComplexityRoot struct {
 
 	Edit struct {
 		Applied      func(childComplexity int) int
+		Closed       func(childComplexity int) int
 		Comments     func(childComplexity int) int
 		Created      func(childComplexity int) int
 		Destructive  func(childComplexity int) int
@@ -176,6 +177,7 @@ type ComplexityRoot struct {
 		PerformerCreate      func(childComplexity int, input PerformerCreateInput) int
 		PerformerDestroy     func(childComplexity int, input PerformerDestroyInput) int
 		PerformerEdit        func(childComplexity int, input PerformerEditInput) int
+		PerformerEditUpdate  func(childComplexity int, id uuid.UUID, input PerformerEditInput) int
 		PerformerUpdate      func(childComplexity int, input PerformerUpdateInput) int
 		RegenerateAPIKey     func(childComplexity int, userID *uuid.UUID) int
 		RescindInviteCode    func(childComplexity int, code uuid.UUID) int
@@ -184,6 +186,7 @@ type ComplexityRoot struct {
 		SceneCreate          func(childComplexity int, input SceneCreateInput) int
 		SceneDestroy         func(childComplexity int, input SceneDestroyInput) int
 		SceneEdit            func(childComplexity int, input SceneEditInput) int
+		SceneEditUpdate      func(childComplexity int, id uuid.UUID, input SceneEditInput) int
 		SceneUpdate          func(childComplexity int, input SceneUpdateInput) int
 		SiteCreate           func(childComplexity int, input SiteCreateInput) int
 		SiteDestroy          func(childComplexity int, input SiteDestroyInput) int
@@ -191,6 +194,7 @@ type ComplexityRoot struct {
 		StudioCreate         func(childComplexity int, input StudioCreateInput) int
 		StudioDestroy        func(childComplexity int, input StudioDestroyInput) int
 		StudioEdit           func(childComplexity int, input StudioEditInput) int
+		StudioEditUpdate     func(childComplexity int, id uuid.UUID, input StudioEditInput) int
 		StudioUpdate         func(childComplexity int, input StudioUpdateInput) int
 		SubmitFingerprint    func(childComplexity int, input FingerprintSubmission) int
 		SubmitPerformerDraft func(childComplexity int, input PerformerDraftInput) int
@@ -201,6 +205,7 @@ type ComplexityRoot struct {
 		TagCreate            func(childComplexity int, input TagCreateInput) int
 		TagDestroy           func(childComplexity int, input TagDestroyInput) int
 		TagEdit              func(childComplexity int, input TagEditInput) int
+		TagEditUpdate        func(childComplexity int, id uuid.UUID, input TagEditInput) int
 		TagUpdate            func(childComplexity int, input TagUpdateInput) int
 		UserCreate           func(childComplexity int, input UserCreateInput) int
 		UserDestroy          func(childComplexity int, input UserDestroyInput) int
@@ -264,34 +269,38 @@ type ComplexityRoot struct {
 	}
 
 	PerformerEdit struct {
-		AddedAliases      func(childComplexity int) int
-		AddedImages       func(childComplexity int) int
-		AddedPiercings    func(childComplexity int) int
-		AddedTattoos      func(childComplexity int) int
-		AddedUrls         func(childComplexity int) int
-		BandSize          func(childComplexity int) int
-		Birthdate         func(childComplexity int) int
-		BirthdateAccuracy func(childComplexity int) int
-		BreastType        func(childComplexity int) int
-		CareerEndYear     func(childComplexity int) int
-		CareerStartYear   func(childComplexity int) int
-		Country           func(childComplexity int) int
-		CupSize           func(childComplexity int) int
-		Disambiguation    func(childComplexity int) int
-		DraftID           func(childComplexity int) int
-		Ethnicity         func(childComplexity int) int
-		EyeColor          func(childComplexity int) int
-		Gender            func(childComplexity int) int
-		HairColor         func(childComplexity int) int
-		Height            func(childComplexity int) int
-		HipSize           func(childComplexity int) int
-		Name              func(childComplexity int) int
-		RemovedAliases    func(childComplexity int) int
-		RemovedImages     func(childComplexity int) int
-		RemovedPiercings  func(childComplexity int) int
-		RemovedTattoos    func(childComplexity int) int
-		RemovedUrls       func(childComplexity int) int
-		WaistSize         func(childComplexity int) int
+		AddedAliases     func(childComplexity int) int
+		AddedImages      func(childComplexity int) int
+		AddedPiercings   func(childComplexity int) int
+		AddedTattoos     func(childComplexity int) int
+		AddedUrls        func(childComplexity int) int
+		Aliases          func(childComplexity int) int
+		BandSize         func(childComplexity int) int
+		Birthdate        func(childComplexity int) int
+		BreastType       func(childComplexity int) int
+		CareerEndYear    func(childComplexity int) int
+		CareerStartYear  func(childComplexity int) int
+		Country          func(childComplexity int) int
+		CupSize          func(childComplexity int) int
+		Disambiguation   func(childComplexity int) int
+		DraftID          func(childComplexity int) int
+		Ethnicity        func(childComplexity int) int
+		EyeColor         func(childComplexity int) int
+		Gender           func(childComplexity int) int
+		HairColor        func(childComplexity int) int
+		Height           func(childComplexity int) int
+		HipSize          func(childComplexity int) int
+		Images           func(childComplexity int) int
+		Name             func(childComplexity int) int
+		Piercings        func(childComplexity int) int
+		RemovedAliases   func(childComplexity int) int
+		RemovedImages    func(childComplexity int) int
+		RemovedPiercings func(childComplexity int) int
+		RemovedTattoos   func(childComplexity int) int
+		RemovedUrls      func(childComplexity int) int
+		Tattoos          func(childComplexity int) int
+		Urls             func(childComplexity int) int
+		WaistSize        func(childComplexity int) int
 	}
 
 	PerformerEditOptions struct {
@@ -414,18 +423,22 @@ type ComplexityRoot struct {
 		AddedUrls           func(childComplexity int) int
 		Code                func(childComplexity int) int
 		Date                func(childComplexity int) int
-		DateAccuracy        func(childComplexity int) int
 		Details             func(childComplexity int) int
 		Director            func(childComplexity int) int
 		DraftID             func(childComplexity int) int
 		Duration            func(childComplexity int) int
+		Fingerprints        func(childComplexity int) int
+		Images              func(childComplexity int) int
+		Performers          func(childComplexity int) int
 		RemovedFingerprints func(childComplexity int) int
 		RemovedImages       func(childComplexity int) int
 		RemovedPerformers   func(childComplexity int) int
 		RemovedTags         func(childComplexity int) int
 		RemovedUrls         func(childComplexity int) int
 		Studio              func(childComplexity int) int
+		Tags                func(childComplexity int) int
 		Title               func(childComplexity int) int
+		Urls                func(childComplexity int) int
 	}
 
 	Site struct {
@@ -467,10 +480,12 @@ type ComplexityRoot struct {
 	StudioEdit struct {
 		AddedImages   func(childComplexity int) int
 		AddedUrls     func(childComplexity int) int
+		Images        func(childComplexity int) int
 		Name          func(childComplexity int) int
 		Parent        func(childComplexity int) int
 		RemovedImages func(childComplexity int) int
 		RemovedUrls   func(childComplexity int) int
+		Urls          func(childComplexity int) int
 	}
 
 	Tag struct {
@@ -494,6 +509,7 @@ type ComplexityRoot struct {
 
 	TagEdit struct {
 		AddedAliases   func(childComplexity int) int
+		Aliases        func(childComplexity int) int
 		Category       func(childComplexity int) int
 		Description    func(childComplexity int) int
 		Name           func(childComplexity int) int
@@ -568,6 +584,7 @@ type EditResolver interface {
 
 	Created(ctx context.Context, obj *Edit) (*time.Time, error)
 	Updated(ctx context.Context, obj *Edit) (*time.Time, error)
+	Closed(ctx context.Context, obj *Edit) (*time.Time, error)
 }
 type EditCommentResolver interface {
 	User(ctx context.Context, obj *EditComment) (*User, error)
@@ -619,6 +636,10 @@ type MutationResolver interface {
 	PerformerEdit(ctx context.Context, input PerformerEditInput) (*Edit, error)
 	StudioEdit(ctx context.Context, input StudioEditInput) (*Edit, error)
 	TagEdit(ctx context.Context, input TagEditInput) (*Edit, error)
+	SceneEditUpdate(ctx context.Context, id uuid.UUID, input SceneEditInput) (*Edit, error)
+	PerformerEditUpdate(ctx context.Context, id uuid.UUID, input PerformerEditInput) (*Edit, error)
+	StudioEditUpdate(ctx context.Context, id uuid.UUID, input StudioEditInput) (*Edit, error)
+	TagEditUpdate(ctx context.Context, id uuid.UUID, input TagEditInput) (*Edit, error)
 	EditVote(ctx context.Context, input EditVoteInput) (*Edit, error)
 	EditComment(ctx context.Context, input EditCommentInput) (*Edit, error)
 	ApplyEdit(ctx context.Context, input ApplyEditInput) (*Edit, error)
@@ -664,6 +685,7 @@ type PerformerDraftResolver interface {
 type PerformerEditResolver interface {
 	Gender(ctx context.Context, obj *PerformerEdit) (*GenderEnum, error)
 
+	Birthdate(ctx context.Context, obj *PerformerEdit) (*string, error)
 	Ethnicity(ctx context.Context, obj *PerformerEdit) (*EthnicityEnum, error)
 
 	EyeColor(ctx context.Context, obj *PerformerEdit) (*EyeColorEnum, error)
@@ -673,6 +695,12 @@ type PerformerEditResolver interface {
 
 	AddedImages(ctx context.Context, obj *PerformerEdit) ([]*Image, error)
 	RemovedImages(ctx context.Context, obj *PerformerEdit) ([]*Image, error)
+
+	Aliases(ctx context.Context, obj *PerformerEdit) ([]string, error)
+	Urls(ctx context.Context, obj *PerformerEdit) ([]*URL, error)
+	Images(ctx context.Context, obj *PerformerEdit) ([]*Image, error)
+	Tattoos(ctx context.Context, obj *PerformerEdit) ([]*BodyModification, error)
+	Piercings(ctx context.Context, obj *PerformerEdit) ([]*BodyModification, error)
 }
 type QueryResolver interface {
 	FindPerformer(ctx context.Context, id uuid.UUID) (*Performer, error)
@@ -742,6 +770,7 @@ type SceneDraftResolver interface {
 	Image(ctx context.Context, obj *SceneDraft) (*Image, error)
 }
 type SceneEditResolver interface {
+	Date(ctx context.Context, obj *SceneEdit) (*string, error)
 	Studio(ctx context.Context, obj *SceneEdit) (*Studio, error)
 	AddedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
 	RemovedPerformers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
@@ -751,6 +780,12 @@ type SceneEditResolver interface {
 	RemovedImages(ctx context.Context, obj *SceneEdit) ([]*Image, error)
 	AddedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
 	RemovedFingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
+
+	Urls(ctx context.Context, obj *SceneEdit) ([]*URL, error)
+	Performers(ctx context.Context, obj *SceneEdit) ([]*PerformerAppearance, error)
+	Tags(ctx context.Context, obj *SceneEdit) ([]*Tag, error)
+	Images(ctx context.Context, obj *SceneEdit) ([]*Image, error)
+	Fingerprints(ctx context.Context, obj *SceneEdit) ([]*Fingerprint, error)
 }
 type SiteResolver interface {
 	Description(ctx context.Context, obj *Site) (*string, error)
@@ -775,6 +810,8 @@ type StudioEditResolver interface {
 	Parent(ctx context.Context, obj *StudioEdit) (*Studio, error)
 	AddedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
 	RemovedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
+	Images(ctx context.Context, obj *StudioEdit) ([]*Image, error)
+	Urls(ctx context.Context, obj *StudioEdit) ([]*URL, error)
 }
 type TagResolver interface {
 	Description(ctx context.Context, obj *Tag) (*string, error)
@@ -791,6 +828,7 @@ type TagCategoryResolver interface {
 }
 type TagEditResolver interface {
 	Category(ctx context.Context, obj *TagEdit) (*TagCategory, error)
+	Aliases(ctx context.Context, obj *TagEdit) ([]string, error)
 }
 type URLResolver interface {
 	Type(ctx context.Context, obj *URL) (string, error)
@@ -912,6 +950,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Edit.Applied(childComplexity), true
+
+	case "Edit.closed":
+		if e.complexity.Edit.Closed == nil {
+			break
+		}
+
+		return e.complexity.Edit.Closed(childComplexity), true
 
 	case "Edit.comments":
 		if e.complexity.Edit.Comments == nil {
@@ -1392,6 +1437,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.PerformerEdit(childComplexity, args["input"].(PerformerEditInput)), true
 
+	case "Mutation.performerEditUpdate":
+		if e.complexity.Mutation.PerformerEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_performerEditUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PerformerEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(PerformerEditInput)), true
+
 	case "Mutation.performerUpdate":
 		if e.complexity.Mutation.PerformerUpdate == nil {
 			break
@@ -1488,6 +1545,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SceneEdit(childComplexity, args["input"].(SceneEditInput)), true
 
+	case "Mutation.sceneEditUpdate":
+		if e.complexity.Mutation.SceneEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sceneEditUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SceneEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(SceneEditInput)), true
+
 	case "Mutation.sceneUpdate":
 		if e.complexity.Mutation.SceneUpdate == nil {
 			break
@@ -1571,6 +1640,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.StudioEdit(childComplexity, args["input"].(StudioEditInput)), true
+
+	case "Mutation.studioEditUpdate":
+		if e.complexity.Mutation.StudioEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_studioEditUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.StudioEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(StudioEditInput)), true
 
 	case "Mutation.studioUpdate":
 		if e.complexity.Mutation.StudioUpdate == nil {
@@ -1691,6 +1772,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.TagEdit(childComplexity, args["input"].(TagEditInput)), true
+
+	case "Mutation.tagEditUpdate":
+		if e.complexity.Mutation.TagEditUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_tagEditUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TagEditUpdate(childComplexity, args["id"].(uuid.UUID), args["input"].(TagEditInput)), true
 
 	case "Mutation.tagUpdate":
 		if e.complexity.Mutation.TagUpdate == nil {
@@ -2104,6 +2197,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PerformerEdit.AddedUrls(childComplexity), true
 
+	case "PerformerEdit.aliases":
+		if e.complexity.PerformerEdit.Aliases == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.Aliases(childComplexity), true
+
 	case "PerformerEdit.band_size":
 		if e.complexity.PerformerEdit.BandSize == nil {
 			break
@@ -2117,13 +2217,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerEdit.Birthdate(childComplexity), true
-
-	case "PerformerEdit.birthdate_accuracy":
-		if e.complexity.PerformerEdit.BirthdateAccuracy == nil {
-			break
-		}
-
-		return e.complexity.PerformerEdit.BirthdateAccuracy(childComplexity), true
 
 	case "PerformerEdit.breast_type":
 		if e.complexity.PerformerEdit.BreastType == nil {
@@ -2216,12 +2309,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PerformerEdit.HipSize(childComplexity), true
 
+	case "PerformerEdit.images":
+		if e.complexity.PerformerEdit.Images == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.Images(childComplexity), true
+
 	case "PerformerEdit.name":
 		if e.complexity.PerformerEdit.Name == nil {
 			break
 		}
 
 		return e.complexity.PerformerEdit.Name(childComplexity), true
+
+	case "PerformerEdit.piercings":
+		if e.complexity.PerformerEdit.Piercings == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.Piercings(childComplexity), true
 
 	case "PerformerEdit.removed_aliases":
 		if e.complexity.PerformerEdit.RemovedAliases == nil {
@@ -2257,6 +2364,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerEdit.RemovedUrls(childComplexity), true
+
+	case "PerformerEdit.tattoos":
+		if e.complexity.PerformerEdit.Tattoos == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.Tattoos(childComplexity), true
+
+	case "PerformerEdit.urls":
+		if e.complexity.PerformerEdit.Urls == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.Urls(childComplexity), true
 
 	case "PerformerEdit.waist_size":
 		if e.complexity.PerformerEdit.WaistSize == nil {
@@ -2925,13 +3046,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneEdit.Date(childComplexity), true
 
-	case "SceneEdit.date_accuracy":
-		if e.complexity.SceneEdit.DateAccuracy == nil {
-			break
-		}
-
-		return e.complexity.SceneEdit.DateAccuracy(childComplexity), true
-
 	case "SceneEdit.details":
 		if e.complexity.SceneEdit.Details == nil {
 			break
@@ -2959,6 +3073,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneEdit.Duration(childComplexity), true
+
+	case "SceneEdit.fingerprints":
+		if e.complexity.SceneEdit.Fingerprints == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Fingerprints(childComplexity), true
+
+	case "SceneEdit.images":
+		if e.complexity.SceneEdit.Images == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Images(childComplexity), true
+
+	case "SceneEdit.performers":
+		if e.complexity.SceneEdit.Performers == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Performers(childComplexity), true
 
 	case "SceneEdit.removed_fingerprints":
 		if e.complexity.SceneEdit.RemovedFingerprints == nil {
@@ -3002,12 +3137,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneEdit.Studio(childComplexity), true
 
+	case "SceneEdit.tags":
+		if e.complexity.SceneEdit.Tags == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Tags(childComplexity), true
+
 	case "SceneEdit.title":
 		if e.complexity.SceneEdit.Title == nil {
 			break
 		}
 
 		return e.complexity.SceneEdit.Title(childComplexity), true
+
+	case "SceneEdit.urls":
+		if e.complexity.SceneEdit.Urls == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.Urls(childComplexity), true
 
 	case "Site.created":
 		if e.complexity.Site.Created == nil {
@@ -3212,6 +3361,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StudioEdit.AddedUrls(childComplexity), true
 
+	case "StudioEdit.images":
+		if e.complexity.StudioEdit.Images == nil {
+			break
+		}
+
+		return e.complexity.StudioEdit.Images(childComplexity), true
+
 	case "StudioEdit.name":
 		if e.complexity.StudioEdit.Name == nil {
 			break
@@ -3239,6 +3395,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StudioEdit.RemovedUrls(childComplexity), true
+
+	case "StudioEdit.urls":
+		if e.complexity.StudioEdit.Urls == nil {
+			break
+		}
+
+		return e.complexity.StudioEdit.Urls(childComplexity), true
 
 	case "Tag.aliases":
 		if e.complexity.Tag.Aliases == nil {
@@ -3337,6 +3500,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TagEdit.AddedAliases(childComplexity), true
+
+	case "TagEdit.aliases":
+		if e.complexity.TagEdit.Aliases == nil {
+			break
+		}
+
+		return e.complexity.TagEdit.Aliases(childComplexity), true
 
 	case "TagEdit.category":
 		if e.complexity.TagEdit.Category == nil {
@@ -3748,15 +3918,14 @@ type Edit {
     status: VoteStatusEnum!
     applied: Boolean!
     created: Time!
-    updated: Time!
+    updated: Time
+    closed: Time
 }
 
 input EditInput {
   """Not required for create type"""
   id: ID
   operation: OperationEnum!
-  """Required for amending an existing edit"""
-  edit_id: ID
   """Only required for merge type"""
   merge_source_ids: [ID!]
   comment: String
@@ -4141,7 +4310,6 @@ type PerformerEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   birthdate: String
-  birthdate_accuracy: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4162,6 +4330,12 @@ type PerformerEdit {
   added_images: [Image]
   removed_images: [Image]
   draft_id: ID
+
+  aliases: [String!]!
+  urls: [URL!]!
+  images: [Image!]!
+  tattoos: [BodyModification!]!
+  piercings: [BodyModification!]!
 }
 
 type PerformerEditOptions {
@@ -4442,7 +4616,6 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: String
-  date_accuracy: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -4457,6 +4630,12 @@ type SceneEdit {
   director: String
   code: String
   draft_id: ID
+
+  urls: [URL!]!
+  performers: [PerformerAppearance!]!
+  tags: [Tag!]!
+  images: [Image!]!
+  fingerprints: [Fingerprint!]!
 }
 
 type QueryScenesResultType {
@@ -4625,6 +4804,9 @@ type StudioEdit {
   parent: Studio
   added_images: [Image]
   removed_images: [Image]
+
+  images: [Image!]!
+  urls: [URL!]!
 }
 
 type QueryStudiosResultType {
@@ -4712,6 +4894,8 @@ type TagEdit {
   added_aliases: [String!]
   removed_aliases: [String!]
   category: TagCategory
+
+  aliases: [String!]!
 }
 
 type QueryTagsResultType {
@@ -5063,6 +5247,15 @@ type Mutation {
   """Propose a new tag or modification to a tag"""
   tagEdit(input: TagEditInput!): Edit! @hasRole(role: EDIT)
 
+  """Update a pending scene edit"""
+  sceneEditUpdate(id: ID!, input: SceneEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending performer edit"""
+  performerEditUpdate(id: ID!, input: PerformerEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending studio edit"""
+  studioEditUpdate(id: ID!, input: StudioEditInput!): Edit! @hasRole(role: EDIT)
+  """Update a pending tag edit"""
+  tagEditUpdate(id: ID!, input: TagEditInput!): Edit! @hasRole(role: EDIT)
+
   """Vote to accept/reject an edit"""
   editVote(input: EditVoteInput!): Edit! @hasRole(role: VOTE)
   """Comment on an edit"""
@@ -5356,6 +5549,30 @@ func (ec *executionContext) field_Mutation_performerDestroy_args(ctx context.Con
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_performerEditUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 PerformerEditInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNPerformerEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerEditInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_performerEdit_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5476,6 +5693,30 @@ func (ec *executionContext) field_Mutation_sceneDestroy_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_sceneEditUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 SceneEditInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNSceneEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneEditInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_sceneEdit_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5578,6 +5819,30 @@ func (ec *executionContext) field_Mutation_studioDestroy_args(ctx context.Contex
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_studioEditUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 StudioEditInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNStudioEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐStudioEditInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -5728,6 +5993,30 @@ func (ec *executionContext) field_Mutation_tagDestroy_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_tagEditUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 TagEditInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNTagEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagEditInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -7185,14 +7474,43 @@ func (ec *executionContext) _Edit_updated(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Edit_closed(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Edit().Closed(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EditComment_id(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
@@ -10116,6 +10434,270 @@ func (ec *executionContext) _Mutation_tagEdit(ctx context.Context, field graphql
 	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_sceneEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_sceneEditUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SceneEditUpdate(rctx, args["id"].(uuid.UUID), args["input"].(SceneEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_performerEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_performerEditUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().PerformerEditUpdate(rctx, args["id"].(uuid.UUID), args["input"].(PerformerEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_studioEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_studioEditUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().StudioEditUpdate(rctx, args["id"].(uuid.UUID), args["input"].(StudioEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_tagEditUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_tagEditUpdate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().TagEditUpdate(rctx, args["id"].(uuid.UUID), args["input"].(TagEditInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Edit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Edit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_editVote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -12563,46 +13145,14 @@ func (ec *executionContext) _PerformerEdit_birthdate(ctx context.Context, field 
 		Object:     "PerformerEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Birthdate, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _PerformerEdit_birthdate_accuracy(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "PerformerEdit",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.BirthdateAccuracy, nil
+		return ec.resolvers.PerformerEdit().Birthdate(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13222,6 +13772,181 @@ func (ec *executionContext) _PerformerEdit_draft_id(ctx context.Context, field g
 	res := resTmp.(*uuid.UUID)
 	fc.Result = res
 	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerEdit_aliases(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PerformerEdit().Aliases(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerEdit_urls(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PerformerEdit().Urls(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*URL)
+	fc.Result = res
+	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerEdit_images(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PerformerEdit().Images(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerEdit_tattoos(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PerformerEdit().Tattoos(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*BodyModification)
+	fc.Result = res
+	return ec.marshalNBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PerformerEdit_piercings(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PerformerEdit().Piercings(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*BodyModification)
+	fc.Result = res
+	return ec.marshalNBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PerformerEditOptions_set_modify_aliases(ctx context.Context, field graphql.CollectedField, obj *PerformerEditOptions) (ret graphql.Marshaler) {
@@ -16654,46 +17379,14 @@ func (ec *executionContext) _SceneEdit_date(ctx context.Context, field graphql.C
 		Object:     "SceneEdit",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Date, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _SceneEdit_date_accuracy(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "SceneEdit",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DateAccuracy, nil
+		return ec.resolvers.SceneEdit().Date(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17121,6 +17814,181 @@ func (ec *executionContext) _SceneEdit_draft_id(ctx context.Context, field graph
 	res := resTmp.(*uuid.UUID)
 	fc.Result = res
 	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_urls(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Urls(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*URL)
+	fc.Result = res
+	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_performers(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Performers(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*PerformerAppearance)
+	fc.Result = res
+	return ec.marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_tags(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Tags(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Tag)
+	fc.Result = res
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_images(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Images(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SceneEdit_fingerprints(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SceneEdit().Fingerprints(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Fingerprint)
+	fc.Result = res
+	return ec.marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Site_id(ctx context.Context, field graphql.CollectedField, obj *Site) (ret graphql.Marshaler) {
@@ -18245,6 +19113,76 @@ func (ec *executionContext) _StudioEdit_removed_images(ctx context.Context, fiel
 	return ec.marshalOImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImage(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _StudioEdit_images(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StudioEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.StudioEdit().Images(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐImageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StudioEdit_urls(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StudioEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.StudioEdit().Urls(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*URL)
+	fc.Result = res
+	return ec.marshalNURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Tag_id(ctx context.Context, field graphql.CollectedField, obj *Tag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -18849,6 +19787,41 @@ func (ec *executionContext) _TagEdit_category(ctx context.Context, field graphql
 	res := resTmp.(*TagCategory)
 	fc.Result = res
 	return ec.marshalOTagCategory2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTagCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TagEdit_aliases(ctx context.Context, field graphql.CollectedField, obj *TagEdit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TagEdit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TagEdit().Aliases(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _URL_url(ctx context.Context, field graphql.CollectedField, obj *URL) (ret graphql.Marshaler) {
@@ -21518,14 +22491,6 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operation"))
 			it.Operation, err = ec.unmarshalNOperationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "edit_id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("edit_id"))
-			it.EditID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -25978,9 +26943,23 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Edit_updated(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "closed":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Edit_closed(ctx, field, obj)
 				return res
 			}
 
@@ -26735,6 +27714,46 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "tagEdit":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_tagEdit(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sceneEditUpdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sceneEditUpdate(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "performerEditUpdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_performerEditUpdate(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "studioEditUpdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_studioEditUpdate(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "tagEditUpdate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_tagEditUpdate(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -27623,19 +28642,22 @@ func (ec *executionContext) _PerformerEdit(ctx context.Context, sel ast.Selectio
 			out.Values[i] = innerFunc(ctx)
 
 		case "birthdate":
+			field := field
+
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._PerformerEdit_birthdate(ctx, field, obj)
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerEdit_birthdate(ctx, field, obj)
+				return res
 			}
 
-			out.Values[i] = innerFunc(ctx)
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
 
-		case "birthdate_accuracy":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._PerformerEdit_birthdate_accuracy(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
+			})
 		case "ethnicity":
 			field := field
 
@@ -27829,6 +28851,106 @@ func (ec *executionContext) _PerformerEdit(ctx context.Context, sel ast.Selectio
 
 			out.Values[i] = innerFunc(ctx)
 
+		case "aliases":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerEdit_aliases(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "urls":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerEdit_urls(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "images":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerEdit_images(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "tattoos":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerEdit_tattoos(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "piercings":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PerformerEdit_piercings(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -29438,19 +30560,22 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = innerFunc(ctx)
 
 		case "date":
+			field := field
+
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._SceneEdit_date(ctx, field, obj)
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_date(ctx, field, obj)
+				return res
 			}
 
-			out.Values[i] = innerFunc(ctx)
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
 
-		case "date_accuracy":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._SceneEdit_date_accuracy(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
+			})
 		case "studio":
 			field := field
 
@@ -29632,6 +30757,106 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 
 			out.Values[i] = innerFunc(ctx)
 
+		case "urls":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_urls(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "performers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_performers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "tags":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_tags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "images":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_images(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "fingerprints":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SceneEdit_fingerprints(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -30183,6 +31408,46 @@ func (ec *executionContext) _StudioEdit(ctx context.Context, sel ast.SelectionSe
 				return innerFunc(ctx)
 
 			})
+		case "images":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._StudioEdit_images(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "urls":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._StudioEdit_urls(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -30485,6 +31750,26 @@ func (ec *executionContext) _TagEdit(ctx context.Context, sel ast.SelectionSet, 
 					}
 				}()
 				res = ec._TagEdit_category(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "aliases":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TagEdit_aliases(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 
@@ -31391,6 +32676,50 @@ func (ec *executionContext) unmarshalNActivateNewUserInput2githubᚗcomᚋstasha
 func (ec *executionContext) unmarshalNApplyEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐApplyEditInput(ctx context.Context, v interface{}) (ApplyEditInput, error) {
 	res, err := ec.unmarshalInputApplyEditInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*BodyModification) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBodyModification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNBodyModification2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModification(ctx context.Context, sel ast.SelectionSet, v *BodyModification) graphql.Marshaler {

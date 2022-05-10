@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash-box/pkg/edit"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -711,52 +712,135 @@ func (qb *sceneQueryBuilder) ApplyEdit(scene *models.Scene, create bool, data *m
 	return updatedScene, err
 }
 
+func (qb *sceneQueryBuilder) GetEditURLs(id *uuid.UUID, data *models.SceneEdit) ([]*models.URL, error) {
+	var urls []*models.URL
+	if id != nil {
+		currentURLs, err := qb.GetURLs(*id)
+		if err != nil {
+			return nil, err
+		}
+		urls = currentURLs
+	}
+	return edit.MergeURLs(urls, data.AddedUrls, data.RemovedUrls), nil
+}
+
 func (qb *sceneQueryBuilder) updateURLsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	urls, err := qb.getSceneURLs(scene.ID)
+	urls, err := qb.GetEditURLs(&scene.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newUrls := models.CreateSceneURLs(scene.ID, data.New.AddedUrls)
-	oldUrls := models.CreateSceneURLs(scene.ID, data.New.RemovedUrls)
-	models.ProcessSlice(&urls, &newUrls, &oldUrls, "URL")
 
-	return qb.UpdateURLs(scene.ID, urls)
+	newURLs := models.CreateSceneURLs(scene.ID, urls)
+	return qb.UpdateURLs(scene.ID, newURLs)
+}
+
+func (qb *sceneQueryBuilder) GetEditImages(id *uuid.UUID, data *models.SceneEdit) ([]uuid.UUID, error) {
+	var imageIds []uuid.UUID
+	if id != nil {
+		currentImages, err := qb.GetImages(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range currentImages {
+			imageIds = append(imageIds, v.ImageID)
+		}
+	}
+	return utils.ProcessSlice(imageIds, data.AddedImages, data.RemovedImages), nil
 }
 
 func (qb *sceneQueryBuilder) updateImagesFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	currentImages, err := qb.GetImages(scene.ID)
+	ids, err := qb.GetEditImages(&scene.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newImages := models.CreateSceneImages(scene.ID, data.New.AddedImages)
-	oldImages := models.CreateSceneImages(scene.ID, data.New.RemovedImages)
-	models.ProcessSlice(&currentImages, &newImages, &oldImages, "image")
 
-	return qb.UpdateImages(scene.ID, currentImages)
+	images := models.CreateSceneImages(scene.ID, ids)
+	return qb.UpdateImages(scene.ID, images)
+}
+
+func (qb *sceneQueryBuilder) GetEditTags(id *uuid.UUID, data *models.SceneEdit) ([]uuid.UUID, error) {
+	var tagIds []uuid.UUID
+	if id != nil {
+		currentTags, err := qb.GetTags(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, tag := range currentTags {
+			tagIds = append(tagIds, tag.TagID)
+		}
+	}
+
+	return utils.ProcessSlice(tagIds, data.AddedTags, data.RemovedTags), nil
 }
 
 func (qb *sceneQueryBuilder) updateTagsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	currentTags, err := qb.GetTags(scene.ID)
+	tags, err := qb.GetEditTags(&scene.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newTags := models.CreateSceneTags(scene.ID, data.New.AddedTags)
-	oldTags := models.CreateSceneTags(scene.ID, data.New.RemovedTags)
-	models.ProcessSlice(&currentTags, &newTags, &oldTags, "tag")
+	newTags := models.CreateSceneTags(scene.ID, tags)
 
-	return qb.UpdateTags(scene.ID, currentTags)
+	return qb.UpdateTags(scene.ID, newTags)
+}
+
+func (qb *sceneQueryBuilder) GetEditPerformers(id *uuid.UUID, obj *models.SceneEdit) ([]*models.PerformerAppearanceInput, error) {
+	// Pointers aren't compared by value, so we have to use a temporary struct
+	type appearance struct {
+		ID uuid.UUID
+		As string
+	}
+
+	var appearances []appearance
+	if id != nil {
+		currentPerformers, err := qb.GetPerformers(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, a := range currentPerformers {
+			appearances = append(appearances, appearance{
+				As: a.As.String,
+				ID: a.PerformerID,
+			})
+		}
+	}
+
+	var added []appearance
+	for _, a := range obj.AddedPerformers {
+		added = append(added, appearance{
+			As: utils.StrPtrToString(a.As),
+			ID: a.PerformerID,
+		})
+	}
+
+	var removed []appearance
+	for _, a := range obj.RemovedPerformers {
+		removed = append(removed, appearance{
+			As: utils.StrPtrToString(a.As),
+			ID: a.PerformerID,
+		})
+	}
+
+	appearances = utils.ProcessSlice(appearances, added, removed)
+
+	var ret []*models.PerformerAppearanceInput
+	for i := range appearances {
+		ret = append(ret, &models.PerformerAppearanceInput{
+			As:          utils.StringToStrPtr(appearances[i].As),
+			PerformerID: appearances[i].ID,
+		})
+	}
+
+	return ret, nil
 }
 
 func (qb *sceneQueryBuilder) updatePerformersFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	currentPerformers, err := qb.GetPerformers(scene.ID)
+	appearances, err := qb.GetEditPerformers(&scene.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newPerformers := models.CreateScenePerformers(scene.ID, data.New.AddedPerformers)
-	oldPerformers := models.CreateScenePerformers(scene.ID, data.New.RemovedPerformers)
-	models.ProcessSlice(&currentPerformers, &newPerformers, &oldPerformers, "performer")
 
-	return qb.UpdatePerformers(scene.ID, currentPerformers)
+	newPerformers := models.CreateScenePerformers(scene.ID, appearances)
+	return qb.UpdatePerformers(scene.ID, newPerformers)
 }
 
 func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *models.SceneEditData, userID uuid.UUID) error {

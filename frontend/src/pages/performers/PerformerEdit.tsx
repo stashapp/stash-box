@@ -61,7 +61,6 @@ const PerformerModify: FC<Props> = ({ performer }) => {
       <PerformerForm
         performer={performer}
         callback={doUpdate}
-        changeType="modify"
         saving={saving}
       />
       {submissionError && (

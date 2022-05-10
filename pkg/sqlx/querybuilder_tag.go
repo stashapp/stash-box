@@ -409,18 +409,7 @@ func (qb *tagQueryBuilder) ApplyEdit(edit models.Edit, operation models.Operatio
 			}
 		}
 
-		currentAliases, err := qb.GetRawAliases(updatedTag.ID)
-		if err != nil {
-			return nil, err
-		}
-		newAliases := models.CreateTagAliases(updatedTag.ID, data.New.AddedAliases)
-		if err := currentAliases.AddAliases(newAliases); err != nil {
-			return nil, err
-		}
-		if err := currentAliases.RemoveAliases(data.New.RemovedAliases); err != nil {
-			return nil, err
-		}
-		if err := qb.UpdateAliases(updatedTag.ID, currentAliases); err != nil {
+		if err := qb.updateAliasesFromEdit(updatedTag, data); err != nil {
 			return nil, err
 		}
 
@@ -428,4 +417,27 @@ func (qb *tagQueryBuilder) ApplyEdit(edit models.Edit, operation models.Operatio
 	default:
 		return nil, errors.New("Unsupported operation: " + operation.String())
 	}
+}
+
+func (qb *tagQueryBuilder) GetEditAliases(id *uuid.UUID, data *models.TagEdit) ([]string, error) {
+	var aliases []string
+	if id != nil {
+		currentAliases, err := qb.GetAliases(*id)
+		if err != nil {
+			return nil, err
+		}
+		aliases = currentAliases
+	}
+
+	return utils.ProcessSlice(aliases, data.AddedAliases, data.RemovedAliases), nil
+}
+
+func (qb *tagQueryBuilder) updateAliasesFromEdit(tag *models.Tag, data *models.TagEditData) error {
+	aliases, err := qb.GetEditAliases(&tag.ID, data.New)
+	if err != nil {
+		return err
+	}
+
+	newAliases := models.CreateTagAliases(tag.ID, aliases)
+	return qb.UpdateAliases(tag.ID, newAliases)
 }

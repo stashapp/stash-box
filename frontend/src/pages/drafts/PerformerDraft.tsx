@@ -106,7 +106,6 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
       <PerformerForm
         performer={emptyPerformer}
         callback={doInsert}
-        changeType="create"
         saving={saving}
         initial={initialPerformer}
       />
