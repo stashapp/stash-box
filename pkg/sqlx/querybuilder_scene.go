@@ -806,24 +806,16 @@ func (qb *sceneQueryBuilder) GetEditPerformers(id *uuid.UUID, obj *models.SceneE
 
 	var added []appearance
 	for _, a := range obj.AddedPerformers {
-		as := ""
-		if a.As != nil {
-			as = *a.As
-		}
 		added = append(added, appearance{
-			As: as,
+			As: utils.StrPtrToString(a.As),
 			ID: a.PerformerID,
 		})
 	}
 
 	var removed []appearance
 	for _, a := range obj.RemovedPerformers {
-		as := ""
-		if a.As != nil {
-			as = *a.As
-		}
 		removed = append(removed, appearance{
-			As: as,
+			As: utils.StrPtrToString(a.As),
 			ID: a.PerformerID,
 		})
 	}
@@ -832,12 +824,8 @@ func (qb *sceneQueryBuilder) GetEditPerformers(id *uuid.UUID, obj *models.SceneE
 
 	var ret []*models.PerformerAppearanceInput
 	for i := range appearances {
-		as := &appearances[i].As
-		if appearances[i].As == "" {
-			as = nil
-		}
 		ret = append(ret, &models.PerformerAppearanceInput{
-			As:          as,
+			As:          utils.StringToStrPtr(appearances[i].As),
 			PerformerID: appearances[i].ID,
 		})
 	}

@@ -67,12 +67,8 @@ func MergeBodyMods(currentBodyMods models.PerformerBodyMods, addedMods []*models
 	current = utils.ProcessSlice(current, added, removed)
 	var ret []*models.BodyModification
 	for i := range current {
-		desc := &current[i].Description
-		if *desc == "" {
-			desc = nil
-		}
 		ret = append(ret, &models.BodyModification{
-			Description: desc,
+			Description: utils.StringToStrPtr(current[i].Description),
 			Location:    current[i].Location,
 		})
 	}

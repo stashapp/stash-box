@@ -6,3 +6,10 @@ func StrPtrToString(val *string) string {
 	}
 	return *val
 }
+
+func StringToStrPtr(val string) *string {
+	if val == "" {
+		return nil
+	}
+	return &val
+}
