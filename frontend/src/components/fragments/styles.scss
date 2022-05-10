@@ -1,10 +1,10 @@
 @keyframes fade-in {
   0% {
-    opacity: 0%;
+    opacity: 0;
   }
 
   100% {
-    opacity: 100%;
+    opacity: 1;
   }
 }
 
@@ -15,11 +15,11 @@
   height: 70vh;
   justify-content: center;
   width: 100%;
-  opacity: 100%;
+  opacity: 1;
   transition: opacity 1s linear;
 
   &-delayed {
-    opacity: 0%;
+    opacity: 0;
   }
 
   &-message {
@@ -111,7 +111,7 @@
   margin-top: -4px;
 
   &:disabled {
-    opacity: 100%;
+    opacity: 1;
   }
 
   &:focus {
