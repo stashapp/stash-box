@@ -40,7 +40,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
   });
   const { data: scene, loading: loadingScene } = useScene(
     { id: draft.data.id ?? "" },
-    isUpdate
+    !isUpdate
   );
   const { data: fingerprintMatches } = useScenesWithoutCount(
     {

@@ -31,7 +31,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
   });
   const { data: performer, loading: loadingPerformer } = usePerformer(
     { id: draft.data.id ?? "" },
-    isUpdate
+    !isUpdate
   );
 
   if (loadingPerformer) return <LoadingIndicator />;
