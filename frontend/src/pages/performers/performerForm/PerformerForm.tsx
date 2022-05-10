@@ -44,7 +44,7 @@ import { PerformerSchema, PerformerFormData } from "./schema";
 import { InitialPerformer } from "./types";
 
 Countries.registerLocale(english);
-const CountryList = Countries.getNames("en");
+const CountryList = Countries.getNames("en", { select: "alias" });
 
 type OptionEnum = {
   value: string;
