@@ -52,14 +52,14 @@
 
   &-remove {
     left: 5px;
-    opacity: 60%;
+    opacity: 0.6;
     padding: 0 5px;
     position: absolute;
     top: 5px;
   }
 
   &:hover &-remove {
-    opacity: 100%;
+    opacity: 1;
   }
 }
 

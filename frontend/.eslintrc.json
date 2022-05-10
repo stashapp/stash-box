@@ -53,6 +53,12 @@
     "prefer-destructuring": ["error", {"object": true, "array": false}],
     "import/named": "off",
     "import/namespace": "off",
-    "import/no-unresolved": "off"
+    "import/no-unresolved": "off",
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ]
 	}
 }
