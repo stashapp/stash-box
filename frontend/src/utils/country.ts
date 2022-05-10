@@ -29,6 +29,6 @@ export const getISOCountry = (country: string | null | undefined) => {
 
 export const getCountryByISO = (iso?: string | null) => {
   if (!iso) return null;
-  const country = Countries.getName(iso, "en");
+  const country = Countries.getName(iso, "en", { select: "alias" });
   return country ?? null;
 };

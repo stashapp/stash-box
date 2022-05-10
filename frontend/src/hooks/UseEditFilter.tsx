@@ -23,10 +23,11 @@ import { resolveEnum } from "src/utils";
 
 function resolveParam<T>(
   type: T,
-  param: string | string[] | undefined | null
+  param: string | (string | null)[] | undefined | null
 ): T[keyof T] | undefined {
   if (!param) return;
   const strval = Array.isArray(param) ? param[0] : param;
+  if (strval == null) return;
   return type[strval.toUpperCase() as keyof T];
 }
 

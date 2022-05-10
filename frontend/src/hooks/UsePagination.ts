@@ -6,7 +6,10 @@ const usePagination = () => {
   const location = useLocation();
   const queryPage = queryString.parse(location.search).page;
   const page = queryPage
-    ? Number.parseInt(Array.isArray(queryPage) ? queryPage[0] : queryPage, 10)
+    ? Number.parseInt(
+        Array.isArray(queryPage) ? queryPage[0] ?? "1" : queryPage,
+        10
+      )
     : 1;
 
   const setPage = (pageNumber: number) => {

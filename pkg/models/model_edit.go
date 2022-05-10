@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"strings"
 	"time"
@@ -20,7 +21,8 @@ type Edit struct {
 	Applied    bool            `db:"applied" json:"applied"`
 	Data       types.JSONText  `db:"data" json:"data"`
 	CreatedAt  SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt  SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	UpdatedAt  sql.NullTime    `db:"updated_at" json:"updated_at"`
+	ClosedAt   sql.NullTime    `db:"closed_at" json:"closed_at"`
 }
 
 type EditComment struct {
@@ -48,7 +50,6 @@ func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditI
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),
 		CreatedAt:  SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:  SQLiteTimestamp{Timestamp: currentTime},
 	}
 
 	return ret
@@ -88,33 +89,33 @@ func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
 func (e *Edit) Accept() {
 	e.Status = VoteStatusEnumAccepted.String()
 	e.Applied = true
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
 }
 
 func (e *Edit) ImmediateAccept() {
 	e.Status = VoteStatusEnumImmediateAccepted.String()
 	e.Applied = true
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
 }
 
 func (e *Edit) ImmediateReject() {
 	e.Status = VoteStatusEnumImmediateRejected.String()
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
 }
 
 func (e *Edit) Reject() {
 	e.Status = VoteStatusEnumRejected.String()
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
 }
 
 func (e *Edit) Fail() {
 	e.Status = VoteStatusEnumFailed.String()
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
 }
 
 func (e *Edit) Cancel() {
 	e.Status = VoteStatusEnumCanceled.String()
-	e.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	e.ClosedAt = sql.NullTime{Time: time.Now(), Valid: true}
 }
 
 func (e *Edit) SetData(data interface{}) error {
@@ -278,6 +279,7 @@ func (p *EditScenes) Add(o interface{}) {
 }
 
 type TagEdit struct {
+	EditID         uuid.UUID  `json:"-"`
 	Name           *string    `json:"name,omitempty"`
 	Description    *string    `json:"description,omitempty"`
 	AddedAliases   []string   `json:"added_aliases,omitempty"`
@@ -296,6 +298,7 @@ type TagEditData struct {
 func (PerformerEdit) IsEditDetails() {}
 
 type PerformerEdit struct {
+	EditID            uuid.UUID           `json:"-"`
 	Name              *string             `json:"name,omitempty"`
 	Disambiguation    *string             `json:"disambiguation,omitempty"`
 	AddedAliases      []string            `json:"added_aliases,omitempty"`
@@ -335,7 +338,8 @@ type PerformerEditData struct {
 }
 
 type StudioEdit struct {
-	Name *string `json:"name"`
+	EditID uuid.UUID `json:"-"`
+	Name   *string   `json:"name"`
 	// Added and modified URLs
 	AddedUrls     []*URL      `json:"added_urls,omitempty"`
 	RemovedUrls   []*URL      `json:"removed_urls,omitempty"`
@@ -353,6 +357,7 @@ type StudioEditData struct {
 }
 
 type SceneEdit struct {
+	EditID              uuid.UUID                   `json:"-"`
 	Title               *string                     `json:"title,omitempty"`
 	Details             *string                     `json:"details,omitempty"`
 	AddedUrls           []*URL                      `json:"added_urls,omitempty"`

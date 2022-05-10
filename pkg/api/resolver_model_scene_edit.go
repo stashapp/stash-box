@@ -2,10 +2,13 @@ package api
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
 type sceneEditResolver struct{ *Resolver }
@@ -111,4 +114,103 @@ func (r *sceneEditResolver) AddedFingerprints(ctx context.Context, obj *models.S
 
 func (r *sceneEditResolver) RemovedFingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
 	return r.fingerprintList(ctx, obj.RemovedFingerprints)
+}
+
+func (r *sceneEditResolver) Fingerprints(ctx context.Context, obj *models.SceneEdit) ([]*models.Fingerprint, error) {
+	var ret []*models.Fingerprint
+	for _, fp := range obj.AddedFingerprints {
+		ret = append(ret, &models.Fingerprint{
+			Hash:          fp.Hash,
+			Algorithm:     fp.Algorithm,
+			Duration:      fp.Duration,
+			Submissions:   0,
+			Created:       time.Now(),
+			Updated:       time.Now(),
+			UserSubmitted: true,
+		})
+	}
+
+	return ret, nil
+}
+
+func (r *sceneEditResolver) Date(ctx context.Context, obj *models.SceneEdit) (*string, error) {
+	return resolveFuzzyDate(obj.Date, obj.DateAccuracy), nil
+}
+
+func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
+	fac := r.getRepoFactory(ctx)
+	id, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
+		return nil, err
+	}
+
+	imageIds, err := fac.Scene().GetEditImages(id, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	images, errs := fac.Image().FindByIds(imageIds)
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+	return images, nil
+}
+
+func (r *sceneEditResolver) Tags(ctx context.Context, obj *models.SceneEdit) ([]*models.Tag, error) {
+	fac := r.getRepoFactory(ctx)
+	id, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
+		return nil, err
+	}
+
+	tagIds, err := fac.Scene().GetEditTags(id, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	tags, errs := fac.Tag().FindByIds(tagIds)
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+	return tags, nil
+}
+
+func (r *sceneEditResolver) Performers(ctx context.Context, obj *models.SceneEdit) ([]*models.PerformerAppearance, error) {
+	fac := r.getRepoFactory(ctx)
+	pqb := fac.Performer()
+
+	id, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
+		return nil, err
+	}
+
+	appearances, err := fac.Scene().GetEditPerformers(id, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	var performerAppearances []*models.PerformerAppearance
+	for i := range appearances {
+		performer, err := pqb.Find(appearances[i].PerformerID)
+		if err != nil {
+			return nil, err
+		}
+
+		performerAppearances = append(performerAppearances, &models.PerformerAppearance{
+			Performer: performer,
+			As:        appearances[i].As,
+		})
+	}
+
+	return performerAppearances, nil
+}
+
+func (r *sceneEditResolver) Urls(ctx context.Context, obj *models.SceneEdit) ([]*models.URL, error) {
+	fac := r.getRepoFactory(ctx)
+	id, err := fac.Edit().FindSceneID(obj.EditID)
+	if err != nil && !errors.Is(err, sqlx.ErrEditTargetIDNotFound) {
+		return nil, err
+	}
+
+	return fac.Scene().GetEditURLs(id, obj)
 }

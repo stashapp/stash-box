@@ -1,6 +1,7 @@
 package edit
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -46,6 +47,17 @@ func (m *mutator) CreateEdit() (*models.Edit, error) {
 
 	m.edit = created
 	return created, nil
+}
+
+func (m *mutator) UpdateEdit() (*models.Edit, error) {
+	m.edit.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	updated, err := m.fac.Edit().Update(*m.edit)
+	if err != nil {
+		return nil, err
+	}
+
+	m.edit = updated
+	return updated, nil
 }
 
 func (m *mutator) CreateComment(user *models.User, comment *string) error {

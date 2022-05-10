@@ -6,7 +6,7 @@ import { Col, Form, Row, Tabs, Tab } from "react-bootstrap";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import cx from "classnames";
-import { merge, sortBy, uniq, uniqBy } from "lodash-es";
+import { sortBy } from "lodash-es";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
@@ -37,12 +37,14 @@ import {
 } from "src/components/form";
 import MultiSelect from "src/components/multiSelect";
 import EditImages from "src/components/editImages";
-import DiffPerformer from "./diff";
-import { PerformerSchema, PerformerFormData } from "./schema";
 import URLInput from "src/components/urlInput";
 
+import DiffPerformer from "./diff";
+import { PerformerSchema, PerformerFormData } from "./schema";
+import { InitialPerformer } from "./types";
+
 Countries.registerLocale(english);
-const CountryList = Countries.getNames("en");
+const CountryList = Countries.getNames("en", { select: "alias" });
 
 type OptionEnum = {
   value: string;
@@ -113,15 +115,14 @@ const getEnumValue = (enumArray: OptionEnum[], val: string | null) => {
 };
 
 interface PerformerProps {
-  performer: Performer;
+  performer?: Performer | null;
   callback: (
     data: PerformerEditDetailsInput,
     note: string,
     updateAliases: boolean,
     id?: string
   ) => void;
-  initial?: Partial<Performer>;
-  changeType: "modify" | "create" | "merge";
+  initial?: InitialPerformer;
   saving: boolean;
 }
 
@@ -131,20 +132,7 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
 }) => {
-  const aliases = uniq([...performer.aliases, ...(initial?.aliases ?? [])]);
-  const measurements = merge({}, initial?.measurements, performer.measurements);
-  const images = uniqBy(
-    [...performer.images, ...(initial?.images ?? [])],
-    (i) => i.id
-  );
-  const tattoos = uniqBy(
-    [...(performer.tattoos ?? []), ...(initial?.tattoos ?? [])],
-    (mod) => `${mod.location}${mod.description}`
-  ).map(({ __typename, ...mod }) => mod);
-  const piercings = uniqBy(
-    [...(performer.piercings ?? []), ...(initial?.piercings ?? [])],
-    (mod) => `${mod.location}${mod.description}`
-  ).map(({ __typename, ...mod }) => mod);
+  const measurements = initial?.measurements ?? performer?.measurements;
   const {
     register,
     control,
@@ -156,39 +144,39 @@ const PerformerForm: FC<PerformerProps> = ({
     resolver: yupResolver(PerformerSchema),
     mode: "onBlur",
     defaultValues: {
-      name: initial?.name ?? performer.name,
-      disambiguation: initial?.disambiguation ?? performer.disambiguation,
-      aliases,
+      name: initial?.name ?? performer?.name ?? "",
+      disambiguation: initial?.disambiguation ?? performer?.disambiguation,
+      aliases: initial?.aliases ?? performer?.aliases ?? [],
       gender: initial?.gender ?? performer?.gender,
-      birthdate: formatFuzzyDate(initial?.birthdate ?? performer.birthdate),
-      eye_color: getEnumValue(EYE, initial?.eye_color ?? performer.eye_color),
+      birthdate: initial?.birthdate ?? formatFuzzyDate(performer?.birthdate),
+      eye_color: getEnumValue(
+        EYE,
+        initial?.eye_color ?? performer?.eye_color ?? null
+      ),
       hair_color: getEnumValue(
         HAIR,
-        initial?.hair_color ?? performer.hair_color
+        initial?.hair_color ?? performer?.hair_color ?? null
       ),
       height: initial?.height || performer?.height,
       breastType: getEnumValue(
         BREAST,
-        initial?.breast_type ?? performer.breast_type
+        initial?.breast_type ?? performer?.breast_type ?? null
       ),
       braSize: getBraSize(measurements),
-      waistSize: measurements.waist,
-      hipSize: measurements.hip,
-      country: initial?.country ?? performer.country,
+      waistSize: measurements?.waist,
+      hipSize: measurements?.hip,
+      country: initial?.country ?? performer?.country,
       ethnicity: getEnumValue(
         ETHNICITY,
-        initial?.ethnicity ?? performer.ethnicity
+        initial?.ethnicity ?? performer?.ethnicity ?? null
       ),
       career_start_year:
         initial?.career_start_year ?? performer?.career_start_year,
       career_end_year: initial?.career_end_year ?? performer?.career_end_year,
-      tattoos,
-      piercings,
-      images,
-      urls: uniqBy(
-        [...(performer.urls ?? []), ...(initial?.urls ?? [])],
-        (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
-      ),
+      tattoos: initial?.tattoos ?? performer?.tattoos ?? [],
+      piercings: initial?.piercings ?? performer?.piercings ?? [],
+      images: initial?.images ?? performer?.images ?? [],
+      urls: initial?.urls ?? performer?.urls ?? [],
     },
   });
 
@@ -203,9 +191,9 @@ const PerformerForm: FC<PerformerProps> = ({
   );
 
   const changedName =
-    !!performer.id &&
+    !!performer?.id &&
     newChanges.name !== null &&
-    (initial?.name?.trim() ?? performer.name.trim()) !== newChanges.name;
+    performer?.name?.trim() !== newChanges.name;
 
   useEffect(() => {
     setUpdateAliases(changedName);
@@ -309,7 +297,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
-      <input type="hidden" value={performer.id} {...register("id")} />
+      <input type="hidden" value={performer?.id} {...register("id")} />
       <Tabs
         activeKey={activeTab}
         onSelect={(key) => key && setActiveTab(key)}

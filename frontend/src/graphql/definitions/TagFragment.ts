@@ -20,4 +20,5 @@ export interface TagFragment {
   description: string | null;
   deleted: boolean;
   category: TagFragment_category | null;
+  aliases: string[];
 }

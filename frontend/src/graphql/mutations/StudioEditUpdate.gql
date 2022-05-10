@@ -1,0 +1,6 @@
+#import "../fragments/EditFragment.gql"
+mutation StudioEditUpdate($id: ID!, $studioData: StudioEditInput!) {
+  studioEditUpdate(id: $id, input: $studioData) {
+    ...EditFragment
+  }
+}
