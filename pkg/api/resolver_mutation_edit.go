@@ -12,7 +12,7 @@ import (
 )
 
 var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
-var ErrAlreadyUpdated = fmt.Errorf("Edits can only be amended once")
+var ErrAlreadyUpdated = fmt.Errorf("Edits can only be updated once")
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()

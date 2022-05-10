@@ -50,7 +50,7 @@ export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     <div>
       <h3>
         Update scene edit for
-        <i>
+        <i className="ms-2">
           <b>{edit.target?.title ?? edit.details.title}</b>
         </i>
       </h3>

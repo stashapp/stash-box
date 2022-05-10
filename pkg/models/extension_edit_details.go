@@ -150,14 +150,3 @@ func (e SceneEditDetailsInput) SceneEditFromCreate() SceneEditData {
 		New: ret.New,
 	}
 }
-
-type EditSliceValue interface {
-	ID() string
-}
-
-type EditSlice interface {
-	Each(fn func(interface{}))
-	EachPtr(fn func(interface{}))
-	Add(o interface{})
-	Remove(v string)
-}

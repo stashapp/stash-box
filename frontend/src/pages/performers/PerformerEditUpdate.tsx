@@ -65,7 +65,7 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     <div>
       <h3>
         Update performer edit for
-        <i>
+        <i className="ms-2">
           <b>{edit.target?.name ?? edit.details.name}</b>
         </i>
       </h3>

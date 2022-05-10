@@ -133,14 +133,6 @@ func (r *sceneEditResolver) Fingerprints(ctx context.Context, obj *models.SceneE
 	return ret, nil
 }
 
-func (r *sceneEditResolver) FuzzyDate(ctx context.Context, obj *models.SceneEdit) (*string, error) {
-	return obj.Date, nil
-}
-
-func (r *sceneEditResolver) FuzzyDateAccuracy(ctx context.Context, obj *models.SceneEdit) (*string, error) {
-	return obj.DateAccuracy, nil
-}
-
 func (r *sceneEditResolver) Date(ctx context.Context, obj *models.SceneEdit) (*string, error) {
 	return resolveFuzzyDate(obj.Date, obj.DateAccuracy), nil
 }

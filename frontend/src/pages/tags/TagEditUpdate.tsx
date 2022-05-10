@@ -20,8 +20,6 @@ export const TagEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     onError: (error) => setSubmissionError(error.message),
   });
 
-  debugger;
-
   if (!isTagDetails(edit.details) || (edit.target && !isTag(edit.target)))
     return null;
 
@@ -45,7 +43,7 @@ export const TagEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     <div>
       <h3>
         Update tag edit for
-        <i>
+        <i className="ms-2">
           <b>{edit.target?.name ?? edit.details.name}</b>
         </i>
       </h3>

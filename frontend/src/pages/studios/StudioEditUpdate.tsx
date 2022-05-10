@@ -46,7 +46,7 @@ export const StudioEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     <div>
       <h3>
         Update studio edit for
-        <i>
+        <i className="ms-2">
           <b>{edit?.target?.name ?? edit.details?.name}</b>
         </i>
       </h3>
