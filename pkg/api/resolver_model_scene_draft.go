@@ -11,6 +11,14 @@ import (
 
 type sceneDraftResolver struct{ *Resolver }
 
+func (r *sceneDraftResolver) ID(ctx context.Context, obj *models.SceneDraft) (*string, error) {
+	if obj.ID != nil {
+		val := obj.ID.String()
+		return &val, nil
+	}
+	return nil, nil
+}
+
 func (r *sceneDraftResolver) Image(ctx context.Context, obj *models.SceneDraft) (*models.Image, error) {
 	if obj.Image == nil {
 		return nil, nil

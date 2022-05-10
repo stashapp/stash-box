@@ -28,6 +28,7 @@ func (r *mutationResolver) SubmitSceneDraft(ctx context.Context, input models.Sc
 	}
 
 	data := models.SceneDraft{
+		ID:           input.ID,
 		Title:        input.Title,
 		Details:      input.Details,
 		URL:          input.URL,
@@ -86,6 +87,7 @@ func (r *mutationResolver) SubmitPerformerDraft(ctx context.Context, input model
 	newDraft := models.NewDraft(UUID, currentUser, models.TargetTypeEnumPerformer)
 
 	data := models.PerformerDraft{
+		ID:              input.ID,
 		Name:            input.Name,
 		Aliases:         input.Aliases,
 		Gender:          input.Gender,
