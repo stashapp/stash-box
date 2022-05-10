@@ -17,8 +17,13 @@ export const formatMeasurements = (val?: Measurements): string | undefined => {
   return undefined;
 };
 
-export const getBraSize = (measurements: Measurements): string | undefined =>
-  measurements.band_size && measurements.cup_size
+export const getBraSize = (
+  measurements:
+    | { band_size: number | null; cup_size: string | null }
+    | null
+    | undefined
+): string | undefined =>
+  measurements?.band_size && measurements?.cup_size
     ? `${measurements.band_size}${measurements.cup_size}`
     : undefined;
 

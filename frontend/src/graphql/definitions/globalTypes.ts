@@ -237,7 +237,6 @@ export interface EditCommentInput {
 export interface EditInput {
   id?: string | null;
   operation: OperationEnum;
-  edit_id?: string | null;
   merge_source_ids?: string[] | null;
   comment?: string | null;
 }

@@ -146,7 +146,6 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: String
-  date_accuracy: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -161,6 +160,12 @@ type SceneEdit {
   director: String
   code: String
   draft_id: ID
+
+  urls: [URL!]!
+  performers: [PerformerAppearance!]!
+  tags: [Tag!]!
+  images: [Image!]!
+  fingerprints: [Fingerprint!]!
 }
 
 type QueryScenesResultType {

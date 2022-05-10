@@ -30,3 +30,22 @@ func resolveNullInt64(value sql.NullInt64) (*int, error) {
 	}
 	return nil, nil
 }
+
+func resolveFuzzyDate(date *string, accuracy *string) *string {
+	if date == nil || accuracy == nil {
+		return nil
+	}
+
+	switch *accuracy {
+	case models.DateAccuracyEnumDay.String():
+		return date
+	case models.DateAccuracyEnumMonth.String():
+		ret := (*date)[0:7]
+		return &ret
+	case models.DateAccuracyEnumYear.String():
+		ret := (*date)[0:4]
+		return &ret
+	}
+
+	return nil
+}

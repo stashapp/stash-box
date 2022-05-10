@@ -4,7 +4,8 @@ fragment TagFragment on Tag {
   description
   deleted
   category {
-  id
-  name
+    id
+    name
   }
+  aliases
 }

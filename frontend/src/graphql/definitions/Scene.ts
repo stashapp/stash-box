@@ -77,6 +77,7 @@ export interface Scene_findScene_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface Scene_findScene {
