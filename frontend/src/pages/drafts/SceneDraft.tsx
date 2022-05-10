@@ -7,7 +7,6 @@ import {
   Draft_findDraft as Draft,
   Draft_findDraft_data_SceneDraft as SceneDraft,
 } from "src/graphql/definitions/Draft";
-import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import {
   useScene,
   useSceneEdit,
@@ -39,26 +38,32 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
     },
     onError: (error) => setSubmissionError(error.message),
   });
-  const { data: scene, loading: loadingScene } = useScene({ id: draft.data.id ?? '' }, isUpdate);
-  const { data: fingerprintMatches } = useScenesWithoutCount({
-    input: {
-      fingerprints: {
-        modifier: CriterionModifier.INCLUDES,
-        value: draft.data.fingerprints.map((f) => f.hash),
+  const { data: scene, loading: loadingScene } = useScene(
+    { id: draft.data.id ?? "" },
+    isUpdate
+  );
+  const { data: fingerprintMatches } = useScenesWithoutCount(
+    {
+      input: {
+        fingerprints: {
+          modifier: CriterionModifier.INCLUDES,
+          value: draft.data.fingerprints.map((f) => f.hash),
+        },
+        page: 1,
+        per_page: 100,
+        direction: SortDirectionEnum.DESC,
+        sort: SceneSortEnum.CREATED_AT,
       },
-      page: 1,
-      per_page: 100,
-      direction: SortDirectionEnum.DESC,
-      sort: SceneSortEnum.CREATED_AT,
     },
-  }, isUpdate);
+    isUpdate
+  );
 
   const doInsert = (updateData: SceneEditDetailsInput, editNote: string) => {
     const details: SceneEditDetailsInput = {
       ...updateData,
-      fingerprints: draft.data.fingerprints.map(
-        ({ __typename, ...rest }) => rest
-      ),
+      fingerprints: !isUpdate
+        ? draft.data.fingerprints.map(({ __typename, ...rest }) => rest)
+        : undefined,
       draft_id: draft.id,
     };
 
@@ -76,8 +81,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
     });
   };
 
-  if (loadingScene)
-    return <LoadingIndicator />;
+  if (loadingScene) return <LoadingIndicator />;
 
   const [initialScene, unparsed] = parseSceneDraft(draft.data);
   const remainder = Object.entries(unparsed)
@@ -93,7 +97,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
 
   return (
     <div>
-      <h3>{isUpdate ? "Update" : "Add new" } scene from draft</h3>
+      <h3>{isUpdate ? "Update" : "Add new"} scene from draft</h3>
       <hr />
       {remainder.length > 0 && (
         <>
