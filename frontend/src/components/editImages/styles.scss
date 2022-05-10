@@ -55,12 +55,12 @@
 
     &-uploading {
       img {
-        opacity: 50%;
+        opacity: 0.5;
       }
 
       .LoadingIndicator {
         display: block;
-        opacity: 100%;
+        opacity: 1;
       }
     }
   }
@@ -69,7 +69,7 @@
     cursor: pointer;
     height: 100%;
     left: 0;
-    opacity: 0%;
+    opacity: 0;
     position: absolute;
     top: 0;
     width: 100%;
