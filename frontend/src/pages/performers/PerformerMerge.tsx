@@ -73,7 +73,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
 
   const aliases = uniq([
     ...performer.aliases,
-    ...mergeSources.map((p) => p.name),
+    ...mergeSources.map((p) => p.name.trim()),
     ...flatMap(mergeSources, (p) => p.aliases),
   ]);
   const images = uniqBy(
