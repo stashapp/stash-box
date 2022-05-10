@@ -8,7 +8,7 @@ import (
 	"image"
 	_ "image/gif"
 	"image/jpeg"
-	_ "image/png"
+	"image/png"
 	"io"
 	"path/filepath"
 
@@ -54,7 +54,7 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 
 func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 	var resizedImage image.Image
-	srcImage, _, err := image.Decode(srcReader)
+	srcImage, format, err := image.Decode(srcReader)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +67,20 @@ func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	options := jpeg.Options{
-		Quality: 90,
-	}
-	err = jpeg.Encode(buf, resizedImage, &options)
-	if err != nil {
-		return nil, err
+
+	if format == "png" {
+		err = png.Encode(buf, resizedImage)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		options := jpeg.Options{
+			Quality: 90,
+		}
+		err = jpeg.Encode(buf, resizedImage, &options)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return buf.Bytes(), nil
 }
