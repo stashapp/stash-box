@@ -201,6 +201,7 @@ export interface Draft_findDraft_data_SceneDraft_tags_Tag {
   description: string | null;
   deleted: boolean;
   category: Draft_findDraft_data_SceneDraft_tags_Tag_category | null;
+  aliases: string[];
 }
 
 export interface Draft_findDraft_data_SceneDraft_tags_DraftEntity {

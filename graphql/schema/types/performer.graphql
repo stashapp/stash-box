@@ -219,7 +219,6 @@ type PerformerEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   birthdate: String
-  birthdate_accuracy: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -240,6 +239,12 @@ type PerformerEdit {
   added_images: [Image]
   removed_images: [Image]
   draft_id: ID
+
+  aliases: [String!]!
+  urls: [URL!]!
+  images: [Image!]!
+  tattoos: [BodyModification!]!
+  piercings: [BodyModification!]!
 }
 
 type PerformerEditOptions {

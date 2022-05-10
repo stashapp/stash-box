@@ -150,37 +150,3 @@ func (e SceneEditDetailsInput) SceneEditFromCreate() SceneEditData {
 		New: ret.New,
 	}
 }
-
-type EditSliceValue interface {
-	ID() string
-}
-
-type EditSlice interface {
-	Each(fn func(interface{}))
-	EachPtr(fn func(interface{}))
-	Add(o interface{})
-	Remove(v string)
-}
-
-func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityType string) {
-	idMap := map[string]bool{}
-	current.Each(func(v interface{}) {
-		idMap[v.(EditSliceValue).ID()] = true
-	})
-
-	removed.Each(func(v interface{}) {
-		id := v.(EditSliceValue).ID()
-		if idMap[id] {
-			current.Remove(id)
-			idMap[id] = false
-		}
-	})
-
-	added.EachPtr(func(v interface{}) {
-		id := v.(EditSliceValue).ID()
-		if !idMap[id] {
-			current.Add(v)
-			idMap[id] = true
-		}
-	})
-}

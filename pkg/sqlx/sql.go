@@ -240,6 +240,10 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 			if t.Valid {
 				addPlaceholder(key)
 			}
+		case sql.NullTime:
+			if t.Valid {
+				addPlaceholder(key)
+			}
 		default:
 			reflectValue := reflect.ValueOf(t)
 			isNil := reflectValue.IsNil()
@@ -302,6 +306,10 @@ func sqlGenKeys(i interface{}, partial bool) string {
 				addKey(key)
 			}
 		case sql.NullFloat64:
+			if partial || t.Valid {
+				addKey(key)
+			}
+		case sql.NullTime:
 			if partial || t.Valid {
 				addKey(key)
 			}

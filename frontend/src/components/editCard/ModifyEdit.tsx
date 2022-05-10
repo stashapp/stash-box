@@ -22,7 +22,6 @@ import {
   isTagOldDetails,
   isPerformerOldDetails,
   formatBodyModification,
-  formatFuzzyDateComponents,
   isStudioDetails,
   isStudioOldDetails,
   isSceneDetails,
@@ -109,7 +108,6 @@ export interface PerformerDetails {
   gender?: GenderEnum | null;
   disambiguation?: string | null;
   birthdate?: string | null;
-  birthdate_accuracy?: string | null;
   career_start_year?: number | null;
   career_end_year?: number | null;
   height?: number | null;
@@ -183,14 +181,8 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Birthdate"
-      newValue={formatFuzzyDateComponents(
-        performerDetails.birthdate,
-        performerDetails.birthdate_accuracy
-      )}
-      oldValue={formatFuzzyDateComponents(
-        oldPerformerDetails?.birthdate,
-        oldPerformerDetails?.birthdate_accuracy
-      )}
+      newValue={performerDetails.birthdate}
+      oldValue={oldPerformerDetails?.birthdate}
       showDiff={showDiff}
     />
     <ChangeRow
@@ -319,7 +311,6 @@ type NullableImage = Image | null;
 export interface SceneDetails {
   title: string | null;
   date: string | null;
-  date_accuracy: string | null;
   duration?: number | null;
   details?: string | null;
   director?: string | null;
@@ -381,14 +372,8 @@ export const renderSceneDetails = (
     )}
     <ChangeRow
       name="Date"
-      newValue={formatFuzzyDateComponents(
-        sceneDetails.date,
-        sceneDetails.date_accuracy
-      )}
-      oldValue={formatFuzzyDateComponents(
-        oldSceneDetails?.date,
-        oldSceneDetails?.date_accuracy
-      )}
+      newValue={sceneDetails.date}
+      oldValue={oldSceneDetails?.date}
       showDiff={showDiff}
     />
     <ChangeRow
