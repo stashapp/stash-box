@@ -13,7 +13,7 @@ type Performer struct {
 	Name              string          `db:"name" json:"name"`
 	Disambiguation    sql.NullString  `db:"disambiguation" json:"disambiguation"`
 	Gender            sql.NullString  `db:"gender" json:"gender"`
-	Birthdate         SQLiteDate      `db:"birthdate" json:"birthdate"`
+	Birthdate         SQLDate         `db:"birthdate" json:"birthdate"`
 	BirthdateAccuracy sql.NullString  `db:"birthdate_accuracy" json:"birthdate_accuracy"`
 	Ethnicity         sql.NullString  `db:"ethnicity" json:"ethnicity"`
 	Country           sql.NullString  `db:"country" json:"country"`
@@ -287,7 +287,7 @@ func (p *Performer) IsEditTarget() {
 }
 
 func (p *Performer) setBirthdate(fuzzyDate FuzzyDateInput) {
-	p.Birthdate = SQLiteDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
+	p.Birthdate = SQLDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
 	p.BirthdateAccuracy = sql.NullString{String: fuzzyDate.Accuracy.String(), Valid: fuzzyDate.Date != ""}
 }
 
@@ -402,7 +402,7 @@ func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit
 	fe.nullInt64(&p.BandSize, input.BandSize, old.BandSize)
 	fe.nullInt64(&p.HipSize, input.HipSize, old.HipSize)
 	fe.nullInt64(&p.WaistSize, input.WaistSize, old.WaistSize)
-	fe.sqliteDate(&p.Birthdate, input.Birthdate, old.Birthdate)
+	fe.sqlDate(&p.Birthdate, input.Birthdate, old.Birthdate)
 	fe.nullString(&p.BirthdateAccuracy, input.BirthdateAccuracy, old.BirthdateAccuracy)
 
 	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}

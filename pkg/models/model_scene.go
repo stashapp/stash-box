@@ -10,7 +10,7 @@ type Scene struct {
 	ID           uuid.UUID       `db:"id" json:"id"`
 	Title        sql.NullString  `db:"title" json:"title"`
 	Details      sql.NullString  `db:"details" json:"details"`
-	Date         SQLiteDate      `db:"date" json:"date"`
+	Date         SQLDate         `db:"date" json:"date"`
 	DateAccuracy sql.NullString  `db:"date_accuracy" json:"date_accuracy"`
 	StudioID     uuid.NullUUID   `db:"studio_id,omitempty" json:"studio_id"`
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
@@ -216,7 +216,7 @@ func (p *Scene) IsEditTarget() {
 }
 
 func (p *Scene) setDate(fuzzyDate FuzzyDateInput) {
-	p.Date = SQLiteDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
+	p.Date = SQLDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
 	p.DateAccuracy = sql.NullString{String: fuzzyDate.Accuracy.String(), Valid: fuzzyDate.Date != ""}
 }
 
@@ -257,7 +257,7 @@ func (p *Scene) CopyFromSceneEdit(input SceneEdit, old *SceneEdit) {
 	fe := fromEdit{}
 	fe.nullString(&p.Title, input.Title, old.Title)
 	fe.nullString(&p.Details, input.Details, old.Details)
-	fe.sqliteDate(&p.Date, input.Date, old.Date)
+	fe.sqlDate(&p.Date, input.Date, old.Date)
 	fe.nullString(&p.DateAccuracy, input.DateAccuracy, old.DateAccuracy)
 	fe.nullUUID(&p.StudioID, input.StudioID, old.StudioID)
 	fe.nullInt64(&p.Duration, input.Duration, old.Duration)
