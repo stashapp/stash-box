@@ -11,7 +11,7 @@ import { PerformerQueryInput, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeCo
 
 export interface Performers_queryPerformers_performers_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 

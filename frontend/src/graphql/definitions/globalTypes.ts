@@ -225,7 +225,7 @@ export interface CancelEditInput {
 }
 
 export interface DateCriterionInput {
-  value: any;
+  value: GQLDate;
   modifier: CriterionModifier;
 }
 
@@ -271,9 +271,9 @@ export interface FingerprintEditInput {
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
-  created: any;
+  created: GQLTime;
   submissions?: number | null;
-  updated?: any | null;
+  updated?: GQLTime | null;
 }
 
 export interface FingerprintInput {
@@ -284,7 +284,7 @@ export interface FingerprintInput {
 }
 
 export interface FuzzyDateInput {
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -305,7 +305,7 @@ export interface IDCriterionInput {
 
 export interface ImageCreateInput {
   url?: string | null;
-  file?: any | null;
+  file?: GQLUpload | null;
 }
 
 export interface IntCriterionInput {

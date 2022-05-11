@@ -106,7 +106,7 @@ export type Draft_findDraft_data_SceneDraft_studio = Draft_findDraft_data_SceneD
 
 export interface Draft_findDraft_data_SceneDraft_performers_Performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -245,8 +245,8 @@ export type Draft_findDraft_data = Draft_findDraft_data_PerformerDraft | Draft_f
 export interface Draft_findDraft {
   __typename: "Draft";
   id: string;
-  created: any;
-  expires: any;
+  created: GQLTime;
+  expires: GQLTime;
   data: Draft_findDraft_data;
 }
 

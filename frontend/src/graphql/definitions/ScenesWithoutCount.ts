@@ -11,7 +11,7 @@ import { SceneQueryInput, DateAccuracyEnum, GenderEnum } from "./globalTypes";
 
 export interface ScenesWithoutCount_queryScenes_scenes_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 

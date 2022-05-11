@@ -11,7 +11,7 @@ import { SceneUpdateInput, DateAccuracyEnum, GenderEnum, FingerprintAlgorithm } 
 
 export interface UpdateScene_sceneUpdate_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
