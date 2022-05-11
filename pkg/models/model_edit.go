@@ -12,57 +12,53 @@ import (
 )
 
 type Edit struct {
-	ID         uuid.UUID       `db:"id" json:"id"`
-	UserID     uuid.UUID       `db:"user_id" json:"user_id"`
-	TargetType string          `db:"target_type" json:"target_type"`
-	Operation  string          `db:"operation" json:"operation"`
-	VoteCount  int             `db:"votes" json:"votes"`
-	Status     string          `db:"status" json:"status"`
-	Applied    bool            `db:"applied" json:"applied"`
-	Data       types.JSONText  `db:"data" json:"data"`
-	CreatedAt  SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt  sql.NullTime    `db:"updated_at" json:"updated_at"`
-	ClosedAt   sql.NullTime    `db:"closed_at" json:"closed_at"`
+	ID         uuid.UUID      `db:"id" json:"id"`
+	UserID     uuid.UUID      `db:"user_id" json:"user_id"`
+	TargetType string         `db:"target_type" json:"target_type"`
+	Operation  string         `db:"operation" json:"operation"`
+	VoteCount  int            `db:"votes" json:"votes"`
+	Status     string         `db:"status" json:"status"`
+	Applied    bool           `db:"applied" json:"applied"`
+	Data       types.JSONText `db:"data" json:"data"`
+	CreatedAt  time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt  sql.NullTime   `db:"updated_at" json:"updated_at"`
+	ClosedAt   sql.NullTime   `db:"closed_at" json:"closed_at"`
 }
 
 type EditComment struct {
-	ID        uuid.UUID       `db:"id" json:"id"`
-	EditID    uuid.UUID       `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
-	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
-	Text      string          `db:"text" json:"text"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	Text      string    `db:"text" json:"text"`
 }
 
 type EditVote struct {
-	EditID    uuid.UUID       `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
-	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
-	Vote      string          `db:"vote" json:"vote"`
+	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	Vote      string    `db:"vote" json:"vote"`
 }
 
 func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
-	currentTime := time.Now()
-
 	ret := &Edit{
 		ID:         uuid,
 		UserID:     user.ID,
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),
-		CreatedAt:  SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt:  time.Now(),
 	}
 
 	return ret
 }
 
 func NewEditComment(uuid uuid.UUID, user *User, edit *Edit, text string) *EditComment {
-	currentTime := time.Now()
-
 	ret := &EditComment{
 		ID:        uuid,
 		EditID:    edit.ID,
 		UserID:    user.ID,
-		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: time.Now(),
 		Text:      text,
 	}
 
@@ -74,12 +70,10 @@ func (e Edit) GetID() uuid.UUID {
 }
 
 func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
-	currentTime := time.Now()
-
 	ret := &EditVote{
 		EditID:    edit.ID,
 		UserID:    user.ID,
-		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: time.Now(),
 		Vote:      vote.String(),
 	}
 

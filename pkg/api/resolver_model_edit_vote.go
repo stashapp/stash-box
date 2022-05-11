@@ -19,7 +19,7 @@ func (r *editVoteResolver) Vote(ctx context.Context, obj *models.EditVote) (mode
 }
 
 func (r *editVoteResolver) Date(ctx context.Context, obj *models.EditVote) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *editVoteResolver) User(ctx context.Context, obj *models.EditVote) (*models.User, error) {

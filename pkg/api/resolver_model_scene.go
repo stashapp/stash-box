@@ -124,9 +124,9 @@ func (r *sceneResolver) Edits(ctx context.Context, obj *models.Scene) ([]*models
 }
 
 func (r *sceneResolver) Created(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *sceneResolver) Updated(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
+	return &obj.UpdatedAt, nil
 }

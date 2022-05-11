@@ -1,13 +1,15 @@
 package models
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 )
 
 type InviteKey struct {
-	ID          uuid.UUID       `db:"id" json:"id"`
-	GeneratedBy uuid.UUID       `db:"generated_by" json:"generated_by"`
-	GeneratedAt SQLiteTimestamp `db:"generated_at" json:"generated_at"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	GeneratedBy uuid.UUID `db:"generated_by" json:"generated_by"`
+	GeneratedAt time.Time `db:"generated_at" json:"generated_at"`
 }
 
 func (p InviteKey) GetID() uuid.UUID {

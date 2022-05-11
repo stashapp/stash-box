@@ -21,8 +21,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	currentTime := time.Now()
 	newStudio := models.Studio{
 		ID:        UUID,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 
 	newStudio.CopyFromCreateInput(input)
@@ -69,7 +69,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 			return err
 		}
 
-		updatedStudio.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		updatedStudio.UpdatedAt = time.Now()
 
 		// Populate studio from the input
 		updatedStudio.CopyFromUpdateInput(input)

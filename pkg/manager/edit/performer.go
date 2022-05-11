@@ -266,7 +266,7 @@ func (m *PerformerEditProcessor) apply() error {
 			return fmt.Errorf("%w: performer %s", ErrEntityNotFound, performerID.String())
 		}
 
-		performer.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		performer.UpdatedAt = time.Now()
 	}
 	newPerformer, err := m.applyEdit(performer)
 	if err != nil {
@@ -321,8 +321,8 @@ func (m *PerformerEditProcessor) applyCreate(data *models.PerformerEditData) (*m
 	}
 	newPerformer := &models.Performer{
 		ID:        *UUID,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
 	qb := m.fac.Performer()

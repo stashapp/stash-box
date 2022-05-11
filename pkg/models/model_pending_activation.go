@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -10,11 +12,11 @@ const (
 )
 
 type PendingActivation struct {
-	ID        uuid.UUID       `db:"id" json:"id"`
-	Email     string          `db:"email" json:"email"`
-	InviteKey uuid.NullUUID   `db:"invite_key" json:"invite_key"`
-	Type      string          `db:"type" json:"type"`
-	Time      SQLiteTimestamp `db:"time" json:"time"`
+	ID        uuid.UUID     `db:"id" json:"id"`
+	Email     string        `db:"email" json:"email"`
+	InviteKey uuid.NullUUID `db:"invite_key" json:"invite_key"`
+	Type      string        `db:"type" json:"type"`
+	Time      time.Time     `db:"time" json:"time"`
 }
 
 func (p PendingActivation) GetID() uuid.UUID {
