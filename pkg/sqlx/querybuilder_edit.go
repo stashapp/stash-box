@@ -264,8 +264,8 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 			 UNION
 			 -- Edits that add/remove studio from scene
 			 (SELECT E.id FROM studio_favorites TF JOIN edits E
-			 ON jsonb_path_query_first(E.data, '$.new_data.studio_id') = to_jsonb(TF.studio_id::TEXT)
-			 OR jsonb_path_query_first(E.data, '$.old_data.studio_id') = to_jsonb(TF.studio_id::TEXT)
+			 ON data->'new_data'->>'studio_id' = TF.studio_id::TEXT
+			 OR data->'old_data'->>'studio_id' = TF.studio_id::TEXT
 			 WHERE E.target_type = 'SCENE'
 			 AND TF.user_id = ?)
 			))
