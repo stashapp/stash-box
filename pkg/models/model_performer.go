@@ -9,27 +9,27 @@ import (
 )
 
 type Performer struct {
-	ID                uuid.UUID       `db:"id" json:"id"`
-	Name              string          `db:"name" json:"name"`
-	Disambiguation    sql.NullString  `db:"disambiguation" json:"disambiguation"`
-	Gender            sql.NullString  `db:"gender" json:"gender"`
-	Birthdate         SQLiteDate      `db:"birthdate" json:"birthdate"`
-	BirthdateAccuracy sql.NullString  `db:"birthdate_accuracy" json:"birthdate_accuracy"`
-	Ethnicity         sql.NullString  `db:"ethnicity" json:"ethnicity"`
-	Country           sql.NullString  `db:"country" json:"country"`
-	EyeColor          sql.NullString  `db:"eye_color" json:"eye_color"`
-	HairColor         sql.NullString  `db:"hair_color" json:"hair_color"`
-	Height            sql.NullInt64   `db:"height" json:"height"`
-	CupSize           sql.NullString  `db:"cup_size" json:"cup_size"`
-	BandSize          sql.NullInt64   `db:"band_size" json:"band_size"`
-	WaistSize         sql.NullInt64   `db:"waist_size" json:"waist_size"`
-	HipSize           sql.NullInt64   `db:"hip_size" json:"hip_size"`
-	BreastType        sql.NullString  `db:"breast_type" json:"breast_type"`
-	CareerStartYear   sql.NullInt64   `db:"career_start_year" json:"career_start_year"`
-	CareerEndYear     sql.NullInt64   `db:"career_end_year" json:"career_end_year"`
-	CreatedAt         SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt         SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-	Deleted           bool            `db:"deleted" json:"deleted"`
+	ID                uuid.UUID      `db:"id" json:"id"`
+	Name              string         `db:"name" json:"name"`
+	Disambiguation    sql.NullString `db:"disambiguation" json:"disambiguation"`
+	Gender            sql.NullString `db:"gender" json:"gender"`
+	Birthdate         SQLDate        `db:"birthdate" json:"birthdate"`
+	BirthdateAccuracy sql.NullString `db:"birthdate_accuracy" json:"birthdate_accuracy"`
+	Ethnicity         sql.NullString `db:"ethnicity" json:"ethnicity"`
+	Country           sql.NullString `db:"country" json:"country"`
+	EyeColor          sql.NullString `db:"eye_color" json:"eye_color"`
+	HairColor         sql.NullString `db:"hair_color" json:"hair_color"`
+	Height            sql.NullInt64  `db:"height" json:"height"`
+	CupSize           sql.NullString `db:"cup_size" json:"cup_size"`
+	BandSize          sql.NullInt64  `db:"band_size" json:"band_size"`
+	WaistSize         sql.NullInt64  `db:"waist_size" json:"waist_size"`
+	HipSize           sql.NullInt64  `db:"hip_size" json:"hip_size"`
+	BreastType        sql.NullString `db:"breast_type" json:"breast_type"`
+	CareerStartYear   sql.NullInt64  `db:"career_start_year" json:"career_start_year"`
+	CareerEndYear     sql.NullInt64  `db:"career_end_year" json:"career_end_year"`
+	CreatedAt         time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt         time.Time      `db:"updated_at" json:"updated_at"`
+	Deleted           bool           `db:"deleted" json:"deleted"`
 }
 
 func (Performer) IsSceneDraftPerformer() {}
@@ -287,7 +287,7 @@ func (p *Performer) IsEditTarget() {
 }
 
 func (p *Performer) setBirthdate(fuzzyDate FuzzyDateInput) {
-	p.Birthdate = SQLiteDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
+	p.Birthdate = SQLDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
 	p.BirthdateAccuracy = sql.NullString{String: fuzzyDate.Accuracy.String(), Valid: fuzzyDate.Date != ""}
 }
 
@@ -402,10 +402,10 @@ func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit
 	fe.nullInt64(&p.BandSize, input.BandSize, old.BandSize)
 	fe.nullInt64(&p.HipSize, input.HipSize, old.HipSize)
 	fe.nullInt64(&p.WaistSize, input.WaistSize, old.WaistSize)
-	fe.sqliteDate(&p.Birthdate, input.Birthdate, old.Birthdate)
+	fe.sqlDate(&p.Birthdate, input.Birthdate, old.Birthdate)
 	fe.nullString(&p.BirthdateAccuracy, input.BirthdateAccuracy, old.BirthdateAccuracy)
 
-	p.UpdatedAt = SQLiteTimestamp{Timestamp: time.Now()}
+	p.UpdatedAt = time.Now()
 }
 
 func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {

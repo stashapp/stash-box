@@ -19,8 +19,8 @@ func (r *mutationResolver) TagCategoryCreate(ctx context.Context, input models.T
 	currentTime := time.Now()
 	newCategory := models.TagCategory{
 		ID:        UUID,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 
 	newCategory.CopyFromCreateInput(input)
@@ -58,7 +58,7 @@ func (r *mutationResolver) TagCategoryUpdate(ctx context.Context, input models.T
 			return err
 		}
 
-		updatedCategory.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		updatedCategory.UpdatedAt = time.Now()
 
 		// Populate category from the input
 		updatedCategory.CopyFromUpdateInput(input)

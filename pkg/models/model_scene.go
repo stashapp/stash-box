@@ -2,23 +2,24 @@ package models
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
 
 type Scene struct {
-	ID           uuid.UUID       `db:"id" json:"id"`
-	Title        sql.NullString  `db:"title" json:"title"`
-	Details      sql.NullString  `db:"details" json:"details"`
-	Date         SQLiteDate      `db:"date" json:"date"`
-	DateAccuracy sql.NullString  `db:"date_accuracy" json:"date_accuracy"`
-	StudioID     uuid.NullUUID   `db:"studio_id,omitempty" json:"studio_id"`
-	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-	Duration     sql.NullInt64   `db:"duration" json:"duration"`
-	Director     sql.NullString  `db:"director" json:"director"`
-	Code         sql.NullString  `db:"code" json:"code"`
-	Deleted      bool            `db:"deleted" json:"deleted"`
+	ID           uuid.UUID      `db:"id" json:"id"`
+	Title        sql.NullString `db:"title" json:"title"`
+	Details      sql.NullString `db:"details" json:"details"`
+	Date         SQLDate        `db:"date" json:"date"`
+	DateAccuracy sql.NullString `db:"date_accuracy" json:"date_accuracy"`
+	StudioID     uuid.NullUUID  `db:"studio_id,omitempty" json:"studio_id"`
+	CreatedAt    time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time      `db:"updated_at" json:"updated_at"`
+	Duration     sql.NullInt64  `db:"duration" json:"duration"`
+	Director     sql.NullString `db:"director" json:"director"`
+	Code         sql.NullString `db:"code" json:"code"`
+	Deleted      bool           `db:"deleted" json:"deleted"`
 }
 
 func (p Scene) GetID() uuid.UUID {
@@ -98,15 +99,15 @@ func CreateSceneURLs(sceneID uuid.UUID, urls []*URL) SceneURLs {
 }
 
 type SceneFingerprint struct {
-	SceneID   uuid.UUID       `db:"scene_id" json:"scene_id"`
-	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
-	Hash      string          `db:"hash" json:"hash"`
-	Algorithm string          `db:"algorithm" json:"algorithm"`
-	Duration  int             `db:"duration" json:"duration"`
-	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
+	SceneID   uuid.UUID `db:"scene_id" json:"scene_id"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	Hash      string    `db:"hash" json:"hash"`
+	Algorithm string    `db:"algorithm" json:"algorithm"`
+	Duration  int       `db:"duration" json:"duration"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	// unused fields
-	Submissions int             `db:"submissions" json:"submissions"`
-	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Submissions int       `db:"submissions" json:"submissions"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type SceneFingerprints []*SceneFingerprint
@@ -139,7 +140,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditI
 					Hash:      fingerprint.Hash,
 					Algorithm: fingerprint.Algorithm.String(),
 					Duration:  fingerprint.Duration,
-					CreatedAt: SQLiteTimestamp{Timestamp: fingerprint.Created},
+					CreatedAt: fingerprint.Created,
 				})
 			}
 		}
@@ -216,7 +217,7 @@ func (p *Scene) IsEditTarget() {
 }
 
 func (p *Scene) setDate(fuzzyDate FuzzyDateInput) {
-	p.Date = SQLiteDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
+	p.Date = SQLDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
 	p.DateAccuracy = sql.NullString{String: fuzzyDate.Accuracy.String(), Valid: fuzzyDate.Date != ""}
 }
 
@@ -257,7 +258,7 @@ func (p *Scene) CopyFromSceneEdit(input SceneEdit, old *SceneEdit) {
 	fe := fromEdit{}
 	fe.nullString(&p.Title, input.Title, old.Title)
 	fe.nullString(&p.Details, input.Details, old.Details)
-	fe.sqliteDate(&p.Date, input.Date, old.Date)
+	fe.sqlDate(&p.Date, input.Date, old.Date)
 	fe.nullString(&p.DateAccuracy, input.DateAccuracy, old.DateAccuracy)
 	fe.nullUUID(&p.StudioID, input.StudioID, old.StudioID)
 	fe.nullInt64(&p.Duration, input.Duration, old.Duration)

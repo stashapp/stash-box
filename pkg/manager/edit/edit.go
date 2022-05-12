@@ -267,7 +267,7 @@ func ResolveVotingThreshold(fac models.Repo, edit *models.Edit) (models.VoteStat
 
 	// For destructive edits we check if they've been open for a minimum period before applying
 	if edit.IsDestructive() {
-		if time.Since(edit.CreatedAt.Timestamp).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
+		if time.Since(edit.CreatedAt).Seconds() <= float64(config.GetMinDestructiveVotingPeriod()) {
 			return models.VoteStatusEnumPending, nil
 		}
 	}

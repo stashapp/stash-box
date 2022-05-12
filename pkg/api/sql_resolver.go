@@ -15,7 +15,7 @@ func resolveNullString(value sql.NullString) *string {
 }
 
 //nolint:deadcode,unused
-func resolveSQLiteDate(value models.SQLiteDate) (*string, error) {
+func resolveSQLDate(value models.SQLDate) (*string, error) {
 	if value.Valid {
 		result := utils.GetYMDFromDatabaseDate(value.String)
 		return &result, nil

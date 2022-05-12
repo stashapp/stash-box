@@ -228,9 +228,9 @@ func Create(fac models.Repo, input models.UserCreateInput) (*models.User, error)
 	newUser := models.User{
 		ID: UUID,
 		// set last API call to now just so that it has a value
-		LastAPICall: models.SQLiteTimestamp{Timestamp: currentTime},
-		CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+		LastAPICall: currentTime,
+		CreatedAt:   currentTime,
+		UpdatedAt:   currentTime,
 	}
 
 	err = newUser.CopyFromCreateInput(input)
@@ -271,7 +271,7 @@ func Update(fac models.Repo, input models.UserUpdateInput) (*models.User, error)
 		return nil, err
 	}
 
-	updatedUser.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	updatedUser.UpdatedAt = time.Now()
 
 	// Populate user from the input
 	err = updatedUser.CopyFromUpdateInput(input)
@@ -436,7 +436,7 @@ func RegenerateAPIKey(fac models.Repo, userID uuid.UUID) (string, error) {
 		return "", fmt.Errorf("Error generating APIKey: %w", err)
 	}
 
-	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	user.UpdatedAt = time.Now()
 	user, err = qb.Update(*user)
 	if err != nil {
 		return "", err
@@ -472,7 +472,7 @@ func ChangePassword(fac models.Repo, userID string, currentPassword string, newP
 	if err != nil {
 		return err
 	}
-	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	user.UpdatedAt = time.Now()
 
 	_, err = qb.Update(*user)
 	return err

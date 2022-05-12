@@ -54,12 +54,12 @@ func (c *fromEdit) nullInt64(out *sql.NullInt64, in *int64, old *int64) {
 	}
 }
 
-func (c *fromEdit) sqliteDate(out *SQLiteDate, in *string, old *string) {
+func (c *fromEdit) sqlDate(out *SQLDate, in *string, old *string) {
 	if in != nil {
 		out.String = *in
 		out.Valid = true
 	} else if old != nil {
-		*out = SQLiteDate{}
+		*out = SQLDate{}
 	}
 }
 
@@ -151,7 +151,7 @@ func (d *editDiff) nullStringEnum(old sql.NullString, new stringEnum) (oldOut *s
 	return
 }
 
-func (d *editDiff) fuzzyDate(oldDate SQLiteDate, oldAcc sql.NullString, new *FuzzyDateInput) (outOldDate, outOldAcc, outNewDate, outNewAcc *string) {
+func (d *editDiff) fuzzyDate(oldDate SQLDate, oldAcc sql.NullString, new *FuzzyDateInput) (outOldDate, outOldAcc, outNewDate, outNewAcc *string) {
 	if new == nil && oldDate.Valid {
 		outOldDate = &oldDate.String
 		if oldAcc.Valid {
@@ -173,7 +173,7 @@ func (d *editDiff) fuzzyDate(oldDate SQLiteDate, oldAcc sql.NullString, new *Fuz
 }
 
 //nolint:unused
-func (d *editDiff) sqliteDate(old SQLiteDate, new *string) (oldOut *string, newOut *string) {
+func (d *editDiff) sqlDate(old SQLDate, new *string) (oldOut *string, newOut *string) {
 	if old.Valid && (new == nil || *new != old.String) {
 		oldVal := old.String
 		oldOut = &oldVal

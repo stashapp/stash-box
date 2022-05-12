@@ -21,8 +21,8 @@ func Create(ctx context.Context, fac models.Repo, input models.SceneCreateInput)
 	currentTime := time.Now()
 	newScene := models.Scene{
 		ID:        UUID,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 
 	newScene.CopyFromCreateInput(input)
@@ -99,7 +99,7 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 		return nil, errors.New("scene not found")
 	}
 
-	updatedScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	updatedScene.UpdatedAt = time.Now()
 
 	// Populate scene from the input
 	updatedScene.CopyFromUpdateInput(input)

@@ -43,9 +43,9 @@ func (r *tagResolver) Category(ctx context.Context, obj *models.Tag) (*models.Ta
 }
 
 func (r *tagResolver) Created(ctx context.Context, obj *models.Tag) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *tagResolver) Updated(ctx context.Context, obj *models.Tag) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
+	return &obj.UpdatedAt, nil
 }

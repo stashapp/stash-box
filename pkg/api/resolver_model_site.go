@@ -36,11 +36,11 @@ func (r *siteResolver) ValidTypes(ctx context.Context, obj *models.Site) ([]mode
 }
 
 func (r *siteResolver) Created(ctx context.Context, obj *models.Site) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *siteResolver) Updated(ctx context.Context, obj *models.Site) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
+	return &obj.UpdatedAt, nil
 }
 
 func (r *siteResolver) Icon(ctx context.Context, obj *models.Site) (string, error) {
