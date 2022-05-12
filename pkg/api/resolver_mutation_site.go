@@ -18,8 +18,8 @@ func (r *mutationResolver) SiteCreate(ctx context.Context, input models.SiteCrea
 	currentTime := time.Now()
 	newSite := models.Site{
 		ID:        UUID,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 	newSite.CopyFromCreateInput(input)
 
@@ -46,7 +46,7 @@ func (r *mutationResolver) SiteUpdate(ctx context.Context, input models.SiteUpda
 			return err
 		}
 
-		updatedSite.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		updatedSite.UpdatedAt = time.Now()
 		updatedSite.CopyFromUpdateInput(input)
 
 		site, err = qb.Update(*updatedSite)

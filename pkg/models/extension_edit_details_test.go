@@ -148,7 +148,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		Name:              aName,
 		Disambiguation:    sql.NullString{String: aDisambiguation, Valid: true},
 		Gender:            sql.NullString{String: aGender.String(), Valid: true},
-		Birthdate:         SQLiteDate{String: aDate, Valid: true},
+		Birthdate:         SQLDate{String: aDate, Valid: true},
 		BirthdateAccuracy: sql.NullString{String: aDateAcc.String(), Valid: true},
 		Ethnicity:         sql.NullString{String: aEthnicityStr, Valid: true},
 		Country:           sql.NullString{String: aCountry, Valid: true},

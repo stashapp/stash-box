@@ -18,7 +18,7 @@ func (r *editCommentResolver) Comment(ctx context.Context, obj *models.EditComme
 }
 
 func (r *editCommentResolver) Date(ctx context.Context, obj *models.EditComment) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *editCommentResolver) User(ctx context.Context, obj *models.EditComment) (*models.User, error) {

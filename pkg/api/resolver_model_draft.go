@@ -12,12 +12,12 @@ import (
 type draftResolver struct{ *Resolver }
 
 func (r *draftResolver) Created(ctx context.Context, obj *models.Draft) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *draftResolver) Expires(ctx context.Context, obj *models.Draft) (*time.Time, error) {
 	duration := time.Second * time.Duration(config.GetDraftTimeLimit())
-	expiration := obj.CreatedAt.Timestamp.Add(duration)
+	expiration := obj.CreatedAt.Add(duration)
 	return &expiration, nil
 }
 

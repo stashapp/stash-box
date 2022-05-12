@@ -1,16 +1,18 @@
 package models
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 )
 
 type Studio struct {
-	ID             uuid.UUID       `db:"id" json:"id"`
-	Name           string          `db:"name" json:"name"`
-	ParentStudioID uuid.NullUUID   `db:"parent_studio_id,omitempty" json:"parent_studio_id"`
-	CreatedAt      SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt      SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-	Deleted        bool            `db:"deleted" json:"deleted"`
+	ID             uuid.UUID     `db:"id" json:"id"`
+	Name           string        `db:"name" json:"name"`
+	ParentStudioID uuid.NullUUID `db:"parent_studio_id,omitempty" json:"parent_studio_id"`
+	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
+	Deleted        bool          `db:"deleted" json:"deleted"`
 }
 
 func (Studio) IsSceneDraftStudio() {}

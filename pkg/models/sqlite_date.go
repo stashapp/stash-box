@@ -8,13 +8,13 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-type SQLiteDate struct {
+type SQLDate struct {
 	String string
 	Valid  bool
 }
 
 // Scan implements the Scanner interface.
-func (t *SQLiteDate) Scan(value interface{}) error {
+func (t *SQLDate) Scan(value interface{}) error {
 	dateTime, ok := value.(time.Time)
 	if !ok {
 		t.String = ""
@@ -32,14 +32,14 @@ func (t *SQLiteDate) Scan(value interface{}) error {
 }
 
 // Value implements the driver Valuer interface.
-func (t SQLiteDate) Value() (driver.Value, error) {
+func (t SQLDate) Value() (driver.Value, error) {
 	if !t.Valid || t.String == "" {
 		return nil, nil
 	}
 
 	result, err := utils.ParseDateStringAsFormat(t.String, "2006-01-02")
 	if err != nil {
-		logger.Debugf("sqlite date conversion error: %s", err.Error())
+		logger.Debugf("date conversion error: %s", err.Error())
 	}
 	if result == "" {
 		return nil, nil
@@ -47,6 +47,6 @@ func (t SQLiteDate) Value() (driver.Value, error) {
 	return result, nil
 }
 
-func (t SQLiteDate) IsValid() bool {
+func (t SQLDate) IsValid() bool {
 	return t.Valid
 }
