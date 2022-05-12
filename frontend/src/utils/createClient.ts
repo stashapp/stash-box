@@ -27,6 +27,7 @@ const httpLink = createUploadLink({
 
 const authLink = setContext(
   (_, { headers, ...context }): ContextSetter => ({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     headers: {
       ...headers,
       ...(import.meta.env.VITE_APIKEY && {

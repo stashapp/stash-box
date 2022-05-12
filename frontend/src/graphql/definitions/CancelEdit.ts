@@ -63,7 +63,7 @@ export interface CancelEdit_cancelEdit {
   operation: OperationEnum;
   status: VoteStatusEnum;
   applied: boolean;
-  created: any;
+  created: GQLTime;
   user: CancelEdit_cancelEdit_user | null;
   /**
    * Object being edited - null if creating a new object

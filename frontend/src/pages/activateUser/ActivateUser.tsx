@@ -1,4 +1,5 @@
 import { FC, useContext, useState } from "react";
+import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory, useLocation } from "react-router-dom";
@@ -18,7 +19,8 @@ const schema = yup.object({
     .test(
       "excludeEmail",
       "The username is public and should not be the same as your email",
-      (value, { parent }) => value?.trim() !== parent.email
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (value, { parent }) => value?.trim() !== parent?.email
     ),
   email: yup.string().email().required("Email is required"),
   activationKey: yup.string().required("Activation Key is required"),
@@ -60,9 +62,9 @@ const ActivateNewUserPage: FC = () => {
       .then(() => {
         history.push(`${ROUTE_LOGIN}?msg=account-created`);
       })
-      .catch((err) => {
-        if (err && err.message) {
-          setSubmitError(err.message as string);
+      .catch((err?: ApolloError) => {
+        if (err?.message) {
+          setSubmitError(err.message);
         }
       });
   };

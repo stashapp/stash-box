@@ -30,7 +30,7 @@ const DraftList: React.FC = () => {
           )}
           <ul className="ps-0">
             {sortBy(data?.findDrafts ?? [], "expires").map((draft) => {
-              const expirationDate = new Date(draft.expires as string);
+              const expirationDate = new Date(draft.expires);
               const expiration =
                 expirationDate > new Date()
                   ? formatDistance(expirationDate, new Date())

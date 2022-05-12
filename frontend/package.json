@@ -10,7 +10,7 @@
     "lint": "yarn lint:css && yarn lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
-    "generate": "apollo client:codegen --target typescript --outputFlat src/graphql/definitions",
+    "generate": "apollo client:codegen --target typescript --outputFlat src/graphql/definitions --passthroughCustomScalars --customScalarsPrefix=GQL",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss}\"",
     "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
     "analyze": "analyze=true vite build"

@@ -11,7 +11,7 @@ import { GenderEnum, DateAccuracyEnum } from "./globalTypes";
 
 export interface SearchAll_searchPerformer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -56,7 +56,7 @@ export interface SearchAll_searchPerformer {
 
 export interface SearchAll_searchScene_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
