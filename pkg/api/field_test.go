@@ -68,7 +68,7 @@ func (c *fieldComparator) strPtrNullUUID(expected *string, actual uuid.NullUUID,
 	}
 }
 
-func (c *fieldComparator) strPtrSQLiteDate(expected *string, actual models.SQLiteDate, field string) {
+func (c *fieldComparator) strPtrSQLDate(expected *string, actual models.SQLDate, field string) {
 	c.r.t.Helper()
 	if expected == nil && !actual.Valid {
 		return

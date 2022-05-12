@@ -2,23 +2,24 @@ package models
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	ID           uuid.UUID       `db:"id" json:"id"`
-	Name         string          `db:"name" json:"name"`
-	PasswordHash string          `db:"password_hash" json:"password_hash"`
-	Email        string          `db:"email" json:"email"`
-	APIKey       string          `db:"api_key" json:"api_key"`
-	APICalls     int             `db:"api_calls" json:"api_calls"`
-	InviteTokens int             `db:"invite_tokens" json:"invite_tokens"`
-	InvitedByID  uuid.NullUUID   `db:"invited_by" json:"invited_by"`
-	LastAPICall  SQLiteTimestamp `db:"last_api_call" json:"last_api_call"`
-	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID           uuid.UUID     `db:"id" json:"id"`
+	Name         string        `db:"name" json:"name"`
+	PasswordHash string        `db:"password_hash" json:"password_hash"`
+	Email        string        `db:"email" json:"email"`
+	APIKey       string        `db:"api_key" json:"api_key"`
+	APICalls     int           `db:"api_calls" json:"api_calls"`
+	InviteTokens int           `db:"invite_tokens" json:"invite_tokens"`
+	InvitedByID  uuid.NullUUID `db:"invited_by" json:"invited_by"`
+	LastAPICall  time.Time     `db:"last_api_call" json:"last_api_call"`
+	CreatedAt    time.Time     `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time     `db:"updated_at" json:"updated_at"`
 }
 
 func (p User) GetID() uuid.UUID {

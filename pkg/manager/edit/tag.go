@@ -186,7 +186,7 @@ func (m *TagEditProcessor) apply() error {
 		if tag == nil {
 			return fmt.Errorf("%w: tag %s", ErrEntityNotFound, tagID.String())
 		}
-		tag.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		tag.UpdatedAt = time.Now()
 	}
 
 	newTag, err := tqb.ApplyEdit(*m.edit, operation, tag)

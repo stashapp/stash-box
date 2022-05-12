@@ -29,7 +29,7 @@ func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User
 }
 
 func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *editResolver) Updated(ctx context.Context, obj *models.Edit) (*time.Time, error) {
@@ -281,7 +281,7 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*model
 	}
 
 	sort.Slice(comments, func(i, j int) bool {
-		return comments[i].CreatedAt.Timestamp.Before(comments[j].CreatedAt.Timestamp)
+		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
 
 	return comments, nil

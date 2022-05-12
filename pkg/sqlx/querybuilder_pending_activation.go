@@ -47,9 +47,7 @@ func (qb *pendingActivationQueryBuilder) Destroy(id uuid.UUID) error {
 func (qb *pendingActivationQueryBuilder) DestroyExpired(expireTime time.Time) error {
 	q := newDeleteQueryBuilder(pendingActivationDBTable)
 	q.AddWhere("time <= ?")
-	q.AddArg(models.SQLiteTimestamp{
-		Timestamp: expireTime,
-	})
+	q.AddArg(expireTime)
 	return qb.dbi.DeleteQuery(*q)
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -216,6 +217,10 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 			}
 		case bool:
 			addPlaceholder(key)
+		case time.Time:
+			if !t.IsZero() {
+				addPlaceholder(key)
+			}
 		case optionalValue:
 			if t.IsValid() {
 				addPlaceholder(key)
@@ -285,6 +290,10 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			}
 		case bool:
 			addKey(key)
+		case time.Time:
+			if !t.IsZero() {
+				addKey(key)
+			}
 		case optionalValue:
 			if partial || t.IsValid() {
 				addKey(key)

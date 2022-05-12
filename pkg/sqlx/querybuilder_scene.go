@@ -532,8 +532,8 @@ type sceneFingerprintGroup struct {
 	Duration      float64                     `db:"duration"`
 	Submissions   int                         `db:"submissions"`
 	UserSubmitted bool                        `db:"user_submitted"`
-	CreatedAt     models.SQLiteTimestamp      `db:"created_at"`
-	UpdatedAt     models.SQLiteTimestamp      `db:"updated_at"`
+	CreatedAt     time.Time                   `db:"created_at"`
+	UpdatedAt     time.Time                   `db:"updated_at"`
 }
 
 func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
@@ -543,8 +543,8 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 		Duration:      int(fpg.Duration),
 		Submissions:   fpg.Submissions,
 		UserSubmitted: fpg.UserSubmitted,
-		Created:       fpg.CreatedAt.Timestamp,
-		Updated:       fpg.UpdatedAt.Timestamp,
+		Created:       fpg.CreatedAt,
+		Updated:       fpg.UpdatedAt,
 	}
 }
 
@@ -947,7 +947,7 @@ func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *
 				Hash:      fingerprint.Hash,
 				Algorithm: fingerprint.Algorithm.String(),
 				Duration:  fingerprint.Duration,
-				CreatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
+				CreatedAt: time.Now(),
 			})
 		}
 	}

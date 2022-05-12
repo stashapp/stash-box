@@ -321,7 +321,7 @@ func (m *SceneEditProcessor) apply() error {
 			return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
 		}
 
-		scene.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		scene.UpdatedAt = time.Now()
 	}
 
 	newScene, err := m.applyEdit(scene)
@@ -377,8 +377,8 @@ func (m *SceneEditProcessor) applyCreate(data *models.SceneEditData, userID *uui
 	}
 	newScene := &models.Scene{
 		ID:        *UUID,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
 	qb := m.fac.Scene()

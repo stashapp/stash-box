@@ -283,8 +283,8 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 		}
 		newStudio := models.Studio{
 			ID:        UUID,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
+			CreatedAt: now,
+			UpdatedAt: now,
 		}
 		if data.New.Name == nil {
 			return nil, errors.New("Missing studio name")
