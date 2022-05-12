@@ -28,6 +28,7 @@ const PaginationComponent: FC<PaginationProps> = ({
   const minVal = Math.max(maxVal - 4, 1);
   const totalItems = maxVal - minVal + 1;
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const paginationItems = [...Array(totalItems)].map((_, arrayIndex) => {
     const index = arrayIndex + minVal;
     const isActive = active === index;

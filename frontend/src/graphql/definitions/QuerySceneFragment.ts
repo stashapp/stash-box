@@ -11,7 +11,7 @@ import { DateAccuracyEnum, GenderEnum } from "./globalTypes";
 
 export interface QuerySceneFragment_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 

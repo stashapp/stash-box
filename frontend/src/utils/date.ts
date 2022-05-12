@@ -24,10 +24,9 @@ export const formatFuzzyDate = (
   date: FuzzyDateInput | null | undefined
 ): string => {
   if (!date) return "";
-  if (date.accuracy === DateAccuracyEnum.DAY) return date.date as string;
-  if (date.accuracy === DateAccuracyEnum.MONTH)
-    return date.date.slice(0, 7) as string;
-  return date.date.slice(0, 4) as string;
+  if (date.accuracy === DateAccuracyEnum.DAY) return date.date;
+  if (date.accuracy === DateAccuracyEnum.MONTH) return date.date.slice(0, 7);
+  return date.date.slice(0, 4);
 };
 
 export const formatDateTime = (dateTime: Date | string, utc = false) => {

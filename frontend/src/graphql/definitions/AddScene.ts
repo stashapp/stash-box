@@ -11,7 +11,7 @@ import { SceneCreateInput, DateAccuracyEnum, GenderEnum, FingerprintAlgorithm } 
 
 export interface AddScene_sceneCreate_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 

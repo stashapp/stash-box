@@ -17,6 +17,6 @@ export interface CommentFragment {
   __typename: "EditComment";
   id: string;
   user: CommentFragment_user | null;
-  date: any;
+  date: GQLTime;
   comment: string;
 }
