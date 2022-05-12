@@ -11,7 +11,7 @@ import { DateAccuracyEnum, GenderEnum, FingerprintAlgorithm } from "./globalType
 
 export interface Scene_findScene_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -68,8 +68,8 @@ export interface Scene_findScene_fingerprints {
   duration: number;
   submissions: number;
   user_submitted: boolean;
-  created: any;
-  updated: any;
+  created: GQLTime;
+  updated: GQLTime;
 }
 
 export interface Scene_findScene_tags {

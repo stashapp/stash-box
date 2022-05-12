@@ -25,7 +25,7 @@ interface Props {
 
 const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
-  const created = new Date(edit.created as string);
+  const created = new Date(edit.created);
 
   const creation = edit.operation === OperationEnum.CREATE && (
     <ModifyEdit details={edit.details} />
@@ -65,7 +65,7 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
           {edit.updated && (
             <div>
               <b className="me-2">Updated:</b>
-              <span>{formatDateTime(edit.updated as string)}</span>
+              <span>{formatDateTime(edit.updated)}</span>
             </div>
           )}
         </div>

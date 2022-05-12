@@ -33,7 +33,7 @@ export interface EditUpdate_findEdit_target_Tag {
 
 export interface EditUpdate_findEdit_target_Performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -154,7 +154,7 @@ export interface EditUpdate_findEdit_target_Studio {
 
 export interface EditUpdate_findEdit_target_Scene_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -211,8 +211,8 @@ export interface EditUpdate_findEdit_target_Scene_fingerprints {
   duration: number;
   submissions: number;
   user_submitted: boolean;
-  created: any;
-  updated: any;
+  created: GQLTime;
+  updated: GQLTime;
 }
 
 export interface EditUpdate_findEdit_target_Scene_tags {
@@ -453,7 +453,7 @@ export interface EditUpdate_findEdit_details_SceneEdit_urls {
 
 export interface EditUpdate_findEdit_details_SceneEdit_performers_performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -593,8 +593,8 @@ export interface EditUpdate_findEdit {
   operation: OperationEnum;
   status: VoteStatusEnum;
   applied: boolean;
-  created: any;
-  updated: any | null;
+  created: GQLTime;
+  updated: GQLTime | null;
   /**
    *  = Accepted - Rejected
    */

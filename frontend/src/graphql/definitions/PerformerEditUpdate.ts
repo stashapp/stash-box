@@ -19,7 +19,7 @@ export interface PerformerEditUpdate_performerEditUpdate_comments {
   __typename: "EditComment";
   id: string;
   user: PerformerEditUpdate_performerEditUpdate_comments_user | null;
-  date: any;
+  date: GQLTime;
   comment: string;
 }
 
@@ -32,7 +32,7 @@ export interface PerformerEditUpdate_performerEditUpdate_votes_user {
 export interface PerformerEditUpdate_performerEditUpdate_votes {
   __typename: "EditVote";
   user: PerformerEditUpdate_performerEditUpdate_votes_user | null;
-  date: any;
+  date: GQLTime;
   vote: VoteTypeEnum;
 }
 
@@ -60,7 +60,7 @@ export interface PerformerEditUpdate_performerEditUpdate_target_Tag {
 
 export interface PerformerEditUpdate_performerEditUpdate_target_Performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -181,7 +181,7 @@ export interface PerformerEditUpdate_performerEditUpdate_target_Studio {
 
 export interface PerformerEditUpdate_performerEditUpdate_target_Scene_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -238,8 +238,8 @@ export interface PerformerEditUpdate_performerEditUpdate_target_Scene_fingerprin
   duration: number;
   submissions: number;
   user_submitted: boolean;
-  created: any;
-  updated: any;
+  created: GQLTime;
+  updated: GQLTime;
 }
 
 export interface PerformerEditUpdate_performerEditUpdate_target_Scene_tags {
@@ -558,7 +558,7 @@ export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit_studi
 
 export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit_added_performers_performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -643,7 +643,7 @@ export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit_added
 
 export interface PerformerEditUpdate_performerEditUpdate_details_SceneEdit_removed_performers_performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -975,7 +975,7 @@ export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_s
 
 export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_added_performers_performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -1060,7 +1060,7 @@ export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_a
 
 export interface PerformerEditUpdate_performerEditUpdate_old_details_SceneEdit_removed_performers_performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -1249,7 +1249,7 @@ export interface PerformerEditUpdate_performerEditUpdate_merge_sources_Tag {
 
 export interface PerformerEditUpdate_performerEditUpdate_merge_sources_Performer_birthdate {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -1370,7 +1370,7 @@ export interface PerformerEditUpdate_performerEditUpdate_merge_sources_Studio {
 
 export interface PerformerEditUpdate_performerEditUpdate_merge_sources_Scene_date {
   __typename: "FuzzyDate";
-  date: any;
+  date: GQLDate;
   accuracy: DateAccuracyEnum;
 }
 
@@ -1427,8 +1427,8 @@ export interface PerformerEditUpdate_performerEditUpdate_merge_sources_Scene_fin
   duration: number;
   submissions: number;
   user_submitted: boolean;
-  created: any;
-  updated: any;
+  created: GQLTime;
+  updated: GQLTime;
 }
 
 export interface PerformerEditUpdate_performerEditUpdate_merge_sources_Scene_tags {
@@ -1478,9 +1478,9 @@ export interface PerformerEditUpdate_performerEditUpdate {
   operation: OperationEnum;
   status: VoteStatusEnum;
   applied: boolean;
-  created: any;
-  updated: any | null;
-  closed: any | null;
+  created: GQLTime;
+  updated: GQLTime | null;
+  closed: GQLTime | null;
   /**
    *  = Accepted - Rejected
    */
