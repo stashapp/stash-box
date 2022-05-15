@@ -338,6 +338,7 @@ input PerformerQueryInput {
 }
 
 type PerformerDraft {
+  id: ID
   name: String!
   aliases: String
   gender: String
@@ -358,6 +359,7 @@ type PerformerDraft {
 }
 
 input PerformerDraftInput {
+  id: ID
   name: String!
   aliases: String
   gender: String
