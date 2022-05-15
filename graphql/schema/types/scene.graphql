@@ -214,6 +214,7 @@ union SceneDraftPerformer = Performer | DraftEntity
 union SceneDraftTag = Tag | DraftEntity
 
 type SceneDraft {
+  id: ID
   title: String
   details: String
   url: URL
@@ -226,6 +227,7 @@ type SceneDraft {
 }
 
 input SceneDraftInput {
+  id: ID
   title: String
   details: String
   url: String

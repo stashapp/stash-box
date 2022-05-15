@@ -260,6 +260,7 @@ type ComplexityRoot struct {
 		Gender          func(childComplexity int) int
 		HairColor       func(childComplexity int) int
 		Height          func(childComplexity int) int
+		ID              func(childComplexity int) int
 		Image           func(childComplexity int) int
 		Measurements    func(childComplexity int) int
 		Name            func(childComplexity int) int
@@ -408,6 +409,7 @@ type ComplexityRoot struct {
 		Date         func(childComplexity int) int
 		Details      func(childComplexity int) int
 		Fingerprints func(childComplexity int) int
+		ID           func(childComplexity int) int
 		Image        func(childComplexity int) int
 		Performers   func(childComplexity int) int
 		Studio       func(childComplexity int) int
@@ -2122,6 +2124,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PerformerDraft.Height(childComplexity), true
 
+	case "PerformerDraft.id":
+		if e.complexity.PerformerDraft.ID == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.ID(childComplexity), true
+
 	case "PerformerDraft.image":
 		if e.complexity.PerformerDraft.Image == nil {
 			break
@@ -2968,6 +2977,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneDraft.Fingerprints(childComplexity), true
+
+	case "SceneDraft.id":
+		if e.complexity.SceneDraft.ID == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.ID(childComplexity), true
 
 	case "SceneDraft.image":
 		if e.complexity.SceneDraft.Image == nil {
@@ -4520,6 +4536,7 @@ input PerformerQueryInput {
 }
 
 type PerformerDraft {
+  id: ID
   name: String!
   aliases: String
   gender: String
@@ -4540,6 +4557,7 @@ type PerformerDraft {
 }
 
 input PerformerDraftInput {
+  id: ID
   name: String!
   aliases: String
   gender: String
@@ -4775,6 +4793,7 @@ union SceneDraftPerformer = Performer | DraftEntity
 union SceneDraftTag = Tag | DraftEntity
 
 type SceneDraft {
+  id: ID
   title: String
   details: String
   url: URL
@@ -4787,6 +4806,7 @@ type SceneDraft {
 }
 
 input SceneDraftInput {
+  id: ID
   title: String
   details: String
   url: String
@@ -14998,6 +15018,47 @@ func (ec *executionContext) fieldContext_PerformerAppearance_as(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _PerformerDraft_id(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PerformerDraft_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PerformerDraft_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PerformerDraft_name(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PerformerDraft_name(ctx, field)
 	if err != nil {
@@ -21886,6 +21947,47 @@ func (ec *executionContext) fieldContext_Scene_updated(ctx context.Context, fiel
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SceneDraft_id(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneDraft_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SceneDraft_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -30572,6 +30674,14 @@ func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Contex
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "name":
 			var err error
 
@@ -31605,6 +31715,14 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "title":
 			var err error
 
@@ -35349,6 +35467,10 @@ func (ec *executionContext) _PerformerDraft(ctx context.Context, sel ast.Selecti
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("PerformerDraft")
+		case "id":
+
+			out.Values[i] = ec._PerformerDraft_id(ctx, field, obj)
+
 		case "name":
 
 			out.Values[i] = ec._PerformerDraft_name(ctx, field, obj)
@@ -37179,6 +37301,10 @@ func (ec *executionContext) _SceneDraft(ctx context.Context, sel ast.SelectionSe
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("SceneDraft")
+		case "id":
+
+			out.Values[i] = ec._SceneDraft_id(ctx, field, obj)
+
 		case "title":
 
 			out.Values[i] = ec._SceneDraft_title(ctx, field, obj)

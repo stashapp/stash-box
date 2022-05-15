@@ -27,6 +27,7 @@ func (DraftEntity) IsSceneDraftPerformer() {}
 func (DraftEntity) IsSceneDraftStudio()    {}
 
 type SceneDraft struct {
+	ID           *uuid.UUID         `json:"id,omitempty"`
 	Title        *string            `json:"title,omitempty"`
 	Details      *string            `json:"details,omitempty"`
 	URL          *string            `json:"url,omitempty"`
@@ -41,6 +42,7 @@ type SceneDraft struct {
 func (SceneDraft) IsDraftData() {}
 
 type PerformerDraft struct {
+	ID              *uuid.UUID `json:"id,omitempty"`
 	Name            string     `json:"name"`
 	Aliases         *string    `json:"aliases,omitempty"`
 	Gender          *string    `json:"gender,omitempty"`
