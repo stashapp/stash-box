@@ -9,11 +9,13 @@
 
 export interface Drafts_findDrafts_data_PerformerDraft {
   __typename: "PerformerDraft";
+  id: string | null;
   name: string;
 }
 
 export interface Drafts_findDrafts_data_SceneDraft {
   __typename: "SceneDraft";
+  id: string | null;
   title: string | null;
 }
 

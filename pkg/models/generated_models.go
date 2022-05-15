@@ -280,6 +280,7 @@ type PerformerDestroyInput struct {
 }
 
 type PerformerDraftInput struct {
+	ID              *uuid.UUID      `json:"id"`
 	Name            string          `json:"name"`
 	Aliases         *string         `json:"aliases"`
 	Gender          *string         `json:"gender"`
@@ -460,6 +461,7 @@ type SceneDestroyInput struct {
 }
 
 type SceneDraftInput struct {
+	ID           *uuid.UUID          `json:"id"`
 	Title        *string             `json:"title"`
 	Details      *string             `json:"details"`
 	URL          *string             `json:"url"`

@@ -19,6 +19,7 @@ export interface Draft_findDraft_data_PerformerDraft_image {
 
 export interface Draft_findDraft_data_PerformerDraft {
   __typename: "PerformerDraft";
+  id: string | null;
   name: string;
   aliases: string | null;
   gender: string | null;
@@ -229,6 +230,7 @@ export interface Draft_findDraft_data_SceneDraft_image {
 
 export interface Draft_findDraft_data_SceneDraft {
   __typename: "SceneDraft";
+  id: string | null;
   title: string | null;
   details: string | null;
   date: string | null;
