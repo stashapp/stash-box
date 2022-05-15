@@ -5,7 +5,7 @@ ALTER TABLE "edits"
 ALTER COLUMN "updated_at" DROP NOT NULL;
 
 UPDATE "edits"
-SET "closed_at" = "updated_at",
+SET "closed_at" = "updated_at"
 WHERE "updated_at" > "created_at"
 AND "status" != 'PENDING';
 
