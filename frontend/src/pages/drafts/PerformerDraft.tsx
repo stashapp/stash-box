@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 import {
   Draft_findDraft as Draft,
@@ -12,7 +12,7 @@ import {
   PerformerEditDetailsInput,
 } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
-import { editHref } from "src/utils";
+import { editHref, performerHref } from "src/utils";
 import { parsePerformerDraft } from "./parse";
 
 import PerformerForm from "src/pages/performers/performerForm";
@@ -72,6 +72,14 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
   return (
     <div>
       <h3>{isUpdate ? "Update" : "Add new"} performer from draft</h3>
+      {isUpdate && performer?.findPerformer && (
+        <h6>
+          Performer:{" "}
+          <Link to={performerHref(performer.findPerformer)}>
+            {performer.findPerformer?.name}
+          </Link>
+        </h6>
+      )}
       <hr />
       {remainder.length > 0 && (
         <>

@@ -98,6 +98,12 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
   return (
     <div>
       <h3>{isUpdate ? "Update" : "Add new"} scene from draft</h3>
+      {isUpdate && scene?.findScene && (
+        <h6>
+          Scene:{" "}
+          <Link to={sceneHref(scene.findScene)}>{scene.findScene?.title}</Link>
+        </h6>
+      )}
       <hr />
       {remainder.length > 0 && (
         <>
