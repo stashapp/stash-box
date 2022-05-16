@@ -59,6 +59,7 @@ func (r *sceneDraftResolver) Tags(ctx context.Context, obj *models.SceneDraft) (
 	qb := fac.Tag()
 
 	var tags []models.SceneDraftTag
+	tagMap := make(map[string]bool)
 	for _, t := range obj.Tags {
 		var st models.SceneDraftTag
 		if t.ID != nil {
@@ -67,6 +68,12 @@ func (r *sceneDraftResolver) Tags(ctx context.Context, obj *models.SceneDraft) (
 				return nil, err
 			}
 			if tag != nil {
+				if _, exists := tagMap[tag.Name]; exists {
+					// Resolved tag already exists, so we skip.
+					// This can happen with merged tags that redirect to the same thing.
+					continue
+				}
+				tagMap[tag.Name] = true
 				st = *tag
 			}
 		}
