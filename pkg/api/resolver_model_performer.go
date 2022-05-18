@@ -50,6 +50,22 @@ func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer
 	return &ret, nil
 }
 
+func (r *performerResolver) BirthDate(ctx context.Context, obj *models.Performer) (*string, error) {
+	if !obj.Birthdate.Valid || !obj.BirthdateAccuracy.Valid {
+		return nil, nil
+	}
+	accuracy := models.DateAccuracyEnum(obj.BirthdateAccuracy.String)
+	if accuracy == models.DateAccuracyEnumDay {
+		return &obj.Birthdate.String, nil
+	} else if accuracy == models.DateAccuracyEnumMonth {
+		res := obj.Birthdate.String[:7]
+		return &res, nil
+	} else {
+		res := obj.Birthdate.String[:4]
+		return &res, nil
+	}
+}
+
 func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {
 	if !obj.Birthdate.Valid {
 		return nil, nil

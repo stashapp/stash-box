@@ -65,10 +65,7 @@ func (s *performerEditTestRunner) testFindEditById() {
 func (s *performerEditTestRunner) testModifyPerformerEdit() {
 	existingName := "performerName"
 
-	existingBirthdate := models.FuzzyDateInput{
-		Date:     "1990-01-02",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	existingBirthdate := "1990-01-02"
 	performerCreateInput := models.PerformerCreateInput{
 		Name:      existingName,
 		Birthdate: &existingBirthdate,
@@ -120,12 +117,13 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 
 	s.compareURLs(input.Urls, performerDetails.AddedUrls)
 
-	if !input.Birthdate.Accuracy.IsValid() || (input.Birthdate.Accuracy.String() != *performerDetails.BirthdateAccuracy) {
-		s.fieldMismatch(input.Birthdate.Accuracy, performerDetails.BirthdateAccuracy, "BirthdateAccuracy")
+	date, accuracy, _ := models.ParseFuzzyString(input.Birthdate)
+	if !accuracy.Valid || (accuracy.String != *performerDetails.BirthdateAccuracy) {
+		s.fieldMismatch(accuracy, *performerDetails.BirthdateAccuracy, "BirthdateAccuracy")
 	}
 
-	if input.Birthdate.Date != *performerDetails.Birthdate {
-		s.fieldMismatch(input.Birthdate.Date, performerDetails.Birthdate, "Birthdate")
+	if date.String != *performerDetails.Birthdate {
+		s.fieldMismatch(date.String, performerDetails.Birthdate, "Birthdate")
 	}
 
 	if !input.Ethnicity.IsValid() || (input.Ethnicity.String() != *performerDetails.Ethnicity) {
@@ -220,20 +218,22 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	urls, _ := resolver.Urls(s.ctx, performer)
 	s.compareURLs(input.Urls, urls)
 
+	date, accuracy, _ := models.ParseFuzzyString(input.Birthdate)
+
 	if input.Birthdate == nil {
 		if performer.BirthdateAccuracy.Valid {
-			s.fieldMismatch(input.Birthdate, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
+			s.fieldMismatch(accuracy, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
 		}
-	} else if input.Birthdate.Accuracy.String() != performer.BirthdateAccuracy.String {
-		s.fieldMismatch(input.Birthdate.Accuracy.String(), performer.BirthdateAccuracy.String, "BirthdateAccuracy")
+	} else if accuracy.String != performer.BirthdateAccuracy.String {
+		s.fieldMismatch(accuracy.String, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
 	}
 
 	if input.Birthdate == nil {
 		if performer.Birthdate.Valid {
-			s.fieldMismatch(input.Birthdate, performer.Birthdate.String, "Birthdate")
+			s.fieldMismatch(date, performer.Birthdate.String, "Birthdate")
 		}
-	} else if input.Birthdate.Date != performer.Birthdate.String {
-		s.fieldMismatch(input.Birthdate.Date, performer.Birthdate.String, "Birthdate")
+	} else if date.String != performer.Birthdate.String {
+		s.fieldMismatch(date.String, performer.Birthdate.String, "Birthdate")
 	}
 
 	if input.Ethnicity == nil {

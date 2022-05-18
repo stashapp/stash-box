@@ -15,13 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import {
-  formatDuration,
-  formatFuzzyDate,
-  parseDuration,
-  parseFuzzyDate,
-  performerHref,
-} from "src/utils";
+import { formatDuration, parseDuration, performerHref } from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -62,7 +56,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     defaultValues: {
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
-      date: initial?.date ?? formatFuzzyDate(scene?.date),
+      date: initial?.date ?? scene?.release_date ?? undefined,
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
@@ -104,7 +98,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneEditDetailsInput = {
       title: data.title,
-      date: parseFuzzyDate(data.date),
+      date: data.date,
       duration: parseDuration(data.duration),
       director: data.director,
       code: data.code,

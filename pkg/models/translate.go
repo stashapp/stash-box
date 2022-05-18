@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"regexp"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -151,21 +153,24 @@ func (d *editDiff) nullStringEnum(old sql.NullString, new stringEnum) (oldOut *s
 	return
 }
 
-func (d *editDiff) fuzzyDate(oldDate SQLDate, oldAcc sql.NullString, new *FuzzyDateInput) (outOldDate, outOldAcc, outNewDate, outNewAcc *string) {
+func (d *editDiff) fuzzyDate(oldDate SQLDate, oldAcc sql.NullString, new *string) (outOldDate, outOldAcc, outNewDate, outNewAcc *string) {
 	if new == nil && oldDate.Valid {
 		outOldDate = &oldDate.String
 		if oldAcc.Valid {
 			outOldAcc = &oldAcc.String
 		}
-	} else if new != nil && (!oldDate.Valid || new.Date != oldDate.String || new.Accuracy.String() != oldAcc.String) {
-		outNewDate = &new.Date
-		newAccuracy := new.Accuracy.String()
-		outNewAcc = &newAccuracy
-		if oldDate.Valid {
-			outOldDate = &oldDate.String
-		}
-		if oldAcc.Valid {
-			outOldAcc = &oldAcc.String
+	} else if new != nil {
+		newDate, newAccuracy, _ := ParseFuzzyString(new)
+		if !oldDate.Valid || newDate.String != oldDate.String || newAccuracy.String != oldAcc.String {
+			outNewDate = &newDate.String
+			newAccuracy := newAccuracy.String
+			outNewAcc = &newAccuracy
+			if oldDate.Valid {
+				outOldDate = &oldDate.String
+			}
+			if oldAcc.Valid {
+				outOldAcc = &oldAcc.String
+			}
 		}
 	}
 
@@ -227,4 +232,34 @@ func (v *editValidator) uuid(field string, old *uuid.UUID, current uuid.NullUUID
 		}
 		v.err = v.error(field, old.String(), currentUUID)
 	}
+}
+
+var ErrInvalidDate = fmt.Errorf("invalid fuzzy date")
+var dateValidator = regexp.MustCompile("^\\d{4}(-\\d{2}){0,2}$")
+
+func ParseFuzzyString(date *string) (SQLDate, sql.NullString, error) {
+	if date == nil {
+		return SQLDate{Valid: false}, sql.NullString{Valid: false}, nil
+	}
+
+	if !dateValidator.MatchString(*date) {
+		return SQLDate{Valid: false}, sql.NullString{Valid: false}, ErrInvalidDate
+	}
+
+	accuracy := DateAccuracyEnumDay
+	fuzzyDate := *date
+	if len(fuzzyDate) == 4 {
+		accuracy = DateAccuracyEnumYear
+		fuzzyDate += "-01-01"
+	} else if len(fuzzyDate) == 7 {
+		accuracy = DateAccuracyEnumMonth
+		fuzzyDate += "-01"
+	}
+
+	_, err := time.Parse("2006-01-02", fuzzyDate)
+	if err != nil {
+		return SQLDate{Valid: false}, sql.NullString{Valid: false}, ErrInvalidDate
+	}
+
+	return SQLDate{String: fuzzyDate, Valid: true}, sql.NullString{String: accuracy.String(), Valid: true}, nil
 }

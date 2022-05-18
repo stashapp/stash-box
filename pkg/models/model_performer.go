@@ -286,11 +286,6 @@ func CreatePerformerBodyMods(performerID uuid.UUID, urls []*BodyModification) Pe
 func (p *Performer) IsEditTarget() {
 }
 
-func (p *Performer) setBirthdate(fuzzyDate FuzzyDateInput) {
-	p.Birthdate = SQLDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
-	p.BirthdateAccuracy = sql.NullString{String: fuzzyDate.Accuracy.String(), Valid: fuzzyDate.Date != ""}
-}
-
 func (p Performer) ResolveBirthdate() FuzzyDate {
 	ret := FuzzyDate{}
 
@@ -348,7 +343,12 @@ func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 	CopyFull(p, input)
 
 	if input.Birthdate != nil {
-		p.setBirthdate(*input.Birthdate)
+		date, accuracy, err := ParseFuzzyString(input.Birthdate)
+		if err != nil {
+			return err
+		}
+		p.Birthdate = date
+		p.BirthdateAccuracy = accuracy
 	}
 
 	if input.Measurements != nil {
@@ -362,7 +362,12 @@ func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
 	CopyFull(p, input)
 
 	if input.Birthdate != nil {
-		p.setBirthdate(*input.Birthdate)
+		date, accuracy, err := ParseFuzzyString(input.Birthdate)
+		if err != nil {
+			return err
+		}
+		p.Birthdate = date
+		p.BirthdateAccuracy = accuracy
 	}
 
 	if input.Measurements != nil {

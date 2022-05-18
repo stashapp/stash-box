@@ -3,17 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DateAccuracyEnum, GenderEnum, FingerprintAlgorithm } from "./globalTypes";
+import { GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Scene
 // ====================================================
-
-export interface Scene_findScene_date {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
 
 export interface Scene_findScene_urls_site {
   __typename: "Site";
@@ -83,7 +77,7 @@ export interface Scene_findScene_tags {
 export interface Scene_findScene {
   __typename: "Scene";
   id: string;
-  date: Scene_findScene_date | null;
+  release_date: string | null;
   title: string | null;
   deleted: boolean;
   details: string | null;

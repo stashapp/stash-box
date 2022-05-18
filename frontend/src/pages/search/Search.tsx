@@ -26,7 +26,6 @@ import {
 } from "src/components/fragments";
 import Title from "src/components/title";
 import {
-  formatFuzzyDate,
   getImage,
   getCountryByISO,
   sceneHref,
@@ -67,10 +66,10 @@ const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
           )}
         </h4>
         <div>
-          {performer.birthdate?.date && (
+          {performer.birth_date && (
             <div>
               <Icon icon={faBirthdayCake} />
-              {formatFuzzyDate(performer.birthdate)}
+              {performer.birth_date}
             </div>
           )}
           {performer.country && (
@@ -107,7 +106,7 @@ const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
         <div>
           <div>
             <Icon icon={faCalendar} />
-            {formatFuzzyDate(scene.date)}
+            {scene.release_date}
           </div>
           <div>
             <Icon icon={faVideo} />

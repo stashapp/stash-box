@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { SceneEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import { SceneEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: SceneEditUpdate
@@ -58,12 +58,6 @@ export interface SceneEditUpdate_sceneEditUpdate_target_Tag {
   aliases: string[];
 }
 
-export interface SceneEditUpdate_sceneEditUpdate_target_Performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface SceneEditUpdate_sceneEditUpdate_target_Performer_measurements {
   __typename: "Measurements";
   waist: number | null;
@@ -113,7 +107,7 @@ export interface SceneEditUpdate_sceneEditUpdate_target_Performer {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: SceneEditUpdate_sceneEditUpdate_target_Performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -177,12 +171,6 @@ export interface SceneEditUpdate_sceneEditUpdate_target_Studio {
   images: SceneEditUpdate_sceneEditUpdate_target_Studio_images[];
   deleted: boolean;
   is_favorite: boolean;
-}
-
-export interface SceneEditUpdate_sceneEditUpdate_target_Scene_date {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface SceneEditUpdate_sceneEditUpdate_target_Scene_urls_site {
@@ -253,7 +241,7 @@ export interface SceneEditUpdate_sceneEditUpdate_target_Scene_tags {
 export interface SceneEditUpdate_sceneEditUpdate_target_Scene {
   __typename: "Scene";
   id: string;
-  date: SceneEditUpdate_sceneEditUpdate_target_Scene_date | null;
+  release_date: string | null;
   title: string | null;
   deleted: boolean;
   details: string | null;
@@ -556,12 +544,6 @@ export interface SceneEditUpdate_sceneEditUpdate_details_SceneEdit_studio {
   is_favorite: boolean;
 }
 
-export interface SceneEditUpdate_sceneEditUpdate_details_SceneEdit_added_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface SceneEditUpdate_sceneEditUpdate_details_SceneEdit_added_performers_performer_measurements {
   __typename: "Measurements";
   waist: number | null;
@@ -611,7 +593,7 @@ export interface SceneEditUpdate_sceneEditUpdate_details_SceneEdit_added_perform
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: SceneEditUpdate_sceneEditUpdate_details_SceneEdit_added_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -639,12 +621,6 @@ export interface SceneEditUpdate_sceneEditUpdate_details_SceneEdit_added_perform
    * Performing as alias
    */
   as: string | null;
-}
-
-export interface SceneEditUpdate_sceneEditUpdate_details_SceneEdit_removed_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface SceneEditUpdate_sceneEditUpdate_details_SceneEdit_removed_performers_performer_measurements {
@@ -696,7 +672,7 @@ export interface SceneEditUpdate_sceneEditUpdate_details_SceneEdit_removed_perfo
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: SceneEditUpdate_sceneEditUpdate_details_SceneEdit_removed_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -973,12 +949,6 @@ export interface SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_studio {
   is_favorite: boolean;
 }
 
-export interface SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_added_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_added_performers_performer_measurements {
   __typename: "Measurements";
   waist: number | null;
@@ -1028,7 +998,7 @@ export interface SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_added_per
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_added_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -1056,12 +1026,6 @@ export interface SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_added_per
    * Performing as alias
    */
   as: string | null;
-}
-
-export interface SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_removed_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_removed_performers_performer_measurements {
@@ -1113,7 +1077,7 @@ export interface SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_removed_p
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: SceneEditUpdate_sceneEditUpdate_old_details_SceneEdit_removed_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -1247,12 +1211,6 @@ export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Tag {
   aliases: string[];
 }
 
-export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Performer_measurements {
   __typename: "Measurements";
   waist: number | null;
@@ -1302,7 +1260,7 @@ export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Performer {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: SceneEditUpdate_sceneEditUpdate_merge_sources_Performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -1366,12 +1324,6 @@ export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Studio {
   images: SceneEditUpdate_sceneEditUpdate_merge_sources_Studio_images[];
   deleted: boolean;
   is_favorite: boolean;
-}
-
-export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Scene_date {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Scene_urls_site {
@@ -1442,7 +1394,7 @@ export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Scene_tags {
 export interface SceneEditUpdate_sceneEditUpdate_merge_sources_Scene {
   __typename: "Scene";
   id: string;
-  date: SceneEditUpdate_sceneEditUpdate_merge_sources_Scene_date | null;
+  release_date: string | null;
   title: string | null;
   deleted: boolean;
   details: string | null;

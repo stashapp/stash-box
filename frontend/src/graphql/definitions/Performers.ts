@@ -3,17 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { PerformerQueryInput, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import { PerformerQueryInput, GenderEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Performers
 // ====================================================
-
-export interface Performers_queryPerformers_performers_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
 
 export interface Performers_queryPerformers_performers_measurements {
   __typename: "Measurements";
@@ -64,7 +58,7 @@ export interface Performers_queryPerformers_performers {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: Performers_queryPerformers_performers_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm

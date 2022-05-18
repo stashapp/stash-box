@@ -7,10 +7,7 @@ fragment PerformerFragment on Performer {
   deleted
   aliases
   gender
-  birthdate {
-    date
-    accuracy
-  }
+  birth_date
   age
   height
   hair_color

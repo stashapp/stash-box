@@ -17,7 +17,7 @@ import {
   SearchPerformers,
   SearchPerformers_searchPerformer as PerformerOnlyResult,
 } from "src/graphql/definitions/SearchPerformers";
-import { formatFuzzyDate, createHref, filterData } from "src/utils";
+import { createHref, filterData } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
 import { GenderIcon } from "src/components/fragments";
 
@@ -97,9 +97,7 @@ function handleResult(
           performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
         }`,
         subLabel: [
-          performer?.birthdate
-            ? `Born: ${formatFuzzyDate(performer.birthdate)}`
-            : null,
+          performer?.birth_date ? `Born: ${performer.birth_date}` : null,
           performer?.aliases.length
             ? `AKA: ${performer.aliases.join(", ")}`
             : null,
@@ -115,7 +113,7 @@ function handleResult(
         type: "scene",
         value: scene,
         label: `${scene.title}${
-          scene.date ? ` (${formatFuzzyDate(scene.date)})` : ""
+          scene.release_date ? ` (${scene.release_date})` : ""
         }`,
         subLabel: filterData([
           scene?.studio?.name,
@@ -138,9 +136,7 @@ function handleResult(
           performer.disambiguation ? "(" + performer.disambiguation + ")" : ""
         }`,
         subLabel: [
-          performer.birthdate
-            ? `Born: ${formatFuzzyDate(performer.birthdate)}`
-            : null,
+          performer.birth_date ? `Born: ${performer.birth_date}` : null,
           performer.aliases.length
             ? `AKA: ${performer.aliases.join(", ")}`
             : null,

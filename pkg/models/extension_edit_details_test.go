@@ -24,6 +24,8 @@ var (
 	bGenderStr      = bGender.String()
 	aDate           = "2001-01-01"
 	bDate           = "2002-01-01"
+	aDateShort      = "2001-01-01"
+	bDateShort      = "2002-01"
 	aDateAcc        = DateAccuracyEnumDay
 	bDateAcc        = DateAccuracyEnumMonth
 	aDateAccStr     = aDateAcc.String()
@@ -167,15 +169,12 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		Name:           &bName,
 		Disambiguation: &bDisambiguation,
 		Gender:         &bGender,
-		Birthdate: &FuzzyDateInput{
-			Date:     bDate,
-			Accuracy: bDateAcc,
-		},
-		Ethnicity: &bEthnicity,
-		Country:   &bCountry,
-		EyeColor:  &bEyeColor,
-		HairColor: &bHairColor,
-		Height:    &bHeight,
+		Birthdate:      &bDateShort,
+		Ethnicity:      &bEthnicity,
+		Country:        &bCountry,
+		EyeColor:       &bEyeColor,
+		HairColor:      &bHairColor,
+		Height:         &bHeight,
 		Measurements: &MeasurementsInput{
 			CupSize:  &bCupSize,
 			BandSize: &bBandSize,
@@ -291,15 +290,12 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		Name:           &aName,
 		Disambiguation: &aDisambiguation,
 		Gender:         &aGender,
-		Birthdate: &FuzzyDateInput{
-			Date:     aDate,
-			Accuracy: aDateAcc,
-		},
-		Ethnicity: &aEthnicity,
-		Country:   &aCountry,
-		EyeColor:  &aEyeColor,
-		HairColor: &aHairColor,
-		Height:    &aHeight,
+		Birthdate:      &aDateShort,
+		Ethnicity:      &aEthnicity,
+		Country:        &aCountry,
+		EyeColor:       &aEyeColor,
+		HairColor:      &aHairColor,
+		Height:         &aHeight,
 		Measurements: &MeasurementsInput{
 			CupSize:  &aCupSize,
 			BandSize: &aBandSize,

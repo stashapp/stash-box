@@ -39,8 +39,20 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 	return &obj.ResolveDate().Date, nil
 }
 
-func (r *sceneResolver) DateFuzzy(ctx context.Context, obj *models.Scene) (*models.FuzzyDate, error) {
-	return obj.ResolveDate(), nil
+func (r *sceneResolver) ReleaseDate(ctx context.Context, obj *models.Scene) (*string, error) {
+	if !obj.Date.Valid || !obj.DateAccuracy.Valid {
+		return nil, nil
+	}
+	accuracy := models.DateAccuracyEnum(obj.DateAccuracy.String)
+	if accuracy == models.DateAccuracyEnumDay {
+		return &obj.Date.String, nil
+	} else if accuracy == models.DateAccuracyEnumMonth {
+		res := obj.Date.String[:7]
+		return &res, nil
+	} else {
+		res := obj.Date.String[:4]
+		return &res, nil
+	}
 }
 
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {

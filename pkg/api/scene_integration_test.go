@@ -24,10 +24,7 @@ func createSceneTestRunner(t *testing.T) *sceneTestRunner {
 func (s *sceneTestRunner) testCreateScene() {
 	title := "Title"
 	details := "Details"
-	date := models.FuzzyDateInput{
-		Date:     "2003-02-01",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
@@ -184,7 +181,7 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 
 	s.compareSiteURLs(input.Urls, scene.Urls)
 
-	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || scene.Date.Date != input.Date.Date || scene.Date.Accuracy != input.Date.Accuracy) {
+	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || *input.Date != *scene.Date) {
 		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 
@@ -308,10 +305,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
-	date := models.FuzzyDateInput{
-		Date:     "2003-02-01",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
@@ -362,10 +356,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 
 	newTitle := "NewTitle"
 	newDetails := "NewDetails"
-	newDate := models.FuzzyDateInput{
-		Date:     "2001-02-03",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	newDate := "2001-02-03"
 
 	performer, _ = s.createTestPerformer(nil)
 	studio, _ = s.createTestStudio(nil)
@@ -444,7 +435,7 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 		s.fieldMismatch(input.Details, scene.Details, "Details")
 	}
 
-	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || scene.Date.Date != input.Date.Date || scene.Date.Accuracy != input.Date.Accuracy) {
+	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || *scene.Date != *input.Date) {
 		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 

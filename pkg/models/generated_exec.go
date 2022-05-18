@@ -215,6 +215,7 @@ type ComplexityRoot struct {
 	Performer struct {
 		Age             func(childComplexity int) int
 		Aliases         func(childComplexity int) int
+		BirthDate       func(childComplexity int) int
 		Birthdate       func(childComplexity int) int
 		BreastType      func(childComplexity int) int
 		CareerEndYear   func(childComplexity int) int
@@ -388,7 +389,6 @@ type ComplexityRoot struct {
 		Code         func(childComplexity int) int
 		Created      func(childComplexity int) int
 		Date         func(childComplexity int) int
-		DateFuzzy    func(childComplexity int) int
 		Deleted      func(childComplexity int) int
 		Details      func(childComplexity int) int
 		Director     func(childComplexity int) int
@@ -398,6 +398,7 @@ type ComplexityRoot struct {
 		ID           func(childComplexity int) int
 		Images       func(childComplexity int) int
 		Performers   func(childComplexity int) int
+		ReleaseDate  func(childComplexity int) int
 		Studio       func(childComplexity int) int
 		Tags         func(childComplexity int) int
 		Title        func(childComplexity int) int
@@ -660,6 +661,7 @@ type PerformerResolver interface {
 	Gender(ctx context.Context, obj *Performer) (*GenderEnum, error)
 	Urls(ctx context.Context, obj *Performer) ([]*URL, error)
 	Birthdate(ctx context.Context, obj *Performer) (*FuzzyDate, error)
+	BirthDate(ctx context.Context, obj *Performer) (*string, error)
 	Age(ctx context.Context, obj *Performer) (*int, error)
 	Ethnicity(ctx context.Context, obj *Performer) (*EthnicityEnum, error)
 	Country(ctx context.Context, obj *Performer) (*string, error)
@@ -750,7 +752,7 @@ type SceneResolver interface {
 	Title(ctx context.Context, obj *Scene) (*string, error)
 	Details(ctx context.Context, obj *Scene) (*string, error)
 	Date(ctx context.Context, obj *Scene) (*string, error)
-	DateFuzzy(ctx context.Context, obj *Scene) (*FuzzyDate, error)
+	ReleaseDate(ctx context.Context, obj *Scene) (*string, error)
 	Urls(ctx context.Context, obj *Scene) ([]*URL, error)
 	Studio(ctx context.Context, obj *Scene) (*Studio, error)
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
@@ -1851,6 +1853,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Performer.Aliases(childComplexity), true
 
+	case "Performer.birth_date":
+		if e.complexity.Performer.BirthDate == nil {
+			break
+		}
+
+		return e.complexity.Performer.BirthDate(childComplexity), true
+
 	case "Performer.birthdate":
 		if e.complexity.Performer.Birthdate == nil {
 			break
@@ -2852,13 +2861,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Date(childComplexity), true
 
-	case "Scene.date_fuzzy":
-		if e.complexity.Scene.DateFuzzy == nil {
-			break
-		}
-
-		return e.complexity.Scene.DateFuzzy(childComplexity), true
-
 	case "Scene.deleted":
 		if e.complexity.Scene.Deleted == nil {
 			break
@@ -2921,6 +2923,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Scene.Performers(childComplexity), true
+
+	case "Scene.release_date":
+		if e.complexity.Scene.ReleaseDate == nil {
+			break
+		}
+
+		return e.complexity.Scene.ReleaseDate(childComplexity), true
 
 	case "Scene.studio":
 		if e.complexity.Scene.Studio == nil {
@@ -4293,7 +4302,8 @@ type Performer {
   aliases: [String!]!
   gender: GenderEnum
   urls: [URL!]!
-  birthdate: FuzzyDate
+  birthdate: FuzzyDate @deprecated(reason: "Please use ` + "`" + `birth_date` + "`" + `")
+  birth_date: String
   age: Int # resolver
   ethnicity: EthnicityEnum
   country: String
@@ -4329,7 +4339,7 @@ input PerformerCreateInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4352,7 +4362,7 @@ input PerformerUpdateInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4377,7 +4387,7 @@ input PerformerEditDetailsInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -4644,8 +4654,8 @@ type Scene {
   id: ID!
   title: String
   details: String
-  date: String @deprecated(reason: "Use the date_fuzzy field instead")
-  date_fuzzy: FuzzyDate
+  date: String @deprecated(reason: "Please use ` + "`" + `release_date` + "`" + ` instead")
+  release_date: String
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -4665,7 +4675,7 @@ input SceneCreateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: FuzzyDateInput
+  date: String!
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -4681,7 +4691,7 @@ input SceneUpdateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: FuzzyDateInput
+  date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -4700,7 +4710,7 @@ input SceneEditDetailsInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: FuzzyDateInput
+  date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -9112,8 +9122,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneCreate(ctx context.Contex
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -9226,8 +9236,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneUpdate(ctx context.Contex
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -9425,6 +9435,8 @@ func (ec *executionContext) fieldContext_Mutation_performerCreate(ctx context.Co
 				return ec.fieldContext_Performer_urls(ctx, field)
 			case "birthdate":
 				return ec.fieldContext_Performer_birthdate(ctx, field)
+			case "birth_date":
+				return ec.fieldContext_Performer_birth_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -9559,6 +9571,8 @@ func (ec *executionContext) fieldContext_Mutation_performerUpdate(ctx context.Co
 				return ec.fieldContext_Performer_urls(ctx, field)
 			case "birthdate":
 				return ec.fieldContext_Performer_birthdate(ctx, field)
+			case "birth_date":
+				return ec.fieldContext_Performer_birth_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -13908,6 +13922,47 @@ func (ec *executionContext) fieldContext_Performer_birthdate(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Performer_birth_date(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_birth_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().BirthDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_birth_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Performer_age(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Performer_age(ctx, field)
 	if err != nil {
@@ -14928,6 +14983,8 @@ func (ec *executionContext) fieldContext_PerformerAppearance_performer(ctx conte
 				return ec.fieldContext_Performer_urls(ctx, field)
 			case "birthdate":
 				return ec.fieldContext_Performer_birthdate(ctx, field)
+			case "birth_date":
+				return ec.fieldContext_Performer_birth_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -17458,6 +17515,8 @@ func (ec *executionContext) fieldContext_Query_findPerformer(ctx context.Context
 				return ec.fieldContext_Performer_urls(ctx, field)
 			case "birthdate":
 				return ec.fieldContext_Performer_birthdate(ctx, field)
+			case "birth_date":
+				return ec.fieldContext_Performer_birth_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -18195,8 +18254,8 @@ func (ec *executionContext) fieldContext_Query_findScene(ctx context.Context, fi
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -18312,8 +18371,8 @@ func (ec *executionContext) fieldContext_Query_findSceneByFingerprint(ctx contex
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -18429,8 +18488,8 @@ func (ec *executionContext) fieldContext_Query_findScenesByFingerprints(ctx cont
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -18546,8 +18605,8 @@ func (ec *executionContext) fieldContext_Query_findScenesByFullFingerprints(ctx 
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -18663,8 +18722,8 @@ func (ec *executionContext) fieldContext_Query_findScenesBySceneFingerprints(ctx
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -19490,6 +19549,8 @@ func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Conte
 				return ec.fieldContext_Performer_urls(ctx, field)
 			case "birthdate":
 				return ec.fieldContext_Performer_birthdate(ctx, field)
+			case "birth_date":
+				return ec.fieldContext_Performer_birth_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -19621,8 +19682,8 @@ func (ec *executionContext) fieldContext_Query_searchScene(ctx context.Context, 
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -20347,6 +20408,8 @@ func (ec *executionContext) fieldContext_QueryPerformersResultType_performers(ct
 				return ec.fieldContext_Performer_urls(ctx, field)
 			case "birthdate":
 				return ec.fieldContext_Performer_birthdate(ctx, field)
+			case "birth_date":
+				return ec.fieldContext_Performer_birth_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -20487,8 +20550,8 @@ func (ec *executionContext) fieldContext_QueryScenesResultType_scenes(ctx contex
 				return ec.fieldContext_Scene_details(ctx, field)
 			case "date":
 				return ec.fieldContext_Scene_date(ctx, field)
-			case "date_fuzzy":
-				return ec.fieldContext_Scene_date_fuzzy(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -21225,8 +21288,8 @@ func (ec *executionContext) fieldContext_Scene_date(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Scene_date_fuzzy(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Scene_date_fuzzy(ctx, field)
+func (ec *executionContext) _Scene_release_date(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Scene_release_date(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -21239,7 +21302,7 @@ func (ec *executionContext) _Scene_date_fuzzy(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().DateFuzzy(rctx, obj)
+		return ec.resolvers.Scene().ReleaseDate(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -21248,25 +21311,19 @@ func (ec *executionContext) _Scene_date_fuzzy(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*FuzzyDate)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOFuzzyDate2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDate(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Scene_date_fuzzy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Scene_release_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "date":
-				return ec.fieldContext_FuzzyDate_date(ctx, field)
-			case "accuracy":
-				return ec.fieldContext_FuzzyDate_accuracy(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type FuzzyDate", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -30528,7 +30585,7 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birthdate"))
-			it.Birthdate, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
+			it.Birthdate, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -30877,7 +30934,7 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birthdate"))
-			it.Birthdate, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
+			it.Birthdate, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -31381,7 +31438,7 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birthdate"))
-			it.Birthdate, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
+			it.Birthdate, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -31609,7 +31666,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
+			it.Date, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -31838,7 +31895,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
+			it.Date, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -32144,7 +32201,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx, v)
+			it.Date, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35040,6 +35097,23 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				return innerFunc(ctx)
 
 			})
+		case "birth_date":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_birth_date(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "age":
 			field := field
 
@@ -37028,7 +37102,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				return innerFunc(ctx)
 
 			})
-		case "date_fuzzy":
+		case "release_date":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -37037,7 +37111,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Scene_date_fuzzy(ctx, field, obj)
+				res = ec._Scene_release_date(ctx, field, obj)
 				return res
 			}
 
@@ -42065,14 +42139,6 @@ func (ec *executionContext) marshalOFuzzyDate2ᚖgithubᚗcomᚋstashappᚋstash
 		return graphql.Null
 	}
 	return ec._FuzzyDate(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOFuzzyDateInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDateInput(ctx context.Context, v interface{}) (*FuzzyDateInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputFuzzyDateInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOGenderEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐGenderEnum(ctx context.Context, v interface{}) (*GenderEnum, error) {

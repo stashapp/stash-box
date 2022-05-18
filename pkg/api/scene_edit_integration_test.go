@@ -107,12 +107,13 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
 	c.intPtrInt64Ptr(input.Duration, sceneDetails.Duration, "Duration")
 
-	if !input.Date.Accuracy.IsValid() || (input.Date.Accuracy.String() != *sceneDetails.DateAccuracy) {
-		s.fieldMismatch(input.Date.Accuracy, sceneDetails.DateAccuracy, "DateAccuracy")
+	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Date)
+	if !inputAccuracy.Valid || (inputAccuracy.String != *sceneDetails.DateAccuracy) {
+		s.fieldMismatch(inputAccuracy.String, *sceneDetails.DateAccuracy, "DateAccuracy")
 	}
 
-	if input.Date.Date != *sceneDetails.Date {
-		s.fieldMismatch(input.Date.Date, sceneDetails.Date, "Date")
+	if inputDate.String != *sceneDetails.Date {
+		s.fieldMismatch(inputDate.String, sceneDetails.Date, "Date")
 	}
 
 	s.compareURLs(input.Urls, sceneDetails.AddedUrls)
@@ -141,20 +142,21 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	c.uuidPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
 	c.intPtrNullInt64(input.Duration, scene.Duration, "Duration")
 
+	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Date)
 	if input.Date == nil {
 		if scene.DateAccuracy.Valid {
-			s.fieldMismatch(input.Date, scene.DateAccuracy.String, "DateAccuracy")
+			s.fieldMismatch(inputDate.String, scene.DateAccuracy.String, "DateAccuracy")
 		}
-	} else if input.Date.Accuracy.String() != scene.DateAccuracy.String {
-		s.fieldMismatch(input.Date.Accuracy.String(), scene.DateAccuracy.String, "DateAccuracy")
+	} else if inputAccuracy.String != scene.DateAccuracy.String {
+		s.fieldMismatch(inputAccuracy.String, scene.DateAccuracy.String, "DateAccuracy")
 	}
 
 	if input.Date == nil {
 		if scene.Date.Valid {
 			s.fieldMismatch(input.Date, scene.Date.String, "Date")
 		}
-	} else if input.Date.Date != scene.Date.String {
-		s.fieldMismatch(input.Date.Date, scene.Date.String, "Date")
+	} else if inputDate.String != scene.Date.String {
+		s.fieldMismatch(inputDate.String, scene.Date.String, "Date")
 	}
 
 	urls, _ := resolver.Urls(s.ctx, scene)

@@ -34,6 +34,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 	eyeColor := models.EyeColorEnumBlue
 	hairColor := models.HairColorEnumBlonde
 	breastType := models.BreastTypeEnumNatural
+	birthdate := "2001-02-03"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return
@@ -50,10 +51,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2001-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
+		Birthdate: &birthdate,
 		Ethnicity: &ethnicity,
 		Country:   &country,
 		EyeColor:  &eyeColor,
@@ -146,8 +144,9 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
 
+	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Birthdate)
 	birthdate, _ := r.Birthdate(s.ctx, performer)
-	if !bothNil(birthdate, input.Birthdate) && (oneNil(birthdate, input.Birthdate) || birthdate.Date != input.Birthdate.Date || birthdate.Accuracy != input.Birthdate.Accuracy) {
+	if !bothNil(birthdate, input.Birthdate) && (oneNil(birthdate, input.Birthdate) || birthdate.Date != inputDate.String || birthdate.Accuracy.String() != inputAccuracy.String) {
 		s.fieldMismatch(input.Birthdate, birthdate, "Birthdate")
 	}
 
@@ -231,6 +230,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	cupSize := "C"
 	bandSize := 32
 	tattooDesc := "Foobar"
+	date := "2001-02-03"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return
@@ -245,10 +245,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2001-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
+		Birthdate: &date,
 		Measurements: &models.MeasurementsInput{
 			CupSize:  &cupSize,
 			BandSize: &bandSize,
@@ -285,10 +282,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2001-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
+		Birthdate: &date,
 		Measurements: &models.MeasurementsInput{
 			CupSize:  &cupSize,
 			BandSize: &bandSize,
@@ -346,8 +340,9 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
 
+	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Birthdate)
 	birthdate, _ := r.Birthdate(s.ctx, performer)
-	if birthdate != nil && (birthdate.Date != input.Birthdate.Date || birthdate.Accuracy != input.Birthdate.Accuracy) {
+	if birthdate != nil && (birthdate.Date != inputDate.String || birthdate.Accuracy.String() != inputAccuracy.String) {
 		s.fieldMismatch(input.Birthdate, birthdate, "Birthdate")
 	}
 

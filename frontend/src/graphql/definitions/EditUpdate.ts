@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import { TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: EditUpdate
@@ -29,12 +29,6 @@ export interface EditUpdate_findEdit_target_Tag {
   deleted: boolean;
   category: EditUpdate_findEdit_target_Tag_category | null;
   aliases: string[];
-}
-
-export interface EditUpdate_findEdit_target_Performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface EditUpdate_findEdit_target_Performer_measurements {
@@ -86,7 +80,7 @@ export interface EditUpdate_findEdit_target_Performer {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: EditUpdate_findEdit_target_Performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -150,12 +144,6 @@ export interface EditUpdate_findEdit_target_Studio {
   images: EditUpdate_findEdit_target_Studio_images[];
   deleted: boolean;
   is_favorite: boolean;
-}
-
-export interface EditUpdate_findEdit_target_Scene_date {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface EditUpdate_findEdit_target_Scene_urls_site {
@@ -226,7 +214,7 @@ export interface EditUpdate_findEdit_target_Scene_tags {
 export interface EditUpdate_findEdit_target_Scene {
   __typename: "Scene";
   id: string;
-  date: EditUpdate_findEdit_target_Scene_date | null;
+  release_date: string | null;
   title: string | null;
   deleted: boolean;
   details: string | null;
@@ -451,12 +439,6 @@ export interface EditUpdate_findEdit_details_SceneEdit_urls {
   site: EditUpdate_findEdit_details_SceneEdit_urls_site;
 }
 
-export interface EditUpdate_findEdit_details_SceneEdit_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface EditUpdate_findEdit_details_SceneEdit_performers_performer_measurements {
   __typename: "Measurements";
   waist: number | null;
@@ -506,7 +488,7 @@ export interface EditUpdate_findEdit_details_SceneEdit_performers_performer {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: EditUpdate_findEdit_details_SceneEdit_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm

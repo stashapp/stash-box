@@ -238,20 +238,30 @@ func (p Scene) ResolveDate() *FuzzyDate {
 	return &ret
 }
 
-func (p *Scene) CopyFromCreateInput(input SceneCreateInput) {
+func (p *Scene) CopyFromCreateInput(input SceneCreateInput) error {
 	CopyFull(p, input)
 
-	if input.Date != nil {
-		p.setDate(*input.Date)
+	date, accuracy, err := ParseFuzzyString(&input.Date)
+	if err != nil {
+		return err
 	}
+	p.Date = date
+	p.DateAccuracy = accuracy
+
+	return nil
 }
 
-func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) {
+func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) error {
 	CopyFull(p, input)
 
-	if input.Date != nil {
-		p.setDate(*input.Date)
+	date, accuracy, err := ParseFuzzyString(input.Date)
+	if err != nil {
+		return err
 	}
+	p.Date = date
+	p.DateAccuracy = accuracy
+
+	return nil
 }
 
 func (p *Scene) CopyFromSceneEdit(input SceneEdit, old *SceneEdit) {

@@ -19,12 +19,7 @@ import {
   PerformerEditDetailsInput,
   ValidSiteTypeEnum,
 } from "src/graphql";
-import {
-  getBraSize,
-  parseBraSize,
-  formatFuzzyDate,
-  parseFuzzyDate,
-} from "src/utils";
+import { getBraSize, parseBraSize } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
@@ -148,7 +143,7 @@ const PerformerForm: FC<PerformerProps> = ({
       disambiguation: initial?.disambiguation ?? performer?.disambiguation,
       aliases: initial?.aliases ?? performer?.aliases ?? [],
       gender: initial?.gender ?? performer?.gender,
-      birthdate: initial?.birthdate ?? formatFuzzyDate(performer?.birthdate),
+      birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
       eye_color: getEnumValue(
         EYE,
         initial?.eye_color ?? performer?.eye_color ?? null
@@ -259,7 +254,7 @@ const PerformerForm: FC<PerformerProps> = ({
     )
       performerData.breast_type = BreastTypeEnum.NA;
 
-    performerData.birthdate = parseFuzzyDate(data.birthdate);
+    performerData.birthdate = data.birthdate;
 
     callback(performerData, data.note, updateAliases, data.id);
   };
