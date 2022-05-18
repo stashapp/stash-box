@@ -176,6 +176,13 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           )}
         </Card.Footer>
       </Card>
+      <div className="float-end">
+        {scene.urls.map((u) => (
+          <a href={u.url} target="_blank" rel="noreferrer noopener" key={u.url}>
+            <img src={u.site.icon} alt="" className="SiteLink-icon" />
+          </a>
+        ))}
+      </div>
       <Tabs
         activeKey={activeTab}
         id="scene-tabs"
