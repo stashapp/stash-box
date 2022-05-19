@@ -3810,7 +3810,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputFingerprintInput,
 		ec.unmarshalInputFingerprintQueryInput,
 		ec.unmarshalInputFingerprintSubmission,
-		ec.unmarshalInputFuzzyDateInput,
 		ec.unmarshalInputGrantInviteInput,
 		ec.unmarshalInputHairColorCriterionInput,
 		ec.unmarshalInputIDCriterionInput,
@@ -4180,11 +4179,6 @@ enum DateAccuracyEnum {
 }
 
 type FuzzyDate {
-  date: Date!
-  accuracy: DateAccuracyEnum!
-}
-
-input FuzzyDateInput {
   date: Date!
   accuracy: DateAccuracyEnum!
 }
@@ -30112,37 +30106,6 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unmatch"))
 			it.Unmatch, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputFuzzyDateInput(ctx context.Context, obj interface{}) (FuzzyDateInput, error) {
-	var it FuzzyDateInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	for k, v := range asMap {
-		switch k {
-		case "date":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalNDate2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "accuracy":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accuracy"))
-			it.Accuracy, err = ec.unmarshalNDateAccuracyEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDateAccuracyEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}

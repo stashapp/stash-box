@@ -173,11 +173,6 @@ type FuzzyDate struct {
 	Accuracy DateAccuracyEnum `json:"accuracy"`
 }
 
-type FuzzyDateInput struct {
-	Date     string           `json:"date"`
-	Accuracy DateAccuracyEnum `json:"accuracy"`
-}
-
 type GrantInviteInput struct {
 	UserID uuid.UUID `json:"user_id"`
 	Amount int       `json:"amount"`
