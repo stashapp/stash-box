@@ -235,7 +235,7 @@ func (v *editValidator) uuid(field string, old *uuid.UUID, current uuid.NullUUID
 }
 
 var ErrInvalidDate = fmt.Errorf("invalid fuzzy date")
-var dateValidator = regexp.MustCompile("^\\d{4}(-\\d{2}){0,2}$")
+var dateValidator = regexp.MustCompile(`^\d{4}(-\d{2}){0,2}$`)
 
 func ParseFuzzyString(date *string) (SQLDate, sql.NullString, error) {
 	if date == nil {
