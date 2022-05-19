@@ -56,9 +56,12 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 	}
 
 	// perform a diff against the input and the current object
-	sceneEdit := input.Details.SceneEditFromDiff(*scene)
+	sceneEdit, err := input.Details.SceneEditFromDiff(*scene)
+	if err != nil {
+		return err
+	}
 
-	if err := m.diffRelationships(&sceneEdit, sceneID, input); err != nil {
+	if err = m.diffRelationships(sceneEdit, sceneID, input); err != nil {
 		return err
 	}
 
@@ -66,7 +69,7 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 		return ErrNoChanges
 	}
 
-	return m.edit.SetData(sceneEdit)
+	return m.edit.SetData(*sceneEdit)
 }
 
 func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, sceneID uuid.UUID, input models.SceneEditInput) error {
@@ -254,17 +257,23 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 	}
 
 	// perform a diff against the input and the current object
-	sceneEdit := input.Details.SceneEditFromMerge(*scene, mergeSources)
-
-	if err := m.diffRelationships(&sceneEdit, sceneID, input); err != nil {
+	sceneEdit, err := input.Details.SceneEditFromMerge(*scene, mergeSources)
+	if err != nil {
 		return err
 	}
 
-	return m.edit.SetData(sceneEdit)
+	if err = m.diffRelationships(sceneEdit, sceneID, input); err != nil {
+		return err
+	}
+
+	return m.edit.SetData(*sceneEdit)
 }
 
 func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
-	sceneEdit := input.Details.SceneEditFromCreate()
+	sceneEdit, err := input.Details.SceneEditFromCreate()
+	if err != nil {
+		return err
+	}
 
 	sceneEdit.New.AddedUrls = models.ParseURLInput(input.Details.Urls)
 	sceneEdit.New.AddedTags = input.Details.TagIds
@@ -273,7 +282,7 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecif
 	sceneEdit.New.AddedFingerprints = input.Details.Fingerprints
 	sceneEdit.New.DraftID = input.Details.DraftID
 
-	return m.edit.SetData(sceneEdit)
+	return m.edit.SetData(*sceneEdit)
 }
 
 func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {

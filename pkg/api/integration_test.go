@@ -391,6 +391,7 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 			Fingerprints: []*models.FingerprintEditInput{
 				s.generateSceneFingerprint(nil),
 			},
+			Date: "2020-03-02",
 		}
 	}
 
@@ -785,7 +786,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 				SiteID: site.ID,
 			},
 		},
-		Date: &date,
+		Date: date,
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},

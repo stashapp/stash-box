@@ -542,6 +542,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 		Performers: []*models.PerformerAppearanceInput{
 			&sceneAppearance,
 		},
+		Date: "2020-01-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -622,6 +623,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 		Performers: []*models.PerformerAppearanceInput{
 			&sceneAppearance,
 		},
+		Date: "2020-01-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -705,6 +707,7 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 	}
 	sceneInput := models.SceneCreateInput{
 		Performers: []*models.PerformerAppearanceInput{&appearance},
+		Date:       "2020-03-02",
 	}
 	scene, _ := s.createTestScene(&sceneInput)
 
@@ -775,6 +778,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 			&mergeSource2Appearance,
 			&mergeTargetAppearance,
 		},
+		Date: "2020-02-03",
 	}
 	scene1, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -786,6 +790,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 			&mergeSource1Appearance,
 			&mergeSource2Appearance,
 		},
+		Date: "2020-03-02",
 	}
 	scene2, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -904,6 +909,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 		Performers: []*models.PerformerAppearanceInput{
 			&mergeSourceAppearance,
 		},
+		Date: "2020-03-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
 	if err != nil {

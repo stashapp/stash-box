@@ -353,6 +353,7 @@ func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
 	studioID := createdStudio.UUID()
 	sceneInput := models.SceneCreateInput{
 		StudioID: &studioID,
+		Date:     "2020-03-02",
 	}
 	scene, _ := s.createTestScene(&sceneInput)
 
@@ -405,6 +406,7 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 	mergeTargetID := mergeTarget.UUID()
 	sceneInput := models.SceneCreateInput{
 		StudioID: &mergeTargetID,
+		Date:     "2020-03-02",
 	}
 	scene1, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -414,6 +416,7 @@ func (s *studioEditTestRunner) testApplyMergeStudioEdit() {
 	mergeSource1ID := mergeSource1.UUID()
 	sceneInput = models.SceneCreateInput{
 		StudioID: &mergeSource1ID,
+		Date:     "2020-03-02",
 	}
 	scene2, err := s.createTestScene(&sceneInput)
 	if err != nil {

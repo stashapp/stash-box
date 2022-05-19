@@ -69,6 +69,7 @@ func (s *sceneEditTestRunner) testModifySceneEdit() {
 	sceneCreateInput := models.SceneCreateInput{
 		Title:   &existingTitle,
 		Details: &existingDetails,
+		Date:    "2020-03-02",
 	}
 	createdScene, err := s.createTestScene(&sceneCreateInput)
 	if err != nil {
@@ -233,6 +234,7 @@ func (s *sceneEditTestRunner) testMergeSceneEdit() {
 	existingName := "sceneName2"
 	sceneCreateInput := models.SceneCreateInput{
 		Title: &existingName,
+		Date:  "2020-03-02",
 	}
 	createdPrimaryScene, err := s.createTestScene(&sceneCreateInput)
 	if err != nil {
@@ -312,6 +314,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 				SiteID: site.ID,
 			},
 		},
+		Date: "2020-03-02",
 	}
 	createdScene, err := s.createTestScene(&sceneCreateInput)
 	if err != nil {

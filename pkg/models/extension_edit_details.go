@@ -34,7 +34,11 @@ func (e TagEditDetailsInput) TagEditFromCreate() TagEditData {
 	}
 }
 
-func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) PerformerEditData {
+func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) (*PerformerEditData, error) {
+	if err := ValidateFuzzyString(e.Birthdate); err != nil {
+		return nil, err
+	}
+
 	newData := &PerformerEdit{}
 	oldData := &PerformerEdit{}
 
@@ -63,25 +67,31 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 	oldData.CareerStartYear, newData.CareerStartYear = ed.nullInt64(orig.CareerStartYear, e.CareerStartYear)
 	oldData.CareerEndYear, newData.CareerEndYear = ed.nullInt64(orig.CareerEndYear, e.CareerEndYear)
 
-	return PerformerEditData{
+	return &PerformerEditData{
 		New: newData,
 		Old: oldData,
-	}
+	}, nil
 }
 
-func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, sources []uuid.UUID) PerformerEditData {
-	data := e.PerformerEditFromDiff(orig)
+func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, sources []uuid.UUID) (*PerformerEditData, error) {
+	data, err := e.PerformerEditFromDiff(orig)
+	if err != nil {
+		return nil, err
+	}
 	data.MergeSources = sources
 
-	return data
+	return data, nil
 }
 
-func (e PerformerEditDetailsInput) PerformerEditFromCreate() PerformerEditData {
-	ret := e.PerformerEditFromDiff(Performer{})
-
-	return PerformerEditData{
-		New: ret.New,
+func (e PerformerEditDetailsInput) PerformerEditFromCreate() (*PerformerEditData, error) {
+	ret, err := e.PerformerEditFromDiff(Performer{})
+	if err != nil {
+		return nil, err
 	}
+
+	return &PerformerEditData{
+		New: ret.New,
+	}, nil
 }
 
 func (e StudioEditDetailsInput) StudioEditFromDiff(orig Studio) StudioEditData {
@@ -117,7 +127,11 @@ func (e StudioEditDetailsInput) StudioEditFromCreate() StudioEditData {
 	}
 }
 
-func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) SceneEditData {
+func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) (*SceneEditData, error) {
+	if err := ValidateFuzzyString(e.Date); err != nil {
+		return nil, err
+	}
+
 	newData := &SceneEdit{}
 	oldData := &SceneEdit{}
 
@@ -130,23 +144,29 @@ func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) SceneEditData {
 	oldData.Director, newData.Director = ed.nullString(orig.Director, e.Director)
 	oldData.Code, newData.Code = ed.nullString(orig.Code, e.Code)
 
-	return SceneEditData{
+	return &SceneEditData{
 		New: newData,
 		Old: oldData,
-	}
+	}, nil
 }
 
-func (e SceneEditDetailsInput) SceneEditFromMerge(orig Scene, sources []uuid.UUID) SceneEditData {
-	data := e.SceneEditFromDiff(orig)
+func (e SceneEditDetailsInput) SceneEditFromMerge(orig Scene, sources []uuid.UUID) (*SceneEditData, error) {
+	data, err := e.SceneEditFromDiff(orig)
+	if err != nil {
+		return nil, err
+	}
 	data.MergeSources = sources
 
-	return data
+	return data, nil
 }
 
-func (e SceneEditDetailsInput) SceneEditFromCreate() SceneEditData {
-	ret := e.SceneEditFromDiff(Scene{})
-
-	return SceneEditData{
-		New: ret.New,
+func (e SceneEditDetailsInput) SceneEditFromCreate() (*SceneEditData, error) {
+	ret, err := e.SceneEditFromDiff(Scene{})
+	if err != nil {
+		return nil, err
 	}
+
+	return &SceneEditData{
+		New: ret.New,
+	}, nil
 }

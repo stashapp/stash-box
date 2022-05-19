@@ -160,7 +160,7 @@ const PerformerForm: FC<PerformerProps> = ({
       braSize: getBraSize(measurements),
       waistSize: measurements?.waist,
       hipSize: measurements?.hip,
-      country: initial?.country ?? performer?.country,
+      country: initial?.country ?? performer?.country ?? "",
       ethnicity: getEnumValue(
         ETHNICITY,
         initial?.ethnicity ?? performer?.ethnicity ?? null

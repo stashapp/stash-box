@@ -263,3 +263,8 @@ func ParseFuzzyString(date *string) (SQLDate, sql.NullString, error) {
 
 	return SQLDate{String: fuzzyDate, Valid: true}, sql.NullString{String: accuracy.String(), Valid: true}, nil
 }
+
+func ValidateFuzzyString(date *string) error {
+	_, _, err := ParseFuzzyString(date)
+	return err
+}

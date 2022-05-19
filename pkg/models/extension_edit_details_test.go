@@ -186,7 +186,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		CareerEndYear:   &bEndYear,
 	}
 
-	out := input.PerformerEditFromDiff(orig)
+	out, _ := input.PerformerEditFromDiff(orig)
 
 	assert := assert.New(t)
 	assert.Equal(PerformerEditData{
@@ -228,13 +228,13 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			CareerStartYear:   &aStartYear64,
 			CareerEndYear:     &aEndYear64,
 		},
-	}, out)
+	}, *out)
 
 	emptyOrig := Performer{
 		Name: aName,
 	}
 
-	out = input.PerformerEditFromDiff(emptyOrig)
+	out, _ = input.PerformerEditFromDiff(emptyOrig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{
 			Name:              &bName,
@@ -258,11 +258,11 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		Old: &PerformerEdit{
 			Name: &aName,
 		},
-	}, out)
+	}, *out)
 
 	emptyInput := PerformerEditDetailsInput{}
 
-	out = emptyInput.PerformerEditFromDiff(orig)
+	out, _ = emptyInput.PerformerEditFromDiff(orig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{},
 		Old: &PerformerEdit{
@@ -284,7 +284,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			CareerStartYear:   &aStartYear64,
 			CareerEndYear:     &aEndYear64,
 		},
-	}, out)
+	}, *out)
 
 	equalInput := PerformerEditDetailsInput{
 		Name:           &aName,
@@ -307,9 +307,9 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		CareerEndYear:   &aEndYear,
 	}
 
-	out = equalInput.PerformerEditFromDiff(orig)
+	out, _ = equalInput.PerformerEditFromDiff(orig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{},
 		Old: &PerformerEdit{},
-	}, out)
+	}, *out)
 }
