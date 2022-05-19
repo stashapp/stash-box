@@ -15,14 +15,6 @@ export interface FullPerformer_findPerformer_birthdate {
   accuracy: DateAccuracyEnum;
 }
 
-export interface FullPerformer_findPerformer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface FullPerformer_findPerformer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -96,7 +88,10 @@ export interface FullPerformer_findPerformer {
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: FullPerformer_findPerformer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: FullPerformer_findPerformer_tattoos[] | null;
   piercings: FullPerformer_findPerformer_piercings[] | null;
   urls: FullPerformer_findPerformer_urls[];

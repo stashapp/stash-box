@@ -64,14 +64,6 @@ export interface Edits_queryEdits_edits_target_Performer_birthdate {
   accuracy: DateAccuracyEnum;
 }
 
-export interface Edits_queryEdits_edits_target_Performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface Edits_queryEdits_edits_target_Performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -126,7 +118,10 @@ export interface Edits_queryEdits_edits_target_Performer {
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Edits_queryEdits_edits_target_Performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Edits_queryEdits_edits_target_Performer_tattoos[] | null;
   piercings: Edits_queryEdits_edits_target_Performer_piercings[] | null;
   urls: Edits_queryEdits_edits_target_Performer_urls[];
@@ -562,14 +557,6 @@ export interface Edits_queryEdits_edits_details_SceneEdit_added_performers_perfo
   accuracy: DateAccuracyEnum;
 }
 
-export interface Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -624,7 +611,10 @@ export interface Edits_queryEdits_edits_details_SceneEdit_added_performers_perfo
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_tattoos[] | null;
   piercings: Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_piercings[] | null;
   urls: Edits_queryEdits_edits_details_SceneEdit_added_performers_performer_urls[];
@@ -645,14 +635,6 @@ export interface Edits_queryEdits_edits_details_SceneEdit_removed_performers_per
   __typename: "FuzzyDate";
   date: GQLDate;
   accuracy: DateAccuracyEnum;
-}
-
-export interface Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
 }
 
 export interface Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_tattoos {
@@ -709,7 +691,10 @@ export interface Edits_queryEdits_edits_details_SceneEdit_removed_performers_per
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_tattoos[] | null;
   piercings: Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_piercings[] | null;
   urls: Edits_queryEdits_edits_details_SceneEdit_removed_performers_performer_urls[];
@@ -979,14 +964,6 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit_added_performers_p
   accuracy: DateAccuracyEnum;
 }
 
-export interface Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -1041,7 +1018,10 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit_added_performers_p
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_tattoos[] | null;
   piercings: Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_piercings[] | null;
   urls: Edits_queryEdits_edits_old_details_SceneEdit_added_performers_performer_urls[];
@@ -1062,14 +1042,6 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_performers
   __typename: "FuzzyDate";
   date: GQLDate;
   accuracy: DateAccuracyEnum;
-}
-
-export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
 }
 
 export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_tattoos {
@@ -1126,7 +1098,10 @@ export interface Edits_queryEdits_edits_old_details_SceneEdit_removed_performers
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_tattoos[] | null;
   piercings: Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_piercings[] | null;
   urls: Edits_queryEdits_edits_old_details_SceneEdit_removed_performers_performer_urls[];
@@ -1253,14 +1228,6 @@ export interface Edits_queryEdits_edits_merge_sources_Performer_birthdate {
   accuracy: DateAccuracyEnum;
 }
 
-export interface Edits_queryEdits_edits_merge_sources_Performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface Edits_queryEdits_edits_merge_sources_Performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -1315,7 +1282,10 @@ export interface Edits_queryEdits_edits_merge_sources_Performer {
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Edits_queryEdits_edits_merge_sources_Performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Edits_queryEdits_edits_merge_sources_Performer_tattoos[] | null;
   piercings: Edits_queryEdits_edits_merge_sources_Performer_piercings[] | null;
   urls: Edits_queryEdits_edits_merge_sources_Performer_urls[];
