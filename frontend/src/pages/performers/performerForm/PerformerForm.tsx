@@ -214,6 +214,7 @@ const PerformerForm: FC<PerformerProps> = ({
       name: data.name,
       disambiguation: data.disambiguation,
       gender: GenderEnum[data.gender as keyof typeof GenderEnum] || null,
+      birthdate: data.birthdate,
       eye_color:
         EyeColorEnum[data.eye_color as keyof typeof EyeColorEnum] || null,
       hair_color:
@@ -253,8 +254,6 @@ const PerformerForm: FC<PerformerProps> = ({
       data.gender === GenderEnum.TRANSGENDER_MALE
     )
       performerData.breast_type = BreastTypeEnum.NA;
-
-    performerData.birthdate = data.birthdate;
 
     callback(performerData, data.note, updateAliases, data.id);
   };

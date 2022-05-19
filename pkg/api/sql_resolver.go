@@ -32,7 +32,7 @@ func resolveNullInt64(value sql.NullInt64) (*int, error) {
 }
 
 func resolveFuzzyDate(date *string, accuracy *string) *string {
-	if date == nil || accuracy == nil {
+	if date == nil || accuracy == nil || *date == "" || *accuracy == "" {
 		return nil
 	}
 

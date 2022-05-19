@@ -7,6 +7,7 @@ import {
   BreastTypeEnum,
   EthnicityEnum,
 } from "src/graphql";
+import { isValidDate } from "src/utils";
 
 const nullCheck = (input: string | null) =>
   input === "" || input === "null" ? null : input;
@@ -30,6 +31,7 @@ export const PerformerSchema = yup.object({
       excludeEmptyString: true,
       message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
     })
+    .test("valid-date", "Invalid date", isValidDate)
     .nullable(),
   career_start_year: yup
     .number()
