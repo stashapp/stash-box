@@ -29,11 +29,21 @@ func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User
 }
 
 func (r *editResolver) Created(ctx context.Context, obj *models.Edit) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *editResolver) Updated(ctx context.Context, obj *models.Edit) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
+	if !obj.UpdatedAt.Valid {
+		return nil, nil
+	}
+	return &obj.UpdatedAt.Time, nil
+}
+
+func (r *editResolver) Closed(ctx context.Context, obj *models.Edit) (*time.Time, error) {
+	if !obj.ClosedAt.Valid {
+		return nil, nil
+	}
+	return &obj.ClosedAt.Time, nil
 }
 
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {
@@ -190,11 +200,17 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 		if err != nil {
 			return nil, err
 		}
+		if tagData.New != nil {
+			tagData.New.EditID = obj.ID
+		}
 		ret = tagData.New
 	case models.TargetTypeEnumPerformer:
 		performerData, err := obj.GetPerformerData()
 		if err != nil {
 			return nil, err
+		}
+		if performerData.New != nil {
+			performerData.New.EditID = obj.ID
 		}
 		ret = performerData.New
 	case models.TargetTypeEnumStudio:
@@ -202,11 +218,17 @@ func (r *editResolver) Details(ctx context.Context, obj *models.Edit) (models.Ed
 		if err != nil {
 			return nil, err
 		}
+		if studioData.New != nil {
+			studioData.New.EditID = obj.ID
+		}
 		ret = studioData.New
 	case models.TargetTypeEnumScene:
 		sceneData, err := obj.GetSceneData()
 		if err != nil {
 			return nil, err
+		}
+		if sceneData.New != nil {
+			sceneData.New.EditID = obj.ID
 		}
 		ret = sceneData.New
 	}
@@ -259,7 +281,7 @@ func (r *editResolver) Comments(ctx context.Context, obj *models.Edit) ([]*model
 	}
 
 	sort.Slice(comments, func(i, j int) bool {
-		return comments[i].CreatedAt.Timestamp.Before(comments[j].CreatedAt.Timestamp)
+		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
 
 	return comments, nil

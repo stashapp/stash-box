@@ -54,9 +54,7 @@ func (qb *inviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireT
 	 LEFT JOIN ` + pendingActivationTable + ` a ON a.invite_key = i.id AND a.time > ?
 	 WHERE i.generated_by = ? AND a.id IS NULL`
 	var args []interface{}
-	args = append(args, models.SQLiteTimestamp{
-		Timestamp: expireTime,
-	})
+	args = append(args, expireTime)
 	args = append(args, userID)
 	output := models.InviteKeys{}
 	err := qb.dbi.RawQuery(inviteKeyDBTable, query, args, &output)

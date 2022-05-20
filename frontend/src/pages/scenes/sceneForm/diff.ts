@@ -19,7 +19,7 @@ type OmittedKeys = "draft_id" | "added_fingerprints" | "removed_fingerprints";
 
 const selectSceneDetails = (
   data: CastedSceneFormData,
-  original: SceneFragment
+  original: SceneFragment | null | undefined
 ): [Required<OldSceneDetails>, Required<Omit<SceneDetails, OmittedKeys>>] => {
   const [addedPerformers, removedPerformers] = diffArray(
     (data.performers ?? []).flatMap((p) =>
@@ -38,7 +38,7 @@ const selectSceneDetails = (
           ]
         : []
     ),
-    original.performers,
+    original?.performers ?? [],
     (s) => `${s.performer.id}${s.as}`
   );
 
@@ -53,25 +53,28 @@ const selectSceneDetails = (
           ]
         : []
     ),
-    original.tags,
+    original?.tags ?? [],
     (t) => t.id
   );
 
-  const [addedImages, removedImages] = diffImages(data.images, original.images);
-  const [addedUrls, removedUrls] = diffURLs(data.urls, original.urls);
+  const [addedImages, removedImages] = diffImages(
+    data.images,
+    original?.images ?? []
+  );
+  const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);
 
   return [
     {
-      title: diffValue(original.title, data.title),
-      details: diffValue(original.details, data.details),
-      date: diffValue(original.date, data.date),
-      duration: diffValue(original.duration, parseDuration(data.duration)),
-      director: diffValue(original.director, data.director),
-      code: diffValue(original.code, data.code),
+      title: diffValue(original?.title, data.title),
+      details: diffValue(original?.details, data.details),
+      date: diffValue(original?.release_date, data.date),
+      duration: diffValue(original?.duration, parseDuration(data.duration)),
+      director: diffValue(original?.director, data.director),
+      code: diffValue(original?.code, data.code),
       studio:
-        original.studio?.id !== data.studio?.id &&
-        original.studio?.id &&
-        original.studio.name
+        original?.studio?.id !== data.studio?.id &&
+        original?.studio?.id &&
+        original?.studio.name
           ? {
               id: original.studio.id,
               name: original.studio.name,
@@ -79,14 +82,14 @@ const selectSceneDetails = (
           : null,
     },
     {
-      title: diffValue(data.title, original.title),
-      details: diffValue(data.details, original.details),
-      date: diffValue(data.date, original.date),
-      duration: diffValue(parseDuration(data.duration), original.duration),
-      director: diffValue(data.director, original.director),
-      code: diffValue(data.code, original.code),
+      title: diffValue(data.title, original?.title),
+      details: diffValue(data.details, original?.details),
+      date: diffValue(data.date, original?.release_date),
+      duration: diffValue(parseDuration(data.duration), original?.duration),
+      director: diffValue(data.director, original?.director),
+      code: diffValue(data.code, original?.code),
       studio:
-        data.studio?.id !== original.studio?.id &&
+        data.studio?.id !== original?.studio?.id &&
         data.studio?.id &&
         data.studio?.name
           ? {

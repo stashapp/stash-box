@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { flatMap } from "lodash-es";
+import { flatMap, uniq, uniqBy } from "lodash-es";
 
 import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
@@ -29,13 +29,16 @@ interface Props {
 
 const PerformerMerge: FC<Props> = ({ performer }) => {
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
   const [aliasUpdating, setAliasUpdating] = useState(true);
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
+      if (submissionError) setSubmissionError("");
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   const toggleMerge = () => {
@@ -70,6 +73,18 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
       },
     });
   };
+
+  const aliases = uniq(
+    [
+      ...performer.aliases,
+      ...mergeSources.map((p) => p.name.trim()),
+      ...flatMap(mergeSources, (p) => p.aliases),
+    ].filter((name) => name !== performer.name.trim())
+  );
+  const images = uniqBy(
+    [...performer.images, ...flatMap(mergeSources, (i) => i.images)],
+    (image) => image.id
+  );
 
   return (
     <div className={CLASSNAME}>
@@ -143,15 +158,18 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
           </h5>
           <PerformerForm
             performer={performer}
-            initialAliases={[
-              ...mergeSources.map((p) => p.name),
-              ...flatMap(mergeSources, (p) => p.aliases),
-            ]}
-            initialImages={flatMap(mergeSources, (i) => i.images)}
+            initial={{
+              aliases,
+              images,
+            }}
             callback={doUpdate}
-            changeType="merge"
             saving={saving}
           />
+          {submissionError && (
+            <div className="text-danger text-end col-9">
+              Error: {submissionError}
+            </div>
+          )}
         </>
       )}
     </div>

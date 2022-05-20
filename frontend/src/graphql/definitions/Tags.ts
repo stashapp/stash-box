@@ -14,6 +14,7 @@ export interface Tags_queryTags_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface Tags_queryTags {

@@ -65,10 +65,7 @@ func (s *performerEditTestRunner) testFindEditById() {
 func (s *performerEditTestRunner) testModifyPerformerEdit() {
 	existingName := "performerName"
 
-	existingBirthdate := models.FuzzyDateInput{
-		Date:     "1990-01-02",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	existingBirthdate := "1990-01-02"
 	performerCreateInput := models.PerformerCreateInput{
 		Name:      existingName,
 		Birthdate: &existingBirthdate,
@@ -120,12 +117,13 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 
 	s.compareURLs(input.Urls, performerDetails.AddedUrls)
 
-	if !input.Birthdate.Accuracy.IsValid() || (input.Birthdate.Accuracy.String() != *performerDetails.BirthdateAccuracy) {
-		s.fieldMismatch(input.Birthdate.Accuracy, performerDetails.BirthdateAccuracy, "BirthdateAccuracy")
+	date, accuracy, _ := models.ParseFuzzyString(input.Birthdate)
+	if !accuracy.Valid || (accuracy.String != *performerDetails.BirthdateAccuracy) {
+		s.fieldMismatch(accuracy, *performerDetails.BirthdateAccuracy, "BirthdateAccuracy")
 	}
 
-	if input.Birthdate.Date != *performerDetails.Birthdate {
-		s.fieldMismatch(input.Birthdate.Date, performerDetails.Birthdate, "Birthdate")
+	if date.String != *performerDetails.Birthdate {
+		s.fieldMismatch(date.String, performerDetails.Birthdate, "Birthdate")
 	}
 
 	if !input.Ethnicity.IsValid() || (input.Ethnicity.String() != *performerDetails.Ethnicity) {
@@ -148,20 +146,20 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 		s.fieldMismatch(input.Height, performerDetails.Height, "Height")
 	}
 
-	if input.Measurements == nil || input.Measurements.BandSize == nil || (int64(*input.Measurements.BandSize) != *performerDetails.BandSize) {
-		s.fieldMismatch(*input.Measurements.BandSize, *performerDetails.BandSize, "BandSize")
+	if input.BandSize == nil || (int64(*input.BandSize) != *performerDetails.BandSize) {
+		s.fieldMismatch(*input.BandSize, *performerDetails.BandSize, "BandSize")
 	}
 
-	if input.Measurements == nil || input.Measurements.Waist == nil || (int64(*input.Measurements.Waist) != *performerDetails.WaistSize) {
-		s.fieldMismatch(*input.Measurements.Waist, *performerDetails.WaistSize, "WaistSize")
+	if input.WaistSize == nil || (int64(*input.WaistSize) != *performerDetails.WaistSize) {
+		s.fieldMismatch(*input.WaistSize, *performerDetails.WaistSize, "WaistSize")
 	}
 
-	if input.Measurements == nil || input.Measurements.Hip == nil || (int64(*input.Measurements.Hip) != *performerDetails.HipSize) {
-		s.fieldMismatch(*input.Measurements.Hip, *performerDetails.HipSize, "HipSize")
+	if input.HipSize == nil || (int64(*input.HipSize) != *performerDetails.HipSize) {
+		s.fieldMismatch(*input.HipSize, *performerDetails.HipSize, "HipSize")
 	}
 
-	if input.Measurements == nil || input.Measurements.CupSize == nil || (*input.Measurements.CupSize != *performerDetails.CupSize) {
-		s.fieldMismatch(*input.Measurements.CupSize, *performerDetails.CupSize, "CupSize")
+	if input.CupSize == nil || (*input.CupSize != *performerDetails.CupSize) {
+		s.fieldMismatch(*input.CupSize, *performerDetails.CupSize, "CupSize")
 	}
 
 	if !input.BreastType.IsValid() || (input.BreastType.String() != *performerDetails.BreastType) {
@@ -220,20 +218,22 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	urls, _ := resolver.Urls(s.ctx, performer)
 	s.compareURLs(input.Urls, urls)
 
+	date, accuracy, _ := models.ParseFuzzyString(input.Birthdate)
+
 	if input.Birthdate == nil {
 		if performer.BirthdateAccuracy.Valid {
-			s.fieldMismatch(input.Birthdate, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
+			s.fieldMismatch(accuracy, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
 		}
-	} else if input.Birthdate.Accuracy.String() != performer.BirthdateAccuracy.String {
-		s.fieldMismatch(input.Birthdate.Accuracy.String(), performer.BirthdateAccuracy.String, "BirthdateAccuracy")
+	} else if accuracy.String != performer.BirthdateAccuracy.String {
+		s.fieldMismatch(accuracy.String, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
 	}
 
 	if input.Birthdate == nil {
 		if performer.Birthdate.Valid {
-			s.fieldMismatch(input.Birthdate, performer.Birthdate.String, "Birthdate")
+			s.fieldMismatch(date, performer.Birthdate.String, "Birthdate")
 		}
-	} else if input.Birthdate.Date != performer.Birthdate.String {
-		s.fieldMismatch(input.Birthdate.Date, performer.Birthdate.String, "Birthdate")
+	} else if date.String != performer.Birthdate.String {
+		s.fieldMismatch(date.String, performer.Birthdate.String, "Birthdate")
 	}
 
 	if input.Ethnicity == nil {
@@ -276,51 +276,36 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 		s.fieldMismatch(*input.Height, performer.Height.Int64, "Height")
 	}
 
-	if input.Measurements == nil {
+	if input.BandSize == nil {
 		if performer.BandSize.Valid {
 			s.fieldMismatch(nil, performer.BandSize.Int64, "BandSize")
 		}
+	} else if int64(*input.BandSize) != performer.BandSize.Int64 {
+		s.fieldMismatch(*input.BandSize, performer.BandSize.Int64, "BandSize")
+	}
+
+	if input.CupSize == nil {
 		if performer.CupSize.Valid {
 			s.fieldMismatch(nil, performer.CupSize.String, "CupSize")
 		}
+	} else if *input.CupSize != performer.CupSize.String {
+		s.fieldMismatch(*input.CupSize, performer.CupSize.String, "CupSize")
+	}
+
+	if input.WaistSize == nil {
 		if performer.WaistSize.Valid {
 			s.fieldMismatch(nil, performer.WaistSize.Int64, "WaistSize")
 		}
+	} else if int64(*input.WaistSize) != performer.WaistSize.Int64 {
+		s.fieldMismatch(*input.WaistSize, performer.WaistSize.Int64, "WaistSize")
+	}
+
+	if input.HipSize == nil {
 		if performer.HipSize.Valid {
 			s.fieldMismatch(nil, performer.HipSize.Int64, "HipSize")
 		}
-	} else {
-		if input.Measurements.BandSize == nil {
-			if performer.BandSize.Valid {
-				s.fieldMismatch(nil, performer.BandSize.Int64, "BandSize")
-			}
-		} else if int64(*input.Measurements.BandSize) != performer.BandSize.Int64 {
-			s.fieldMismatch(*input.Measurements.BandSize, performer.BandSize.Int64, "BandSize")
-		}
-
-		if input.Measurements.CupSize == nil {
-			if performer.CupSize.Valid {
-				s.fieldMismatch(nil, performer.CupSize.String, "CupSize")
-			}
-		} else if *input.Measurements.CupSize != performer.CupSize.String {
-			s.fieldMismatch(*input.Measurements.CupSize, performer.CupSize.String, "CupSize")
-		}
-
-		if input.Measurements.Waist == nil {
-			if performer.WaistSize.Valid {
-				s.fieldMismatch(nil, performer.WaistSize.Int64, "WaistSize")
-			}
-		} else if int64(*input.Measurements.Waist) != performer.WaistSize.Int64 {
-			s.fieldMismatch(*input.Measurements.Waist, performer.WaistSize.Int64, "WaistSize")
-		}
-
-		if input.Measurements.Hip == nil {
-			if performer.HipSize.Valid {
-				s.fieldMismatch(nil, performer.HipSize.Int64, "HipSize")
-			}
-		} else if int64(*input.Measurements.Hip) != performer.HipSize.Int64 {
-			s.fieldMismatch(*input.Measurements.Hip, performer.HipSize.Int64, "HipSize")
-		}
+	} else if int64(*input.HipSize) != performer.HipSize.Int64 {
+		s.fieldMismatch(*input.HipSize, performer.HipSize.Int64, "HipSize")
 	}
 
 	if input.BreastType == nil {
@@ -542,6 +527,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 		Performers: []*models.PerformerAppearanceInput{
 			&sceneAppearance,
 		},
+		Date: "2020-01-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -622,6 +608,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 		Performers: []*models.PerformerAppearanceInput{
 			&sceneAppearance,
 		},
+		Date: "2020-01-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -665,13 +652,11 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		return
 	}
 
-	measurements := models.MeasurementsInput{}
 	performerUnsetInput := models.PerformerEditDetailsInput{
-		Aliases:      []string{},
-		Tattoos:      []*models.BodyModification{},
-		Piercings:    []*models.BodyModification{},
-		Urls:         []*models.URLInput{},
-		Measurements: &measurements,
+		Aliases:   []string{},
+		Tattoos:   []*models.BodyModification{},
+		Piercings: []*models.BodyModification{},
+		Urls:      []*models.URLInput{},
 	}
 
 	id := createdPerformer.UUID()
@@ -705,6 +690,7 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 	}
 	sceneInput := models.SceneCreateInput{
 		Performers: []*models.PerformerAppearanceInput{&appearance},
+		Date:       "2020-03-02",
 	}
 	scene, _ := s.createTestScene(&sceneInput)
 
@@ -775,6 +761,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 			&mergeSource2Appearance,
 			&mergeTargetAppearance,
 		},
+		Date: "2020-02-03",
 	}
 	scene1, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -786,6 +773,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 			&mergeSource1Appearance,
 			&mergeSource2Appearance,
 		},
+		Date: "2020-03-02",
 	}
 	scene2, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -904,6 +892,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 		Performers: []*models.PerformerAppearanceInput{
 			&mergeSourceAppearance,
 		},
+		Date: "2020-03-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
 	if err != nil {

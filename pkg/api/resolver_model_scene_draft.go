@@ -11,6 +11,14 @@ import (
 
 type sceneDraftResolver struct{ *Resolver }
 
+func (r *sceneDraftResolver) ID(ctx context.Context, obj *models.SceneDraft) (*string, error) {
+	if obj.ID != nil {
+		val := obj.ID.String()
+		return &val, nil
+	}
+	return nil, nil
+}
+
 func (r *sceneDraftResolver) Image(ctx context.Context, obj *models.SceneDraft) (*models.Image, error) {
 	if obj.Image == nil {
 		return nil, nil
@@ -51,6 +59,7 @@ func (r *sceneDraftResolver) Tags(ctx context.Context, obj *models.SceneDraft) (
 	qb := fac.Tag()
 
 	var tags []models.SceneDraftTag
+	tagMap := make(map[string]bool)
 	for _, t := range obj.Tags {
 		var st models.SceneDraftTag
 		if t.ID != nil {
@@ -59,6 +68,12 @@ func (r *sceneDraftResolver) Tags(ctx context.Context, obj *models.SceneDraft) (
 				return nil, err
 			}
 			if tag != nil {
+				if _, exists := tagMap[tag.Name]; exists {
+					// Resolved tag already exists, so we skip.
+					// This can happen with merged tags that redirect to the same thing.
+					continue
+				}
+				tagMap[tag.Name] = true
 				st = *tag
 			}
 		}
@@ -109,7 +124,7 @@ func (r *sceneDraftResolver) URL(ctx context.Context, obj *models.SceneDraft) (*
 	var siteID *uuid.UUID
 	for _, site := range sites {
 		// Skip any sites not valid for scenes
-		if !utils.StrInclude(site.ValidTypes, models.ValidSiteTypeEnumScene.String()) {
+		if !utils.Includes(site.ValidTypes, models.ValidSiteTypeEnumScene.String()) {
 			continue
 		}
 

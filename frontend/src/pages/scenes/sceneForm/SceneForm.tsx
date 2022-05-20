@@ -1,14 +1,21 @@
 import { FC, useState, useMemo } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  FieldError,
+} from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faExclamationTriangle,
+  faExternalLinkAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
-import { formatDuration, parseDuration } from "src/utils";
+import { formatDuration, parseDuration, performerHref } from "src/utils";
 import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -24,21 +31,19 @@ import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
+import { InitialScene } from "./types";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
-  scene: Scene;
-  initial?: Scene;
+  scene?: Scene | null;
+  initial?: InitialScene;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
 }
 
 const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
-  const initialStudio = initial?.studio ?? scene.studio ?? undefined;
-  const initialTags = initial?.tags ?? scene.tags;
-
   const {
     register,
     control,
@@ -51,15 +56,15 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     defaultValues: {
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
-      date: initial?.date ?? scene?.date,
+      date: initial?.date ?? scene?.release_date ?? undefined,
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
-      urls: initial?.urls ?? scene.urls ?? [],
-      images: initial?.images ?? scene.images,
-      studio: initialStudio,
-      tags: initialTags,
-      performers: (initial?.performers ?? scene.performers).map((p) => ({
+      urls: initial?.urls ?? scene?.urls ?? [],
+      images: initial?.images ?? scene?.images ?? [],
+      studio: initial?.studio ?? scene?.studio ?? undefined,
+      tags: initial?.tags ?? scene?.tags ?? [],
+      performers: (initial?.performers ?? scene?.performers ?? []).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
         alias: p.as ?? "",
@@ -79,11 +84,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     name: "performers",
     keyName: "key",
   });
-  const { replace: replaceTags } = useFieldArray({
-    control,
-    name: "tags",
-    keyName: "key",
-  });
 
   const fieldData = watch();
   const [oldSceneChanges, newSceneChanges] = useMemo(
@@ -94,9 +94,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
   const [isChanging, setChange] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState("details");
   const [file, setFile] = useState<File | undefined>();
-
-  const onTagChange = (selectedTags: Tag[]) =>
-    replaceTags(selectedTags.map((t) => ({ id: t.id, name: t.name })));
 
   const onSubmit = (data: SceneFormData) => {
     const sceneData: SceneEditDetailsInput = {
@@ -199,19 +196,28 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 searchType={SearchType.Performer}
               />
             ) : (
-              <InputGroup.Text className="flex-grow-1 text-start text-truncate">
-                <GenderIcon gender={p.gender} />
-                <span
-                  className={cx("performer-name text-truncate", {
-                    "text-decoration-line-through": p.deleted,
-                  })}
+              <>
+                <InputGroup.Text className="flex-grow-1 text-start text-truncate">
+                  <GenderIcon gender={p.gender} />
+                  <span
+                    className={cx("performer-name text-truncate", {
+                      "text-decoration-line-through": p.deleted,
+                    })}
+                  >
+                    <b>{p.name}</b>
+                    {p.disambiguation && (
+                      <small className="ms-1">({p.disambiguation})</small>
+                    )}
+                  </span>
+                </InputGroup.Text>
+                <Button
+                  variant="primary"
+                  href={performerHref({ id: p.performerId })}
+                  target="_blank"
                 >
-                  <b>{p.name}</b>
-                  {p.disambiguation && (
-                    <small className="ms-1">({p.disambiguation})</small>
-                  )}
-                </span>
-              </InputGroup.Text>
+                  <Icon icon={faExternalLinkAlt} />
+                </Button>
+              </>
             )}
           </>
         </InputGroup>
@@ -235,7 +241,10 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     { error: errors.title?.message, tab: "details" },
     { error: errors.date?.message, tab: "details" },
     { error: errors.duration?.message, tab: "details" },
-    { error: errors.studio?.id?.message, tab: "details" },
+    {
+      error: (errors.studio as FieldError | undefined)?.message,
+      tab: "details",
+    },
     {
       error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
       tab: "links",
@@ -273,6 +282,10 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               <Form.Control.Feedback type="invalid">
                 {errors?.date?.message}
               </Form.Control.Feedback>
+              {/* <Form.Text>
+                If the precise date is unknown the day and/or month can be
+                omitted.
+              </Form.Text> */}
             </Form.Group>
 
             <Form.Group controlId="duration" className="col-2 mb-3">
@@ -312,13 +325,20 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               className="studio-select col-6 mb-3"
             >
               <Form.Label>Studio</Form.Label>
-              <StudioSelect
-                initialStudio={initialStudio}
+              <Controller
+                name="studio"
                 control={control}
-                isClearable
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <StudioSelect
+                    initialStudio={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    isClearable
+                  />
+                )}
               />
               <Form.Control.Feedback type="invalid">
-                {errors.studio?.id?.message}
+                {(errors.studio as FieldError | undefined)?.message}
               </Form.Control.Feedback>
             </Form.Group>
 
@@ -361,10 +381,16 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
 
           <Form.Group className="mb-3">
             <Form.Label>Tags</Form.Label>
-            <TagSelect
-              tags={initialTags}
-              onChange={onTagChange}
-              menuPlacement="top"
+            <Controller
+              name="tags"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <TagSelect
+                  tags={value}
+                  onChange={onChange}
+                  menuPlacement="top"
+                />
+              )}
             />
           </Form.Group>
 

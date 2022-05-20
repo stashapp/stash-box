@@ -28,13 +28,6 @@ type Measurements {
   hip: Int
 }
 
-input MeasurementsInput {
-  cup_size: String
-  band_size: Int
-  waist: Int
-  hip: Int
-}
-
 enum EthnicityEnum {
   CAUCASIAN
   BLACK
@@ -95,7 +88,8 @@ type Performer {
   aliases: [String!]!
   gender: GenderEnum
   urls: [URL!]!
-  birthdate: FuzzyDate
+  birthdate: FuzzyDate @deprecated(reason: "Please use `birth_date`")
+  birth_date: String
   age: Int # resolver
   ethnicity: EthnicityEnum
   country: String
@@ -103,7 +97,11 @@ type Performer {
   hair_color: HairColorEnum
   """Height in cm"""
   height: Int
-  measurements: Measurements!
+  measurements: Measurements! @deprecated(reason: "Use individual fields, cup/band/waist/hip_size")
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -131,13 +129,16 @@ input PerformerCreateInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -154,13 +155,16 @@ input PerformerUpdateInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -179,13 +183,16 @@ input PerformerEditDetailsInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -219,7 +226,6 @@ type PerformerEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   birthdate: String
-  birthdate_accuracy: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -240,6 +246,12 @@ type PerformerEdit {
   added_images: [Image]
   removed_images: [Image]
   draft_id: ID
+
+  aliases: [String!]!
+  urls: [URL!]!
+  images: [Image!]!
+  tattoos: [BodyModification!]!
+  piercings: [BodyModification!]!
 }
 
 type PerformerEditOptions {
@@ -333,6 +345,7 @@ input PerformerQueryInput {
 }
 
 type PerformerDraft {
+  id: ID
   name: String!
   aliases: String
   gender: String
@@ -353,6 +366,7 @@ type PerformerDraft {
 }
 
 input PerformerDraftInput {
+  id: ID
   name: String!
   aliases: String
   gender: String

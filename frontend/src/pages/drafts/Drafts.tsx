@@ -30,7 +30,7 @@ const DraftList: React.FC = () => {
           )}
           <ul className="ps-0">
             {sortBy(data?.findDrafts ?? [], "expires").map((draft) => {
-              const expirationDate = new Date(draft.expires as string);
+              const expirationDate = new Date(draft.expires);
               const expiration =
                 expirationDate > new Date()
                   ? formatDistance(expirationDate, new Date())
@@ -39,11 +39,13 @@ const DraftList: React.FC = () => {
                 <li key={draft.id} className="d-block">
                   {draft.data.__typename === "PerformerDraft" ? (
                     <Link to={`/drafts/${draft.id}`}>
-                      Performer: <b>{draft.data.name}</b>
+                      Performer {draft.data.id ? "update" : "addition"}:{" "}
+                      <b>{draft.data.name}</b>
                     </Link>
                   ) : (
                     <Link to={`/drafts/${draft.id}`}>
-                      Scene: <b>{draft.data.title}</b>
+                      Scene {draft.data.id ? "update" : "addition"}:{" "}
+                      <b>{draft.data.title}</b>
                     </Link>
                   )}
                   <span className="ms-2">

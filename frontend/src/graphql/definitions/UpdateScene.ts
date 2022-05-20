@@ -57,7 +57,7 @@ export interface UpdateScene_sceneUpdate_tags {
 export interface UpdateScene_sceneUpdate {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  release_date: string | null;
   details: string | null;
   director: string | null;
   code: string | null;

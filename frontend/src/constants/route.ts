@@ -35,6 +35,7 @@ export const ROUTE_CATEGORY_EDIT = "/categories/:id/edit";
 export const ROUTE_CATEGORIES = "/categories";
 export const ROUTE_EDITS = "/edits";
 export const ROUTE_EDIT = "/edits/:id";
+export const ROUTE_EDIT_UPDATE = "/edits/:id/update";
 export const ROUTE_REGISTER = "/register";
 export const ROUTE_ACTIVATE = "/activate";
 export const ROUTE_FORGOT_PASSWORD = "/forgotPassword";

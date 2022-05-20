@@ -57,7 +57,7 @@ export interface AddScene_sceneCreate_tags {
 export interface AddScene_sceneCreate {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  release_date: string | null;
   title: string | null;
   details: string | null;
   urls: AddScene_sceneCreate_urls[];

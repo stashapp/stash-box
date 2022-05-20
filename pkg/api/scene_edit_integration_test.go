@@ -69,6 +69,7 @@ func (s *sceneEditTestRunner) testModifySceneEdit() {
 	sceneCreateInput := models.SceneCreateInput{
 		Title:   &existingTitle,
 		Details: &existingDetails,
+		Date:    "2020-03-02",
 	}
 	createdScene, err := s.createTestScene(&sceneCreateInput)
 	if err != nil {
@@ -101,12 +102,20 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 
 	c := fieldComparator{r: &s.testRunner}
 	c.strPtrStrPtr(input.Title, sceneDetails.Title, "Title")
-	c.strPtrStrPtr(input.Date, sceneDetails.Date, "Date")
 	c.strPtrStrPtr(input.Details, sceneDetails.Details, "Details")
 	c.strPtrStrPtr(input.Director, sceneDetails.Director, "Director")
 	c.strPtrStrPtr(input.Code, sceneDetails.Code, "Code")
 	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
 	c.intPtrInt64Ptr(input.Duration, sceneDetails.Duration, "Duration")
+
+	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Date)
+	if !inputAccuracy.Valid || (inputAccuracy.String != *sceneDetails.DateAccuracy) {
+		s.fieldMismatch(inputAccuracy.String, *sceneDetails.DateAccuracy, "DateAccuracy")
+	}
+
+	if inputDate.String != *sceneDetails.Date {
+		s.fieldMismatch(inputDate.String, sceneDetails.Date, "Date")
+	}
 
 	s.compareURLs(input.Urls, sceneDetails.AddedUrls)
 
@@ -128,12 +137,28 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 
 	c := fieldComparator{r: &s.testRunner}
 	c.strPtrNullStr(input.Title, scene.Title, "Title")
-	c.strPtrSQLiteDate(input.Date, scene.Date, "Date")
 	c.strPtrNullStr(input.Details, scene.Details, "Details")
 	c.strPtrNullStr(input.Director, scene.Director, "Director")
 	c.strPtrNullStr(input.Code, scene.Code, "Code")
 	c.uuidPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
 	c.intPtrNullInt64(input.Duration, scene.Duration, "Duration")
+
+	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Date)
+	if input.Date == nil {
+		if scene.DateAccuracy.Valid {
+			s.fieldMismatch(inputDate.String, scene.DateAccuracy.String, "DateAccuracy")
+		}
+	} else if inputAccuracy.String != scene.DateAccuracy.String {
+		s.fieldMismatch(inputAccuracy.String, scene.DateAccuracy.String, "DateAccuracy")
+	}
+
+	if input.Date == nil {
+		if scene.Date.Valid {
+			s.fieldMismatch(input.Date, scene.Date.String, "Date")
+		}
+	} else if inputDate.String != scene.Date.String {
+		s.fieldMismatch(inputDate.String, scene.Date.String, "Date")
+	}
 
 	urls, _ := resolver.Urls(s.ctx, scene)
 	s.compareURLs(input.Urls, urls)
@@ -209,6 +234,7 @@ func (s *sceneEditTestRunner) testMergeSceneEdit() {
 	existingName := "sceneName2"
 	sceneCreateInput := models.SceneCreateInput{
 		Title: &existingName,
+		Date:  "2020-03-02",
 	}
 	createdPrimaryScene, err := s.createTestScene(&sceneCreateInput)
 	if err != nil {
@@ -288,6 +314,7 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 				SiteID: site.ID,
 			},
 		},
+		Date: "2020-03-02",
 	}
 	createdScene, err := s.createTestScene(&sceneCreateInput)
 	if err != nil {

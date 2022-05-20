@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash-box/pkg/edit"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -188,6 +189,100 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 		return nil, err
 	}
 	return qb.queryScenes(query, args)
+}
+
+func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, error) {
+	query := `
+		SELECT scenes.* FROM scenes
+		WHERE id IN (?)
+	`
+	query, args, _ := sqlx.In(query, ids)
+	scenes, err := qb.queryScenes(query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[uuid.UUID]*models.Scene)
+	for _, scene := range scenes {
+		m[scene.ID] = scene
+	}
+
+	result := make([]*models.Scene, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
+func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.FingerprintQueryInput) (map[string][]uuid.UUID, error) {
+	hashClause := `
+		SELECT scene_id, hash
+		FROM scene_fingerprints
+		WHERE hash IN (:hashes)
+		GROUP BY scene_id, hash
+	`
+	phashClause := `
+		SELECT scene_id, phash as hash
+		FROM UNNEST(ARRAY[:phashes]) phash
+		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
+		AND algorithm = 'PHASH'
+		GROUP BY scene_id, phash
+	`
+
+	var phashes []int64
+	var hashes []string
+	for _, fp := range fingerprints {
+		if fp.Algorithm == models.FingerprintAlgorithmPhash {
+			// Postgres only supports signed integers, so we parse
+			// as uint64 and cast to int64 to ensure values are the same.
+			value, err := strconv.ParseUint(fp.Hash, 16, 64)
+			if err == nil {
+				phashes = append(phashes, int64(value))
+			}
+		} else {
+			hashes = append(hashes, fp.Hash)
+		}
+	}
+
+	var clauses []string
+	if len(phashes) > 0 {
+		clauses = append(clauses, phashClause)
+	}
+	if len(hashes) > 0 {
+		clauses = append(clauses, hashClause)
+	}
+	if len(clauses) == 0 {
+		return nil, nil
+	}
+
+	arg := map[string]interface{}{
+		"phashes":  phashes,
+		"hashes":   hashes,
+		"distance": config.GetPHashDistance(),
+	}
+
+	query := strings.Join(clauses, " UNION ")
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, err
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	output := models.SceneFingerprints{}
+	if err := qb.dbi.RawQuery(sceneFingerprintTable.table, query, args, &output); err != nil {
+		return nil, err
+	}
+
+	res := make(map[string][]uuid.UUID)
+	output.Each(func(row interface{}) {
+		fp := row.(models.SceneFingerprint)
+		res[fp.Hash] = append(res[fp.Hash], fp.SceneID)
+	})
+
+	return res, nil
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*models.Scene, error) {
@@ -437,8 +532,8 @@ type sceneFingerprintGroup struct {
 	Duration      float64                     `db:"duration"`
 	Submissions   int                         `db:"submissions"`
 	UserSubmitted bool                        `db:"user_submitted"`
-	CreatedAt     models.SQLiteTimestamp      `db:"created_at"`
-	UpdatedAt     models.SQLiteTimestamp      `db:"updated_at"`
+	CreatedAt     time.Time                   `db:"created_at"`
+	UpdatedAt     time.Time                   `db:"updated_at"`
 }
 
 func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
@@ -448,8 +543,8 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 		Duration:      int(fpg.Duration),
 		Submissions:   fpg.Submissions,
 		UserSubmitted: fpg.UserSubmitted,
-		Created:       fpg.CreatedAt.Timestamp,
-		Updated:       fpg.UpdatedAt.Timestamp,
+		Created:       fpg.CreatedAt,
+		Updated:       fpg.UpdatedAt,
 	}
 }
 
@@ -711,52 +806,135 @@ func (qb *sceneQueryBuilder) ApplyEdit(scene *models.Scene, create bool, data *m
 	return updatedScene, err
 }
 
+func (qb *sceneQueryBuilder) GetEditURLs(id *uuid.UUID, data *models.SceneEdit) ([]*models.URL, error) {
+	var urls []*models.URL
+	if id != nil {
+		currentURLs, err := qb.GetURLs(*id)
+		if err != nil {
+			return nil, err
+		}
+		urls = currentURLs
+	}
+	return edit.MergeURLs(urls, data.AddedUrls, data.RemovedUrls), nil
+}
+
 func (qb *sceneQueryBuilder) updateURLsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	urls, err := qb.getSceneURLs(scene.ID)
+	urls, err := qb.GetEditURLs(&scene.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newUrls := models.CreateSceneURLs(scene.ID, data.New.AddedUrls)
-	oldUrls := models.CreateSceneURLs(scene.ID, data.New.RemovedUrls)
-	models.ProcessSlice(&urls, &newUrls, &oldUrls, "URL")
 
-	return qb.UpdateURLs(scene.ID, urls)
+	newURLs := models.CreateSceneURLs(scene.ID, urls)
+	return qb.UpdateURLs(scene.ID, newURLs)
+}
+
+func (qb *sceneQueryBuilder) GetEditImages(id *uuid.UUID, data *models.SceneEdit) ([]uuid.UUID, error) {
+	var imageIds []uuid.UUID
+	if id != nil {
+		currentImages, err := qb.GetImages(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range currentImages {
+			imageIds = append(imageIds, v.ImageID)
+		}
+	}
+	return utils.ProcessSlice(imageIds, data.AddedImages, data.RemovedImages), nil
 }
 
 func (qb *sceneQueryBuilder) updateImagesFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	currentImages, err := qb.GetImages(scene.ID)
+	ids, err := qb.GetEditImages(&scene.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newImages := models.CreateSceneImages(scene.ID, data.New.AddedImages)
-	oldImages := models.CreateSceneImages(scene.ID, data.New.RemovedImages)
-	models.ProcessSlice(&currentImages, &newImages, &oldImages, "image")
 
-	return qb.UpdateImages(scene.ID, currentImages)
+	images := models.CreateSceneImages(scene.ID, ids)
+	return qb.UpdateImages(scene.ID, images)
+}
+
+func (qb *sceneQueryBuilder) GetEditTags(id *uuid.UUID, data *models.SceneEdit) ([]uuid.UUID, error) {
+	var tagIds []uuid.UUID
+	if id != nil {
+		currentTags, err := qb.GetTags(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, tag := range currentTags {
+			tagIds = append(tagIds, tag.TagID)
+		}
+	}
+
+	return utils.ProcessSlice(tagIds, data.AddedTags, data.RemovedTags), nil
 }
 
 func (qb *sceneQueryBuilder) updateTagsFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	currentTags, err := qb.GetTags(scene.ID)
+	tags, err := qb.GetEditTags(&scene.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newTags := models.CreateSceneTags(scene.ID, data.New.AddedTags)
-	oldTags := models.CreateSceneTags(scene.ID, data.New.RemovedTags)
-	models.ProcessSlice(&currentTags, &newTags, &oldTags, "tag")
+	newTags := models.CreateSceneTags(scene.ID, tags)
 
-	return qb.UpdateTags(scene.ID, currentTags)
+	return qb.UpdateTags(scene.ID, newTags)
+}
+
+func (qb *sceneQueryBuilder) GetEditPerformers(id *uuid.UUID, obj *models.SceneEdit) ([]*models.PerformerAppearanceInput, error) {
+	// Pointers aren't compared by value, so we have to use a temporary struct
+	type appearance struct {
+		ID uuid.UUID
+		As string
+	}
+
+	var appearances []appearance
+	if id != nil {
+		currentPerformers, err := qb.GetPerformers(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, a := range currentPerformers {
+			appearances = append(appearances, appearance{
+				As: a.As.String,
+				ID: a.PerformerID,
+			})
+		}
+	}
+
+	var added []appearance
+	for _, a := range obj.AddedPerformers {
+		added = append(added, appearance{
+			As: utils.StrPtrToString(a.As),
+			ID: a.PerformerID,
+		})
+	}
+
+	var removed []appearance
+	for _, a := range obj.RemovedPerformers {
+		removed = append(removed, appearance{
+			As: utils.StrPtrToString(a.As),
+			ID: a.PerformerID,
+		})
+	}
+
+	appearances = utils.ProcessSlice(appearances, added, removed)
+
+	var ret []*models.PerformerAppearanceInput
+	for i := range appearances {
+		ret = append(ret, &models.PerformerAppearanceInput{
+			As:          utils.StringToStrPtr(appearances[i].As),
+			PerformerID: appearances[i].ID,
+		})
+	}
+
+	return ret, nil
 }
 
 func (qb *sceneQueryBuilder) updatePerformersFromEdit(scene *models.Scene, data *models.SceneEditData) error {
-	currentPerformers, err := qb.GetPerformers(scene.ID)
+	appearances, err := qb.GetEditPerformers(&scene.ID, data.New)
 	if err != nil {
 		return err
 	}
-	newPerformers := models.CreateScenePerformers(scene.ID, data.New.AddedPerformers)
-	oldPerformers := models.CreateScenePerformers(scene.ID, data.New.RemovedPerformers)
-	models.ProcessSlice(&currentPerformers, &newPerformers, &oldPerformers, "performer")
 
-	return qb.UpdatePerformers(scene.ID, currentPerformers)
+	newPerformers := models.CreateScenePerformers(scene.ID, appearances)
+	return qb.UpdatePerformers(scene.ID, newPerformers)
 }
 
 func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *models.SceneEditData, userID uuid.UUID) error {
@@ -769,7 +947,7 @@ func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *
 				Hash:      fingerprint.Hash,
 				Algorithm: fingerprint.Algorithm.String(),
 				Duration:  fingerprint.Duration,
-				CreatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
+				CreatedAt: time.Now(),
 			})
 		}
 	}

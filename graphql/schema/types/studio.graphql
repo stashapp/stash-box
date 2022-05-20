@@ -51,6 +51,9 @@ type StudioEdit {
   parent: Studio
   added_images: [Image]
   removed_images: [Image]
+
+  images: [Image!]!
+  urls: [URL!]!
 }
 
 type QueryStudiosResultType {

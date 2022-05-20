@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import { GenderEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Draft
@@ -19,6 +19,7 @@ export interface Draft_findDraft_data_PerformerDraft_image {
 
 export interface Draft_findDraft_data_PerformerDraft {
   __typename: "PerformerDraft";
+  id: string | null;
   name: string;
   aliases: string | null;
   gender: string | null;
@@ -104,20 +105,6 @@ export interface Draft_findDraft_data_SceneDraft_studio_DraftEntity {
 
 export type Draft_findDraft_data_SceneDraft_studio = Draft_findDraft_data_SceneDraft_studio_Studio | Draft_findDraft_data_SceneDraft_studio_DraftEntity;
 
-export interface Draft_findDraft_data_SceneDraft_performers_Performer_birthdate {
-  __typename: "FuzzyDate";
-  date: any;
-  accuracy: DateAccuracyEnum;
-}
-
-export interface Draft_findDraft_data_SceneDraft_performers_Performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface Draft_findDraft_data_SceneDraft_performers_Performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -159,7 +146,7 @@ export interface Draft_findDraft_data_SceneDraft_performers_Performer {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: Draft_findDraft_data_SceneDraft_performers_Performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -172,7 +159,10 @@ export interface Draft_findDraft_data_SceneDraft_performers_Performer {
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Draft_findDraft_data_SceneDraft_performers_Performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Draft_findDraft_data_SceneDraft_performers_Performer_tattoos[] | null;
   piercings: Draft_findDraft_data_SceneDraft_performers_Performer_piercings[] | null;
   urls: Draft_findDraft_data_SceneDraft_performers_Performer_urls[];
@@ -201,6 +191,7 @@ export interface Draft_findDraft_data_SceneDraft_tags_Tag {
   description: string | null;
   deleted: boolean;
   category: Draft_findDraft_data_SceneDraft_tags_Tag_category | null;
+  aliases: string[];
 }
 
 export interface Draft_findDraft_data_SceneDraft_tags_DraftEntity {
@@ -228,9 +219,10 @@ export interface Draft_findDraft_data_SceneDraft_image {
 
 export interface Draft_findDraft_data_SceneDraft {
   __typename: "SceneDraft";
+  id: string | null;
   title: string | null;
   details: string | null;
-  date: any | null;
+  date: string | null;
   url: Draft_findDraft_data_SceneDraft_url | null;
   studio: Draft_findDraft_data_SceneDraft_studio | null;
   performers: Draft_findDraft_data_SceneDraft_performers[];
@@ -244,8 +236,8 @@ export type Draft_findDraft_data = Draft_findDraft_data_PerformerDraft | Draft_f
 export interface Draft_findDraft {
   __typename: "Draft";
   id: string;
-  created: any;
-  expires: any;
+  created: GQLTime;
+  expires: GQLTime;
   data: Draft_findDraft_data;
 }
 

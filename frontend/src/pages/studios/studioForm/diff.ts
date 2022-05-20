@@ -8,18 +8,21 @@ import { diffValue, diffImages, diffURLs } from "src/utils";
 
 const selectStudioDetails = (
   data: CastedStudioFormData,
-  original: StudioFragment
+  original: StudioFragment | null | undefined
 ): [Required<OldStudioDetails>, Required<StudioDetails>] => {
-  const [addedImages, removedImages] = diffImages(data.images, original.images);
-  const [addedUrls, removedUrls] = diffURLs(data.urls, original.urls);
+  const [addedImages, removedImages] = diffImages(
+    data.images,
+    original?.images ?? []
+  );
+  const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);
 
   return [
     {
-      name: diffValue(original.name, data.name),
+      name: diffValue(original?.name, data.name),
       parent:
-        original.parent?.id !== data.studio?.id &&
-        original.parent?.id &&
-        original.parent.name
+        original?.parent?.id !== data.parent?.id &&
+        original?.parent?.id &&
+        original?.parent.name
           ? {
               id: original.parent.id,
               name: original.parent.name,
@@ -27,14 +30,14 @@ const selectStudioDetails = (
           : null,
     },
     {
-      name: diffValue(data.name, original.name),
+      name: diffValue(data.name, original?.name),
       parent:
-        data.studio?.id !== original.parent?.id &&
-        data.studio?.id &&
-        data.studio?.name
+        data.parent?.id !== original?.parent?.id &&
+        data.parent?.id &&
+        data.parent?.name
           ? {
-              id: data.studio.id,
-              name: data.studio.name,
+              id: data.parent.id,
+              name: data.parent.name,
             }
           : null,
       added_urls: addedUrls,
