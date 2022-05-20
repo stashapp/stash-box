@@ -105,14 +105,6 @@ export interface Draft_findDraft_data_SceneDraft_studio_DraftEntity {
 
 export type Draft_findDraft_data_SceneDraft_studio = Draft_findDraft_data_SceneDraft_studio_Studio | Draft_findDraft_data_SceneDraft_studio_DraftEntity;
 
-export interface Draft_findDraft_data_SceneDraft_performers_Performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface Draft_findDraft_data_SceneDraft_performers_Performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -167,7 +159,10 @@ export interface Draft_findDraft_data_SceneDraft_performers_Performer {
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Draft_findDraft_data_SceneDraft_performers_Performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Draft_findDraft_data_SceneDraft_performers_Performer_tattoos[] | null;
   piercings: Draft_findDraft_data_SceneDraft_performers_Performer_piercings[] | null;
   urls: Draft_findDraft_data_SceneDraft_performers_Performer_urls[];

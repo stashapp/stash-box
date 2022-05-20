@@ -28,13 +28,6 @@ type Measurements {
   hip: Int
 }
 
-input MeasurementsInput {
-  cup_size: String
-  band_size: Int
-  waist: Int
-  hip: Int
-}
-
 enum EthnicityEnum {
   CAUCASIAN
   BLACK
@@ -104,7 +97,11 @@ type Performer {
   hair_color: HairColorEnum
   """Height in cm"""
   height: Int
-  measurements: Measurements!
+  measurements: Measurements! @deprecated(reason: "Use individual fields, cup/band/waist/hip_size")
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -138,7 +135,10 @@ input PerformerCreateInput {
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -161,7 +161,10 @@ input PerformerUpdateInput {
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -186,7 +189,10 @@ input PerformerEditDetailsInput {
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int

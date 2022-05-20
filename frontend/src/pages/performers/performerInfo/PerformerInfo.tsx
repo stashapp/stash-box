@@ -127,7 +127,7 @@ const PerformerInfo: FC<Props> = ({ performer }) => (
                     <>
                       <tr>
                         <td>Measurements</td>
-                        <td>{formatMeasurements(performer.measurements)}</td>
+                        <td>{formatMeasurements(performer)}</td>
                       </tr>
                       <tr>
                         <td>Breast type</td>

@@ -215,6 +215,7 @@ type ComplexityRoot struct {
 	Performer struct {
 		Age             func(childComplexity int) int
 		Aliases         func(childComplexity int) int
+		BandSize        func(childComplexity int) int
 		BirthDate       func(childComplexity int) int
 		Birthdate       func(childComplexity int) int
 		BreastType      func(childComplexity int) int
@@ -222,6 +223,7 @@ type ComplexityRoot struct {
 		CareerStartYear func(childComplexity int) int
 		Country         func(childComplexity int) int
 		Created         func(childComplexity int) int
+		CupSize         func(childComplexity int) int
 		Deleted         func(childComplexity int) int
 		Disambiguation  func(childComplexity int) int
 		Edits           func(childComplexity int) int
@@ -230,6 +232,7 @@ type ComplexityRoot struct {
 		Gender          func(childComplexity int) int
 		HairColor       func(childComplexity int) int
 		Height          func(childComplexity int) int
+		HipSize         func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Images          func(childComplexity int) int
 		IsFavorite      func(childComplexity int) int
@@ -242,6 +245,7 @@ type ComplexityRoot struct {
 		Tattoos         func(childComplexity int) int
 		Updated         func(childComplexity int) int
 		Urls            func(childComplexity int) int
+		WaistSize       func(childComplexity int) int
 	}
 
 	PerformerAppearance struct {
@@ -669,6 +673,10 @@ type PerformerResolver interface {
 	HairColor(ctx context.Context, obj *Performer) (*HairColorEnum, error)
 	Height(ctx context.Context, obj *Performer) (*int, error)
 	Measurements(ctx context.Context, obj *Performer) (*Measurements, error)
+	CupSize(ctx context.Context, obj *Performer) (*string, error)
+	BandSize(ctx context.Context, obj *Performer) (*int, error)
+	WaistSize(ctx context.Context, obj *Performer) (*int, error)
+	HipSize(ctx context.Context, obj *Performer) (*int, error)
 	BreastType(ctx context.Context, obj *Performer) (*BreastTypeEnum, error)
 	CareerStartYear(ctx context.Context, obj *Performer) (*int, error)
 	CareerEndYear(ctx context.Context, obj *Performer) (*int, error)
@@ -1853,6 +1861,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Performer.Aliases(childComplexity), true
 
+	case "Performer.band_size":
+		if e.complexity.Performer.BandSize == nil {
+			break
+		}
+
+		return e.complexity.Performer.BandSize(childComplexity), true
+
 	case "Performer.birth_date":
 		if e.complexity.Performer.BirthDate == nil {
 			break
@@ -1901,6 +1916,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Performer.Created(childComplexity), true
+
+	case "Performer.cup_size":
+		if e.complexity.Performer.CupSize == nil {
+			break
+		}
+
+		return e.complexity.Performer.CupSize(childComplexity), true
 
 	case "Performer.deleted":
 		if e.complexity.Performer.Deleted == nil {
@@ -1957,6 +1979,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Performer.Height(childComplexity), true
+
+	case "Performer.hip_size":
+		if e.complexity.Performer.HipSize == nil {
+			break
+		}
+
+		return e.complexity.Performer.HipSize(childComplexity), true
 
 	case "Performer.id":
 		if e.complexity.Performer.ID == nil {
@@ -2041,6 +2070,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Performer.Urls(childComplexity), true
+
+	case "Performer.waist_size":
+		if e.complexity.Performer.WaistSize == nil {
+			break
+		}
+
+		return e.complexity.Performer.WaistSize(childComplexity), true
 
 	case "PerformerAppearance.as":
 		if e.complexity.PerformerAppearance.As == nil {
@@ -3817,7 +3853,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputImageDestroyInput,
 		ec.unmarshalInputImageUpdateInput,
 		ec.unmarshalInputIntCriterionInput,
-		ec.unmarshalInputMeasurementsInput,
 		ec.unmarshalInputMultiIDCriterionInput,
 		ec.unmarshalInputMultiStringCriterionInput,
 		ec.unmarshalInputNewUserInput,
@@ -4229,13 +4264,6 @@ type Measurements {
   hip: Int
 }
 
-input MeasurementsInput {
-  cup_size: String
-  band_size: Int
-  waist: Int
-  hip: Int
-}
-
 enum EthnicityEnum {
   CAUCASIAN
   BLACK
@@ -4305,7 +4333,11 @@ type Performer {
   hair_color: HairColorEnum
   """Height in cm"""
   height: Int
-  measurements: Measurements!
+  measurements: Measurements! @deprecated(reason: "Use individual fields, cup/band/waist/hip_size")
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -4339,7 +4371,10 @@ input PerformerCreateInput {
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -4362,7 +4397,10 @@ input PerformerUpdateInput {
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -4387,7 +4425,10 @@ input PerformerEditDetailsInput {
   eye_color: EyeColorEnum
   hair_color: HairColorEnum
   height: Int
-  measurements: MeasurementsInput
+  cup_size: String
+  band_size: Int
+  waist_size: Int
+  hip_size: Int
   breast_type: BreastTypeEnum
   career_start_year: Int
   career_end_year: Int
@@ -9445,6 +9486,14 @@ func (ec *executionContext) fieldContext_Mutation_performerCreate(ctx context.Co
 				return ec.fieldContext_Performer_height(ctx, field)
 			case "measurements":
 				return ec.fieldContext_Performer_measurements(ctx, field)
+			case "cup_size":
+				return ec.fieldContext_Performer_cup_size(ctx, field)
+			case "band_size":
+				return ec.fieldContext_Performer_band_size(ctx, field)
+			case "waist_size":
+				return ec.fieldContext_Performer_waist_size(ctx, field)
+			case "hip_size":
+				return ec.fieldContext_Performer_hip_size(ctx, field)
 			case "breast_type":
 				return ec.fieldContext_Performer_breast_type(ctx, field)
 			case "career_start_year":
@@ -9581,6 +9630,14 @@ func (ec *executionContext) fieldContext_Mutation_performerUpdate(ctx context.Co
 				return ec.fieldContext_Performer_height(ctx, field)
 			case "measurements":
 				return ec.fieldContext_Performer_measurements(ctx, field)
+			case "cup_size":
+				return ec.fieldContext_Performer_cup_size(ctx, field)
+			case "band_size":
+				return ec.fieldContext_Performer_band_size(ctx, field)
+			case "waist_size":
+				return ec.fieldContext_Performer_waist_size(ctx, field)
+			case "hip_size":
+				return ec.fieldContext_Performer_hip_size(ctx, field)
 			case "breast_type":
 				return ec.fieldContext_Performer_breast_type(ctx, field)
 			case "career_start_year":
@@ -14257,6 +14314,170 @@ func (ec *executionContext) fieldContext_Performer_measurements(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Performer_cup_size(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_cup_size(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().CupSize(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_cup_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performer_band_size(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_band_size(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().BandSize(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_band_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performer_waist_size(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_waist_size(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().WaistSize(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_waist_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Performer_hip_size(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_hip_size(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().HipSize(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_hip_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Performer_breast_type(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Performer_breast_type(ctx, field)
 	if err != nil {
@@ -14993,6 +15214,14 @@ func (ec *executionContext) fieldContext_PerformerAppearance_performer(ctx conte
 				return ec.fieldContext_Performer_height(ctx, field)
 			case "measurements":
 				return ec.fieldContext_Performer_measurements(ctx, field)
+			case "cup_size":
+				return ec.fieldContext_Performer_cup_size(ctx, field)
+			case "band_size":
+				return ec.fieldContext_Performer_band_size(ctx, field)
+			case "waist_size":
+				return ec.fieldContext_Performer_waist_size(ctx, field)
+			case "hip_size":
+				return ec.fieldContext_Performer_hip_size(ctx, field)
 			case "breast_type":
 				return ec.fieldContext_Performer_breast_type(ctx, field)
 			case "career_start_year":
@@ -17525,6 +17754,14 @@ func (ec *executionContext) fieldContext_Query_findPerformer(ctx context.Context
 				return ec.fieldContext_Performer_height(ctx, field)
 			case "measurements":
 				return ec.fieldContext_Performer_measurements(ctx, field)
+			case "cup_size":
+				return ec.fieldContext_Performer_cup_size(ctx, field)
+			case "band_size":
+				return ec.fieldContext_Performer_band_size(ctx, field)
+			case "waist_size":
+				return ec.fieldContext_Performer_waist_size(ctx, field)
+			case "hip_size":
+				return ec.fieldContext_Performer_hip_size(ctx, field)
 			case "breast_type":
 				return ec.fieldContext_Performer_breast_type(ctx, field)
 			case "career_start_year":
@@ -19559,6 +19796,14 @@ func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Conte
 				return ec.fieldContext_Performer_height(ctx, field)
 			case "measurements":
 				return ec.fieldContext_Performer_measurements(ctx, field)
+			case "cup_size":
+				return ec.fieldContext_Performer_cup_size(ctx, field)
+			case "band_size":
+				return ec.fieldContext_Performer_band_size(ctx, field)
+			case "waist_size":
+				return ec.fieldContext_Performer_waist_size(ctx, field)
+			case "hip_size":
+				return ec.fieldContext_Performer_hip_size(ctx, field)
 			case "breast_type":
 				return ec.fieldContext_Performer_breast_type(ctx, field)
 			case "career_start_year":
@@ -20418,6 +20663,14 @@ func (ec *executionContext) fieldContext_QueryPerformersResultType_performers(ct
 				return ec.fieldContext_Performer_height(ctx, field)
 			case "measurements":
 				return ec.fieldContext_Performer_measurements(ctx, field)
+			case "cup_size":
+				return ec.fieldContext_Performer_cup_size(ctx, field)
+			case "band_size":
+				return ec.fieldContext_Performer_band_size(ctx, field)
+			case "waist_size":
+				return ec.fieldContext_Performer_waist_size(ctx, field)
+			case "hip_size":
+				return ec.fieldContext_Performer_hip_size(ctx, field)
 			case "breast_type":
 				return ec.fieldContext_Performer_breast_type(ctx, field)
 			case "career_start_year":
@@ -30324,53 +30577,6 @@ func (ec *executionContext) unmarshalInputIntCriterionInput(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputMeasurementsInput(ctx context.Context, obj interface{}) (MeasurementsInput, error) {
-	var it MeasurementsInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	for k, v := range asMap {
-		switch k {
-		case "cup_size":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cup_size"))
-			it.CupSize, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "band_size":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("band_size"))
-			it.BandSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "waist":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("waist"))
-			it.Waist, err = ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "hip":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hip"))
-			it.Hip, err = ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputMultiIDCriterionInput(ctx context.Context, obj interface{}) (MultiIDCriterionInput, error) {
 	var it MultiIDCriterionInput
 	asMap := map[string]interface{}{}
@@ -30592,11 +30798,35 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
-		case "measurements":
+		case "cup_size":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("measurements"))
-			it.Measurements, err = ec.unmarshalOMeasurementsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMeasurementsInput(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cup_size"))
+			it.CupSize, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "band_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("band_size"))
+			it.BandSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "waist_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("waist_size"))
+			it.WaistSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hip_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hip_size"))
+			it.HipSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -30941,11 +31171,35 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 			if err != nil {
 				return it, err
 			}
-		case "measurements":
+		case "cup_size":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("measurements"))
-			it.Measurements, err = ec.unmarshalOMeasurementsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMeasurementsInput(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cup_size"))
+			it.CupSize, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "band_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("band_size"))
+			it.BandSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "waist_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("waist_size"))
+			it.WaistSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hip_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hip_size"))
+			it.HipSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -31445,11 +31699,35 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
-		case "measurements":
+		case "cup_size":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("measurements"))
-			it.Measurements, err = ec.unmarshalOMeasurementsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMeasurementsInput(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cup_size"))
+			it.CupSize, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "band_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("band_size"))
+			it.BandSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "waist_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("waist_size"))
+			it.WaistSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hip_size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hip_size"))
+			it.HipSize, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35192,6 +35470,74 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "cup_size":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_cup_size(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "band_size":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_band_size(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "waist_size":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_waist_size(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "hip_size":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_hip_size(ctx, field, obj)
 				return res
 			}
 
@@ -42317,14 +42663,6 @@ func (ec *executionContext) unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstasha
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputIntCriterionInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOMeasurementsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMeasurementsInput(ctx context.Context, v interface{}) (*MeasurementsInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputMeasurementsInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

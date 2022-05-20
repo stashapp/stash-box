@@ -302,21 +302,6 @@ func (p Performer) ResolveBirthdate() FuzzyDate {
 	return ret
 }
 
-func (p *Performer) setMeasurements(measurements MeasurementsInput) {
-	if measurements.CupSize != nil {
-		p.CupSize = sql.NullString{String: *measurements.CupSize, Valid: *measurements.CupSize != ""}
-	}
-	if measurements.BandSize != nil {
-		p.BandSize = sql.NullInt64{Int64: int64(*measurements.BandSize), Valid: *measurements.BandSize != 0}
-	}
-	if measurements.Hip != nil {
-		p.HipSize = sql.NullInt64{Int64: int64(*measurements.Hip), Valid: *measurements.Hip != 0}
-	}
-	if measurements.Waist != nil {
-		p.WaistSize = sql.NullInt64{Int64: int64(*measurements.Waist), Valid: *measurements.Waist != 0}
-	}
-}
-
 func (p Performer) ResolveMeasurements() Measurements {
 	ret := Measurements{}
 
@@ -351,10 +336,6 @@ func (p *Performer) CopyFromCreateInput(input PerformerCreateInput) error {
 		p.BirthdateAccuracy = accuracy
 	}
 
-	if input.Measurements != nil {
-		p.setMeasurements(*input.Measurements)
-	}
-
 	return nil
 }
 
@@ -368,10 +349,6 @@ func (p *Performer) CopyFromUpdateInput(input PerformerUpdateInput) error {
 		}
 		p.Birthdate = date
 		p.BirthdateAccuracy = accuracy
-	}
-
-	if input.Measurements != nil {
-		p.setMeasurements(*input.Measurements)
 	}
 
 	return nil

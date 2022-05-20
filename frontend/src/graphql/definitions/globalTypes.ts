@@ -302,13 +302,6 @@ export interface IntCriterionInput {
   modifier: CriterionModifier;
 }
 
-export interface MeasurementsInput {
-  cup_size?: string | null;
-  band_size?: number | null;
-  waist?: number | null;
-  hip?: number | null;
-}
-
 export interface MultiIDCriterionInput {
   value?: string[] | null;
   modifier: CriterionModifier;
@@ -341,7 +334,10 @@ export interface PerformerEditDetailsInput {
   eye_color?: EyeColorEnum | null;
   hair_color?: HairColorEnum | null;
   height?: number | null;
-  measurements?: MeasurementsInput | null;
+  cup_size?: string | null;
+  band_size?: number | null;
+  waist_size?: number | null;
+  hip_size?: number | null;
   breast_type?: BreastTypeEnum | null;
   career_start_year?: number | null;
   career_end_year?: number | null;
