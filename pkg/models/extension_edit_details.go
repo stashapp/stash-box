@@ -49,15 +49,10 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 	oldData.HairColor, newData.HairColor = ed.nullStringEnum(orig.HairColor, e.HairColor)
 	oldData.Height, newData.Height = ed.nullInt64(orig.Height, e.Height)
 
-	measurements := e.Measurements
-	if measurements == nil {
-		measurements = &MeasurementsInput{}
-	}
-
-	oldData.CupSize, newData.CupSize = ed.nullString(orig.CupSize, measurements.CupSize)
-	oldData.BandSize, newData.BandSize = ed.nullInt64(orig.BandSize, measurements.BandSize)
-	oldData.WaistSize, newData.WaistSize = ed.nullInt64(orig.WaistSize, measurements.Waist)
-	oldData.HipSize, newData.HipSize = ed.nullInt64(orig.HipSize, measurements.Hip)
+	oldData.CupSize, newData.CupSize = ed.nullString(orig.CupSize, e.CupSize)
+	oldData.BandSize, newData.BandSize = ed.nullInt64(orig.BandSize, e.BandSize)
+	oldData.WaistSize, newData.WaistSize = ed.nullInt64(orig.WaistSize, e.WaistSize)
+	oldData.HipSize, newData.HipSize = ed.nullInt64(orig.HipSize, e.HipSize)
 
 	oldData.BreastType, newData.BreastType = ed.nullStringEnum(orig.BreastType, e.BreastType)
 	oldData.CareerStartYear, newData.CareerStartYear = ed.nullInt64(orig.CareerStartYear, e.CareerStartYear)

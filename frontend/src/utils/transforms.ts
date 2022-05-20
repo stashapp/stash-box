@@ -1,6 +1,5 @@
 import { ImageFragment } from "src/graphql/definitions/ImageFragment";
 import { URLFragment } from "src/graphql/definitions/URLFragment";
-import { Performer_findPerformer_measurements as Measurements } from "src/graphql/definitions/Performer";
 
 export const formatCareer = (
   start?: number | null,
@@ -8,24 +7,29 @@ export const formatCareer = (
 ): string | undefined =>
   start || end ? `Active ${start ?? "????"}\u2013${end ?? ""}` : undefined;
 
-export const formatMeasurements = (val?: Measurements): string | undefined => {
-  if ((val?.cup_size && val.band_size) || val?.hip || val?.waist) {
-    const bust =
-      val.cup_size && val.band_size ? `${val.band_size}${val.cup_size}` : "??";
-    return `${bust}-${val.waist ?? "??"}-${val.hip ?? "??"}`;
+export const formatMeasurements = ({
+  cup_size,
+  band_size,
+  hip_size,
+  waist_size,
+}: {
+  cup_size: string | null;
+  band_size: number | null;
+  waist_size: number | null;
+  hip_size: number | null;
+}): string | undefined => {
+  if ((cup_size && band_size) || hip_size || waist_size) {
+    const bust = cup_size && band_size ? `${band_size}${cup_size}` : "??";
+    return `${bust}-${waist_size ?? "??"}-${hip_size ?? "??"}`;
   }
   return undefined;
 };
 
 export const getBraSize = (
-  measurements:
-    | { band_size: number | null; cup_size: string | null }
-    | null
-    | undefined
+  cup_size: string | null | undefined,
+  band_size: number | null | undefined
 ): string | undefined =>
-  measurements?.band_size && measurements?.cup_size
-    ? `${measurements.band_size}${measurements.cup_size}`
-    : undefined;
+  band_size && cup_size ? `${band_size}${cup_size}` : undefined;
 
 export const sortImageURLs = (
   urls: ImageFragment[],

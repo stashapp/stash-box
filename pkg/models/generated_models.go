@@ -219,13 +219,6 @@ type Measurements struct {
 	Hip      *int    `json:"hip"`
 }
 
-type MeasurementsInput struct {
-	CupSize  *string `json:"cup_size"`
-	BandSize *int    `json:"band_size"`
-	Waist    *int    `json:"waist"`
-	Hip      *int    `json:"hip"`
-}
-
 type MultiIDCriterionInput struct {
 	Value    []uuid.UUID       `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -265,7 +258,10 @@ type PerformerCreateInput struct {
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
 	HairColor       *HairColorEnum      `json:"hair_color"`
 	Height          *int                `json:"height"`
-	Measurements    *MeasurementsInput  `json:"measurements"`
+	CupSize         *string             `json:"cup_size"`
+	BandSize        *int                `json:"band_size"`
+	WaistSize       *int                `json:"waist_size"`
+	HipSize         *int                `json:"hip_size"`
 	BreastType      *BreastTypeEnum     `json:"breast_type"`
 	CareerStartYear *int                `json:"career_start_year"`
 	CareerEndYear   *int                `json:"career_end_year"`
@@ -312,7 +308,10 @@ type PerformerEditDetailsInput struct {
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
 	HairColor       *HairColorEnum      `json:"hair_color"`
 	Height          *int                `json:"height"`
-	Measurements    *MeasurementsInput  `json:"measurements"`
+	CupSize         *string             `json:"cup_size"`
+	BandSize        *int                `json:"band_size"`
+	WaistSize       *int                `json:"waist_size"`
+	HipSize         *int                `json:"hip_size"`
 	BreastType      *BreastTypeEnum     `json:"breast_type"`
 	CareerStartYear *int                `json:"career_start_year"`
 	CareerEndYear   *int                `json:"career_end_year"`
@@ -393,7 +392,10 @@ type PerformerUpdateInput struct {
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
 	HairColor       *HairColorEnum      `json:"hair_color"`
 	Height          *int                `json:"height"`
-	Measurements    *MeasurementsInput  `json:"measurements"`
+	CupSize         *string             `json:"cup_size"`
+	BandSize        *int                `json:"band_size"`
+	WaistSize       *int                `json:"waist_size"`
+	HipSize         *int                `json:"hip_size"`
 	BreastType      *BreastTypeEnum     `json:"breast_type"`
 	CareerStartYear *int                `json:"career_start_year"`
 	CareerEndYear   *int                `json:"career_end_year"`

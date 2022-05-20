@@ -111,6 +111,22 @@ func (r *performerResolver) Measurements(ctx context.Context, obj *models.Perfor
 	return &ret, nil
 }
 
+func (r *performerResolver) CupSize(ctx context.Context, obj *models.Performer) (*string, error) {
+	return resolveNullString(obj.CupSize), nil
+}
+
+func (r *performerResolver) BandSize(ctx context.Context, obj *models.Performer) (*int, error) {
+	return resolveNullInt64(obj.BandSize)
+}
+
+func (r *performerResolver) WaistSize(ctx context.Context, obj *models.Performer) (*int, error) {
+	return resolveNullInt64(obj.WaistSize)
+}
+
+func (r *performerResolver) HipSize(ctx context.Context, obj *models.Performer) (*int, error) {
+	return resolveNullInt64(obj.HipSize)
+}
+
 func (r *performerResolver) BreastType(ctx context.Context, obj *models.Performer) (*models.BreastTypeEnum, error) {
 	var ret models.BreastTypeEnum
 	if !utils.ResolveEnum(obj.BreastType, &ret) {
