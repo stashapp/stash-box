@@ -7,10 +7,7 @@ query SearchAll($term: String!, $limit: Int = 5) {
     }
     searchScene(term: $term, limit: $limit) {
         id
-        date: date_fuzzy {
-          date
-          accuracy
-        }
+        release_date
         title
         deleted
         duration

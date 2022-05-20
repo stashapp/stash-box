@@ -56,7 +56,10 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 	}
 
 	// perform a diff against the input and the current object
-	performerEdit := input.Details.PerformerEditFromDiff(*performer)
+	performerEdit, err := input.Details.PerformerEditFromDiff(*performer)
+	if err != nil {
+		return err
+	}
 
 	aliases, err := pqb.GetAliases(performerID)
 	if err != nil {
@@ -102,7 +105,7 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 		return ErrNoChanges
 	}
 
-	return m.edit.SetData(performerEdit)
+	return m.edit.SetData(*performerEdit)
 }
 
 func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
@@ -144,7 +147,10 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 	}
 
 	// perform a diff against the input and the current object
-	performerEdit := input.Details.PerformerEditFromMerge(*performer, mergeSources)
+	performerEdit, err := input.Details.PerformerEditFromMerge(*performer, mergeSources)
+	if err != nil {
+		return err
+	}
 
 	aliases, err := pqb.GetAliases(performerID)
 	if err != nil {
@@ -189,11 +195,14 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 		performerEdit.SetModifyAliases = *input.Options.SetModifyAliases
 	}
 
-	return m.edit.SetData(performerEdit)
+	return m.edit.SetData(*performerEdit)
 }
 
 func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {
-	performerEdit := input.Details.PerformerEditFromCreate()
+	performerEdit, err := input.Details.PerformerEditFromCreate()
+	if err != nil {
+		return err
+	}
 
 	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
 		performerEdit.New.AddedAliases = input.Details.Aliases
@@ -221,7 +230,7 @@ func (m *PerformerEditProcessor) createEdit(input models.PerformerEditInput, inp
 
 	performerEdit.New.DraftID = input.Details.DraftID
 
-	return m.edit.SetData(performerEdit)
+	return m.edit.SetData(*performerEdit)
 }
 
 func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput, inputSpecified InputSpecifiedFunc) error {

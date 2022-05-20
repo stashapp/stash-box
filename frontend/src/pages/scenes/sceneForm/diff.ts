@@ -11,7 +11,6 @@ import {
   diffValue,
   diffImages,
   diffURLs,
-  formatFuzzyDate,
 } from "src/utils";
 
 import { CastedSceneFormData } from "./schema";
@@ -68,7 +67,7 @@ const selectSceneDetails = (
     {
       title: diffValue(original?.title, data.title),
       details: diffValue(original?.details, data.details),
-      date: diffValue(formatFuzzyDate(original?.date), data.date),
+      date: diffValue(original?.release_date, data.date),
       duration: diffValue(original?.duration, parseDuration(data.duration)),
       director: diffValue(original?.director, data.director),
       code: diffValue(original?.code, data.code),
@@ -85,7 +84,7 @@ const selectSceneDetails = (
     {
       title: diffValue(data.title, original?.title),
       details: diffValue(data.details, original?.details),
-      date: diffValue(data.date, formatFuzzyDate(original?.date)),
+      date: diffValue(data.date, original?.release_date),
       duration: diffValue(parseDuration(data.duration), original?.duration),
       director: diffValue(data.director, original?.director),
       code: diffValue(data.code, original?.code),

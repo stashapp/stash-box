@@ -3,17 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import { GenderEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: PerformerFragment
 // ====================================================
-
-export interface PerformerFragment_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
 
 export interface PerformerFragment_tattoos {
   __typename: "BodyModification";
@@ -56,7 +50,7 @@ export interface PerformerFragment {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: PerformerFragment_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm

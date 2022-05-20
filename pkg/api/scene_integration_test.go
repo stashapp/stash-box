@@ -24,10 +24,7 @@ func createSceneTestRunner(t *testing.T) *sceneTestRunner {
 func (s *sceneTestRunner) testCreateScene() {
 	title := "Title"
 	details := "Details"
-	date := models.FuzzyDateInput{
-		Date:     "2003-02-01",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
@@ -43,7 +40,7 @@ func (s *sceneTestRunner) testCreateScene() {
 	input := models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		Date:    &date,
+		Date:    date,
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
@@ -184,7 +181,7 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 
 	s.compareSiteURLs(input.Urls, scene.Urls)
 
-	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || scene.Date.Date != input.Date.Date || scene.Date.Accuracy != input.Date.Accuracy) {
+	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || input.Date != *scene.Date) {
 		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 
@@ -268,6 +265,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
+		Date: "2020-03-02",
 	}
 	createdScene1, err := s.createTestScene(&scene1Input)
 	if err != nil {
@@ -308,10 +306,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
-	date := models.FuzzyDateInput{
-		Date:     "2003-02-01",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	date := "2003-02-01"
 
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
@@ -327,7 +322,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	input := models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		Date:    &date,
+		Date:    date,
 		Fingerprints: []*models.FingerprintEditInput{
 			// fingerprint that will be kept
 			s.generateSceneFingerprint([]uuid.UUID{
@@ -362,10 +357,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 
 	newTitle := "NewTitle"
 	newDetails := "NewDetails"
-	newDate := models.FuzzyDateInput{
-		Date:     "2001-02-03",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	newDate := "2001-02-03"
 
 	performer, _ = s.createTestPerformer(nil)
 	studio, _ = s.createTestStudio(nil)
@@ -444,7 +436,7 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 		s.fieldMismatch(input.Details, scene.Details, "Details")
 	}
 
-	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || scene.Date.Date != input.Date.Date || scene.Date.Accuracy != input.Date.Accuracy) {
+	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || *scene.Date != *input.Date) {
 		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 
@@ -837,6 +829,7 @@ func (s *sceneTestRunner) testQueryScenesByStudio() {
 	input := models.SceneCreateInput{
 		StudioID: &studio1ID,
 		Title:    &scene1Title,
+		Date:     "2020-03-02",
 	}
 
 	scene1, err := s.createTestScene(&input)
@@ -924,6 +917,7 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 			},
 		},
 		Title: &scene1Title,
+		Date:  "2020-03-02",
 	}
 
 	scene1, err := s.createTestScene(&input)
@@ -1006,6 +1000,7 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 			tag1ID,
 		},
 		Title: &scene1Title,
+		Date:  "2020-03-02",
 	}
 
 	scene1, err := s.createTestScene(&input)

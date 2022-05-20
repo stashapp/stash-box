@@ -24,6 +24,8 @@ var (
 	bGenderStr      = bGender.String()
 	aDate           = "2001-01-01"
 	bDate           = "2002-01-01"
+	aDateShort      = "2001-01-01"
+	bDateShort      = "2002-01"
 	aDateAcc        = DateAccuracyEnumDay
 	bDateAcc        = DateAccuracyEnumMonth
 	aDateAccStr     = aDateAcc.String()
@@ -164,13 +166,10 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		CareerEndYear:     sql.NullInt64{Int64: int64(aEndYear), Valid: true},
 	}
 	input := PerformerEditDetailsInput{
-		Name:           &bName,
-		Disambiguation: &bDisambiguation,
-		Gender:         &bGender,
-		Birthdate: &FuzzyDateInput{
-			Date:     bDate,
-			Accuracy: bDateAcc,
-		},
+		Name:            &bName,
+		Disambiguation:  &bDisambiguation,
+		Gender:          &bGender,
+		Birthdate:       &bDateShort,
 		Ethnicity:       &bEthnicity,
 		Country:         &bCountry,
 		EyeColor:        &bEyeColor,
@@ -185,7 +184,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		CareerEndYear:   &bEndYear,
 	}
 
-	out := input.PerformerEditFromDiff(orig)
+	out, _ := input.PerformerEditFromDiff(orig)
 
 	assert := assert.New(t)
 	assert.Equal(PerformerEditData{
@@ -227,13 +226,13 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			CareerStartYear:   &aStartYear64,
 			CareerEndYear:     &aEndYear64,
 		},
-	}, out)
+	}, *out)
 
 	emptyOrig := Performer{
 		Name: aName,
 	}
 
-	out = input.PerformerEditFromDiff(emptyOrig)
+	out, _ = input.PerformerEditFromDiff(emptyOrig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{
 			Name:              &bName,
@@ -257,11 +256,11 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		Old: &PerformerEdit{
 			Name: &aName,
 		},
-	}, out)
+	}, *out)
 
 	emptyInput := PerformerEditDetailsInput{}
 
-	out = emptyInput.PerformerEditFromDiff(orig)
+	out, _ = emptyInput.PerformerEditFromDiff(orig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{},
 		Old: &PerformerEdit{
@@ -283,16 +282,13 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			CareerStartYear:   &aStartYear64,
 			CareerEndYear:     &aEndYear64,
 		},
-	}, out)
+	}, *out)
 
 	equalInput := PerformerEditDetailsInput{
-		Name:           &aName,
-		Disambiguation: &aDisambiguation,
-		Gender:         &aGender,
-		Birthdate: &FuzzyDateInput{
-			Date:     aDate,
-			Accuracy: aDateAcc,
-		},
+		Name:            &aName,
+		Disambiguation:  &aDisambiguation,
+		Gender:          &aGender,
+		Birthdate:       &aDateShort,
 		Ethnicity:       &aEthnicity,
 		Country:         &aCountry,
 		EyeColor:        &aEyeColor,
@@ -307,9 +303,9 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		CareerEndYear:   &aEndYear,
 	}
 
-	out = equalInput.PerformerEditFromDiff(orig)
+	out, _ = equalInput.PerformerEditFromDiff(orig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{},
 		Old: &PerformerEdit{},
-	}, out)
+	}, *out)
 }

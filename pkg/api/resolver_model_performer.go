@@ -50,6 +50,10 @@ func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer
 	return &ret, nil
 }
 
+func (r *performerResolver) BirthDate(ctx context.Context, obj *models.Performer) (*string, error) {
+	return resolveFuzzyDate(&obj.Birthdate.String, &obj.BirthdateAccuracy.String), nil
+}
+
 func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {
 	if !obj.Birthdate.Valid {
 		return nil, nil

@@ -173,11 +173,6 @@ type FuzzyDate struct {
 	Accuracy DateAccuracyEnum `json:"accuracy"`
 }
 
-type FuzzyDateInput struct {
-	Date     string           `json:"date"`
-	Accuracy DateAccuracyEnum `json:"accuracy"`
-}
-
 type GrantInviteInput struct {
 	UserID uuid.UUID `json:"user_id"`
 	Amount int       `json:"amount"`
@@ -252,7 +247,7 @@ type PerformerCreateInput struct {
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
 	Urls            []*URLInput         `json:"urls"`
-	Birthdate       *FuzzyDateInput     `json:"birthdate"`
+	Birthdate       *string             `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
@@ -302,7 +297,7 @@ type PerformerEditDetailsInput struct {
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
 	Urls            []*URLInput         `json:"urls"`
-	Birthdate       *FuzzyDateInput     `json:"birthdate"`
+	Birthdate       *string             `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
@@ -386,7 +381,7 @@ type PerformerUpdateInput struct {
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
 	Urls            []*URLInput         `json:"urls"`
-	Birthdate       *FuzzyDateInput     `json:"birthdate"`
+	Birthdate       *string             `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
@@ -447,7 +442,7 @@ type SceneCreateInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *FuzzyDateInput             `json:"date"`
+	Date         string                      `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
@@ -479,7 +474,7 @@ type SceneEditDetailsInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *FuzzyDateInput             `json:"date"`
+	Date         *string                     `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
@@ -530,7 +525,7 @@ type SceneUpdateInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *FuzzyDateInput             `json:"date"`
+	Date         *string                     `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
