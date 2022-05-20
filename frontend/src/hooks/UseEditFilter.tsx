@@ -33,6 +33,7 @@ function resolveParam<T>(
 
 const sortOptions = [
   { value: "", label: "Date created" },
+  { value: EditSortEnum.CLOSED_AT, label: "Date closed" },
   { value: EditSortEnum.UPDATED_AT, label: "Date updated" },
 ];
 const defaultSort = EditSortEnum.CREATED_AT;

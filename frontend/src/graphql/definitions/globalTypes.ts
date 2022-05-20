@@ -26,6 +26,7 @@ export enum CriterionModifier {
 }
 
 export enum EditSortEnum {
+  CLOSED_AT = "CLOSED_AT",
   CREATED_AT = "CREATED_AT",
   UPDATED_AT = "UPDATED_AT",
 }
