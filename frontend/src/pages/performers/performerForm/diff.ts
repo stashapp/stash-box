@@ -84,10 +84,10 @@ const selectPerformerDetails = (
         data.career_end_year
       ),
       height: diffValue(original?.height, data.height),
-      band_size: diffValue(original?.measurements.band_size, newBandSize),
-      cup_size: diffValue(original?.measurements.cup_size, newCupSize),
-      waist_size: diffValue(original?.measurements.waist, data.waistSize),
-      hip_size: diffValue(original?.measurements.hip, data.hipSize),
+      band_size: diffValue(original?.band_size, newBandSize),
+      cup_size: diffValue(original?.cup_size, newCupSize),
+      waist_size: diffValue(original?.waist_size, data.waistSize),
+      hip_size: diffValue(original?.hip_size, data.hipSize),
       breast_type: diffValue(
         original?.breast_type,
         breastType(data.breastType)
@@ -114,10 +114,10 @@ const selectPerformerDetails = (
         original?.career_end_year
       ),
       height: diffValue(data.height, original?.height),
-      band_size: diffValue(newBandSize, original?.measurements.band_size),
-      cup_size: diffValue(newCupSize, original?.measurements.cup_size),
-      waist_size: diffValue(data.waistSize, original?.measurements.waist),
-      hip_size: diffValue(data.hipSize, original?.measurements.hip),
+      band_size: diffValue(newBandSize, original?.band_size),
+      cup_size: diffValue(newCupSize, original?.cup_size),
+      waist_size: diffValue(data.waistSize, original?.waist_size),
+      hip_size: diffValue(data.hipSize, original?.hip_size),
       breast_type: diffValue(
         breastType(data.breastType),
         original?.breast_type

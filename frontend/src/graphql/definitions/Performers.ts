@@ -15,14 +15,6 @@ export interface Performers_queryPerformers_performers_birthdate {
   accuracy: DateAccuracyEnum;
 }
 
-export interface Performers_queryPerformers_performers_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface Performers_queryPerformers_performers_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -77,7 +69,10 @@ export interface Performers_queryPerformers_performers {
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: Performers_queryPerformers_performers_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: Performers_queryPerformers_performers_tattoos[] | null;
   piercings: Performers_queryPerformers_performers_piercings[] | null;
   urls: Performers_queryPerformers_performers_urls[];

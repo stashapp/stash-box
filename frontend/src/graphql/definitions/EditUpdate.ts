@@ -37,14 +37,6 @@ export interface EditUpdate_findEdit_target_Performer_birthdate {
   accuracy: DateAccuracyEnum;
 }
 
-export interface EditUpdate_findEdit_target_Performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface EditUpdate_findEdit_target_Performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -99,7 +91,10 @@ export interface EditUpdate_findEdit_target_Performer {
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: EditUpdate_findEdit_target_Performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: EditUpdate_findEdit_target_Performer_tattoos[] | null;
   piercings: EditUpdate_findEdit_target_Performer_piercings[] | null;
   urls: EditUpdate_findEdit_target_Performer_urls[];
@@ -457,14 +452,6 @@ export interface EditUpdate_findEdit_details_SceneEdit_performers_performer_birt
   accuracy: DateAccuracyEnum;
 }
 
-export interface EditUpdate_findEdit_details_SceneEdit_performers_performer_measurements {
-  __typename: "Measurements";
-  waist: number | null;
-  hip: number | null;
-  band_size: number | null;
-  cup_size: string | null;
-}
-
 export interface EditUpdate_findEdit_details_SceneEdit_performers_performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -519,7 +506,10 @@ export interface EditUpdate_findEdit_details_SceneEdit_performers_performer {
   career_end_year: number | null;
   career_start_year: number | null;
   breast_type: BreastTypeEnum | null;
-  measurements: EditUpdate_findEdit_details_SceneEdit_performers_performer_measurements;
+  waist_size: number | null;
+  hip_size: number | null;
+  band_size: number | null;
+  cup_size: string | null;
   tattoos: EditUpdate_findEdit_details_SceneEdit_performers_performer_tattoos[] | null;
   piercings: EditUpdate_findEdit_details_SceneEdit_performers_performer_piercings[] | null;
   urls: EditUpdate_findEdit_details_SceneEdit_performers_performer_urls[];
