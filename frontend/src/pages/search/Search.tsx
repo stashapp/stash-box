@@ -8,7 +8,7 @@ import {
   faVideo,
   faCalendar,
   faUsers,
-  faSearch,
+  faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
@@ -156,7 +156,7 @@ const Search: FC = () => {
     <div className={CLASSNAME}>
       <Title page={term} />
       <Form.Group className={cx(CLASSNAME_INPUT, "mb-3")}>
-        <Icon icon={faSearch} />
+        <Icon icon={faMagnifyingGlass} />
         <Form.Control
           defaultValue={term}
           onChange={(e) => debouncedSearch(e.currentTarget.value)}
