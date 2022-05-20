@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { getImage } from "src/utils";
 import { LoadingIndicator, Icon } from "src/components/fragments";
 import { ImageFragment } from "src/graphql";
@@ -34,7 +34,7 @@ const Image: FC<Props> = ({
       {imageState === "error" && (
         <div>
           <span className="me-2">
-            <Icon icon={faTimes} color="red" />
+            <Icon icon={faXmark} color="red" />
           </span>
           <span>Failed to load image</span>
         </div>

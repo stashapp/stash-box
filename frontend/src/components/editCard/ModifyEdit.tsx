@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Col, Row } from "react-bootstrap";
-import { faCheck, faTimes, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faXmark, faEdit } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits_details as Details,
@@ -154,7 +154,7 @@ export const renderPerformerDetails = (
       performerDetails.name !== oldPerformerDetails.name && (
         <div className="d-flex mb-2 align-items-center">
           <Icon
-            icon={setModifyAliases ? faCheck : faTimes}
+            icon={setModifyAliases ? faCheck : faXmark}
             color={setModifyAliases ? "green" : "red"}
             className="ms-auto"
           />

@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Button } from "react-bootstrap";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 import { Icon } from "src/components/fragments";
 import { ImageFragment } from "src/graphql";
@@ -21,7 +21,7 @@ const ImageInput: FC<ImageProps> = ({ image, onRemove }) => (
       className={CLASSNAME_REMOVE}
       onClick={() => onRemove()}
     >
-      <Icon icon={faTimes} />
+      <Icon icon={faXmark} />
     </Button>
     <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
   </div>
