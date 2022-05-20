@@ -88,16 +88,20 @@ export const PerformerSchema = yup.object({
     .nullable()
     .oneOf([null, ...Object.keys(HairColorEnum)], "Invalid hair color"),
   tattoos: yup.array().of(
-    yup.object({
-      location: yup.string().trim().required("Location is required"),
-      description: yup.string().trim().transform(nullCheck).nullable(),
-    })
+    yup
+      .object({
+        location: yup.string().trim().required("Location is required"),
+        description: yup.string().trim().transform(nullCheck).nullable(),
+      })
+      .noUnknown()
   ),
   piercings: yup.array().of(
-    yup.object({
-      location: yup.string().trim().required("Location is required"),
-      description: yup.string().trim().transform(nullCheck).nullable(),
-    })
+    yup
+      .object({
+        location: yup.string().trim().required("Location is required"),
+        description: yup.string().trim().transform(nullCheck).nullable(),
+      })
+      .noUnknown()
   ),
   aliases: yup.array().of(yup.string().ensure().trim()).ensure().default([]),
   images: yup
