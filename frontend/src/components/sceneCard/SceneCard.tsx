@@ -4,13 +4,7 @@ import { Card } from "react-bootstrap";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
 
 import { Scenes_queryScenes_scenes as Performance } from "src/graphql/definitions/Scenes";
-import {
-  getImage,
-  sceneHref,
-  studioHref,
-  formatDuration,
-  formatFuzzyDate,
-} from "src/utils";
+import { getImage, sceneHref, studioHref, formatDuration } from "src/utils";
 import { Icon } from "src/components/fragments";
 
 const CLASSNAME = "SceneCard";
@@ -43,7 +37,7 @@ const SceneCard: FC<{ performance: Performance }> = ({ performance }) => (
             {performance.studio.name}
           </Link>
         )}
-        <strong>{formatFuzzyDate(performance.date)}</strong>
+        <strong>{performance.release_date}</strong>
       </div>
     </Card.Footer>
   </Card>

@@ -65,8 +65,8 @@ type Scene {
   id: ID!
   title: String
   details: String
-  date: String @deprecated(reason: "Use the date_fuzzy field instead")
-  date_fuzzy: FuzzyDate
+  date: String @deprecated(reason: "Please use `release_date` instead")
+  release_date: String
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -86,7 +86,7 @@ input SceneCreateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: FuzzyDateInput
+  date: String!
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -102,7 +102,7 @@ input SceneUpdateInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: FuzzyDateInput
+  date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -121,7 +121,7 @@ input SceneEditDetailsInput {
   title: String
   details: String
   urls: [URLInput!]
-  date: FuzzyDateInput
+  date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]

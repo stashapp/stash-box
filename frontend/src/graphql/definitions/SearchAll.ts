@@ -3,17 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum, DateAccuracyEnum } from "./globalTypes";
+import { GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchAll
 // ====================================================
-
-export interface SearchAll_searchPerformer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
 
 export interface SearchAll_searchPerformer_urls_site {
   __typename: "Site";
@@ -48,16 +42,10 @@ export interface SearchAll_searchPerformer {
   career_start_year: number | null;
   career_end_year: number | null;
   scene_count: number;
-  birthdate: SearchAll_searchPerformer_birthdate | null;
+  birth_date: string | null;
   urls: SearchAll_searchPerformer_urls[];
   images: SearchAll_searchPerformer_images[];
   is_favorite: boolean;
-}
-
-export interface SearchAll_searchScene_date {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface SearchAll_searchScene_urls_site {
@@ -109,7 +97,7 @@ export interface SearchAll_searchScene_performers {
 export interface SearchAll_searchScene {
   __typename: "Scene";
   id: string;
-  date: SearchAll_searchScene_date | null;
+  release_date: string | null;
   title: string | null;
   deleted: boolean;
   duration: number | null;

@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import { GenderEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Draft
@@ -105,12 +105,6 @@ export interface Draft_findDraft_data_SceneDraft_studio_DraftEntity {
 
 export type Draft_findDraft_data_SceneDraft_studio = Draft_findDraft_data_SceneDraft_studio_Studio | Draft_findDraft_data_SceneDraft_studio_DraftEntity;
 
-export interface Draft_findDraft_data_SceneDraft_performers_Performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface Draft_findDraft_data_SceneDraft_performers_Performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -152,7 +146,7 @@ export interface Draft_findDraft_data_SceneDraft_performers_Performer {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: Draft_findDraft_data_SceneDraft_performers_Performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm

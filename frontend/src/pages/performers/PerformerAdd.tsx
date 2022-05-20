@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import {
@@ -12,10 +12,13 @@ import PerformerForm from "./performerForm";
 
 const PerformerAdd: FC = () => {
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
+      if (submissionError) setSubmissionError("");
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   const doInsert = (
@@ -40,6 +43,11 @@ const PerformerAdd: FC = () => {
       <h3>Add new performer</h3>
       <hr />
       <PerformerForm callback={doInsert} saving={saving} />
+      {submissionError && (
+        <div className="text-danger text-end col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </div>
   );
 };

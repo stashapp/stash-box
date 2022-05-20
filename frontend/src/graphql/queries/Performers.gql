@@ -10,10 +10,7 @@ query Performers($input: PerformerQueryInput!) {
       deleted
       aliases
       gender
-      birthdate {
-        date
-        accuracy
-      }
+      birth_date
       age
       height
       hair_color
