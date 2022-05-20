@@ -88,7 +88,8 @@ type Performer {
   aliases: [String!]!
   gender: GenderEnum
   urls: [URL!]!
-  birthdate: FuzzyDate
+  birthdate: FuzzyDate @deprecated(reason: "Please use `birth_date`")
+  birth_date: String
   age: Int # resolver
   ethnicity: EthnicityEnum
   country: String
@@ -128,7 +129,7 @@ input PerformerCreateInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -154,7 +155,7 @@ input PerformerUpdateInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -182,7 +183,7 @@ input PerformerEditDetailsInput {
   aliases: [String!]
   gender: GenderEnum
   urls: [URLInput!]
-  birthdate: FuzzyDateInput
+  birthdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum

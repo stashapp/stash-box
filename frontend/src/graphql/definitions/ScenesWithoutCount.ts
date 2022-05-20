@@ -3,17 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { SceneQueryInput, DateAccuracyEnum, GenderEnum } from "./globalTypes";
+import { SceneQueryInput, GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: ScenesWithoutCount
 // ====================================================
-
-export interface ScenesWithoutCount_queryScenes_scenes_date {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
 
 export interface ScenesWithoutCount_queryScenes_scenes_urls_site {
   __typename: "Site";
@@ -64,7 +58,7 @@ export interface ScenesWithoutCount_queryScenes_scenes_performers {
 export interface ScenesWithoutCount_queryScenes_scenes {
   __typename: "Scene";
   id: string;
-  date: ScenesWithoutCount_queryScenes_scenes_date | null;
+  release_date: string | null;
   title: string | null;
   duration: number | null;
   urls: ScenesWithoutCount_queryScenes_scenes_urls[];

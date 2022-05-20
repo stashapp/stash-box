@@ -75,13 +75,10 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	studioID := createdStudio.UUID()
 
 	title := "scene search title"
-	date := models.FuzzyDateInput{
-		Date:     "2019-02-03",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	date := "2019-02-03"
 	input := models.SceneCreateInput{
 		Title:    &title,
-		Date:     &date,
+		Date:     date,
 		StudioID: &studioID,
 	}
 	createdScene, err := s.createTestScene(&input)
@@ -89,7 +86,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 		return
 	}
 
-	scenes, err := s.resolver.Query().SearchScene(s.ctx, *createdScene.Title+" "+createdScene.Date.Date, nil)
+	scenes, err := s.resolver.Query().SearchScene(s.ctx, *createdScene.Title+" "+*createdScene.Date, nil)
 	if err != nil {
 		s.t.Errorf("Error finding scene: %s", err.Error())
 		return

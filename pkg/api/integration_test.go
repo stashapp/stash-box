@@ -285,6 +285,7 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 	careerstart := 2019
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
+	birthdate := "2000-02-03"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
@@ -301,10 +302,7 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2000-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
+		Birthdate:       &birthdate,
 		Ethnicity:       &ethnicity,
 		Country:         &country,
 		EyeColor:        &eyecolor,
@@ -391,6 +389,7 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 			Fingerprints: []*models.FingerprintEditInput{
 				s.generateSceneFingerprint(nil),
 			},
+			Date: "2020-03-02",
 		}
 	}
 
@@ -718,6 +717,7 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 	careerstart := 2019
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
+	birthdate := "2000-02-03"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
@@ -734,10 +734,7 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2000-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
+		Birthdate:       &birthdate,
 		Ethnicity:       &ethnicity,
 		Country:         &country,
 		EyeColor:        &eyecolor,
@@ -767,10 +764,7 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 	title := s.generateSceneName()
 	details := "Details"
-	date := models.FuzzyDateInput{
-		Date:     "2000-02-03",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	date := "2000-02-03"
 	duration := 123
 	director := "Director"
 	code := "SomeCode"
@@ -788,7 +782,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 				SiteID: site.ID,
 			},
 		},
-		Date: &date,
+		Date: date,
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
@@ -801,10 +795,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput {
 	title := s.generateSceneName()
 	details := "Details"
-	date := models.FuzzyDateInput{
-		Date:     "2000-02-03",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	date := "2000-02-03"
 	duration := 123
 	director := "Director"
 	code := "SomeCode"
@@ -843,10 +834,7 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 
 	title := s.generateSceneName()
 	details := "Details"
-	date := models.FuzzyDateInput{
-		Date:     "2000-02-03",
-		Accuracy: models.DateAccuracyEnumDay,
-	}
+	date := "2000-02-03"
 	duration := 123
 	director := "Director"
 	code := "SomeCode"

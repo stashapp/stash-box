@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { StudioEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import { StudioEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: StudioEditUpdate
@@ -58,12 +58,6 @@ export interface StudioEditUpdate_studioEditUpdate_target_Tag {
   aliases: string[];
 }
 
-export interface StudioEditUpdate_studioEditUpdate_target_Performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface StudioEditUpdate_studioEditUpdate_target_Performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -105,7 +99,7 @@ export interface StudioEditUpdate_studioEditUpdate_target_Performer {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: StudioEditUpdate_studioEditUpdate_target_Performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -172,12 +166,6 @@ export interface StudioEditUpdate_studioEditUpdate_target_Studio {
   images: StudioEditUpdate_studioEditUpdate_target_Studio_images[];
   deleted: boolean;
   is_favorite: boolean;
-}
-
-export interface StudioEditUpdate_studioEditUpdate_target_Scene_date {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface StudioEditUpdate_studioEditUpdate_target_Scene_urls_site {
@@ -248,7 +236,7 @@ export interface StudioEditUpdate_studioEditUpdate_target_Scene_tags {
 export interface StudioEditUpdate_studioEditUpdate_target_Scene {
   __typename: "Scene";
   id: string;
-  date: StudioEditUpdate_studioEditUpdate_target_Scene_date | null;
+  release_date: string | null;
   title: string | null;
   deleted: boolean;
   details: string | null;
@@ -551,12 +539,6 @@ export interface StudioEditUpdate_studioEditUpdate_details_SceneEdit_studio {
   is_favorite: boolean;
 }
 
-export interface StudioEditUpdate_studioEditUpdate_details_SceneEdit_added_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface StudioEditUpdate_studioEditUpdate_details_SceneEdit_added_performers_performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -598,7 +580,7 @@ export interface StudioEditUpdate_studioEditUpdate_details_SceneEdit_added_perfo
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: StudioEditUpdate_studioEditUpdate_details_SceneEdit_added_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -629,12 +611,6 @@ export interface StudioEditUpdate_studioEditUpdate_details_SceneEdit_added_perfo
    * Performing as alias
    */
   as: string | null;
-}
-
-export interface StudioEditUpdate_studioEditUpdate_details_SceneEdit_removed_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface StudioEditUpdate_studioEditUpdate_details_SceneEdit_removed_performers_performer_tattoos {
@@ -678,7 +654,7 @@ export interface StudioEditUpdate_studioEditUpdate_details_SceneEdit_removed_per
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: StudioEditUpdate_studioEditUpdate_details_SceneEdit_removed_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -958,12 +934,6 @@ export interface StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_studio 
   is_favorite: boolean;
 }
 
-export interface StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_added_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_added_performers_performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -1005,7 +975,7 @@ export interface StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_added_p
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_added_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -1036,12 +1006,6 @@ export interface StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_added_p
    * Performing as alias
    */
   as: string | null;
-}
-
-export interface StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_removed_performers_performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_removed_performers_performer_tattoos {
@@ -1085,7 +1049,7 @@ export interface StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_removed
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: StudioEditUpdate_studioEditUpdate_old_details_SceneEdit_removed_performers_performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -1222,12 +1186,6 @@ export interface StudioEditUpdate_studioEditUpdate_merge_sources_Tag {
   aliases: string[];
 }
 
-export interface StudioEditUpdate_studioEditUpdate_merge_sources_Performer_birthdate {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface StudioEditUpdate_studioEditUpdate_merge_sources_Performer_tattoos {
   __typename: "BodyModification";
   location: string;
@@ -1269,7 +1227,7 @@ export interface StudioEditUpdate_studioEditUpdate_merge_sources_Performer {
   deleted: boolean;
   aliases: string[];
   gender: GenderEnum | null;
-  birthdate: StudioEditUpdate_studioEditUpdate_merge_sources_Performer_birthdate | null;
+  birth_date: string | null;
   age: number | null;
   /**
    * Height in cm
@@ -1336,12 +1294,6 @@ export interface StudioEditUpdate_studioEditUpdate_merge_sources_Studio {
   images: StudioEditUpdate_studioEditUpdate_merge_sources_Studio_images[];
   deleted: boolean;
   is_favorite: boolean;
-}
-
-export interface StudioEditUpdate_studioEditUpdate_merge_sources_Scene_date {
-  __typename: "FuzzyDate";
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface StudioEditUpdate_studioEditUpdate_merge_sources_Scene_urls_site {
@@ -1412,7 +1364,7 @@ export interface StudioEditUpdate_studioEditUpdate_merge_sources_Scene_tags {
 export interface StudioEditUpdate_studioEditUpdate_merge_sources_Scene {
   __typename: "Scene";
   id: string;
-  date: StudioEditUpdate_studioEditUpdate_merge_sources_Scene_date | null;
+  release_date: string | null;
   title: string | null;
   deleted: boolean;
   details: string | null;

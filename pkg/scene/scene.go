@@ -25,7 +25,9 @@ func Create(ctx context.Context, fac models.Repo, input models.SceneCreateInput)
 		UpdatedAt: currentTime,
 	}
 
-	newScene.CopyFromCreateInput(input)
+	if err := newScene.CopyFromCreateInput(input); err != nil {
+		return nil, err
+	}
 
 	var scene *models.Scene
 	qb := fac.Scene()
@@ -102,7 +104,9 @@ func Update(ctx context.Context, fac models.Repo, input models.SceneUpdateInput)
 	updatedScene.UpdatedAt = time.Now()
 
 	// Populate scene from the input
-	updatedScene.CopyFromUpdateInput(input)
+	if err := updatedScene.CopyFromUpdateInput(input); err != nil {
+		return nil, err
+	}
 
 	scene, err := qb.Update(*updatedScene)
 	if err != nil {

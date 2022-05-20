@@ -25,12 +25,6 @@ export enum CriterionModifier {
   NOT_NULL = "NOT_NULL",
 }
 
-export enum DateAccuracyEnum {
-  DAY = "DAY",
-  MONTH = "MONTH",
-  YEAR = "YEAR",
-}
-
 export enum EditSortEnum {
   CREATED_AT = "CREATED_AT",
   UPDATED_AT = "UPDATED_AT",
@@ -283,11 +277,6 @@ export interface FingerprintInput {
   duration: number;
 }
 
-export interface FuzzyDateInput {
-  date: GQLDate;
-  accuracy: DateAccuracyEnum;
-}
-
 export interface GrantInviteInput {
   user_id: string;
   amount: number;
@@ -339,7 +328,7 @@ export interface PerformerEditDetailsInput {
   aliases?: string[] | null;
   gender?: GenderEnum | null;
   urls?: URLInput[] | null;
-  birthdate?: FuzzyDateInput | null;
+  birthdate?: string | null;
   ethnicity?: EthnicityEnum | null;
   country?: string | null;
   eye_color?: EyeColorEnum | null;
@@ -418,7 +407,7 @@ export interface SceneCreateInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: FuzzyDateInput | null;
+  date: string;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
@@ -437,7 +426,7 @@ export interface SceneEditDetailsInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: FuzzyDateInput | null;
+  date?: string | null;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
@@ -477,7 +466,7 @@ export interface SceneUpdateInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: FuzzyDateInput | null;
+  date?: string | null;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;

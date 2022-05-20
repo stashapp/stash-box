@@ -41,7 +41,7 @@ type sceneOutput struct {
 	ID           string                 `json:"id"`
 	Title        *string                `json:"title"`
 	Details      *string                `json:"details"`
-	Date         *fuzzyDate             `json:"date_fuzzy"`
+	Date         *string                `json:"release_date"`
 	Urls         []*siteURL             `json:"urls"`
 	Studio       *idObject              `json:"studio"`
 	Tags         []*idObject            `json:"tags"`
@@ -63,11 +63,6 @@ type queryScenesResultType struct {
 	Scenes []*sceneOutput `json:"scenes"`
 }
 
-type fuzzyDate struct {
-	Date     string                  `json:"date"`
-	Accuracy models.DateAccuracyEnum `json:"accuracy"`
-}
-
 type measurements struct {
 	CupSize  *string `json:"cup_size"`
 	BandSize *int    `json:"band_size"`
@@ -80,7 +75,7 @@ type performerOutput struct {
 	Name            string        `json:"name"`
 	Disambiguation  *string       `json:"disambiguation"`
 	Gender          *string       `json:"gender"`
-	Birthdate       *fuzzyDate    `json:"birthdate"`
+	Birthdate       *string       `json:"birth_date"`
 	Ethnicity       *string       `json:"ethnicity"`
 	Country         *string       `json:"country"`
 	EyeColor        *string       `json:"eye_color"`

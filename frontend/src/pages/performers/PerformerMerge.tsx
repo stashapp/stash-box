@@ -29,13 +29,16 @@ interface Props {
 
 const PerformerMerge: FC<Props> = ({ performer }) => {
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const [mergeActive, setMergeActive] = useState(false);
   const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
   const [aliasUpdating, setAliasUpdating] = useState(true);
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
+      if (submissionError) setSubmissionError("");
       if (data.performerEdit.id) history.push(editHref(data.performerEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   const toggleMerge = () => {
@@ -162,6 +165,11 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
             callback={doUpdate}
             saving={saving}
           />
+          {submissionError && (
+            <div className="text-danger text-end col-9">
+              Error: {submissionError}
+            </div>
+          )}
         </>
       )}
     </div>

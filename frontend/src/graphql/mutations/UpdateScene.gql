@@ -1,10 +1,7 @@
 mutation UpdateScene($updateData: SceneUpdateInput!) {
   sceneUpdate(input: $updateData) {
       id
-      date: date_fuzzy {
-        date
-        accuracy
-      }
+      release_date
       details
       director
       code

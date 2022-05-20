@@ -19,12 +19,7 @@ import {
   PerformerEditDetailsInput,
   ValidSiteTypeEnum,
 } from "src/graphql";
-import {
-  getBraSize,
-  parseBraSize,
-  formatFuzzyDate,
-  parseFuzzyDate,
-} from "src/utils";
+import { getBraSize, parseBraSize } from "src/utils";
 import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
@@ -147,7 +142,7 @@ const PerformerForm: FC<PerformerProps> = ({
       disambiguation: initial?.disambiguation ?? performer?.disambiguation,
       aliases: initial?.aliases ?? performer?.aliases ?? [],
       gender: initial?.gender ?? performer?.gender,
-      birthdate: initial?.birthdate ?? formatFuzzyDate(performer?.birthdate),
+      birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
       eye_color: getEnumValue(
         EYE,
         initial?.eye_color ?? performer?.eye_color ?? null
@@ -167,7 +162,7 @@ const PerformerForm: FC<PerformerProps> = ({
       ),
       waistSize: initial?.waist_size ?? performer?.waist_size,
       hipSize: initial?.hip_size ?? performer?.hip_size,
-      country: initial?.country ?? performer?.country,
+      country: initial?.country ?? performer?.country ?? "",
       ethnicity: getEnumValue(
         ETHNICITY,
         initial?.ethnicity ?? performer?.ethnicity ?? null
@@ -221,6 +216,7 @@ const PerformerForm: FC<PerformerProps> = ({
       name: data.name,
       disambiguation: data.disambiguation,
       gender: GenderEnum[data.gender as keyof typeof GenderEnum] || null,
+      birthdate: data.birthdate,
       eye_color:
         EyeColorEnum[data.eye_color as keyof typeof EyeColorEnum] || null,
       hair_color:
@@ -256,8 +252,6 @@ const PerformerForm: FC<PerformerProps> = ({
       data.gender === GenderEnum.TRANSGENDER_MALE
     )
       performerData.breast_type = BreastTypeEnum.NA;
-
-    performerData.birthdate = parseFuzzyDate(data.birthdate);
 
     callback(performerData, data.note, updateAliases, data.id);
   };

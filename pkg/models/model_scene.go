@@ -216,11 +216,6 @@ func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearance
 func (p *Scene) IsEditTarget() {
 }
 
-func (p *Scene) setDate(fuzzyDate FuzzyDateInput) {
-	p.Date = SQLDate{String: fuzzyDate.Date, Valid: fuzzyDate.Date != ""}
-	p.DateAccuracy = sql.NullString{String: fuzzyDate.Accuracy.String(), Valid: fuzzyDate.Date != ""}
-}
-
 func (p Scene) ResolveDate() *FuzzyDate {
 	if !p.Date.Valid {
 		return nil
@@ -238,32 +233,45 @@ func (p Scene) ResolveDate() *FuzzyDate {
 	return &ret
 }
 
-func (p *Scene) CopyFromCreateInput(input SceneCreateInput) {
+func (p *Scene) CopyFromCreateInput(input SceneCreateInput) error {
 	CopyFull(p, input)
 
-	if input.Date != nil {
-		p.setDate(*input.Date)
+	date, accuracy, err := ParseFuzzyString(&input.Date)
+	if err != nil {
+		return err
 	}
+	p.Date = date
+	p.DateAccuracy = accuracy
+
+	return nil
 }
 
-func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) {
+func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) error {
 	CopyFull(p, input)
 
-	if input.Date != nil {
-		p.setDate(*input.Date)
+	date, accuracy, err := ParseFuzzyString(input.Date)
+	if err != nil {
+		return err
 	}
+	p.Date = date
+	p.DateAccuracy = accuracy
+
+	return nil
 }
 
 func (p *Scene) CopyFromSceneEdit(input SceneEdit, old *SceneEdit) {
 	fe := fromEdit{}
 	fe.nullString(&p.Title, input.Title, old.Title)
 	fe.nullString(&p.Details, input.Details, old.Details)
-	fe.sqlDate(&p.Date, input.Date, old.Date)
-	fe.nullString(&p.DateAccuracy, input.DateAccuracy, old.DateAccuracy)
 	fe.nullUUID(&p.StudioID, input.StudioID, old.StudioID)
 	fe.nullInt64(&p.Duration, input.Duration, old.Duration)
 	fe.nullString(&p.Director, input.Director, old.Director)
 	fe.nullString(&p.Code, input.Code, old.Code)
+	fe.sqlDate(&p.Date, input.Date, old.Date)
+	fe.nullString(&p.DateAccuracy, input.DateAccuracy, old.DateAccuracy)
+	if input.DateAccuracy == nil && input.Date != nil {
+		p.DateAccuracy = sql.NullString{String: DateAccuracyEnumDay.String(), Valid: true}
+	}
 }
 
 func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
