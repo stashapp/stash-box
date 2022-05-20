@@ -132,7 +132,6 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
 }) => {
-  const measurements = initial?.measurements ?? performer?.measurements;
   const {
     register,
     control,
@@ -162,9 +161,12 @@ const PerformerForm: FC<PerformerProps> = ({
         BREAST,
         initial?.breast_type ?? performer?.breast_type ?? null
       ),
-      braSize: getBraSize(measurements),
-      waistSize: measurements?.waist,
-      hipSize: measurements?.hip,
+      braSize: getBraSize(
+        initial?.cup_size ?? performer?.cup_size,
+        initial?.band_size ?? performer?.band_size
+      ),
+      waistSize: initial?.waist_size ?? performer?.waist_size,
+      hipSize: initial?.hip_size ?? performer?.hip_size,
       country: initial?.country ?? performer?.country,
       ethnicity: getEnumValue(
         ETHNICITY,
@@ -226,6 +228,8 @@ const PerformerForm: FC<PerformerProps> = ({
       career_start_year: data.career_start_year,
       career_end_year: data.career_end_year,
       height: data.height,
+      waist_size: data.waistSize,
+      hip_size: data.hipSize,
       ethnicity:
         EthnicityEnum[data.ethnicity as keyof typeof EthnicityEnum] || null,
       country: data.country,
@@ -241,16 +245,10 @@ const PerformerForm: FC<PerformerProps> = ({
       })),
     };
 
-    performerData.measurements = {
-      cup_size: null,
-      band_size: null,
-      waist: data.waistSize ?? null,
-      hip: data.hipSize ?? null,
-    };
     if (data.braSize != null) {
       const [cupSize, bandSize] = parseBraSize(data.braSize);
-      performerData.measurements.cup_size = cupSize;
-      performerData.measurements.band_size = bandSize ?? 0;
+      performerData.cup_size = cupSize;
+      performerData.band_size = bandSize ?? 0;
     }
 
     if (

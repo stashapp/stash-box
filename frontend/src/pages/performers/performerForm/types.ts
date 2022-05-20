@@ -27,12 +27,10 @@ export type InitialPerformer = {
     };
   }[];
   aliases?: string[];
-  measurements?: {
-    waist: number | null;
-    hip: number | null;
-    band_size: number | null;
-    cup_size: string | null;
-  };
+  waist_size?: number | null;
+  hip_size?: number | null;
+  band_size?: number | null;
+  cup_size?: string | null;
   images?: {
     id: string;
     url: string;
