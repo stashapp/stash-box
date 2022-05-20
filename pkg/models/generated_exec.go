@@ -4099,6 +4099,7 @@ type QueryEditsResultType {
 enum EditSortEnum {
   CREATED_AT
   UPDATED_AT
+  CLOSED_AT
 }
 
 input EditQueryInput {
