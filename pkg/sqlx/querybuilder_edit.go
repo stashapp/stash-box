@@ -274,7 +274,7 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		query.AddArg(userID, userID, userID, userID, userID, userID)
 	}
 
-	query.Sort = getSort(filter.Sort.String(), filter.Direction.String()+nullsLast(), "edits", nil)
+	query.Sort = getSort(filter.Sort.String(), filter.Direction.String(), "edits", nil)
 
 	return query, nil
 }
