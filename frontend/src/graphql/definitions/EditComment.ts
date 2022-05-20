@@ -19,7 +19,7 @@ export interface EditComment_editComment_comments {
   __typename: "EditComment";
   id: string;
   user: EditComment_editComment_comments_user | null;
-  date: any;
+  date: GQLTime;
   comment: string;
 }
 

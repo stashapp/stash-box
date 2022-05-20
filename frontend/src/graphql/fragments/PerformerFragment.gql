@@ -7,10 +7,7 @@ fragment PerformerFragment on Performer {
   deleted
   aliases
   gender
-  birthdate {
-    date
-    accuracy
-  }
+  birth_date
   age
   height
   hair_color
@@ -20,12 +17,10 @@ fragment PerformerFragment on Performer {
   career_end_year
   career_start_year
   breast_type
-  measurements {
-    waist
-    hip
-    band_size
-    cup_size
-  }
+  waist_size
+  hip_size
+  band_size
+  cup_size
   tattoos {
     location
     description

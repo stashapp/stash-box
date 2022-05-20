@@ -91,8 +91,6 @@ type EditInput struct {
 	// Not required for create type
 	ID        *uuid.UUID    `json:"id"`
 	Operation OperationEnum `json:"operation"`
-	// Required for amending an existing edit
-	EditID *uuid.UUID `json:"edit_id"`
 	// Only required for merge type
 	MergeSourceIds []uuid.UUID `json:"merge_source_ids"`
 	Comment        *string     `json:"comment"`
@@ -142,15 +140,13 @@ type Fingerprint struct {
 }
 
 type FingerprintEditInput struct {
-	UserIds   []uuid.UUID          `json:"user_ids"`
-	Hash      string               `json:"hash"`
-	Algorithm FingerprintAlgorithm `json:"algorithm"`
-	Duration  int                  `json:"duration"`
-	Created   time.Time            `json:"created"`
-	// @deprecated(reason: "unused")
-	Submissions *int `json:"submissions"`
-	// @deprecated(reason: "unused")
-	Updated *time.Time `json:"updated"`
+	UserIds     []uuid.UUID          `json:"user_ids"`
+	Hash        string               `json:"hash"`
+	Algorithm   FingerprintAlgorithm `json:"algorithm"`
+	Duration    int                  `json:"duration"`
+	Created     time.Time            `json:"created"`
+	Submissions *int                 `json:"submissions"`
+	Updated     *time.Time           `json:"updated"`
 }
 
 type FingerprintInput struct {
@@ -173,11 +169,6 @@ type FingerprintSubmission struct {
 }
 
 type FuzzyDate struct {
-	Date     string           `json:"date"`
-	Accuracy DateAccuracyEnum `json:"accuracy"`
-}
-
-type FuzzyDateInput struct {
 	Date     string           `json:"date"`
 	Accuracy DateAccuracyEnum `json:"accuracy"`
 }
@@ -223,13 +214,6 @@ type Measurements struct {
 	Hip      *int    `json:"hip"`
 }
 
-type MeasurementsInput struct {
-	CupSize  *string `json:"cup_size"`
-	BandSize *int    `json:"band_size"`
-	Waist    *int    `json:"waist"`
-	Hip      *int    `json:"hip"`
-}
-
 type MultiIDCriterionInput struct {
 	Value    []uuid.UUID       `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -263,13 +247,16 @@ type PerformerCreateInput struct {
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
 	Urls            []*URLInput         `json:"urls"`
-	Birthdate       *FuzzyDateInput     `json:"birthdate"`
+	Birthdate       *string             `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
 	HairColor       *HairColorEnum      `json:"hair_color"`
 	Height          *int                `json:"height"`
-	Measurements    *MeasurementsInput  `json:"measurements"`
+	CupSize         *string             `json:"cup_size"`
+	BandSize        *int                `json:"band_size"`
+	WaistSize       *int                `json:"waist_size"`
+	HipSize         *int                `json:"hip_size"`
 	BreastType      *BreastTypeEnum     `json:"breast_type"`
 	CareerStartYear *int                `json:"career_start_year"`
 	CareerEndYear   *int                `json:"career_end_year"`
@@ -284,6 +271,7 @@ type PerformerDestroyInput struct {
 }
 
 type PerformerDraftInput struct {
+	ID              *uuid.UUID      `json:"id"`
 	Name            string          `json:"name"`
 	Aliases         *string         `json:"aliases"`
 	Gender          *string         `json:"gender"`
@@ -309,13 +297,16 @@ type PerformerEditDetailsInput struct {
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
 	Urls            []*URLInput         `json:"urls"`
-	Birthdate       *FuzzyDateInput     `json:"birthdate"`
+	Birthdate       *string             `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
 	HairColor       *HairColorEnum      `json:"hair_color"`
 	Height          *int                `json:"height"`
-	Measurements    *MeasurementsInput  `json:"measurements"`
+	CupSize         *string             `json:"cup_size"`
+	BandSize        *int                `json:"band_size"`
+	WaistSize       *int                `json:"waist_size"`
+	HipSize         *int                `json:"hip_size"`
 	BreastType      *BreastTypeEnum     `json:"breast_type"`
 	CareerStartYear *int                `json:"career_start_year"`
 	CareerEndYear   *int                `json:"career_end_year"`
@@ -390,13 +381,16 @@ type PerformerUpdateInput struct {
 	Aliases         []string            `json:"aliases"`
 	Gender          *GenderEnum         `json:"gender"`
 	Urls            []*URLInput         `json:"urls"`
-	Birthdate       *FuzzyDateInput     `json:"birthdate"`
+	Birthdate       *string             `json:"birthdate"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity"`
 	Country         *string             `json:"country"`
 	EyeColor        *EyeColorEnum       `json:"eye_color"`
 	HairColor       *HairColorEnum      `json:"hair_color"`
 	Height          *int                `json:"height"`
-	Measurements    *MeasurementsInput  `json:"measurements"`
+	CupSize         *string             `json:"cup_size"`
+	BandSize        *int                `json:"band_size"`
+	WaistSize       *int                `json:"waist_size"`
+	HipSize         *int                `json:"hip_size"`
 	BreastType      *BreastTypeEnum     `json:"breast_type"`
 	CareerStartYear *int                `json:"career_start_year"`
 	CareerEndYear   *int                `json:"career_end_year"`
@@ -448,7 +442,7 @@ type SceneCreateInput struct {
 	Title        *string                     `json:"title"`
 	Details      *string                     `json:"details"`
 	Urls         []*URLInput                 `json:"urls"`
-	Date         *string                     `json:"date"`
+	Date         string                      `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
@@ -464,6 +458,7 @@ type SceneDestroyInput struct {
 }
 
 type SceneDraftInput struct {
+	ID           *uuid.UUID          `json:"id"`
 	Title        *string             `json:"title"`
 	Details      *string             `json:"details"`
 	URL          *string             `json:"url"`

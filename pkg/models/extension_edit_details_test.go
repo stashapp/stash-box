@@ -24,6 +24,8 @@ var (
 	bGenderStr      = bGender.String()
 	aDate           = "2001-01-01"
 	bDate           = "2002-01-01"
+	aDateShort      = "2001-01-01"
+	bDateShort      = "2002-01"
 	aDateAcc        = DateAccuracyEnumDay
 	bDateAcc        = DateAccuracyEnumMonth
 	aDateAccStr     = aDateAcc.String()
@@ -148,7 +150,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		Name:              aName,
 		Disambiguation:    sql.NullString{String: aDisambiguation, Valid: true},
 		Gender:            sql.NullString{String: aGender.String(), Valid: true},
-		Birthdate:         SQLiteDate{String: aDate, Valid: true},
+		Birthdate:         SQLDate{String: aDate, Valid: true},
 		BirthdateAccuracy: sql.NullString{String: aDateAcc.String(), Valid: true},
 		Ethnicity:         sql.NullString{String: aEthnicityStr, Valid: true},
 		Country:           sql.NullString{String: aCountry, Valid: true},
@@ -164,30 +166,25 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		CareerEndYear:     sql.NullInt64{Int64: int64(aEndYear), Valid: true},
 	}
 	input := PerformerEditDetailsInput{
-		Name:           &bName,
-		Disambiguation: &bDisambiguation,
-		Gender:         &bGender,
-		Birthdate: &FuzzyDateInput{
-			Date:     bDate,
-			Accuracy: bDateAcc,
-		},
-		Ethnicity: &bEthnicity,
-		Country:   &bCountry,
-		EyeColor:  &bEyeColor,
-		HairColor: &bHairColor,
-		Height:    &bHeight,
-		Measurements: &MeasurementsInput{
-			CupSize:  &bCupSize,
-			BandSize: &bBandSize,
-			Waist:    &bWaistSize,
-			Hip:      &bHipSize,
-		},
+		Name:            &bName,
+		Disambiguation:  &bDisambiguation,
+		Gender:          &bGender,
+		Birthdate:       &bDateShort,
+		Ethnicity:       &bEthnicity,
+		Country:         &bCountry,
+		EyeColor:        &bEyeColor,
+		HairColor:       &bHairColor,
+		Height:          &bHeight,
+		CupSize:         &bCupSize,
+		BandSize:        &bBandSize,
+		WaistSize:       &bWaistSize,
+		HipSize:         &bHipSize,
 		BreastType:      &bBreastType,
 		CareerStartYear: &bStartYear,
 		CareerEndYear:   &bEndYear,
 	}
 
-	out := input.PerformerEditFromDiff(orig)
+	out, _ := input.PerformerEditFromDiff(orig)
 
 	assert := assert.New(t)
 	assert.Equal(PerformerEditData{
@@ -229,13 +226,13 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			CareerStartYear:   &aStartYear64,
 			CareerEndYear:     &aEndYear64,
 		},
-	}, out)
+	}, *out)
 
 	emptyOrig := Performer{
 		Name: aName,
 	}
 
-	out = input.PerformerEditFromDiff(emptyOrig)
+	out, _ = input.PerformerEditFromDiff(emptyOrig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{
 			Name:              &bName,
@@ -259,11 +256,11 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		Old: &PerformerEdit{
 			Name: &aName,
 		},
-	}, out)
+	}, *out)
 
 	emptyInput := PerformerEditDetailsInput{}
 
-	out = emptyInput.PerformerEditFromDiff(orig)
+	out, _ = emptyInput.PerformerEditFromDiff(orig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{},
 		Old: &PerformerEdit{
@@ -285,35 +282,30 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			CareerStartYear:   &aStartYear64,
 			CareerEndYear:     &aEndYear64,
 		},
-	}, out)
+	}, *out)
 
 	equalInput := PerformerEditDetailsInput{
-		Name:           &aName,
-		Disambiguation: &aDisambiguation,
-		Gender:         &aGender,
-		Birthdate: &FuzzyDateInput{
-			Date:     aDate,
-			Accuracy: aDateAcc,
-		},
-		Ethnicity: &aEthnicity,
-		Country:   &aCountry,
-		EyeColor:  &aEyeColor,
-		HairColor: &aHairColor,
-		Height:    &aHeight,
-		Measurements: &MeasurementsInput{
-			CupSize:  &aCupSize,
-			BandSize: &aBandSize,
-			Waist:    &aWaistSize,
-			Hip:      &aHipSize,
-		},
+		Name:            &aName,
+		Disambiguation:  &aDisambiguation,
+		Gender:          &aGender,
+		Birthdate:       &aDateShort,
+		Ethnicity:       &aEthnicity,
+		Country:         &aCountry,
+		EyeColor:        &aEyeColor,
+		HairColor:       &aHairColor,
+		Height:          &aHeight,
+		CupSize:         &aCupSize,
+		BandSize:        &aBandSize,
+		WaistSize:       &aWaistSize,
+		HipSize:         &aHipSize,
 		BreastType:      &aBreastType,
 		CareerStartYear: &aStartYear,
 		CareerEndYear:   &aEndYear,
 	}
 
-	out = equalInput.PerformerEditFromDiff(orig)
+	out, _ = equalInput.PerformerEditFromDiff(orig)
 	assert.Equal(PerformerEditData{
 		New: &PerformerEdit{},
 		Old: &PerformerEdit{},
-	}, out)
+	}, *out)
 }

@@ -9,11 +9,13 @@
 
 export interface Drafts_findDrafts_data_PerformerDraft {
   __typename: "PerformerDraft";
+  id: string | null;
   name: string;
 }
 
 export interface Drafts_findDrafts_data_SceneDraft {
   __typename: "SceneDraft";
+  id: string | null;
   title: string | null;
 }
 
@@ -22,8 +24,8 @@ export type Drafts_findDrafts_data = Drafts_findDrafts_data_PerformerDraft | Dra
 export interface Drafts_findDrafts {
   __typename: "Draft";
   id: string;
-  created: any;
-  expires: any;
+  created: GQLTime;
+  expires: GQLTime;
   data: Drafts_findDrafts_data;
 }
 

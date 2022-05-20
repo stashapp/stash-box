@@ -58,7 +58,7 @@ export interface QuerySceneFragment_performers {
 export interface QuerySceneFragment {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  release_date: string | null;
   title: string | null;
   duration: number | null;
   urls: QuerySceneFragment_urls[];

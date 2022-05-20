@@ -3,24 +3,22 @@ import {
   Draft_findDraft_data_PerformerDraft as PerformerDraft,
 } from "src/graphql/definitions/Draft";
 import {
-  Scene_findScene as Scene,
   Scene_findScene_tags as Tag,
   Scene_findScene_performers as ScenePerformer,
 } from "src/graphql/definitions/Scene";
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
+import { InitialScene } from "src/pages/scenes/sceneForm";
+import { InitialPerformer } from "src/pages/performers/performerForm";
 import {
   GenderEnum,
   HairColorEnum,
   EyeColorEnum,
   EthnicityEnum,
-  DateAccuracyEnum,
 } from "src/graphql";
 
 export const parseSceneDraft = (
   draft: SceneDraft
-): [Scene, Record<string, string | null>] => {
-  const scene: Scene = {
-    id: "",
+): [InitialScene, Record<string, string | null>] => {
+  const scene: InitialScene = {
     date: draft.date,
     title: draft.title,
     details: draft.details,
@@ -34,7 +32,6 @@ export const parseSceneDraft = (
       (res, t) => (t.__typename === "Tag" ? [...res, t] : res),
       []
     ),
-    fingerprints: [],
     performers: (draft.performers ?? []).reduce<ScenePerformer[]>(
       (res, p) =>
         p.__typename === "Performer"
@@ -45,8 +42,6 @@ export const parseSceneDraft = (
           : res,
       []
     ),
-    deleted: false,
-    __typename: "Scene",
   };
 
   const remainder = {
@@ -76,9 +71,8 @@ const parseEnum = (value: string | null, enumObj: Record<string, string>) =>
 
 export const parsePerformerDraft = (
   draft: PerformerDraft
-): [Performer, Record<string, string | null>] => {
-  const performer: Performer = {
-    id: "",
+): [InitialPerformer, Record<string, string | null>] => {
+  const performer: InitialPerformer = {
     name: draft.name,
     disambiguation: null,
     images: draft.image ? [draft.image] : [],
@@ -92,33 +86,20 @@ export const parsePerformerDraft = (
       draft.hair_color,
       HairColorEnum
     ) as HairColorEnum | null,
-    birthdate: draft.birthdate
-      ? {
-          date: draft.birthdate,
-          accuracy: DateAccuracyEnum.DAY,
-          __typename: "FuzzyDate",
-        }
-      : null,
+    birthdate: draft.birthdate,
     height: Number.parseInt(draft.height ?? "") || null,
     country: draft?.country?.length === 2 ? draft.country : null,
-    deleted: false,
     aliases: [],
-    age: null,
     career_start_year: null,
     career_end_year: null,
     breast_type: null,
-    measurements: {
-      band_size: null,
-      waist: null,
-      hip: null,
-      cup_size: null,
-      __typename: "Measurements",
-    },
-    tattoos: null,
-    piercings: null,
+    band_size: null,
+    waist_size: null,
+    hip_size: null,
+    cup_size: null,
+    tattoos: [],
+    piercings: [],
     urls: [],
-    is_favorite: false,
-    __typename: "Performer",
   };
 
   const remainder = {

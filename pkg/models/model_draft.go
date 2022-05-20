@@ -10,11 +10,11 @@ import (
 )
 
 type Draft struct {
-	ID        uuid.UUID       `db:"id" json:"id"`
-	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
-	Type      string          `db:"type" json:"type"`
-	Data      types.JSONText  `db:"data" json:"data"`
-	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
+	ID        uuid.UUID      `db:"id" json:"id"`
+	UserID    uuid.UUID      `db:"user_id" json:"user_id"`
+	Type      string         `db:"type" json:"type"`
+	Data      types.JSONText `db:"data" json:"data"`
+	CreatedAt time.Time      `db:"created_at" json:"created_at"`
 }
 
 type DraftEntity struct {
@@ -27,6 +27,7 @@ func (DraftEntity) IsSceneDraftPerformer() {}
 func (DraftEntity) IsSceneDraftStudio()    {}
 
 type SceneDraft struct {
+	ID           *uuid.UUID         `json:"id,omitempty"`
 	Title        *string            `json:"title,omitempty"`
 	Details      *string            `json:"details,omitempty"`
 	URL          *string            `json:"url,omitempty"`
@@ -41,6 +42,7 @@ type SceneDraft struct {
 func (SceneDraft) IsDraftData() {}
 
 type PerformerDraft struct {
+	ID              *uuid.UUID `json:"id,omitempty"`
 	Name            string     `json:"name"`
 	Aliases         *string    `json:"aliases,omitempty"`
 	Gender          *string    `json:"gender,omitempty"`
@@ -63,13 +65,11 @@ type PerformerDraft struct {
 func (PerformerDraft) IsDraftData() {}
 
 func NewDraft(id uuid.UUID, user *User, targetType TargetTypeEnum) *Draft {
-	currentTime := time.Now()
-
 	ret := &Draft{
 		ID:        id,
 		UserID:    user.ID,
 		Type:      targetType.String(),
-		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: time.Now(),
 	}
 
 	return ret

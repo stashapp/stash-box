@@ -99,8 +99,8 @@ const SceneComponent: FC<Props> = ({ scene }) => {
         {fingerprint.submissions}
         {maybeRenderSubmitted(fingerprint)}
       </td>
-      <td>{formatDateTime(fingerprint.created as string)}</td>
-      <td>{formatDateTime(fingerprint.updated as string)}</td>
+      <td>{formatDateTime(fingerprint.created)}</td>
+      <td>{formatDateTime(fingerprint.updated)}</td>
     </tr>
   ));
   const tags = [...scene.tags]
@@ -150,7 +150,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
                 <span className="mx-1">•</span>
               </>
             )}
-            {scene.date}
+            {scene.release_date}
           </h6>
         </Card.Header>
         <Card.Body className="ScenePhoto">
@@ -175,6 +175,13 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           )}
         </Card.Footer>
       </Card>
+      <div className="float-end">
+        {scene.urls.map((u) => (
+          <a href={u.url} target="_blank" rel="noreferrer noopener" key={u.url}>
+            <img src={u.site.icon} alt="" className="SiteLink-icon" />
+          </a>
+        ))}
+      </div>
       <Tabs
         activeKey={activeTab}
         id="scene-tabs"

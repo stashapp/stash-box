@@ -122,16 +122,12 @@ func generateActivationKey(aqb models.PendingActivationCreator, email string, in
 		return "", err
 	}
 
-	currentTime := time.Now()
-
 	activation := models.PendingActivation{
 		ID:        UUID,
 		Email:     email,
 		InviteKey: inviteKey,
-		Time: models.SQLiteTimestamp{
-			Timestamp: currentTime,
-		},
-		Type: models.PendingActivationTypeNewUser,
+		Time:      time.Now(),
+		Type:      models.PendingActivationTypeNewUser,
 	}
 
 	obj, err := aqb.Create(activation)
@@ -279,15 +275,11 @@ func generateResetPasswordActivationKey(aqb models.PendingActivationCreator, ema
 		return "", err
 	}
 
-	currentTime := time.Now()
-
 	activation := models.PendingActivation{
 		ID:    UUID,
 		Email: email,
-		Time: models.SQLiteTimestamp{
-			Timestamp: currentTime,
-		},
-		Type: models.PendingActivationTypeResetPassword,
+		Time:  time.Now(),
+		Type:  models.PendingActivationTypeResetPassword,
 	}
 
 	obj, err := aqb.Create(activation)
@@ -344,7 +336,7 @@ func ActivateResetPassword(fac models.Repo, activationKey string, newPassword st
 	if err != nil {
 		return err
 	}
-	user.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	user.UpdatedAt = time.Now()
 
 	_, err = uqb.Update(*user)
 	if err != nil {

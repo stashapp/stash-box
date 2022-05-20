@@ -19,8 +19,8 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	currentTime := time.Now()
 	newTag := models.Tag{
 		ID:        UUID,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 
 	newTag.CopyFromCreateInput(input)
@@ -60,7 +60,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 			return err
 		}
 
-		updatedTag.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		updatedTag.UpdatedAt = time.Now()
 
 		// Populate performer from the input
 		updatedTag.CopyFromUpdateInput(input)

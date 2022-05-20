@@ -20,6 +20,8 @@ const (
 	voteTable          = "edit_votes"
 )
 
+var ErrEditTargetIDNotFound = fmt.Errorf("edit target not found")
+
 var (
 	editDBTable = newTable(editTable, func() interface{} {
 		return &models.Edit{}
@@ -110,7 +112,7 @@ func (qb *editQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, err
 	}
 	if len(joins) == 0 {
-		return nil, errors.New("tag edit not found")
+		return nil, ErrEditTargetIDNotFound
 	}
 	return &joins[0].TagID, nil
 }
@@ -122,7 +124,7 @@ func (qb *editQueryBuilder) FindPerformerID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, err
 	}
 	if len(joins) == 0 {
-		return nil, errors.New("performer edit not found")
+		return nil, ErrEditTargetIDNotFound
 	}
 	return &joins[0].PerformerID, nil
 }
@@ -134,7 +136,7 @@ func (qb *editQueryBuilder) FindStudioID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, err
 	}
 	if len(joins) == 0 {
-		return nil, errors.New("studio edit not found")
+		return nil, ErrEditTargetIDNotFound
 	}
 	return &joins[0].StudioID, nil
 }
@@ -146,7 +148,7 @@ func (qb *editQueryBuilder) FindSceneID(id uuid.UUID) (*uuid.UUID, error) {
 		return nil, err
 	}
 	if len(joins) == 0 {
-		return nil, errors.New("scene edit not found")
+		return nil, ErrEditTargetIDNotFound
 	}
 	return &joins[0].SceneID, nil
 }
@@ -262,8 +264,8 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 			 UNION
 			 -- Edits that add/remove studio from scene
 			 (SELECT E.id FROM studio_favorites TF JOIN edits E
-			 ON jsonb_path_query_first(E.data, '$.new_data.studio_id') = to_jsonb(TF.studio_id::TEXT)
-			 OR jsonb_path_query_first(E.data, '$.old_data.studio_id') = to_jsonb(TF.studio_id::TEXT)
+			 ON data->'new_data'->>'studio_id' = TF.studio_id::TEXT
+			 OR data->'old_data'->>'studio_id' = TF.studio_id::TEXT
 			 WHERE E.target_type = 'SCENE'
 			 AND TF.user_id = ?)
 			))

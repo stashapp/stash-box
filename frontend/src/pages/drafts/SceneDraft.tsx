@@ -7,8 +7,8 @@ import {
   Draft_findDraft as Draft,
   Draft_findDraft_data_SceneDraft as SceneDraft,
 } from "src/graphql/definitions/Draft";
-import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import {
+  useScene,
   useSceneEdit,
   OperationEnum,
   SceneEditDetailsInput,
@@ -17,7 +17,7 @@ import {
   SortDirectionEnum,
   SceneSortEnum,
 } from "src/graphql";
-import { Icon } from "src/components/fragments";
+import { Icon, LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 import { parseSceneDraft } from "./parse";
 
@@ -28,6 +28,7 @@ interface Props {
 }
 
 const SceneDraftAdd: FC<Props> = ({ draft }) => {
+  const isUpdate = Boolean(draft.data.id);
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
   const [submitSceneEdit, { loading: saving }] = useSceneEdit({
@@ -37,25 +38,32 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
     },
     onError: (error) => setSubmissionError(error.message),
   });
-  const { data: fingerprintMatches } = useScenesWithoutCount({
-    input: {
-      fingerprints: {
-        modifier: CriterionModifier.INCLUDES,
-        value: draft.data.fingerprints.map((f) => f.hash),
+  const { data: scene, loading: loadingScene } = useScene(
+    { id: draft.data.id ?? "" },
+    !isUpdate
+  );
+  const { data: fingerprintMatches } = useScenesWithoutCount(
+    {
+      input: {
+        fingerprints: {
+          modifier: CriterionModifier.INCLUDES,
+          value: draft.data.fingerprints.map((f) => f.hash),
+        },
+        page: 1,
+        per_page: 100,
+        direction: SortDirectionEnum.DESC,
+        sort: SceneSortEnum.CREATED_AT,
       },
-      page: 1,
-      per_page: 100,
-      direction: SortDirectionEnum.DESC,
-      sort: SceneSortEnum.CREATED_AT,
     },
-  });
+    isUpdate
+  );
 
   const doInsert = (updateData: SceneEditDetailsInput, editNote: string) => {
     const details: SceneEditDetailsInput = {
       ...updateData,
-      fingerprints: draft.data.fingerprints.map(
-        ({ __typename, ...rest }) => rest
-      ),
+      fingerprints: !isUpdate
+        ? draft.data.fingerprints.map(({ __typename, ...rest }) => rest)
+        : undefined,
       draft_id: draft.id,
     };
 
@@ -63,7 +71,8 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       variables: {
         sceneData: {
           edit: {
-            operation: OperationEnum.CREATE,
+            id: draft.data.id,
+            operation: isUpdate ? OperationEnum.MODIFY : OperationEnum.CREATE,
             comment: editNote,
           },
           details,
@@ -71,6 +80,8 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       },
     });
   };
+
+  if (loadingScene) return <LoadingIndicator />;
 
   const [initialScene, unparsed] = parseSceneDraft(draft.data);
   const remainder = Object.entries(unparsed)
@@ -82,29 +93,17 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       </li>
     ));
 
-  const emptyScene: Scene = {
-    id: "",
-    date: null,
-    title: null,
-    details: null,
-    urls: [],
-    studio: null,
-    director: null,
-    code: null,
-    duration: null,
-    images: [],
-    tags: [],
-    fingerprints: [],
-    performers: [],
-    deleted: false,
-    __typename: "Scene",
-  };
-
   const existingScenes = fingerprintMatches?.queryScenes?.scenes ?? [];
 
   return (
     <div>
-      <h3>Add new scene from draft</h3>
+      <h3>{isUpdate ? "Update" : "Add new"} scene from draft</h3>
+      {isUpdate && scene?.findScene && (
+        <h6>
+          Scene:{" "}
+          <Link to={sceneHref(scene.findScene)}>{scene.findScene?.title}</Link>
+        </h6>
+      )}
       <hr />
       {remainder.length > 0 && (
         <>
@@ -134,7 +133,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
         </>
       )}
       <SceneForm
-        scene={emptyScene}
+        scene={scene?.findScene ?? undefined}
         initial={initialScene}
         callback={doInsert}
         saving={saving}

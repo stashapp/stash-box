@@ -94,7 +94,7 @@ func (m *StudioEditProcessor) diffImages(studioEdit *models.StudioEditData, stud
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(newImageIds, existingImages)
+	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.SliceCompare(newImageIds, existingImages)
 
 	return nil
 }
@@ -156,7 +156,7 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 	for _, image := range images {
 		existingImages = append(existingImages, image.ID)
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.UUIDSliceCompare(input.Details.ImageIds, existingImages)
+	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.SliceCompare(input.Details.ImageIds, existingImages)
 
 	return m.edit.SetData(studioEdit)
 }
@@ -219,7 +219,7 @@ func (m *StudioEditProcessor) apply() error {
 		if studio == nil {
 			return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
 		}
-		studio.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		studio.UpdatedAt = time.Now()
 	}
 
 	newStudio, err := sqb.ApplyEdit(*m.edit, operation, studio)

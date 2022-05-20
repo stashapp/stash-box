@@ -3,7 +3,7 @@
 #import "../fragments/URLFragment.gql"
 fragment SceneFragment on Scene {
   id
-  date
+  release_date
   title
   deleted
   details
@@ -39,5 +39,6 @@ fragment SceneFragment on Scene {
     id
     name
     description
+    aliases
   }
 }

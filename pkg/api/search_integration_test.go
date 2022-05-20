@@ -78,7 +78,7 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 	date := "2019-02-03"
 	input := models.SceneCreateInput{
 		Title:    &title,
-		Date:     &date,
+		Date:     date,
 		StudioID: &studioID,
 	}
 	createdScene, err := s.createTestScene(&input)

@@ -37,7 +37,7 @@ const SceneCard: FC<{ performance: Performance }> = ({ performance }) => (
             {performance.studio.name}
           </Link>
         )}
-        <strong>{performance.date}</strong>
+        <strong>{performance.release_date}</strong>
       </div>
     </Card.Footer>
   </Card>

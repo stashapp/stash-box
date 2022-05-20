@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { Row, Col, Form, Tab, Tabs } from "react-bootstrap";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Link } from "react-router-dom";
@@ -16,12 +16,14 @@ import URLInput from "src/components/urlInput";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
 import { StudioSchema, StudioFormData } from "./schema";
+import { InitialStudio } from "./types";
 import DiffStudio from "./diff";
 
 interface StudioProps {
-  studio: Studio;
+  studio?: Studio | null;
   callback: (data: StudioEditDetailsInput, editNote: string) => void;
   showNetworkSelect?: boolean;
+  initial?: InitialStudio;
   saving: boolean;
 }
 
@@ -29,6 +31,7 @@ const StudioForm: FC<StudioProps> = ({
   studio,
   callback,
   showNetworkSelect = true,
+  initial,
   saving,
 }) => {
   const {
@@ -40,15 +43,10 @@ const StudioForm: FC<StudioProps> = ({
   } = useForm<StudioFormData>({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
-      name: studio.name,
-      images: studio.images,
-      urls: studio.urls ?? [],
-      studio: studio.parent
-        ? {
-            id: studio.parent.id,
-            name: studio.parent.name,
-          }
-        : undefined,
+      name: initial?.name ?? studio?.name,
+      images: initial?.images ?? studio?.images ?? [],
+      urls: initial?.urls ?? studio?.urls ?? [],
+      parent: initial?.parent ?? studio?.parent,
     },
   });
 
@@ -69,7 +67,7 @@ const StudioForm: FC<StudioProps> = ({
         site_id: u.site.id,
       })),
       image_ids: data.images.map((i) => i.id),
-      parent_id: data.studio?.id,
+      parent_id: data.parent?.id,
     };
     callback(callbackData, data.note);
   };
@@ -95,7 +93,6 @@ const StudioForm: FC<StudioProps> = ({
             <Form.Control
               className={cx({ "is-invalid": errors.name })}
               placeholder="Name"
-              defaultValue={studio.name}
               {...register("name")}
             />
             <Form.Control.Feedback type="invalid">
@@ -106,12 +103,18 @@ const StudioForm: FC<StudioProps> = ({
           {showNetworkSelect && (
             <Form.Group controlId="network" className="mb-3">
               <Form.Label>Network</Form.Label>
-              <StudioSelect
-                excludeStudio={studio.id}
+              <Controller
+                name="parent"
                 control={control}
-                initialStudio={studio.parent}
-                isClearable
-                networkSelect
+                render={({ field: { onChange, value } }) => (
+                  <StudioSelect
+                    excludeStudio={studio?.id}
+                    initialStudio={value}
+                    onChange={onChange}
+                    isClearable
+                    networkSelect
+                  />
+                )}
               />
             </Form.Group>
           )}
@@ -138,6 +141,7 @@ const StudioForm: FC<StudioProps> = ({
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}
+            allowLossless
           />
 
           <NavButtons

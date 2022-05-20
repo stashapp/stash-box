@@ -22,7 +22,6 @@ import {
   isTagOldDetails,
   isPerformerOldDetails,
   formatBodyModification,
-  formatFuzzyDateComponents,
   isStudioDetails,
   isStudioOldDetails,
   isSceneDetails,
@@ -55,7 +54,7 @@ export interface TagDetails {
 
 export type OldTagDetails = TargetOldDetails<TagDetails>;
 
-const renderTagDetails = (
+export const renderTagDetails = (
   tagDetails: TagDetails,
   oldTagDetails: OldTagDetails | undefined,
   showDiff: boolean
@@ -86,15 +85,9 @@ const renderTagDetails = (
       showDiff={showDiff}
     />
     <ChangeRow
-      name="Added Aliases"
+      name="Aliases"
       newValue={tagDetails.added_aliases?.join(", ")}
-      oldValue=""
-      showDiff={showDiff}
-    />
-    <ChangeRow
-      name="Removed Aliases"
-      newValue={tagDetails.removed_aliases?.join(", ")}
-      oldValue=""
+      oldValue={tagDetails.removed_aliases?.join(", ")}
       showDiff={showDiff}
     />
   </>
@@ -115,7 +108,6 @@ export interface PerformerDetails {
   gender?: GenderEnum | null;
   disambiguation?: string | null;
   birthdate?: string | null;
-  birthdate_accuracy?: string | null;
   career_start_year?: number | null;
   career_end_year?: number | null;
   height?: number | null;
@@ -189,14 +181,8 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Birthdate"
-      newValue={formatFuzzyDateComponents(
-        performerDetails.birthdate,
-        performerDetails.birthdate_accuracy
-      )}
-      oldValue={formatFuzzyDateComponents(
-        oldPerformerDetails?.birthdate,
-        oldPerformerDetails?.birthdate_accuracy
-      )}
+      newValue={performerDetails.birthdate}
+      oldValue={oldPerformerDetails?.birthdate}
       showDiff={showDiff}
     />
     <ChangeRow
@@ -299,6 +285,16 @@ export const renderPerformerDetails = (
       oldImages={performerDetails.removed_images}
       showDiff={showDiff}
     />
+    {performerDetails.draft_id && (
+      <Row className="mb-2">
+        <Col xs={{ offset: 2 }}>
+          <h6>
+            <Icon icon={faEdit} color="green" />
+            <span className="ms-1">Submitted by draft</span>
+          </h6>
+        </Col>
+      </Row>
+    )}
   </>
 );
 

@@ -11,10 +11,7 @@ fragment SearchPerformerFragment on Performer {
   career_start_year
   career_end_year
   scene_count
-  birthdate {
-    date
-    accuracy
-  }
+  birth_date
   urls {
     ...URLFragment
   }

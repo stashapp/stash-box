@@ -62,8 +62,8 @@ export interface SceneFragment_fingerprints {
   duration: number;
   submissions: number;
   user_submitted: boolean;
-  created: any;
-  updated: any;
+  created: GQLTime;
+  updated: GQLTime;
 }
 
 export interface SceneFragment_tags {
@@ -71,12 +71,13 @@ export interface SceneFragment_tags {
   id: string;
   name: string;
   description: string | null;
+  aliases: string[];
 }
 
 export interface SceneFragment {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  release_date: string | null;
   title: string | null;
   deleted: boolean;
   details: string | null;

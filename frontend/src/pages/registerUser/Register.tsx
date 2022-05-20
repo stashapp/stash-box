@@ -1,4 +1,5 @@
 import { FC, useContext, useState } from "react";
+import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
@@ -51,9 +52,9 @@ const Register: FC = () => {
           setAwaitingActivation(true);
         }
       })
-      .catch((err) => {
-        if (err && err.message) {
-          setSubmitError(err.message as string);
+      .catch((err?: ApolloError) => {
+        if (err?.message) {
+          setSubmitError(err.message);
         }
       });
   };

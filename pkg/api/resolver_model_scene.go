@@ -34,8 +34,13 @@ func (r *sceneResolver) Code(ctx context.Context, obj *models.Scene) (*string, e
 	return resolveNullString(obj.Code), nil
 }
 
+// Deprecated: use `DateFuzzy`
 func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveSQLiteDate(obj.Date)
+	return &obj.ResolveDate().Date, nil
+}
+
+func (r *sceneResolver) ReleaseDate(ctx context.Context, obj *models.Scene) (*string, error) {
+	return resolveFuzzyDate(&obj.Date.String, &obj.DateAccuracy.String), nil
 }
 
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
@@ -119,9 +124,9 @@ func (r *sceneResolver) Edits(ctx context.Context, obj *models.Scene) ([]*models
 }
 
 func (r *sceneResolver) Created(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *sceneResolver) Updated(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
+	return &obj.UpdatedAt, nil
 }

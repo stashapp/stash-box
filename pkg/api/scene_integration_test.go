@@ -40,7 +40,7 @@ func (s *sceneTestRunner) testCreateScene() {
 	input := models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		Date:    &date,
+		Date:    date,
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
@@ -181,8 +181,8 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 
 	s.compareSiteURLs(input.Urls, scene.Urls)
 
-	if !reflect.DeepEqual(scene.Date, input.Date) {
-		s.fieldMismatch(*input.Date, scene.Date, "Date")
+	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || input.Date != *scene.Date) {
+		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 
 	if !compareFingerprints(input.Fingerprints, scene.Fingerprints) {
@@ -265,6 +265,7 @@ func (s *sceneTestRunner) testFindScenesByFingerprints() {
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
+		Date: "2020-03-02",
 	}
 	createdScene1, err := s.createTestScene(&scene1Input)
 	if err != nil {
@@ -321,7 +322,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	input := models.SceneCreateInput{
 		Title:   &title,
 		Details: &details,
-		Date:    &date,
+		Date:    date,
 		Fingerprints: []*models.FingerprintEditInput{
 			// fingerprint that will be kept
 			s.generateSceneFingerprint([]uuid.UUID{
@@ -435,7 +436,7 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 		s.fieldMismatch(input.Details, scene.Details, "Details")
 	}
 
-	if !reflect.DeepEqual(scene.Date, input.Date) {
+	if !bothNil(scene.Date, input.Date) && (oneNil(scene.Date, input.Date) || *scene.Date != *input.Date) {
 		s.fieldMismatch(input.Date, scene.Date, "Date")
 	}
 
@@ -828,6 +829,7 @@ func (s *sceneTestRunner) testQueryScenesByStudio() {
 	input := models.SceneCreateInput{
 		StudioID: &studio1ID,
 		Title:    &scene1Title,
+		Date:     "2020-03-02",
 	}
 
 	scene1, err := s.createTestScene(&input)
@@ -915,6 +917,7 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 			},
 		},
 		Title: &scene1Title,
+		Date:  "2020-03-02",
 	}
 
 	scene1, err := s.createTestScene(&input)
@@ -997,6 +1000,7 @@ func (s *sceneTestRunner) testQueryScenesByTag() {
 			tag1ID,
 		},
 		Title: &scene1Title,
+		Date:  "2020-03-02",
 	}
 
 	scene1, err := s.createTestScene(&input)

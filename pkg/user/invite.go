@@ -116,10 +116,9 @@ func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid
 		return nil, err
 	}
 
-	currentTime := time.Now()
 	newKey := models.InviteKey{
 		ID:          UUID,
-		GeneratedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		GeneratedAt: time.Now(),
 		GeneratedBy: userID,
 	}
 
