@@ -368,10 +368,16 @@ func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPe
 		SELECT edits.* FROM edits
 		WHERE status = 'PENDING'
 		AND (
-			created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))
+			(created_at <= (now()::timestamp - (INTERVAL '1 second' * $1)) AND updated_at IS NULL)
+			OR
+			(updated_at <= (now()::timestamp - (INTERVAL '1 second' * $1)) AND updated_at IS NOT NULL)
 			OR (
 				VOTES >= $2
-				AND created_at <= (now()::timestamp - (INTERVAL '1 second' * $3))
+				AND (
+					(created_at <= (now()::timestamp - (INTERVAL '1 second' * $3)) AND updated_at IS NULL)
+					OR
+					(updated_at <= (now()::timestamp - (INTERVAL '1 second' * $3)) AND updated_at IS NOT NULL)
+				)
 			)
 		)
 	`

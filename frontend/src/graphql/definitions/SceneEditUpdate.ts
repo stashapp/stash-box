@@ -1403,6 +1403,7 @@ export interface SceneEditUpdate_sceneEditUpdate {
   created: GQLTime;
   updated: GQLTime | null;
   closed: GQLTime | null;
+  expires: GQLTime | null;
   /**
    *  = Accepted - Rejected
    */

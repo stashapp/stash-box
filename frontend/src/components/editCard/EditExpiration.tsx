@@ -26,7 +26,8 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   if (
     !config ||
     !config.vote_cron_interval ||
-    edit.status !== VoteStatusEnum.PENDING
+    edit.status !== VoteStatusEnum.PENDING ||
+    !edit.expires
   )
     return <></>;
 
@@ -36,12 +37,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
     config.vote_application_threshold > 0 &&
     edit.vote_count >= config.vote_application_threshold;
 
-  const expirationTime = addSeconds(
-    new Date(edit.created),
-    shortVotingPeriod
-      ? config.min_destructive_voting_period
-      : config.voting_period
-  );
+  const expirationTime = new Date(edit.expires);
   const expirationDistance =
     expirationTime > new Date()
       ? formatDistance(expirationTime, new Date())

@@ -1403,6 +1403,7 @@ export interface Edits_queryEdits_edits {
   created: GQLTime;
   updated: GQLTime | null;
   closed: GQLTime | null;
+  expires: GQLTime | null;
   /**
    *  = Accepted - Rejected
    */
