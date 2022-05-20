@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ develop, master ]
+    branches: [ master ]
   pull_request:
-    branches: [ develop ]
+    branches: [ master ]
   release:
     types: [ published ]
 
@@ -103,13 +103,13 @@ jobs:
       run: make it
 
     - name: Set PR version
-      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/master'}}
       run: echo "BUILD_TYPE=PR" >> $GITHUB_ENV
     - name: Set Official version
       if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest-develop' }}
       run: echo "BUILD_TYPE=OFFICIAL" >> $GITHUB_ENV
     - name: Set Development version
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      if: ${{ github.event_name == 'push' }}
       run: echo "BUILD_TYPE=DEVELOPMENT" >> $GITHUB_ENV
 
     - name: Crosscompile binaries
@@ -125,25 +125,25 @@ jobs:
 
     - name: Upload Windows binary
       # only upload binaries for pull requests
-      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-box-win.exe
         path: dist/stash-box-windows.exe
     - name: Upload Linux binary
       # only upload binaries for pull requests
-      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-box-linux
         path: dist/stash-box-linux
 
     - name: Update latest-develop tag
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      if: ${{ github.event_name == 'push' }}
       run : git tag -f latest-develop; git push -f --tags
 
     - name: Development Release
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      if: ${{ github.event_name == 'push' }}
       uses: marvinpinto/action-automatic-releases@v1.1.2
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -175,7 +175,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Development Docker
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      if: ${{ github.event_name == 'push' }}
       run: |
         docker build -t stashapp/stash-box:development -f ./docker/ci/x86_64/Dockerfile ./dist
         docker push stashapp/stash-box:development
