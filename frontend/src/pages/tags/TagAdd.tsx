@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
 
 import { editHref } from "src/utils";
@@ -29,21 +28,11 @@ const TagAddComponent: FC = () => {
     });
   };
 
-  const emptyTag: Tag = {
-    id: "",
-    name: "",
-    description: "",
-    deleted: false,
-    aliases: [],
-    category: null,
-    __typename: "Tag",
-  };
-
   return (
     <div>
       <h3>Add new tag</h3>
       <hr />
-      <TagForm tag={emptyTag} callback={doInsert} saving={saving} />
+      <TagForm callback={doInsert} saving={saving} />
     </div>
   );
 };

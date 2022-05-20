@@ -65,7 +65,8 @@ const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
       [name]: value || undefined,
       page: undefined,
     });
-    history.replace(`${history.location.pathname}?${qs}`);
+    const hash = history.location.hash ?? "";
+    history.replace(`${history.location.pathname}?${qs}${hash}`);
   };
 
   const filters = (

@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"database/sql"
 
@@ -9,13 +10,13 @@ import (
 )
 
 type Tag struct {
-	ID          uuid.UUID       `db:"id" json:"id"`
-	Name        string          `db:"name" json:"name"`
-	CategoryID  uuid.NullUUID   `db:"category_id" json:"category_id"`
-	Description sql.NullString  `db:"description" json:"description"`
-	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-	Deleted     bool            `db:"deleted" json:"deleted"`
+	ID          uuid.UUID      `db:"id" json:"id"`
+	Name        string         `db:"name" json:"name"`
+	CategoryID  uuid.NullUUID  `db:"category_id" json:"category_id"`
+	Description sql.NullString `db:"description" json:"description"`
+	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
+	Deleted     bool           `db:"deleted" json:"deleted"`
 }
 
 func (Tag) IsSceneDraftTag() {}

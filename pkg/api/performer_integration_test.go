@@ -34,6 +34,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 	eyeColor := models.EyeColorEnumBlue
 	hairColor := models.HairColorEnumBlonde
 	breastType := models.BreastTypeEnumNatural
+	birthdate := "2001-02-03"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return
@@ -50,21 +51,16 @@ func (s *performerTestRunner) testCreatePerformer() {
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2001-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
-		Ethnicity: &ethnicity,
-		Country:   &country,
-		EyeColor:  &eyeColor,
-		HairColor: &hairColor,
-		Height:    &height,
-		Measurements: &models.MeasurementsInput{
-			CupSize:  &cupSize,
-			BandSize: &bandSize,
-			Waist:    &bandSize,
-			Hip:      &bandSize,
-		},
+		Birthdate:       &birthdate,
+		Ethnicity:       &ethnicity,
+		Country:         &country,
+		EyeColor:        &eyeColor,
+		HairColor:       &hairColor,
+		Height:          &height,
+		CupSize:         &cupSize,
+		BandSize:        &bandSize,
+		WaistSize:       &bandSize,
+		HipSize:         &bandSize,
 		BreastType:      &breastType,
 		CareerStartYear: &careerStartYear,
 		CareerEndYear:   nil,
@@ -146,8 +142,9 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
 
+	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Birthdate)
 	birthdate, _ := r.Birthdate(s.ctx, performer)
-	if !bothNil(birthdate, input.Birthdate) && (oneNil(birthdate, input.Birthdate) || birthdate.Date != input.Birthdate.Date || birthdate.Accuracy != input.Birthdate.Accuracy) {
+	if !bothNil(birthdate, input.Birthdate) && (oneNil(birthdate, input.Birthdate) || birthdate.Date != inputDate.String || birthdate.Accuracy.String() != inputAccuracy.String) {
 		s.fieldMismatch(input.Birthdate, birthdate, "Birthdate")
 	}
 
@@ -171,13 +168,20 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 		s.fieldMismatch(*input.Height, v, "Height")
 	}
 
-	measurements, _ := r.Measurements(s.ctx, performer)
-	if !bothNil(measurements, input.Measurements) && (oneNil(measurements, input.Measurements) ||
-		*measurements.CupSize != *input.Measurements.CupSize ||
-		*measurements.BandSize != *input.Measurements.BandSize ||
-		*measurements.Waist != *input.Measurements.Waist ||
-		*measurements.Hip != *input.Measurements.Hip) {
-		s.fieldMismatch(input.Measurements, measurements, "Measurements")
+	if v, _ := r.CupSize(s.ctx, performer); !reflect.DeepEqual(v, input.CupSize) {
+		s.fieldMismatch(*input.CupSize, v, "CupSize")
+	}
+
+	if v, _ := r.BandSize(s.ctx, performer); !reflect.DeepEqual(v, input.BandSize) {
+		s.fieldMismatch(*input.BandSize, v, "BandSize")
+	}
+
+	if v, _ := r.WaistSize(s.ctx, performer); !reflect.DeepEqual(v, input.WaistSize) {
+		s.fieldMismatch(*input.WaistSize, v, "WaistSize")
+	}
+
+	if v, _ := r.HipSize(s.ctx, performer); !reflect.DeepEqual(v, input.HipSize) {
+		s.fieldMismatch(*input.HipSize, v, "HipSize")
 	}
 
 	if v, _ := r.BreastType(s.ctx, performer); !reflect.DeepEqual(v, input.BreastType) {
@@ -231,6 +235,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	cupSize := "C"
 	bandSize := 32
 	tattooDesc := "Foobar"
+	date := "2001-02-03"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return
@@ -245,16 +250,11 @@ func (s *performerTestRunner) testUpdatePerformer() {
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2001-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
-		Measurements: &models.MeasurementsInput{
-			CupSize:  &cupSize,
-			BandSize: &bandSize,
-			Waist:    &bandSize,
-			Hip:      &bandSize,
-		},
+		Birthdate: &date,
+		CupSize:   &cupSize,
+		BandSize:  &bandSize,
+		WaistSize: &bandSize,
+		HipSize:   &bandSize,
 		Tattoos: []*models.BodyModificationInput{
 			&models.BodyModificationInput{
 				Location:    "Inner thigh",
@@ -280,29 +280,24 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		ID:      performerID,
 		Aliases: []string{"Alias3", "Alias4"},
 		Urls: []*models.URLInput{
-			&models.URLInput{
+			{
 				URL:    "URL",
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2001-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
-		Measurements: &models.MeasurementsInput{
-			CupSize:  &cupSize,
-			BandSize: &bandSize,
-			Waist:    &bandSize,
-			Hip:      &bandSize,
-		},
+		Birthdate: &date,
+		CupSize:   &cupSize,
+		BandSize:  &bandSize,
+		WaistSize: &bandSize,
+		HipSize:   &bandSize,
 		Tattoos: []*models.BodyModificationInput{
-			&models.BodyModificationInput{
+			{
 				Location:    "Tramp stamp",
 				Description: &tattooDesc,
 			},
 		},
 		Piercings: []*models.BodyModificationInput{
-			&models.BodyModificationInput{
+			{
 				Location:    "Navel",
 				Description: nil,
 			},
@@ -314,9 +309,12 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		"aliases",
 		"urls",
 		"birthdate",
-		"measurements",
 		"tattoos",
 		"piercings",
+		"cup_size",
+		"band_size",
+		"waist_size",
+		"hip_size",
 	})
 
 	updatedPerformer, err := s.resolver.Mutation().PerformerUpdate(ctx, updateInput)
@@ -346,17 +344,10 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 		s.fieldMismatch(input.Urls, urls, "Urls")
 	}
 
+	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Birthdate)
 	birthdate, _ := r.Birthdate(s.ctx, performer)
-	if birthdate != nil && (birthdate.Date != input.Birthdate.Date || birthdate.Accuracy != input.Birthdate.Accuracy) {
+	if birthdate != nil && (birthdate.Date != inputDate.String || birthdate.Accuracy.String() != inputAccuracy.String) {
 		s.fieldMismatch(input.Birthdate, birthdate, "Birthdate")
-	}
-
-	measurements, _ := r.Measurements(s.ctx, performer)
-	if input.Measurements != nil && (*measurements.CupSize != *input.Measurements.CupSize ||
-		*measurements.BandSize != *input.Measurements.BandSize ||
-		*measurements.Waist != *input.Measurements.Waist ||
-		*measurements.Hip != *input.Measurements.Hip) {
-		s.fieldMismatch(input.Measurements, measurements, "Measurements")
 	}
 
 	tattoos, _ := s.resolver.Performer().Tattoos(s.ctx, performer)
@@ -367,6 +358,22 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 	piercings, _ := s.resolver.Performer().Piercings(s.ctx, performer)
 	if !compareBodyMods(input.Piercings, piercings) {
 		s.fieldMismatch(input.Piercings, piercings, "Piercings")
+	}
+
+	if v, _ := r.CupSize(s.ctx, performer); !reflect.DeepEqual(v, input.CupSize) {
+		s.fieldMismatch(*input.CupSize, v, "CupSize")
+	}
+
+	if v, _ := r.BandSize(s.ctx, performer); !reflect.DeepEqual(v, input.BandSize) {
+		s.fieldMismatch(*input.BandSize, v, "BandSize")
+	}
+
+	if v, _ := r.WaistSize(s.ctx, performer); !reflect.DeepEqual(v, input.WaistSize) {
+		s.fieldMismatch(*input.WaistSize, v, "WaistSize")
+	}
+
+	if v, _ := r.HipSize(s.ctx, performer); !reflect.DeepEqual(v, input.HipSize) {
+		s.fieldMismatch(*input.HipSize, v, "HipSize")
 	}
 }
 

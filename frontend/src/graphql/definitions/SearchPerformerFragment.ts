@@ -3,17 +3,11 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum, DateAccuracyEnum } from "./globalTypes";
+import { GenderEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: SearchPerformerFragment
 // ====================================================
-
-export interface SearchPerformerFragment_birthdate {
-  __typename: "FuzzyDate";
-  date: any;
-  accuracy: DateAccuracyEnum;
-}
 
 export interface SearchPerformerFragment_urls_site {
   __typename: "Site";
@@ -48,7 +42,7 @@ export interface SearchPerformerFragment {
   career_start_year: number | null;
   career_end_year: number | null;
   scene_count: number;
-  birthdate: SearchPerformerFragment_birthdate | null;
+  birth_date: string | null;
   urls: SearchPerformerFragment_urls[];
   images: SearchPerformerFragment_images[];
   is_favorite: boolean;

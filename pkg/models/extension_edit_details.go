@@ -34,7 +34,11 @@ func (e TagEditDetailsInput) TagEditFromCreate() TagEditData {
 	}
 }
 
-func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) PerformerEditData {
+func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) (*PerformerEditData, error) {
+	if err := ValidateFuzzyString(e.Birthdate); err != nil {
+		return nil, err
+	}
+
 	newData := &PerformerEdit{}
 	oldData := &PerformerEdit{}
 
@@ -49,39 +53,40 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer) Perform
 	oldData.HairColor, newData.HairColor = ed.nullStringEnum(orig.HairColor, e.HairColor)
 	oldData.Height, newData.Height = ed.nullInt64(orig.Height, e.Height)
 
-	measurements := e.Measurements
-	if measurements == nil {
-		measurements = &MeasurementsInput{}
-	}
-
-	oldData.CupSize, newData.CupSize = ed.nullString(orig.CupSize, measurements.CupSize)
-	oldData.BandSize, newData.BandSize = ed.nullInt64(orig.BandSize, measurements.BandSize)
-	oldData.WaistSize, newData.WaistSize = ed.nullInt64(orig.WaistSize, measurements.Waist)
-	oldData.HipSize, newData.HipSize = ed.nullInt64(orig.HipSize, measurements.Hip)
+	oldData.CupSize, newData.CupSize = ed.nullString(orig.CupSize, e.CupSize)
+	oldData.BandSize, newData.BandSize = ed.nullInt64(orig.BandSize, e.BandSize)
+	oldData.WaistSize, newData.WaistSize = ed.nullInt64(orig.WaistSize, e.WaistSize)
+	oldData.HipSize, newData.HipSize = ed.nullInt64(orig.HipSize, e.HipSize)
 
 	oldData.BreastType, newData.BreastType = ed.nullStringEnum(orig.BreastType, e.BreastType)
 	oldData.CareerStartYear, newData.CareerStartYear = ed.nullInt64(orig.CareerStartYear, e.CareerStartYear)
 	oldData.CareerEndYear, newData.CareerEndYear = ed.nullInt64(orig.CareerEndYear, e.CareerEndYear)
 
-	return PerformerEditData{
+	return &PerformerEditData{
 		New: newData,
 		Old: oldData,
-	}
+	}, nil
 }
 
-func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, sources []uuid.UUID) PerformerEditData {
-	data := e.PerformerEditFromDiff(orig)
+func (e PerformerEditDetailsInput) PerformerEditFromMerge(orig Performer, sources []uuid.UUID) (*PerformerEditData, error) {
+	data, err := e.PerformerEditFromDiff(orig)
+	if err != nil {
+		return nil, err
+	}
 	data.MergeSources = sources
 
-	return data
+	return data, nil
 }
 
-func (e PerformerEditDetailsInput) PerformerEditFromCreate() PerformerEditData {
-	ret := e.PerformerEditFromDiff(Performer{})
-
-	return PerformerEditData{
-		New: ret.New,
+func (e PerformerEditDetailsInput) PerformerEditFromCreate() (*PerformerEditData, error) {
+	ret, err := e.PerformerEditFromDiff(Performer{})
+	if err != nil {
+		return nil, err
 	}
+
+	return &PerformerEditData{
+		New: ret.New,
+	}, nil
 }
 
 func (e StudioEditDetailsInput) StudioEditFromDiff(orig Studio) StudioEditData {
@@ -117,70 +122,46 @@ func (e StudioEditDetailsInput) StudioEditFromCreate() StudioEditData {
 	}
 }
 
-func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) SceneEditData {
+func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene) (*SceneEditData, error) {
+	if err := ValidateFuzzyString(e.Date); err != nil {
+		return nil, err
+	}
+
 	newData := &SceneEdit{}
 	oldData := &SceneEdit{}
 
 	ed := editDiff{}
 	oldData.Title, newData.Title = ed.nullString(orig.Title, e.Title)
 	oldData.Details, newData.Details = ed.nullString(orig.Details, e.Details)
-	oldData.Date, newData.Date = ed.sqliteDate(orig.Date, e.Date)
+	oldData.Date, oldData.DateAccuracy, newData.Date, newData.DateAccuracy = ed.fuzzyDate(orig.Date, orig.DateAccuracy, e.Date)
 	oldData.StudioID, newData.StudioID = ed.nullUUID(orig.StudioID, e.StudioID)
 	oldData.Duration, newData.Duration = ed.nullInt64(orig.Duration, e.Duration)
 	oldData.Director, newData.Director = ed.nullString(orig.Director, e.Director)
 	oldData.Code, newData.Code = ed.nullString(orig.Code, e.Code)
 
-	return SceneEditData{
+	return &SceneEditData{
 		New: newData,
 		Old: oldData,
-	}
+	}, nil
 }
 
-func (e SceneEditDetailsInput) SceneEditFromMerge(orig Scene, sources []uuid.UUID) SceneEditData {
-	data := e.SceneEditFromDiff(orig)
+func (e SceneEditDetailsInput) SceneEditFromMerge(orig Scene, sources []uuid.UUID) (*SceneEditData, error) {
+	data, err := e.SceneEditFromDiff(orig)
+	if err != nil {
+		return nil, err
+	}
 	data.MergeSources = sources
 
-	return data
+	return data, nil
 }
 
-func (e SceneEditDetailsInput) SceneEditFromCreate() SceneEditData {
-	ret := e.SceneEditFromDiff(Scene{})
-
-	return SceneEditData{
-		New: ret.New,
+func (e SceneEditDetailsInput) SceneEditFromCreate() (*SceneEditData, error) {
+	ret, err := e.SceneEditFromDiff(Scene{})
+	if err != nil {
+		return nil, err
 	}
-}
 
-type EditSliceValue interface {
-	ID() string
-}
-
-type EditSlice interface {
-	Each(fn func(interface{}))
-	EachPtr(fn func(interface{}))
-	Add(o interface{})
-	Remove(v string)
-}
-
-func ProcessSlice(current EditSlice, added EditSlice, removed EditSlice, entityType string) {
-	idMap := map[string]bool{}
-	current.Each(func(v interface{}) {
-		idMap[v.(EditSliceValue).ID()] = true
-	})
-
-	removed.Each(func(v interface{}) {
-		id := v.(EditSliceValue).ID()
-		if idMap[id] {
-			current.Remove(id)
-			idMap[id] = false
-		}
-	})
-
-	added.EachPtr(func(v interface{}) {
-		id := v.(EditSliceValue).ID()
-		if !idMap[id] {
-			current.Add(v)
-			idMap[id] = true
-		}
-	})
+	return &SceneEditData{
+		New: ret.New,
+	}, nil
 }

@@ -64,9 +64,9 @@ func (r *studioResolver) IsFavorite(ctx context.Context, obj *models.Studio) (bo
 }
 
 func (r *studioResolver) Created(ctx context.Context, obj *models.Studio) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *studioResolver) Updated(ctx context.Context, obj *models.Studio) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
+	return &obj.UpdatedAt, nil
 }

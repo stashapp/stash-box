@@ -18,8 +18,8 @@ export interface Site_findSite {
   regex: string | null;
   valid_types: ValidSiteTypeEnum[];
   icon: string;
-  created: any;
-  updated: any;
+  created: GQLTime;
+  updated: GQLTime;
 }
 
 export interface Site {

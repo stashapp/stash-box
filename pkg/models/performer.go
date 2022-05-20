@@ -37,4 +37,9 @@ type PerformerRepo interface {
 	MergeInto(source *Performer, target *Performer, setAlias bool) error
 	DeleteScenePerformers(id uuid.UUID) error
 	DeletePerformerFavorites(id uuid.UUID) error
+	GetEditURLs(id *uuid.UUID, data *PerformerEdit) ([]*URL, error)
+	GetEditImages(id *uuid.UUID, data *PerformerEdit) ([]uuid.UUID, error)
+	GetEditAliases(id *uuid.UUID, data *PerformerEdit) ([]string, error)
+	GetEditTattoos(id *uuid.UUID, data *PerformerEdit) ([]*BodyModification, error)
+	GetEditPiercings(id *uuid.UUID, data *PerformerEdit) ([]*BodyModification, error)
 }

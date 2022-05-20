@@ -22,6 +22,8 @@ interface EditImagesProps {
   file: File | undefined;
   setFile: (f: File | undefined) => void;
   maxImages?: number;
+  /** Whether to allow svg/png image input */
+  allowLossless?: boolean;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -29,6 +31,7 @@ const EditImages: FC<EditImagesProps> = ({
   maxImages,
   file,
   setFile,
+  allowLossless = false,
 }) => {
   const {
     fields: images,
@@ -113,7 +116,11 @@ const EditImages: FC<EditImagesProps> = ({
                 <Form.Control
                   type="file"
                   onChange={onFileChange}
-                  accept=".png,.jpg,.webp,.svg"
+                  accept={[
+                    ".jpg",
+                    ".webp",
+                    ...(allowLossless ? [".svg", ".png"] : []),
+                  ].join(",")}
                 />
                 <div className={CLASSNAME_PLACEHOLDER}>
                   <Icon icon={faImages} />

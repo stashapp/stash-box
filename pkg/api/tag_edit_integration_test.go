@@ -403,6 +403,7 @@ func (s *tagEditTestRunner) testApplyDestroyTagEdit() {
 	tagID := createdTag.UUID()
 	sceneInput := models.SceneCreateInput{
 		TagIds: []uuid.UUID{tagID},
+		Date:   "2020-03-02",
 	}
 	scene, _ := s.createTestScene(&sceneInput)
 
@@ -460,6 +461,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 	// Scene with tag from both source and target, should not cause db unique error
 	sceneInput := models.SceneCreateInput{
 		TagIds: []uuid.UUID{mergeSource2.UUID(), mergeTarget.UUID()},
+		Date:   "2020-03-02",
 	}
 	scene1, err := s.createTestScene(&sceneInput)
 	if err != nil {
@@ -468,6 +470,7 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 
 	sceneInput = models.SceneCreateInput{
 		TagIds: []uuid.UUID{mergeSource1.UUID(), mergeSource2.UUID()},
+		Date:   "2020-03-02",
 	}
 	scene2, err := s.createTestScene(&sceneInput)
 	if err != nil {

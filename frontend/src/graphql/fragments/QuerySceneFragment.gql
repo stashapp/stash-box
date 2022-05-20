@@ -3,7 +3,7 @@
 #import "../fragments/ScenePerformerFragment.gql"
 fragment QuerySceneFragment on Scene {
   id
-  date
+  release_date
   title
   duration
   urls {

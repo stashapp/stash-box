@@ -21,8 +21,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	currentTime := time.Now()
 	newPerformer := models.Performer{
 		ID:        UUID,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 
 	fac := r.getRepoFactory(ctx)
@@ -100,7 +100,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 			return models.NotFoundError(input.ID)
 		}
 
-		updatedPerformer.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		updatedPerformer.UpdatedAt = time.Now()
 
 		// Populate performer from the input
 		if err = updatedPerformer.CopyFromUpdateInput(input); err != nil {

@@ -58,7 +58,7 @@ export interface Scenes_queryScenes_scenes_performers {
 export interface Scenes_queryScenes_scenes {
   __typename: "Scene";
   id: string;
-  date: any | null;
+  release_date: string | null;
   title: string | null;
   duration: number | null;
   urls: Scenes_queryScenes_scenes_urls[];

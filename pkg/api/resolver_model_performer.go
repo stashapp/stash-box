@@ -50,6 +50,10 @@ func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer
 	return &ret, nil
 }
 
+func (r *performerResolver) BirthDate(ctx context.Context, obj *models.Performer) (*string, error) {
+	return resolveFuzzyDate(&obj.Birthdate.String, &obj.BirthdateAccuracy.String), nil
+}
+
 func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {
 	if !obj.Birthdate.Valid {
 		return nil, nil
@@ -109,6 +113,22 @@ func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (
 func (r *performerResolver) Measurements(ctx context.Context, obj *models.Performer) (*models.Measurements, error) {
 	ret := obj.ResolveMeasurements()
 	return &ret, nil
+}
+
+func (r *performerResolver) CupSize(ctx context.Context, obj *models.Performer) (*string, error) {
+	return resolveNullString(obj.CupSize), nil
+}
+
+func (r *performerResolver) BandSize(ctx context.Context, obj *models.Performer) (*int, error) {
+	return resolveNullInt64(obj.BandSize)
+}
+
+func (r *performerResolver) WaistSize(ctx context.Context, obj *models.Performer) (*int, error) {
+	return resolveNullInt64(obj.WaistSize)
+}
+
+func (r *performerResolver) HipSize(ctx context.Context, obj *models.Performer) (*int, error) {
+	return resolveNullInt64(obj.HipSize)
 }
 
 func (r *performerResolver) BreastType(ctx context.Context, obj *models.Performer) (*models.BreastTypeEnum, error) {
@@ -177,9 +197,9 @@ func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performe
 }
 
 func (r *performerResolver) Created(ctx context.Context, obj *models.Performer) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
+	return &obj.CreatedAt, nil
 }
 
 func (r *performerResolver) Updated(ctx context.Context, obj *models.Performer) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
+	return &obj.UpdatedAt, nil
 }

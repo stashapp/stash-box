@@ -37,7 +37,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
     edit.vote_count >= config.vote_application_threshold;
 
   const expirationTime = addSeconds(
-    new Date(edit.created as string),
+    new Date(edit.created),
     shortVotingPeriod
       ? config.min_destructive_voting_period
       : config.voting_period

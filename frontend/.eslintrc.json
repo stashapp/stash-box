@@ -25,11 +25,7 @@
   },
   "rules": {
     "react/prop-types": "off",
-    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": true }],
-    "@typescript-eslint/no-unsafe-assignment": "off",
-    "@typescript-eslint/no-unsafe-call": "off",
-    "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
     "@typescript-eslint/ban-types": [
@@ -53,6 +49,12 @@
     "prefer-destructuring": ["error", {"object": true, "array": false}],
     "import/named": "off",
     "import/namespace": "off",
-    "import/no-unresolved": "off"
+    "import/no-unresolved": "off",
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ]
 	}
 }

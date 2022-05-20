@@ -25,12 +25,6 @@ export enum CriterionModifier {
   NOT_NULL = "NOT_NULL",
 }
 
-export enum DateAccuracyEnum {
-  DAY = "DAY",
-  MONTH = "MONTH",
-  YEAR = "YEAR",
-}
-
 export enum EditSortEnum {
   CREATED_AT = "CREATED_AT",
   UPDATED_AT = "UPDATED_AT",
@@ -225,7 +219,7 @@ export interface CancelEditInput {
 }
 
 export interface DateCriterionInput {
-  value: any;
+  value: GQLDate;
   modifier: CriterionModifier;
 }
 
@@ -237,7 +231,6 @@ export interface EditCommentInput {
 export interface EditInput {
   id?: string | null;
   operation: OperationEnum;
-  edit_id?: string | null;
   merge_source_ids?: string[] | null;
   comment?: string | null;
 }
@@ -272,9 +265,9 @@ export interface FingerprintEditInput {
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
-  created: any;
+  created: GQLTime;
   submissions?: number | null;
-  updated?: any | null;
+  updated?: GQLTime | null;
 }
 
 export interface FingerprintInput {
@@ -282,11 +275,6 @@ export interface FingerprintInput {
   hash: string;
   algorithm: FingerprintAlgorithm;
   duration: number;
-}
-
-export interface FuzzyDateInput {
-  date: any;
-  accuracy: DateAccuracyEnum;
 }
 
 export interface GrantInviteInput {
@@ -306,19 +294,12 @@ export interface IDCriterionInput {
 
 export interface ImageCreateInput {
   url?: string | null;
-  file?: any | null;
+  file?: GQLUpload | null;
 }
 
 export interface IntCriterionInput {
   value: number;
   modifier: CriterionModifier;
-}
-
-export interface MeasurementsInput {
-  cup_size?: string | null;
-  band_size?: number | null;
-  waist?: number | null;
-  hip?: number | null;
 }
 
 export interface MultiIDCriterionInput {
@@ -347,13 +328,16 @@ export interface PerformerEditDetailsInput {
   aliases?: string[] | null;
   gender?: GenderEnum | null;
   urls?: URLInput[] | null;
-  birthdate?: FuzzyDateInput | null;
+  birthdate?: string | null;
   ethnicity?: EthnicityEnum | null;
   country?: string | null;
   eye_color?: EyeColorEnum | null;
   hair_color?: HairColorEnum | null;
   height?: number | null;
-  measurements?: MeasurementsInput | null;
+  cup_size?: string | null;
+  band_size?: number | null;
+  waist_size?: number | null;
+  hip_size?: number | null;
   breast_type?: BreastTypeEnum | null;
   career_start_year?: number | null;
   career_end_year?: number | null;
@@ -423,7 +407,7 @@ export interface SceneCreateInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: any | null;
+  date: string;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
@@ -442,7 +426,7 @@ export interface SceneEditDetailsInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: any | null;
+  date?: string | null;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
@@ -482,7 +466,7 @@ export interface SceneUpdateInput {
   title?: string | null;
   details?: string | null;
   urls?: URLInput[] | null;
-  date?: any | null;
+  date?: string | null;
   studio_id?: string | null;
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;

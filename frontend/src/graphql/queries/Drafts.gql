@@ -5,9 +5,11 @@ query Drafts {
     expires
     data {
       ... on PerformerDraft {
+        id
         name
       }
       ... on SceneDraft {
+        id
         title
       }
     }

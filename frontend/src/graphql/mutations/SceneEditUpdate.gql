@@ -1,0 +1,6 @@
+#import "../fragments/EditFragment.gql"
+mutation SceneEditUpdate($id: ID!, $sceneData: SceneEditInput!) {
+  sceneEditUpdate(id: $id, input: $sceneData) {
+    ...EditFragment
+  }
+}

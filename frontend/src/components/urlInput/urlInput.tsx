@@ -1,6 +1,8 @@
 import { FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
+import { Icon } from "src/components/fragments";
 import { Control, useFieldArray, FieldError } from "react-hook-form";
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { useSites, ValidSiteTypeEnum } from "src/graphql";
 import { Site_findSite as Site } from "src/graphql/definitions/Site";
@@ -117,6 +119,9 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
               <InputGroup.Text className="overflow-hidden">
                 {u.url}
               </InputGroup.Text>
+              <Button variant="primary" href={u.url} target="_blank">
+                <Icon icon={faExternalLinkAlt} />
+              </Button>
             </InputGroup>
             {errors?.[i]?.url && (
               <div className="text-danger">{errors?.[i]?.url?.message}</div>

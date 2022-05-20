@@ -8,7 +8,6 @@ import { Performer_findPerformer as Performer } from "src/graphql/definitions/Pe
 import AuthContext from "src/AuthContext";
 import {
   canEdit,
-  formatFuzzyDate,
   getCountryByISO,
   formatBodyModifications,
   formatMeasurements,
@@ -113,10 +112,7 @@ const PerformerInfo: FC<Props> = ({ performer }) => (
                 </tr>
                 <tr>
                   <td>Birthdate</td>
-                  <td>
-                    {performer.birthdate &&
-                      formatFuzzyDate(performer.birthdate)}
-                  </td>
+                  <td>{performer.birth_date}</td>
                 </tr>
                 <tr>
                   <td>Height</td>
@@ -131,7 +127,7 @@ const PerformerInfo: FC<Props> = ({ performer }) => (
                     <>
                       <tr>
                         <td>Measurements</td>
-                        <td>{formatMeasurements(performer.measurements)}</td>
+                        <td>{formatMeasurements(performer)}</td>
                       </tr>
                       <tr>
                         <td>Breast type</td>

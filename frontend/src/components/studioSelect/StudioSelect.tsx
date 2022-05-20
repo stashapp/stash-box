@@ -1,6 +1,5 @@
 import { FC } from "react";
 import Async from "react-select/async";
-import { Controller } from "react-hook-form";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
@@ -16,11 +15,13 @@ import { Studios, StudiosVariables } from "src/graphql/definitions/Studios";
 import { SortDirectionEnum, StudioSortEnum } from "src/graphql";
 import { isUUID } from "src/utils";
 
+type StudioSlim = Pick<Studio_findStudio, "id" | "name">;
+
 interface StudioSelectProps {
-  initialStudio?: Pick<Studio_findStudio, "id" | "name"> | null;
+  initialStudio?: StudioSlim | null;
   excludeStudio?: string;
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  control: any;
+  onChange: (studio: StudioSlim | null) => void;
+  onBlur?: React.FocusEventHandler;
   networkSelect?: boolean;
   isClearable?: boolean;
 }
@@ -31,7 +32,8 @@ const CLASSNAME_SELECT = `${CLASSNAME}-select`;
 const StudioSelect: FC<StudioSelectProps> = ({
   initialStudio,
   excludeStudio,
-  control,
+  onChange,
+  onBlur,
   networkSelect = false,
   isClearable = false,
 }) => {
@@ -90,27 +92,18 @@ const StudioSelect: FC<StudioSelectProps> = ({
 
   return (
     <div className={CLASSNAME}>
-      <Controller
-        name="studio"
-        control={control}
+      <Async
+        classNamePrefix="react-select"
+        className={`react-select ${CLASSNAME_SELECT}`}
+        onChange={(s) => onChange(s ? { id: s.value, name: s.label } : null)}
+        onBlur={onBlur}
         defaultValue={defaultValue}
-        rules={{ validate: () => true }}
-        render={({ field: { onChange } }) => (
-          <Async
-            classNamePrefix="react-select"
-            className={`react-select ${CLASSNAME_SELECT}`}
-            onChange={(s) =>
-              onChange(s ? { id: s.value, name: s.label } : undefined)
-            }
-            defaultValue={defaultValue}
-            loadOptions={debouncedLoad}
-            placeholder="Search for studio"
-            noOptionsMessage={({ inputValue }) =>
-              inputValue === "" ? null : `No studios found for "${inputValue}"`
-            }
-            isClearable={isClearable}
-          />
-        )}
+        loadOptions={debouncedLoad}
+        placeholder="Search for studio"
+        noOptionsMessage={({ inputValue }) =>
+          inputValue === "" ? null : `No studios found for "${inputValue}"`
+        }
+        isClearable={isClearable}
       />
     </div>
   );

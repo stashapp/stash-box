@@ -285,6 +285,7 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 	careerstart := 2019
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
+	birthdate := "2000-02-03"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
@@ -301,21 +302,16 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2000-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
-		Ethnicity: &ethnicity,
-		Country:   &country,
-		EyeColor:  &eyecolor,
-		HairColor: &haircolor,
-		Height:    &height,
-		Measurements: &models.MeasurementsInput{
-			Hip:      &hip,
-			Waist:    &waist,
-			BandSize: &band,
-			CupSize:  &cup,
-		},
+		Birthdate:       &birthdate,
+		Ethnicity:       &ethnicity,
+		Country:         &country,
+		EyeColor:        &eyecolor,
+		HairColor:       &haircolor,
+		Height:          &height,
+		HipSize:         &hip,
+		WaistSize:       &waist,
+		BandSize:        &band,
+		CupSize:         &cup,
 		BreastType:      &breasttype,
 		CareerStartYear: &careerstart,
 		CareerEndYear:   &careerend,
@@ -393,6 +389,7 @@ func (s *testRunner) createTestScene(input *models.SceneCreateInput) (*sceneOutp
 			Fingerprints: []*models.FingerprintEditInput{
 				s.generateSceneFingerprint(nil),
 			},
+			Date: "2020-03-02",
 		}
 	}
 
@@ -720,6 +717,7 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 	careerstart := 2019
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
+	birthdate := "2000-02-03"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
@@ -736,21 +734,16 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 				SiteID: site.ID,
 			},
 		},
-		Birthdate: &models.FuzzyDateInput{
-			Date:     "2000-02-03",
-			Accuracy: models.DateAccuracyEnumDay,
-		},
-		Ethnicity: &ethnicity,
-		Country:   &country,
-		EyeColor:  &eyecolor,
-		HairColor: &haircolor,
-		Height:    &height,
-		Measurements: &models.MeasurementsInput{
-			Hip:      &hip,
-			Waist:    &waist,
-			BandSize: &band,
-			CupSize:  &cup,
-		},
+		Birthdate:       &birthdate,
+		Ethnicity:       &ethnicity,
+		Country:         &country,
+		EyeColor:        &eyecolor,
+		HairColor:       &haircolor,
+		Height:          &height,
+		HipSize:         &hip,
+		WaistSize:       &waist,
+		BandSize:        &band,
+		CupSize:         &cup,
 		BreastType:      &breasttype,
 		CareerStartYear: &careerstart,
 		CareerEndYear:   &careerend,
@@ -789,7 +782,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 				SiteID: site.ID,
 			},
 		},
-		Date: &date,
+		Date: date,
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
