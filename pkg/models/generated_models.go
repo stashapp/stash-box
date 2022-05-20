@@ -918,16 +918,18 @@ type EditSortEnum string
 const (
 	EditSortEnumCreatedAt EditSortEnum = "CREATED_AT"
 	EditSortEnumUpdatedAt EditSortEnum = "UPDATED_AT"
+	EditSortEnumClosedAt  EditSortEnum = "CLOSED_AT"
 )
 
 var AllEditSortEnum = []EditSortEnum{
 	EditSortEnumCreatedAt,
 	EditSortEnumUpdatedAt,
+	EditSortEnumClosedAt,
 }
 
 func (e EditSortEnum) IsValid() bool {
 	switch e {
-	case EditSortEnumCreatedAt, EditSortEnumUpdatedAt:
+	case EditSortEnumCreatedAt, EditSortEnumUpdatedAt, EditSortEnumClosedAt:
 		return true
 	}
 	return false
