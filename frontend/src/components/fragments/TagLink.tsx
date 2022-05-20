@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Badge, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
 interface IProps {
@@ -24,7 +24,7 @@ const TagLink: FC<IProps> = ({
     {link && !disabled ? <Link to={link}>{title}</Link> : title}
     {onRemove && (
       <Button onClick={onRemove}>
-        <Icon icon={faTimes} />
+        <Icon icon={faXmark} />
       </Button>
     )}
   </Badge>

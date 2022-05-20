@@ -1,7 +1,7 @@
 import { FC } from "react";
 import {
   faVenus,
-  faTransgenderAlt,
+  faTransgender,
   faMars,
   faVenusMars,
 } from "@fortawesome/free-solid-svg-icons";
@@ -18,7 +18,7 @@ const GenderIcon: FC<IconProps> = ({ gender }) => {
         ? faMars
         : gender.toLowerCase() === "female"
         ? faVenus
-        : faTransgenderAlt;
+        : faTransgender;
     return <Icon icon={icon} />;
   }
   return <Icon icon={faVenusMars} />;

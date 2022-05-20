@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
-import { faCheck, faTimes, faVideo } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faXmark, faVideo } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Edits_queryEdits_edits as Edit,
@@ -110,7 +110,7 @@ const EditHeader: FC<EditHeaderProps> = ({ edit }) => {
               <Row>
                 <div className="offset-2 d-flex align-items-center">
                   <Icon
-                    icon={edit.options?.set_merge_aliases ? faCheck : faTimes}
+                    icon={edit.options?.set_merge_aliases ? faCheck : faXmark}
                     color={edit.options?.set_merge_aliases ? "green" : "red"}
                   />
                   <span className="ms-1">
