@@ -1,7 +1,21 @@
-import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloLink,
+  TypePolicies,
+} from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { setContext, ContextSetter } from "@apollo/client/link/context";
 import { createUploadLink } from "apollo-upload-client";
+
+const typePolicies: TypePolicies = {
+  SceneDraft: {
+    keyFields: false,
+  },
+  PerformerDraft: {
+    keyFields: false,
+  },
+};
 
 const isDevEnvironment = () => import.meta.env.DEV;
 
@@ -55,7 +69,7 @@ const createClient = () =>
       }),
       httpLink as unknown as ApolloLink,
     ]),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({ typePolicies }),
   });
 
 export const setToken = (token: string) => {
