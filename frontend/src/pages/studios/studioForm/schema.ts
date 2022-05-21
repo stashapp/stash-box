@@ -31,7 +31,8 @@ export const StudioSchema = yup.object({
       id: yup.string().required(),
       name: yup.string().required(),
     })
-    .nullable(),
+    .nullable()
+    .default(null),
   note: yup.string().required("Edit note is required"),
 });
 

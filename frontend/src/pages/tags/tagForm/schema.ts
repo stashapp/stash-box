@@ -10,7 +10,7 @@ export const TagSchema = yup.object({
       name: yup.string().required(),
     })
     .nullable()
-    .defined(),
+    .default(null),
   note: yup.string().required("Edit note is required"),
 });
 
