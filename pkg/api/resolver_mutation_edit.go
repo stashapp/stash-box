@@ -13,6 +13,7 @@ import (
 
 var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
 var ErrAlreadyUpdated = fmt.Errorf("Edits can only be updated once")
+var ErrClosedEdit = fmt.Errorf("Votes can only be cast on pending edits")
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
@@ -327,6 +328,10 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 		voteEdit, err = eqb.Find(input.ID)
 		if err != nil {
 			return err
+		}
+
+		if voteEdit.Status != models.VoteStatusEnumPending.String() {
+			return ErrClosedEdit
 		}
 
 		if err := user.ValidateOwner(ctx, voteEdit.UserID); err == nil {
