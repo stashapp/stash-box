@@ -28,7 +28,8 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
 
   const doUpdate = (
     updateData: PerformerEditDetailsInput,
-    editNote: string
+    editNote: string,
+    setModifyAliases: boolean
   ) => {
     if (!isPerformerDetails(edit.details)) return;
 
@@ -44,6 +45,11 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
             id: edit.target?.id,
             operation: edit.operation,
             comment: editNote,
+            merge_source_ids: edit.merge_sources.map((s) => s.id),
+          },
+          options: {
+            set_modify_aliases: setModifyAliases,
+            set_merge_aliases: edit.options?.set_merge_aliases,
           },
           details,
         },
