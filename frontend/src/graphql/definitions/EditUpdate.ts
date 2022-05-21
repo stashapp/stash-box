@@ -162,10 +162,17 @@ export interface EditUpdate_findEdit_target_Scene_images {
   height: number;
 }
 
+export interface EditUpdate_findEdit_target_Scene_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface EditUpdate_findEdit_target_Scene_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: EditUpdate_findEdit_target_Scene_studio_parent | null;
 }
 
 export interface EditUpdate_findEdit_target_Scene_performers_performer {
