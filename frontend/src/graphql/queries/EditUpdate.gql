@@ -13,7 +13,7 @@ query EditUpdate($id: ID!) {
     created
     updated
     vote_count
-     merge_sources {
+    merge_sources {
       ... on Tag {
         id
       }
