@@ -7,6 +7,7 @@ interface MultiSelectProps {
   onChange: (values: string[]) => void;
   placeholder?: string;
   plural?: string;
+  initialSelected?: string[];
 }
 
 interface IOptionType {
@@ -20,8 +21,9 @@ const CheckboxSelect: FC<MultiSelectProps> = ({
   onChange,
   placeholder = "Select...",
   plural = "values",
+  initialSelected = [],
 }) => {
-  const [unselected, setUnselected] = useState<string[]>([]);
+  const [unselected, setUnselected] = useState<string[]>(initialSelected);
 
   const handleChange = (vals: OnChangeValue<IOptionType, true>) => {
     const selected = vals.map((v) => [v.value, ...(v.subValues ?? [])]).flat();
@@ -57,8 +59,13 @@ const CheckboxSelect: FC<MultiSelectProps> = ({
     } ${plural} selected`;
   };
 
+  const defaultValue = values.filter((val) =>
+    initialSelected.includes(val.value)
+  );
+
   return (
     <Select
+      defaultValue={defaultValue}
       isMulti
       classNamePrefix="react-select"
       className="react-select CheckboxSelect"
