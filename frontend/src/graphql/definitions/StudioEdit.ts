@@ -1417,6 +1417,7 @@ export interface StudioEdit_studioEdit {
   created: GQLTime;
   updated: GQLTime | null;
   closed: GQLTime | null;
+  expires: GQLTime | null;
   /**
    *  = Accepted - Rejected
    */

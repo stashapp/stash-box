@@ -6,6 +6,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -44,6 +45,29 @@ func (r *editResolver) Closed(ctx context.Context, obj *models.Edit) (*time.Time
 		return nil, nil
 	}
 	return &obj.ClosedAt.Time, nil
+}
+
+func (r *editResolver) Expires(ctx context.Context, obj *models.Edit) (*time.Time, error) {
+	if obj.Status != models.VoteStatusEnumPending.String() {
+		return nil, nil
+	}
+
+	// Count expiration time from creation, or time when edit was amended
+	startTime := obj.CreatedAt
+	if obj.UpdatedAt.Valid {
+		startTime = obj.UpdatedAt.Time
+	}
+
+	// Pending edits that have reached the voting threshold have shorter voting periods.
+	// This will happen for destructive edits, or when votes are not unanimous.
+	short := config.GetVoteApplicationThreshold() > 0 && obj.VoteCount >= config.GetVoteApplicationThreshold()
+	duration := config.GetVotingPeriod()
+	if short {
+		duration = config.GetMinDestructiveVotingPeriod()
+	}
+
+	expiration := startTime.Add(time.Second * time.Duration(duration))
+	return &expiration, nil
 }
 
 func (r *editResolver) Target(ctx context.Context, obj *models.Edit) (models.EditTarget, error) {

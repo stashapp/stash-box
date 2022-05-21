@@ -74,6 +74,7 @@ type Edit {
     created: Time!
     updated: Time
     closed: Time
+    expires: Time
 }
 
 input EditInput {
