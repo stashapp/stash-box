@@ -1,13 +1,13 @@
 mutation AddStudio($studioData: StudioCreateInput!) {
   studioCreate(input: $studioData) {
-      id
-      name
-      urls {
-          url
-          site {
-              id
-              name
-          }
+    id
+    name
+    urls {
+      url
+      site {
+        id
+        name
       }
+    }
   }
 }
