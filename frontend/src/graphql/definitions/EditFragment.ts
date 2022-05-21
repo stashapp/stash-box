@@ -189,10 +189,17 @@ export interface EditFragment_target_Scene_images {
   height: number;
 }
 
+export interface EditFragment_target_Scene_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface EditFragment_target_Scene_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: EditFragment_target_Scene_studio_parent | null;
 }
 
 export interface EditFragment_target_Scene_performers_performer {
@@ -1317,10 +1324,17 @@ export interface EditFragment_merge_sources_Scene_images {
   height: number;
 }
 
+export interface EditFragment_merge_sources_Scene_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface EditFragment_merge_sources_Scene_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: EditFragment_merge_sources_Scene_studio_parent | null;
 }
 
 export interface EditFragment_merge_sources_Scene_performers_performer {

@@ -189,10 +189,17 @@ export interface SceneEdit_sceneEdit_target_Scene_images {
   height: number;
 }
 
+export interface SceneEdit_sceneEdit_target_Scene_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface SceneEdit_sceneEdit_target_Scene_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: SceneEdit_sceneEdit_target_Scene_studio_parent | null;
 }
 
 export interface SceneEdit_sceneEdit_target_Scene_performers_performer {
@@ -1317,10 +1324,17 @@ export interface SceneEdit_sceneEdit_merge_sources_Scene_images {
   height: number;
 }
 
+export interface SceneEdit_sceneEdit_merge_sources_Scene_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface SceneEdit_sceneEdit_merge_sources_Scene_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: SceneEdit_sceneEdit_merge_sources_Scene_studio_parent | null;
 }
 
 export interface SceneEdit_sceneEdit_merge_sources_Scene_performers_performer {
