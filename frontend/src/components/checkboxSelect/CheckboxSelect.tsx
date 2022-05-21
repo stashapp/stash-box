@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import Select, { OnChangeValue } from "react-select";
 import { Form } from "react-bootstrap";
+import { uniq } from "lodash-es";
 
 interface MultiSelectProps {
   values: IOptionType[];
@@ -26,7 +27,9 @@ const CheckboxSelect: FC<MultiSelectProps> = ({
   const [unselected, setUnselected] = useState<string[]>(initialSelected);
 
   const handleChange = (vals: OnChangeValue<IOptionType, true>) => {
-    const selected = vals.map((v) => [v.value, ...(v.subValues ?? [])]).flat();
+    const selected = uniq(
+      vals.map((v) => [v.value, ...(v.subValues ?? [])]).flat()
+    );
 
     setUnselected(selected);
     onChange(selected);
