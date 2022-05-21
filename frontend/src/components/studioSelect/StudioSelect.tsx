@@ -108,7 +108,9 @@ const StudioSelect: FC<StudioSelectProps> = ({
   const formatStudioName = (opt: IOptionType) => (
     <>
       <span>{opt.label}</span>
-      {opt.sublabel && <span className="parent-studio">({opt.sublabel})</span>}
+      {opt.sublabel && (
+        <small className="bullet-separator parent-studio">{opt.sublabel}</small>
+      )}
     </>
   );
 
