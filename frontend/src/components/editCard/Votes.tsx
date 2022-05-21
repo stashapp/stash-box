@@ -1,10 +1,12 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
+import { sortBy } from "lodash-es";
 
 import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 import { VoteTypeEnum } from "src/graphql";
-import { userHref } from "src/utils/route";
+import { userHref, formatDateTime } from "src/utils";
 import { VoteTypes } from "src/constants/enums";
+import { Tooltip } from "src/components/fragments";
 
 const CLASSNAME = "EditVotes";
 
@@ -23,13 +25,15 @@ const Votes: FC<VotesProps> = ({ edit }) => (
         <b>{edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length}</b>
         <span className="ms-1">no</span>
       </div>
-      {edit.votes
+      {sortBy(edit.votes, (v) => v.date)
         .filter((v) => v.vote !== VoteTypeEnum.ABSTAIN)
         .map(
           (v) =>
             v.user && (
               <div key={`${edit.id}${v.user.id}`}>
-                <Link to={userHref(v.user)}>{v.user.name}</Link>
+                <Tooltip text={formatDateTime(v.date)}>
+                  <Link to={userHref(v.user)}>{v.user.name}</Link>
+                </Tooltip>
                 <span className="mx-2">&bull;</span>
                 {VoteTypes[v.vote]}
               </div>
