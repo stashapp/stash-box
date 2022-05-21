@@ -1,6 +1,4 @@
 import { Button, Form, InputGroup } from "react-bootstrap";
-import { useHistory } from "react-router-dom";
-import queryString from "query-string";
 import {
   faSortAmountUp,
   faSortAmountDown,
@@ -19,24 +17,14 @@ import {
   EditStatusTypes,
 } from "src/constants/enums";
 import { Icon } from "src/components/fragments";
-import { resolveEnum } from "src/utils";
-
-function resolveParam<T>(
-  type: T,
-  param: string | (string | null)[] | undefined | null
-): T[keyof T] | undefined {
-  if (!param) return;
-  const strval = Array.isArray(param) ? param[0] : param;
-  if (strval == null) return;
-  return type[strval.toUpperCase() as keyof T];
-}
+import { useQueryParams } from "src/hooks";
+import { resolveEnum, ensureEnum } from "src/utils";
 
 const sortOptions = [
-  { value: "", label: "Date created" },
+  { value: EditSortEnum.CREATED_AT, label: "Date created" },
   { value: EditSortEnum.CLOSED_AT, label: "Date closed" },
   { value: EditSortEnum.UPDATED_AT, label: "Date updated" },
 ];
-const defaultSort = EditSortEnum.CREATED_AT;
 
 interface EditFilterProps {
   sort?: EditSortEnum;
@@ -57,52 +45,29 @@ const useEditFilter = ({
   favorite: fixedFavorite,
   showFavoriteOption = true,
 }: EditFilterProps) => {
-  const history = useHistory();
-  const query = queryString.parse(history.location.search);
-  const sort = resolveEnum(
-    EditSortEnum,
-    Array.isArray(query.sort) ? query.sort[0] : query.sort
-  );
-  const direction =
-    resolveParam(SortDirectionEnum, query.dir) ?? SortDirectionEnum.DESC;
-  const operation = resolveParam(OperationEnum, query.operation);
-  const status = resolveParam(VoteStatusEnum, query.status);
-  const type = resolveParam(TargetTypeEnum, query.type);
-  const favorite =
-    (Array.isArray(query.favorite) ? query.favorite[0] : query.favorite) ===
-    "true";
-  const selectedSort = fixedSort ?? sort ?? EditSortEnum.CREATED_AT;
+  const [params, setParams] = useQueryParams({
+    query: { name: "query", type: "string", default: "" },
+    sort: { name: "sort", type: "string", default: EditSortEnum.CREATED_AT },
+    direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
+    operation: { name: "operation", type: "string", default: "" },
+    status: { name: "status", type: "string", default: VoteStatusEnum.PENDING },
+    type: { name: "type", type: "string", default: "" },
+    favorite: { name: "favorite", type: "string", default: "false" },
+  });
+
+  const sort = ensureEnum(EditSortEnum, params.sort);
+  const direction = ensureEnum(SortDirectionEnum, params.direction);
+  const operation = resolveEnum(OperationEnum, params.operation);
+  const status = resolveEnum(VoteStatusEnum, params.status, undefined);
+  const type = resolveEnum(TargetTypeEnum, params.type);
+  const favorite = params.favorite === "true";
+
+  const selectedSort = fixedSort ?? sort;
   const selectedDirection = fixedDirection ?? direction;
   const selectedStatus = fixedStatus ?? status;
   const selectedType = fixedType ?? type;
   const selectedOperation = fixedOperation ?? operation;
   const selectedFavorite = fixedFavorite ?? favorite;
-
-  const createQueryString = (
-    updatedParams: Record<string, string | undefined>
-  ) =>
-    queryString
-      .stringify({
-        sort: !sort ? undefined : sort,
-        dir:
-          !direction || direction === SortDirectionEnum.DESC
-            ? undefined
-            : direction,
-        type: !type ? undefined : type,
-        status: !status ? undefined : status,
-        operation: !operation ? undefined : operation,
-        favorite: favorite ? "true" : undefined,
-        ...updatedParams,
-      })
-      .toLowerCase();
-
-  const handleChange = (key: string, value?: string) =>
-    history.replace({
-      ...history.location,
-      search: createQueryString({
-        [key]: !value ? undefined : value,
-      }),
-    });
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -117,10 +82,8 @@ const useEditFilter = ({
         <Form.Label>Order</Form.Label>
         <InputGroup>
           <Form.Select
-            onChange={(e) =>
-              handleChange("sort", e.currentTarget.value.toLowerCase())
-            }
-            defaultValue={selectedSort ?? defaultSort}
+            onChange={(e) => setParams("sort", e.currentTarget.value)}
+            defaultValue={selectedSort}
           >
             {sortOptions.map((s) => (
               <option value={s.value} key={s.value}>
@@ -131,11 +94,11 @@ const useEditFilter = ({
           <Button
             variant="secondary"
             onClick={() =>
-              handleChange(
-                "dir",
+              setParams(
+                "direction",
                 selectedDirection === SortDirectionEnum.DESC
                   ? SortDirectionEnum.ASC
-                  : undefined
+                  : SortDirectionEnum.DESC
               )
             }
           >
@@ -152,11 +115,11 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Type</Form.Label>
         <Form.Select
-          onChange={(e) => handleChange("type", e.currentTarget.value)}
+          onChange={(e) => setParams("type", e.currentTarget.value)}
           value={selectedType}
           disabled={!!fixedType}
         >
-          <option value="" key="all-targets">
+          <option value={""} key="all-targets">
             All
           </option>
           {enumToOptions(EditTargetTypes)}
@@ -165,11 +128,11 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Status</Form.Label>
         <Form.Select
-          onChange={(e) => handleChange("status", e.currentTarget.value)}
+          onChange={(e) => setParams("status", e.currentTarget.value)}
           value={selectedStatus}
           disabled={!!fixedStatus}
         >
-          <option value="" key="all-statuses">
+          <option value="all" key="all-statuses">
             All
           </option>
           {enumToOptions(EditStatusTypes)}
@@ -178,7 +141,7 @@ const useEditFilter = ({
       <Form.Group className="mx-2 mb-3 d-flex flex-column">
         <Form.Label>Operation</Form.Label>
         <Form.Select
-          onChange={(e) => handleChange("operation", e.currentTarget.value)}
+          onChange={(e) => setParams("operation", e.currentTarget.value)}
           value={selectedOperation}
           disabled={!!fixedOperation}
         >
@@ -196,10 +159,7 @@ const useEditFilter = ({
             type="switch"
             defaultChecked={favorite}
             onChange={(e) =>
-              handleChange(
-                "favorite",
-                e.currentTarget.checked ? "true" : undefined
-              )
+              setParams("favorite", e.currentTarget.checked.toString())
             }
           />
         </Form.Group>
