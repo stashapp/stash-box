@@ -13,7 +13,24 @@ query EditUpdate($id: ID!) {
     created
     updated
     vote_count
-    destructive
+     merge_sources {
+      ... on Tag {
+        id
+      }
+      ... on Performer {
+        id
+      }
+      ... on Studio {
+        id
+      }
+      ... on Scene {
+        id
+      }
+    }
+    options {
+      set_modify_aliases
+      set_merge_aliases
+    }
     user {
       id
       name
