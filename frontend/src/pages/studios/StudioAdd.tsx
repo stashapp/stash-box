@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import {
@@ -12,10 +12,13 @@ import StudioForm from "./studioForm";
 
 const StudioAdd: FC = () => {
   const history = useHistory();
+  const [submissionError, setSubmissionError] = useState("");
   const [insertStudioEdit, { loading: saving }] = useStudioEdit({
     onCompleted: (data) => {
+      if (submissionError) setSubmissionError("");
       if (data.studioEdit.id) history.push(editHref(data.studioEdit));
     },
+    onError: (error) => setSubmissionError(error.message),
   });
 
   const doInsert = (insertData: StudioEditDetailsInput, editNote: string) => {
@@ -37,6 +40,11 @@ const StudioAdd: FC = () => {
       <h3>Add new studio</h3>
       <hr />
       <StudioForm callback={doInsert} saving={saving} />
+      {submissionError && (
+        <div className="text-danger text-end col-9">
+          Error: {submissionError}
+        </div>
+      )}
     </div>
   );
 };
