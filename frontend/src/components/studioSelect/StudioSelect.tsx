@@ -21,7 +21,7 @@ type StudioSlim = Pick<Studio_findStudio, "id" | "name"> &
 interface IOptionType {
   value: string;
   label: string;
-  sublabel?: string;
+  sublabel: string | undefined;
 }
 
 interface StudioSelectProps {
@@ -98,11 +98,11 @@ const StudioSelect: FC<StudioSelectProps> = ({
   const debouncedLoad = debounce(fetchStudios, 200);
 
   const defaultValue = initialStudio
-    ? ({
+    ? {
         value: initialStudio.id,
         label: initialStudio.name,
         sublabel: initialStudio.parent?.name,
-      } as IOptionType)
+      }
     : undefined;
 
   const formatStudioName = (opt: IOptionType) => (
