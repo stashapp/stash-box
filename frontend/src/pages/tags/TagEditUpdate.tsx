@@ -32,6 +32,7 @@ export const TagEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
             id: edit.target?.id,
             operation: edit.operation,
             comment: editNote,
+            merge_source_ids: edit.merge_sources.map((s) => s.id),
           },
           details: updateData,
         },
