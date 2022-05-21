@@ -1,7 +1,5 @@
 import { FC } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import querystring from "query-string";
-import { useHistory } from "react-router-dom";
 import {
   faSortAmountUp,
   faSortAmountDown,
@@ -13,8 +11,8 @@ import {
   SortDirectionEnum,
   SceneSortEnum,
 } from "src/graphql";
-import { usePagination } from "src/hooks";
-import { resolveEnum } from "src/utils";
+import { usePagination, useQueryParams } from "src/hooks";
+import { ensureEnum } from "src/utils";
 import SceneCard from "src/components/sceneCard";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "./List";
@@ -27,31 +25,26 @@ interface Props {
 }
 
 const sortOptions = [
-  { value: "", label: "Release Date" },
+  { value: SceneSortEnum.DATE, label: "Release Date" },
   { value: SceneSortEnum.TRENDING, label: "Trending" },
   { value: SceneSortEnum.CREATED_AT, label: "Created At" },
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
 ];
 
 const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
-  const history = useHistory();
-  const queries = querystring.parse(history.location.search);
-  const sort = resolveEnum(
-    SceneSortEnum,
-    Array.isArray(queries.sort) ? queries.sort[0] : queries.sort
-  );
-  const direction =
-    (Array.isArray(queries.dir) ? queries.dir[0] : queries.dir) ===
-    SortDirectionEnum.ASC
-      ? SortDirectionEnum.ASC
-      : SortDirectionEnum.DESC;
+  const [params, setParams] = useQueryParams({
+    sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
+    dir: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
+  });
+  const sort = ensureEnum(SceneSortEnum, params.sort);
+  const direction = ensureEnum(SortDirectionEnum, params.dir);
 
   const { page, setPage } = usePagination();
   const { loading, data } = useScenes({
     input: {
       page,
       per_page: perPage,
-      sort: sort ?? SceneSortEnum.DATE,
+      sort,
       direction,
       ...filter,
     },
@@ -59,23 +52,11 @@ const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
 
   if (!loading && !data) return <ErrorMessage error="Failed to load scenes." />;
 
-  const handleQuery = (name: string, value?: string) => {
-    const qs = querystring.stringify({
-      ...querystring.parse(history.location.search),
-      [name]: value || undefined,
-      page: undefined,
-    });
-    const hash = history.location.hash ?? "";
-    history.replace(`${history.location.pathname}?${qs}${hash}`);
-  };
-
   const filters = (
     <InputGroup className="scene-sort w-auto">
       <Form.Select
         className="w-auto"
-        onChange={(e) =>
-          handleQuery("sort", e.currentTarget.value.toLowerCase())
-        }
+        onChange={(e) => setParams("sort", e.currentTarget.value.toLowerCase())}
         defaultValue={sort ?? "name"}
       >
         {sortOptions.map((s) => (
@@ -87,11 +68,11 @@ const SceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
       <Button
         variant="secondary"
         onClick={() =>
-          handleQuery(
+          setParams(
             "dir",
             direction === SortDirectionEnum.DESC
               ? SortDirectionEnum.ASC
-              : undefined
+              : SortDirectionEnum.DESC
           )
         }
       >

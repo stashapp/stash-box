@@ -1,21 +1,19 @@
 import { FC, useContext } from "react";
 import { Button } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
-import querystring from "query-string";
+import { Link } from "react-router-dom";
 
 import { CriterionModifier } from "src/graphql";
 import { canEdit, createHref } from "src/utils";
 import AuthContext from "src/AuthContext";
 import { SceneList } from "src/components/list";
+import { useQueryParams } from "src/hooks";
 import { ROUTE_SCENE_ADD } from "src/constants/route";
 
 const Scenes: FC = () => {
   const auth = useContext(AuthContext);
-  const history = useHistory();
-  const queries = querystring.parse(history.location.search);
-  const fingerprint = Array.isArray(queries.fingerprint)
-    ? queries.fingerprint[0]
-    : queries.fingerprint;
+  const [{ fingerprint }] = useQueryParams({
+    fingerprint: { name: "fingerprint", type: "string" },
+  });
   const filter = fingerprint
     ? {
         fingerprints: {

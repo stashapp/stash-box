@@ -1,8 +1,7 @@
 import { FC } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Card, Form, Row } from "react-bootstrap";
 import { debounce } from "lodash-es";
-import querystring from "query-string";
 
 import {
   useTags,
@@ -10,7 +9,7 @@ import {
   TagSortEnum,
   TagQueryInput,
 } from "src/graphql";
-import { usePagination } from "src/hooks";
+import { usePagination, useQueryParams } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import { createHref, tagHref } from "src/utils/route";
 import { ROUTE_CATEGORIES } from "src/constants/route";
@@ -24,13 +23,13 @@ interface TagListProps {
 }
 
 const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
-  const history = useHistory();
-  const queries = querystring.parse(history.location.search);
-  const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
+  const [{ name }, setParams] = useQueryParams({
+    name: { name: "query", type: "string", default: "" },
+  });
   const { page, setPage } = usePagination();
   const { loading, data } = useTags({
     input: {
-      name: query,
+      name: name.trim(),
       page,
       per_page: PER_PAGE,
       sort: TagSortEnum.NAME,
@@ -51,22 +50,14 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
     </li>
   ));
 
-  const handleQuery = (q: string) => {
-    const qs = querystring.stringify({
-      ...querystring.parse(history.location.search),
-      query: q || undefined,
-      page: undefined,
-    });
-    history.replace(`${history.location.pathname}?${qs}`);
-  };
-  const debouncedHandler = debounce(handleQuery, 200);
+  const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
     <Form.Control
       id="tag-query"
-      onChange={(e) => debouncedHandler(e.currentTarget.value)}
+      onChange={(e) => debouncedHandler("name", e.currentTarget.value)}
       placeholder="Filter tag name"
-      defaultValue={query ?? ""}
+      defaultValue={name}
       className="w-25"
     />
   );

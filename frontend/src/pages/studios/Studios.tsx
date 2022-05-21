@@ -1,33 +1,30 @@
 import { FC, useContext } from "react";
 import { Button, Card, Form } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { studioHref, createHref, canEdit } from "src/utils";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
 import { debounce } from "lodash-es";
 import AuthContext from "src/AuthContext";
-import querystring from "query-string";
 
 import { useStudios, SortDirectionEnum, StudioSortEnum } from "src/graphql";
-import { usePagination } from "src/hooks";
+import { usePagination, useQueryParams } from "src/hooks";
 import { List } from "src/components/list";
 import { FavoriteStar } from "src/components/fragments";
 
 const PER_PAGE = 40;
 
 const StudiosComponent: FC = () => {
-  const history = useHistory();
   const auth = useContext(AuthContext);
-  const queries = querystring.parse(history.location.search);
-  const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
-  const favorite =
-    (Array.isArray(queries.favorite)
-      ? queries.favorite[0]
-      : queries.favorite) === "true";
+  const [params, setParams] = useQueryParams({
+    query: { name: "query", type: "string", default: "" },
+    favorite: { name: "favorite", type: "string", default: "false" },
+  });
+  const favorite = params.favorite === "true";
   const { page, setPage } = usePagination();
   const { loading, data } = useStudios({
     input: {
-      names: query,
-      is_favorite: favorite || undefined,
+      names: params.query,
+      is_favorite: favorite,
       page,
       per_page: PER_PAGE,
       direction: SortDirectionEnum.ASC,
@@ -47,15 +44,7 @@ const StudiosComponent: FC = () => {
     </li>
   ));
 
-  const handleQuery = (name: string, value?: string) => {
-    const qs = querystring.stringify({
-      ...querystring.parse(history.location.search),
-      [name]: value || undefined,
-      page: undefined,
-    });
-    history.replace(`${history.location.pathname}?${qs}`);
-  };
-  const debouncedHandler = debounce(handleQuery, 200);
+  const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
     <>
@@ -63,7 +52,7 @@ const StudiosComponent: FC = () => {
         id="studio-query"
         onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
         placeholder="Filter studio name"
-        defaultValue={query ?? ""}
+        defaultValue={params.query ?? ""}
         className="w-25 me-3"
       />
       <Form.Group controlId="favorite">
@@ -73,10 +62,7 @@ const StudiosComponent: FC = () => {
           label="Only favorites"
           defaultChecked={favorite}
           onChange={(e) =>
-            handleQuery(
-              "favorite",
-              e.currentTarget.checked ? "true" : undefined
-            )
+            setParams("favorite", e.currentTarget.checked.toString())
           }
         />
       </Form.Group>

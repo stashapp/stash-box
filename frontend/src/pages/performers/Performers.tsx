@@ -1,8 +1,7 @@
 import { FC, useContext } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
-import querystring from "query-string";
 import { debounce } from "lodash-es";
 import {
   faSortAmountUp,
@@ -15,10 +14,10 @@ import {
   GenderFilterEnum,
   PerformerSortEnum,
 } from "src/graphql";
-import { usePagination } from "src/hooks";
+import { usePagination, useQueryParams } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
-import { canEdit, resolveEnum } from "src/utils";
+import { canEdit, ensureEnum, resolveEnum } from "src/utils";
 import AuthContext from "src/AuthContext";
 import { List } from "src/components/list";
 import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
@@ -30,7 +29,7 @@ const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
   label: GenderFilterTypes[g as GenderFilterEnum],
 }));
 const sortOptions = [
-  { value: "", label: "Name" },
+  { value: PerformerSortEnum.NAME, label: "Name" },
   { value: PerformerSortEnum.BIRTHDATE, label: "Birthdate" },
   { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
   { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
@@ -39,35 +38,27 @@ const sortOptions = [
 ];
 
 const PerformersComponent: FC = () => {
-  const history = useHistory();
   const auth = useContext(AuthContext);
-  const queries = querystring.parse(history.location.search);
-  const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
-  const gender = Array.isArray(queries.gender)
-    ? queries.gender[0]
-    : queries.gender;
-  const direction =
-    (Array.isArray(queries.dir) ? queries.dir[0] : queries.dir) ===
-    SortDirectionEnum.DESC
-      ? SortDirectionEnum.DESC
-      : SortDirectionEnum.ASC;
-  const sort = resolveEnum(
-    PerformerSortEnum,
-    Array.isArray(queries.sort) ? queries.sort[0] : queries.sort
-  );
-  const favorite =
-    (Array.isArray(queries.favorite)
-      ? queries.favorite[0]
-      : queries.favorite) === "true";
+  const [params, setParams] = useQueryParams({
+    query: { name: "query", type: "string", default: "" },
+    gender: { name: "gender", type: "string" },
+    direction: { name: "dir", type: "string", default: SortDirectionEnum.ASC },
+    sort: { name: "sort", type: "string", default: PerformerSortEnum.NAME },
+    favorite: { name: "favorite", type: "string", default: "false" },
+  });
+  const gender = resolveEnum(GenderFilterEnum, params.gender);
+  const direction = ensureEnum(SortDirectionEnum, params.direction);
+  const sort = ensureEnum(PerformerSortEnum, params.sort);
+  const favorite = params.favorite === "true";
   const { page, setPage } = usePagination();
   const { loading, data } = usePerformers({
     input: {
-      name: query || undefined,
-      gender: gender ? (gender as GenderFilterEnum) : undefined,
-      is_favorite: favorite || undefined,
+      name: params.query,
+      gender,
+      is_favorite: favorite,
       page,
       per_page: PER_PAGE,
-      sort: sort ?? PerformerSortEnum.NAME,
+      sort,
       direction,
     },
   });
@@ -83,15 +74,7 @@ const PerformersComponent: FC = () => {
     )
   );
 
-  const handleQuery = (name: string, value?: string) => {
-    const qs = querystring.stringify({
-      ...querystring.parse(history.location.search),
-      [name]: value || undefined,
-      page: undefined,
-    });
-    history.replace(`${history.location.pathname}?${qs}`);
-  };
-  const debouncedHandler = debounce(handleQuery, 200);
+  const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
     <>
@@ -99,7 +82,7 @@ const PerformersComponent: FC = () => {
         id="performer-name"
         onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
         placeholder="Filter performer name"
-        defaultValue={query ?? ""}
+        defaultValue={params.query}
         className="w-auto"
       />
       <Select
@@ -107,14 +90,14 @@ const PerformersComponent: FC = () => {
         options={genderOptions}
         placeholder="Gender"
         isClearable
-        onChange={(e) => handleQuery("gender", e?.value ?? undefined)}
+        onChange={(e) => setParams("gender", e?.value ?? undefined)}
         classNamePrefix="react-select"
         className="performer-filter ms-2"
       />
       <InputGroup className="performer-sort ms-2 me-3">
         <Form.Select
           onChange={(e) =>
-            handleQuery("sort", e.currentTarget.value.toLowerCase())
+            setParams("sort", e.currentTarget.value.toLowerCase())
           }
           defaultValue={sort ?? "name"}
         >
@@ -127,8 +110,8 @@ const PerformersComponent: FC = () => {
         <Button
           variant="secondary"
           onClick={() =>
-            handleQuery(
-              "dir",
+            setParams(
+              "direction",
               direction === SortDirectionEnum.ASC
                 ? SortDirectionEnum.DESC
                 : undefined
@@ -151,10 +134,7 @@ const PerformersComponent: FC = () => {
           label="Only favorites"
           defaultChecked={favorite}
           onChange={(e) =>
-            handleQuery(
-              "favorite",
-              e.currentTarget.checked ? "true" : undefined
-            )
+            setParams("favorite", e.currentTarget.checked.toString())
           }
         />
       </Form.Group>

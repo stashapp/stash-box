@@ -1,12 +1,11 @@
 import { FC } from "react";
 import { Button, Form, Table } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
-import querystring from "query-string";
 import { debounce } from "lodash-es";
 
 import { useUsers } from "src/graphql";
-import { usePagination } from "src/hooks";
+import { usePagination, useQueryParams } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import { createHref } from "src/utils";
@@ -19,13 +18,13 @@ import {
 const PER_PAGE = 20;
 
 const UsersComponent: FC = () => {
-  const history = useHistory();
-  const queries = querystring.parse(history.location.search);
-  const query = Array.isArray(queries.query) ? queries.query[0] : queries.query;
+  const [{ query }, setParams] = useQueryParams({
+    query: { name: "query", type: "string", default: "" },
+  });
   const { page, setPage } = usePagination();
   const { loading, data } = useUsers({
     input: {
-      name: query,
+      name: query.trim(),
       page,
       per_page: PER_PAGE,
     },
@@ -54,15 +53,7 @@ const UsersComponent: FC = () => {
     </tr>
   ));
 
-  const handleQuery = (name: string, value?: string) => {
-    const qs = querystring.stringify({
-      ...querystring.parse(history.location.search),
-      [name]: value || undefined,
-      page: undefined,
-    });
-    history.replace(`${history.location.pathname}?${qs}`);
-  };
-  const debouncedHandler = debounce(handleQuery, 200);
+  const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
     <Form.Control
