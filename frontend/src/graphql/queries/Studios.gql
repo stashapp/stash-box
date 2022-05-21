@@ -2,22 +2,22 @@
 #import "../fragments/ImageFragment.gql"
 query Studios($input: StudioQueryInput!) {
   queryStudios(input: $input) {
-      count
-      studios {
+    count
+    studios {
+      id
+      name
+      deleted
+      parent {
         id
         name
-        deleted
-        parent {
-            id,
-            name
-        }
-        urls {
-          ...URLFragment
-        }
-        images {
-          ...ImageFragment
-        }
-        is_favorite
       }
+      urls {
+        ...URLFragment
+      }
+      images {
+        ...ImageFragment
+      }
+      is_favorite
+    }
   }
 }

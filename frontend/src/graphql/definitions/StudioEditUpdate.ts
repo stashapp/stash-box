@@ -189,10 +189,17 @@ export interface StudioEditUpdate_studioEditUpdate_target_Scene_images {
   height: number;
 }
 
+export interface StudioEditUpdate_studioEditUpdate_target_Scene_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface StudioEditUpdate_studioEditUpdate_target_Scene_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: StudioEditUpdate_studioEditUpdate_target_Scene_studio_parent | null;
 }
 
 export interface StudioEditUpdate_studioEditUpdate_target_Scene_performers_performer {
@@ -1317,10 +1324,17 @@ export interface StudioEditUpdate_studioEditUpdate_merge_sources_Scene_images {
   height: number;
 }
 
+export interface StudioEditUpdate_studioEditUpdate_merge_sources_Scene_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface StudioEditUpdate_studioEditUpdate_merge_sources_Scene_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: StudioEditUpdate_studioEditUpdate_merge_sources_Scene_studio_parent | null;
 }
 
 export interface StudioEditUpdate_studioEditUpdate_merge_sources_Scene_performers_performer {
@@ -1403,6 +1417,7 @@ export interface StudioEditUpdate_studioEditUpdate {
   created: GQLTime;
   updated: GQLTime | null;
   closed: GQLTime | null;
+  expires: GQLTime | null;
   /**
    *  = Accepted - Rejected
    */

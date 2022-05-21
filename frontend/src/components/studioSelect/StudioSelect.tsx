@@ -15,7 +15,14 @@ import { Studios, StudiosVariables } from "src/graphql/definitions/Studios";
 import { SortDirectionEnum, StudioSortEnum } from "src/graphql";
 import { isUUID } from "src/utils";
 
-type StudioSlim = Pick<Studio_findStudio, "id" | "name">;
+type StudioSlim = Pick<Studio_findStudio, "id" | "name"> &
+  Partial<Pick<Studio_findStudio, "parent">>;
+
+interface IOptionType {
+  value: string;
+  label: string;
+  sublabel: string | undefined;
+}
 
 interface StudioSelectProps {
   initialStudio?: StudioSlim | null;
@@ -39,7 +46,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
 }) => {
   const client = useApolloClient();
 
-  const fetchStudios = async (term: string) => {
+  const fetchStudios = async (term: string): Promise<IOptionType[]> => {
     const value = term.trim();
     if (isUUID(value)) {
       if (value === excludeStudio) {
@@ -56,7 +63,13 @@ const StudioSelect: FC<StudioSelectProps> = ({
         return [];
       }
 
-      return [{ value: studio.id, label: studio.name }];
+      return [
+        {
+          value: studio.id,
+          label: studio.name,
+          sublabel: studio.parent?.name,
+        },
+      ];
     }
 
     const { data } = await client.query<Studios, StudiosVariables>({
@@ -77,6 +90,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
       .map((s) => ({
         value: s.id,
         label: s.name,
+        sublabel: s.parent?.name,
       }))
       .filter((s) => s.value !== excludeStudio);
   };
@@ -87,8 +101,18 @@ const StudioSelect: FC<StudioSelectProps> = ({
     ? {
         value: initialStudio.id,
         label: initialStudio.name,
+        sublabel: initialStudio.parent?.name,
       }
     : undefined;
+
+  const formatStudioName = (opt: IOptionType) => (
+    <>
+      <span>{opt.label}</span>
+      {opt.sublabel && (
+        <small className="bullet-separator parent-studio">{opt.sublabel}</small>
+      )}
+    </>
+  );
 
   return (
     <div className={CLASSNAME}>
@@ -104,6 +128,7 @@ const StudioSelect: FC<StudioSelectProps> = ({
           inputValue === "" ? null : `No studios found for "${inputValue}"`
         }
         isClearable={isClearable}
+        formatOptionLabel={formatStudioName}
       />
     </div>
   );

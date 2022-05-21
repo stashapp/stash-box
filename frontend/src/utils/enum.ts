@@ -71,6 +71,11 @@ export const breastType = (
   }
 };
 
+export const ensureEnum = <T>(enm: { [s: string]: T }, value: string): T =>
+  (Object.values(enm) as unknown as string[]).includes(value.toUpperCase())
+    ? (value.toUpperCase() as unknown as T)
+    : Object.values(enm)[0];
+
 export const resolveEnum = <T>(
   enm: { [s: string]: T },
   value: string | null,

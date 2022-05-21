@@ -30,10 +30,17 @@ export interface Scene_findScene_images {
   height: number;
 }
 
+export interface Scene_findScene_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface Scene_findScene_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: Scene_findScene_studio_parent | null;
 }
 
 export interface Scene_findScene_performers_performer {

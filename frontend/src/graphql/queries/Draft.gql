@@ -40,28 +40,28 @@ query Draft($id: ID!) {
           ...URLFragment
         }
         studio {
-          ...on Studio {
+          ... on Studio {
             ...StudioFragment
           }
-          ... on DraftEntity { 
+          ... on DraftEntity {
             draftID: id
             name
           }
         }
         performers {
-          ...on Performer {
+          ... on Performer {
             ...PerformerFragment
           }
-          ... on DraftEntity { 
+          ... on DraftEntity {
             draftID: id
             name
           }
         }
         tags {
-          ...on Tag {
+          ... on Tag {
             ...TagFragment
           }
-          ... on DraftEntity { 
+          ... on DraftEntity {
             draftID: id
             name
           }
