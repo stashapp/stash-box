@@ -33,7 +33,7 @@ fragment PerformerFragment on Performer {
     ...URLFragment
   }
   images {
-    ... ImageFragment
+    ...ImageFragment
   }
   is_favorite
 }

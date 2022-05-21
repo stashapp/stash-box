@@ -1,7 +1,7 @@
 query Me {
-    me {
-        id
-        name
-        roles
-    }
+  me {
+    id
+    name
+    roles
+  }
 }
