@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { useHistory } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import { groupBy, keyBy, sortBy } from "lodash-es";
@@ -13,6 +13,7 @@ import {
 import { formatPendingEdits } from "src/utils";
 import { EditList, SceneList, URLList } from "src/components/list";
 import CheckboxSelect from "src/components/checkboxSelect";
+import { useQueryParams } from "src/hooks";
 import PerformerInfo from "./performerInfo";
 
 const DEFAULT_TAB = "scenes";
@@ -24,12 +25,9 @@ interface Props {
 const PerformerComponent: FC<Props> = ({ performer }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
-  const [studioFilter, setStudioFilter] = useState<string[] | null>(null);
-
-  // Clear studio filter on performer change
-  useEffect(() => {
-    setStudioFilter(null);
-  }, [performer.id]);
+  const [{ studioFilter }, setParams] = useQueryParams({
+    studioFilter: { name: "studios", type: "string[]" },
+  });
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.PERFORMER,
@@ -85,10 +83,6 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
     ])
     .flat();
 
-  const handleStudioSelect = (selected: string[]) => {
-    setStudioFilter(selected.length === 0 ? null : selected);
-  };
-
   return (
     <>
       <PerformerInfo performer={performer} />
@@ -102,10 +96,11 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
         <Tab eventKey="scenes" title="Scenes" className="PerformerScenes">
           <CheckboxSelect
             values={obj}
-            onChange={handleStudioSelect}
+            onChange={(ids) => setParams("studioFilter", ids)}
             placeholder="Filter by studios"
             plural="studios"
             key={`performer-${performer.id}-studio-select`}
+            initialSelected={studioFilter}
           />
           <SceneList
             perPage={40}
@@ -123,6 +118,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
                   }
                 : {}),
             }}
+            key={`performer-${performer.id}-scene-list`}
           />
         </Tab>
         <Tab eventKey="links" title="Links">

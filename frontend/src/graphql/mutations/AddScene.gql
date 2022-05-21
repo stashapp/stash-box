@@ -1,37 +1,37 @@
 mutation AddScene($sceneData: SceneCreateInput!) {
   sceneCreate(input: $sceneData) {
-      id
-      release_date
-      title,
-      details,
-      urls {
-        url,
-        site {
-          id
-          name
-        }
-      }
-      studio {
+    id
+    release_date
+    title
+    details
+    urls {
+      url
+      site {
         id
         name
       }
-      performers {
-        performer {
-          name
-          id
-		  gender
-		  aliases
-        }
-      }
-      fingerprints {
-        hash
-        algorithm
-        duration
-      }
-      tags {
-          id
-          name
-          description
+    }
+    studio {
+      id
+      name
+    }
+    performers {
+      performer {
+        name
+        id
+        gender
+        aliases
       }
     }
+    fingerprints {
+      hash
+      algorithm
+      duration
+    }
+    tags {
+      id
+      name
+      description
+    }
+  }
 }

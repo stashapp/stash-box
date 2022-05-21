@@ -30,10 +30,17 @@ export interface SceneFragment_images {
   height: number;
 }
 
+export interface SceneFragment_studio_parent {
+  __typename: "Studio";
+  id: string;
+  name: string;
+}
+
 export interface SceneFragment_studio {
   __typename: "Studio";
   id: string;
   name: string;
+  parent: SceneFragment_studio_parent | null;
 }
 
 export interface SceneFragment_performers_performer {

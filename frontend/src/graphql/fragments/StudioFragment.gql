@@ -1,24 +1,24 @@
 #import "../fragments/URLFragment.gql"
 fragment StudioFragment on Studio {
+  id
+  name
+  child_studios {
     id
     name
-    child_studios {
-      id
-      name
-    }
-    parent {
-      id
-      name
-    }
-    urls {
-      ...URLFragment
-    }
-    images {
-        id
-        url
-        height
-        width
-    }
-    deleted
-    is_favorite
+  }
+  parent {
+    id
+    name
+  }
+  urls {
+    ...URLFragment
+  }
+  images {
+    id
+    url
+    height
+    width
+  }
+  deleted
+  is_favorite
 }
