@@ -46,6 +46,7 @@
 div.react-select__menu {
   background-color: $secondary;
   color: $text-color;
+  z-index: 2;
 
   .react-select__option {
     color: $text-color;
