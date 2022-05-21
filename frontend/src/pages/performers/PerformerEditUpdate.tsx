@@ -51,16 +51,6 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     });
   };
 
-  const initial = {
-    ...edit.details,
-    measurements: {
-      waist: edit.details?.waist_size ?? null,
-      hip: edit.details?.hip_size ?? null,
-      band_size: edit.details?.band_size ?? null,
-      cup_size: edit.details?.cup_size ?? null,
-    },
-  };
-
   return (
     <div>
       <h3>
@@ -72,7 +62,7 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
       <hr />
       <PerformerForm
         performer={edit.target}
-        initial={initial}
+        initial={edit.details}
         callback={doUpdate}
         saving={saving}
       />
