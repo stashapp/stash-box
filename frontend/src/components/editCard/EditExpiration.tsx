@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { addSeconds, formatDistance } from "date-fns";
+import { formatDistance } from "date-fns";
 
 import { Tooltip } from "src/components/fragments";
 import { useConfig, VoteStatusEnum } from "src/graphql";
