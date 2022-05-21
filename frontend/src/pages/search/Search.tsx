@@ -80,7 +80,7 @@ const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
           )}
           <div>
             <Icon icon={faVideo} />
-            {performer.scene_count} scene{performer.scene_count > 1 && "s"}
+            {performer.scene_count} scene{performer.scene_count !== 1 && "s"}
           </div>
         </div>
       </div>
