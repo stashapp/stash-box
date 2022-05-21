@@ -1417,6 +1417,7 @@ export interface PerformerEdit_performerEdit {
   created: GQLTime;
   updated: GQLTime | null;
   closed: GQLTime | null;
+  expires: GQLTime | null;
   /**
    *  = Accepted - Rejected
    */

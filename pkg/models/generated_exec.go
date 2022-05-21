@@ -103,6 +103,7 @@ type ComplexityRoot struct {
 		Created      func(childComplexity int) int
 		Destructive  func(childComplexity int) int
 		Details      func(childComplexity int) int
+		Expires      func(childComplexity int) int
 		ID           func(childComplexity int) int
 		MergeSources func(childComplexity int) int
 		OldDetails   func(childComplexity int) int
@@ -593,6 +594,7 @@ type EditResolver interface {
 	Created(ctx context.Context, obj *Edit) (*time.Time, error)
 	Updated(ctx context.Context, obj *Edit) (*time.Time, error)
 	Closed(ctx context.Context, obj *Edit) (*time.Time, error)
+	Expires(ctx context.Context, obj *Edit) (*time.Time, error)
 }
 type EditCommentResolver interface {
 	User(ctx context.Context, obj *EditComment) (*User, error)
@@ -999,6 +1001,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Edit.Details(childComplexity), true
+
+	case "Edit.expires":
+		if e.complexity.Edit.Expires == nil {
+			break
+		}
+
+		return e.complexity.Edit.Expires(childComplexity), true
 
 	case "Edit.id":
 		if e.complexity.Edit.ID == nil {
@@ -4070,6 +4079,7 @@ type Edit {
     created: Time!
     updated: Time
     closed: Time
+    expires: Time
 }
 
 input EditInput {
@@ -8004,6 +8014,47 @@ func (ec *executionContext) fieldContext_Edit_closed(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Edit_expires(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Edit_expires(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Edit().Expires(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Edit_expires(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _EditComment_id(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_EditComment_id(ctx, field)
 	if err != nil {
@@ -11874,6 +11925,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneEdit(ctx context.Context,
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -11991,6 +12044,8 @@ func (ec *executionContext) fieldContext_Mutation_performerEdit(ctx context.Cont
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -12108,6 +12163,8 @@ func (ec *executionContext) fieldContext_Mutation_studioEdit(ctx context.Context
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -12225,6 +12282,8 @@ func (ec *executionContext) fieldContext_Mutation_tagEdit(ctx context.Context, f
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -12342,6 +12401,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneEditUpdate(ctx context.Co
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -12459,6 +12520,8 @@ func (ec *executionContext) fieldContext_Mutation_performerEditUpdate(ctx contex
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -12576,6 +12639,8 @@ func (ec *executionContext) fieldContext_Mutation_studioEditUpdate(ctx context.C
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -12693,6 +12758,8 @@ func (ec *executionContext) fieldContext_Mutation_tagEditUpdate(ctx context.Cont
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -12810,6 +12877,8 @@ func (ec *executionContext) fieldContext_Mutation_editVote(ctx context.Context, 
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -12927,6 +12996,8 @@ func (ec *executionContext) fieldContext_Mutation_editComment(ctx context.Contex
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -13044,6 +13115,8 @@ func (ec *executionContext) fieldContext_Mutation_applyEdit(ctx context.Context,
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -13161,6 +13234,8 @@ func (ec *executionContext) fieldContext_Mutation_cancelEdit(ctx context.Context
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -14869,6 +14944,8 @@ func (ec *executionContext) fieldContext_Performer_edits(ctx context.Context, fi
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -19351,6 +19428,8 @@ func (ec *executionContext) fieldContext_Query_findEdit(ctx context.Context, fie
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -20544,6 +20623,8 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(ctx context.
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -22162,6 +22243,8 @@ func (ec *executionContext) fieldContext_Scene_edits(ctx context.Context, field 
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -25796,6 +25879,8 @@ func (ec *executionContext) fieldContext_Tag_edits(ctx context.Context, field gr
 				return ec.fieldContext_Edit_updated(ctx, field)
 			case "closed":
 				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
@@ -34413,6 +34498,23 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Edit_closed(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "expires":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Edit_expires(ctx, field, obj)
 				return res
 			}
 
