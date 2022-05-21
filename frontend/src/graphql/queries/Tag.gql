@@ -1,15 +1,15 @@
 query Tag($name: String, $id: ID) {
-    findTag(name: $name, id: $id) {
-        id
-        name
-        description
-        aliases
-        deleted
-        category {
-          id
-          name
-          group
-          description
-        }
+  findTag(name: $name, id: $id) {
+    id
+    name
+    description
+    aliases
+    deleted
+    category {
+      id
+      name
+      group
+      description
     }
+  }
 }
