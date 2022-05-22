@@ -635,7 +635,12 @@ const PerformerForm: FC<PerformerProps> = ({
         </Tab>
 
         <Tab eventKey="confirm" title="Confirm" className="mt-3 col-xl-9">
-          {renderPerformerDetails(newChanges, oldChanges, true, updateAliases)}
+          {renderPerformerDetails(
+            newChanges,
+            oldChanges,
+            !!performer,
+            updateAliases
+          )}
           <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>
               <EditNote register={register} error={errors.note} />
