@@ -7,6 +7,7 @@ import StudioForm from "./studioForm";
 
 import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
 import { ROUTE_EDIT } from "src/constants";
+import Title from "src/components/title";
 
 export const StudioEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
   const history = useHistory();
@@ -43,12 +44,15 @@ export const StudioEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     });
   };
 
+  const studioName = edit?.target?.name ?? edit.details?.name;
+
   return (
     <div>
+      <Title page={`Update studio edit for "${studioName}"`} />
       <h3>
         Update studio edit for
         <i className="ms-2">
-          <b>{edit?.target?.name ?? edit.details?.name}</b>
+          <b>{studioName}</b>
         </i>
       </h3>
       <hr />
