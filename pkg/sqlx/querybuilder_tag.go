@@ -279,6 +279,22 @@ func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, in
 	return tags, countResult, nil
 }
 
+func (qb *tagQueryBuilder) SearchTags(term string, limit int) ([]*models.Tag, error) {
+	query := `
+		SELECT T.* FROM tags T
+		LEFT JOIN tag_aliases TA ON TA.tag_id = T.id
+		WHERE (
+			to_tsvector('english', T.name) ||
+			to_tsvector('english', COALESCE(TA.alias, ''))
+		) @@ plainto_tsquery($1)
+		AND T.deleted = FALSE
+		GROUP BY T.id
+		LIMIT $2;
+	`
+	args := []interface{}{term, limit}
+	return qb.queryTags(query, args)
+}
+
 func (qb *tagQueryBuilder) queryTags(query string, args []interface{}) (models.Tags, error) {
 	var output models.Tags
 	err := qb.dbi.RawQuery(tagDBTable, query, args, &output)
