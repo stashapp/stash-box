@@ -26,12 +26,13 @@ interface TagSelectProps {
   message?: string;
   excludeTags?: string[];
   menuPlacement?: MenuPlacement;
+  allowDeleted?: boolean;
 }
 
 interface SearchResult {
   value: Tag;
   label: string;
-  subLabel: string;
+  sublabel: string;
 }
 
 const CLASSNAME = "TagSelect";
@@ -45,6 +46,7 @@ const TagSelect: FC<TagSelectProps> = ({
   message = "Add tag:",
   excludeTags = [],
   menuPlacement = "auto",
+  allowDeleted = false,
 }) => {
   const client = useApolloClient();
   const [tags, setTags] = useState(initialTags);
@@ -86,15 +88,28 @@ const TagSelect: FC<TagSelectProps> = ({
     });
 
     return data.searchTag
-      .filter((tag) => !excluded.includes(tag.id))
+      .filter(
+        (tag) => !excluded.includes(tag.id) && (allowDeleted || !tag.deleted)
+      )
       .map((tag) => ({
         label: tag.name,
         value: tag,
-        subLabel: tag.description ?? "",
+        sublabel: tag.description ?? "",
       }));
   };
 
   const debouncedLoadOptions = debounce(handleSearch, 400);
+
+  const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => {
+    return (
+      <div title={value.aliases.map((a) => `\u{2022} ${a}`).join("\n")}>
+        <div className={`${CLASSNAME_SELECT}-value`}>
+          {value.deleted ? <del>{label}</del> : label}
+        </div>
+        <div className={`${CLASSNAME_SELECT}-subvalue`}>{sublabel}</div>
+      </div>
+    );
+  };
 
   return (
     <div className={CLASSNAME}>
@@ -112,6 +127,7 @@ const TagSelect: FC<TagSelectProps> = ({
           }
           menuPlacement={menuPlacement}
           controlShouldRenderValue={false}
+          formatOptionLabel={formatOptionLabel}
         />
       </div>
     </div>

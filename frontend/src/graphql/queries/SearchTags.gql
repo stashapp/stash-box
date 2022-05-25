@@ -1,5 +1,6 @@
 query SearchTags($term: String!, $limit: Int = 5) {
   searchTag(term: $term, limit: $limit) {
+    deleted
     id
     name
     description

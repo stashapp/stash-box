@@ -9,6 +9,7 @@
 
 export interface SearchTags_searchTag {
   __typename: "Tag";
+  deleted: boolean;
   id: string;
   name: string;
   description: string | null;
