@@ -295,6 +295,7 @@ func (qb *tagQueryBuilder) SearchTags(term string, limit int) ([]*models.Tag, er
 		) @@ plainto_tsquery($1)
 		AND T.deleted = FALSE
 		GROUP BY T.id
+		ORDER BY T.name ASC
 		LIMIT $2;
 	`
 	args := []interface{}{term, limit}
