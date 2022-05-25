@@ -14,6 +14,7 @@ import {
 import { SortDirectionEnum, TagSortEnum } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
+import { compareByName } from "src/utils";
 
 type TagSlim = {
   id: string;
@@ -66,7 +67,7 @@ const TagSelect: FC<TagSelectProps> = ({
   };
 
   const tagList = [...(tags ?? [])]
-    .sort((a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0))
+    .sort(compareByName)
     .map((tag) => (
       <TagLink
         title={tag.name}

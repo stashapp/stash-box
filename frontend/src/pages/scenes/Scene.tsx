@@ -19,6 +19,7 @@ import {
   formatDateTime,
   formatPendingEdits,
   getUrlBySite,
+  compareByName,
 } from "src/utils";
 import {
   ROUTE_SCENE_EDIT,
@@ -103,17 +104,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
       <td>{formatDateTime(fingerprint.updated)}</td>
     </tr>
   ));
-  const tags = [...scene.tags]
-    .sort((a, b) => {
-      if (a.name > b.name) return 1;
-      if (a.name < b.name) return -1;
-      return 0;
-    })
-    .map((tag) => (
-      <li key={tag.name}>
-        <TagLink title={tag.name} link={tagHref(tag)} />
-      </li>
-    ));
+  const tags = [...scene.tags].sort(compareByName).map((tag) => (
+    <li key={tag.name}>
+      <TagLink title={tag.name} link={tagHref(tag)} />
+    </li>
+  ));
 
   const studioURL = getUrlBySite(scene.urls, "Studio");
 
