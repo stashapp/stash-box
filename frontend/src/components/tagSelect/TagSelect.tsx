@@ -4,14 +4,13 @@ import { OnChangeValue, MenuPlacement } from "react-select";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
-import TagsQuery from "src/graphql/queries/Tags.gql";
+import SearchTagsQuery from "src/graphql/queries/SearchTags.gql";
 
 import {
-  Tags_queryTags_tags as Tag,
-  Tags,
-  TagsVariables,
-} from "src/graphql/definitions/Tags";
-import { SortDirectionEnum, TagSortEnum } from "src/graphql";
+  SearchTags_searchTag as Tag,
+  SearchTags,
+  SearchTagsVariables,
+} from "src/graphql/definitions/SearchTags";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 
@@ -78,20 +77,15 @@ const TagSelect: FC<TagSelectProps> = ({
     ));
 
   const handleSearch = async (term: string) => {
-    const { data } = await client.query<Tags, TagsVariables>({
-      query: TagsQuery,
+    const { data } = await client.query<SearchTags, SearchTagsVariables>({
+      query: SearchTagsQuery,
       variables: {
-        input: {
-          page: 1,
-          per_page: 25,
-          name: term,
-          sort: TagSortEnum.NAME,
-          direction: SortDirectionEnum.ASC,
-        },
+        term,
+        limit: 25,
       },
     });
 
-    return data.queryTags.tags
+    return data.searchTag
       .filter((tag) => !excluded.includes(tag.id))
       .map((tag) => ({
         label: tag.name,

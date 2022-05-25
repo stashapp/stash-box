@@ -1,0 +1,8 @@
+query SearchTags($term: String!, $limit: Int = 5) {
+  searchTag(term: $term, limit: $limit) {
+    id
+    name
+    description
+    aliases
+  }
+}
