@@ -50,6 +50,10 @@ export const SceneSchema = yup.object({
             .nullable(),
           deleted: yup.bool().required(),
         })
+        .transform((s: { name?: string; alias?: string }) => ({
+          ...s,
+          alias: s.name === s?.alias?.trim() ? undefined : s?.alias?.trim(),
+        }))
         .required()
     )
     .ensure(),
