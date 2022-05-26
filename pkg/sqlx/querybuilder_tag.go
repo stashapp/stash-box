@@ -262,13 +262,16 @@ func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, in
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
-	} else if q := filter.Names; q != nil && *q != "" {
+	}
+
+	if q := filter.Names; q != nil && *q != "" {
 		searchColumns := []string{"tags.name", "tag_aliases.alias"}
 		query.AddLeftJoin(tagAliasTable.table, "tag_aliases.tag_id = tags.id", true)
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
+
 	if catID := filter.CategoryID; catID != nil {
 		query.Eq("tags.category_id", catID)
 	}
