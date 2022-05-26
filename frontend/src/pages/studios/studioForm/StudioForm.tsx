@@ -161,7 +161,7 @@ const StudioForm: FC<StudioProps> = ({
         </Tab>
 
         <Tab eventKey="confirm" title="Confirm" className="mt-3 col-xl-9">
-          {renderStudioDetails(newStudioChanges, oldStudioChanges, true)}
+          {renderStudioDetails(newStudioChanges, oldStudioChanges, !!studio)}
           <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>
               <EditNote register={register} error={errors.note} />

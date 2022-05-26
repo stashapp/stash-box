@@ -431,7 +431,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
           </div>
         </Tab>
         <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
-          {renderSceneDetails(newSceneChanges, oldSceneChanges, true)}
+          {renderSceneDetails(newSceneChanges, oldSceneChanges, !!scene)}
           <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>
               <EditNote register={register} error={errors.note} />
