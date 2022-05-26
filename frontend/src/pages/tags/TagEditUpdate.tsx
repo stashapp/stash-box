@@ -7,6 +7,7 @@ import TagForm from "./tagForm";
 
 import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
 import { ROUTE_EDIT } from "src/constants";
+import Title from "src/components/title";
 
 export const TagEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
   const history = useHistory();
@@ -40,12 +41,15 @@ export const TagEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     });
   };
 
+  const tagName = edit.target?.name ?? edit.details.name;
+
   return (
     <div>
+      <Title page={`Update tag edit for "${tagName}"`} />
       <h3>
         Update tag edit for
         <i className="ms-2">
-          <b>{edit.target?.name ?? edit.details.name}</b>
+          <b>{tagName}</b>
         </i>
       </h3>
       <hr />
