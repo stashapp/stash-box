@@ -276,6 +276,7 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		}
 	}
 
+	handleStringCriterion("disambiguation", filter.Disambiguation, query)
 	handleStringCriterion("country", filter.Country, query)
 	/*
 		handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
