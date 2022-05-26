@@ -4545,7 +4545,7 @@ enum PerformerSortEnum {
 }
 
 input PerformerQueryInput {
-  """Searches name and aliases - assumes like query unless quoted"""
+  """Searches name and disambiguation - assumes like query unless quoted"""
   names: String
 
   """Searches name only - assumes like query unless quoted"""
@@ -4557,7 +4557,7 @@ input PerformerQueryInput {
   disambiguation: StringCriterionInput
 
   gender: GenderFilterEnum
-  
+
   """Filter to search urls - assumes like query unless quoted"""
   url: String
 

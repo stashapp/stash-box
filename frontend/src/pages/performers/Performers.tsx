@@ -53,7 +53,7 @@ const PerformersComponent: FC = () => {
   const { page, setPage } = usePagination();
   const { loading, data } = usePerformers({
     input: {
-      name: params.query,
+      names: params.query,
       gender,
       is_favorite: favorite,
       page,

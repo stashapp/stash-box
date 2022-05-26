@@ -230,6 +230,13 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		query.AddArg(thisArgs...)
 	}
 
+	if q := filter.Names; q != nil && *q != "" {
+		searchColumns := []string{"performers.name", "performers.disambiguation"}
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
+	}
+
 	if birthYear := filter.BirthYear; birthYear != nil {
 		clauses, thisArgs := getBirthYearFilterClause(birthYear.Modifier, birthYear.Value)
 		query.AddWhere(clauses...)
