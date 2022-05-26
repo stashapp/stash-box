@@ -1,6 +1,6 @@
 import { FC, KeyboardEvent, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client";
-import { components, OptionProps, OnChangeValue } from "react-select";
+import { OnChangeValue } from "react-select";
 import Async from "react-select/async";
 import debounce from "p-debounce";
 import { useHistory } from "react-router-dom";
@@ -48,27 +48,22 @@ interface SearchResult {
   type: string;
   value?: SceneResult | PerformerResult;
   label?: string;
-  subLabel?: string;
+  sublabel?: string;
 }
 
 const valueIsPerformer = (
   arg?: SceneResult | PerformerResult
 ): arg is PerformerResult => arg?.__typename === "Performer";
 
-const Option = (props: OptionProps<SearchResult, false>) => {
-  const {
-    data: { label, subLabel, value },
-  } = props;
-  return (
-    <components.Option {...props}>
-      <div className="search-value">
-        {valueIsPerformer(value) && <GenderIcon gender={value.gender} />}
-        {value?.deleted ? <del>{label}</del> : label}
-      </div>
-      <div className="search-subvalue">{subLabel}</div>
-    </components.Option>
-  );
-};
+const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
+  <>
+    <div className="search-value">
+      {valueIsPerformer(value) && <GenderIcon gender={value.gender} />}
+      {value?.deleted ? <del>{label}</del> : label}
+    </div>
+    <div className="search-subvalue">{sublabel}</div>
+  </>
+);
 
 const resultIsSearchAll = (
   arg: SearchAll | SearchPerformers
@@ -96,7 +91,7 @@ function handleResult(
           // eslint-disable-next-line prefer-template
           performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
         }`,
-        subLabel: [
+        sublabel: [
           performer?.birth_date ? `Born: ${performer.birth_date}` : null,
           performer?.aliases.length
             ? `AKA: ${performer.aliases.join(", ")}`
@@ -115,7 +110,7 @@ function handleResult(
         label: `${scene.title}${
           scene.release_date ? ` (${scene.release_date})` : ""
         }`,
-        subLabel: filterData([
+        sublabel: filterData([
           scene?.studio?.name,
           scene?.code ? `Code ${scene.code}` : null,
           scene.performers
@@ -135,7 +130,7 @@ function handleResult(
           // eslint-disable-next-line prefer-template
           performer.disambiguation ? "(" + performer.disambiguation + ")" : ""
         }`,
-        subLabel: [
+        sublabel: [
           performer.birth_date ? `Born: ${performer.birth_date}` : null,
           performer.aliases.length
             ? `AKA: ${performer.aliases.join(", ")}`
@@ -228,8 +223,8 @@ const SearchField: FC<SearchFieldProps> = ({
             ? "Search for performer..."
             : "Search for performer or scene...")
         }
+        formatOptionLabel={formatOptionLabel}
         components={{
-          Option,
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null,
         }}
