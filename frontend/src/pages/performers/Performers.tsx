@@ -88,6 +88,7 @@ const PerformersComponent: FC = () => {
       <Select
         id="performer-gender"
         options={genderOptions}
+        defaultValue={genderOptions.find((o) => o.value === gender)}
         placeholder="Gender"
         isClearable
         onChange={(e) => setParams("gender", e?.value ?? undefined)}
