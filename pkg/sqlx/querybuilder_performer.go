@@ -288,7 +288,7 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 			ON performers.id = D.performer_id
 		`
 		direction := filter.Direction.String() + nullsLast()
-		query.Sort = "ORDER BY debut " + direction + ", name " + direction
+		query.Sort = " ORDER BY debut " + direction + ", name " + direction
 	case filter.Sort == models.PerformerSortEnumSceneCount:
 		query.Body += `
 			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
