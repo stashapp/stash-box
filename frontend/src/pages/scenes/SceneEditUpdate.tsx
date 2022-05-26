@@ -7,6 +7,7 @@ import SceneForm from "./sceneForm";
 
 import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
 import { ROUTE_EDIT } from "src/constants";
+import Title from "src/components/title";
 
 export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
   const history = useHistory();
@@ -46,12 +47,15 @@ export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     });
   };
 
+  const sceneTitle = edit.target?.title ?? edit.details.title;
+
   return (
     <div>
+      <Title page={`Update scene edit for "${sceneTitle}"`} />
       <h3>
         Update scene edit for
         <i className="ms-2">
-          <b>{edit.target?.title ?? edit.details.title}</b>
+          <b>{sceneTitle}</b>
         </i>
       </h3>
       <hr />

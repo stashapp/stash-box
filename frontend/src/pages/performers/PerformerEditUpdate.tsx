@@ -7,6 +7,7 @@ import PerformerForm from "./performerForm";
 
 import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
 import { ROUTE_EDIT } from "src/constants";
+import Title from "src/components/title";
 
 export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
   const history = useHistory();
@@ -57,12 +58,15 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     });
   };
 
+  const performerName = edit.target?.name ?? edit.details.name;
+
   return (
     <div>
+      <Title page={`Update performer edit for "${performerName}"`} />
       <h3>
         Update performer edit for
         <i className="ms-2">
-          <b>{edit.target?.name ?? edit.details.name}</b>
+          <b>{performerName}</b>
         </i>
       </h3>
       <hr />
