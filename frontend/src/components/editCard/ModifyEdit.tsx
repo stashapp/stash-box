@@ -28,6 +28,7 @@ import {
   isSceneOldDetails,
   studioHref,
   categoryHref,
+  compareByName,
 } from "src/utils";
 import { Icon } from "src/components/fragments";
 import ChangeRow from "src/components/changeRow";
@@ -427,8 +428,8 @@ export const renderSceneDetails = (
     />
     <ListChangeRow
       name="Tags"
-      added={sceneDetails.added_tags}
-      removed={sceneDetails.removed_tags}
+      added={sceneDetails.added_tags?.slice().sort(compareByName)}
+      removed={sceneDetails.removed_tags?.slice().sort(compareByName)}
       renderItem={renderTag}
       getKey={(o) => o.id}
       showDiff={showDiff}
