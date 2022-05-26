@@ -14,11 +14,7 @@ export const renderPerformer = (appearance: {
     "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
   >;
 }) => (
-  <Link
-    key={appearance.performer.id}
-    to={performerHref(appearance.performer)}
-    className="scene-performer"
-  >
+  <Link key={appearance.performer.id} to={performerHref(appearance.performer)}>
     <GenderIcon gender={appearance.performer.gender} />
     <PerformerName performer={appearance.performer} as={appearance.as} />
   </Link>
