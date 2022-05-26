@@ -53,7 +53,7 @@ const PerformersComponent: FC = () => {
   const { page, setPage } = usePagination();
   const { loading, data } = usePerformers({
     input: {
-      name: params.query,
+      names: params.query,
       gender,
       is_favorite: favorite,
       page,
@@ -88,6 +88,7 @@ const PerformersComponent: FC = () => {
       <Select
         id="performer-gender"
         options={genderOptions}
+        defaultValue={genderOptions.find((o) => o.value === gender)}
         placeholder="Gender"
         isClearable
         onChange={(e) => setParams("gender", e?.value ?? undefined)}

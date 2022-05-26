@@ -339,7 +339,7 @@ type PerformerEditOptionsInput struct {
 }
 
 type PerformerQueryInput struct {
-	// Searches name and aliases - assumes like query unless quoted
+	// Searches name and disambiguation - assumes like query unless quoted
 	Names *string `json:"names"`
 	// Searches name only - assumes like query unless quoted
 	Name *string `json:"name"`
