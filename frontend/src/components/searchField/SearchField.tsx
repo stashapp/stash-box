@@ -91,7 +91,7 @@ function handleResult(
           // eslint-disable-next-line prefer-template
           performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
         }`,
-        subLabel: [
+        sublabel: [
           performer?.birth_date ? `Born: ${performer.birth_date}` : null,
           performer?.aliases.length
             ? `AKA: ${performer.aliases.join(", ")}`
