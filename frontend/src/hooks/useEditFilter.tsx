@@ -34,6 +34,7 @@ interface EditFilterProps {
   operation?: OperationEnum;
   favorite?: boolean;
   showFavoriteOption?: boolean;
+  defaultVoteStatus?: VoteStatusEnum | "all";
 }
 
 const useEditFilter = ({
@@ -44,13 +45,14 @@ const useEditFilter = ({
   operation: fixedOperation,
   favorite: fixedFavorite,
   showFavoriteOption = true,
+  defaultVoteStatus = "all",
 }: EditFilterProps) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
     sort: { name: "sort", type: "string", default: EditSortEnum.CREATED_AT },
     direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
     operation: { name: "operation", type: "string", default: "" },
-    status: { name: "status", type: "string", default: VoteStatusEnum.PENDING },
+    status: { name: "status", type: "string", default: defaultVoteStatus },
     type: { name: "type", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
   });
