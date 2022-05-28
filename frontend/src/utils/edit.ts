@@ -103,6 +103,11 @@ export const getEditTargetName = (target: Target | null): string => {
     return target.title || target.id;
   }
 
+  if (isPerformer(target)) {
+    return `${target?.name}${
+      target?.disambiguation ? " (" + target?.disambiguation + ")" : ""
+    }`;
+  }
   return target?.name || target?.id || "-";
 };
 
@@ -124,6 +129,12 @@ export const getEditTargetEntity = (target: Target) => {
 export const getEditDetailsName = (details: Details | null): string => {
   if (isSceneDetails(details)) {
     return details.title ?? "-";
+  }
+
+  if (isPerformerDetails(details)) {
+    return `${details?.name}${
+      details?.disambiguation ? " (" + details?.disambiguation + ")" : ""
+    }`;
   }
 
   return details?.name ?? "-";
