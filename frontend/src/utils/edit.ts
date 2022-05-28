@@ -100,10 +100,10 @@ export const getEditTargetRoute = (target: Target): string => {
 
 export const getEditTargetName = (target: Target | null): string => {
   if (isScene(target)) {
-    return target.title ?? target.id;
+    return target.title || target.id;
   }
 
-  return target?.name ?? target?.id ?? "-";
+  return target?.name || target?.id || "-";
 };
 
 export const getEditTargetEntity = (target: Target) => {
