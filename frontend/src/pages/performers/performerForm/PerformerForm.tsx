@@ -141,7 +141,7 @@ const PerformerForm: FC<PerformerProps> = ({
       name: initial?.name ?? performer?.name ?? "",
       disambiguation: initial?.disambiguation ?? performer?.disambiguation,
       aliases: initial?.aliases ?? performer?.aliases ?? [],
-      gender: initial?.gender ?? performer?.gender,
+      gender: initial?.gender ?? performer?.gender ?? "",
       birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
       eye_color: getEnumValue(
         EYE,
