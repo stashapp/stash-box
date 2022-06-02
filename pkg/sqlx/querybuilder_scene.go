@@ -222,7 +222,7 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 		GROUP BY scene_id, hash
 	`
 	phashClause := `
-		SELECT scene_id, phash as hash
+		SELECT scene_id, to_hex(phash::::bigint) as hash
 		FROM UNNEST(ARRAY[:phashes]) phash
 		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
 		AND algorithm = 'PHASH'
