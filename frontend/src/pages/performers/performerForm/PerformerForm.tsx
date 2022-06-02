@@ -127,6 +127,7 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
 }) => {
+  const initialAliases = initial?.aliases ?? performer?.aliases ?? [];
   const {
     register,
     control,
@@ -140,7 +141,7 @@ const PerformerForm: FC<PerformerProps> = ({
     defaultValues: {
       name: initial?.name ?? performer?.name ?? "",
       disambiguation: initial?.disambiguation ?? performer?.disambiguation,
-      aliases: initial?.aliases ?? performer?.aliases ?? [],
+      aliases: initialAliases,
       gender: initial?.gender ?? performer?.gender ?? "",
       birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
       eye_color: getEnumValue(
@@ -343,9 +344,9 @@ const PerformerForm: FC<PerformerProps> = ({
               <Controller
                 control={control}
                 name="aliases"
-                render={({ field: { onChange, value } }) => (
+                render={({ field: { onChange } }) => (
                   <MultiSelect
-                    values={value}
+                    initialValues={initialAliases}
                     onChange={onChange}
                     placeholder="Enter name..."
                   />
