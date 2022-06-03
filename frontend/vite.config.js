@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
   const config = {
     build: {
       outDir: "build",
+      assetsDir: "assets",
       sourcemap: mode === "production",
     },
     optimizeDeps: {

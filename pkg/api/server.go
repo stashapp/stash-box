@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/pprof"
-	"path"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -179,22 +178,19 @@ func Start(rfp RepoProvider, ui embed.FS) {
 
 	r.Mount("/image", imageRoutes{}.Routes())
 
+	// Serve static assets
+	r.HandleFunc("/assets/*", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Cache-Control", "max-age=604800000")
+		uiRoot, err := fs.Sub(ui, "frontend/build")
+		if err != nil {
+			panic(error.Error(err))
+		}
+		http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
+	})
+
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		if ext == ".html" || ext == "" {
-			_, _ = w.Write(index)
-		} else {
-			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
-			if isStatic {
-				w.Header().Add("Cache-Control", "max-age=604800000")
-			}
-			uiRoot, err := fs.Sub(ui, "frontend/build")
-			if err != nil {
-				panic(error.Error(err))
-			}
-			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
-		}
+		_, _ = w.Write(index)
 	})
 
 	if config.GetProfilerPort() != nil {
