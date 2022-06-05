@@ -68,7 +68,7 @@ const PerformersComponent: FC = () => {
 
   const performers = (data?.queryPerformers.performers ?? []).map(
     (performer) => (
-      <Col xs={3} key={performer.id}>
+      <Col xs="auto" key={performer.id}>
         <PerformerCard performer={performer} />
       </Col>
     )
