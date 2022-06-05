@@ -22,7 +22,7 @@ import AuthContext from "src/AuthContext";
 import { List } from "src/components/list";
 import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
 
-const PER_PAGE = 20;
+const PER_PAGE = 25;
 
 const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
   value: g,
