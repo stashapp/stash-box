@@ -46,4 +46,15 @@
 .user-submitted {
   color: $success;
   margin-left: 0.5rem;
+
+  &:hover {
+    cursor: pointer;
+    color: $danger;
+  }
+
+  .fa-spin {
+    animation-duration: 1.5s;
+    cursor: wait;
+    color: $warning;
+  }
 }

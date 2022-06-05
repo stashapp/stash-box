@@ -1,0 +1,14 @@
+mutation UnmatchFingerprint(
+  $scene_id: ID!
+  $algorithm: FingerprintAlgorithm!
+  $hash: String!
+  $duration: Int!
+) {
+  unmatchFingerprint: submitFingerprint(
+    input: {
+      unmatch: true
+      scene_id: $scene_id
+      fingerprint: { hash: $hash, algorithm: $algorithm, duration: $duration }
+    }
+  )
+}
