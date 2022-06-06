@@ -100,10 +100,15 @@ export const getEditTargetRoute = (target: Target): string => {
 
 export const getEditTargetName = (target: Target | null): string => {
   if (isScene(target)) {
-    return target.title ?? target.id;
+    return target.title || target.id;
   }
 
-  return target?.name ?? target?.id ?? "-";
+  if (isPerformer(target)) {
+    return `${target?.name}${
+      target?.disambiguation ? " (" + target?.disambiguation + ")" : ""
+    }`;
+  }
+  return target?.name || target?.id || "-";
 };
 
 export const getEditTargetEntity = (target: Target) => {
@@ -124,6 +129,12 @@ export const getEditTargetEntity = (target: Target) => {
 export const getEditDetailsName = (details: Details | null): string => {
   if (isSceneDetails(details)) {
     return details.title ?? "-";
+  }
+
+  if (isPerformerDetails(details)) {
+    return `${details?.name}${
+      details?.disambiguation ? " (" + details?.disambiguation + ")" : ""
+    }`;
   }
 
   return details?.name ?? "-";
