@@ -3,7 +3,7 @@ import CreatableSelect from "react-select/creatable";
 import { OnChangeValue } from "react-select";
 
 interface MultiSelectProps {
-  values: string[];
+  initialValues: string[];
   onChange: (values: string[]) => void;
   placeholder?: string;
 }
@@ -14,7 +14,7 @@ interface IOptionType {
 }
 
 const MultiSelect: FC<MultiSelectProps> = ({
-  values: initialValues,
+  initialValues,
   onChange,
   placeholder = "Select...",
 }) => {
