@@ -29,6 +29,7 @@ interface TagProps {
 
 const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
   const history = useHistory();
+  const initialAliases = initial?.aliases ?? tag?.aliases ?? [];
   const {
     register,
     handleSubmit,
@@ -39,7 +40,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
     defaultValues: {
       name: initial?.name ?? tag?.name ?? "",
       description: initial?.description ?? tag?.description ?? "",
-      aliases: initial?.aliases ?? tag?.aliases ?? [],
+      aliases: initialAliases,
       category: initial?.category ?? tag?.category,
     },
   });
@@ -95,9 +96,9 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
         <Controller
           name="aliases"
           control={control}
-          render={({ field: { onChange, value } }) => (
+          render={({ field: { onChange } }) => (
             <MultiSelect
-              values={value}
+              initialValues={initialAliases}
               onChange={onChange}
               placeholder="Enter name..."
             />
