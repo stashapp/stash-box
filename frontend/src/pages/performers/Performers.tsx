@@ -49,7 +49,7 @@ const PerformersComponent: FC = () => {
   const gender = resolveEnum(GenderFilterEnum, params.gender);
   const direction = ensureEnum(SortDirectionEnum, params.direction);
   const sort = ensureEnum(PerformerSortEnum, params.sort);
-  const favorite = params.favorite === "true";
+  const favorite = params.favorite === "true" || undefined;
   const { page, setPage } = usePagination();
   const { loading, data } = usePerformers({
     input: {
