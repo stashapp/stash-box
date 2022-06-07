@@ -137,7 +137,6 @@ input SceneEditInput {
   edit: EditInput!
   """Not required for destroy type"""
   details: SceneEditDetailsInput
-  duration: Int
 }
 
 type SceneEdit {

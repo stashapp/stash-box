@@ -442,7 +442,6 @@ export interface SceneEditDetailsInput {
 export interface SceneEditInput {
   edit: EditInput;
   details?: SceneEditDetailsInput | null;
-  duration?: number | null;
 }
 
 export interface SceneQueryInput {
