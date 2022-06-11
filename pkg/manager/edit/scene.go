@@ -69,6 +69,8 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 		return ErrNoChanges
 	}
 
+	sceneEdit.New.DraftID = input.Details.DraftID
+
 	return m.edit.SetData(*sceneEdit)
 }
 
