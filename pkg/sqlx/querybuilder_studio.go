@@ -182,6 +182,14 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 		}
 	}
 
+	if q := filter.URL; q != nil && *q != "" {
+		query.AddJoin(studioURLTable.table, studioURLTable.Name()+"."+studioJoinKey+" = studios.id", true)
+		searchColumns := []string{studioURLTable.Name() + ".url"}
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
+	}
+
 	query.Sort = qb.getStudioSort(filter)
 	query.Pagination = getPagination(filter.Page, filter.PerPage)
 
