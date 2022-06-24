@@ -20,13 +20,17 @@ const typePolicies: TypePolicies = {
 const isDevEnvironment = () => import.meta.env.DEV;
 
 export const getCredentialsSetting = () =>
-  isDevEnvironment() && !import.meta.env.VITE_SERVER_URL ? "include" : "same-origin";
+  isDevEnvironment() && !import.meta.env.VITE_SERVER_URL
+    ? "include"
+    : "same-origin";
 
 export const getPlatformURL = () => {
   let platformUrl = new URL(window.location.origin);
 
-  if (isDevEnvironment()){
-    platformUrl = new URL(import.meta.env.VITE_SERVER_URL ?? window.location.origin);
+  if (isDevEnvironment()) {
+    platformUrl = new URL(
+      import.meta.env.VITE_SERVER_URL ?? window.location.origin
+    );
     platformUrl.port = import.meta.env.VITE_SERVER_PORT ?? "9998";
   }
 
