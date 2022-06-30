@@ -353,7 +353,8 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, isCount b
 	}
 
 	if q := filter.URL; q != nil && *q != "" {
-		searchColumns := []string{"scenes.url"}
+		query.AddJoin(sceneURLTable.table, sceneURLTable.Name()+"."+sceneJoinKey+" = scenes.id", true)
+		searchColumns := []string{sceneURLTable.Name() + ".url"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
