@@ -74,6 +74,7 @@ const UsersComponent: FC = () => {
         </Link>
       </div>
       <List
+        entityName="users"
         page={page}
         setPage={setPage}
         perPage={PER_PAGE}
