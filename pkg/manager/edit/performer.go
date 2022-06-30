@@ -105,6 +105,8 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 		return ErrNoChanges
 	}
 
+	performerEdit.New.DraftID = input.Details.DraftID
+
 	return m.edit.SetData(*performerEdit)
 }
 
