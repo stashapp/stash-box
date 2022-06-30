@@ -57,10 +57,12 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
     if (!newURL || !selectedSite) return;
     const cleanedURL = cleanURL(selectedSite?.regex, newURL);
 
-    append({
-      url: cleanedURL ?? newURL,
-      site: selectedSite,
-    });
+    const url = cleanedURL ?? newURL;
+    if (!urls.some((u) => u.url === url))
+      append({
+        url,
+        site: selectedSite,
+      });
 
     if (selectRef.current) selectRef.current.value = "";
     if (inputRef.current) inputRef.current.value = "";
