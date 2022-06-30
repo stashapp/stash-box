@@ -265,6 +265,14 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		}
 	}
 
+	if q := filter.URL; q != nil && *q != "" {
+		query.AddJoin(performerURLTable.table, performerURLTable.Name()+"."+performerJoinKey+" = performers.id", true)
+		searchColumns := []string{performerURLTable.Name() + ".url"}
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
+	}
+
 	if filter.IsFavorite != nil {
 		// userID is internal based on user context so it is safe to append rather than bind
 		q := fmt.Sprintf(" JOIN performer_favorites F ON performers.id = F.performer_id AND F.user_id = '%s'", userID)
