@@ -273,8 +273,8 @@ const PerformerForm: FC<PerformerProps> = ({
     ),
   ];
 
-  const handleNumberInputWheel = ({ target }: WheelEvent) =>
-    (target as HTMLInputElement).blur();
+  const handleNumberInputWheel = (el: WheelEvent<HTMLInputElement>) =>
+    el.currentTarget.blur();
 
   const metadataErrors = [
     { error: errors.name?.message, tab: "personal" },
