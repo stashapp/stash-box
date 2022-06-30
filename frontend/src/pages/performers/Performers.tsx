@@ -22,7 +22,7 @@ import AuthContext from "src/AuthContext";
 import { List } from "src/components/list";
 import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
 
-const PER_PAGE = 20;
+const PER_PAGE = 25;
 
 const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
   value: g,
@@ -68,7 +68,7 @@ const PerformersComponent: FC = () => {
 
   const performers = (data?.queryPerformers.performers ?? []).map(
     (performer) => (
-      <Col xs={3} key={performer.id}>
+      <Col xs="auto" key={performer.id}>
         <PerformerCard performer={performer} />
       </Col>
     )
