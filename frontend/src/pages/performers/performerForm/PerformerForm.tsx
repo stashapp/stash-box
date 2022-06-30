@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState, WheelEvent } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Select from "react-select";
@@ -273,6 +273,9 @@ const PerformerForm: FC<PerformerProps> = ({
     ),
   ];
 
+  const handleNumberInputWheel = (el: WheelEvent<HTMLInputElement>) =>
+    el.currentTarget.blur();
+
   const metadataErrors = [
     { error: errors.name?.message, tab: "personal" },
     { error: errors.gender?.message, tab: "personal" },
@@ -424,6 +427,7 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Control
                 className={cx({ "is-invalid": errors.height })}
                 type="number"
+                onWheel={handleNumberInputWheel}
                 {...register("height")}
               />
               <Form.Control.Feedback type="invalid">
@@ -468,6 +472,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Control
                   className={cx({ "is-invalid": errors.waistSize })}
                   type="number"
+                  onWheel={handleNumberInputWheel}
                   {...register("waistSize")}
                 />
                 <Form.Control.Feedback type="invalid">
@@ -481,6 +486,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Control
                   className={cx({ "is-invalid": errors.hipSize })}
                   type="number"
+                  onWheel={handleNumberInputWheel}
                   {...register("hipSize")}
                 />
                 <Form.Control.Feedback type="invalid">
