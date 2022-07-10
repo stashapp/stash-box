@@ -14,22 +14,19 @@ export interface ImageChangeRowProps {
 
 const Images: FC<{
   images: (Pick<Image, "id" | "url"> | null)[] | null | undefined;
-}> = ({ images }) =>
-{
-  const [imgDimensions, setImgDimensions] = useState<{[key: string]: {height: int, width: int}} | null>(
-    {},
-  );
+}> = ({ images }) => {
+  const [imgDimensions, setImgDimensions] = useState<{
+    [key: string]: { height: int; width: int };
+  } | null>({});
 
-  const onImgLoad = ( event: React.SyntheticEvent<HTMLImageElement, Event> ) => {
-    setImgDimensions(
-      {
-        ...imgDimensions,
-        [event.currentTarget.src]: {
-          height: event.currentTarget.naturalHeight,
-          width: event.currentTarget.naturalWidth
-        }
-      }
-    )
+  const onImgLoad = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    setImgDimensions({
+      ...imgDimensions,
+      [event.currentTarget.src]: {
+        height: event.currentTarget.naturalHeight,
+        width: event.currentTarget.naturalWidth,
+      },
+    });
   };
 
   return (
@@ -38,26 +35,27 @@ const Images: FC<{
         image === null ? (
           <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
         ) : (
-            <div>
-              <img
-                src={image.url}
-                className={CLASSNAME_IMAGE}
-                alt=""
-                key={image.id}
-                onLoad={onImgLoad}
-              />
-              <div className={"text-center"}>
-                {imgDimensions[image.url] ? (
-                  String(imgDimensions[image.url].height) + " x " + String(imgDimensions[image.url].width)
-                ) : ""
-                }
-              </div>
+          <div>
+            <img
+              src={image.url}
+              className={CLASSNAME_IMAGE}
+              alt=""
+              key={image.id}
+              onLoad={onImgLoad}
+            />
+            <div className={"text-center"}>
+              {imgDimensions[image.url]
+                ? String(imgDimensions[image.url].height) +
+                  " x " +
+                  String(imgDimensions[image.url].width)
+                : ""}
             </div>
+          </div>
         )
       )}
     </>
   );
-}
+};
 
 const ImageChangeRow: FC<ImageChangeRowProps> = ({
   newImages,
