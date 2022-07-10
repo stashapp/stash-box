@@ -16,14 +16,14 @@ yarn
 ```
 
 ## GraphQL development
-If any queries/mutations or the schema on the server is updated, the Typescript types can be updated with: 
+If any queries/mutations or the schema on the server is updated, the Typescript types can be updated with:
 ```shell
 yarn generate
 ```
 
 ## Running
 
-### Local development server 
+### Local development server
 
 The API key can be set in the environment configuration. To do so, you will need to initialize the environment configuration:
 
@@ -56,5 +56,29 @@ yarn format
 Build the release bundle:
 
 ```shell
-yarn build 
+yarn build
+```
+
+## Contributing
+
+### Run before submitting a PR
+
+Before submitting a Pull Request, if you have only changed the frontend, you can run the frontend checks alone:
+
+Run the linter:
+
+```shell
+yarn lint
+```
+
+Run the code formatter:
+
+```shell
+yarn format
+```
+
+Run the typescript compiler checks:
+
+```shell
+tsc --noEmit
 ```
