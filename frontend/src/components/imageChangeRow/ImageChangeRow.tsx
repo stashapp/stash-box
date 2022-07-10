@@ -16,7 +16,7 @@ const Images: FC<{
   images: (Pick<Image, "id" | "url"> | null)[] | null | undefined;
 }> = ({ images }) => {
   const [imgDimensions, setImgDimensions] = useState<{
-    [key: string]: { height: int; width: int };
+    [key: string]: { height: number; width: number };
   } | null>({});
 
   const onImgLoad = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -44,7 +44,7 @@ const Images: FC<{
               onLoad={onImgLoad}
             />
             <div className={"text-center"}>
-              {imgDimensions[image.url]
+              {imgDimensions && imgDimensions[image.url]
                 ? String(imgDimensions[image.url].height) +
                   " x " +
                   String(imgDimensions[image.url].width)
