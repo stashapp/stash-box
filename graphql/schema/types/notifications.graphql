@@ -1,0 +1,12 @@
+type Notification {
+  user: User!
+  edit: Edit!
+  type: NotificationType!
+  created: Time!
+  read: Boolean!
+}
+
+type Notifications {
+  notifications: [Notification!]!
+  unreadCount: Int!
+}
