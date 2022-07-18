@@ -4,6 +4,6 @@ CREATE TABLE notifications (
     type TEXT NOT NULL,
     data JSONB,
     created_at TIMESTAMP NOT NULL,
-    read_at TIMESTAMP NOT NULL
+    read_at TIMESTAMP
 );
 CREATE INDEX notifications_idx ON notifications (user_id, read_at);

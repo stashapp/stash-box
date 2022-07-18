@@ -1,7 +1,7 @@
 type Notification {
   user: User!
   edit: Edit!
-  type: NotificationType!
+  data: NotificationData!
   created: Time!
   read: Boolean!
 }
@@ -10,3 +10,17 @@ type Notifications {
   notifications: [Notification!]!
   unreadCount: Int!
 }
+
+type NegativeVoteNotification {
+  user: User!
+}
+
+type CommentNotification {
+  comment: EditComment!
+}
+
+type FailedVoteNotification {
+  message: String!
+}
+
+union NotificationData = NegativeVoteNotification | CommentNotification | FailedVoteNotification

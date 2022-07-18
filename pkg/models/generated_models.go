@@ -24,6 +24,10 @@ type EditTarget interface {
 	IsEditTarget()
 }
 
+type NotificationData interface {
+	IsNotificationData()
+}
+
 type SceneDraftPerformer interface {
 	IsSceneDraftPerformer()
 }
@@ -61,6 +65,12 @@ type BreastTypeCriterionInput struct {
 type CancelEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
+
+type CommentNotification struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentNotification) IsNotificationData() {}
 
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
@@ -134,6 +144,12 @@ type EyeColorCriterionInput struct {
 	Value    *EyeColorEnum     `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+
+type FailedVoteNotification struct {
+	Message string `json:"message"`
+}
+
+func (FailedVoteNotification) IsNotificationData() {}
 
 type Fingerprint struct {
 	Hash          string               `json:"hash"`
@@ -230,9 +246,28 @@ type MultiStringCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type NegativeVoteNotification struct {
+	User *User `json:"user"`
+}
+
+func (NegativeVoteNotification) IsNotificationData() {}
+
 type NewUserInput struct {
 	Email     string  `json:"email"`
 	InviteKey *string `json:"invite_key"`
+}
+
+type Notification struct {
+	User    *User            `json:"user"`
+	Edit    *Edit            `json:"edit"`
+	Data    NotificationData `json:"data"`
+	Created time.Time        `json:"created"`
+	Read    bool             `json:"read"`
+}
+
+type Notifications struct {
+	Notifications []*Notification `json:"notifications"`
+	UnreadCount   int             `json:"unreadCount"`
 }
 
 type PerformerAppearance struct {
