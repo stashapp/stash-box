@@ -50,11 +50,11 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
     const regex = new RegExp(regexStr);
     const match = regex.exec(url);
 
-    if (match.length > 1) {
+    if (match == null || match.length < 2) {
+      return match?.[1];
+    } else {
       match.shift();
       return match.join("");
-    } else {
-      return match?.[1];
     }
   };
 
