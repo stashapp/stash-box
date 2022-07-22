@@ -1164,6 +1164,7 @@ const (
 	GenderEnumTransgenderMale   GenderEnum = "TRANSGENDER_MALE"
 	GenderEnumTransgenderFemale GenderEnum = "TRANSGENDER_FEMALE"
 	GenderEnumIntersex          GenderEnum = "INTERSEX"
+	GenderEnumNonBinary         GenderEnum = "NON_BINARY"
 )
 
 var AllGenderEnum = []GenderEnum{
@@ -1172,11 +1173,12 @@ var AllGenderEnum = []GenderEnum{
 	GenderEnumTransgenderMale,
 	GenderEnumTransgenderFemale,
 	GenderEnumIntersex,
+	GenderEnumNonBinary,
 }
 
 func (e GenderEnum) IsValid() bool {
 	switch e {
-	case GenderEnumMale, GenderEnumFemale, GenderEnumTransgenderMale, GenderEnumTransgenderFemale, GenderEnumIntersex:
+	case GenderEnumMale, GenderEnumFemale, GenderEnumTransgenderMale, GenderEnumTransgenderFemale, GenderEnumIntersex, GenderEnumNonBinary:
 		return true
 	}
 	return false
@@ -1212,6 +1214,7 @@ const (
 	GenderFilterEnumTransgenderMale   GenderFilterEnum = "TRANSGENDER_MALE"
 	GenderFilterEnumTransgenderFemale GenderFilterEnum = "TRANSGENDER_FEMALE"
 	GenderFilterEnumIntersex          GenderFilterEnum = "INTERSEX"
+	GenderFilterEnumNonBinary         GenderFilterEnum = "NON_BINARY"
 )
 
 var AllGenderFilterEnum = []GenderFilterEnum{
@@ -1221,11 +1224,12 @@ var AllGenderFilterEnum = []GenderFilterEnum{
 	GenderFilterEnumTransgenderMale,
 	GenderFilterEnumTransgenderFemale,
 	GenderFilterEnumIntersex,
+	GenderFilterEnumNonBinary,
 }
 
 func (e GenderFilterEnum) IsValid() bool {
 	switch e {
-	case GenderFilterEnumUnknown, GenderFilterEnumMale, GenderFilterEnumFemale, GenderFilterEnumTransgenderMale, GenderFilterEnumTransgenderFemale, GenderFilterEnumIntersex:
+	case GenderFilterEnumUnknown, GenderFilterEnumMale, GenderFilterEnumFemale, GenderFilterEnumTransgenderMale, GenderFilterEnumTransgenderFemale, GenderFilterEnumIntersex, GenderFilterEnumNonBinary:
 		return true
 	}
 	return false

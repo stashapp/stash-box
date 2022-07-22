@@ -38,6 +38,8 @@ import DiffPerformer from "./diff";
 import { PerformerSchema, PerformerFormData } from "./schema";
 import { InitialPerformer } from "./types";
 
+import { GenderTypes } from "src/constants";
+
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en", { select: "alias" });
 
@@ -47,14 +49,14 @@ type OptionEnum = {
   disabled?: boolean;
 };
 
+const genderOptions = Object.keys(GenderEnum).map((g) => ({
+  value: g,
+  label: GenderTypes[g as GenderEnum],
+}));
+
 const GENDER: OptionEnum[] = [
   { value: "", label: "Select gender...", disabled: true },
-  { value: "null", label: "Unknown" },
-  { value: "FEMALE", label: "Female" },
-  { value: "MALE", label: "Male" },
-  { value: "TRANSGENDER_FEMALE", label: "Transfemale" },
-  { value: "TRANSGENDER_MALE", label: "Transmale" },
-  { value: "INTERSEX", label: "Intersex" },
+  ...genderOptions
 ];
 
 const HAIR: OptionEnum[] = [
