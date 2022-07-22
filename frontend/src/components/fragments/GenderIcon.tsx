@@ -21,7 +21,7 @@ const GenderIcon: FC<IconProps> = ({ gender }) => {
         : gender.toLowerCase() === "female"
         ? faVenus
         : faTransgender;
-    return <Icon icon={icon} title={ GenderTypes[ gender ] } />;
+    return <Icon icon={icon} title={GenderTypes[gender]} />;
   }
   return <Icon icon={faVenusMars} />;
 };

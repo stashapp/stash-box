@@ -16,7 +16,11 @@ import {
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { formatDuration, parseDuration, performerHref } from "src/utils";
-import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
+import {
+  ValidSiteTypeEnum,
+  SceneEditDetailsInput,
+  GenderEnum,
+} from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import { GenderIcon, Icon } from "src/components/fragments";
@@ -198,7 +202,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
             ) : (
               <>
                 <InputGroup.Text className="flex-grow-1 text-start text-truncate">
-                  <GenderIcon gender={p.gender} />
+                  <GenderIcon gender={p.gender as GenderEnum} />
                   <span
                     className={cx("performer-name text-truncate", {
                       "text-decoration-line-through": p.deleted,
