@@ -59,26 +59,8 @@ Build the release bundle:
 yarn build
 ```
 
-## Contributing
-
-### Run before submitting a PR
-
-Before submitting a Pull Request, if you have only changed the frontend, you can run the frontend checks alone:
-
-Run the linter:
+Run the validation (before submitting a Pull Request)
 
 ```shell
-yarn lint
-```
-
-Run the code formatter:
-
-```shell
-yarn format
-```
-
-Run the typescript compiler checks:
-
-```shell
-tsc --noEmit
+yarn validate
 ```
