@@ -13,21 +13,45 @@ import {
   HairColorEnum,
   EyeColorEnum,
   EthnicityEnum,
+  SceneFragment,
+  PerformerFragment,
 } from "src/graphql";
+import { uniqBy } from "lodash-es";
+
+type URL = { url: string; site: { id: string } };
+const joinURLs = <T extends URL>(
+  newURL: T | null,
+  existingURLs: T[] | undefined
+) =>
+  uniqBy(
+    [...(newURL ? [newURL] : []), ...(existingURLs ?? [])],
+    (u) => `${u.url}-${u.site.id}`
+  );
+
+type Image = { id: string };
+const joinImages = <T extends Image>(
+  newImage: T | null,
+  existingImages: T[] | undefined
+) =>
+  uniqBy(
+    [...(newImage ? [newImage] : []), ...(existingImages ?? [])],
+    (i) => i.id
+  );
 
 export const parseSceneDraft = (
-  draft: SceneDraft
+  draft: SceneDraft,
+  existingScene: SceneFragment | undefined
 ): [InitialScene, Record<string, string | null>] => {
   const scene: InitialScene = {
     date: draft.date,
     title: draft.title,
     details: draft.details,
-    urls: draft.url ? [draft.url] : [],
+    urls: joinURLs(draft.url, existingScene?.urls),
     studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
     director: null,
     code: null,
     duration: draft.fingerprints?.[0].duration ?? null,
-    images: draft.image ? [draft.image] : [],
+    images: draft.image ? [draft.image] : existingScene?.images,
     tags: (draft.tags ?? []).reduce<Tag[]>(
       (res, t) => (t.__typename === "Tag" ? [...res, t] : res),
       []
@@ -70,12 +94,13 @@ const parseEnum = (value: string | null, enumObj: Record<string, string>) =>
   )?.[0] ?? null;
 
 export const parsePerformerDraft = (
-  draft: PerformerDraft
+  draft: PerformerDraft,
+  existingPerformer: PerformerFragment | undefined
 ): [InitialPerformer, Record<string, string | null>] => {
   const performer: InitialPerformer = {
     name: draft.name,
     disambiguation: null,
-    images: draft.image ? [draft.image] : [],
+    images: joinImages(draft.image, existingPerformer?.images),
     gender: parseEnum(draft.gender, GenderEnum) as GenderEnum | null,
     ethnicity: parseEnum(
       draft.ethnicity,
@@ -89,17 +114,17 @@ export const parsePerformerDraft = (
     birthdate: draft.birthdate,
     height: Number.parseInt(draft.height ?? "") || null,
     country: draft?.country?.length === 2 ? draft.country : null,
-    aliases: [],
-    career_start_year: null,
-    career_end_year: null,
-    breast_type: null,
-    band_size: null,
-    waist_size: null,
-    hip_size: null,
-    cup_size: null,
-    tattoos: [],
-    piercings: [],
-    urls: [],
+    aliases: existingPerformer?.aliases,
+    career_start_year: existingPerformer?.career_start_year,
+    career_end_year: existingPerformer?.career_end_year,
+    breast_type: existingPerformer?.breast_type,
+    band_size: existingPerformer?.band_size,
+    waist_size: existingPerformer?.waist_size,
+    hip_size: existingPerformer?.hip_size,
+    cup_size: existingPerformer?.cup_size,
+    tattoos: existingPerformer?.tattoos ?? undefined,
+    piercings: existingPerformer?.piercings ?? undefined,
+    urls: existingPerformer?.urls,
   };
 
   const remainder = {
