@@ -8,7 +8,7 @@ The intent of stash-box is to provide a collaborative, crowd-sourced database of
 
 The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
 
-**Note: If you are a [Stash](https://github.com/stashapp/stash) user, you do not need to install stash-box.  The Stash community has a server with many titles from which you can pull data. You can get the login information from the #stashbox-invites channel on our Discord server.**
+**Note: If you are a [Stash](https://github.com/stashapp/stash) user, you do not need to install stash-box.  The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt).**
 
 # Docker install
 
@@ -31,11 +31,11 @@ Before building the binary the frontend project needs to be built.
 
 Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stash-box-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
 
-The database must be created and available. If the postgres user is not a superuser, `CREATE EXTENSION pg_trgm; CREATE EXTENSION pgcrypto;` needs to be run by a superuser before rerunning stash-box, otherwise you will get a migration error. The schema will be created within the database if it is not already present. 
+The database must be created and available. If the postgres user is not a superuser, `CREATE EXTENSION pg_trgm; CREATE EXTENSION pgcrypto;` needs to be run by a superuser before rerunning stash-box, otherwise you will get a migration error. The schema will be created within the database if it is not already present.
 
 The `sslmode` parameter is documented in the [pq documentation](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default value is `require`.
 
-After ensuring the database connection string is correct and the database server is available, the stash-box executable may be rerun. 
+After ensuring the database connection string is correct and the database server is available, the stash-box executable may be rerun.
 
 The second time that stash-box is run, stash-box will run the schema migrations to create the required tables. It will also generate a `root` user with a random password and an API key. These credentials are printed once to stdout and are not logged. The root user will be regenerated on startup if it does not exist, so a new root user may be created by deleting the root user row from the database and restarting stash-box.
 
@@ -140,7 +140,7 @@ To run the frontend in development mode, run `yarn start` from the frontend dire
 
 When developing the API key can be set in `frontend/.env.development.local` to avoid having to log in.  
 When `is_production` is enabled on the server this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  
-See `frontend/.env.development.local.shadow` for examples. 
+See `frontend/.env.development.local.shadow` for examples.
 
 ## Building a release
 
