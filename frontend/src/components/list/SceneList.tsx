@@ -26,6 +26,7 @@ interface Props {
 
 const sortOptions = [
   { value: SceneSortEnum.DATE, label: "Release Date" },
+  { value: SceneSortEnum.TITLE, label: "Title" },
   { value: SceneSortEnum.TRENDING, label: "Trending" },
   { value: SceneSortEnum.CREATED_AT, label: "Created At" },
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
