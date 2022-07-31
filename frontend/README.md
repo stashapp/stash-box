@@ -4,7 +4,7 @@ This project builds the frontend for the stash-box server. It can be used to bui
 
 ## Setup / Installing
 Make sure your environment is up to date:
-- node >= `14.16.0`
+- node >= `14.16.0`, < `17.0.0`
 - yarn >= `1.15.2`
 
 For installation instructions, please see the websites for [yarn](https://yarnpkg.com/lang/en/docs/install/) and [node.js](https://nodejs.org/en/download/).
