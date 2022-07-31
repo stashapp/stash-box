@@ -4,7 +4,7 @@ This project builds the frontend for the stash-box server. It can be used to bui
 
 ## Setup / Installing
 Make sure your environment is up to date:
-- node >= `14.16.0`
+- node >= `14.16.0`, < `17.0.0`
 - yarn >= `1.15.2`
 
 For installation instructions, please see the websites for [yarn](https://yarnpkg.com/lang/en/docs/install/) and [node.js](https://nodejs.org/en/download/).
@@ -16,14 +16,14 @@ yarn
 ```
 
 ## GraphQL development
-If any queries/mutations or the schema on the server is updated, the Typescript types can be updated with: 
+If any queries/mutations or the schema on the server is updated, the Typescript types can be updated with:
 ```shell
 yarn generate
 ```
 
 ## Running
 
-### Local development server 
+### Local development server
 
 The API key can be set in the environment configuration. To do so, you will need to initialize the environment configuration:
 
@@ -56,5 +56,5 @@ yarn format
 Build the release bundle:
 
 ```shell
-yarn build 
+yarn build
 ```
