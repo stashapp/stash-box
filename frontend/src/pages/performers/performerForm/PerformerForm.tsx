@@ -93,7 +93,7 @@ const ETHNICITY: OptionEnum[] = [
   { value: "BLACK", label: "Black" },
   { value: "ASIAN", label: "Asian" },
   { value: "INDIAN", label: "Indian" },
-  { value: "LATIN", label: "Latino" },
+  { value: "LATIN", label: "Latin" },
   { value: "MIDDLE_EASTERN", label: "Middle Eastern" },
   { value: "MIXED", label: "Mixed" },
   { value: "OTHER", label: "Other" },
