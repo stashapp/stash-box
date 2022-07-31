@@ -157,6 +157,7 @@ const PerformersComponent: FC = () => {
         page={page}
         filters={filters}
         setPage={setPage}
+        perPage={PER_PAGE}
         loading={loading}
         listCount={data?.queryPerformers.count}
       >
