@@ -58,3 +58,9 @@ Build the release bundle:
 ```shell
 yarn build
 ```
+
+Run the validation (before submitting a Pull Request)
+
+```shell
+yarn validate
+```
