@@ -17,7 +17,7 @@ const Images: FC<{
 }> = ({ images }) => {
   const [imgDimensions, setImgDimensions] = useState<{
     [key: string]: { height: number; width: number };
-  } | null>({});
+  }>({});
 
   const onImgLoad = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
     setImgDimensions({
@@ -35,19 +35,18 @@ const Images: FC<{
         image === null ? (
           <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
         ) : (
-          <div>
+          <div key={image.id}>
             <img
               src={image.url}
               className={CLASSNAME_IMAGE}
               alt=""
-              key={image.id}
               onLoad={onImgLoad}
             />
             <div className={"text-center"}>
               {imgDimensions && imgDimensions[image.url]
-                ? String(imgDimensions[image.url].height) +
-                  " x " +
-                  String(imgDimensions[image.url].width)
+                ? `${imgDimensions[image.url].width} x ${
+                    imgDimensions[image.url].height
+                  }`
                 : ""}
             </div>
           </div>
