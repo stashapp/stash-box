@@ -413,6 +413,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}
+            original={scene?.images}
           />
 
           <NavButtons
