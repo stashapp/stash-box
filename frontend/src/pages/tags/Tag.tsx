@@ -99,6 +99,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
                 modifier: CriterionModifier.INCLUDES,
               },
             }}
+            favoriteFilter="all"
           />
         </Tab>
         <Tab
