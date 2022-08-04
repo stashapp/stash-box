@@ -28,8 +28,8 @@ const joinURLs = <T extends URL>(
     (u) => `${u.url}-${u.site.id}`
   );
 
-type Image = { id: string };
-const joinImages = <T extends Image>(
+type Entity = { id: string };
+const joinImages = <T extends Entity>(
   newImage: T | null,
   existingImages: T[] | undefined
 ) =>
@@ -37,6 +37,11 @@ const joinImages = <T extends Image>(
     [...(newImage ? [newImage] : []), ...(existingImages ?? [])],
     (i) => i.id
   );
+
+const joinTags = <T extends Entity>(
+  newTags: T[] | null,
+  existingTags: T[] | undefined
+) => uniqBy([...(newTags ?? []), ...(existingTags ?? [])], (t) => t.id);
 
 export const parseSceneDraft = (
   draft: SceneDraft,
@@ -52,9 +57,12 @@ export const parseSceneDraft = (
     code: null,
     duration: draft.fingerprints?.[0].duration ?? null,
     images: draft.image ? [draft.image] : existingScene?.images,
-    tags: (draft.tags ?? []).reduce<Tag[]>(
-      (res, t) => (t.__typename === "Tag" ? [...res, t] : res),
-      []
+    tags: joinTags(
+      (draft.tags ?? []).reduce<Tag[]>(
+        (res, t) => (t.__typename === "Tag" ? [...res, t] : res),
+        []
+      ),
+      existingScene?.tags
     ),
     performers: (draft.performers ?? []).reduce<ScenePerformer[]>(
       (res, p) =>
