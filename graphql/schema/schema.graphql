@@ -60,6 +60,7 @@ type Query {
   ### Full text search ###
   searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
+  searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
 
   ### Drafts ###
   findDraft(id: ID!): Draft @hasRole(role: READ)

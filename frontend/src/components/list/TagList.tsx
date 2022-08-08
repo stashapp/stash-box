@@ -29,7 +29,7 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
   const { page, setPage } = usePagination();
   const { loading, data } = useTags({
     input: {
-      name: name.trim(),
+      names: name.trim(),
       page,
       per_page: PER_PAGE,
       sort: TagSortEnum.NAME,
