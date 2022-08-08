@@ -43,6 +43,20 @@ const joinTags = <T extends Entity>(
   existingTags: T[] | undefined
 ) => uniqBy([...(newTags ?? []), ...(existingTags ?? [])], (t) => t.id);
 
+type Performer = { performer: { id: string }; as: string | null };
+const joinPerformers = <T extends Performer>(
+  newPerformers: T[] | null,
+  existingPerformers: T[] | undefined
+) => [
+  ...(existingPerformers ?? []),
+  ...(newPerformers ?? []).filter(
+    (p) =>
+      !(existingPerformers ?? []).some(
+        (ep) => ep.performer.id === p.performer.id
+      )
+  ),
+];
+
 export const parseSceneDraft = (
   draft: SceneDraft,
   existingScene: SceneFragment | undefined
@@ -64,15 +78,18 @@ export const parseSceneDraft = (
       ),
       existingScene?.tags
     ),
-    performers: (draft.performers ?? []).reduce<ScenePerformer[]>(
-      (res, p) =>
-        p.__typename === "Performer"
-          ? [
-              ...res,
-              { performer: p, as: "", __typename: "PerformerAppearance" },
-            ]
-          : res,
-      []
+    performers: joinPerformers(
+      (draft.performers ?? []).reduce<ScenePerformer[]>(
+        (res, p) =>
+          p.__typename === "Performer"
+            ? [
+                ...res,
+                { performer: p, as: "", __typename: "PerformerAppearance" },
+              ]
+            : res,
+        []
+      ),
+      existingScene?.performers
     ),
   };
 
