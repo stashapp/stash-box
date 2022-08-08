@@ -33,7 +33,7 @@ const Scenes: FC = () => {
           </Link>
         )}
       </div>
-      <SceneList filter={filter} />
+      <SceneList filter={filter} favoriteFilter="all" />
     </>
   );
 };

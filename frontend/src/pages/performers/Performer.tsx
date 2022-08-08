@@ -118,6 +118,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
                   }
                 : {}),
             }}
+            favoriteFilter={"studio"}
             key={`performer-${performer.id}-scene-list`}
           />
         </Tab>
