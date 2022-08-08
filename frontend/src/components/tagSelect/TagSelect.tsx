@@ -4,14 +4,13 @@ import { OnChangeValue, MenuPlacement } from "react-select";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
-import TagsQuery from "src/graphql/queries/Tags.gql";
+import SearchTagsQuery from "src/graphql/queries/SearchTags.gql";
 
 import {
-  Tags_queryTags_tags as Tag,
-  Tags,
-  TagsVariables,
-} from "src/graphql/definitions/Tags";
-import { SortDirectionEnum, TagSortEnum } from "src/graphql";
+  SearchTags_searchTag as Tag,
+  SearchTags,
+  SearchTagsVariables,
+} from "src/graphql/definitions/SearchTags";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 import { compareByName } from "src/utils";
@@ -28,12 +27,13 @@ interface TagSelectProps {
   message?: string;
   excludeTags?: string[];
   menuPlacement?: MenuPlacement;
+  allowDeleted?: boolean;
 }
 
 interface SearchResult {
   value: Tag;
   label: string;
-  subLabel: string;
+  sublabel: string;
 }
 
 const CLASSNAME = "TagSelect";
@@ -47,6 +47,7 @@ const TagSelect: FC<TagSelectProps> = ({
   message = "Add tag:",
   excludeTags = [],
   menuPlacement = "auto",
+  allowDeleted = false,
 }) => {
   const client = useApolloClient();
   const [tags, setTags] = useState(initialTags);
@@ -79,29 +80,37 @@ const TagSelect: FC<TagSelectProps> = ({
     ));
 
   const handleSearch = async (term: string) => {
-    const { data } = await client.query<Tags, TagsVariables>({
-      query: TagsQuery,
+    const { data } = await client.query<SearchTags, SearchTagsVariables>({
+      query: SearchTagsQuery,
       variables: {
-        input: {
-          page: 1,
-          per_page: 25,
-          name: term,
-          sort: TagSortEnum.NAME,
-          direction: SortDirectionEnum.ASC,
-        },
+        term,
+        limit: 25,
       },
     });
 
-    return data.queryTags.tags
-      .filter((tag) => !excluded.includes(tag.id))
+    return data.searchTag
+      .filter(
+        (tag) => !excluded.includes(tag.id) && (allowDeleted || !tag.deleted)
+      )
       .map((tag) => ({
         label: tag.name,
         value: tag,
-        subLabel: tag.description ?? "",
+        sublabel: tag.description ?? "",
       }));
   };
 
   const debouncedLoadOptions = debounce(handleSearch, 400);
+
+  const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => {
+    return (
+      <div title={value.aliases.map((a) => `\u{2022} ${a}`).join("\n")}>
+        <div className={`${CLASSNAME_SELECT}-value`}>
+          {value.deleted ? <del>{label}</del> : label}
+        </div>
+        <div className={`${CLASSNAME_SELECT}-subvalue`}>{sublabel}</div>
+      </div>
+    );
+  };
 
   return (
     <div className={CLASSNAME}>
@@ -119,6 +128,7 @@ const TagSelect: FC<TagSelectProps> = ({
           }
           menuPlacement={menuPlacement}
           controlShouldRenderValue={false}
+          formatOptionLabel={formatOptionLabel}
         />
       </div>
     </div>

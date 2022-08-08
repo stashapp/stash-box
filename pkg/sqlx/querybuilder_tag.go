@@ -263,6 +263,15 @@ func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, in
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
+
+	if q := filter.Names; q != nil && *q != "" {
+		searchColumns := []string{"tags.name", "tag_aliases.alias"}
+		query.AddLeftJoin(tagAliasTable.table, "tag_aliases.tag_id = tags.id", true)
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		query.AddWhere(clause)
+		query.AddArg(thisArgs...)
+	}
+
 	if catID := filter.CategoryID; catID != nil {
 		query.Eq("tags.category_id", catID)
 	}
@@ -277,6 +286,23 @@ func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, in
 	}
 
 	return tags, countResult, nil
+}
+
+func (qb *tagQueryBuilder) SearchTags(term string, limit int) ([]*models.Tag, error) {
+	query := `
+		SELECT T.* FROM tags T
+		LEFT JOIN tag_aliases TA ON TA.tag_id = T.id
+		WHERE (
+			to_tsvector('english', T.name) ||
+			to_tsvector('english', COALESCE(TA.alias, ''))
+		) @@ plainto_tsquery($1)
+		AND T.deleted = FALSE
+		GROUP BY T.id
+		ORDER BY T.name ASC
+		LIMIT $2;
+	`
+	args := []interface{}{term, limit}
+	return qb.queryTags(query, args)
 }
 
 func (qb *tagQueryBuilder) queryTags(query string, args []interface{}) (models.Tags, error) {
