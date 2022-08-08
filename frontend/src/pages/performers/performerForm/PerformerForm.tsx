@@ -623,6 +623,7 @@ const PerformerForm: FC<PerformerProps> = ({
             control={control}
             file={file}
             setFile={(f) => setFile(f)}
+            original={performer?.images}
           />
 
           <NavButtons
