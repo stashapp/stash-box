@@ -83,7 +83,10 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
 
   if (loadingScene) return <LoadingIndicator />;
 
-  const [initialScene, unparsed] = parseSceneDraft(draft.data);
+  const [initialScene, unparsed] = parseSceneDraft(
+    draft.data,
+    scene?.findScene ?? undefined
+  );
   const remainder = Object.entries(unparsed)
     .filter(([, val]) => !!val)
     .map(([key, val]) => (

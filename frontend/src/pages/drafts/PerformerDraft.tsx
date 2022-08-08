@@ -59,7 +59,10 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
     });
   };
 
-  const [initialPerformer, unparsed] = parsePerformerDraft(draft.data);
+  const [initialPerformer, unparsed] = parsePerformerDraft(
+    draft.data,
+    performer?.findPerformer ?? undefined
+  );
   const remainder = Object.entries(unparsed)
     .filter(([, val]) => !!val)
     .map(([key, val]) => (
