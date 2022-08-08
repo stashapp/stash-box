@@ -54,6 +54,13 @@ func (qb *queryBuilder) AddJoin(jt table, on string, isOneToMany bool) {
 	}
 }
 
+func (qb *queryBuilder) AddLeftJoin(jt table, on string, isOneToMany bool) {
+	qb.Body += " LEFT JOIN " + jt.Name() + " ON " + on
+	if isOneToMany {
+		qb.Distinct = true
+	}
+}
+
 func (qb *queryBuilder) AddWhere(clauses ...string) {
 	qb.whereClauses = append(qb.whereClauses, clauses...)
 }
