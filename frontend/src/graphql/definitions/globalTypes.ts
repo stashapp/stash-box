@@ -63,6 +63,12 @@ export enum EyeColorEnum {
   RED = "RED",
 }
 
+export enum FavoriteFilter {
+  ALL = "ALL",
+  PERFORMER = "PERFORMER",
+  STUDIO = "STUDIO",
+}
+
 export enum FingerprintAlgorithm {
   MD5 = "MD5",
   OSHASH = "OSHASH",
@@ -456,6 +462,7 @@ export interface SceneQueryInput {
   performers?: MultiIDCriterionInput | null;
   alias?: StringCriterionInput | null;
   fingerprints?: MultiStringCriterionInput | null;
+  favorites?: FavoriteFilter | null;
   page: number;
   per_page: number;
   direction: SortDirectionEnum;

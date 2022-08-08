@@ -127,7 +127,10 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           eventKey="scenes"
           title={subStudios.length > 0 ? "All Scenes" : "Scenes"}
         >
-          <SceneList filter={{ parentStudio: studio.id }} />
+          <SceneList
+            filter={{ parentStudio: studio.id }}
+            favoriteFilter="performer"
+          />
         </Tab>
         {subStudios.length > 0 && (
           <Tab eventKey="studio-scenes" title="Studio Scenes">

@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/user"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id uuid.UUID) (*models.Scene, error) {
@@ -120,11 +121,13 @@ type querySceneResolver struct{ *Resolver }
 func (r *querySceneResolver) Count(ctx context.Context, obj *models.SceneQuery) (int, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
-	return qb.QueryCount(obj.Filter)
+	u := user.GetCurrentUser(ctx)
+	return qb.QueryCount(obj.Filter, u.ID)
 }
 
 func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery) ([]*models.Scene, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
-	return qb.QueryScenes(obj.Filter)
+	u := user.GetCurrentUser(ctx)
+	return qb.QueryScenes(obj.Filter, u.ID)
 }
