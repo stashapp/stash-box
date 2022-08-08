@@ -4651,6 +4651,12 @@ enum FingerprintAlgorithm {
   PHASH
 }
 
+enum FavoriteFilter {
+  PERFORMER
+  STUDIO
+  ALL
+}
+
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
@@ -4837,6 +4843,8 @@ input SceneQueryInput {
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
   fingerprints: MultiStringCriterionInput
+  """Filter by favorited entity"""
+  favorites: FavoriteFilter
 
   page: Int! = 1
   per_page: Int! = 25
@@ -32445,6 +32453,14 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "favorites":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("favorites"))
+			it.Favorites, err = ec.unmarshalOFavoriteFilter2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFavoriteFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "page":
 			var err error
 
@@ -42453,6 +42469,22 @@ func (ec *executionContext) unmarshalOEyeColorEnum2ᚖgithubᚗcomᚋstashappᚋ
 }
 
 func (ec *executionContext) marshalOEyeColorEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEyeColorEnum(ctx context.Context, sel ast.SelectionSet, v *EyeColorEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOFavoriteFilter2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFavoriteFilter(ctx context.Context, v interface{}) (*FavoriteFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(FavoriteFilter)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFavoriteFilter2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFavoriteFilter(ctx context.Context, sel ast.SelectionSet, v *FavoriteFilter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
