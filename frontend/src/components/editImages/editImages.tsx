@@ -11,6 +11,7 @@ import { Icon, LoadingIndicator } from "src/components/fragments";
 const CLASSNAME = "EditImages";
 const CLASSNAME_IMAGES = `${CLASSNAME}-images`;
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;
+const CLASSNAME_INPUT_CONTAINER = `${CLASSNAME_INPUT}-container`;
 const CLASSNAME_DROP = `${CLASSNAME}-drop`;
 const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
@@ -24,6 +25,7 @@ interface EditImagesProps {
   maxImages?: number;
   /** Whether to allow svg/png image input */
   allowLossless?: boolean;
+  original?: { id: string; url: string }[] | undefined;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -32,11 +34,13 @@ const EditImages: FC<EditImagesProps> = ({
   file,
   setFile,
   allowLossless = false,
+  original,
 }) => {
   const {
     fields: images,
     append,
     remove,
+    replace,
   } = useFieldArray<
     { images: Array<{ id: string; url: string; key: string }> },
     "images",
@@ -100,7 +104,7 @@ const EditImages: FC<EditImagesProps> = ({
         ))}
       </Col>
       <Col xs={5} className={CLASSNAME_INPUT}>
-        <div className="d-flex">
+        <div className={CLASSNAME_INPUT_CONTAINER}>
           {file ? (
             <div
               className={cx(CLASSNAME_IMAGE, {
@@ -130,25 +134,34 @@ const EditImages: FC<EditImagesProps> = ({
             )
           )}
         </div>
-        {file && (
-          <>
-            <Button
-              variant="danger"
-              onClick={() => removeImage()}
-              disabled={!file || uploading}
-              className="ms-auto"
-            >
-              Remove
-            </Button>
-            <Button
-              onClick={() => handleAddImage()}
-              disabled={!file || uploading}
-              className="ms-2 me-auto"
-            >
-              Upload
-            </Button>
-          </>
-        )}
+        <div className="mt-4 d-flex">
+          {file && (
+            <>
+              <Button
+                variant="danger"
+                onClick={() => removeImage()}
+                disabled={!file || uploading}
+              >
+                Remove
+              </Button>
+              <Button
+                onClick={() => handleAddImage()}
+                disabled={!file || uploading}
+                className="ms-2"
+              >
+                Upload
+              </Button>
+            </>
+          )}
+          <Button
+            variant="danger"
+            onClick={() => original && replace(original)}
+            disabled={original === undefined}
+            className="ms-auto mt-auto"
+          >
+            Reset Images
+          </Button>
+        </div>
       </Col>
     </Row>
   );
