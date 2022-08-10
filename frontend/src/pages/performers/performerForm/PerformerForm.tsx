@@ -56,6 +56,7 @@ const genderOptions = Object.keys(GenderEnum).map((g) => ({
 
 const GENDER: OptionEnum[] = [
   { value: "", label: "Select gender...", disabled: true },
+  { value: "null", label: "Unknown" },
   ...genderOptions,
 ];
 
