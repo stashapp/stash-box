@@ -50,9 +50,8 @@ func getPagination(page int, perPage int) string {
 func getSortDirection(direction string) string {
 	if direction != "ASC" && direction != "DESC" {
 		return "ASC"
-	} else {
-		return direction
 	}
+	return direction
 }
 
 func getSort(sort string, direction string, tableName string, secondarySort *string) string {
