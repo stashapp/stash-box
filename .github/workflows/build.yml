@@ -114,7 +114,7 @@ jobs:
 
     - name: Crosscompile binaries
       run: make cross-compile
-      env: 
+      env:
         BUILD_TYPE: "${{ env.BUILD_TYPE }}"
 
     - name: Generate checksums
