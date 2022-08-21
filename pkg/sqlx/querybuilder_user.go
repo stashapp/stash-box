@@ -199,3 +199,28 @@ func (qb *userQueryBuilder) CountVotesByType(id uuid.UUID) (*models.UserVoteCoun
 
 	return &res, nil
 }
+
+func (qb *userQueryBuilder) GetFingerprints(currentUserID uuid.UUID) ([]*models.Fingerprint, int, error) {
+	var res []*models.Fingerprint
+	query := `
+		SELECT
+			scene_id,
+			hash,
+			algorithm,
+			duration,
+			1 as submissions,
+			created_at,
+			updated_at,
+			user_id as user_submitted
+		FROM scene_fingerprints f
+		WHERE user_id = ?
+		ORDER BY created_at DESC`
+
+	err := qb.dbi.txn.tx.Select(&res, query, currentUserID)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return res, len(res), nil
+}

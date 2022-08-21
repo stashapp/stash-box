@@ -57,6 +57,9 @@ type Query {
   """Returns currently authenticated user"""
   me: User
 
+  """Returns current user specific information"""
+  myFingerprints: QueryFingerprintResultType!
+
   ### Full text search ###
   searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)

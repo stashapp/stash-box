@@ -399,6 +399,11 @@ type PerformerUpdateInput struct {
 	ImageIds        []uuid.UUID         `json:"image_ids"`
 }
 
+type QueryFingerprintResultType struct {
+	Count        int            `json:"count"`
+	Fingerprints []*Fingerprint `json:"fingerprints"`
+}
+
 type QuerySitesResultType struct {
 	Count int     `json:"count"`
 	Sites []*Site `json:"sites"`

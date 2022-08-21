@@ -43,3 +43,19 @@ func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 
 	return currentUser, nil
 }
+
+func (r *queryResolver) MyFingerprints(ctx context.Context) (*models.QueryFingerprintResultType, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.User()
+
+	currentUser := getCurrentUser(ctx)
+	if currentUser == nil {
+		return nil, user.ErrUnauthorized
+	}
+	res, count, err := qb.GetFingerprints(currentUser.ID)
+
+	return &models.QueryFingerprintResultType{
+		Count:        count,
+		Fingerprints: res,
+	}, err
+}

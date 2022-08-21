@@ -337,6 +337,7 @@ type ComplexityRoot struct {
 		FindUser                      func(childComplexity int, id *uuid.UUID, username *string) int
 		GetConfig                     func(childComplexity int) int
 		Me                            func(childComplexity int) int
+		MyFingerprints                func(childComplexity int) int
 		QueryEdits                    func(childComplexity int, input EditQueryInput) int
 		QueryPerformers               func(childComplexity int, input PerformerQueryInput) int
 		QueryScenes                   func(childComplexity int, input SceneQueryInput) int
@@ -353,6 +354,11 @@ type ComplexityRoot struct {
 	QueryEditsResultType struct {
 		Count func(childComplexity int) int
 		Edits func(childComplexity int) int
+	}
+
+	QueryFingerprintResultType struct {
+		Count        func(childComplexity int) int
+		Fingerprints func(childComplexity int) int
 	}
 
 	QueryPerformersResultType struct {
@@ -739,6 +745,7 @@ type QueryResolver interface {
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
 	QueryUsers(ctx context.Context, input UserQueryInput) (*QueryUsersResultType, error)
 	Me(ctx context.Context) (*User, error)
+	MyFingerprints(ctx context.Context) (*QueryFingerprintResultType, error)
 	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
 	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
 	FindDraft(ctx context.Context, id uuid.UUID) (*Draft, error)
@@ -2656,6 +2663,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Me(childComplexity), true
 
+	case "Query.myFingerprints":
+		if e.complexity.Query.MyFingerprints == nil {
+			break
+		}
+
+		return e.complexity.Query.MyFingerprints(childComplexity), true
+
 	case "Query.queryEdits":
 		if e.complexity.Query.QueryEdits == nil {
 			break
@@ -2786,6 +2800,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.QueryEditsResultType.Edits(childComplexity), true
+
+	case "QueryFingerprintResultType.count":
+		if e.complexity.QueryFingerprintResultType.Count == nil {
+			break
+		}
+
+		return e.complexity.QueryFingerprintResultType.Count(childComplexity), true
+
+	case "QueryFingerprintResultType.fingerprints":
+		if e.complexity.QueryFingerprintResultType.Fingerprints == nil {
+			break
+		}
+
+		return e.complexity.QueryFingerprintResultType.Fingerprints(childComplexity), true
 
 	case "QueryPerformersResultType.count":
 		if e.complexity.QueryPerformersResultType.Count == nil {
@@ -4661,6 +4689,11 @@ type Fingerprint {
   user_submitted: Boolean!
 }
 
+type QueryFingerprintResultType {
+  count: Int!
+  fingerprints: [Fingerprint!]!
+}
+
 type DraftFingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
@@ -5334,6 +5367,9 @@ type Query {
 
   """Returns currently authenticated user"""
   me: User
+
+  """Returns current user specific information"""
+  myFingerprints: QueryFingerprintResultType!
 
   ### Full text search ###
   searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
@@ -19783,6 +19819,56 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_myFingerprints(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_myFingerprints(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().MyFingerprints(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*QueryFingerprintResultType)
+	fc.Result = res
+	return ec.marshalNQueryFingerprintResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryFingerprintResultType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_myFingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "count":
+				return ec.fieldContext_QueryFingerprintResultType_count(ctx, field)
+			case "fingerprints":
+				return ec.fieldContext_QueryFingerprintResultType_fingerprints(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryFingerprintResultType", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_searchPerformer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_searchPerformer(ctx, field)
 	if err != nil {
@@ -20627,6 +20713,110 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(ctx context.
 				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryFingerprintResultType_count(ctx context.Context, field graphql.CollectedField, obj *QueryFingerprintResultType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryFingerprintResultType_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryFingerprintResultType_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryFingerprintResultType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryFingerprintResultType_fingerprints(ctx context.Context, field graphql.CollectedField, obj *QueryFingerprintResultType) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryFingerprintResultType_fingerprints(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fingerprints, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Fingerprint)
+	fc.Result = res
+	return ec.marshalNFingerprint2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryFingerprintResultType_fingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryFingerprintResultType",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hash":
+				return ec.fieldContext_Fingerprint_hash(ctx, field)
+			case "algorithm":
+				return ec.fieldContext_Fingerprint_algorithm(ctx, field)
+			case "duration":
+				return ec.fieldContext_Fingerprint_duration(ctx, field)
+			case "submissions":
+				return ec.fieldContext_Fingerprint_submissions(ctx, field)
+			case "created":
+				return ec.fieldContext_Fingerprint_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Fingerprint_updated(ctx, field)
+			case "user_submitted":
+				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
 	}
 	return fc, nil
@@ -36930,6 +37120,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "myFingerprints":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_myFingerprints(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "searchPerformer":
 			field := field
 
@@ -37138,6 +37351,41 @@ func (ec *executionContext) _QueryEditsResultType(ctx context.Context, sel ast.S
 				return innerFunc(ctx)
 
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var queryFingerprintResultTypeImplementors = []string{"QueryFingerprintResultType"}
+
+func (ec *executionContext) _QueryFingerprintResultType(ctx context.Context, sel ast.SelectionSet, obj *QueryFingerprintResultType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryFingerprintResultTypeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryFingerprintResultType")
+		case "count":
+
+			out.Values[i] = ec._QueryFingerprintResultType_count(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "fingerprints":
+
+			out.Values[i] = ec._QueryFingerprintResultType_fingerprints(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -40856,6 +41104,20 @@ func (ec *executionContext) marshalNQueryEditsResultType2ᚖgithubᚗcomᚋstash
 		return graphql.Null
 	}
 	return ec._QueryEditsResultType(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNQueryFingerprintResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryFingerprintResultType(ctx context.Context, sel ast.SelectionSet, v QueryFingerprintResultType) graphql.Marshaler {
+	return ec._QueryFingerprintResultType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQueryFingerprintResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryFingerprintResultType(ctx context.Context, sel ast.SelectionSet, v *QueryFingerprintResultType) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QueryFingerprintResultType(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNQueryPerformersResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQuery(ctx context.Context, sel ast.SelectionSet, v PerformerQuery) graphql.Marshaler {

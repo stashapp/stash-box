@@ -14,6 +14,13 @@ interface Props {
   user: Pick<User, "id" | "name">;
 }
 
+/*
+  Dev notes
+
+  Fingerprints for self can be removed by calling SubmitFingerprint with FingerprintSubmission.Unmatch = true
+
+*/
+
 const UserScenesComponent: FC<Props> = ({ user }) =>{
   const Auth = useContext(AuthContext);
   const currentUserId = Auth.user?.id;
