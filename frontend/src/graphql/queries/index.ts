@@ -15,6 +15,7 @@ import { Edit, EditVariables } from "../definitions/Edit";
 import { EditUpdate, EditUpdateVariables } from "../definitions/EditUpdate";
 import { Edits, EditsVariables } from "../definitions/Edits";
 import { Me } from "../definitions/Me";
+import { MyFingerprints } from "../definitions/MyFingerprints";
 import { Performer, PerformerVariables } from "../definitions/Performer";
 import {
   FullPerformer,
@@ -78,6 +79,7 @@ import SiteQuery from "./Site.gql";
 import SitesQuery from "./Sites.gql";
 import DraftQuery from "./Draft.gql";
 import DraftsQuery from "./Drafts.gql";
+import MyFingerprintsQuery from "./MyFingerprints.gql";
 
 export const useCategory = (variables: CategoryVariables, skip = false) =>
   useQuery<Category, CategoryVariables>(CategoryQuery, {
@@ -246,3 +248,6 @@ export const useDraft = (variables: DraftVariables, skip = false) =>
   });
 
 export const useDrafts = () => useQuery<Drafts>(DraftsQuery);
+
+export const useMyFingerprints = (options?: QueryHookOptions<MyFingerprints>) =>
+  useQuery<MyFingerprints>(MyFingerprintsQuery, options);

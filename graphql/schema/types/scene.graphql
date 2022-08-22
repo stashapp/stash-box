@@ -26,11 +26,6 @@ type Fingerprint {
   user_submitted: Boolean!
 }
 
-type QueryFingerprintResultType {
-  count: Int!
-  fingerprints: [Fingerprint!]!
-}
-
 type DraftFingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!

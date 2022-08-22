@@ -5,10 +5,11 @@ import { ROUTE_USER_MY_SCENES } from "src/constants/route";
 import { User_findUser as User } from "src/graphql/definitions/User";
 import { ROUTE_USER } from "src/constants/route";
 import { createHref } from "src/utils";
-import { SceneList } from "src/components/list";
+import UserSceneList from "./UserScenes/UserSceneList";
 import AuthContext from "src/AuthContext";
 import { Button } from "react-bootstrap";
-import { CriterionModifier } from "src/graphql";
+import { CriterionModifier, useMyFingerprints } from "src/graphql";
+import { ErrorMessage } from "src/components/fragments";
 
 interface Props {
   user: Pick<User, "id" | "name">;
@@ -35,14 +36,18 @@ const UserScenesComponent: FC<Props> = ({ user }) =>{
     )
   }
 
-  // Find a way to filter on scenes the user has a fingerprint in
-  /* const filter = {
-    fingerprints: {
-      modifier: CriterionModifier.INCLUDES,
-      value: [currentUserId],
-    },
-  }*/
-  const filter = undefined;
+  const { loading, data :userFingerprints} = useMyFingerprints()
+
+  if (!loading && !userFingerprints) return <ErrorMessage error="Failed to load scenes." />;
+  
+  console.log(userFingerprints)
+
+  const filter = {
+        fingerprints: {
+          modifier: CriterionModifier.INCLUDES,
+          value: userFingerprints?.myFingerprints.fingerprints.map(fing => fing.hash) ?? [''],
+        },
+      }
 
   
   return (
@@ -50,7 +55,7 @@ const UserScenesComponent: FC<Props> = ({ user }) =>{
       <h3>
         My scenes
       </h3>
-      <SceneList filter={filter} />
+      <UserSceneList filter={filter} />
     </>
   );
 

@@ -145,3 +145,8 @@ type UserVoteCount {
   immediate_accept: Int!
   immediate_reject: Int!
 }
+
+type QueryFingerprintResultType {
+  count: Int!
+  fingerprints: [Fingerprint!]!
+}

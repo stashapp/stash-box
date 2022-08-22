@@ -57,7 +57,7 @@ type Query {
   """Returns currently authenticated user"""
   me: User
 
-  """Returns current user specific information"""
+  """Returns fingerprints submitted by current user"""
   myFingerprints: QueryFingerprintResultType!
 
   ### Full text search ###

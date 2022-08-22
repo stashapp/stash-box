@@ -1,0 +1,11 @@
+query MyFingerprints {
+  myFingerprints {
+    count
+    fingerprints{
+      hash
+      duration
+      created
+    }
+    
+  }
+}
