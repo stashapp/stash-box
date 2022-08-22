@@ -1,6 +1,8 @@
 package sqlx
 
 import (
+	"log"
+
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -204,22 +206,32 @@ func (qb *userQueryBuilder) GetFingerprints(currentUserID uuid.UUID) ([]*models.
 	var res []*models.Fingerprint
 	query := `
 		SELECT
-			scene_id,
 			hash,
 			algorithm,
 			duration,
 			1 as submissions,
-			created_at,
-			updated_at,
-			user_id as user_submitted
+			created_at as created,
+			updated_at as updated,
+			true as usersubmitted
 		FROM scene_fingerprints f
-		WHERE user_id = ?
+		WHERE user_id = ? AND algorithm = 'PHASH'
 		ORDER BY created_at DESC`
 
-	err := qb.dbi.txn.tx.Select(&res, query, currentUserID)
-
+	rows, err := qb.dbi.queryx(query, currentUserID)
 	if err != nil {
 		return nil, 0, err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	for rows.Next() {
+		fing := models.Fingerprint{}
+		err = rows.StructScan(&fing)
+		if err != nil {
+			log.Println(err)
+		}
+		res = append(res, &fing)
 	}
 
 	return res, len(res), nil
