@@ -1,8 +1,6 @@
 package sqlx
 
 import (
-	"log"
-
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -229,7 +227,7 @@ func (qb *userQueryBuilder) GetFingerprints(currentUserID uuid.UUID) ([]*models.
 		fing := models.Fingerprint{}
 		err = rows.StructScan(&fing)
 		if err != nil {
-			log.Println(err)
+			return nil, 0, err
 		}
 		res = append(res, &fing)
 	}
