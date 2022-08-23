@@ -284,6 +284,12 @@ export interface FingerprintInput {
   duration: number;
 }
 
+export interface FingerprintSubmission {
+  scene_id: string;
+  fingerprint: FingerprintInput;
+  unmatch?: boolean | null;
+}
+
 export interface GrantInviteInput {
   user_id: string;
   amount: number;

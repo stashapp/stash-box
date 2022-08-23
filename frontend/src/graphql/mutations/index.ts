@@ -94,6 +94,7 @@ import {
   FavoritePerformerVariables,
 } from "../definitions/FavoritePerformer";
 import { DeleteDraft, DeleteDraftVariables } from "../definitions/DeleteDraft";
+import { SubmitFingerprint, SubmitFingerprintVariables } from "../definitions/SubmitFingerprint";
 
 import ActivateUserMutation from "./ActivateNewUser.gql";
 import AddUserMutation from "./AddUser.gql";
@@ -135,6 +136,7 @@ import UpdateSiteMutation from "./UpdateSite.gql";
 import FavoriteStudioMutation from "./FavoriteStudio.gql";
 import FavoritePerformerMutation from "./FavoritePerformer.gql";
 import DeleteDraftMutation from "./DeleteDraft.gql";
+import SubmitFingerprintMutation from "./SubmitFingerprint.gql";
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -313,3 +315,8 @@ export const useSetFavorite = <T extends "performer" | "studio">(
 export const useDeleteDraft = (
   options?: MutationHookOptions<DeleteDraft, DeleteDraftVariables>
 ) => useMutation(DeleteDraftMutation, options);
+
+
+export const useSubmitFingerPrint = (
+  options?: MutationHookOptions<SubmitFingerprint, SubmitFingerprintVariables>
+) => useMutation(SubmitFingerprintMutation,options);
