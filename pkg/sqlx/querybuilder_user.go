@@ -200,10 +200,12 @@ func (qb *userQueryBuilder) CountVotesByType(id uuid.UUID) (*models.UserVoteCoun
 	return &res, nil
 }
 
-func (qb *userQueryBuilder) GetFingerprints(currentUserID uuid.UUID) ([]*models.Fingerprint, int, error) {
-	var res []*models.Fingerprint
+func (qb *userQueryBuilder) GetMyFingerprints(currentUserID uuid.UUID) ([]*models.MyFingerprint, int, error) {
+	var res []*models.MyFingerprint
 	query := `
 		SELECT
+			scene_id as sceneid,
+			user_id as userid,
 			hash,
 			algorithm,
 			duration,
@@ -224,7 +226,7 @@ func (qb *userQueryBuilder) GetFingerprints(currentUserID uuid.UUID) ([]*models.
 	}()
 
 	for rows.Next() {
-		fing := models.Fingerprint{}
+		fing := models.MyFingerprint{}
 		err = rows.StructScan(&fing)
 		if err != nil {
 			return nil, 0, err

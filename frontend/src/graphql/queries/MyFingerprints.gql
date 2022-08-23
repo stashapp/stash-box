@@ -5,6 +5,8 @@ query MyFingerprints {
       hash
       duration
       created
+      scene_id
+      algorithm
     }
     
   }

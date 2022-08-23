@@ -146,7 +146,19 @@ type UserVoteCount {
   immediate_reject: Int!
 }
 
+type MyFingerprint {
+  scene_id: ID!
+  user_id: ID!
+  hash: String!
+  algorithm: FingerprintAlgorithm!
+  duration: Int!
+  submissions: Int!
+  created: Time!
+  updated: Time!
+  user_submitted: Boolean!
+}
+
 type QueryFingerprintResultType {
   count: Int!
-  fingerprints: [Fingerprint!]!
+  fingerprints: [MyFingerprint!]!
 }

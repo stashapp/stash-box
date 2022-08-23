@@ -55,7 +55,7 @@ const UserScenesComponent: FC<Props> = ({ user }) =>{
       <h3>
         My scenes
       </h3>
-      <UserSceneList filter={filter} />
+      <UserSceneList filter={filter} userFingerprints={userFingerprints?.myFingerprints.fingerprints}/>
     </>
   );
 

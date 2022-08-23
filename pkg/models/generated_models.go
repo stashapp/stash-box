@@ -224,6 +224,18 @@ type MultiStringCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type MyFingerprint struct {
+	SceneID       uuid.UUID            `json:"scene_id"`
+	UserID        uuid.UUID            `json:"user_id"`
+	Hash          string               `json:"hash"`
+	Algorithm     FingerprintAlgorithm `json:"algorithm"`
+	Duration      int                  `json:"duration"`
+	Submissions   int                  `json:"submissions"`
+	Created       time.Time            `json:"created"`
+	Updated       time.Time            `json:"updated"`
+	UserSubmitted bool                 `json:"user_submitted"`
+}
+
 type NewUserInput struct {
 	Email     string  `json:"email"`
 	InviteKey *string `json:"invite_key"`
@@ -400,8 +412,8 @@ type PerformerUpdateInput struct {
 }
 
 type QueryFingerprintResultType struct {
-	Count        int            `json:"count"`
-	Fingerprints []*Fingerprint `json:"fingerprints"`
+	Count        int              `json:"count"`
+	Fingerprints []*MyFingerprint `json:"fingerprints"`
 }
 
 type QuerySitesResultType struct {

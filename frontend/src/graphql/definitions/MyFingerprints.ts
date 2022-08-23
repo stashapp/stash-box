@@ -3,15 +3,19 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { FingerprintAlgorithm } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: MyFingerprints
 // ====================================================
 
 export interface MyFingerprints_myFingerprints_fingerprints {
-  __typename: "Fingerprint";
+  __typename: "MyFingerprint";
   hash: string;
   duration: number;
   created: GQLTime;
+  scene_id: string;
+  algorithm: FingerprintAlgorithm;
 }
 
 export interface MyFingerprints_myFingerprints {

@@ -52,7 +52,7 @@ func (r *queryResolver) MyFingerprints(ctx context.Context) (*models.QueryFinger
 	if currentUser == nil {
 		return nil, user.ErrUnauthorized
 	}
-	res, count, err := qb.GetFingerprints(currentUser.ID)
+	res, count, err := qb.GetMyFingerprints(currentUser.ID)
 
 	return &models.QueryFingerprintResultType{
 		Count:        count,
