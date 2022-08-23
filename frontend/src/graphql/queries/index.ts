@@ -33,6 +33,7 @@ import {
   SearchPerformers,
   SearchPerformersVariables,
 } from "../definitions/SearchPerformers";
+import { SearchTags, SearchTagsVariables } from "../definitions/SearchTags";
 import { Studio, StudioVariables } from "../definitions/Studio";
 import { Studios, StudiosVariables } from "../definitions/Studios";
 import { Tag, TagVariables } from "../definitions/Tag";
@@ -65,6 +66,7 @@ import ScenesQuery from "./Scenes.gql";
 import ScenesWithoutCountQuery from "./ScenesWithoutCount.gql";
 import SearchAllQuery from "./SearchAll.gql";
 import SearchPerformersQuery from "./SearchPerformers.gql";
+import SearchTagsQuery from "./SearchTags.gql";
 import StudioQuery from "./Studio.gql";
 import StudiosQuery from "./Studios.gql";
 import TagQuery from "./Tag.gql";
@@ -166,6 +168,11 @@ export const useLazySearchAll = (
 export const useLazySearchPerformers = (
   options?: LazyQueryHookOptions<SearchPerformers, SearchPerformersVariables>
 ) => useLazyQuery(SearchPerformersQuery, options);
+
+export const useSearchTags = (variables: SearchTagsVariables) =>
+  useQuery<SearchTags, SearchTagsVariables>(SearchTagsQuery, {
+    variables,
+  });
 
 export const useStudio = (variables: StudioVariables, skip = false) =>
   useQuery<Studio, StudioVariables>(StudioQuery, {

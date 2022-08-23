@@ -20,8 +20,8 @@ type SceneRepo interface {
 	FindIdsBySceneFingerprints(fingerprints []*FingerprintQueryInput) (map[string][]uuid.UUID, error)
 	FindByTitle(name string) ([]*Scene, error)
 	Count() (int, error)
-	QueryScenes(filter SceneQueryInput) ([]*Scene, error)
-	QueryCount(filter SceneQueryInput) (int, error)
+	QueryScenes(filter SceneQueryInput, userID uuid.UUID) ([]*Scene, error)
+	QueryCount(filter SceneQueryInput, userID uuid.UUID) (int, error)
 	GetFingerprints(id uuid.UUID) (SceneFingerprints, error)
 
 	// GetAllFingerprints returns fingerprints for each of the scene ids provided.

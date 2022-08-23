@@ -519,10 +519,12 @@ type SceneQueryInput struct {
 	Alias *StringCriterionInput `json:"alias"`
 	// Filter to only include scenes with these fingerprints
 	Fingerprints *MultiStringCriterionInput `json:"fingerprints"`
-	Page         int                        `json:"page"`
-	PerPage      int                        `json:"per_page"`
-	Direction    SortDirectionEnum          `json:"direction"`
-	Sort         SceneSortEnum              `json:"sort"`
+	// Filter by favorited entity
+	Favorites *FavoriteFilter   `json:"favorites"`
+	Page      int               `json:"page"`
+	PerPage   int               `json:"per_page"`
+	Direction SortDirectionEnum `json:"direction"`
+	Sort      SceneSortEnum     `json:"sort"`
 }
 
 type SceneUpdateInput struct {
@@ -1115,6 +1117,49 @@ func (e *EyeColorEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e EyeColorEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type FavoriteFilter string
+
+const (
+	FavoriteFilterPerformer FavoriteFilter = "PERFORMER"
+	FavoriteFilterStudio    FavoriteFilter = "STUDIO"
+	FavoriteFilterAll       FavoriteFilter = "ALL"
+)
+
+var AllFavoriteFilter = []FavoriteFilter{
+	FavoriteFilterPerformer,
+	FavoriteFilterStudio,
+	FavoriteFilterAll,
+}
+
+func (e FavoriteFilter) IsValid() bool {
+	switch e {
+	case FavoriteFilterPerformer, FavoriteFilterStudio, FavoriteFilterAll:
+		return true
+	}
+	return false
+}
+
+func (e FavoriteFilter) String() string {
+	return string(e)
+}
+
+func (e *FavoriteFilter) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FavoriteFilter(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FavoriteFilter", str)
+	}
+	return nil
+}
+
+func (e FavoriteFilter) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
