@@ -2,7 +2,6 @@ package image
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
@@ -29,7 +28,7 @@ func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
 
 	// write the file
 	path := GetImagePath(fileDir, image.Checksum)
-	if err := ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0644)); err != nil {
+	if err := os.WriteFile(path, buf.Bytes(), os.FileMode(0644)); err != nil {
 		_ = os.Remove(path)
 		return err
 	}

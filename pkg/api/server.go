@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
-	"io/ioutil"
 	"net/http"
 	"net/http/pprof"
+	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
@@ -262,12 +262,12 @@ func GetVersion() (string, string, string) {
 }
 
 func makeTLSConfig() *tls.Config {
-	cert, err := ioutil.ReadFile(paths.GetSSLCert())
+	cert, err := os.ReadFile(paths.GetSSLCert())
 	if err != nil {
 		return nil
 	}
 
-	key, err := ioutil.ReadFile(paths.GetSSLKey())
+	key, err := os.ReadFile(paths.GetSSLKey())
 	if err != nil {
 		return nil
 	}
