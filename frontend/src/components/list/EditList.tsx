@@ -84,6 +84,7 @@ const EditListComponent: FC<EditsProps> = ({
       filters={editFilter}
       page={page}
       setPage={setPage}
+      perPage={PER_PAGE}
     >
       <div>{edits}</div>
     </List>

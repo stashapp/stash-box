@@ -93,7 +93,7 @@ const ETHNICITY: OptionEnum[] = [
   { value: "BLACK", label: "Black" },
   { value: "ASIAN", label: "Asian" },
   { value: "INDIAN", label: "Indian" },
-  { value: "LATIN", label: "Latino" },
+  { value: "LATIN", label: "Latin" },
   { value: "MIDDLE_EASTERN", label: "Middle Eastern" },
   { value: "MIXED", label: "Mixed" },
   { value: "OTHER", label: "Other" },
@@ -623,6 +623,7 @@ const PerformerForm: FC<PerformerProps> = ({
             control={control}
             file={file}
             setFile={(f) => setFile(f)}
+            original={performer?.images}
           />
 
           <NavButtons

@@ -42,7 +42,9 @@ const StudioComponent: FC<Props> = ({ studio }) => {
 
   const studioImage = getImage(studio.images, "landscape");
 
-  const subStudios = sortBy(studio.child_studios, (s) => s.name).map((s) => (
+  const subStudios = sortBy(studio.child_studios, (s) =>
+    s.name.toLowerCase()
+  ).map((s) => (
     <li key={s.id}>
       <Link to={studioHref(s)}>{s.name}</Link>
     </li>
@@ -125,7 +127,10 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           eventKey="scenes"
           title={subStudios.length > 0 ? "All Scenes" : "Scenes"}
         >
-          <SceneList filter={{ parentStudio: studio.id }} />
+          <SceneList
+            filter={{ parentStudio: studio.id }}
+            favoriteFilter="performer"
+          />
         </Tab>
         {subStudios.length > 0 && (
           <Tab eventKey="studio-scenes" title="Studio Scenes">

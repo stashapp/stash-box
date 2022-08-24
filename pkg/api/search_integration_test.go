@@ -127,6 +127,55 @@ func (s *searchTestRunner) testSearchSceneByID() {
 		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
 	}
 }
+
+func (s *searchTestRunner) testSearchTagByTerm() {
+	createdTag, err := s.createTestTag(nil)
+	if err != nil {
+		return
+	}
+
+	tags, err := s.resolver.Query().SearchTag(s.ctx, createdTag.Name, nil)
+	if err != nil {
+		s.t.Errorf("Error finding tag: %s", err.Error())
+		return
+	}
+
+	// ensure returned tag is not nil
+	if len(tags) == 0 {
+		s.t.Error("Did not find tag by name search")
+		return
+	}
+
+	// ensure values were set
+	if createdTag.UUID() != tags[0].ID {
+		s.fieldMismatch(createdTag.ID, tags[0].ID, "ID")
+	}
+}
+
+func (s *searchTestRunner) testSearchTagByID() {
+	createdTag, err := s.createTestTag(nil)
+	if err != nil {
+		return
+	}
+
+	tags, err := s.resolver.Query().SearchTag(s.ctx, "   "+createdTag.ID, nil)
+	if err != nil {
+		s.t.Errorf("Error finding tag: %s", err.Error())
+		return
+	}
+
+	// ensure returned tag is not nil
+	if len(tags) == 0 {
+		s.t.Error("Did not find tag by name search")
+		return
+	}
+
+	// ensure values were set
+	if createdTag.UUID() != tags[0].ID {
+		s.fieldMismatch(createdTag.ID, tags[0].ID, "ID")
+	}
+}
+
 func TestSearchPerformerByTerm(t *testing.T) {
 	pt := createSearchTestRunner(t)
 	pt.testSearchPerformerByTerm()
@@ -145,4 +194,14 @@ func TestSearchSceneByTerm(t *testing.T) {
 func TestSearchSceneByID(t *testing.T) {
 	pt := createSearchTestRunner(t)
 	pt.testSearchSceneByID()
+}
+
+func TestSearchTagByTerm(t *testing.T) {
+	pt := createSearchTestRunner(t)
+	pt.testSearchTagByTerm()
+}
+
+func TestSearchTagByID(t *testing.T) {
+	pt := createSearchTestRunner(t)
+	pt.testSearchTagByID()
 }

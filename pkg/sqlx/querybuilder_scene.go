@@ -335,7 +335,7 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, isCount bool) (*queryBuilder, error) {
+func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uuid.UUID, isCount bool) (*queryBuilder, error) {
 	query := newQueryBuilder(sceneDBTable)
 
 	if q := filter.Text; q != nil && *q != "" {
@@ -439,6 +439,29 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, isCount b
 		}
 	}
 
+	if q := filter.Favorites; q != nil {
+		var clauses []string
+		if *q == models.FavoriteFilterPerformer || *q == models.FavoriteFilterAll {
+			clauses = append(clauses, `(
+					SELECT scene_id FROM performer_favorites PF
+					JOIN scene_performers SP ON PF.performer_id = SP.performer_id
+					WHERE PF.user_id = ?
+			)`)
+			query.AddArg(userID)
+		}
+		if *q == models.FavoriteFilterStudio || *q == models.FavoriteFilterAll {
+			clauses = append(clauses, `(
+					SELECT S.id FROM studio_favorites SF
+					JOIN scenes S ON SF.studio_id = S.studio_id
+					WHERE SF.user_id = ?
+			)`)
+			query.AddArg(userID)
+		}
+
+		clause := "(scenes.id IN (" + strings.Join(clauses, " UNION ") + "))"
+		query.AddWhere(clause)
+	}
+
 	if filter.Sort == models.SceneSortEnumTrending {
 		limit := ""
 		if len(query.whereClauses) == 0 && !isCount {
@@ -469,8 +492,8 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, isCount b
 	return query, nil
 }
 
-func (qb *sceneQueryBuilder) QueryScenes(filter models.SceneQueryInput) ([]*models.Scene, error) {
-	query, err := qb.buildQuery(filter, false)
+func (qb *sceneQueryBuilder) QueryScenes(filter models.SceneQueryInput, userID uuid.UUID) ([]*models.Scene, error) {
+	query, err := qb.buildQuery(filter, userID, false)
 	if err != nil {
 		return nil, err
 	}
@@ -481,8 +504,8 @@ func (qb *sceneQueryBuilder) QueryScenes(filter models.SceneQueryInput) ([]*mode
 	return scenes, err
 }
 
-func (qb *sceneQueryBuilder) QueryCount(filter models.SceneQueryInput) (int, error) {
-	query, err := qb.buildQuery(filter, true)
+func (qb *sceneQueryBuilder) QueryCount(filter models.SceneQueryInput, userID uuid.UUID) (int, error) {
+	query, err := qb.buildQuery(filter, userID, true)
 	if err != nil {
 		return 0, err
 	}

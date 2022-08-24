@@ -33,11 +33,15 @@
     justify-content: space-between;
   }
 
+  &-input-container {
+    display: flex;
+    min-height: 200px;
+  }
+
   &-image {
     margin: auto;
     max-height: 600px;
     max-width: 100%;
-    padding-bottom: 1rem;
     position: relative;
 
     img {
