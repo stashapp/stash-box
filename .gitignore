@@ -42,6 +42,9 @@
 # Vim
 *.swp
 
+# macOS
+.DS_Store
+
 ####
 # Random
 ####

@@ -214,26 +214,26 @@ const SceneComponent: FC<Props> = ({ scene }) => {
         mountOnEnter
         onSelect={setTab}
       >
-        <Tab eventKey="description" title="Description">
-          <div className="scene-description my-4">
+        <Tab eventKey="description" title="Description" className="my-4">
+          <div className="scene-description">
             <h4>Description:</h4>
             <div>{scene.details}</div>
-            <div className="scene-tags">
-              <h6>Tags:</h6>
-              <ul className="scene-tag-list">{tags}</ul>
-            </div>
-            {studioURL && (
-              <>
-                <hr />
-                <div>
-                  <b className="me-2">Studio URL:</b>
-                  <a href={studioURL} target="_blank" rel="noopener noreferrer">
-                    {studioURL}
-                  </a>
-                </div>
-              </>
-            )}
           </div>
+          <div className="scene-tags">
+            <h6>Tags:</h6>
+            <ul className="scene-tag-list">{tags}</ul>
+          </div>
+          {studioURL && (
+            <>
+              <hr />
+              <div>
+                <b className="me-2">Studio URL:</b>
+                <a href={studioURL} target="_blank" rel="noopener noreferrer">
+                  {studioURL}
+                </a>
+              </div>
+            </>
+          )}
         </Tab>
         <Tab eventKey="fingerprints" title="Fingerprints" mountOnEnter={false}>
           <div className="scene-fingerprints my-4">

@@ -41,7 +41,10 @@ const PerformerSelect: FC<PerformerSelectProps> = ({
     .sort((a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0))
     .map((performer) => (
       <TagLink
-        title={performer.name}
+        title={
+          performer.name +
+          (performer.disambiguation ? ` (${performer.disambiguation})` : "")
+        }
         link={performerHref(performer)}
         onRemove={() => removePerformer(performer.id)}
         key={performer.id}

@@ -88,7 +88,6 @@ function handleResult(
         type: "performer",
         value: performer,
         label: `${performer.name}${
-          // eslint-disable-next-line prefer-template
           performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
         }`,
         sublabel: [
@@ -126,9 +125,8 @@ function handleResult(
       .map((performer) => ({
         type: "performer",
         value: performer,
-        label: `${performer.name} ${
-          // eslint-disable-next-line prefer-template
-          performer.disambiguation ? "(" + performer.disambiguation + ")" : ""
+        label: `${performer.name}${
+          performer.disambiguation ? " (" + performer.disambiguation + ")" : ""
         }`,
         sublabel: [
           performer.birth_date ? `Born: ${performer.birth_date}` : null,

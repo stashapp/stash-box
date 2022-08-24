@@ -19,7 +19,7 @@ const StudiosComponent: FC = () => {
     query: { name: "query", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
   });
-  const favorite = params.favorite === "true";
+  const favorite = params.favorite === "true" || undefined;
   const { page, setPage } = usePagination();
   const { loading, data } = useStudios({
     input: {

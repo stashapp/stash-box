@@ -53,3 +53,26 @@ func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int
 
 	return qb.SearchScenes(trimmedQuery, searchLimit)
 }
+
+func (r *queryResolver) SearchTag(ctx context.Context, term string, limit *int) ([]*models.Tag, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Tag()
+
+	trimmedQuery := strings.TrimSpace(term)
+	tagID, err := uuid.FromString(trimmedQuery)
+	if err == nil {
+		var tags []*models.Tag
+		tag, err := qb.Find(tagID)
+		if tag != nil {
+			tags = append(tags, tag)
+		}
+		return tags, err
+	}
+
+	searchLimit := 10
+	if limit != nil {
+		searchLimit = *limit
+	}
+
+	return qb.SearchTags(trimmedQuery, searchLimit)
+}
