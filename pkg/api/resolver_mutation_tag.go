@@ -24,6 +24,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		UpdatedAt: currentTime,
 	}
 	input.Name = strings.Title(input.Name)
+
 	newTag.CopyFromCreateInput(input)
 
 	// Start the transaction and save the performer
@@ -36,6 +37,9 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 			return err
 		}
 
+		for index, alias := range input.Aliases {
+			input.Aliases[index] = strings.Title(alias)
+		}
 		// Save the aliases
 		tagAliases := models.CreateTagAliases(tag.ID, input.Aliases)
 		return qb.CreateAliases(tagAliases)
@@ -72,6 +76,9 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 			return err
 		}
 
+		for index, alias := range input.Aliases {
+			input.Aliases[index] = strings.Title(alias)
+		}
 		// Save the aliases
 		// TODO - only do this if provided
 		tagAliases := models.CreateTagAliases(tag.ID, input.Aliases)
