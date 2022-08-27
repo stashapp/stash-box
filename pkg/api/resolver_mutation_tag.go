@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -22,7 +23,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
-
+	input.Name = strings.Title(input.Name)
 	newTag.CopyFromCreateInput(input)
 
 	// Start the transaction and save the performer
@@ -61,7 +62,8 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		}
 
 		updatedTag.UpdatedAt = time.Now()
-
+		processedName := strings.Title(*input.Name)
+		input.Name = &processedName
 		// Populate performer from the input
 		updatedTag.CopyFromUpdateInput(input)
 
