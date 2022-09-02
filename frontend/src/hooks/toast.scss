@@ -1,0 +1,16 @@
+.ToastContainer {
+  position: fixed;
+  bottom: 30px;
+  right: 40px;
+  z-index: 10;
+}
+
+.toast-header {
+  float: right;
+  background-color: transparent;
+  padding: 0.75rem;
+}
+
+.toast.fade {
+  transition: opacity 0.6s ease-in-out;
+}
