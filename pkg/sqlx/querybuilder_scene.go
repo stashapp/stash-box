@@ -93,8 +93,12 @@ func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins 
 func (qb *sceneQueryBuilder) DestroyFingerprints(sceneID uuid.UUID, toDestroy models.SceneFingerprints) error {
 	for _, fp := range toDestroy {
 		query := qb.dbi.db().Rebind(`DELETE FROM ` + sceneFingerprintTable.name + ` WHERE algorithm = ? AND HASH = ? AND user_id = ? AND scene_id = ?`)
-		if _, err := qb.dbi.db().Exec(query, fp.Algorithm, fp.Hash, fp.UserID, fp.SceneID); err != nil {
+		res, err := qb.dbi.db().Exec(query, fp.Algorithm, fp.Hash, fp.UserID, fp.SceneID)
+		if err != nil {
 			return err
+		}
+		if affectedRows, _ := res.RowsAffected(); affectedRows == 0 {
+			return fmt.Errorf("%s fingerprint %s was not found", fp.Algorithm, fp.Hash)
 		}
 	}
 

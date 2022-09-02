@@ -1,14 +1,23 @@
 import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheckCircle,
+  faTimesCircle,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 
 import {
   Scene_findScene as Scene,
   Scene_findScene_fingerprints as Fingerprint,
 } from "src/graphql/definitions/Scene";
-import { usePendingEditsCount, TargetTypeEnum } from "src/graphql";
+import {
+  usePendingEditsCount,
+  TargetTypeEnum,
+  useUnmatchFingerprint,
+} from "src/graphql";
 import AuthContext from "src/AuthContext";
+import { useToast } from "src/hooks";
 import {
   canEdit,
   tagHref,
@@ -45,6 +54,9 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const auth = useContext(AuthContext);
+  const addToast = useToast();
+
+  const [unmatchFingerprint, { loading: unmatching }] = useUnmatchFingerprint();
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.SCENE,
@@ -71,11 +83,42 @@ const SceneComponent: FC<Props> = ({ scene }) => {
     })
     .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
 
+  async function handleFingerprintUnmatch(fingerprint: Fingerprint) {
+    if (unmatching) return;
+
+    const { data } = await unmatchFingerprint({
+      variables: {
+        scene_id: scene.id,
+        algorithm: fingerprint.algorithm,
+        hash: fingerprint.hash,
+        duration: fingerprint.duration,
+      },
+    });
+    const success = data?.unmatchFingerprint;
+    addToast({
+      variant: success ? "success" : "danger",
+      content: `${
+        success ? "Removed" : "Failed to remove"
+      } fingerprint submission`,
+    });
+  }
+
   function maybeRenderSubmitted(fingerprint: Fingerprint) {
     if (fingerprint.user_submitted) {
       return (
-        <span className="user-submitted" title="Submitted by you">
-          <Icon icon={faCheckCircle} />
+        <span
+          className="user-submitted"
+          title="Submitted by you - click to remove submission"
+          onClick={() => handleFingerprintUnmatch(fingerprint)}
+        >
+          {!unmatching ? (
+            <>
+              <Icon icon={faCheckCircle} />
+              <Icon icon={faTimesCircle} />
+            </>
+          ) : (
+            <Icon icon={faSpinner} className="fa-spin" />
+          )}
         </span>
       );
     }
