@@ -1,9 +1,6 @@
 package utils
 
-import (
-	"fmt"
-	"strings"
-)
+import "strings"
 
 // FindField traverses a json map, searching for the field matching the
 // qualified field string provided.
@@ -17,7 +14,6 @@ import (
 func FindField(m map[string]interface{}, qualifiedField string) (interface{}, bool) {
 	const delimiter = "."
 	fields := strings.Split(qualifiedField, delimiter)
-	fmt.Println(m)
 
 	var current interface{}
 	current = m
