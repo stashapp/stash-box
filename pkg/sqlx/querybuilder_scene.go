@@ -222,7 +222,8 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	hashClause := `
 		SELECT scene_id, hash
 		FROM scene_fingerprints
-		WHERE hash IN (:hashes)
+		JOIN scenes ON scene_id = scenes.id
+		WHERE hash IN (:hashes) AND deleted = FALSE
 		GROUP BY scene_id, hash
 	`
 	phashClause := `
@@ -230,6 +231,8 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 		FROM UNNEST(ARRAY[:phashes]) phash
 		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
 		AND algorithm = 'PHASH'
+		JOIN scenes ON scene_id = scenes.id
+		WHERE deleted = FALSE
 		GROUP BY scene_id, phash
 	`
 
