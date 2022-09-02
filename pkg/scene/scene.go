@@ -242,6 +242,14 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 		return false, err
 	}
 
+	if scene.Deleted {
+		// FIXME: this should error out, but due to the use-case in Stash,
+		//       it will stop submitting fingerprints if a single one fails
+		//       see https://github.com/stashapp/stash/blob/v0.16.1/pkg/scraper/stashbox/stash_box.go#L254-L257
+		return true, nil
+		// return false, fmt.Errorf("scene is deleted, unable to submit fingerprint")
+	}
+
 	// if no user is set, or if the current user does not have the modify
 	// role, then set users to the current user
 	if len(input.Fingerprint.UserIds) == 0 || !user.IsRole(ctx, models.RoleEnumModify) {
