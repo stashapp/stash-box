@@ -1,7 +1,11 @@
 import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
-import { faCheckCircle, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheckCircle,
+  faTimesCircle,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 
 import {
   Scene_findScene as Scene,
@@ -13,6 +17,7 @@ import {
   useUnmatchFingerprint,
 } from "src/graphql";
 import AuthContext from "src/AuthContext";
+import { useToast } from "src/hooks";
 import {
   canEdit,
   tagHref,
@@ -49,6 +54,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const history = useHistory();
   const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
   const auth = useContext(AuthContext);
+  const addToast = useToast();
 
   const [unmatchFingerprint, { loading: unmatching }] = useUnmatchFingerprint();
 
@@ -89,9 +95,12 @@ const SceneComponent: FC<Props> = ({ scene }) => {
       },
     });
     const success = data?.unmatchFingerprint;
-    // TODO: Update fingerprints table
-    // TODO: Handle error
-    alert(`${success ? "Removed" : "Failed to remove"} fingerprint submission`);
+    addToast({
+      variant: success ? "success" : "danger",
+      content: `${
+        success ? "Removed" : "Failed to remove"
+      } fingerprint submission`,
+    });
   }
 
   function maybeRenderSubmitted(fingerprint: Fingerprint) {
@@ -103,7 +112,10 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           onClick={() => handleFingerprintUnmatch(fingerprint)}
         >
           {!unmatching ? (
-            <Icon icon={faCheckCircle} />
+            <>
+              <Icon icon={faCheckCircle} />
+              <Icon icon={faTimesCircle} />
+            </>
           ) : (
             <Icon icon={faSpinner} className="fa-spin" />
           )}

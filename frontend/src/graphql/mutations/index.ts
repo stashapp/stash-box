@@ -320,11 +320,15 @@ export const useDeleteDraft = (
 ) => useMutation(DeleteDraftMutation, options);
 
 export const useUnmatchFingerprint = (
-  options: MutationHookOptions<UnmatchFingerprint, UnmatchFingerprintVariables>
-) => useMutation(UnmatchFingerprintMutation, {
-  update(cache, { data }, { variables }) {
-    if (data?.unmatchFingerprint)
-      cache.evict({ id: cache.identify({ __typename: 'Scene', id: variables?.scene_id }), fieldName: 'fingerprints' });
-  },
-  ...options,
-});
+  options?: MutationHookOptions<UnmatchFingerprint, UnmatchFingerprintVariables>
+) =>
+  useMutation(UnmatchFingerprintMutation, {
+    update(cache, { data }, { variables }) {
+      if (data?.unmatchFingerprint)
+        cache.evict({
+          id: cache.identify({ __typename: "Scene", id: variables?.scene_id }),
+          fieldName: "fingerprints",
+        });
+    },
+    ...options,
+  });
