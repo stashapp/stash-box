@@ -27,6 +27,9 @@ export default defineConfig(({ mode }) => {
       tsconfigPaths(),
       graphqlPlugin(),
     ],
+    esbuild: {
+      logOverride: { 'this-is-undefined-in-esm': 'silent' }
+    }
   };
 
   if (process.env.analyze) {
