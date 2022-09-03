@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-graphql": "^1.1.0",
-    "@types/apollo-upload-client": "^17.0.0",
+    "@types/apollo-upload-client": "^17.0.1",
     "@types/lodash-es": "^4.17.6",
     "@types/react": "^17.0.45",
     "@types/react-dom": "^17.0.16",
