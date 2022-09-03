@@ -30,6 +30,7 @@ $textfield-bg: rgba(16 22 26 / 30%);
 
 // 3. Include remainder of required Bootstrap stylesheets
 @import "bootstrap/scss/variables";
+@import "bootstrap/scss/maps";
 @import "bootstrap/scss/mixins";
 
 // 4. Include any optional Bootstrap components as you like
@@ -163,6 +164,7 @@ label.is-invalid {
 hr {
   margin: 5px 0;
   background-color: rgba(0 0 0 / 10%);
+  border-color: rgba(0 0 0 / 10%);
   opacity: 1;
 }
 
