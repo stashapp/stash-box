@@ -38,7 +38,8 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
 
   const doInsert = (
     updateData: PerformerEditDetailsInput,
-    editNote: string
+    editNote: string,
+    setModifyAliases: boolean
   ) => {
     const details: PerformerEditDetailsInput = {
       ...updateData,
@@ -54,6 +55,9 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
             comment: editNote,
           },
           details,
+          options: {
+            set_modify_aliases: isUpdate ? setModifyAliases : undefined,
+          },
         },
       },
     });
