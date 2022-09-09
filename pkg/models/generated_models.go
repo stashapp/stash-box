@@ -149,6 +149,14 @@ type FingerprintEditInput struct {
 	Updated     *time.Time           `json:"updated"`
 }
 
+type FingerprintInput struct {
+	// assumes current user if omitted. Ignored for non-modify Users
+	UserIds   []uuid.UUID          `json:"user_ids"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+}
+
 type FingerprintQueryInput struct {
 	Hash      string               `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`

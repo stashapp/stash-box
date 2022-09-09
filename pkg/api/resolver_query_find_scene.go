@@ -142,12 +142,12 @@ type queryExistingSceneResolver struct{ *Resolver }
 
 func (r *queryExistingSceneResolver) Edits(ctx context.Context, obj *models.QueryExistingSceneResult) ([]*models.Edit, error) {
 	fac := r.getRepoFactory(ctx)
-	qb := fac.Scene()
-	return qb.QueryCount(obj.Input)
+	qb := fac.Edit()
+	return qb.FindPendingSceneCreation(obj.Input)
 }
 
 func (r *queryExistingSceneResolver) Scenes(ctx context.Context, obj *models.QueryExistingSceneResult) ([]*models.Scene, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Scene()
-	return qb.QueryScenes(obj.Input)
+	return qb.FindExistingScenes(obj.Input)
 }
