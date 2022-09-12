@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -397,37 +399,33 @@ func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPe
 }
 
 func (qb *editQueryBuilder) FindPendingSceneCreation(input models.QueryExistingSceneInput) ([]*models.Edit, error) {
+	// jsonb_exists_any is the backing function for the ?: operator, but since sqlx foolishly has no way of escaping
+	// question marks in operators we have to use this undocumented function
 	query := `
 		SELECT edits.* FROM edits
 		WHERE status = 'PENDING'
 		AND target_type = 'SCENE'
-		AND (
-			created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))
-			OR (
-				VOTES >= $2
-				AND created_at <= (now()::timestamp - (INTERVAL '1 second' * $3))
-			)
-		)
-	`
-	// select jsonb_path_query(data, '$.new_data.added_fingerprints[*].hash') from edits where id = 'aa86c94b-0dbc-4b25-bed4-7688d37fa783';
-	// select data from edits where data->'new_data'->>'title' = 'Sun Rays' AND data->'new_data'->>'studio_id' = 'f66c00ba-a78f-4980-984d-69b59495ed63';
-
-	args := []interface{}{votingPeriod, minimumVotes, minimumVotingPeriod}
-	return qb.queryEdits(query, args)
-}
-func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPeriod int, minimumVotes int) ([]*models.Edit, error) {
-	query := `
-		SELECT edits.* FROM edits
-		WHERE status = 'PENDING'
-		AND (
-			created_at <= (now()::timestamp - (INTERVAL '1 second' * $1))
-			OR (
-				VOTES >= $2
-				AND created_at <= (now()::timestamp - (INTERVAL '1 second' * $3))
-			)
-		)
+		AND ((
+			jsonb_exists_any(jsonb_path_query_array(data, '$.new_data.added_fingerprints[*].hash'), :hashes)
+		) OR (
+			data->'new_data'->>'title' = :title AND data->'new_data'->>'studio_id' = :studio
+		))
 	`
 
-	args := []interface{}{votingPeriod, minimumVotes, minimumVotingPeriod}
+	var hashes []string
+	for _, fp := range input.Fingerprints {
+		hashes = append(hashes, fp.Hash)
+	}
+	arg := map[string]interface{}{
+		"hashes": pq.Array(hashes),
+		"title":  input.Title,
+		"studio": input.StudioID,
+	}
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, err
+	}
+
 	return qb.queryEdits(query, args)
 }
