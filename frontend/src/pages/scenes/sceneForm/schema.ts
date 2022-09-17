@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { GenderEnum } from "src/graphql";
+import { GenderEnum, FingerprintAlgorithm } from "src/graphql";
 import { isValidDate } from "src/utils";
 
 const nullCheck = (input: string | null) =>
@@ -59,6 +59,15 @@ export const SceneSchema = yup.object({
         .required()
     )
     .ensure(),
+  fingerprints: yup
+    .array()
+    .of(
+      yup.object({
+        hash: yup.string().required(),
+        algorithm: yup.string().oneOf([null, ...Object.keys(FingerprintAlgorithm)]).required(),
+        duration: yup.string().nullable()
+      })
+    ).nullable(),
   tags: yup
     .array()
     .of(

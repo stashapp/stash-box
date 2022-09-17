@@ -10,13 +10,14 @@ import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
+  faD,
   faExclamationTriangle,
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { formatDuration, parseDuration, performerHref } from "src/utils";
-import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
+import { ValidSiteTypeEnum, SceneEditDetailsInput, FingerprintAlgorithm } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import { GenderIcon, Icon } from "src/components/fragments";
@@ -237,6 +238,8 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     </Row>
   ));
 
+  const phashMissing = initial?.fingerprints?.filter(f => f.algorithm === FingerprintAlgorithm.PHASH).length === 0;
+
   const metadataErrors = [
     { error: errors.title?.message, tab: "details" },
     { error: errors.date?.message, tab: "details" },
@@ -376,7 +379,25 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
               />
             </Form.Group>
 
-            <Form.Group className="col-8 mb-3" />
+            <Form.Group className="col-2 mb-3" />
+
+            <Form.Group controlId="fingerprints" className="col-6 mb-3">
+              <Form.Label>Fingerprints</Form.Label>
+              {(initial?.fingerprints?.map((f) =>
+                <li key={f.algorithm}>
+                  {f.algorithm}: {f.hash}
+                  <span title={`${f.duration}s`}>
+                    {", duration: "}
+                    {formatDuration(f.duration)}
+                  </span>
+                </li>
+              ))}
+              {phashMissing && (
+                <li key="missing" className="text-danger">
+                  {FingerprintAlgorithm.PHASH}: {"MISSING"}
+                </li>
+              )}
+            </Form.Group>
           </Row>
 
           <Form.Group className="mb-3">

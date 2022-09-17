@@ -16,6 +16,7 @@ import {
   CriterionModifier,
   SortDirectionEnum,
   SceneSortEnum,
+  FingerprintAlgorithm,
 } from "src/graphql";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
@@ -98,6 +99,8 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
 
   const existingScenes = fingerprintMatches?.queryScenes?.scenes ?? [];
 
+  const phashMissing = draft.data.fingerprints.filter(f => f.algorithm === FingerprintAlgorithm.PHASH).length === 0;
+
   return (
     <div>
       <h3>{isUpdate ? "Update" : "Add new"} scene from draft</h3>
@@ -132,6 +135,16 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
           <div className="my-2">
             Please verify your draft is not already in the database before
             submitting.
+          </div>
+        </>
+      )}
+      {phashMissing && (
+        <>
+          <h6>
+            <b>Warning</b>: You did not generate a perceptual hash (PHASH) for your scene, so it might not pass voting
+          </h6>
+          <div className="my-2">
+            <a href="https://guidelines.stashdb.org/docs/getting-started-stashdb/#whats-a-phash">https://guidelines.stashdb.org/docs/getting-started-stashdb/#whats-a-phash</a>
           </div>
         </>
       )}

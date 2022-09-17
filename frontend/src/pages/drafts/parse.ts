@@ -48,14 +48,14 @@ const joinPerformers = <T extends Performer>(
   newPerformers: T[] | null,
   existingPerformers: T[] | undefined
 ) => [
-  ...(existingPerformers ?? []),
-  ...(newPerformers ?? []).filter(
-    (p) =>
-      !(existingPerformers ?? []).some(
-        (ep) => ep.performer.id === p.performer.id
-      )
-  ),
-];
+    ...(existingPerformers ?? []),
+    ...(newPerformers ?? []).filter(
+      (p) =>
+        !(existingPerformers ?? []).some(
+          (ep) => ep.performer.id === p.performer.id
+        )
+    ),
+  ];
 
 export const parseSceneDraft = (
   draft: SceneDraft,
@@ -71,6 +71,7 @@ export const parseSceneDraft = (
     code: null,
     duration: draft.fingerprints?.[0].duration ?? null,
     images: draft.image ? [draft.image] : existingScene?.images,
+    fingerprints: draft.fingerprints,
     tags: joinTags(
       (draft.tags ?? []).reduce<Tag[]>(
         (res, t) => (t.__typename === "Tag" ? [...res, t] : res),
@@ -83,9 +84,9 @@ export const parseSceneDraft = (
         (res, p) =>
           p.__typename === "Performer"
             ? [
-                ...res,
-                { performer: p, as: "", __typename: "PerformerAppearance" },
-              ]
+              ...res,
+              { performer: p, as: "", __typename: "PerformerAppearance" },
+            ]
             : res,
         []
       ),
