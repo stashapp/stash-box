@@ -99,7 +99,10 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
 
   const existingScenes = fingerprintMatches?.queryScenes?.scenes ?? [];
 
-  const phashMissing = draft.data.fingerprints.filter(f => f.algorithm === FingerprintAlgorithm.PHASH).length === 0;
+  const phashMissing =
+    draft.data.fingerprints.filter(
+      (f) => f.algorithm === FingerprintAlgorithm.PHASH
+    ).length === 0;
 
   return (
     <div>
@@ -141,7 +144,8 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       {phashMissing && (
         <>
           <h6>
-            <b>Warning</b>: You did not generate a perceptual hash (PHASH) for your scene, so it might not pass voting
+            <b>Warning</b>: You did not generate a perceptual hash (PHASH) for
+            your scene, so it might not pass voting
           </h6>
         </>
       )}

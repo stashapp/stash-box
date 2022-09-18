@@ -64,10 +64,14 @@ export const SceneSchema = yup.object({
     .of(
       yup.object({
         hash: yup.string().required(),
-        algorithm: yup.string().oneOf([null, ...Object.keys(FingerprintAlgorithm)]).required(),
-        duration: yup.string().nullable()
+        algorithm: yup
+          .string()
+          .oneOf([null, ...Object.keys(FingerprintAlgorithm)])
+          .required(),
+        duration: yup.string().nullable(),
       })
-    ).nullable(),
+    )
+    .nullable(),
   tags: yup
     .array()
     .of(

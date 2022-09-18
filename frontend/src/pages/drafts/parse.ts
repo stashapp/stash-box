@@ -48,14 +48,14 @@ const joinPerformers = <T extends Performer>(
   newPerformers: T[] | null,
   existingPerformers: T[] | undefined
 ) => [
-    ...(existingPerformers ?? []),
-    ...(newPerformers ?? []).filter(
-      (p) =>
-        !(existingPerformers ?? []).some(
-          (ep) => ep.performer.id === p.performer.id
-        )
-    ),
-  ];
+  ...(existingPerformers ?? []),
+  ...(newPerformers ?? []).filter(
+    (p) =>
+      !(existingPerformers ?? []).some(
+        (ep) => ep.performer.id === p.performer.id
+      )
+  ),
+];
 
 export const parseSceneDraft = (
   draft: SceneDraft,
@@ -84,9 +84,9 @@ export const parseSceneDraft = (
         (res, p) =>
           p.__typename === "Performer"
             ? [
-              ...res,
-              { performer: p, as: "", __typename: "PerformerAppearance" },
-            ]
+                ...res,
+                { performer: p, as: "", __typename: "PerformerAppearance" },
+              ]
             : res,
         []
       ),

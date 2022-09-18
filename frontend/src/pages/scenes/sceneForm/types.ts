@@ -24,26 +24,28 @@ export type InitialScene = {
     id: string;
     name: string;
   } | null;
-  fingerprints?: {
-    hash: string;
-    algorithm: FingerprintAlgorithm;
-    duration: number;
-  }[] | null;
+  fingerprints?:
+    | {
+        hash: string;
+        algorithm: FingerprintAlgorithm;
+        duration: number;
+      }[]
+    | null;
   tags?: {
     id: string;
     name: string;
     aliases: string[];
   }[];
   performers?:
-  | {
-    as: string | null;
-    performer: {
-      id: string;
-      name: string;
-      disambiguation: string | null;
-      gender: GenderEnum | null;
-      deleted: boolean;
-    };
-  }[]
-  | null;
+    | {
+        as: string | null;
+        performer: {
+          id: string;
+          name: string;
+          disambiguation: string | null;
+          gender: GenderEnum | null;
+          deleted: boolean;
+        };
+      }[]
+    | null;
 };
