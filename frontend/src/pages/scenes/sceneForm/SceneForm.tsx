@@ -10,7 +10,6 @@ import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
-  faD,
   faExclamationTriangle,
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
