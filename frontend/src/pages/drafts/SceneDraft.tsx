@@ -143,9 +143,6 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
           <h6>
             <b>Warning</b>: You did not generate a perceptual hash (PHASH) for your scene, so it might not pass voting
           </h6>
-          <div className="my-2">
-            <a href="https://guidelines.stashdb.org/docs/getting-started-stashdb/#whats-a-phash">https://guidelines.stashdb.org/docs/getting-started-stashdb/#whats-a-phash</a>
-          </div>
         </>
       )}
       <SceneForm
