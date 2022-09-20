@@ -6,9 +6,11 @@ import {
   faVenusMars,
 } from "@fortawesome/free-solid-svg-icons";
 import Icon from "./Icon";
+import { GenderEnum } from "src/graphql";
+import { GenderTypes } from "src/constants";
 
 interface IconProps {
-  gender?: string | null;
+  gender?: GenderEnum | null;
 }
 
 const GenderIcon: FC<IconProps> = ({ gender }) => {
@@ -19,7 +21,7 @@ const GenderIcon: FC<IconProps> = ({ gender }) => {
         : gender.toLowerCase() === "female"
         ? faVenus
         : faTransgender;
-    return <Icon icon={icon} />;
+    return <Icon icon={icon} title={GenderTypes[gender]} />;
   }
   return <Icon icon={faVenusMars} />;
 };
