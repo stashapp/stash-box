@@ -1,4 +1,4 @@
-import { GenderEnum, FingerprintAlgorithm } from "src/graphql";
+import { GenderEnum } from "src/graphql";
 
 export type InitialScene = {
   title?: string | null;
@@ -24,13 +24,6 @@ export type InitialScene = {
     id: string;
     name: string;
   } | null;
-  fingerprints?:
-    | {
-        hash: string;
-        algorithm: FingerprintAlgorithm;
-        duration: number;
-      }[]
-    | null;
   tags?: {
     id: string;
     name: string;

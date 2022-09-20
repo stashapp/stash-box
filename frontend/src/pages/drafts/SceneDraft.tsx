@@ -1,5 +1,6 @@
 import { FC, useState } from "react";
 import { useHistory, Link } from "react-router-dom";
+import { Alert, Col, Row } from "react-bootstrap";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { sceneHref } from "src/utils/route";
@@ -100,6 +101,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
   const existingScenes = fingerprintMatches?.queryScenes?.scenes ?? [];
 
   const phashMissing =
+    !isUpdate &&
     draft.data.fingerprints.filter(
       (f) => f.algorithm === FingerprintAlgorithm.PHASH
     ).length === 0;
@@ -121,34 +123,38 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
           <hr />
         </>
       )}
-      {existingScenes.length > 0 && (
-        <>
-          <h6>
-            <b>Warning</b>: Scenes already exist in the database with the same
-            fingerprint:
-          </h6>
-          {existingScenes.map((s) => (
-            <div key={s.id}>
-              <Icon icon={faExclamationTriangle} color="orange" />
-              <Link to={sceneHref(s)} className="ms-2">
-                {s.title}
-              </Link>
-            </div>
-          ))}
-          <div className="my-2">
-            Please verify your draft is not already in the database before
-            submitting.
-          </div>
-        </>
-      )}
-      {phashMissing && (
-        <>
-          <h6>
-            <b>Warning</b>: You did not generate a perceptual hash (PHASH) for
-            your scene, so it might not pass voting
-          </h6>
-        </>
-      )}
+      <Row>
+        <Col xs={9}>
+          {existingScenes.length > 0 && (
+            <Alert variant="warning">
+              <div className="mb-2">
+                <b>Warning</b>: Scenes already exist in the database with the
+                same fingerprint.
+              </div>
+              {existingScenes.map((s) => (
+                <div key={s.id}>
+                  <Icon icon={faExclamationTriangle} color="red" />
+                  <Link to={sceneHref(s)} className="ms-2">
+                    <b>{s.title}</b>
+                  </Link>
+                </div>
+              ))}
+              <div className="mt-2">
+                Please verify your draft is not already in the database before
+                submitting.
+              </div>
+            </Alert>
+          )}
+          {phashMissing && (
+            <>
+              <Alert variant="warning">
+                <b>Warning</b>: The draft does not include a perceptual hash
+                (PHASH) for your scene, so it might not pass voting.
+              </Alert>
+            </>
+          )}
+        </Col>
+      </Row>
       <SceneForm
         scene={scene?.findScene ?? undefined}
         initial={initialScene}
