@@ -489,8 +489,7 @@ type SceneEditDetailsInput struct {
 type SceneEditInput struct {
 	Edit *EditInput `json:"edit"`
 	// Not required for destroy type
-	Details  *SceneEditDetailsInput `json:"details"`
-	Duration *int                   `json:"duration"`
+	Details *SceneEditDetailsInput `json:"details"`
 }
 
 type SceneQueryInput struct {
