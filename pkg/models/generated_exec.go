@@ -4794,7 +4794,6 @@ input SceneEditInput {
   edit: EditInput!
   """Not required for destroy type"""
   details: SceneEditDetailsInput
-  duration: Int
 }
 
 type SceneEdit {
@@ -32474,14 +32473,6 @@ func (ec *executionContext) unmarshalInputSceneEditInput(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
 			it.Details, err = ec.unmarshalOSceneEditDetailsInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneEditDetailsInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "duration":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
-			it.Duration, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
