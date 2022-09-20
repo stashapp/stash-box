@@ -4265,6 +4265,7 @@ input URLInput {
   TRANSGENDER_MALE
   TRANSGENDER_FEMALE
   INTERSEX
+  NON_BINARY
 }
 
 enum GenderFilterEnum {
@@ -4274,6 +4275,7 @@ enum GenderFilterEnum {
   TRANSGENDER_MALE
   TRANSGENDER_FEMALE
   INTERSEX
+  NON_BINARY
 }
 
 enum BreastTypeEnum {
