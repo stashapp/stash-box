@@ -58,16 +58,12 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified 
 	// perform a diff against the input and the current object
 	tagEdit := input.Details.TagEditFromDiff(*tag)
 
-	// determine unspecified aliases vs no aliases
-	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
-		aliases, err := tqb.GetAliases(tagID)
-
-		if err != nil {
-			return err
-		}
-
-		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases)
+	aliases, err := tqb.GetAliases(tagID)
+	if err != nil {
+		return err
 	}
+
+	tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases)
 
 	if reflect.DeepEqual(tagEdit.Old, tagEdit.New) {
 		return ErrNoChanges
@@ -117,16 +113,13 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 	// perform a diff against the input and the current object
 	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources)
 
-	// determine unspecified aliases vs no aliases
-	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
-		aliases, err := tqb.GetAliases(tagID)
+	aliases, err := tqb.GetAliases(tagID)
 
-		if err != nil {
-			return err
-		}
-
-		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases)
+	if err != nil {
+		return err
 	}
+
+	tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases)
 
 	return m.edit.SetData(tagEdit)
 }
@@ -134,10 +127,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 func (m *TagEditProcessor) createEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
 	tagEdit := input.Details.TagEditFromCreate()
 
-	// determine unspecified aliases vs no aliases
-	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
-		tagEdit.New.AddedAliases = input.Details.Aliases
-	}
+	tagEdit.New.AddedAliases = input.Details.Aliases
 
 	return m.edit.SetData(tagEdit)
 }
