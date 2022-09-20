@@ -274,7 +274,17 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		query.AddArg(userID, userID, userID, userID, userID, userID)
 	}
 
-	query.Sort = getSort(filter.Sort.String(), filter.Direction.String(), "edits", nil)
+	if filter.Sort == models.EditSortEnumClosedAt || filter.Sort == models.EditSortEnumUpdatedAt {
+		// When closed_at/updated_at value is null, fallback to created_at
+		colName := getColumn(editTable, filter.Sort.String())
+		createdAtCol := getColumn(editTable, models.EditSortEnumCreatedAt.String())
+		direction := getSortDirection(filter.Direction.String())
+		query.Sort = " ORDER BY COALESCE(" + colName + ", " + createdAtCol + ") " + direction + nullsLast() +
+			", " + getColumn(editTable, "id") + " " + direction
+	} else {
+		secondary := "id"
+		query.Sort = getSort(filter.Sort.String(), filter.Direction.String(), "edits", &secondary)
+	}
 
 	return query, nil
 }
