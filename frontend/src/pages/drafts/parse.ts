@@ -71,7 +71,6 @@ export const parseSceneDraft = (
     code: null,
     duration: draft.fingerprints?.[0].duration ?? null,
     images: draft.image ? [draft.image] : existingScene?.images,
-    fingerprints: draft.fingerprints,
     tags: joinTags(
       (draft.tags ?? []).reduce<Tag[]>(
         (res, t) => (t.__typename === "Tag" ? [...res, t] : res),
