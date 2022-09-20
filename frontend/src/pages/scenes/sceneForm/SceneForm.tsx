@@ -15,6 +15,7 @@ import {
   ValidSiteTypeEnum,
   SceneEditDetailsInput,
   GenderEnum,
+  useQueryExistingScene,
 } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -40,9 +41,10 @@ interface SceneProps {
   initial?: InitialScene;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
+  isCreate?: boolean;
 }
 
-const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
+const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving, isCreate = false }) => {
   const {
     register,
     control,
@@ -89,6 +91,11 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     () => DiffScene(SceneSchema.cast(fieldData), scene),
     [fieldData, scene]
   );
+
+  const asd = useQueryExistingScene(
+    { input: { title: fieldData.title, studio_id: fieldData.studio.id } }, !isCreate
+  );
+  
 
   const [isChanging, setChange] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState("details");

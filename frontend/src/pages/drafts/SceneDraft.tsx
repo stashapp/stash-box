@@ -160,6 +160,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
         initial={initialScene}
         callback={doInsert}
         saving={saving}
+        isCreate={!isUpdate}
       />
       {submissionError && (
         <div className="text-danger text-end col-9">

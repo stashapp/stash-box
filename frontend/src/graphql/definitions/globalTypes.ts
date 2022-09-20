@@ -398,6 +398,12 @@ export interface PerformerQueryInput {
   sort: PerformerSortEnum;
 }
 
+export interface QueryExistingSceneInput {
+  title?: string | null;
+  studio_id?: string | null;
+  fingerprints: FingerprintInput[];
+}
+
 export interface ResetPasswordInput {
   email: string;
 }
