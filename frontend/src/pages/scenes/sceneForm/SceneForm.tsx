@@ -1,10 +1,5 @@
 import { FC, useState, useMemo } from "react";
-import {
-  useForm,
-  useFieldArray,
-  Controller,
-  FieldError,
-} from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
@@ -242,7 +237,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     { error: errors.date?.message, tab: "details" },
     { error: errors.duration?.message, tab: "details" },
     {
-      error: (errors.studio as FieldError | undefined)?.message,
+      error: errors.studio !== undefined ? "Studio is required" : undefined,
       tab: "details",
     },
     {
@@ -338,7 +333,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 )}
               />
               <Form.Control.Feedback type="invalid">
-                {(errors.studio as FieldError | undefined)?.message}
+                {errors.studio !== undefined ? "Studio is required" : null}
               </Form.Control.Feedback>
             </Form.Group>
 
