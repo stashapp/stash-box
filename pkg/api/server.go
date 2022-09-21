@@ -6,12 +6,9 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"html/template"
-	"io/fs"
 	"net/http"
 	"net/http/pprof"
 	"os"
-	"path"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -164,38 +161,7 @@ func Start(rfp RepoProvider, ui embed.FS) {
 		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 	}
 
-	index := getIndex(ui)
-
-	// session handlers
-	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			_, _ = w.Write(index)
-			return
-		}
-
-		handleLogin(w, r)
-	})
-	r.HandleFunc("/logout", handleLogout)
-
-	r.Mount("/image", imageRoutes{}.Routes())
-
-	// Serve the web app
-	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		if ext == ".html" || ext == "" {
-			_, _ = w.Write(index)
-		} else {
-			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
-			if isStatic {
-				w.Header().Add("Cache-Control", "max-age=604800000")
-			}
-			uiRoot, err := fs.Sub(ui, "frontend/build")
-			if err != nil {
-				panic(error.Error(err))
-			}
-			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
-		}
-	})
+	r.Mount("/", rootRoutes{ui: ui}.Routes())
 
 	if config.GetProfilerPort() != nil {
 		go func() {
@@ -309,18 +275,4 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
-}
-
-func getIndex(ui embed.FS) []byte {
-	indexFile, err := ui.ReadFile("frontend/build/index.html")
-	if err != nil {
-		panic(error.Error(err))
-	}
-	tmpl := template.Must(template.New("index").Parse(string(indexFile)))
-	title := template.HTMLEscapeString(config.GetTitle())
-	output := new(strings.Builder)
-	if err := tmpl.Execute(output, template.HTML(title)); err != nil {
-		panic(error.Error(err))
-	}
-	return []byte(output.String())
 }
