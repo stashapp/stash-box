@@ -50,6 +50,10 @@ import { Site, SiteVariables } from "../definitions/Site";
 import { Sites } from "../definitions/Sites";
 import { Draft, DraftVariables } from "../definitions/Draft";
 import { Drafts } from "../definitions/Drafts";
+import {
+  QueryExistingScene,
+  QueryExistingSceneVariables,
+} from "../definitions/QueryExistingScene";
 
 import CategoryQuery from "./Category.gql";
 import CategoriesQuery from "./Categories.gql";
@@ -80,6 +84,7 @@ import SiteQuery from "./Site.gql";
 import SitesQuery from "./Sites.gql";
 import DraftQuery from "./Draft.gql";
 import DraftsQuery from "./Drafts.gql";
+import QueryExistingSceneQuery from "./QueryExistingScene.gql";
 
 export const useCategory = (variables: CategoryVariables, skip = false) =>
   useQuery<Category, CategoryVariables>(CategoryQuery, {
@@ -253,3 +258,15 @@ export const useDraft = (variables: DraftVariables, skip = false) =>
   });
 
 export const useDrafts = () => useQuery<Drafts>(DraftsQuery);
+
+export const useQueryExistingScene = (
+  variables: QueryExistingSceneVariables,
+  skip = false
+) =>
+  useQuery<QueryExistingScene, QueryExistingSceneVariables>(
+    QueryExistingSceneQuery,
+    {
+      variables,
+      skip,
+    }
+  );

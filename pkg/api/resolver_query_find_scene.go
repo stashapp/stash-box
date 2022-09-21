@@ -131,3 +131,23 @@ func (r *querySceneResolver) Scenes(ctx context.Context, obj *models.SceneQuery)
 	u := user.GetCurrentUser(ctx)
 	return qb.QueryScenes(obj.Filter, u.ID)
 }
+
+func (r *queryResolver) QueryExistingScene(ctx context.Context, input models.QueryExistingSceneInput) (*models.QueryExistingSceneResult, error) {
+	return &models.QueryExistingSceneResult{
+		Input: input,
+	}, nil
+}
+
+type queryExistingSceneResolver struct{ *Resolver }
+
+func (r *queryExistingSceneResolver) Edits(ctx context.Context, obj *models.QueryExistingSceneResult) ([]*models.Edit, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
+	return qb.FindPendingSceneCreation(obj.Input)
+}
+
+func (r *queryExistingSceneResolver) Scenes(ctx context.Context, obj *models.QueryExistingSceneResult) ([]*models.Scene, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
+	return qb.FindExistingScenes(obj.Input)
+}

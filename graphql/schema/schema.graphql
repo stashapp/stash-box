@@ -66,6 +66,9 @@ type Query {
   findDraft(id: ID!): Draft @hasRole(role: READ)
   findDrafts: [Draft!]! @hasRole(role: READ)
 
+  ###Find scenes or pending scenes which match scene input###
+  queryExistingScene(input: QueryExistingSceneInput!): QueryExistingSceneResult! @hasRole(role: READ)
+
   #### Version ####
   version: Version! @hasRole(role: READ)
 

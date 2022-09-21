@@ -39,7 +39,7 @@ const SceneAdd: FC = () => {
     <div>
       <h3>Add new scene</h3>
       <hr />
-      <SceneForm callback={doInsert} saving={saving} />
+      <SceneForm callback={doInsert} saving={saving} isCreate />
       {submissionError && (
         <div className="text-danger text-end col-9">
           Error: {submissionError}
