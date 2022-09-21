@@ -12,6 +12,8 @@ export const genderEnum = (
     ? GenderEnum.MALE
     : gender === "FEMALE"
     ? GenderEnum.FEMALE
+    : gender === "NON_BINARY"
+    ? GenderEnum.NON_BINARY
     : gender === "TRANSGENDER_MALE"
     ? GenderEnum.TRANSGENDER_MALE
     : gender === "TRANSGENDER_FEMALE"

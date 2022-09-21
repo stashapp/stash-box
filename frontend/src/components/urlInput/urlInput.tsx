@@ -50,17 +50,24 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
     const regex = new RegExp(regexStr);
     const match = regex.exec(url);
 
-    return match?.[1];
+    if (match == null || match.length < 2) {
+      return match?.[1];
+    } else {
+      match.shift();
+      return match.join("");
+    }
   };
 
   const handleAdd = () => {
     if (!newURL || !selectedSite) return;
     const cleanedURL = cleanURL(selectedSite?.regex, newURL);
 
-    append({
-      url: cleanedURL ?? newURL,
-      site: selectedSite,
-    });
+    const url = cleanedURL ?? newURL;
+    if (!urls.some((u) => u.url === url))
+      append({
+        url,
+        site: selectedSite,
+      });
 
     if (selectRef.current) selectRef.current.value = "";
     if (inputRef.current) inputRef.current.value = "";

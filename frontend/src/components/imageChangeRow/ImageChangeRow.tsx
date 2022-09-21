@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 
 import { ImageFragment as Image } from "src/graphql/definitions/ImageFragment";
@@ -14,22 +14,47 @@ export interface ImageChangeRowProps {
 
 const Images: FC<{
   images: (Pick<Image, "id" | "url"> | null)[] | null | undefined;
-}> = ({ images }) => (
-  <>
-    {(images ?? []).map((image, i) =>
-      image === null ? (
-        <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
-      ) : (
-        <img
-          src={image.url}
-          className={CLASSNAME_IMAGE}
-          alt=""
-          key={image.id}
-        />
-      )
-    )}
-  </>
-);
+}> = ({ images }) => {
+  const [imgDimensions, setImgDimensions] = useState<{
+    [key: string]: { height: number; width: number };
+  }>({});
+
+  const onImgLoad = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    setImgDimensions({
+      ...imgDimensions,
+      [event.currentTarget.src]: {
+        height: event.currentTarget.naturalHeight,
+        width: event.currentTarget.naturalWidth,
+      },
+    });
+  };
+
+  return (
+    <>
+      {(images ?? []).map((image, i) =>
+        image === null ? (
+          <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
+        ) : (
+          <div key={image.id}>
+            <img
+              src={image.url}
+              className={CLASSNAME_IMAGE}
+              alt=""
+              onLoad={onImgLoad}
+            />
+            <div className={"text-center"}>
+              {imgDimensions && imgDimensions[image.url]
+                ? `${imgDimensions[image.url].width} x ${
+                    imgDimensions[image.url].height
+                  }`
+                : ""}
+            </div>
+          </div>
+        )
+      )}
+    </>
+  );
+};
 
 const ImageChangeRow: FC<ImageChangeRowProps> = ({
   newImages,

@@ -16,6 +16,12 @@ enum FingerprintAlgorithm {
   PHASH
 }
 
+enum FavoriteFilter {
+  PERFORMER
+  STUDIO
+  ALL
+}
+
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
@@ -137,7 +143,6 @@ input SceneEditInput {
   edit: EditInput!
   """Not required for destroy type"""
   details: SceneEditDetailsInput
-  duration: Int
 }
 
 type SceneEdit {
@@ -202,6 +207,8 @@ input SceneQueryInput {
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
   fingerprints: MultiStringCriterionInput
+  """Filter by favorited entity"""
+  favorites: FavoriteFilter
 
   page: Int! = 1
   per_page: Int! = 25

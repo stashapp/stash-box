@@ -64,6 +64,7 @@ export const GenderTypes: EnumDictionary<GenderEnum, string> = {
   [GenderEnum.MALE]: "Male",
   [GenderEnum.FEMALE]: "Female",
   [GenderEnum.INTERSEX]: "Intersex",
+  [GenderEnum.NON_BINARY]: "Non-binary",
   [GenderEnum.TRANSGENDER_MALE]: "Transmale",
   [GenderEnum.TRANSGENDER_FEMALE]: "Transfemale",
 };

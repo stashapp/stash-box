@@ -177,6 +177,18 @@ const PerformerInfo: FC<Props> = ({ performer }) => (
             </Table>
           </Card.Body>
         </Card>
+        <div className="float-end">
+          {performer.urls.map((u) => (
+            <a
+              href={u.url}
+              target="_blank"
+              rel="noreferrer noopener"
+              key={u.url}
+            >
+              <img src={u.site.icon} alt="" className="SiteLink-icon" />
+            </a>
+          ))}
+        </div>
       </Col>
       <Col xs={6} className="performer-photo">
         <ImageCarousel images={performer.images} orientation="portrait" />

@@ -94,6 +94,10 @@ import {
   FavoritePerformerVariables,
 } from "../definitions/FavoritePerformer";
 import { DeleteDraft, DeleteDraftVariables } from "../definitions/DeleteDraft";
+import {
+  UnmatchFingerprint,
+  UnmatchFingerprintVariables,
+} from "../definitions/UnmatchFingerprint";
 
 import ActivateUserMutation from "./ActivateNewUser.gql";
 import AddUserMutation from "./AddUser.gql";
@@ -135,6 +139,7 @@ import UpdateSiteMutation from "./UpdateSite.gql";
 import FavoriteStudioMutation from "./FavoriteStudio.gql";
 import FavoritePerformerMutation from "./FavoritePerformer.gql";
 import DeleteDraftMutation from "./DeleteDraft.gql";
+import UnmatchFingerprintMutation from "./UnmatchFingerprint.gql";
 
 export const useActivateUser = (
   options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
@@ -313,3 +318,17 @@ export const useSetFavorite = <T extends "performer" | "studio">(
 export const useDeleteDraft = (
   options?: MutationHookOptions<DeleteDraft, DeleteDraftVariables>
 ) => useMutation(DeleteDraftMutation, options);
+
+export const useUnmatchFingerprint = (
+  options?: MutationHookOptions<UnmatchFingerprint, UnmatchFingerprintVariables>
+) =>
+  useMutation(UnmatchFingerprintMutation, {
+    update(cache, { data }, { variables }) {
+      if (data?.unmatchFingerprint)
+        cache.evict({
+          id: cache.identify({ __typename: "Scene", id: variables?.scene_id }),
+          fieldName: "fingerprints",
+        });
+    },
+    ...options,
+  });

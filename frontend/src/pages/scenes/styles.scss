@@ -28,6 +28,10 @@
   margin-right: 0.5rem;
 }
 
+.scene-description {
+  white-space: pre-wrap;
+}
+
 .scene-tags {
   margin-top: 1rem;
 }
@@ -46,4 +50,27 @@
 .user-submitted {
   color: $success;
   margin-left: 0.5rem;
+
+  .fa-circle-xmark {
+    display: none;
+  }
+
+  &:hover {
+    cursor: pointer;
+    color: $danger;
+
+    .fa-circle-xmark {
+      display: inline;
+    }
+
+    .fa-circle-check {
+      display: none;
+    }
+  }
+
+  .fa-spin {
+    animation-duration: 1.5s;
+    cursor: wait;
+    color: $warning;
+  }
 }

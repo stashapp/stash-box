@@ -1,10 +1,5 @@
 import { FC, useState, useMemo } from "react";
-import {
-  useForm,
-  useFieldArray,
-  Controller,
-  FieldError,
-} from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
@@ -16,7 +11,11 @@ import {
 
 import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { formatDuration, parseDuration, performerHref } from "src/utils";
-import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
+import {
+  ValidSiteTypeEnum,
+  SceneEditDetailsInput,
+  GenderEnum,
+} from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import { GenderIcon, Icon } from "src/components/fragments";
@@ -198,7 +197,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
             ) : (
               <>
                 <InputGroup.Text className="flex-grow-1 text-start text-truncate">
-                  <GenderIcon gender={p.gender} />
+                  <GenderIcon gender={p.gender as GenderEnum} />
                   <span
                     className={cx("performer-name text-truncate", {
                       "text-decoration-line-through": p.deleted,
@@ -242,7 +241,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     { error: errors.date?.message, tab: "details" },
     { error: errors.duration?.message, tab: "details" },
     {
-      error: (errors.studio as FieldError | undefined)?.message,
+      error: errors.studio !== undefined ? "Studio is required" : undefined,
       tab: "details",
     },
     {
@@ -338,7 +337,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
                 )}
               />
               <Form.Control.Feedback type="invalid">
-                {(errors.studio as FieldError | undefined)?.message}
+                {errors.studio !== undefined ? "Studio is required" : null}
               </Form.Control.Feedback>
             </Form.Group>
 
@@ -413,6 +412,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
             maxImages={1}
             file={file}
             setFile={(f) => setFile(f)}
+            original={scene?.images}
           />
 
           <NavButtons

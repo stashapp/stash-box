@@ -33,7 +33,7 @@ const List: FC<Props> = ({
   const currentCount = count ?? listCount;
 
   return (
-    <>
+    <div className={`${entityName}-list`}>
       <div className="d-flex mt-2 align-items-start">
         {filters}
         <Pagination
@@ -61,7 +61,7 @@ const List: FC<Props> = ({
           active={page}
         />
       </div>
-    </>
+    </div>
   );
 };
 

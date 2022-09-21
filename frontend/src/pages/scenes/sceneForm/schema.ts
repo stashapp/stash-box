@@ -10,6 +10,7 @@ export const SceneSchema = yup.object({
   details: yup.string().trim(),
   date: yup
     .string()
+    .trim()
     .defined()
     .transform(nullCheck)
     .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
@@ -21,6 +22,7 @@ export const SceneSchema = yup.object({
     .required("Release date is required"),
   duration: yup
     .string()
+    .trim()
     .matches(/^((\d+:)?([0-5]?\d):)?([0-5]?\d)$/, {
       excludeEmptyString: true,
       message: "Invalid duration, format should be HH:MM:SS",

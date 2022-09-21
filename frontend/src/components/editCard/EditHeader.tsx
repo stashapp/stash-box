@@ -15,6 +15,7 @@ import {
   isScene,
   performerHref,
   studioHref,
+  getEditTargetName,
 } from "src/utils";
 import { Icon } from "src/components/fragments";
 
@@ -31,8 +32,7 @@ const renderTargetLink = (obj: Target | null) => {
       </Link>
     );
   } else {
-    const name = isScene(obj) ? obj.title : obj.name;
-    return <Link to={getEditTargetRoute(obj)}>{name}</Link>;
+    return <Link to={getEditTargetRoute(obj)}>{getEditTargetName(obj)}</Link>;
   }
 };
 

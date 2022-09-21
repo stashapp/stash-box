@@ -47,10 +47,15 @@ func getPagination(page int, perPage int) string {
 	return " LIMIT " + strconv.Itoa(count) + " OFFSET " + strconv.Itoa(offset) + " "
 }
 
-func getSort(sort string, direction string, tableName string, secondarySort *string) string {
+func getSortDirection(direction string) string {
 	if direction != "ASC" && direction != "DESC" {
-		direction = "ASC"
+		return "ASC"
 	}
+	return direction
+}
+
+func getSort(sort string, direction string, tableName string, secondarySort *string) string {
+	direction = getSortDirection(direction)
 
 	switch {
 	case strings.Contains(sort, "_count"):

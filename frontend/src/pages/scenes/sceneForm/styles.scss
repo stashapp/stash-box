@@ -74,4 +74,12 @@
   .studio-select .invalid-feedback {
     display: block;
   }
+
+  .TagSelect .react-select__menu {
+    // min-width should match .TagSelect-select
+    min-width: 25rem;
+    width: max-content;
+    max-width: 45rem;
+    right: 0;
+  }
 }

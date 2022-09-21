@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState, WheelEvent } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Select from "react-select";
@@ -38,6 +38,8 @@ import DiffPerformer from "./diff";
 import { PerformerSchema, PerformerFormData } from "./schema";
 import { InitialPerformer } from "./types";
 
+import { GenderTypes } from "src/constants";
+
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en", { select: "alias" });
 
@@ -47,14 +49,15 @@ type OptionEnum = {
   disabled?: boolean;
 };
 
+const genderOptions = Object.keys(GenderEnum).map((g) => ({
+  value: g,
+  label: GenderTypes[g as GenderEnum],
+}));
+
 const GENDER: OptionEnum[] = [
   { value: "", label: "Select gender...", disabled: true },
   { value: "null", label: "Unknown" },
-  { value: "FEMALE", label: "Female" },
-  { value: "MALE", label: "Male" },
-  { value: "TRANSGENDER_FEMALE", label: "Transfemale" },
-  { value: "TRANSGENDER_MALE", label: "Transmale" },
-  { value: "INTERSEX", label: "Intersex" },
+  ...genderOptions,
 ];
 
 const HAIR: OptionEnum[] = [
@@ -93,7 +96,7 @@ const ETHNICITY: OptionEnum[] = [
   { value: "BLACK", label: "Black" },
   { value: "ASIAN", label: "Asian" },
   { value: "INDIAN", label: "Indian" },
-  { value: "LATIN", label: "Latino" },
+  { value: "LATIN", label: "Latin" },
   { value: "MIDDLE_EASTERN", label: "Middle Eastern" },
   { value: "MIXED", label: "Mixed" },
   { value: "OTHER", label: "Other" },
@@ -127,6 +130,7 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
 }) => {
+  const initialAliases = initial?.aliases ?? performer?.aliases ?? [];
   const {
     register,
     control,
@@ -140,8 +144,8 @@ const PerformerForm: FC<PerformerProps> = ({
     defaultValues: {
       name: initial?.name ?? performer?.name ?? "",
       disambiguation: initial?.disambiguation ?? performer?.disambiguation,
-      aliases: initial?.aliases ?? performer?.aliases ?? [],
-      gender: initial?.gender ?? performer?.gender,
+      aliases: initialAliases,
+      gender: initial?.gender ?? performer?.gender ?? "",
       birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
       eye_color: getEnumValue(
         EYE,
@@ -272,6 +276,9 @@ const PerformerForm: FC<PerformerProps> = ({
     ),
   ];
 
+  const handleNumberInputWheel = (el: WheelEvent<HTMLInputElement>) =>
+    el.currentTarget.blur();
+
   const metadataErrors = [
     { error: errors.name?.message, tab: "personal" },
     { error: errors.gender?.message, tab: "personal" },
@@ -343,9 +350,9 @@ const PerformerForm: FC<PerformerProps> = ({
               <Controller
                 control={control}
                 name="aliases"
-                render={({ field: { onChange, value } }) => (
+                render={({ field: { onChange } }) => (
                   <MultiSelect
-                    values={value}
+                    initialValues={initialAliases}
                     onChange={onChange}
                     placeholder="Enter name..."
                   />
@@ -423,6 +430,7 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Control
                 className={cx({ "is-invalid": errors.height })}
                 type="number"
+                onWheel={handleNumberInputWheel}
                 {...register("height")}
               />
               <Form.Control.Feedback type="invalid">
@@ -467,6 +475,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Control
                   className={cx({ "is-invalid": errors.waistSize })}
                   type="number"
+                  onWheel={handleNumberInputWheel}
                   {...register("waistSize")}
                 />
                 <Form.Control.Feedback type="invalid">
@@ -480,6 +489,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Control
                   className={cx({ "is-invalid": errors.hipSize })}
                   type="number"
+                  onWheel={handleNumberInputWheel}
                   {...register("hipSize")}
                 />
                 <Form.Control.Feedback type="invalid">
@@ -616,6 +626,7 @@ const PerformerForm: FC<PerformerProps> = ({
             control={control}
             file={file}
             setFile={(f) => setFile(f)}
+            original={performer?.images}
           />
 
           <NavButtons

@@ -30,6 +30,7 @@ $textfield-bg: rgba(16 22 26 / 30%);
 
 // 3. Include remainder of required Bootstrap stylesheets
 @import "bootstrap/scss/variables";
+@import "bootstrap/scss/maps";
 @import "bootstrap/scss/mixins";
 
 // 4. Include any optional Bootstrap components as you like
@@ -56,6 +57,8 @@ $textfield-bg: rgba(16 22 26 / 30%);
 @import "bootstrap/scss/popover";
 @import "bootstrap/scss/spinners";
 @import "bootstrap/scss/close";
+@import "bootstrap/scss/toasts";
+@import "bootstrap/scss/alert";
 
 /*
 @import "bootstrap/scss/images";
@@ -64,10 +67,8 @@ $textfield-bg: rgba(16 22 26 / 30%);
 @import "bootstrap/scss/button-group";
 @import "bootstrap/scss/accordion";
 @import "bootstrap/scss/breadcrumb";
-@import "bootstrap/scss/alert";
 @import "bootstrap/scss/progress";
 @import "bootstrap/scss/list-group";
-@import "bootstrap/scss/toasts";
 @import "bootstrap/scss/carousel";
 @import "bootstrap/scss/offcanvas";
 */
@@ -163,6 +164,7 @@ label.is-invalid {
 hr {
   margin: 5px 0;
   background-color: rgba(0 0 0 / 10%);
+  border-color: rgba(0 0 0 / 10%);
   opacity: 1;
 }
 

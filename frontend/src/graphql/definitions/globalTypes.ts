@@ -63,6 +63,12 @@ export enum EyeColorEnum {
   RED = "RED",
 }
 
+export enum FavoriteFilter {
+  ALL = "ALL",
+  PERFORMER = "PERFORMER",
+  STUDIO = "STUDIO",
+}
+
 export enum FingerprintAlgorithm {
   MD5 = "MD5",
   OSHASH = "OSHASH",
@@ -73,6 +79,7 @@ export enum GenderEnum {
   FEMALE = "FEMALE",
   INTERSEX = "INTERSEX",
   MALE = "MALE",
+  NON_BINARY = "NON_BINARY",
   TRANSGENDER_FEMALE = "TRANSGENDER_FEMALE",
   TRANSGENDER_MALE = "TRANSGENDER_MALE",
 }
@@ -81,6 +88,7 @@ export enum GenderFilterEnum {
   FEMALE = "FEMALE",
   INTERSEX = "INTERSEX",
   MALE = "MALE",
+  NON_BINARY = "NON_BINARY",
   TRANSGENDER_FEMALE = "TRANSGENDER_FEMALE",
   TRANSGENDER_MALE = "TRANSGENDER_MALE",
   UNKNOWN = "UNKNOWN",
@@ -442,7 +450,6 @@ export interface SceneEditDetailsInput {
 export interface SceneEditInput {
   edit: EditInput;
   details?: SceneEditDetailsInput | null;
-  duration?: number | null;
 }
 
 export interface SceneQueryInput {
@@ -456,6 +463,7 @@ export interface SceneQueryInput {
   performers?: MultiIDCriterionInput | null;
   alias?: StringCriterionInput | null;
   fingerprints?: MultiStringCriterionInput | null;
+  favorites?: FavoriteFilter | null;
   page: number;
   per_page: number;
   direction: SortDirectionEnum;
