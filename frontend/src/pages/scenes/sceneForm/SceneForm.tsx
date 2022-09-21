@@ -15,6 +15,7 @@ import {
   ValidSiteTypeEnum,
   SceneEditDetailsInput,
   GenderEnum,
+  FingerprintAlgorithm,
 } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -31,6 +32,7 @@ import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
+import ExistingSceneAlert from "./ExistingSceneAlert";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
@@ -40,9 +42,22 @@ interface SceneProps {
   initial?: InitialScene;
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
+  isCreate?: boolean;
+  draftFingerprints?: {
+    hash: string;
+    algorithm: FingerprintAlgorithm;
+    duration: number;
+  }[];
 }
 
-const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
+const SceneForm: FC<SceneProps> = ({
+  scene,
+  initial,
+  callback,
+  saving,
+  isCreate = false,
+  draftFingerprints,
+}) => {
   const {
     register,
     control,
@@ -252,6 +267,17 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
 
   return (
     <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
+      {isCreate && (
+        <Row>
+          <Col xs={9}>
+            <ExistingSceneAlert
+              title={fieldData.title}
+              studio_id={fieldData.studio?.id}
+              fingerprints={draftFingerprints}
+            />
+          </Col>
+        </Row>
+      )}
       <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
         <Tab eventKey="details" title="Details" className="col-xl-9">
           <Row>

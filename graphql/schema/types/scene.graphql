@@ -245,3 +245,14 @@ input SceneDraftInput {
   image: Upload
   fingerprints: [FingerprintInput!]!
 }
+
+input QueryExistingSceneInput {
+  title: String
+  studio_id: ID
+  fingerprints: [FingerprintInput!]!
+}
+
+type QueryExistingSceneResult {
+  edits: [Edit!]!
+  scenes: [Scene!]!
+}

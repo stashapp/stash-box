@@ -1,7 +1,6 @@
 import { FC, useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { Alert, Col, Row } from "react-bootstrap";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { sceneHref } from "src/utils/route";
 import {
@@ -13,13 +12,9 @@ import {
   useSceneEdit,
   OperationEnum,
   SceneEditDetailsInput,
-  useScenesWithoutCount,
-  CriterionModifier,
-  SortDirectionEnum,
-  SceneSortEnum,
   FingerprintAlgorithm,
 } from "src/graphql";
-import { Icon, LoadingIndicator } from "src/components/fragments";
+import { LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 import { parseSceneDraft } from "./parse";
 
@@ -43,21 +38,6 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
   const { data: scene, loading: loadingScene } = useScene(
     { id: draft.data.id ?? "" },
     !isUpdate
-  );
-  const { data: fingerprintMatches } = useScenesWithoutCount(
-    {
-      input: {
-        fingerprints: {
-          modifier: CriterionModifier.INCLUDES,
-          value: draft.data.fingerprints.map((f) => f.hash),
-        },
-        page: 1,
-        per_page: 100,
-        direction: SortDirectionEnum.DESC,
-        sort: SceneSortEnum.CREATED_AT,
-      },
-    },
-    isUpdate
   );
 
   const doInsert = (updateData: SceneEditDetailsInput, editNote: string) => {
@@ -98,8 +78,6 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       </li>
     ));
 
-  const existingScenes = fingerprintMatches?.queryScenes?.scenes ?? [];
-
   const phashMissing =
     !isUpdate &&
     draft.data.fingerprints.filter(
@@ -123,43 +101,23 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
           <hr />
         </>
       )}
-      <Row>
-        <Col xs={9}>
-          {existingScenes.length > 0 && (
+      {phashMissing && (
+        <Row>
+          <Col xs={9}>
             <Alert variant="warning">
-              <div className="mb-2">
-                <b>Warning</b>: Scenes already exist in the database with the
-                same fingerprint.
-              </div>
-              {existingScenes.map((s) => (
-                <div key={s.id}>
-                  <Icon icon={faExclamationTriangle} color="red" />
-                  <Link to={sceneHref(s)} className="ms-2">
-                    <b>{s.title}</b>
-                  </Link>
-                </div>
-              ))}
-              <div className="mt-2">
-                Please verify your draft is not already in the database before
-                submitting.
-              </div>
+              <b>Warning</b>: The draft does not include a perceptual hash
+              (PHASH) for your scene, so it might not pass voting.
             </Alert>
-          )}
-          {phashMissing && (
-            <>
-              <Alert variant="warning">
-                <b>Warning</b>: The draft does not include a perceptual hash
-                (PHASH) for your scene, so it might not pass voting.
-              </Alert>
-            </>
-          )}
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      )}
       <SceneForm
         scene={scene?.findScene ?? undefined}
         initial={initialScene}
         callback={doInsert}
         saving={saving}
+        isCreate={!isUpdate}
+        draftFingerprints={draft.data.fingerprints}
       />
       {submissionError && (
         <div className="text-danger text-end col-9">
