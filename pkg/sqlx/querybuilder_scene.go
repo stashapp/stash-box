@@ -1007,33 +1007,47 @@ func (qb *sceneQueryBuilder) MergeInto(source *models.Scene, target *models.Scen
 }
 
 func (qb *sceneQueryBuilder) FindExistingScenes(input models.QueryExistingSceneInput) ([]*models.Scene, error) {
-	query := `
-		SELECT * FROM scenes
-		WHERE (TRIM(LOWER(title)) = TRIM(LOWER(:title)) AND studio_id = :studio)
-		OR id IN (
-			SELECT scene_id
-			FROM scene_fingerprints
-			WHERE hash IN (:hashes)
-			GROUP BY scene_id
-		)`
+	if (input.StudioID == nil || input.Title == nil) && len(input.Fingerprints) == 0 {
+		return nil, nil
+	}
 
-	var hashes []string
-	for _, fp := range input.Fingerprints {
-		hashes = append(hashes, fp.Hash)
+	var clauses []string
+	arg := make(map[string]interface{})
+
+	if input.Title != nil && input.StudioID != nil {
+		arg["title"] = *input.Title
+		arg["studio"] = *input.StudioID
+		clauses = append(clauses, `
+			(TRIM(LOWER(title)) = TRIM(LOWER(:title)) AND studio_id = :studio)
+		`)
 	}
-	arg := map[string]interface{}{
-		"title":  input.Title,
-		"studio": input.StudioID,
-		"hashes": hashes,
+	if len(input.Fingerprints) > 0 {
+		var hashes []string
+		for _, fp := range input.Fingerprints {
+			hashes = append(hashes, fp.Hash)
+		}
+		arg["hashes"] = hashes
+		clauses = append(clauses, `
+			id IN (
+				SELECT scene_id
+				FROM scene_fingerprints
+				WHERE hash IN (:hashes)
+				GROUP BY scene_id
+			)
+		`)
 	}
+
+	query := "SELECT * FROM scenes WHERE " + strings.Join(clauses, " OR ")
 
 	query, args, err := sqlx.Named(query, arg)
 	if err != nil {
 		return nil, err
 	}
-	query, args, err = sqlx.In(query, args...)
-	if err != nil {
-		return nil, err
+	if len(input.Fingerprints) > 0 {
+		query, args, err = sqlx.In(query, args...)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return qb.queryScenes(query, args)
 }

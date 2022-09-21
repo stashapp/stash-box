@@ -15,7 +15,7 @@ import {
   ValidSiteTypeEnum,
   SceneEditDetailsInput,
   GenderEnum,
-  useQueryExistingScene,
+  FingerprintAlgorithm,
 } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -32,6 +32,7 @@ import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
+import ExistingSceneAlert from "./ExistingSceneAlert";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
@@ -42,9 +43,21 @@ interface SceneProps {
   callback: (updateData: SceneEditDetailsInput, editNote: string) => void;
   saving: boolean;
   isCreate?: boolean;
+  draftFingerprints?: {
+    hash: string;
+    algorithm: FingerprintAlgorithm;
+    duration: number;
+  }[];
 }
 
-const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving, isCreate = false }) => {
+const SceneForm: FC<SceneProps> = ({
+  scene,
+  initial,
+  callback,
+  saving,
+  isCreate = false,
+  draftFingerprints,
+}) => {
   const {
     register,
     control,
@@ -91,11 +104,6 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving, isCreate 
     () => DiffScene(SceneSchema.cast(fieldData), scene),
     [fieldData, scene]
   );
-
-  const asd = useQueryExistingScene(
-    { input: { title: fieldData.title, studio_id: fieldData.studio.id } }, !isCreate
-  );
-  
 
   const [isChanging, setChange] = useState<number | undefined>();
   const [activeTab, setActiveTab] = useState("details");
@@ -259,6 +267,17 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving, isCreate 
 
   return (
     <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
+      {isCreate && (
+        <Row>
+          <Col xs={9}>
+            <ExistingSceneAlert
+              title={fieldData.title}
+              studio_id={fieldData.studio?.id}
+              fingerprints={draftFingerprints}
+            />
+          </Col>
+        </Row>
+      )}
       <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
         <Tab eventKey="details" title="Details" className="col-xl-9">
           <Row>

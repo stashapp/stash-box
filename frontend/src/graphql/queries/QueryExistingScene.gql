@@ -4,7 +4,8 @@ query QueryExistingScene($input: QueryExistingSceneInput!) {
   queryExistingScene(input: $input) {
     scenes {
       ...SceneFragment
-    } edits {
+    }
+    edits {
       ...EditFragment
     }
   }
