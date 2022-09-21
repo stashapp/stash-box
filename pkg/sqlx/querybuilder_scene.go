@@ -1005,3 +1005,49 @@ func (qb *sceneQueryBuilder) MergeInto(source *models.Scene, target *models.Scen
 	redirect := models.Redirect{SourceID: source.ID, TargetID: target.ID}
 	return qb.CreateRedirect(redirect)
 }
+
+func (qb *sceneQueryBuilder) FindExistingScenes(input models.QueryExistingSceneInput) ([]*models.Scene, error) {
+	if (input.StudioID == nil || input.Title == nil) && len(input.Fingerprints) == 0 {
+		return nil, nil
+	}
+
+	var clauses []string
+	arg := make(map[string]interface{})
+
+	if input.Title != nil && input.StudioID != nil {
+		arg["title"] = *input.Title
+		arg["studio"] = *input.StudioID
+		clauses = append(clauses, `
+			(TRIM(LOWER(title)) = TRIM(LOWER(:title)) AND studio_id = :studio)
+		`)
+	}
+	if len(input.Fingerprints) > 0 {
+		var hashes []string
+		for _, fp := range input.Fingerprints {
+			hashes = append(hashes, fp.Hash)
+		}
+		arg["hashes"] = hashes
+		clauses = append(clauses, `
+			id IN (
+				SELECT scene_id
+				FROM scene_fingerprints
+				WHERE hash IN (:hashes)
+				GROUP BY scene_id
+			)
+		`)
+	}
+
+	query := "SELECT * FROM scenes WHERE " + strings.Join(clauses, " OR ")
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, err
+	}
+	if len(input.Fingerprints) > 0 {
+		query, args, err = sqlx.In(query, args...)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return qb.queryScenes(query, args)
+}

@@ -1,0 +1,12 @@
+#import "../fragments/EditFragment.gql"
+#import "../fragments/SceneFragment.gql"
+query QueryExistingScene($input: QueryExistingSceneInput!) {
+  queryExistingScene(input: $input) {
+    scenes {
+      ...SceneFragment
+    }
+    edits {
+      ...EditFragment
+    }
+  }
+}
