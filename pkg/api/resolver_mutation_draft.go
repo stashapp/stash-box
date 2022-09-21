@@ -18,14 +18,7 @@ func (r *mutationResolver) SubmitSceneDraft(ctx context.Context, input models.Sc
 	currentUser := getCurrentUser(ctx)
 	newDraft := models.NewDraft(UUID, currentUser, models.TargetTypeEnumScene)
 
-	var fingerprints []models.DraftFingerprint
-	for _, fp := range input.Fingerprints {
-		fingerprints = append(fingerprints, models.DraftFingerprint{
-			Hash:      fp.Hash,
-			Algorithm: fp.Algorithm,
-			Duration:  fp.Duration,
-		})
-	}
+	fingerprints := filterFingerprints(input.Fingerprints)
 
 	data := models.SceneDraft{
 		ID:           input.ID,
@@ -165,6 +158,25 @@ func translateDraftEntitySlice(entities []*models.DraftEntityInput) []models.Dra
 	}
 
 	return ret
+}
+
+func filterFingerprints(input []*models.FingerprintInput) []models.DraftFingerprint {
+	resultMap := make(map[string]bool)
+	var fingerprints []models.DraftFingerprint
+
+	for _, fp := range input {
+		unique := fp.Hash + fp.Algorithm.String()
+		if _, exists := resultMap[unique]; !exists {
+			fingerprints = append(fingerprints, models.DraftFingerprint{
+				Hash:      fp.Hash,
+				Algorithm: fp.Algorithm,
+				Duration:  fp.Duration,
+			})
+			resultMap[unique] = true
+		}
+	}
+
+	return fingerprints
 }
 
 func resolveTags(tags []*models.DraftEntityInput, fac models.Repo) ([]models.DraftEntity, error) {
