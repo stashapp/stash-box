@@ -18,7 +18,7 @@ import { compareByName } from "src/utils";
 type TagSlim = {
   id: string;
   name: string;
-  description: string | null;
+  description: string | null | undefined;
   aliases: string[];
 };
 
