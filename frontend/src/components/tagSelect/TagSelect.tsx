@@ -18,6 +18,7 @@ import { compareByName } from "src/utils";
 type TagSlim = {
   id: string;
   name: string;
+  description: string | null;
   aliases: string[];
 };
 
@@ -72,6 +73,7 @@ const TagSelect: FC<TagSelectProps> = ({
     .map((tag) => (
       <TagLink
         title={tag.name}
+        description={tag.description}
         link={tagHref(tag)}
         onRemove={() => removeTag(tag.id)}
         key={tag.id}

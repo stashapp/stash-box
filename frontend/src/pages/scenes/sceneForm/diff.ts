@@ -49,6 +49,7 @@ const selectSceneDetails = (
             {
               id: t.id,
               name: t.name,
+              description: t.description ?? null,
             },
           ]
         : []

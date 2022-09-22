@@ -20,8 +20,12 @@ export const renderPerformer = (appearance: {
   </Link>
 );
 
-export const renderTag = (tag: { id: string; name: string }) => (
-  <TagLink title={tag.name} link={tagHref(tag)} />
+export const renderTag = (tag: {
+  id: string;
+  name: string;
+  description: string | null;
+}) => (
+  <TagLink title={tag.name} link={tagHref(tag)} description={tag.description} />
 );
 
 export const renderFingerprint = (fingerprint: {
