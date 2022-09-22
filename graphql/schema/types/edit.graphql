@@ -107,6 +107,13 @@ enum EditSortEnum {
   CLOSED_AT
 }
 
+enum UserVotedFilterEnum {
+    ABSTAIN
+    ACCEPT
+    REJECT
+    NOT_VOTED
+}
+
 input EditQueryInput {
   """Filter by user id"""
   user_id: ID
@@ -124,6 +131,10 @@ input EditQueryInput {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+  """Filter by user voted status"""
+  voted: UserVotedFilterEnum
+  """Voted user id, this will be set to the current user"""
+  voted_user_id: ID
 
   page: Int! = 1
   per_page: Int! = 25

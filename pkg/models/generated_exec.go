@@ -4165,6 +4165,13 @@ enum EditSortEnum {
   CLOSED_AT
 }
 
+enum UserVotedFilterEnum {
+    ABSTAIN
+    ACCEPT
+    REJECT
+    NOT_VOTED
+}
+
 input EditQueryInput {
   """Filter by user id"""
   user_id: ID
@@ -4182,6 +4189,10 @@ input EditQueryInput {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+  """Filter by user voted status"""
+  voted: UserVotedFilterEnum
+  """Voted user id, this will be set to the current user"""
+  voted_user_id: ID
 
   page: Int! = 1
   per_page: Int! = 25
@@ -30632,6 +30643,22 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 			if err != nil {
 				return it, err
 			}
+		case "voted":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("voted"))
+			it.Voted, err = ec.unmarshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "voted_user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("voted_user_id"))
+			it.VotedUserID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "page":
 			var err error
 
@@ -43995,6 +44022,22 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋstashappᚋstashᚑbo
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx context.Context, v interface{}) (*UserVotedFilterEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(UserVotedFilterEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx context.Context, sel ast.SelectionSet, v *UserVotedFilterEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOVoteStatusEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteStatusEnum(ctx context.Context, v interface{}) (*VoteStatusEnum, error) {

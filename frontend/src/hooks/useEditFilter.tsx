@@ -10,11 +10,13 @@ import {
   TargetTypeEnum,
   VoteStatusEnum,
   EditSortEnum,
+  UserVotedFilterEnum,
 } from "src/graphql";
 import {
   EditOperationTypes,
   EditTargetTypes,
   EditStatusTypes,
+  UserVotedFilterTypes,
 } from "src/constants/enums";
 import { Icon } from "src/components/fragments";
 import { useQueryParams } from "src/hooks";
@@ -32,8 +34,10 @@ interface EditFilterProps {
   type?: TargetTypeEnum;
   status?: VoteStatusEnum;
   operation?: OperationEnum;
+  voted?: UserVotedFilterEnum;
   favorite?: boolean;
   showFavoriteOption?: boolean;
+  showVotedFilter?: boolean;
   defaultVoteStatus?: VoteStatusEnum | "all";
 }
 
@@ -43,8 +47,10 @@ const useEditFilter = ({
   type: fixedType,
   status: fixedStatus,
   operation: fixedOperation,
+  voted: fixedVoted,
   favorite: fixedFavorite,
   showFavoriteOption = true,
+  showVotedFilter = true,
   defaultVoteStatus = "all",
 }: EditFilterProps) => {
   const [params, setParams] = useQueryParams({
@@ -52,6 +58,11 @@ const useEditFilter = ({
     sort: { name: "sort", type: "string", default: EditSortEnum.CREATED_AT },
     direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
     operation: { name: "operation", type: "string", default: "" },
+    voted: {
+      name: "voted",
+      type: "string",
+      default: UserVotedFilterEnum.NOT_VOTED,
+    },
     status: { name: "status", type: "string", default: defaultVoteStatus },
     type: { name: "type", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
@@ -60,6 +71,7 @@ const useEditFilter = ({
   const sort = ensureEnum(EditSortEnum, params.sort);
   const direction = ensureEnum(SortDirectionEnum, params.direction);
   const operation = resolveEnum(OperationEnum, params.operation);
+  const voted = resolveEnum(UserVotedFilterEnum, params.voted);
   const status = resolveEnum(VoteStatusEnum, params.status, undefined);
   const type = resolveEnum(TargetTypeEnum, params.type);
   const favorite = params.favorite === "true";
@@ -69,6 +81,7 @@ const useEditFilter = ({
   const selectedStatus = fixedStatus ?? status;
   const selectedType = fixedType ?? type;
   const selectedOperation = fixedOperation ?? operation;
+  const selectedVoted = fixedVoted ?? voted;
   const selectedFavorite = fixedFavorite ?? favorite;
 
   const enumToOptions = (e: Record<string, string>) =>
@@ -153,6 +166,21 @@ const useEditFilter = ({
           {enumToOptions(EditOperationTypes)}
         </Form.Select>
       </Form.Group>
+      {showVotedFilter && (
+        <Form.Group className="mx-2 mb-3 d-flex flex-column">
+          <Form.Label>Voted</Form.Label>
+          <Form.Select
+            onChange={(e) => setParams("voted", e.currentTarget.value)}
+            value={selectedVoted}
+            disabled={!!fixedVoted}
+          >
+            <option value="all" key="all-voted">
+              All
+            </option>
+            {enumToOptions(UserVotedFilterTypes)}
+          </Form.Select>
+        </Form.Group>
+      )}
       {showFavoriteOption && (
         <Form.Group controlId="favorite">
           <Form.Label>Favorites</Form.Label>
@@ -176,6 +204,7 @@ const useEditFilter = ({
     selectedType,
     selectedStatus,
     selectedOperation,
+    selectedVoted,
     selectedFavorite,
   };
 };

@@ -240,6 +240,25 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		query.Eq("applied", *q)
 	}
 
+	if q := filter.Voted; q != nil && *q != "" {
+		switch *filter.Voted {
+		case models.UserVotedFilterEnumNotVoted:
+			where := `
+				NOT EXISTS (
+				  SELECT 1 FROM edit_votes ev
+				  WHERE ev.edit_id = edits.id
+				  AND ev.user_id = ?
+				)
+			`
+			query.AddWhere(where)
+			query.AddArg(&filter.VotedUserID)
+		default:
+			query.AddLeftJoin(editVoteTable.table, editVoteTable.Name()+".edit_id = edits.id", true)
+			query.AddWhere("(" + editVoteTable.Name() + ".user_id = ? AND " + editVoteTable.Name() + ".vote = ?)")
+			query.AddArg(&filter.VotedUserID, q.String())
+		}
+	}
+
 	if q := filter.IsFavorite; q != nil && *q {
 		q := `
 			(edits.id IN (

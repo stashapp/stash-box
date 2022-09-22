@@ -172,6 +172,13 @@ export enum TargetTypeEnum {
   TAG = "TAG",
 }
 
+export enum UserVotedFilterEnum {
+  ABSTAIN = "ABSTAIN",
+  ACCEPT = "ACCEPT",
+  NOT_VOTED = "NOT_VOTED",
+  REJECT = "REJECT",
+}
+
 export enum ValidSiteTypeEnum {
   PERFORMER = "PERFORMER",
   SCENE = "SCENE",
@@ -253,6 +260,8 @@ export interface EditQueryInput {
   target_type?: TargetTypeEnum | null;
   target_id?: string | null;
   is_favorite?: boolean | null;
+  voted?: UserVotedFilterEnum | null;
+  voted_user_id?: string | null;
   page: number;
   per_page: number;
   direction: SortDirectionEnum;

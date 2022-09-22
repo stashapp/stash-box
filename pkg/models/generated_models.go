@@ -112,11 +112,15 @@ type EditQueryInput struct {
 	// Filter by target id
 	TargetID *uuid.UUID `json:"target_id"`
 	// Filter by favorite status
-	IsFavorite *bool             `json:"is_favorite"`
-	Page       int               `json:"page"`
-	PerPage    int               `json:"per_page"`
-	Direction  SortDirectionEnum `json:"direction"`
-	Sort       EditSortEnum      `json:"sort"`
+	IsFavorite *bool `json:"is_favorite"`
+	// Filter by user voted status
+	Voted *UserVotedFilterEnum `json:"voted"`
+	// Voted user id, this will be set to the current user
+	VotedUserID *uuid.UUID        `json:"voted_user_id"`
+	Page        int               `json:"page"`
+	PerPage     int               `json:"per_page"`
+	Direction   SortDirectionEnum `json:"direction"`
+	Sort        EditSortEnum      `json:"sort"`
 }
 
 type EditVoteInput struct {
@@ -1771,6 +1775,51 @@ func (e *TargetTypeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e TargetTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type UserVotedFilterEnum string
+
+const (
+	UserVotedFilterEnumAbstain  UserVotedFilterEnum = "ABSTAIN"
+	UserVotedFilterEnumAccept   UserVotedFilterEnum = "ACCEPT"
+	UserVotedFilterEnumReject   UserVotedFilterEnum = "REJECT"
+	UserVotedFilterEnumNotVoted UserVotedFilterEnum = "NOT_VOTED"
+)
+
+var AllUserVotedFilterEnum = []UserVotedFilterEnum{
+	UserVotedFilterEnumAbstain,
+	UserVotedFilterEnumAccept,
+	UserVotedFilterEnumReject,
+	UserVotedFilterEnumNotVoted,
+}
+
+func (e UserVotedFilterEnum) IsValid() bool {
+	switch e {
+	case UserVotedFilterEnumAbstain, UserVotedFilterEnumAccept, UserVotedFilterEnumReject, UserVotedFilterEnumNotVoted:
+		return true
+	}
+	return false
+}
+
+func (e UserVotedFilterEnum) String() string {
+	return string(e)
+}
+
+func (e *UserVotedFilterEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserVotedFilterEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserVotedFilterEnum", str)
+	}
+	return nil
+}
+
+func (e UserVotedFilterEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
