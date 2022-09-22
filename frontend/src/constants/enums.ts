@@ -107,9 +107,9 @@ export const VoteTypes: EnumDictionary<VoteTypeEnum, string> = {
 };
 
 export const UserVotedFilterTypes: EnumDictionary<UserVotedFilterEnum, string> =
-{
-  [UserVotedFilterEnum.NOT_VOTED]: "Not Yet Voted",
-  [UserVotedFilterEnum.ACCEPT]: "Yes",
-  [UserVotedFilterEnum.ABSTAIN]: "Abstain",
-  [UserVotedFilterEnum.REJECT]: "No",
-};
+  {
+    [UserVotedFilterEnum.NOT_VOTED]: "Not Yet Voted",
+    [UserVotedFilterEnum.ACCEPT]: "Yes",
+    [UserVotedFilterEnum.ABSTAIN]: "Abstain",
+    [UserVotedFilterEnum.REJECT]: "No",
+  };
