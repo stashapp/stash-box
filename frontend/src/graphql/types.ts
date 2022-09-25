@@ -289,7 +289,9 @@ export type FingerprintEditInput = {
   created: Scalars["Time"];
   duration: Scalars["Int"];
   hash: Scalars["String"];
+  /** @deprecated Unused */
   submissions?: InputMaybe<Scalars["Int"]>;
+  /** @deprecated Unused */
   updated?: InputMaybe<Scalars["Time"]>;
   user_ids?: InputMaybe<Array<Scalars["ID"]>>;
 };

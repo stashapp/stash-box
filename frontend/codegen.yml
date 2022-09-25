@@ -1,5 +1,5 @@
 overwrite: true
-schema: "http://localhost:9998/graphql"
+schema: "../graphql/schema/**/*.graphql"
 documents: "src/graphql/**/*.gql"
 generates:
   src/graphql/types.ts:
@@ -16,3 +16,6 @@ generates:
       namingConvention:
         enumValues: change-case-all#upperCase
       nonOptionalTypename: true
+hooks:
+  afterAllFileWrite:
+    - prettier --write
