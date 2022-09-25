@@ -1,10 +1,11 @@
 import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Site_findSite as Site } from "src/graphql/definitions/Site";
-import { useUpdateSite, SiteCreateInput } from "src/graphql";
+import { useUpdateSite, SiteCreateInput, SiteQuery } from "src/graphql";
 import { siteHref } from "src/utils";
 import SiteForm from "./siteForm";
+
+type Site = NonNullable<SiteQuery["findSite"]>;
 
 interface Props {
   site: Site;

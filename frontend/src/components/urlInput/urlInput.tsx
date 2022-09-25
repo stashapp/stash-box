@@ -4,8 +4,9 @@ import { Icon } from "src/components/fragments";
 import { Control, useFieldArray, FieldError } from "react-hook-form";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
-import { useSites, ValidSiteTypeEnum } from "src/graphql";
-import { Site_findSite as Site } from "src/graphql/definitions/Site";
+import { useSites, ValidSiteTypeEnum, SiteQuery } from "src/graphql";
+
+type Site = NonNullable<SiteQuery["findSite"]>;
 
 const CLASSNAME = "URLInput";
 

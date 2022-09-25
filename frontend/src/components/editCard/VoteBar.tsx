@@ -4,9 +4,13 @@ import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
 import AuthContext from "src/AuthContext";
-import { VoteStatusEnum, VoteTypeEnum, useVote } from "src/graphql";
+import {
+  VoteStatusEnum,
+  VoteTypeEnum,
+  useVote,
+  EditFragment,
+} from "src/graphql";
 import { Icon } from "src/components/fragments";
-import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
 import { canVote } from "src/utils";
 
 const CLASSNAME = "VoteBar";
@@ -15,7 +19,7 @@ const CLASSNAME_VOTED = `${CLASSNAME}-voted`;
 const CLASSNAME_SAVE = `${CLASSNAME}-save`;
 
 interface Props {
-  edit: Edit;
+  edit: EditFragment;
 }
 
 const VoteBar: FC<Props> = ({ edit }) => {

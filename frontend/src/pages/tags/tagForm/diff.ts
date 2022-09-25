@@ -1,5 +1,5 @@
 import { OldTagDetails, TagDetails } from "src/components/editCard/ModifyEdit";
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
+import { TagFragment as Tag } from "src/graphql";
 import { CastedTagFormData } from "./schema";
 import { diffValue, diffArray } from "src/utils";
 

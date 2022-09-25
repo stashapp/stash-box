@@ -5,21 +5,21 @@ import Async from "react-select/async";
 import debounce from "p-debounce";
 import { useHistory } from "react-router-dom";
 
-import SearchAllQuery from "src/graphql/queries/SearchAll.gql";
-import SearchPerformersQuery from "src/graphql/queries/SearchPerformers.gql";
+import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
+import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 
-import {
-  SearchAll,
-  SearchAll_searchScene as SceneAllResult,
-  SearchAll_searchPerformer as PerformerAllResult,
-} from "src/graphql/definitions/SearchAll";
-import {
-  SearchPerformers,
-  SearchPerformers_searchPerformer as PerformerOnlyResult,
-} from "src/graphql/definitions/SearchPerformers";
+import { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { createHref, filterData } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
 import { GenderIcon } from "src/components/fragments";
+
+type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
+type PerformerAllResult = NonNullable<
+  SearchAllQuery["searchPerformer"][number]
+>;
+type PerformerOnlyResult = NonNullable<
+  SearchPerformersQuery["searchPerformer"][number]
+>;
 
 export enum SearchType {
   Performer = "performer",
@@ -66,13 +66,13 @@ const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
 );
 
 const resultIsSearchAll = (
-  arg: SearchAll | SearchPerformers
-): arg is SearchAll =>
-  (arg as SearchAll).searchPerformer !== undefined &&
-  (arg as SearchAll).searchScene !== undefined;
+  arg: SearchAllQuery | SearchPerformersQuery
+): arg is SearchAllQuery =>
+  (arg as SearchAllQuery).searchPerformer !== undefined &&
+  (arg as SearchAllQuery).searchScene !== undefined;
 
 function handleResult(
-  result: SearchAll | SearchPerformers,
+  result: SearchAllQuery | SearchPerformersQuery,
   excludeIDs: string[],
   showAllLink: boolean
 ): (SearchGroup | SearchResult)[] {
@@ -165,11 +165,13 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleSearch = async (term: string) => {
     if (term) {
-      const { data } = await client.query<SearchPerformers | SearchAll>({
+      const { data } = await client.query<
+        SearchPerformersQuery | SearchAllQuery
+      >({
         query:
           searchType === SearchType.Performer
-            ? SearchPerformersQuery
-            : SearchAllQuery,
+            ? SearchPerformersGQL
+            : SearchAllGQL,
         variables: { term },
         fetchPolicy: "network-only",
       });

@@ -4,16 +4,14 @@ import { OnChangeValue, MenuPlacement } from "react-select";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
-import SearchTagsQuery from "src/graphql/queries/SearchTags.gql";
+import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
 
-import {
-  SearchTags_searchTag as Tag,
-  SearchTags,
-  SearchTagsVariables,
-} from "src/graphql/definitions/SearchTags";
+import { SearchTagsQuery, SearchTagsQueryVariables } from "src/graphql";
 import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 import { compareByName } from "src/utils";
+
+type Tag = NonNullable<SearchTagsQuery["searchTag"][number]>;
 
 type TagSlim = {
   id: string;
@@ -80,8 +78,11 @@ const TagSelect: FC<TagSelectProps> = ({
     ));
 
   const handleSearch = async (term: string) => {
-    const { data } = await client.query<SearchTags, SearchTagsVariables>({
-      query: SearchTagsQuery,
+    const { data } = await client.query<
+      SearchTagsQuery,
+      SearchTagsQueryVariables
+    >({
+      query: SearchTagsGQL,
       variables: {
         term,
         limit: 25,

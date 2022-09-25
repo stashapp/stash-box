@@ -3,20 +3,21 @@ import Async from "react-select/async";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
 
-import StudiosQuery from "src/graphql/queries/Studios.gql";
-import StudioQuery from "src/graphql/queries/Studio.gql";
+import StudiosGQL from "src/graphql/queries/Studios.gql";
+import StudioGQL from "src/graphql/queries/Studio.gql";
 
 import {
-  Studio_findStudio,
-  Studio,
-  StudioVariables,
-} from "src/graphql/definitions/Studio";
-import { Studios, StudiosVariables } from "src/graphql/definitions/Studios";
-import { SortDirectionEnum, StudioSortEnum } from "src/graphql";
+  SortDirectionEnum,
+  StudioSortEnum,
+  StudiosQuery,
+  StudiosQueryVariables,
+  StudioQuery,
+  StudioQueryVariables,
+} from "src/graphql";
 import { isUUID } from "src/utils";
 
-type StudioSlim = Pick<Studio_findStudio, "id" | "name"> &
-  Partial<Pick<Studio_findStudio, "parent">>;
+type Studio = NonNullable<StudioQuery["findStudio"]>;
+type StudioSlim = Pick<Studio, "id" | "name"> & Partial<Pick<Studio, "parent">>;
 
 interface IOptionType {
   value: string;
@@ -53,8 +54,8 @@ const StudioSelect: FC<StudioSelectProps> = ({
         return [];
       }
 
-      const { data } = await client.query<Studio, StudioVariables>({
-        query: StudioQuery,
+      const { data } = await client.query<StudioQuery, StudioQueryVariables>({
+        query: StudioGQL,
         variables: { id: value },
       });
 
@@ -72,8 +73,8 @@ const StudioSelect: FC<StudioSelectProps> = ({
       ];
     }
 
-    const { data } = await client.query<Studios, StudiosVariables>({
-      query: StudiosQuery,
+    const { data } = await client.query<StudiosQuery, StudiosQueryVariables>({
+      query: StudiosGQL,
       variables: {
         input: {
           name: term,

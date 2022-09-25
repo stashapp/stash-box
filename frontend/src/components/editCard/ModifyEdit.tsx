@@ -3,29 +3,21 @@ import { Col, Row } from "react-bootstrap";
 import { faCheck, faXmark, faEdit } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  Edits_queryEdits_edits_details as Details,
-  Edits_queryEdits_edits_old_details as OldDetails,
-  Edits_queryEdits_edits_options as Options,
-} from "src/graphql/definitions/Edits";
-import {
   FingerprintAlgorithm,
   PerformerFragment,
   GenderEnum,
   EthnicityEnum,
   BreastTypeEnum,
+  EditFragment,
 } from "src/graphql";
 import {
   formatDuration,
   getCountryByISO,
-  isTagDetails,
-  isPerformerDetails,
-  isTagOldDetails,
-  isPerformerOldDetails,
+  isTagEdit,
+  isPerformerEdit,
   formatBodyModification,
-  isStudioDetails,
-  isStudioOldDetails,
-  isSceneDetails,
-  isSceneOldDetails,
+  isStudioEdit,
+  isSceneEdit,
   studioHref,
   categoryHref,
   compareByName,
@@ -38,6 +30,10 @@ import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
 import { renderPerformer, renderTag, renderFingerprint } from "./renderEntity";
 
+type Details = EditFragment["details"];
+type OldDetails = EditFragment["old_details"];
+type Options = EditFragment["options"];
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
 type TargetOldDetails<T> = Omit<
@@ -46,9 +42,9 @@ type TargetOldDetails<T> = Omit<
 >;
 
 export interface TagDetails {
-  name: string | null;
+  name?: string | null;
   description?: string | null;
-  category: { id: string; name: string } | null;
+  category?: { id: string; name: string } | null;
   added_aliases?: string[] | null;
   removed_aliases?: string[] | null;
 }
@@ -96,7 +92,7 @@ export const renderTagDetails = (
 
 type BodyMod = {
   location: string;
-  description: string | null;
+  description?: string | null;
 };
 
 type Image = {
@@ -105,7 +101,7 @@ type Image = {
 };
 
 export interface PerformerDetails {
-  name: string | null;
+  name?: string | null;
   gender?: GenderEnum | null;
   disambiguation?: string | null;
   birthdate?: string | null;
@@ -300,7 +296,7 @@ export const renderPerformerDetails = (
 );
 
 type ScenePerformance = {
-  as: string | null;
+  as?: string | null;
   performer: Pick<
     PerformerFragment,
     "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
@@ -310,13 +306,13 @@ type ScenePerformance = {
 type NullableImage = Image | null;
 
 export interface SceneDetails {
-  title: string | null;
-  date: string | null;
+  title?: string | null;
+  date?: string | null;
   duration?: number | null;
   details?: string | null;
   director?: string | null;
   code?: string | null;
-  studio: {
+  studio?: {
     id: string;
     name: string;
   } | null;
@@ -461,8 +457,8 @@ export const renderSceneDetails = (
 );
 
 export interface StudioDetails {
-  name: string | null;
-  parent: {
+  name?: string | null;
+  parent?: {
     id: string;
     name: string;
   } | null;
@@ -523,15 +519,15 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
   const showDiff = !!oldDetails;
 
   if (
-    isTagDetails(details) &&
-    (isTagOldDetails(oldDetails) || oldDetails === undefined)
+    isTagEdit(details) &&
+    (isTagEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderTagDetails(details, oldDetails, showDiff);
   }
 
   if (
-    isPerformerDetails(details) &&
-    (isPerformerOldDetails(oldDetails) || oldDetails === undefined)
+    isPerformerEdit(details) &&
+    (isPerformerEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderPerformerDetails(
       details,
@@ -542,15 +538,15 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
   }
 
   if (
-    isStudioDetails(details) &&
-    (isStudioOldDetails(oldDetails) || oldDetails === undefined)
+    isStudioEdit(details) &&
+    (isStudioEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderStudioDetails(details, oldDetails, showDiff);
   }
 
   if (
-    isSceneDetails(details) &&
-    (isSceneOldDetails(oldDetails) || oldDetails === undefined)
+    isSceneEdit(details) &&
+    (isSceneEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderSceneDetails(details, oldDetails, showDiff);
   }

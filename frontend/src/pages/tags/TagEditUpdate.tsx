@@ -1,15 +1,20 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useTagEditUpdate, TagEditDetailsInput } from "src/graphql";
-import { createHref, isTag, isTagDetails } from "src/utils";
+import {
+  useTagEditUpdate,
+  TagEditDetailsInput,
+  EditUpdateQuery,
+} from "src/graphql";
+import { createHref, isTag, isTagEdit } from "src/utils";
 import TagForm from "./tagForm";
 
-import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
+type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
+
 import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
 
-export const TagEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
+export const TagEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
   const [updateTagEdit, { loading: saving }] = useTagEditUpdate({
@@ -21,7 +26,7 @@ export const TagEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     onError: (error) => setSubmissionError(error.message),
   });
 
-  if (!isTagDetails(edit.details) || (edit.target && !isTag(edit.target)))
+  if (!isTagEdit(edit.details) || (edit.target && !isTag(edit.target)))
     return null;
 
   const doUpdate = (updateData: TagEditDetailsInput, editNote: string) => {

@@ -3,8 +3,7 @@ import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
-import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
-import { OperationEnum } from "src/graphql";
+import { OperationEnum, EditFragment } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
@@ -19,7 +18,7 @@ import Votes from "./Votes";
 const CLASSNAME = "EditCard";
 
 interface Props {
-  edit: Edit;
+  edit: EditFragment;
   showVotes?: boolean;
 }
 

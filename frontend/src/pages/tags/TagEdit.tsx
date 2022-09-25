@@ -1,8 +1,12 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
+import {
+  useTagEdit,
+  OperationEnum,
+  TagEditDetailsInput,
+  TagFragment as Tag,
+} from "src/graphql";
 
 import { ROUTE_EDIT } from "src/constants/route";
 import { createHref } from "src/utils/route";
