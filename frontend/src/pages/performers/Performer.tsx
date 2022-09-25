@@ -3,11 +3,11 @@ import { useHistory } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import { groupBy, keyBy, sortBy } from "lodash-es";
 
-import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import {
   usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
+  FullPerformerQuery,
 } from "src/graphql";
 
 import { formatPendingEdits } from "src/utils";
@@ -15,6 +15,8 @@ import { EditList, SceneList, URLList } from "src/components/list";
 import CheckboxSelect from "src/components/checkboxSelect";
 import { useQueryParams } from "src/hooks";
 import PerformerInfo from "./performerInfo";
+
+type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 
 const DEFAULT_TAB = "scenes";
 

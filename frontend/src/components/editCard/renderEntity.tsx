@@ -1,11 +1,15 @@
 import { Link } from "react-router-dom";
 
-import { Edits_queryEdits_edits_details_SceneEdit_added_performers as Appearance } from "src/graphql/definitions/Edits";
-import { FingerprintAlgorithm } from "src/graphql";
+import { FingerprintAlgorithm, PerformerFragment } from "src/graphql";
 
 import { performerHref, tagHref, createHref, formatDuration } from "src/utils";
 import { GenderIcon, PerformerName, TagLink } from "src/components/fragments";
 import { ROUTE_SCENES } from "src/constants";
+
+type Appearance = {
+  performer: PerformerFragment;
+  as: string;
+};
 
 export const renderPerformer = (appearance: {
   as: string | null;

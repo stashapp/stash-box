@@ -2,13 +2,14 @@ import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button, Row } from "react-bootstrap";
 
-import { Category_findTagCategory as Category } from "src/graphql/definitions/Category";
-import { useDeleteCategory } from "src/graphql";
+import { useDeleteCategory, CategoryQuery } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import { isAdmin, createHref } from "src/utils";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
+
+type Category = NonNullable<CategoryQuery["findTagCategory"]>;
 
 interface Props {
   category: Category;

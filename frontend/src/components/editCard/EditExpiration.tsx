@@ -2,11 +2,10 @@ import { FC } from "react";
 import { formatDistance } from "date-fns";
 
 import { Tooltip } from "src/components/fragments";
-import { useConfig, VoteStatusEnum } from "src/graphql";
-import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
+import { useConfig, VoteStatusEnum, EditFragment } from "src/graphql";
 
 interface Props {
-  edit: Edit;
+  edit: EditFragment;
 }
 
 const TooltipMessage: FC<{ pass: boolean; time: Date }> = ({ pass, time }) => (

@@ -3,11 +3,7 @@ import { Link } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 import { faCheck, faXmark, faVideo } from "@fortawesome/free-solid-svg-icons";
 
-import {
-  Edits_queryEdits_edits as Edit,
-  Edits_queryEdits_edits_target as Target,
-} from "src/graphql/definitions/Edits";
-import { OperationEnum } from "src/graphql";
+import { OperationEnum, EditFragment } from "src/graphql";
 import {
   isValidEditTarget,
   getEditTargetRoute,
@@ -18,6 +14,8 @@ import {
   getEditTargetName,
 } from "src/utils";
 import { Icon } from "src/components/fragments";
+
+type Target = NonNullable<EditFragment["target"]>;
 
 const renderTargetLink = (obj: Target | null) => {
   if (!obj) return null;
@@ -49,7 +47,7 @@ const renderTargetAddendum = (obj: Target | null) => {
 };
 
 interface EditHeaderProps {
-  edit: Edit;
+  edit: EditFragment;
 }
 
 const EditHeader: FC<EditHeaderProps> = ({ edit }) => {

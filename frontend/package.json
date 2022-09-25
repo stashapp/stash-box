@@ -10,7 +10,7 @@
     "lint": "yarn lint:css && yarn lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
-    "generate": "apollo client:codegen --target typescript --outputFlat src/graphql/definitions --passthroughCustomScalars --customScalarsPrefix=GQL",
+    "generate": "graphql-codegen --config codegen.yml",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss,gql}\"",
     "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss,gql}\"",
     "analyze": "analyze=true vite build"
@@ -23,6 +23,9 @@
     "**/graphql": "^15.8.0"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^2.12.1",
+    "@graphql-codegen/typescript": "^2.7.3",
+    "@graphql-codegen/typescript-operations": "^2.2.2",
     "@rollup/plugin-graphql": "^1.1.0",
     "@types/apollo-upload-client": "^17.0.1",
     "@types/lodash-es": "^4.17.6",
@@ -33,7 +36,6 @@
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
     "@vitejs/plugin-react": "^2.0.1",
-    "apollo": "^2.34.0",
     "eslint": "^8.23.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-prettier": "^8.5.0",

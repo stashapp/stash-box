@@ -18,9 +18,9 @@ import {
   EthnicityEnum,
   PerformerEditDetailsInput,
   ValidSiteTypeEnum,
+  PerformerFragment as Performer,
 } from "src/graphql";
 import { getBraSize, parseBraSize } from "src/utils";
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
 import { Help, Icon } from "src/components/fragments";

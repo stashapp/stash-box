@@ -6,8 +6,11 @@ import cx from "classnames";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
+import {
+  StudioEditDetailsInput,
+  ValidSiteTypeEnum,
+  StudioFragment as Studio,
+} from "src/graphql";
 import { Icon } from "src/components/fragments";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";

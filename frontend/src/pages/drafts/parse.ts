@@ -1,11 +1,3 @@
-import {
-  Draft_findDraft_data_SceneDraft as SceneDraft,
-  Draft_findDraft_data_PerformerDraft as PerformerDraft,
-} from "src/graphql/definitions/Draft";
-import {
-  Scene_findScene_tags as Tag,
-  Scene_findScene_performers as ScenePerformer,
-} from "src/graphql/definitions/Scene";
 import { InitialScene } from "src/pages/scenes/sceneForm";
 import { InitialPerformer } from "src/pages/performers/performerForm";
 import {
@@ -15,8 +7,18 @@ import {
   EthnicityEnum,
   SceneFragment,
   PerformerFragment,
+  DraftQuery,
+  SceneQuery,
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
+
+type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
+type SceneDraft = DraftData & { __typename: "SceneDraft" };
+type PerformerDraft = DraftData & { __typename: "PerformerDraft" };
+type Tag = NonNullable<SceneQuery["findScene"]>["tags"][number];
+type ScenePerformer = NonNullable<
+  SceneQuery["findScene"]
+>["performers"][number];
 
 type URL = { url: string; site: { id: string } };
 const joinURLs = <T extends URL>(

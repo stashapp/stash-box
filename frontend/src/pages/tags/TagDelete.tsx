@@ -5,8 +5,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { useTagEdit, OperationEnum } from "src/graphql";
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
+import { useTagEdit, OperationEnum, TagFragment as Tag } from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 

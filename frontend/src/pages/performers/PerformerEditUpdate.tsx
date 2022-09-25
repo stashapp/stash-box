@@ -1,15 +1,20 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { usePerformerEditUpdate, PerformerEditDetailsInput } from "src/graphql";
-import { createHref, isPerformer, isPerformerDetails } from "src/utils";
+import {
+  usePerformerEditUpdate,
+  PerformerEditDetailsInput,
+  EditUpdateQuery,
+} from "src/graphql";
+import { createHref, isPerformer, isPerformerEdit } from "src/utils";
 import PerformerForm from "./performerForm";
 
-import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
+type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
+
 import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
 
-export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
+export const PerformerEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
   const [updatePerformerEdit, { loading: saving }] = usePerformerEditUpdate({
@@ -22,7 +27,7 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
   });
 
   if (
-    !isPerformerDetails(edit.details) ||
+    !isPerformerEdit(edit.details) ||
     (edit.target && !isPerformer(edit.target))
   )
     return null;
@@ -32,7 +37,7 @@ export const PerformerEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     editNote: string,
     setModifyAliases: boolean
   ) => {
-    if (!isPerformerDetails(edit.details)) return;
+    if (!isPerformerEdit(edit.details)) return;
 
     const details: PerformerEditDetailsInput = {
       ...updateData,

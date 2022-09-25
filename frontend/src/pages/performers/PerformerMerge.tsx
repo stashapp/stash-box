@@ -3,12 +3,12 @@ import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { flatMap, uniq, uniqBy } from "lodash-es";
 
-import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
-import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 import {
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
+  FullPerformerQuery,
+  SearchPerformersQuery,
 } from "src/graphql";
 
 import PerformerSelect from "src/components/performerSelect";
@@ -16,6 +16,11 @@ import PerformerCard from "src/components/performerCard";
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 import { Help } from "src/components/fragments";
+
+type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
+type SearchPerformer = NonNullable<
+  SearchPerformersQuery["searchPerformer"][number]
+>;
 
 const UPDATE_ALIAS_MESSAGE = `Enabling this option sets each merged performer's name as an alias on every scene that performer does not have an alias on.
 In most cases, it should be enabled when merging aliases of a performer, and disabled when the performers share the same name.

@@ -1,5 +1,4 @@
-import { ImageFragment } from "src/graphql/definitions/ImageFragment";
-import { URLFragment } from "src/graphql/definitions/URLFragment";
+import { ImageFragment, UrlFragment } from "src/graphql";
 
 export const formatCareer = (
   start?: number | null,
@@ -61,7 +60,7 @@ export const getImage = (
   return images?.[0]?.url ?? "";
 };
 
-export const getUrlBySite = (urls: URLFragment[], name: string) =>
+export const getUrlBySite = (urls: UrlFragment[], name: string) =>
   (urls && (urls.find((url) => url.site.name === name) || {}).url) || "";
 
 export const formatBodyModification = (

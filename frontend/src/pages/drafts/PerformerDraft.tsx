@@ -2,18 +2,18 @@ import { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import {
-  Draft_findDraft as Draft,
-  Draft_findDraft_data_PerformerDraft as PerformerDraft,
-} from "src/graphql/definitions/Draft";
-import {
   usePerformer,
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
+  DraftQuery,
 } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
 import { editHref, performerHref } from "src/utils";
 import { parsePerformerDraft } from "./parse";
+
+type Draft = NonNullable<DraftQuery["findDraft"]>;
+type PerformerDraft = Draft["data"] & { __typename: "PerformerDraft" };
 
 import PerformerForm from "src/pages/performers/performerForm";
 

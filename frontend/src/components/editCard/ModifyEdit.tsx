@@ -3,29 +3,21 @@ import { Col, Row } from "react-bootstrap";
 import { faCheck, faXmark, faEdit } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  Edits_queryEdits_edits_details as Details,
-  Edits_queryEdits_edits_old_details as OldDetails,
-  Edits_queryEdits_edits_options as Options,
-} from "src/graphql/definitions/Edits";
-import {
   FingerprintAlgorithm,
   PerformerFragment,
   GenderEnum,
   EthnicityEnum,
   BreastTypeEnum,
+  EditFragment,
 } from "src/graphql";
 import {
   formatDuration,
   getCountryByISO,
-  isTagDetails,
-  isPerformerDetails,
-  isTagOldDetails,
-  isPerformerOldDetails,
+  isTagEdit,
+  isPerformerEdit,
   formatBodyModification,
-  isStudioDetails,
-  isStudioOldDetails,
-  isSceneDetails,
-  isSceneOldDetails,
+  isStudioEdit,
+  isSceneEdit,
   studioHref,
   categoryHref,
   compareByName,
@@ -37,6 +29,10 @@ import URLChangeRow, { URL } from "src/components/urlChangeRow";
 import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
 import { renderPerformer, renderTag, renderFingerprint } from "./renderEntity";
+
+type Details = EditFragment["details"];
+type OldDetails = EditFragment["old_details"];
+type Options = EditFragment["options"];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
@@ -523,15 +519,15 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
   const showDiff = !!oldDetails;
 
   if (
-    isTagDetails(details) &&
-    (isTagOldDetails(oldDetails) || oldDetails === undefined)
+    isTagEdit(details) &&
+    (isTagEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderTagDetails(details, oldDetails, showDiff);
   }
 
   if (
-    isPerformerDetails(details) &&
-    (isPerformerOldDetails(oldDetails) || oldDetails === undefined)
+    isPerformerEdit(details) &&
+    (isPerformerEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderPerformerDetails(
       details,
@@ -542,15 +538,15 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
   }
 
   if (
-    isStudioDetails(details) &&
-    (isStudioOldDetails(oldDetails) || oldDetails === undefined)
+    isStudioEdit(details) &&
+    (isStudioEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderStudioDetails(details, oldDetails, showDiff);
   }
 
   if (
-    isSceneDetails(details) &&
-    (isSceneOldDetails(oldDetails) || oldDetails === undefined)
+    isSceneEdit(details) &&
+    (isSceneEdit(oldDetails) || oldDetails === undefined)
   ) {
     return renderSceneDetails(details, oldDetails, showDiff);
   }
