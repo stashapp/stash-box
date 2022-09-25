@@ -27,7 +27,7 @@ export const renderPerformer = (appearance: {
 export const renderTag = (tag: {
   id: string;
   name: string;
-  description: string | null;
+  description?: string | null;
 }) => (
   <TagLink title={tag.name} link={tagHref(tag)} description={tag.description} />
 );

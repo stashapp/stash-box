@@ -326,14 +326,14 @@ export interface SceneDetails {
     | {
         id: string;
         name: string;
-        description: string | null;
+        description?: string | null;
       }[]
     | null;
   removed_tags?:
     | {
         id: string;
         name: string;
-        description: string | null;
+        description?: string | null;
       }[]
     | null;
   added_fingerprints?:
