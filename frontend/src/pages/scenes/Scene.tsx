@@ -148,7 +148,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   ));
   const tags = [...scene.tags].sort(compareByName).map((tag) => (
     <li key={tag.name}>
-      <TagLink title={tag.name} link={tagHref(tag)} />
+      <TagLink
+        title={tag.name}
+        link={tagHref(tag)}
+        description={tag.description}
+      />
     </li>
   ));
 
