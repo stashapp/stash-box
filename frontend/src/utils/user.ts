@@ -1,6 +1,8 @@
 import { User } from "../AuthContext";
-import { User_findUser as PrivateUser } from "src/graphql/definitions/User";
-import { PublicUser_findUser as PublicUser } from "src/graphql/definitions/PublicUser";
+import { UserQuery, PublicUserQuery } from "src/graphql";
+
+type PrivateUser = NonNullable<UserQuery["findUser"]>;
+type PublicUser = NonNullable<PublicUserQuery["findUser"]>;
 
 const USER_STORAGE = "stash_box_user";
 const cache = localStorage.getItem(USER_STORAGE);

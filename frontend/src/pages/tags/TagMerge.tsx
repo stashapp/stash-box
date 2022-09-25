@@ -3,8 +3,12 @@ import { useHistory } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 import { flatMap, uniq } from "lodash-es";
 
-import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
+import {
+  useTagEdit,
+  OperationEnum,
+  TagEditDetailsInput,
+  TagFragment as Tag,
+} from "src/graphql";
 
 import TagSelect from "src/components/tagSelect";
 import { editHref } from "src/utils";

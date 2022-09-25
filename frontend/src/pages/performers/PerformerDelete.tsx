@@ -5,10 +5,15 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
-import { usePerformerEdit, OperationEnum } from "src/graphql";
+import {
+  usePerformerEdit,
+  OperationEnum,
+  FullPerformerQuery,
+} from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
+
+type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 
 const schema = yup.object({
   id: yup.string().required(),

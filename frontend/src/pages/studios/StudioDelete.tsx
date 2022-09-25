@@ -5,8 +5,11 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { OperationEnum, useStudioEdit } from "src/graphql";
+import {
+  OperationEnum,
+  useStudioEdit,
+  StudioFragment as Studio,
+} from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 

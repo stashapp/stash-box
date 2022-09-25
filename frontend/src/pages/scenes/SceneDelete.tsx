@@ -5,8 +5,11 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import { OperationEnum, useSceneEdit } from "src/graphql";
+import {
+  OperationEnum,
+  useSceneEdit,
+  SceneFragment as Scene,
+} from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 

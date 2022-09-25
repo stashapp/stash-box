@@ -1,5 +1,4 @@
-import { ImageFragment } from "src/graphql/definitions/ImageFragment";
-import { URLFragment } from "src/graphql/definitions/URLFragment";
+import { ImageFragment, UrlFragment } from "src/graphql";
 
 export const formatCareer = (
   start?: number | null,
@@ -13,10 +12,10 @@ export const formatMeasurements = ({
   hip_size,
   waist_size,
 }: {
-  cup_size: string | null;
-  band_size: number | null;
-  waist_size: number | null;
-  hip_size: number | null;
+  cup_size?: string | null;
+  band_size?: number | null;
+  waist_size?: number | null;
+  hip_size?: number | null;
 }): string | undefined => {
   if ((cup_size && band_size) || hip_size || waist_size) {
     const bust = cup_size && band_size ? `${band_size}${cup_size}` : "??";
@@ -61,7 +60,7 @@ export const getImage = (
   return images?.[0]?.url ?? "";
 };
 
-export const getUrlBySite = (urls: URLFragment[], name: string) =>
+export const getUrlBySite = (urls: UrlFragment[], name: string) =>
   (urls && (urls.find((url) => url.site.name === name) || {}).url) || "";
 
 export const formatBodyModification = (

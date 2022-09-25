@@ -3,11 +3,11 @@ import { Link, useHistory } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { sortBy } from "lodash-es";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import {
   usePendingEditsCount,
   TargetTypeEnum,
   CriterionModifier,
+  StudioFragment as Studio,
 } from "src/graphql";
 import { EditList, SceneList, URLList } from "src/components/list";
 

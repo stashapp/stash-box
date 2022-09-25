@@ -8,8 +8,9 @@ import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
 import { capitalize } from "lodash-es";
 
-import { Site_findSite as Site } from "src/graphql/definitions/Site";
-import { ValidSiteTypeEnum, SiteCreateInput } from "src/graphql";
+import { ValidSiteTypeEnum, SiteCreateInput, SiteQuery } from "src/graphql";
+
+type Site = NonNullable<SiteQuery["findSite"]>;
 
 const validSites = Object.keys(ValidSiteTypeEnum);
 

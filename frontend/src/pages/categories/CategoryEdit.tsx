@@ -1,10 +1,15 @@
 import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useUpdateCategory, TagCategoryCreateInput } from "src/graphql";
-import { Category_findTagCategory as Category } from "src/graphql/definitions/Category";
+import {
+  useUpdateCategory,
+  TagCategoryCreateInput,
+  CategoryQuery,
+} from "src/graphql";
 import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
+
+type Category = NonNullable<CategoryQuery["findTagCategory"]>;
 
 interface Props {
   category: Category;

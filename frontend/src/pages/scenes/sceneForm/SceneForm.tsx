@@ -9,13 +9,13 @@ import {
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import { formatDuration, parseDuration, performerHref } from "src/utils";
 import {
   ValidSiteTypeEnum,
   SceneEditDetailsInput,
   GenderEnum,
   FingerprintAlgorithm,
+  SceneFragment as Scene,
 } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";

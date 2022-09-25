@@ -1,0 +1,21 @@
+overwrite: true
+schema: "../graphql/schema/**/*.graphql"
+documents: "src/graphql/**/*.gql"
+generates:
+  src/graphql/types.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+    config:
+      dedupeOperationSuffix: true
+      scalars:
+        Date: string
+        DateTime: string
+        Time: string
+        Upload: File
+      namingConvention:
+        enumValues: change-case-all#upperCase
+      nonOptionalTypename: true
+hooks:
+  afterAllFileWrite:
+    - prettier --write

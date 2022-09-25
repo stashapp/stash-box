@@ -31,12 +31,12 @@ export type InitialScene = {
   }[];
   performers?:
     | {
-        as: string | null;
+        as?: string | null;
         performer: {
           id: string;
           name: string;
-          disambiguation: string | null;
-          gender: GenderEnum | null;
+          disambiguation?: string | null;
+          gender?: GenderEnum | null;
           deleted: boolean;
         };
       }[]

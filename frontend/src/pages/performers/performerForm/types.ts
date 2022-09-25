@@ -39,10 +39,10 @@ export type InitialPerformer = {
   }[];
   tattoos?: {
     location: string;
-    description: string | null;
+    description?: string | null;
   }[];
   piercings?: {
     location: string;
-    description: string | null;
+    description?: string | null;
   }[];
 };

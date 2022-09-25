@@ -4,19 +4,19 @@ import { Alert, Col, Row } from "react-bootstrap";
 
 import { sceneHref } from "src/utils/route";
 import {
-  Draft_findDraft as Draft,
-  Draft_findDraft_data_SceneDraft as SceneDraft,
-} from "src/graphql/definitions/Draft";
-import {
   useScene,
   useSceneEdit,
   OperationEnum,
   SceneEditDetailsInput,
   FingerprintAlgorithm,
+  DraftQuery,
 } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
 import { editHref } from "src/utils";
 import { parseSceneDraft } from "./parse";
+
+type Draft = NonNullable<DraftQuery["findDraft"]>;
+type SceneDraft = Draft["data"] & { __typename: "SceneDraft" };
 
 import SceneForm from "src/pages/scenes/sceneForm";
 
