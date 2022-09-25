@@ -25,6 +25,12 @@ type Performer = {
   as?: string | null;
 };
 
+type Tag = {
+  id: string;
+  name: string;
+  description?: string | null;
+};
+
 const selectSceneDetails = (
   data: CastedSceneFormData,
   original: SceneFragment | null | undefined
@@ -50,7 +56,7 @@ const selectSceneDetails = (
     (s) => `${s.performer.id}${s.as}`
   );
 
-  const [addedTags, removedTags] = diffArray(
+  const [addedTags, removedTags] = diffArray<Tag>(
     (data.tags ?? []).flatMap((t) =>
       t.id && t.name
         ? [

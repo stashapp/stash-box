@@ -16,7 +16,7 @@ type Tag = NonNullable<SearchTagsQuery["searchTag"][number]>;
 type TagSlim = {
   id: string;
   name: string;
-  description: string | null | undefined;
+  description?: string | null | undefined;
   aliases: string[];
 };
 
