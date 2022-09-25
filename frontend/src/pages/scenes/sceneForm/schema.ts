@@ -49,7 +49,6 @@ export const SceneSchema = yup.object({
           gender: yup
             .string()
             .oneOf([null, ...Object.keys(GenderEnum)])
-            .optional()
             .nullable(),
           deleted: yup.bool().required(),
         })
