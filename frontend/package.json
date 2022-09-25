@@ -12,15 +12,12 @@
     "lint:css": "stylelint \"src/**/*.scss\"",
     "generate": "graphql-codegen --config codegen.yml",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss,gql}\"",
-    "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss,gql}\"",
+    "format-check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,scss,gql}\"",
     "analyze": "analyze=true vite build"
   },
   "engines": {
     "node": ">=16",
     "yarn": ">=1.15.2"
-  },
-  "resolutions": {
-    "**/graphql": "^15.8.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.12.1",
@@ -67,7 +64,7 @@
     "bootstrap": "^5.2.0",
     "classnames": "^2.3.1",
     "date-fns": "^2.29.2",
-    "graphql": "^15.8.0",
+    "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
     "i18n-iso-countries": "^7.5.0",
     "lodash-es": "^4.17.21",
