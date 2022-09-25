@@ -8,6 +8,7 @@ import cx from "classnames";
 interface IProps {
   title: string;
   link?: string;
+  description?: string | null;
   className?: string;
   onRemove?: () => void;
   disabled?: boolean;
@@ -16,12 +17,15 @@ interface IProps {
 const TagLink: FC<IProps> = ({
   title,
   link,
+  description,
   className,
   onRemove,
   disabled = false,
 }) => (
   <Badge className={cx("tag-item", className)} bg="none">
-    {link && !disabled ? <Link to={link}>{title}</Link> : title}
+    <abbr title={description || undefined}>
+      {link && !disabled ? <Link to={link}>{title}</Link> : title}
+    </abbr>
     {onRemove && (
       <Button onClick={onRemove}>
         <Icon icon={faXmark} />
