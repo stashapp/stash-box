@@ -21,8 +21,12 @@
       height: 100%;
       image-rendering: smooth;
       object-fit: cover;
-      object-position: top;
+      object-position: center;
       width: 100%;
+    }
+
+    .vertical-img {
+      object-fit: scale-down;
     }
   }
 

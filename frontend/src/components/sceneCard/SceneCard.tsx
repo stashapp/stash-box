@@ -4,7 +4,13 @@ import { Card } from "react-bootstrap";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
 
 import { ScenesQuery } from "src/graphql";
-import { getImage, sceneHref, studioHref, formatDuration } from "src/utils";
+import {
+  getImage,
+  sceneHref,
+  studioHref,
+  formatDuration,
+  imageType,
+} from "src/utils";
 import { Icon } from "src/components/fragments";
 
 type Performance = NonNullable<ScenesQuery["queryScenes"]>["scenes"][number];
@@ -17,7 +23,11 @@ const SceneCard: FC<{ performance: Performance }> = ({ performance }) => (
   <Card className={CLASSNAME}>
     <Card.Body className={CLASSNAME_BODY}>
       <Link className={CLASSNAME_IMAGE} to={sceneHref(performance)}>
-        <img alt="" src={getImage(performance.images, "landscape")} />
+        <img
+          alt=""
+          className={imageType(performance.images[0])}
+          src={getImage(performance.images, "landscape")}
+        />
       </Link>
     </Card.Body>
     <Card.Footer>
