@@ -22,7 +22,7 @@ type ScenePerformer = NonNullable<
 
 type URL = { url: string; site: { id: string } };
 const joinURLs = <T extends URL>(
-  newURL: T | null,
+  newURL: T | undefined | null,
   existingURLs: T[] | undefined
 ) =>
   uniqBy(
@@ -32,7 +32,7 @@ const joinURLs = <T extends URL>(
 
 type Entity = { id: string };
 const joinImages = <T extends Entity>(
-  newImage: T | null,
+  newImage: T | null | undefined,
   existingImages: T[] | undefined
 ) =>
   uniqBy(
@@ -45,7 +45,7 @@ const joinTags = <T extends Entity>(
   existingTags: T[] | undefined
 ) => uniqBy([...(newTags ?? []), ...(existingTags ?? [])], (t) => t.id);
 
-type Performer = { performer: { id: string }; as: string | null };
+type Performer = { performer: { id: string }; as?: string | null };
 const joinPerformers = <T extends Performer>(
   newPerformers: T[] | null,
   existingPerformers: T[] | undefined
@@ -115,7 +115,10 @@ export const parseSceneDraft = (
   return [scene, remainder];
 };
 
-const parseEnum = (value: string | null, enumObj: Record<string, string>) =>
+const parseEnum = (
+  value: string | null | undefined,
+  enumObj: Record<string, string>
+) =>
   Object.entries(enumObj).find(
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
@@ -155,13 +158,13 @@ export const parsePerformerDraft = (
   };
 
   const remainder = {
-    Aliases: draft?.aliases,
+    Aliases: draft?.aliases ?? null,
     Height: draft.height && !performer.height ? draft.height : null,
-    Country: draft?.country?.length !== 2 ? draft?.country : null,
+    Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
-    Measurements: draft?.measurements,
-    Piercings: draft?.piercings,
-    Tattoos: draft?.tattoos,
+    Measurements: draft?.measurements ?? null,
+    Piercings: draft?.piercings ?? null,
+    Tattoos: draft?.tattoos ?? null,
   };
 
   return [performer, remainder];

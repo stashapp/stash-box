@@ -12,7 +12,7 @@ type Appearance = {
 };
 
 export const renderPerformer = (appearance: {
-  as: string | null;
+  as?: string | null;
   performer: Pick<
     Appearance["performer"],
     "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"

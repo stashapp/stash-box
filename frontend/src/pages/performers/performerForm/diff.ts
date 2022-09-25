@@ -21,7 +21,7 @@ const diffBodyMods = (
   newMods:
     | { location: string | undefined; description: string | null | undefined }[]
     | undefined,
-  oldMods: { location: string; description: string | null }[] | null
+  oldMods: { location: string; description?: string | null }[] | null
 ) =>
   diffArray(
     (newMods ?? []).flatMap((m) =>

@@ -5,7 +5,7 @@ import { RoleEnum } from "src/graphql";
 export interface User {
   id: string;
   name: string;
-  roles: RoleEnum[] | null;
+  roles?: RoleEnum[] | null;
 }
 
 export type ContextType = {

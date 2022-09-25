@@ -82,7 +82,9 @@ export const getEditTargetRoute = (target: Target): string => {
   return ROUTE_HOME;
 };
 
-export const getEditTargetName = (target: Target | null): string => {
+export const getEditTargetName = (target?: Target | null): string => {
+  if (!target) return "-";
+
   if (isScene(target)) {
     return target.title || target.id;
   }
@@ -92,7 +94,7 @@ export const getEditTargetName = (target: Target | null): string => {
       target?.disambiguation ? " (" + target?.disambiguation + ")" : ""
     }`;
   }
-  return target?.name || target?.id || "-";
+  return target.name || target.id;
 };
 
 export const getEditTargetEntity = (target: Target) => {

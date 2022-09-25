@@ -17,7 +17,7 @@ import { Icon } from "src/components/fragments";
 
 type Target = NonNullable<EditFragment["target"]>;
 
-const renderTargetLink = (obj: Target | null) => {
+const renderTargetLink = (obj?: Target | null) => {
   if (!obj) return null;
 
   if (isPerformer(obj)) {
@@ -34,8 +34,8 @@ const renderTargetLink = (obj: Target | null) => {
   }
 };
 
-const renderTargetAddendum = (obj: Target | null) => {
-  if (isScene(obj) && obj.studio)
+const renderTargetAddendum = (obj?: Target | null) => {
+  if (isScene(obj) && obj?.studio)
     return (
       <>
         <span className="mx-2">•</span>

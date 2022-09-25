@@ -17,11 +17,19 @@ import { CastedSceneFormData } from "./schema";
 
 type OmittedKeys = "draft_id" | "added_fingerprints" | "removed_fingerprints";
 
+type Performer = {
+  performer: Pick<
+    SceneFragment["performers"][number]["performer"],
+    "id" | "name" | "gender" | "disambiguation" | "deleted"
+  >;
+  as?: string | null;
+};
+
 const selectSceneDetails = (
   data: CastedSceneFormData,
   original: SceneFragment | null | undefined
 ): [Required<OldSceneDetails>, Required<Omit<SceneDetails, OmittedKeys>>] => {
-  const [addedPerformers, removedPerformers] = diffArray(
+  const [addedPerformers, removedPerformers] = diffArray<Performer>(
     (data.performers ?? []).flatMap((p) =>
       p.performerId && p.name
         ? [
