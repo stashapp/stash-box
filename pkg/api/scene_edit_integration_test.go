@@ -4,11 +4,13 @@
 package api_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 type sceneEditTestRunner struct {
@@ -359,26 +361,47 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 	}
 	id := createdScene.UUID()
 
-	sceneUnsetInput := models.SceneEditDetailsInput{
-		Urls: []*models.URLInput{},
+	var resp struct {
+		SceneEdit struct {
+			ID string
+		}
 	}
 
-	editInput := models.EditInput{
-		Operation: models.OperationEnumModify,
-		ID:        &id,
+	s.client.MustPost(fmt.Sprintf(`
+		mutation {
+			sceneEdit(input: {
+				edit: {id: "%v", operation: MODIFY}
+				details: { urls: [] }
+			}) {
+				id
+			}
+		}
+	`, id), &resp)
+
+	edit, _ := s.applyEdit(uuid.FromStringOrNil(resp.SceneEdit.ID))
+	s.verifyAppliedSceneEdit(edit)
+
+	var scene struct {
+		FindScene struct {
+			Director string
+			URLs     []models.URL
+		}
 	}
 
-	createdUpdateEdit, err := s.createTestSceneEdit(models.OperationEnumModify, &sceneUnsetInput, &editInput)
-	if err != nil {
-		return
-	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
-	if err != nil {
-		return
-	}
+	s.client.MustPost(fmt.Sprintf(`
+		query {
+			findScene(id: "%v") {
+				director
+				urls {
+					url
+				}
+			}
+		}
+	`, id), &scene)
 
-	modifiedScene, _ := s.resolver.Query().FindScene(s.ctx, id)
-	s.verifyApplyModifySceneEdit(sceneUnsetInput, modifiedScene, appliedEdit)
+	assert := assert.New(s.t)
+	assert.Equal(scene.FindScene.Director, *sceneData.Director)
+	assert.Empty(scene.FindScene.URLs)
 }
 
 func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {

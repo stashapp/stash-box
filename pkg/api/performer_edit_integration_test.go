@@ -4,11 +4,13 @@
 package api_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 type performerEditTestRunner struct {
@@ -501,16 +503,9 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	}
 
 	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
-	s.verifyApplyModifyPerformerEdit(*performerEditDetailsInput, modifiedPerformer, appliedEdit)
-}
 
-func (s *performerEditTestRunner) verifyApplyModifyPerformerEdit(input models.PerformerEditDetailsInput, updatedPerformer *models.Performer, edit *models.Edit) {
-	s.verifyEditOperation(models.OperationEnumModify.String(), edit)
-	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
-	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
-	s.verifyEditApplication(true, edit)
-
-	s.verifyPerformerEdit(input, updatedPerformer)
+	s.verifyAppliedPerformerEdit(appliedEdit)
+	s.verifyPerformerEdit(*performerEditDetailsInput, modifiedPerformer)
 }
 
 func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
@@ -652,30 +647,63 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		return
 	}
 
-	performerUnsetInput := models.PerformerEditDetailsInput{
-		Aliases:   []string{},
-		Tattoos:   []*models.BodyModification{},
-		Piercings: []*models.BodyModification{},
-		Urls:      []*models.URLInput{},
-	}
-
 	id := createdPerformer.UUID()
-	editInput := models.EditInput{
-		Operation: models.OperationEnumModify,
-		ID:        &id,
+
+	var resp struct {
+		PerformerEdit struct {
+			ID string
+		}
 	}
 
-	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, &performerUnsetInput, &editInput, nil)
-	if err != nil {
-		return
-	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
-	if err != nil {
-		return
+	s.client.MustPost(fmt.Sprintf(`
+		mutation {
+			performerEdit(input: {
+				edit: {id: "%v", operation: MODIFY}
+				details: { aliases: [], tattoos: [], piercings: [], urls: [] }
+			}) {
+				id
+			}
+		}
+	`, id), &resp)
+
+	edit, _ := s.applyEdit(uuid.FromStringOrNil(resp.PerformerEdit.ID))
+	s.verifyAppliedPerformerEdit(edit)
+
+	var performer struct {
+		FindPerformer struct {
+			ID             string
+			Disambiguation string
+			Aliases        []string
+			URLs           []models.URL
+			Piercings      []models.BodyModification
+			Tattoos        []models.BodyModification
+		}
 	}
 
-	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
-	s.verifyApplyModifyPerformerEdit(performerUnsetInput, modifiedPerformer, appliedEdit)
+	s.client.MustPost(fmt.Sprintf(`
+		query {
+			findPerformer(id: "%v") {
+				disambiguation
+				aliases
+				urls {
+					url
+				}
+				piercings {
+					location
+				}
+				tattoos {
+					location
+				}
+			}
+		}
+	`, id), &performer)
+
+	assert := assert.New(s.t)
+	assert.Equal(performer.FindPerformer.Disambiguation, *performerData.Disambiguation)
+	assert.Empty(performer.FindPerformer.Aliases)
+	assert.Empty(performer.FindPerformer.URLs)
+	assert.Empty(performer.FindPerformer.Piercings)
+	assert.Empty(performer.FindPerformer.Tattoos)
 }
 
 func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
