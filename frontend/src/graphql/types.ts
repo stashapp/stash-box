@@ -1270,6 +1270,10 @@ export type Scene = {
   urls: Array<Url>;
 };
 
+export type SceneFingerprintsArgs = {
+  is_submitted?: InputMaybe<Scalars["Boolean"]>;
+};
+
 export type SceneCreateInput = {
   code?: InputMaybe<Scalars["String"]>;
   date: Scalars["String"];
@@ -1382,6 +1386,8 @@ export type SceneQueryInput = {
   favorites?: InputMaybe<FavoriteFilter>;
   /** Filter to only include scenes with these fingerprints */
   fingerprints?: InputMaybe<MultiStringCriterionInput>;
+  /** Filter to scenes with fingerprints submitted by the user */
+  has_fingerprint_submissions?: InputMaybe<Scalars["Boolean"]>;
   page?: Scalars["Int"];
   /** Filter to only include scenes with this studio as primary or parent */
   parentStudio?: InputMaybe<Scalars["String"]>;

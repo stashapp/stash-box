@@ -17,24 +17,25 @@ const (
 )
 
 type Loaders struct {
-	SceneFingerprintsByID  FingerprintsLoader
-	ImageByID              ImageLoader
-	PerformerByID          PerformerLoader
-	PerformerAliasesByID   StringsLoader
-	PerformerImageIDsByID  UUIDsLoader
-	PerformerMergeIDsByID  UUIDsLoader
-	PerformerPiercingsByID BodyModificationsLoader
-	PerformerTattoosByID   BodyModificationsLoader
-	PerformerUrlsByID      URLLoader
-	SceneImageIDsByID      UUIDsLoader
-	SceneAppearancesByID   SceneAppearancesLoader
-	SceneUrlsByID          URLLoader
-	StudioImageIDsByID     UUIDsLoader
-	StudioUrlsByID         URLLoader
-	SceneTagIDsByID        UUIDsLoader
-	SiteByID               SiteLoader
-	TagByID                TagLoader
-	TagCategoryByID        TagCategoryLoader
+	SceneFingerprintsByID          FingerprintsLoader
+	SubmittedSceneFingerprintsByID FingerprintsLoader
+	ImageByID                      ImageLoader
+	PerformerByID                  PerformerLoader
+	PerformerAliasesByID           StringsLoader
+	PerformerImageIDsByID          UUIDsLoader
+	PerformerMergeIDsByID          UUIDsLoader
+	PerformerPiercingsByID         BodyModificationsLoader
+	PerformerTattoosByID           BodyModificationsLoader
+	PerformerUrlsByID              URLLoader
+	SceneImageIDsByID              UUIDsLoader
+	SceneAppearancesByID           SceneAppearancesLoader
+	SceneUrlsByID                  URLLoader
+	StudioImageIDsByID             UUIDsLoader
+	StudioUrlsByID                 URLLoader
+	SceneTagIDsByID                UUIDsLoader
+	SiteByID                       SiteLoader
+	TagByID                        TagLoader
+	TagCategoryByID                TagCategoryLoader
 }
 
 func Middleware(fac models.Repo) func(next http.Handler) http.Handler {
@@ -63,7 +64,15 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
 				qb := fac.Scene()
-				return qb.GetAllFingerprints(currentUser.ID, ids)
+				return qb.GetAllFingerprints(currentUser.ID, ids, false)
+			},
+		},
+		SubmittedSceneFingerprintsByID: FingerprintsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
+				qb := fac.Scene()
+				return qb.GetAllFingerprints(currentUser.ID, ids, true)
 			},
 		},
 		PerformerByID: PerformerLoader{

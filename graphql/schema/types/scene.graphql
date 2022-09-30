@@ -78,7 +78,7 @@ type Scene {
   tags: [Tag!]!
   images: [Image!]!
   performers: [PerformerAppearance!]!
-  fingerprints: [Fingerprint!]!
+  fingerprints(is_submitted: Boolean = False): [Fingerprint!]!
   duration: Int
   director: String
   code: String
@@ -209,6 +209,8 @@ input SceneQueryInput {
   fingerprints: MultiStringCriterionInput
   """Filter by favorited entity"""
   favorites: FavoriteFilter
+  """Filter to scenes with fingerprints submitted by the user"""
+  has_fingerprint_submissions: Boolean = False
 
   page: Int! = 1
   per_page: Int! = 25

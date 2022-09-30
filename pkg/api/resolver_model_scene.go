@@ -110,7 +110,11 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 
 	return ret, nil
 }
-func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene) ([]*models.Fingerprint, error) {
+
+func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene, isSubmitted *bool) ([]*models.Fingerprint, error) {
+	if isSubmitted != nil && *isSubmitted {
+		return dataloader.For(ctx).SubmittedSceneFingerprintsByID.Load(obj.ID)
+	}
 	return dataloader.For(ctx).SceneFingerprintsByID.Load(obj.ID)
 }
 
