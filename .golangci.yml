@@ -6,16 +6,13 @@ run:
 linters:
   enable:
     # Default
-    - deadcode
     - errcheck
     - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - structcheck
     - typecheck
     - unused
-    - varcheck
     # additional
     - gofmt
     - revive
@@ -24,7 +21,6 @@ linters:
     - exhaustive
     - exportloopref
     - gocritic
-    - ifshort
     #- goerr113
     - misspell
     - noctx
