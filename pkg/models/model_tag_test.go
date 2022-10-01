@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	"github.com/stretchr/testify/assert"
+	"gotest.tools/v3/assert"
 )
 
 func TestCopyFromTagEdit(t *testing.T) {
@@ -30,9 +30,7 @@ func TestCopyFromTagEdit(t *testing.T) {
 	origCopy := orig
 	origCopy.CopyFromTagEdit(input, &old)
 
-	assert := assert.New(t)
-
-	assert.Equal(Tag{
+	assert.DeepEqual(t, Tag{
 		Name:        bName,
 		Description: sql.NullString{String: bDescription, Valid: true},
 		CategoryID:  uuid.NullUUID{UUID: bCategoryID, Valid: true},
@@ -41,5 +39,5 @@ func TestCopyFromTagEdit(t *testing.T) {
 	origCopy = orig
 	origCopy.CopyFromTagEdit(TagEdit{}, &TagEdit{})
 
-	assert.Equal(orig, origCopy)
+	assert.DeepEqual(t, orig, origCopy)
 }
