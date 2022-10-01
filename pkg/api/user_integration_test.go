@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
+	"gotest.tools/v3/assert"
 )
 
 type userTestRunner struct {
@@ -35,38 +36,20 @@ func (s *userTestRunner) testCreateUser() {
 	}
 
 	user, err := s.resolver.Mutation().UserCreate(s.ctx, input)
-
-	if err != nil {
-		s.t.Errorf("Error creating user: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error creating user")
 
 	s.verifyCreatedUser(input, user)
 }
 
 func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *models.User) {
 	// ensure basic attributes are set correctly
-	if input.Name != user.Name {
-		s.fieldMismatch(input.Name, user.Name, "Name")
-	}
-
-	if input.Email != user.Email {
-		s.fieldMismatch(input.Email, user.Email, "Email")
-	}
+	assert.Equal(s.t, input.Name, user.Name)
+	assert.Equal(s.t, input.Email, user.Email)
 
 	// ensure apikey is set
-	if user.APIKey == "" {
-		s.t.Errorf("API key was not generated")
-	}
-
-	// ensure password is set
-	if user.PasswordHash == "" {
-		s.t.Errorf("Password was not set")
-	}
-
-	if user.ID == uuid.Nil {
-		s.t.Errorf("Expected created user id to be non-zero")
-	}
+	assert.Assert(s.t, user.APIKey != "", "API key was not generated")
+	assert.Assert(s.t, user.PasswordHash != "", "Password was not set")
+	assert.Assert(s.t, user.ID != uuid.Nil, "Expected created user id to be non-zero")
 
 	// TODO - ensure roles are set
 
@@ -74,58 +57,36 @@ func (s *userTestRunner) verifyCreatedUser(input models.UserCreateInput, user *m
 
 func (s *userTestRunner) testFindUserById() {
 	createdUser, err := s.createTestUser(nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	user, err := s.resolver.Query().FindUser(s.ctx, &createdUser.ID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding user: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding user")
 
 	// ensure returned user is not nil
-	if user == nil {
-		s.t.Error("Did not find user by id")
-		return
-	}
+	assert.Assert(s.t, user != nil, "Did not find user by id")
 
 	// ensure values were set
-	if createdUser.Name != user.Name {
-		s.fieldMismatch(createdUser.Name, user.Name, "Name")
-	}
+	assert.Equal(s.t, createdUser.Name, user.Name)
 }
 
 func (s *userTestRunner) testFindUserByName() {
 	createdUser, err := s.createTestUser(nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	userName := createdUser.Name
 	user, err := s.resolver.Query().FindUser(s.ctx, nil, &userName)
-	if err != nil {
-		s.t.Errorf("Error finding user: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding user")
 
 	// ensure returned user is not nil
-	if user == nil {
-		s.t.Error("Did not find user by name")
-		return
-	}
+	assert.Assert(s.t, user != nil, "Did not find user by name")
 
 	// ensure values were set
-	if createdUser.Name != user.Name {
-		s.fieldMismatch(createdUser.Name, user.Name, "Name")
-	}
+	assert.Equal(s.t, createdUser.Name, user.Name)
 }
 
 func (s *userTestRunner) testQueryUserByName() {
 	createdUser, err := s.createTestUser(nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	userName := createdUser.Name
 
@@ -136,23 +97,13 @@ func (s *userTestRunner) testQueryUserByName() {
 	}
 
 	result, err := s.resolver.Query().QueryUsers(s.ctx, input)
-	if err != nil {
-		s.t.Errorf("Error querying user: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error querying user")
 
 	// ensure one result was returned
-	if result.Count != 1 {
-		s.t.Errorf("Expected %d users, got %d", 1, result.Count)
-		return
-	}
-
-	user := result.Users[0]
+	assert.Equal(s.t, result.Count, 1, "Expected 1 user")
 
 	// ensure values were set
-	if createdUser.Name != user.Name {
-		s.fieldMismatch(createdUser.Name, user.Name, "Name")
-	}
+	assert.Equal(s.t, createdUser.Name, result.Users[0].Name)
 }
 
 func (s *userTestRunner) testUpdateUserName() {
@@ -164,9 +115,7 @@ func (s *userTestRunner) testUpdateUserName() {
 	}
 
 	createdUser, err := s.createTestUser(input, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	userID := createdUser.ID
 
@@ -181,10 +130,7 @@ func (s *userTestRunner) testUpdateUserName() {
 		"name",
 	})
 	updatedUser, err := s.resolver.Mutation().UserUpdate(ctx, updateInput)
-	if err != nil {
-		s.t.Errorf("Error updating user: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error updating user")
 
 	input.Name = updatedName
 	s.verifyCreatedUser(*input, updatedUser)
@@ -199,9 +145,7 @@ func (s *userTestRunner) testUpdatePassword() {
 	}
 
 	createdUser, err := s.createTestUser(input, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	userID := createdUser.ID
 	oldPassword := createdUser.PasswordHash
@@ -217,59 +161,36 @@ func (s *userTestRunner) testUpdatePassword() {
 		"password",
 	})
 	updatedUser, err := s.resolver.Mutation().UserUpdate(ctx, updateInput)
-	if err != nil {
-		s.t.Errorf("Error updating user: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error updating user")
 
 	// ensure password is set
-	if updatedUser.PasswordHash == "" {
-		s.t.Errorf("Password was not set")
-	}
-
-	if updatedUser.PasswordHash == oldPassword {
-		s.t.Error("Password was not changed")
-	}
+	assert.Assert(s.t, updatedUser.PasswordHash != "", "Password was not set")
+	assert.Assert(s.t, updatedUser.PasswordHash != oldPassword, "Password was not changed")
 }
 
 func (s *userTestRunner) verifyUpdatedUser(input models.UserUpdateInput, user *models.User) {
 	// ensure basic attributes are set correctly
-	if input.Name != nil && *input.Name != user.Name {
-		s.fieldMismatch(input.Name, user.Name, "Name")
-	}
+	assert.Assert(s.t, input.Name == nil || *input.Name == user.Name)
 }
 
 func (s *userTestRunner) testDestroyUser() {
 	createdUser, err := s.createTestUser(nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	userID := createdUser.ID
 
 	destroyed, err := s.resolver.Mutation().UserDestroy(s.ctx, models.UserDestroyInput{
 		ID: userID,
 	})
-	if err != nil {
-		s.t.Errorf("Error destroying user: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error destroying user")
 
-	if !destroyed {
-		s.t.Error("User was not destroyed")
-		return
-	}
+	assert.Assert(s.t, destroyed, "User was not destroyed")
 
 	// ensure cannot find user
 	foundUser, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding user after destroying: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding user after destroying")
 
-	if foundUser != nil {
-		s.t.Error("Found user after destruction")
-	}
+	assert.Assert(s.t, foundUser == nil, "Found user after destruction")
 }
 
 func (s *userTestRunner) testUserQuery() {
@@ -282,15 +203,9 @@ func (s *userTestRunner) testUserQuery() {
 	}
 
 	users, err := s.resolver.Query().QueryUsers(s.ctx, input)
-	if err != nil {
-		s.t.Errorf("QueryUsers: got %v want %v", err, nil)
-		return
-	}
+	assert.NilError(s.t, err)
 
-	if len(users.Users) != 1 {
-		s.t.Error("QueryUsers: admin user not found")
-		return
-	}
+	assert.Equal(s.t, len(users.Users), 1, "QueryUsers: admin user not found")
 }
 
 func (s *userTestRunner) testChangePassword() {
@@ -303,9 +218,7 @@ func (s *userTestRunner) testChangePassword() {
 	}
 
 	createdUser, err := s.createTestUser(input, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	// change password as the test user
 	ctx := context.TODO()
@@ -319,23 +232,17 @@ func (s *userTestRunner) testChangePassword() {
 	}
 
 	_, err = s.resolver.Mutation().ChangePassword(ctx, updateInput)
-	if err == nil {
-		s.t.Error("Expected error for incorrect current password")
-	}
+	assert.Error(s.t, err, "current password incorrect", "Expected error for incorrect current password")
 
 	updateInput.ExistingPassword = &oldPassword
 	updateInput.NewPassword = "aaa"
 
 	_, err = s.resolver.Mutation().ChangePassword(ctx, updateInput)
-	if err == nil {
-		s.t.Error("Expected error for invalid new password")
-	}
+	assert.Error(s.t, err, "password length < 8", "Expected error for invalid new password")
 
 	updateInput.NewPassword = updatedPassword
 	_, err = s.resolver.Mutation().ChangePassword(ctx, updateInput)
-	if err != nil {
-		s.t.Errorf("Error changing password: %s", err.Error())
-	}
+	assert.NilError(s.t, err, "Error changing password")
 }
 
 func (s *userTestRunner) testRegenerateAPIKey() {
@@ -347,9 +254,7 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 	}
 
 	createdUser, err := s.createTestUser(input, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	oldKey := createdUser.APIKey
 
@@ -359,55 +264,34 @@ func (s *userTestRunner) testRegenerateAPIKey() {
 
 	adminID := userDB.admin.ID
 	_, err = s.resolver.Mutation().RegenerateAPIKey(ctx, &adminID)
-	if err == nil {
-		s.t.Error("Expected error for changing other user API key")
-	}
+	assert.Error(s.t, err, "Not authorized", "Expected error for changing other user API key")
 
 	// wait one second before regenerating to ensure a new key is created
 	time.Sleep(1 * time.Second)
 	newKey, err := s.resolver.Mutation().RegenerateAPIKey(ctx, nil)
-	if err != nil {
-		s.t.Errorf("Error regenerating API key: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error regenerating API key")
 
-	if newKey == "" {
-		s.t.Error("Regenerated API key is empty")
-		return
-	}
+	assert.Assert(s.t, newKey != "", "Regenerated API key is empty")
 
-	if newKey == oldKey {
-		s.t.Errorf("Regenerated API key is same as old key: %s", newKey)
-		return
-	}
+	assert.Assert(s.t, newKey != oldKey, "Regenerated API key is same as old key")
 
 	userID := createdUser.ID
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding user: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding user")
 
-	if user.APIKey != newKey {
-		s.t.Errorf("Returned API key %s is different to stored key %s", newKey, user.APIKey)
-	}
+	assert.Equal(s.t, user.APIKey, newKey, "Returned API key s is different to stored key")
 }
 
 func (s *userTestRunner) testUserEditQuery() {
 	createdUser, err := s.createTestUser(nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	userID := createdUser.ID
 	filter := models.EditQueryInput{
 		UserID: &userID,
 	}
 	_, err = s.resolver.Query().QueryEdits(s.ctx, filter)
-	if err != nil {
-		s.t.Errorf("Error finding user edits: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding user edits")
 
 	// TODO: Test edits are returned
 }

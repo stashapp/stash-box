@@ -4,11 +4,11 @@
 package api_test
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"gotest.tools/v3/assert"
 )
 
 type performerEditTestRunner struct {
@@ -24,15 +24,12 @@ func createPerformerEditTestRunner(t *testing.T) *performerEditTestRunner {
 func (s *performerEditTestRunner) testCreatePerformerEdit() {
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
-	if err == nil {
-		s.verifyCreatedPerformerEdit(*performerEditDetailsInput, edit)
-	}
+	assert.NilError(s.t, err)
+	s.verifyCreatedPerformerEdit(*performerEditDetailsInput, edit)
 }
 
 func (s *performerEditTestRunner) verifyCreatedPerformerEdit(input models.PerformerEditDetailsInput, edit *models.Edit) {
-	if edit.ID == uuid.Nil {
-		s.t.Errorf("Expected created edit id to be non-zero")
-	}
+	assert.Assert(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumPending.String(), edit)
@@ -44,22 +41,12 @@ func (s *performerEditTestRunner) verifyCreatedPerformerEdit(input models.Perfor
 
 func (s *performerEditTestRunner) testFindEditById() {
 	createdEdit, err := s.createTestPerformerEdit(models.OperationEnumCreate, nil, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	editID := createdEdit.ID
 	edit, err := s.resolver.Query().FindEdit(s.ctx, editID)
-	if err != nil {
-		s.t.Errorf("Error finding edit: %s", err.Error())
-		return
-	}
-
-	// ensure returned performer is not nil
-	if edit == nil {
-		s.t.Error("Did not find edit by id")
-		return
-	}
+	assert.NilError(s.t, err, "Error finding edit: %s")
+	assert.Assert(s.t, edit != nil, "Did not find edit by id")
 }
 
 func (s *performerEditTestRunner) testModifyPerformerEdit() {
@@ -71,9 +58,7 @@ func (s *performerEditTestRunner) testModifyPerformerEdit() {
 		Birthdate: &existingBirthdate,
 	}
 	createdPerformer, err := s.createTestPerformer(&performerCreateInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := createdPerformer.UUID()
@@ -83,6 +68,7 @@ func (s *performerEditTestRunner) testModifyPerformerEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
+	assert.NilError(s.t, err)
 
 	s.verifyUpdatedPerformerEdit(createdPerformer, *performerEditDetailsInput, createdUpdateEdit)
 }
@@ -99,120 +85,57 @@ func (s *performerEditTestRunner) verifyUpdatedPerformerEdit(originalPerformer *
 func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.PerformerEditDetailsInput, edit *models.Edit) {
 	performerDetails := s.getEditPerformerDetails(edit)
 
-	if *input.Name != *performerDetails.Name {
-		s.fieldMismatch(input.Name, performerDetails.Name, "Name")
-	}
+	c := fieldComparator{r: &s.testRunner}
+	c.strPtrStrPtr(input.Name, performerDetails.Name, "Name")
+	c.strPtrStrPtr(input.Disambiguation, performerDetails.Disambiguation, "Disambiguation")
 
-	if *input.Disambiguation != *performerDetails.Disambiguation {
-		s.fieldMismatch(input.Disambiguation, performerDetails.Disambiguation, "Disambiguation")
-	}
-
-	if !reflect.DeepEqual(input.Aliases, performerDetails.AddedAliases) {
-		s.fieldMismatch(input.Aliases, performerDetails.AddedAliases, "Aliases")
-	}
-
-	if !input.Gender.IsValid() || (input.Gender.String() != *performerDetails.Gender) {
-		s.fieldMismatch(input.Gender, performerDetails.Gender, "Disambiguation")
-	}
+	assert.DeepEqual(s.t, input.Aliases, performerDetails.AddedAliases)
+	assert.Assert(s.t, input.Gender.IsValid() && (input.Gender.String() == *performerDetails.Gender))
 
 	s.compareURLs(input.Urls, performerDetails.AddedUrls)
 
 	date, accuracy, _ := models.ParseFuzzyString(input.Birthdate)
-	if !accuracy.Valid || (accuracy.String != *performerDetails.BirthdateAccuracy) {
-		s.fieldMismatch(accuracy, *performerDetails.BirthdateAccuracy, "BirthdateAccuracy")
-	}
-
-	if date.String != *performerDetails.Birthdate {
-		s.fieldMismatch(date.String, performerDetails.Birthdate, "Birthdate")
-	}
-
-	if !input.Ethnicity.IsValid() || (input.Ethnicity.String() != *performerDetails.Ethnicity) {
-		s.fieldMismatch(input.Ethnicity, performerDetails.Ethnicity, "Ethnicity")
-	}
-
-	if input.Country == nil || (*input.Country != *performerDetails.Country) {
-		s.fieldMismatch(input.Country, performerDetails.Country, "Country")
-	}
-
-	if !input.EyeColor.IsValid() || (input.EyeColor.String() != *performerDetails.EyeColor) {
-		s.fieldMismatch(input.EyeColor, performerDetails.EyeColor, "EyeColor")
-	}
-
-	if !input.HairColor.IsValid() || (input.HairColor.String() != *performerDetails.HairColor) {
-		s.fieldMismatch(input.HairColor, performerDetails.HairColor, "HairColor")
-	}
-
-	if input.Height == nil || (int64(*input.Height) != *performerDetails.Height) {
-		s.fieldMismatch(input.Height, performerDetails.Height, "Height")
-	}
-
-	if input.BandSize == nil || (int64(*input.BandSize) != *performerDetails.BandSize) {
-		s.fieldMismatch(*input.BandSize, *performerDetails.BandSize, "BandSize")
-	}
-
-	if input.WaistSize == nil || (int64(*input.WaistSize) != *performerDetails.WaistSize) {
-		s.fieldMismatch(*input.WaistSize, *performerDetails.WaistSize, "WaistSize")
-	}
-
-	if input.HipSize == nil || (int64(*input.HipSize) != *performerDetails.HipSize) {
-		s.fieldMismatch(*input.HipSize, *performerDetails.HipSize, "HipSize")
-	}
-
-	if input.CupSize == nil || (*input.CupSize != *performerDetails.CupSize) {
-		s.fieldMismatch(*input.CupSize, *performerDetails.CupSize, "CupSize")
-	}
-
-	if !input.BreastType.IsValid() || (input.BreastType.String() != *performerDetails.BreastType) {
-		s.fieldMismatch(input.BreastType, performerDetails.BreastType, "BreastType")
-	}
-
-	if input.CareerStartYear == nil || (int64(*input.CareerStartYear) != *performerDetails.CareerStartYear) {
-		s.fieldMismatch(*input.CareerStartYear, *performerDetails.CareerStartYear, "CareerStartYear")
-	}
-
-	if input.CareerEndYear == nil || (int64(*input.CareerEndYear) != *performerDetails.CareerEndYear) {
-		s.fieldMismatch(*input.CareerEndYear, *performerDetails.CareerEndYear, "CareerEndYear")
-	}
-
-	if !reflect.DeepEqual(input.Tattoos, performerDetails.AddedTattoos) {
-		s.fieldMismatch(input.Tattoos, performerDetails.AddedTattoos, "Tattoos")
-	}
-
-	if !reflect.DeepEqual(input.Piercings, performerDetails.AddedPiercings) {
-		s.fieldMismatch(input.Piercings, performerDetails.AddedPiercings, "Piercings")
-	}
-
-	if !reflect.DeepEqual(input.ImageIds, performerDetails.AddedImages) {
-		s.fieldMismatch(input.ImageIds, performerDetails.AddedImages, "Images")
-	}
+	assert.Assert(s.t, accuracy.Valid && (accuracy.String == *performerDetails.BirthdateAccuracy))
+	assert.Assert(s.t, date.Valid && (date.String == *performerDetails.Birthdate))
+	assert.Assert(s.t, input.Ethnicity.IsValid() && (input.Ethnicity.String() == *performerDetails.Ethnicity))
+	assert.Assert(s.t, input.Country != nil && (*input.Country == *performerDetails.Country))
+	assert.Assert(s.t, input.EyeColor.IsValid() && (input.EyeColor.String() == *performerDetails.EyeColor))
+	assert.Assert(s.t, input.HairColor.IsValid() && (input.HairColor.String() == *performerDetails.HairColor))
+	assert.Assert(s.t, input.Height != nil && (int64(*input.Height) == *performerDetails.Height))
+	assert.Assert(s.t, input.BandSize != nil && (int64(*input.BandSize) == *performerDetails.BandSize))
+	assert.Assert(s.t, input.WaistSize != nil && (int64(*input.WaistSize) == *performerDetails.WaistSize))
+	assert.Assert(s.t, input.HipSize != nil && (int64(*input.HipSize) == *performerDetails.HipSize))
+	assert.Assert(s.t, input.CupSize != nil && (*input.CupSize == *performerDetails.CupSize))
+	assert.Assert(s.t, input.BreastType.IsValid() && (input.BreastType.String() == *performerDetails.BreastType))
+	assert.Assert(s.t, input.CareerStartYear != nil && (int64(*input.CareerStartYear) == *performerDetails.CareerStartYear))
+	assert.Assert(s.t, input.CareerEndYear != nil && (int64(*input.CareerEndYear) == *performerDetails.CareerEndYear))
+	assert.DeepEqual(s.t, input.Tattoos, performerDetails.AddedTattoos)
+	assert.DeepEqual(s.t, input.Piercings, performerDetails.AddedPiercings)
+	assert.DeepEqual(s.t, input.ImageIds, performerDetails.AddedImages)
 }
 
 func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEditDetailsInput, performer *models.Performer) {
 	resolver := s.resolver.Performer()
 
-	if input.Name != nil && *input.Name != performer.Name {
-		s.fieldMismatch(input.Name, performer.Name, "Name")
-	}
+	assert.Assert(s.t, input.Name == nil || (*input.Name == performer.Name))
 
 	if input.Disambiguation == nil {
-		if performer.Disambiguation.Valid {
-			s.fieldMismatch(input.Disambiguation, performer.Disambiguation.String, "Disambiguation")
-		}
-	} else if *input.Disambiguation != performer.Disambiguation.String {
-		s.fieldMismatch(*input.Disambiguation, performer.Disambiguation.String, "Disambiguation")
+		assert.Assert(s.t, !performer.Disambiguation.Valid)
+	} else {
+		assert.Equal(s.t, *input.Disambiguation, performer.Disambiguation.String)
 	}
 
 	aliases, _ := resolver.Aliases(s.ctx, performer)
-	if (len(input.Aliases) > 0 || len(aliases) > 0) && !reflect.DeepEqual(input.Aliases, aliases) {
-		s.fieldMismatch(input.Aliases, aliases, "Aliases")
+	if len(input.Aliases) == 0 {
+		assert.Assert(s.t, len(aliases) == 0)
+	} else {
+		assert.DeepEqual(s.t, input.Aliases, aliases)
 	}
 
 	if input.Gender == nil {
-		if performer.Gender.Valid {
-			s.fieldMismatch(input.Gender, performer.Gender.String, "Disambiguation")
-		}
-	} else if input.Gender.String() != performer.Gender.String {
-		s.fieldMismatch(*input.Gender, performer.Gender.String, "Disambiguation")
+		assert.Assert(s.t, !performer.Gender.Valid)
+	} else {
+		assert.Equal(s.t, input.Gender.String(), performer.Gender.String)
 	}
 
 	urls, _ := resolver.Urls(s.ctx, performer)
@@ -221,125 +144,97 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	date, accuracy, _ := models.ParseFuzzyString(input.Birthdate)
 
 	if input.Birthdate == nil {
-		if performer.BirthdateAccuracy.Valid {
-			s.fieldMismatch(accuracy, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
-		}
-	} else if accuracy.String != performer.BirthdateAccuracy.String {
-		s.fieldMismatch(accuracy.String, performer.BirthdateAccuracy.String, "BirthdateAccuracy")
-	}
-
-	if input.Birthdate == nil {
-		if performer.Birthdate.Valid {
-			s.fieldMismatch(date, performer.Birthdate.String, "Birthdate")
-		}
-	} else if date.String != performer.Birthdate.String {
-		s.fieldMismatch(date.String, performer.Birthdate.String, "Birthdate")
+		assert.Assert(s.t, !performer.BirthdateAccuracy.Valid)
+		assert.Assert(s.t, !performer.Birthdate.Valid)
+	} else {
+		assert.Equal(s.t, accuracy.String, performer.BirthdateAccuracy.String)
+		assert.Equal(s.t, date.String, performer.Birthdate.String)
 	}
 
 	if input.Ethnicity == nil {
-		if performer.Ethnicity.Valid {
-			s.fieldMismatch(input.Ethnicity, performer.Ethnicity.String, "Ethnicity")
-		}
-	} else if input.Ethnicity.String() != performer.Ethnicity.String {
-		s.fieldMismatch(input.Ethnicity.String(), performer.Ethnicity.String, "Ethnicity")
+		assert.Assert(s.t, !performer.Ethnicity.Valid)
+	} else {
+		assert.Equal(s.t, input.Ethnicity.String(), performer.Ethnicity.String)
 	}
 
 	if input.Country == nil {
-		if performer.Country.Valid {
-			s.fieldMismatch(input.Country, performer.Country.String, "Country")
-		}
-	} else if *input.Country != performer.Country.String {
-		s.fieldMismatch(*input.Country, performer.Country.String, "Country")
+		assert.Assert(s.t, !performer.Country.Valid)
+	} else {
+		assert.Equal(s.t, *input.Country, performer.Country.String)
 	}
 
 	if input.EyeColor == nil {
-		if performer.EyeColor.Valid {
-			s.fieldMismatch(input.EyeColor, performer.EyeColor.String, "EyeColor")
-		}
-	} else if input.EyeColor.String() != performer.EyeColor.String {
-		s.fieldMismatch(input.EyeColor.String(), performer.EyeColor.String, "EyeColor")
+		assert.Assert(s.t, !performer.EyeColor.Valid)
+	} else {
+		assert.Equal(s.t, input.EyeColor.String(), performer.EyeColor.String)
 	}
 
 	if input.HairColor == nil {
-		if performer.HairColor.Valid {
-			s.fieldMismatch(input.HairColor, performer.HairColor.String, "HairColor")
-		}
-	} else if input.HairColor.String() != performer.HairColor.String {
-		s.fieldMismatch(input.HairColor.String(), performer.HairColor.String, "HairColor")
+		assert.Assert(s.t, !performer.HairColor.Valid)
+	} else {
+		assert.Equal(s.t, input.HairColor.String(), performer.HairColor.String)
 	}
 
 	if input.Height == nil {
-		if performer.Height.Valid {
-			s.fieldMismatch(input.Height, performer.Height.Int64, "Height")
-		}
-	} else if int64(*input.Height) != performer.Height.Int64 {
-		s.fieldMismatch(*input.Height, performer.Height.Int64, "Height")
+		assert.Assert(s.t, !performer.Height.Valid)
+	} else {
+		assert.Equal(s.t, int64(*input.Height), performer.Height.Int64)
 	}
 
 	if input.BandSize == nil {
-		if performer.BandSize.Valid {
-			s.fieldMismatch(nil, performer.BandSize.Int64, "BandSize")
-		}
-	} else if int64(*input.BandSize) != performer.BandSize.Int64 {
-		s.fieldMismatch(*input.BandSize, performer.BandSize.Int64, "BandSize")
+		assert.Assert(s.t, !performer.BandSize.Valid)
+	} else {
+		assert.Equal(s.t, int64(*input.BandSize), performer.BandSize.Int64)
 	}
 
 	if input.CupSize == nil {
-		if performer.CupSize.Valid {
-			s.fieldMismatch(nil, performer.CupSize.String, "CupSize")
-		}
-	} else if *input.CupSize != performer.CupSize.String {
-		s.fieldMismatch(*input.CupSize, performer.CupSize.String, "CupSize")
+		assert.Assert(s.t, !performer.CupSize.Valid)
+	} else {
+		assert.Equal(s.t, *input.CupSize, performer.CupSize.String)
 	}
 
 	if input.WaistSize == nil {
-		if performer.WaistSize.Valid {
-			s.fieldMismatch(nil, performer.WaistSize.Int64, "WaistSize")
-		}
-	} else if int64(*input.WaistSize) != performer.WaistSize.Int64 {
-		s.fieldMismatch(*input.WaistSize, performer.WaistSize.Int64, "WaistSize")
+		assert.Assert(s.t, !performer.WaistSize.Valid)
+	} else {
+		assert.Equal(s.t, int64(*input.WaistSize), performer.WaistSize.Int64)
 	}
 
 	if input.HipSize == nil {
-		if performer.HipSize.Valid {
-			s.fieldMismatch(nil, performer.HipSize.Int64, "HipSize")
-		}
-	} else if int64(*input.HipSize) != performer.HipSize.Int64 {
-		s.fieldMismatch(*input.HipSize, performer.HipSize.Int64, "HipSize")
+		assert.Assert(s.t, !performer.HipSize.Valid)
+	} else {
+		assert.Equal(s.t, int64(*input.HipSize), performer.HipSize.Int64)
 	}
 
 	if input.BreastType == nil {
-		if performer.BreastType.Valid {
-			s.fieldMismatch(input.BreastType, performer.BreastType.String, "BreastType")
-		}
-	} else if input.BreastType.String() != performer.BreastType.String {
-		s.fieldMismatch(input.BreastType.String(), performer.BreastType.String, "BreastType")
+		assert.Assert(s.t, !performer.BreastType.Valid)
+	} else {
+		assert.Equal(s.t, input.BreastType.String(), performer.BreastType.String)
+	}
+
+	if input.CareerStartYear == nil {
+		assert.Assert(s.t, !performer.CareerStartYear.Valid)
+	} else {
+		assert.Equal(s.t, int64(*input.CareerStartYear), performer.CareerStartYear.Int64)
 	}
 
 	if input.CareerEndYear == nil {
-		if performer.CareerStartYear.Valid {
-			s.fieldMismatch(input.CareerStartYear, performer.CareerStartYear.Int64, "CareerStartYear")
-		}
-	} else if int64(*input.CareerStartYear) != performer.CareerStartYear.Int64 {
-		s.fieldMismatch(*input.CareerStartYear, performer.CareerStartYear.Int64, "CareerStartYear")
-	}
-
-	if input.CareerEndYear == nil {
-		if performer.CareerEndYear.Valid {
-			s.fieldMismatch(input.CareerEndYear, performer.CareerEndYear.Int64, "CareerEndYear")
-		}
-	} else if int64(*input.CareerEndYear) != performer.CareerEndYear.Int64 {
-		s.fieldMismatch(*input.CareerEndYear, performer.CareerEndYear.Int64, "CareerEndYear")
+		assert.Assert(s.t, !performer.CareerEndYear.Valid)
+	} else {
+		assert.Equal(s.t, int64(*input.CareerEndYear), performer.CareerEndYear.Int64)
 	}
 
 	tattoos, _ := resolver.Tattoos(s.ctx, performer)
-	if (len(input.Tattoos) > 0 || len(tattoos) > 0) && !reflect.DeepEqual(input.Tattoos, tattoos) {
-		s.fieldMismatch(input.Tattoos, tattoos, "Tattoos")
+	if len(input.Tattoos) == 0 {
+		assert.Assert(s.t, len(tattoos) == 0)
+	} else {
+		assert.DeepEqual(s.t, input.Tattoos, tattoos)
 	}
 
 	piercings, _ := resolver.Piercings(s.ctx, performer)
-	if (len(input.Piercings) > 0 || len(piercings) > 0) && !reflect.DeepEqual(input.Piercings, piercings) {
-		s.fieldMismatch(input.Piercings, piercings, "Piercings")
+	if len(input.Piercings) == 0 {
+		assert.Assert(s.t, len(piercings) == 0)
+	} else {
+		assert.DeepEqual(s.t, input.Piercings, piercings)
 	}
 
 	images, _ := resolver.Images(s.ctx, performer)
@@ -347,16 +242,12 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	for _, image := range images {
 		imageIds = append(imageIds, image.ID)
 	}
-	if !reflect.DeepEqual(input.ImageIds, imageIds) {
-		s.fieldMismatch(input.ImageIds, imageIds, "Images")
-	}
+	assert.DeepEqual(s.t, input.ImageIds, imageIds)
 }
 
 func (s *performerEditTestRunner) testDestroyPerformerEdit() {
 	createdPerformer, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performerID := createdPerformer.UUID()
 
@@ -366,6 +257,7 @@ func (s *performerEditTestRunner) testDestroyPerformerEdit() {
 		ID:        &performerID,
 	}
 	destroyEdit, err := s.createTestPerformerEdit(models.OperationEnumDestroy, &performerEditDetailsInput, &editInput, nil)
+	assert.NilError(s.t, err)
 
 	s.verifyDestroyPerformerEdit(performerID, destroyEdit)
 }
@@ -378,9 +270,7 @@ func (s *performerEditTestRunner) verifyDestroyPerformerEdit(performerID uuid.UU
 
 	editTarget := s.getEditPerformerTarget(edit)
 
-	if performerID != editTarget.ID {
-		s.fieldMismatch(performerID, editTarget.ID.String(), "ID")
-	}
+	assert.Equal(s.t, performerID, editTarget.ID)
 }
 
 func (s *performerEditTestRunner) testMergePerformerEdit() {
@@ -391,11 +281,10 @@ func (s *performerEditTestRunner) testMergePerformerEdit() {
 		Aliases: []string{existingAlias},
 	}
 	createdPrimaryPerformer, err := s.createTestPerformer(&performerCreateInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	createdMergePerformer, err := s.createTestPerformer(nil)
+	assert.NilError(s.t, err)
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := createdPrimaryPerformer.UUID()
@@ -407,6 +296,7 @@ func (s *performerEditTestRunner) testMergePerformerEdit() {
 	}
 
 	createdMergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput, nil)
+	assert.NilError(s.t, err)
 
 	s.verifyMergePerformerEdit(createdPrimaryPerformer, *performerEditDetailsInput, createdMergeEdit, mergeSources)
 }
@@ -425,24 +315,21 @@ func (s *performerEditTestRunner) verifyMergePerformerEdit(originalPerformer *pe
 		merge := merges[i].(*models.Performer)
 		mergeSources = append(mergeSources, merge.ID)
 	}
-	if !reflect.DeepEqual(inputMergeSources, mergeSources) {
-		s.fieldMismatch(inputMergeSources, mergeSources, "MergeSources")
-	}
+	assert.DeepEqual(s.t, inputMergeSources, mergeSources)
 }
 
 func (s *performerEditTestRunner) testApplyCreatePerformerEdit() {
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	edit, err := s.createTestPerformerEdit(models.OperationEnumCreate, performerEditDetailsInput, nil, nil)
+	assert.NilError(s.t, err)
+
 	appliedEdit, err := s.applyEdit(edit.ID)
-	if err == nil {
-		s.verifyAppliedPerformerCreateEdit(*performerEditDetailsInput, appliedEdit)
-	}
+	assert.NilError(s.t, err)
+	s.verifyAppliedPerformerCreateEdit(*performerEditDetailsInput, appliedEdit)
 }
 
 func (s *performerEditTestRunner) verifyAppliedPerformerCreateEdit(input models.PerformerEditDetailsInput, edit *models.Edit) {
-	if edit.ID == uuid.Nil {
-		s.t.Errorf("Expected created edit id to be non-zero")
-	}
+	assert.Assert(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
@@ -455,9 +342,8 @@ func (s *performerEditTestRunner) verifyAppliedPerformerCreateEdit(input models.
 
 func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	site, err := s.createTestSite(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	performerCreateInput := models.PerformerCreateInput{
 		Name:    "performerName3",
 		Aliases: []string{"modfied performer alias"},
@@ -479,9 +365,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 		},
 	}
 	createdPerformer, err := s.createTestPerformer(&performerCreateInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	// Create edit that replaces all metadata for the performer
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
@@ -492,15 +376,13 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
-	if err != nil {
-		return
-	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
-	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	assert.NilError(s.t, err)
+
+	modifiedPerformer, err := s.resolver.Query().FindPerformer(s.ctx, id)
+	assert.NilError(s.t, err)
 	s.verifyApplyModifyPerformerEdit(*performerEditDetailsInput, modifiedPerformer, appliedEdit)
 }
 
@@ -515,9 +397,7 @@ func (s *performerEditTestRunner) verifyApplyModifyPerformerEdit(input models.Pe
 
 func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	createdPerformer, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	sceneAppearance := models.PerformerAppearanceInput{
 		PerformerID: createdPerformer.UUID(),
@@ -530,9 +410,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 		Date: "2020-01-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := createdPerformer.UUID()
@@ -542,27 +420,18 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	}
 
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	_, err = s.applyEdit(createdUpdateEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
 	s.verifyPerformanceAlias(scene, nil)
 
 	performer, err := s.client.findPerformer(id)
-	if err != nil {
-		s.t.Errorf("Error finding performer")
-		return
-	}
+	assert.NilError(s.t, err, "Error finding performer")
 
 	performerEditDetailsInput = s.createPerformerEditDetailsInput()
 	editInput = models.EditInput{
@@ -576,19 +445,13 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	}
 
 	createdUpdateEdit, err = s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, &options)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	_, err = s.applyEdit(createdUpdateEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
 	// set modify aliases was set to true - this should be set to the old name
 	s.verifyPerformanceAlias(scene, &performer.Name)
@@ -596,9 +459,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 
 func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	createdPerformer, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	sceneAppearance := models.PerformerAppearanceInput{
 		PerformerID: createdPerformer.UUID(),
@@ -611,9 +472,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 		Date: "2020-01-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := createdPerformer.UUID()
@@ -628,19 +487,13 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	}
 
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, &options)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	_, err = s.applyEdit(createdUpdateEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
 	s.verifyPerformanceAlias(scene, &createdPerformer.Name)
 }
@@ -648,9 +501,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 	performerData := s.createFullPerformerCreateInput()
 	createdPerformer, err := s.createTestPerformer(performerData)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performerUnsetInput := models.PerformerEditDetailsInput{
 		Aliases:   []string{},
@@ -666,23 +517,19 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, &performerUnsetInput, &editInput, nil)
-	if err != nil {
-		return
-	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
-	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	assert.NilError(s.t, err)
+
+	modifiedPerformer, err := s.resolver.Query().FindPerformer(s.ctx, id)
+	assert.NilError(s.t, err)
 	s.verifyApplyModifyPerformerEdit(performerUnsetInput, modifiedPerformer, appliedEdit)
 }
 
 func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 	createdPerformer, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performerID := createdPerformer.UUID()
 	appearance := models.PerformerAppearanceInput{
@@ -700,18 +547,16 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 		ID:        &performerID,
 	}
 	destroyEdit, err := s.createTestPerformerEdit(models.OperationEnumDestroy, &performerEditDetailsInput, &editInput, nil)
-	if err != nil {
-		return
-	}
-	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	assert.NilError(s.t, err)
 
-	destroyedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, performerID)
+	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	assert.NilError(s.t, err)
+
+	destroyedPerformer, err := s.resolver.Query().FindPerformer(s.ctx, performerID)
+	assert.NilError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
 	s.verifyApplyDestroyPerformerEdit(destroyedPerformer, appliedEdit, scene)
 }
@@ -722,29 +567,21 @@ func (s *performerEditTestRunner) verifyApplyDestroyPerformerEdit(destroyedPerfo
 	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
 	s.verifyEditApplication(true, edit)
 
-	if destroyedPerformer.Deleted != true {
-		s.fieldMismatch(destroyedPerformer.Deleted, true, "Deleted")
-	}
+	assert.Assert(s.t, destroyedPerformer.Deleted, true)
 
 	scenePerformers := scene.Performers
-	if len(scenePerformers) > 0 {
-		s.fieldMismatch(len(scenePerformers), 0, "Scene performer count")
-	}
+	assert.Assert(s.t, len(scenePerformers) == 0)
 }
 
 func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	mergeSource1, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	mergeSource2, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	mergeTarget, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	mergeSource1Appearance := models.PerformerAppearanceInput{
 		PerformerID: mergeSource1.UUID(),
@@ -764,9 +601,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 		Date: "2020-02-03",
 	}
 	scene1, err := s.createTestScene(&sceneInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	sceneInput = models.SceneCreateInput{
 		Performers: []*models.PerformerAppearanceInput{
@@ -776,9 +611,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 		Date: "2020-03-02",
 	}
 	scene2, err := s.createTestScene(&sceneInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	mergeSources := []uuid.UUID{
@@ -798,25 +631,16 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	}
 
 	mergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput, &options)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	appliedMerge, err := s.applyEdit(mergeEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	scene1, err = s.client.findScene(scene1.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
+
 	scene2, err = s.client.findScene(scene2.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
 	s.verifyAppliedMergePerformerEdit(*performerEditDetailsInput, appliedMerge, scene1, scene2)
 	// Target already attached, so should not get alias
@@ -835,54 +659,37 @@ func (s *performerEditTestRunner) verifyAppliedMergePerformerEdit(input models.P
 	merges, _ := s.resolver.Edit().MergeSources(s.ctx, edit)
 	for i := range merges {
 		performer := merges[i].(*models.Performer)
-		if performer.Deleted != true {
-			s.fieldMismatch(performer.Deleted, true, "Deleted")
-		}
+		assert.Assert(s.t, performer.Deleted == true)
 	}
 
 	editTarget := s.getEditPerformerTarget(edit)
 	scene1Performers := scene1.Performers
-	if len(scene1Performers) > 1 {
-		s.fieldMismatch(len(scene1Performers), 1, "Scene 1 performer count")
-	}
-	if scene1Performers[0].Performer.ID != editTarget.ID.String() {
-		s.fieldMismatch(scene1Performers[0].Performer.ID, editTarget.ID, "Scene 1 performer ID")
-	}
+	assert.Assert(s.t, len(scene1Performers) == 1)
+	assert.Equal(s.t, scene1Performers[0].Performer.ID, editTarget.ID.String())
 
 	scene2Performers := scene2.Performers
-	if len(scene2Performers) > 1 {
-		s.fieldMismatch(len(scene2Performers), 1, "Scene 2 performer count")
-	}
-	if scene2Performers[0].Performer.ID != editTarget.ID.String() {
-		s.fieldMismatch(scene2Performers[0].Performer.ID, editTarget.ID, "Scene 2 performer ID")
-	}
+	assert.Assert(s.t, len(scene2Performers) == 1)
+	assert.Equal(s.t, scene2Performers[0].Performer.ID, editTarget.ID.String())
 }
 
 func (s *performerEditTestRunner) verifyPerformanceAlias(scene *sceneOutput, alias *string) {
 	scenePerformers := scene.Performers
-	if len(scenePerformers) > 1 {
-		s.fieldMismatch(len(scenePerformers), 1, "Scene performer count")
-	}
+	assert.Assert(s.t, len(scenePerformers) == 1)
+
 	if alias == nil {
-		if len(scenePerformers) > 0 && scenePerformers[0].As != nil {
-			s.fieldMismatch(*scenePerformers[0].As, alias, "Scene appearance alias")
-		}
-	} else if scenePerformers[0].As == nil {
-		s.fieldMismatch(scenePerformers[0].As, *alias, "Scene appearance alias")
-	} else if *alias != *scenePerformers[0].As {
-		s.fieldMismatch(*scenePerformers[0].As, *alias, "Scene appearance alias")
+		assert.Assert(s.t, len(scenePerformers) == 0 || scenePerformers[0].As == nil)
+	} else {
+		assert.Assert(s.t, scenePerformers[0].As != nil)
+		assert.Assert(s.t, *alias == *scenePerformers[0].As)
 	}
 }
 
 func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	mergeSource, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	mergeTarget, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	mergeSourceAppearance := models.PerformerAppearanceInput{
 		PerformerID: mergeSource.UUID(),
@@ -895,9 +702,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 		Date: "2020-03-02",
 	}
 	scene, err := s.createTestScene(&sceneInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performerEditDetailsInput := s.createPerformerEditDetailsInput()
 	id := mergeTarget.UUID()
@@ -909,29 +714,20 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	}
 
 	mergeEdit, err := s.createTestPerformerEdit(models.OperationEnumMerge, performerEditDetailsInput, &editInput, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	_, err = s.applyEdit(mergeEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
 	s.verifyPerformanceAlias(scene, nil)
 }
 
 func (s *performerTestRunner) testChangeURLSite() {
 	site, err := s.createTestSite(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	input := &models.PerformerCreateInput{
 		Name: s.generatePerformerName(),
@@ -946,9 +742,7 @@ func (s *performerTestRunner) testChangeURLSite() {
 	createdPerformer, err := s.createTestPerformer(input)
 
 	siteTwo, err := s.createTestSite(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	updateInput := &models.PerformerEditDetailsInput{
 		Urls: []*models.URLInput{
@@ -965,14 +759,10 @@ func (s *performerTestRunner) testChangeURLSite() {
 	}
 
 	modifyEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, updateInput, &editInput, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	_, err = s.applyEdit(modifyEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
 	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
