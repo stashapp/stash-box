@@ -4022,7 +4022,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graphql/schema/types/config.graphql", Input: `type StashBoxConfig {
+	{Name: "../../graphql/schema/types/config.graphql", Input: `type StashBoxConfig {
   host_url: String!
   require_invite: Boolean!
   require_activation: Boolean!
@@ -4033,7 +4033,7 @@ var sources = []*ast.Source{
   vote_cron_interval: String!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/draft.graphql", Input: `type DraftSubmissionStatus {
+	{Name: "../../graphql/schema/types/draft.graphql", Input: `type DraftSubmissionStatus {
   id: ID
 }
 
@@ -4056,7 +4056,7 @@ type Draft {
 
 union DraftData = SceneDraft | PerformerDraft
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/edit.graphql", Input: `enum OperationEnum {
+	{Name: "../../graphql/schema/types/edit.graphql", Input: `enum OperationEnum {
     CREATE
     MODIFY
     DESTROY
@@ -4196,7 +4196,7 @@ input CancelEditInput {
     id: ID!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/filter.graphql", Input: `input MultiIDCriterionInput {
+	{Name: "../../graphql/schema/types/filter.graphql", Input: `input MultiIDCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
 }
@@ -4244,7 +4244,7 @@ enum CriterionModifier {
   INCLUDES,
   EXCLUDES,
 }`, BuiltIn: false},
-	{Name: "graphql/schema/types/image.graphql", Input: `scalar Upload
+	{Name: "../../graphql/schema/types/image.graphql", Input: `scalar Upload
 
 type Image {
   id: ID!
@@ -4267,7 +4267,7 @@ input ImageDestroyInput {
   id: ID!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/misc.graphql", Input: `scalar Date
+	{Name: "../../graphql/schema/types/misc.graphql", Input: `scalar Date
 scalar DateTime
 scalar Time
 
@@ -4298,7 +4298,7 @@ input URLInput {
   site_id: ID!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/performer.graphql", Input: `enum GenderEnum {
+	{Name: "../../graphql/schema/types/performer.graphql", Input: `enum GenderEnum {
   MALE
   FEMALE
   TRANSGENDER_MALE
@@ -4688,7 +4688,7 @@ input PerformerDraftInput {
   image: Upload
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/scene.graphql", Input: `type PerformerAppearance {
+	{Name: "../../graphql/schema/types/scene.graphql", Input: `type PerformerAppearance {
   performer: Performer!
   """Performing as alias"""
   as: String
@@ -4947,7 +4947,7 @@ type QueryExistingSceneResult {
   scenes: [Scene!]!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/site.graphql", Input: `type Site {
+	{Name: "../../graphql/schema/types/site.graphql", Input: `type Site {
   id: ID!
   name: String!
   description:  String
@@ -4991,7 +4991,7 @@ enum ValidSiteTypeEnum {
   STUDIO
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/studio.graphql", Input: `type Studio {
+	{Name: "../../graphql/schema/types/studio.graphql", Input: `type Studio {
   id: ID!
   name: String!
   urls: [URL!]!
@@ -5078,7 +5078,7 @@ input StudioQueryInput {
   sort: StudioSortEnum! = NAME
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/tag.graphql", Input: `enum TagGroupEnum {
+	{Name: "../../graphql/schema/types/tag.graphql", Input: `enum TagGroupEnum {
   PEOPLE
   SCENE
   ACTION
@@ -5194,7 +5194,7 @@ input TagCategoryDestroyInput {
   id: ID!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/user.graphql", Input: `directive @isUserOwner on FIELD_DEFINITION
+	{Name: "../../graphql/schema/types/user.graphql", Input: `directive @isUserOwner on FIELD_DEFINITION
 directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION
 
 enum RoleEnum {
@@ -5342,14 +5342,14 @@ type UserVoteCount {
   immediate_reject: Int!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/types/version.graphql", Input: `type Version {
+	{Name: "../../graphql/schema/types/version.graphql", Input: `type Version {
   hash: String!
   build_time: String!
   build_type: String!
   version: String!
 }
 `, BuiltIn: false},
-	{Name: "graphql/schema/schema.graphql", Input: `"""The query root for this schema"""
+	{Name: "../../graphql/schema/schema.graphql", Input: `"""The query root for this schema"""
 type Query {
   #### Performers ####
 
@@ -30219,7 +30219,12 @@ func (ec *executionContext) unmarshalInputActivateNewUserInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "email", "activation_key", "password"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -30266,7 +30271,12 @@ func (ec *executionContext) unmarshalInputApplyEditInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -30289,7 +30299,12 @@ func (ec *executionContext) unmarshalInputBodyModificationCriterionInput(ctx con
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"location", "description", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "location":
 			var err error
@@ -30328,7 +30343,12 @@ func (ec *executionContext) unmarshalInputBodyModificationInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"location", "description"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "location":
 			var err error
@@ -30359,7 +30379,12 @@ func (ec *executionContext) unmarshalInputBreastTypeCriterionInput(ctx context.C
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -30390,7 +30415,12 @@ func (ec *executionContext) unmarshalInputCancelEditInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -30413,7 +30443,12 @@ func (ec *executionContext) unmarshalInputDateCriterionInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -30444,7 +30479,12 @@ func (ec *executionContext) unmarshalInputDraftEntityInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -30475,7 +30515,12 @@ func (ec *executionContext) unmarshalInputEditCommentInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "comment"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -30506,7 +30551,12 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "operation", "merge_source_ids", "comment"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -30566,7 +30616,12 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "page", "per_page", "direction", "sort"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "user_id":
 			var err error
@@ -30677,7 +30732,12 @@ func (ec *executionContext) unmarshalInputEditVoteInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "vote"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -30708,7 +30768,12 @@ func (ec *executionContext) unmarshalInputEyeColorCriterionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -30739,7 +30804,12 @@ func (ec *executionContext) unmarshalInputFingerprintEditInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"user_ids", "hash", "algorithm", "duration", "created", "submissions", "updated"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "user_ids":
 			var err error
@@ -30810,7 +30880,12 @@ func (ec *executionContext) unmarshalInputFingerprintInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"user_ids", "hash", "algorithm", "duration"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "user_ids":
 			var err error
@@ -30857,7 +30932,12 @@ func (ec *executionContext) unmarshalInputFingerprintQueryInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"hash", "algorithm"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "hash":
 			var err error
@@ -30888,7 +30968,12 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"scene_id", "fingerprint", "unmatch"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "scene_id":
 			var err error
@@ -30927,7 +31012,12 @@ func (ec *executionContext) unmarshalInputGrantInviteInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"user_id", "amount"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "user_id":
 			var err error
@@ -30958,7 +31048,12 @@ func (ec *executionContext) unmarshalInputHairColorCriterionInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -30989,7 +31084,12 @@ func (ec *executionContext) unmarshalInputIDCriterionInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -31020,7 +31120,12 @@ func (ec *executionContext) unmarshalInputImageCreateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"url", "file"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "url":
 			var err error
@@ -31051,7 +31156,12 @@ func (ec *executionContext) unmarshalInputImageDestroyInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -31074,7 +31184,12 @@ func (ec *executionContext) unmarshalInputImageUpdateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "url"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -31105,7 +31220,12 @@ func (ec *executionContext) unmarshalInputIntCriterionInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -31136,7 +31256,12 @@ func (ec *executionContext) unmarshalInputMultiIDCriterionInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -31167,7 +31292,12 @@ func (ec *executionContext) unmarshalInputMultiStringCriterionInput(ctx context.
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -31198,7 +31328,12 @@ func (ec *executionContext) unmarshalInputNewUserInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"email", "invite_key"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "email":
 			var err error
@@ -31229,7 +31364,12 @@ func (ec *executionContext) unmarshalInputPerformerAppearanceInput(ctx context.C
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"performer_id", "as"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "performer_id":
 			var err error
@@ -31260,7 +31400,12 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -31451,7 +31596,12 @@ func (ec *executionContext) unmarshalInputPerformerDestroyInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -31474,7 +31624,12 @@ func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "name", "aliases", "gender", "birthdate", "urls", "ethnicity", "country", "eye_color", "hair_color", "height", "measurements", "breast_type", "tattoos", "piercings", "career_start_year", "career_end_year", "image"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -31633,7 +31788,12 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -31824,7 +31984,12 @@ func (ec *executionContext) unmarshalInputPerformerEditInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"edit", "details", "options"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "edit":
 			var err error
@@ -31870,7 +32035,12 @@ func (ec *executionContext) unmarshalInputPerformerEditOptionsInput(ctx context.
 		asMap["set_merge_aliases"] = true
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"set_modify_aliases", "set_merge_aliases"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "set_modify_aliases":
 			var err error
@@ -31914,7 +32084,12 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "page", "per_page", "direction", "sort"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "names":
 			var err error
@@ -32153,7 +32328,12 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -32344,7 +32524,12 @@ func (ec *executionContext) unmarshalInputQueryExistingSceneInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"title", "studio_id", "fingerprints"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "title":
 			var err error
@@ -32383,7 +32568,12 @@ func (ec *executionContext) unmarshalInputResetPasswordInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"email"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "email":
 			var err error
@@ -32406,7 +32596,12 @@ func (ec *executionContext) unmarshalInputRevokeInviteInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"user_id", "amount"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "user_id":
 			var err error
@@ -32437,7 +32632,12 @@ func (ec *executionContext) unmarshalInputRoleCriterionInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -32468,7 +32668,12 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "title":
 			var err error
@@ -32579,7 +32784,12 @@ func (ec *executionContext) unmarshalInputSceneDestroyInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -32602,7 +32812,12 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "title", "details", "url", "date", "studio", "performers", "tags", "image", "fingerprints"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -32697,7 +32912,12 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "duration", "director", "code", "fingerprints", "draft_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "title":
 			var err error
@@ -32816,7 +33036,12 @@ func (ec *executionContext) unmarshalInputSceneEditInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"edit", "details"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "edit":
 			var err error
@@ -32860,7 +33085,12 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "page", "per_page", "direction", "sort"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "text":
 			var err error
@@ -32995,7 +33225,12 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -33114,7 +33349,12 @@ func (ec *executionContext) unmarshalInputSiteCreateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "description", "url", "regex", "valid_types"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -33169,7 +33409,12 @@ func (ec *executionContext) unmarshalInputSiteDestroyInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -33192,7 +33437,12 @@ func (ec *executionContext) unmarshalInputSiteUpdateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "name", "description", "url", "regex", "valid_types"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -33255,7 +33505,12 @@ func (ec *executionContext) unmarshalInputStringCriterionInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"value", "modifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "value":
 			var err error
@@ -33286,7 +33541,12 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "urls", "parent_id", "image_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -33333,7 +33593,12 @@ func (ec *executionContext) unmarshalInputStudioDestroyInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -33356,7 +33621,12 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "urls", "parent_id", "image_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -33403,7 +33673,12 @@ func (ec *executionContext) unmarshalInputStudioEditInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"edit", "details"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "edit":
 			var err error
@@ -33447,7 +33722,12 @@ func (ec *executionContext) unmarshalInputStudioQueryInput(ctx context.Context, 
 		asMap["sort"] = "NAME"
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "names", "url", "parent", "has_parent", "is_favorite", "page", "per_page", "direction", "sort"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -33542,7 +33822,12 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "name", "urls", "parent_id", "image_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -33597,7 +33882,12 @@ func (ec *executionContext) unmarshalInputTagCategoryCreateInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "group", "description"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -33636,7 +33926,12 @@ func (ec *executionContext) unmarshalInputTagCategoryDestroyInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -33659,7 +33954,12 @@ func (ec *executionContext) unmarshalInputTagCategoryUpdateInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "name", "group", "description"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -33706,7 +34006,12 @@ func (ec *executionContext) unmarshalInputTagCreateInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "description", "aliases", "category_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -33753,7 +34058,12 @@ func (ec *executionContext) unmarshalInputTagDestroyInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -33776,7 +34086,12 @@ func (ec *executionContext) unmarshalInputTagEditDetailsInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "description", "aliases", "category_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -33823,7 +34138,12 @@ func (ec *executionContext) unmarshalInputTagEditInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"edit", "details"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "edit":
 			var err error
@@ -33867,7 +34187,12 @@ func (ec *executionContext) unmarshalInputTagQueryInput(ctx context.Context, obj
 		asMap["sort"] = "NAME"
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"text", "names", "name", "category_id", "page", "per_page", "direction", "sort"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "text":
 			var err error
@@ -33946,7 +34271,12 @@ func (ec *executionContext) unmarshalInputTagUpdateInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "name", "description", "aliases", "category_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -34001,7 +34331,12 @@ func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj inte
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"url", "site_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "url":
 			var err error
@@ -34032,7 +34367,12 @@ func (ec *executionContext) unmarshalInputUserChangePasswordInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"existing_password", "new_password", "reset_key"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "existing_password":
 			var err error
@@ -34071,7 +34411,12 @@ func (ec *executionContext) unmarshalInputUserCreateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "password", "roles", "email", "invited_by_id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -34126,7 +34471,12 @@ func (ec *executionContext) unmarshalInputUserDestroyInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
@@ -34156,7 +34506,12 @@ func (ec *executionContext) unmarshalInputUserQueryInput(ctx context.Context, ob
 		asMap["per_page"] = 25
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"name", "email", "roles", "apiKey", "successful_edits", "unsuccessful_edits", "successful_votes", "unsuccessful_votes", "api_calls", "invited_by", "page", "per_page"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "name":
 			var err error
@@ -34267,7 +34622,12 @@ func (ec *executionContext) unmarshalInputUserUpdateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	for k, v := range asMap {
+	fieldsInOrder := [...]string{"id", "name", "password", "roles", "email"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
 		switch k {
 		case "id":
 			var err error
