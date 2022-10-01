@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"gotest.tools/v3/assert"
 )
 
 func TestCopyFromPerformerEdit(t *testing.T) {
@@ -71,9 +71,7 @@ func TestCopyFromPerformerEdit(t *testing.T) {
 	origCopy := orig
 	origCopy.CopyFromPerformerEdit(input, old)
 
-	assert := assert.New(t)
-
-	assert.Equal(Performer{
+	assert.DeepEqual(t, Performer{
 		Name:              bName,
 		Disambiguation:    sql.NullString{String: bDisambiguation, Valid: true},
 		Gender:            sql.NullString{String: bGender.String(), Valid: true},
@@ -98,5 +96,5 @@ func TestCopyFromPerformerEdit(t *testing.T) {
 	origCopy.CopyFromPerformerEdit(PerformerEdit{}, PerformerEdit{})
 
 	orig.UpdatedAt = origCopy.UpdatedAt
-	assert.Equal(orig, origCopy)
+	assert.DeepEqual(t, orig, origCopy)
 }
