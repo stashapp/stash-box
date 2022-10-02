@@ -4,11 +4,11 @@
 package api_test
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"gotest.tools/v3/assert"
 )
 
 type tagCategoryTestRunner struct {
@@ -31,64 +31,43 @@ func (s *tagCategoryTestRunner) testCreateTagCategory() {
 	}
 
 	category, err := s.resolver.Mutation().TagCategoryCreate(s.ctx, input)
-
-	if err != nil {
-		s.t.Errorf("Error creating tagCategory: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error creating tagCategory")
 
 	s.verifyCreatedTagCategory(input, category)
 }
 
 func (s *tagCategoryTestRunner) verifyCreatedTagCategory(input models.TagCategoryCreateInput, category *models.TagCategory) {
 	// ensure basic attributes are set correctly
-	if input.Name != category.Name {
-		s.fieldMismatch(input.Name, category.Name, "Name")
-	}
+	assert.Equal(s.t, input.Name, category.Name)
 
 	r := s.resolver.TagCategory()
 
-	if category.ID == uuid.Nil {
-		s.t.Errorf("Expected created tagCategory id to be non-zero")
-	}
+	assert.Assert(s.t, category.ID != uuid.Nil, "Expected created tagCategory id to be non-zero")
 
-	if v, _ := r.Description(s.ctx, category); !reflect.DeepEqual(v, input.Description) {
-		s.fieldMismatch(*input.Description, v, "Description")
-	}
-	if v, _ := r.Group(s.ctx, category); !reflect.DeepEqual(v, models.TagGroupEnumPeople) {
-		s.fieldMismatch(input.Group, v, "Group")
-	}
+	description, _ := r.Description(s.ctx, category)
+	assert.DeepEqual(s.t, description, input.Description)
+
+	group, _ := r.Group(s.ctx, category)
+	assert.DeepEqual(s.t, group, models.TagGroupEnumPeople)
 }
 
 func (s *tagCategoryTestRunner) testFindTagCategoryById() {
 	createdCategory, err := s.createTestTagCategory(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	category, err := s.resolver.Query().FindTagCategory(s.ctx, createdCategory.ID)
-	if err != nil {
-		s.t.Errorf("Error finding tagCategory: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding tagCategory")
 
 	// ensure returned tagCategory is not nil
-	if category == nil {
-		s.t.Error("Did not find tagCategory by id")
-		return
-	}
+	assert.Assert(s.t, category != nil, "Did not find tagCategory by id")
 
 	// ensure values were set
-	if createdCategory.Name != category.Name {
-		s.fieldMismatch(createdCategory.Name, category.Name, "Name")
-	}
+	assert.Equal(s.t, createdCategory.Name, category.Name)
 }
 
 func (s *tagCategoryTestRunner) testUpdateTagCategory() {
 	createdCategory, err := s.createTestTagCategory(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	catID := createdCategory.ID
 
@@ -100,58 +79,39 @@ func (s *tagCategoryTestRunner) testUpdateTagCategory() {
 	}
 
 	updatedCategory, err := s.resolver.Mutation().TagCategoryUpdate(s.ctx, updateInput)
-	if err != nil {
-		s.t.Errorf("Error updating tagCategory: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error updating tagCategory")
 
 	s.verifyUpdatedTagCategory(updateInput, updatedCategory)
 }
 
 func (s *tagCategoryTestRunner) verifyUpdatedTagCategory(input models.TagCategoryUpdateInput, category *models.TagCategory) {
 	// ensure basic attributes are set correctly
-	if input.Name != nil && *input.Name != category.Name {
-		s.fieldMismatch(*input.Name, category.Name, "Name")
-	}
+	assert.Assert(s.t, input.Name == nil || (*input.Name == category.Name))
 
 	r := s.resolver.TagCategory()
 
-	if v, _ := r.Description(s.ctx, category); !reflect.DeepEqual(v, input.Description) {
-		s.fieldMismatch(input.Description, v, "Description")
-	}
+	description, _ := r.Description(s.ctx, category)
+	assert.DeepEqual(s.t, description, input.Description)
 }
 
 func (s *tagCategoryTestRunner) testDestroyTagCategory() {
 	createdCategory, err := s.createTestTagCategory(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	catID := createdCategory.ID
 
 	destroyed, err := s.resolver.Mutation().TagCategoryDestroy(s.ctx, models.TagCategoryDestroyInput{
 		ID: catID,
 	})
-	if err != nil {
-		s.t.Errorf("Error destroying tagCategory: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error destroying tagCategory")
 
-	if !destroyed {
-		s.t.Error("TagCategory was not destroyed")
-		return
-	}
+	assert.Assert(s.t, destroyed, "TagCategory was not destroyed")
 
 	// ensure cannot find tagCategory
 	foundTagCategory, err := s.resolver.Query().FindTagCategory(s.ctx, catID)
-	if err != nil {
-		s.t.Errorf("Error finding tagCategory after destroying: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding tagCategory after destroying")
 
-	if foundTagCategory != nil {
-		s.t.Error("Found tagCategory after destruction")
-	}
+	assert.Assert(s.t, foundTagCategory == nil, "Found tagCategory after destruction")
 }
 
 func TestCreateTagCategory(t *testing.T) {
