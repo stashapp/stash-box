@@ -4899,6 +4899,8 @@ input SceneQueryInput {
   fingerprints: MultiStringCriterionInput
   """Filter by favorited entity"""
   favorites: FavoriteFilter
+  """Filter to only include scenes where the current user has submitted a fingerprint"""
+  userHasFingerprint: Boolean
 
   page: Int! = 1
   per_page: Int! = 25
@@ -33085,7 +33087,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "userHasFingerprint", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33177,6 +33179,14 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("favorites"))
 			it.Favorites, err = ec.unmarshalOFavoriteFilter2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFavoriteFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "userHasFingerprint":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userHasFingerprint"))
+			it.UserHasFingerprint, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}

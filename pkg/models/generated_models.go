@@ -520,11 +520,13 @@ type SceneQueryInput struct {
 	// Filter to only include scenes with these fingerprints
 	Fingerprints *MultiStringCriterionInput `json:"fingerprints"`
 	// Filter by favorited entity
-	Favorites *FavoriteFilter   `json:"favorites"`
-	Page      int               `json:"page"`
-	PerPage   int               `json:"per_page"`
-	Direction SortDirectionEnum `json:"direction"`
-	Sort      SceneSortEnum     `json:"sort"`
+	Favorites *FavoriteFilter `json:"favorites"`
+	// Filter to only include scenes where the current user has submitted a fingerprint
+	UserHasFingerprint *bool             `json:"userHasFingerprint"`
+	Page               int               `json:"page"`
+	PerPage            int               `json:"per_page"`
+	Direction          SortDirectionEnum `json:"direction"`
+	Sort               SceneSortEnum     `json:"sort"`
 }
 
 type SceneUpdateInput struct {

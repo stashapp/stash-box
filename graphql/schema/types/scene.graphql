@@ -209,6 +209,8 @@ input SceneQueryInput {
   fingerprints: MultiStringCriterionInput
   """Filter by favorited entity"""
   favorites: FavoriteFilter
+  """Filter to only include scenes where the current user has submitted a fingerprint"""
+  userHasFingerprint: Boolean
 
   page: Int! = 1
   per_page: Int! = 25

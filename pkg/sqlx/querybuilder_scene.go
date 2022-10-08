@@ -469,6 +469,16 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 		query.AddWhere(clause)
 	}
 
+	if q := filter.UserHasFingerprint; q != nil && *q {
+		// Only add Join if it hasn't already been done by filtering on Fingerprints
+		if filter.Fingerprints == nil || len(filter.Fingerprints.Value) == 0 {
+			query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id", true)
+		}
+		var clause = "(" + sceneFingerprintTable.Name() + ".user_id = ?)"
+		query.AddWhere(clause)
+		query.AddArg(userID)
+	}
+
 	if filter.Sort == models.SceneSortEnumTrending {
 		limit := ""
 		if len(query.whereClauses) == 0 && !isCount {

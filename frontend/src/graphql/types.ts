@@ -1399,6 +1399,8 @@ export type SceneQueryInput = {
   title?: InputMaybe<Scalars["String"]>;
   /** Filter to search urls - assumes like query unless quoted */
   url?: InputMaybe<Scalars["String"]>;
+  /** Filter to only include scenes where the current user has submitted a fingerprint */
+  userHasFingerprint?: InputMaybe<Scalars["Boolean"]>;
 };
 
 export enum SceneSortEnum {
