@@ -98,7 +98,7 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
         <Form.Text>
           A regular expression that will be optionally used to clean links. Must
           contain a capture group of the portion of the URL that is considered
-          valid. For instance: <code>(https://example.org/.*)\??</code> which
+          valid. For instance: <code>(https://example\.org/.*)\??</code> which
           will capture everything before the first question mark.
         </Form.Text>
       </Form.Group>
