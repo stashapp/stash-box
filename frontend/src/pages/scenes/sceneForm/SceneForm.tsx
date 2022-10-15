@@ -3,6 +3,7 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
+import { Typeahead, Menu, MenuItem } from "react-bootstrap-typeahead";
 import { Link } from "react-router-dom";
 import {
   faExclamationTriangle,
@@ -82,6 +83,7 @@ const SceneForm: FC<SceneProps> = ({
         performerId: p.performer.id,
         name: p.performer.name,
         alias: p.as ?? "",
+        aliases: p.performer.aliases,
         gender: p.performer.gender,
         disambiguation: p.performer.disambiguation,
         deleted: p.performer.deleted,
@@ -139,6 +141,7 @@ const SceneForm: FC<SceneProps> = ({
       performerId: result.id,
       gender: result.gender,
       alias: "",
+      aliases: result.aliases,
       disambiguation: result.disambiguation ?? undefined,
       deleted: result.deleted,
     });
@@ -158,6 +161,7 @@ const SceneForm: FC<SceneProps> = ({
       performerId: result.id,
       gender: result.gender,
       alias: alias === result.name ? "" : alias,
+      aliases: result.aliases,
       disambiguation: result.disambiguation ?? undefined,
       deleted: result.deleted,
     });
@@ -240,11 +244,49 @@ const SceneForm: FC<SceneProps> = ({
       <Col xs={{ span: 5, offset: 1 }}>
         <InputGroup>
           <InputGroup.Text>Scene Alias</InputGroup.Text>
-          <Form.Control
-            className="performer-alias"
-            defaultValue={p.alias ?? ""}
-            placeholder={p.name}
-            {...register(`performers.${index}.alias`)}
+
+          <Controller
+            name={`performers.${index}.alias`}
+            control={control}
+            render={({ field: { onChange } }) => (
+              <Typeahead
+                id={`performers.${index}.alias`}
+                onInputChange={onChange}
+                onChange={(selected) =>
+                  selected.length && onChange(selected[0])
+                }
+                options={p.aliases ?? []}
+                defaultInputValue={p.alias ?? ""}
+                emptyLabel={""}
+                renderMenu={(results, { id }) => {
+                  if (!results.length) {
+                    return <></>;
+                  }
+                  return (
+                    <Menu id={id}>
+                      <MenuItem
+                        option="aliases"
+                        position={0}
+                        key={"header"}
+                        disabled
+                      >
+                        <b className="text-dark">{`${p.name}'s Aliases`}</b>
+                      </MenuItem>
+                      {results.map((result, idx) => (
+                        <MenuItem
+                          option={result}
+                          position={idx + 1}
+                          key={`${result}-idx`}
+                        >
+                          {result}
+                        </MenuItem>
+                      ))}
+                    </Menu>
+                  );
+                }}
+                placeholder={p.name}
+              />
+            )}
           />
         </InputGroup>
       </Col>
