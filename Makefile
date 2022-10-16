@@ -32,15 +32,25 @@ build-release-static: build
 # Regenerates GraphQL files
 generate: generate-backend generate-ui
 
-.PHONY: generate-backend
+.PHONY: \
+	generate-backend \
+	generate-ui \
+	generate-dataloaders \
+	test \
+	it \
+	fmt \
+	lint \
+	ui \
+	ui-start \
+	ui-fmt \
+	ui-validate
+
 generate-backend:
 	go generate
 
-.PHONY: generate-ui
 generate-ui:
 	cd frontend && yarn generate
 
-.PHONY: generate-dataloaders
 generate-dataloaders:
 	cd pkg/dataloader; \
 		go run github.com/vektah/dataloaden UUIDsLoader github.com/gofrs/uuid.UUID "[]github.com/gofrs/uuid.UUID"; \
@@ -55,43 +65,35 @@ generate-dataloaders:
 		go run github.com/vektah/dataloaden TagCategoryLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.TagCategory"; \
 		go run github.com/vektah/dataloaden SiteLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Site";
 
-.PHONY: test
 test:
 	go test ./...
 
 # Runs the integration tests. -count=1 is used to ensure results are not
 # cached, which is important if the environment changes
-.PHONY: it
 it:
 	go test -tags=integration -count=1 ./...
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
-.PHONY: fmt
 fmt:
 	go fmt ./...
 
 # Runs all configured linuters. golangci-lint needs to be installed locally first.
-.PHONY: lint
 lint:
 	golangci-lint run
 
 pre-ui:
 	cd frontend && yarn install --frozen-lockfile
 
-.PHONY: ui
 ui:
 	cd frontend && yarn build
 
-.PHONY: ui-start
 ui-start:
 	cd frontend && yarn start
 
-.PHONY: ui-fmt
 ui-fmt:
 	cd frontend && yarn format
 
 # runs tests and checks on the UI and builds it
-.PHONY: ui-validate
 ui-validate:
 	cd frontend && yarn run validate
 
