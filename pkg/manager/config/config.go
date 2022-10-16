@@ -105,7 +105,7 @@ const (
 var defaultUserRoles = []string{"READ", "VOTE", "EDIT"}
 var C = &config{
 	RequireInvite:              true,
-	RequireActivation:          true,
+	RequireActivation:          false,
 	ActivationExpiry:           2 * 60 * 60,
 	EmailCooldown:              5 * 60,
 	EmailPort:                  25,
