@@ -43,7 +43,11 @@ generate: generate-backend generate-ui
 	ui \
 	ui-start \
 	ui-fmt \
-	ui-validate
+	ui-validate \
+	clean
+
+clean:
+	@ rm -rf stash-box stash-box-config.yml frontend/node_modules/ frontend/build/
 
 generate-backend:
 	go generate
