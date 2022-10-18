@@ -48,7 +48,7 @@ generate: generate-backend generate-ui
 	clean
 
 clean:
-	@ rm -rf stash-box stash-box-config.yml frontend/node_modules/ frontend/build/
+	@ rm -rf stash-box stash-box-config.yml frontend/node_modules frontend/build dist
 
 generate-backend:
 	go generate
