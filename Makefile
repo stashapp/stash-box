@@ -2,6 +2,7 @@ LDFLAGS := $(LDFLAGS)
 export CGO_ENABLED = 0
 
 .PHONY: \
+	stash-box \
 	generate-backend \
 	generate-ui \
 	generate-dataloaders \
@@ -19,6 +20,8 @@ export CGO_ENABLED = 0
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
 endif
+
+stash-box: pre-ui ui build
 
 pre-build:
 ifndef BUILD_DATE
