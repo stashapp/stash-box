@@ -44,6 +44,7 @@ generate: generate-backend generate-ui
 	ui-start \
 	ui-fmt \
 	ui-validate \
+	pre-ui \
 	clean
 
 clean:
