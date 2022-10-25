@@ -420,8 +420,10 @@ type ComplexityRoot struct {
 	}
 
 	SceneDraft struct {
+		Code         func(childComplexity int) int
 		Date         func(childComplexity int) int
 		Details      func(childComplexity int) int
+		Director     func(childComplexity int) int
 		Fingerprints func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Image        func(childComplexity int) int
@@ -3063,6 +3065,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Urls(childComplexity), true
 
+	case "SceneDraft.code":
+		if e.complexity.SceneDraft.Code == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Code(childComplexity), true
+
 	case "SceneDraft.date":
 		if e.complexity.SceneDraft.Date == nil {
 			break
@@ -3076,6 +3085,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneDraft.Details(childComplexity), true
+
+	case "SceneDraft.director":
+		if e.complexity.SceneDraft.Director == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Director(childComplexity), true
 
 	case "SceneDraft.fingerprints":
 		if e.complexity.SceneDraft.Fingerprints == nil {
@@ -4913,7 +4929,9 @@ union SceneDraftTag = Tag | DraftEntity
 type SceneDraft {
   id: ID
   title: String
+  code: String
   details: String
+  director: String
   url: URL
   date: String
   studio: SceneDraftStudio
@@ -4926,7 +4944,9 @@ type SceneDraft {
 input SceneDraftInput {
   id: ID
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
   studio: DraftEntityInput
@@ -22888,6 +22908,47 @@ func (ec *executionContext) fieldContext_SceneDraft_title(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _SceneDraft_code(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneDraft_code(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Code, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SceneDraft_code(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SceneDraft_details(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SceneDraft_details(ctx, field)
 	if err != nil {
@@ -22917,6 +22978,47 @@ func (ec *executionContext) _SceneDraft_details(ctx context.Context, field graph
 }
 
 func (ec *executionContext) fieldContext_SceneDraft_details(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SceneDraft_director(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneDraft_director(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Director, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SceneDraft_director(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneDraft",
 		Field:      field,
@@ -32812,7 +32914,7 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "details", "url", "date", "studio", "performers", "tags", "image", "fingerprints"}
+	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "url", "date", "studio", "performers", "tags", "image", "fingerprints"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32835,11 +32937,27 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "code":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			it.Code, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "details":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
 			it.Details, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "director":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("director"))
+			it.Director, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38767,9 +38885,17 @@ func (ec *executionContext) _SceneDraft(ctx context.Context, sel ast.SelectionSe
 
 			out.Values[i] = ec._SceneDraft_title(ctx, field, obj)
 
+		case "code":
+
+			out.Values[i] = ec._SceneDraft_code(ctx, field, obj)
+
 		case "details":
 
 			out.Values[i] = ec._SceneDraft_details(ctx, field, obj)
+
+		case "director":
+
+			out.Values[i] = ec._SceneDraft_director(ctx, field, obj)
 
 		case "url":
 			field := field

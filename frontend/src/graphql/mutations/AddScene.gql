@@ -3,7 +3,9 @@ mutation AddScene($sceneData: SceneCreateInput!) {
     id
     release_date
     title
+    code
     details
+    director
     urls {
       url
       site {
