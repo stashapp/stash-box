@@ -10,6 +10,32 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
+type ImageFilterType string
+
+const (
+	LanczosFilter           ImageFilterType = "lanczos"
+	MitchellNetravaliFilter ImageFilterType = "mitchell_netravali"
+	LinearFilter            ImageFilterType = "linear"
+	BoxFilter               ImageFilterType = "box"
+	NearestNeighborFilter   ImageFilterType = "nearest_neighbor"
+)
+
+type ImageFormatType string
+
+const (
+	PNG  ImageFormatType = "png"
+	JPEG ImageFormatType = "jpeg"
+	AVIF ImageFormatType = "avif"
+)
+
+type ImageConfig struct {
+	Format       ImageFormatType `mapstructure:"format"`
+	Filter       ImageFilterType `mapstructure:"filter"`
+	MaxWidth     int64           `mapstructure:"max_width"`
+	MaxHeight    int64           `mapstructure:"max_height"`
+	KeepOriginal bool            `mapstructure:"keep_original"`
+}
+
 type S3Config struct {
 	BaseURL      string `mapstructure:"base_url"`
 	Endpoint     string `mapstructure:"endpoint"`
@@ -70,6 +96,10 @@ type config struct {
 	ImageBackend  string `mapstructure:"image_backend"`
 	FaviconPath   string `mapstructure:"favicon_path"`
 
+	Images struct {
+		ImageConfig `mapstructure:",squash"`
+	}
+
 	// Logging options
 	LogFile     string `mapstructure:"logFile"`
 	UserLogFile string `mapstructure:"userLogFile"`
@@ -117,6 +147,17 @@ var C = &config{
 	VotingPeriod:               345600,
 	MinDestructiveVotingPeriod: 172800,
 	DraftTimeLimit:             86400,
+	Images: struct {
+		ImageConfig "mapstructure:\",squash\""
+	}{
+		ImageConfig: ImageConfig{
+			Format:       PNG,
+			Filter:       MitchellNetravaliFilter,
+			KeepOriginal: true,
+			MaxWidth:     3840,
+			MaxHeight:    2160,
+		},
+	},
 }
 
 func GetDatabasePath() string {
@@ -227,6 +268,10 @@ func GetImageLocation() string {
 // GetImageBackend returns the backend used to store images.
 func GetImageBackend() ImageBackendType {
 	return ImageBackendType(C.ImageBackend)
+}
+
+func GetImageConfig() *ImageConfig {
+	return &C.Images.ImageConfig
 }
 
 func GetS3Config() *S3Config {
