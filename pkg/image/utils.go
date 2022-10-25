@@ -7,14 +7,11 @@ import (
 	"errors"
 	"image"
 	_ "image/gif"
-	"image/jpeg"
-	"image/png"
 	"io"
 	"path/filepath"
 
 	_ "golang.org/x/image/webp"
 
-	"github.com/disintegration/imaging"
 	issvg "github.com/h2non/go-is-svg"
 
 	"github.com/stashapp/stash-box/pkg/models"
@@ -50,39 +47,6 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 	}
 
 	return nil
-}
-
-func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
-	var resizedImage image.Image
-	srcImage, format, err := image.Decode(srcReader)
-	if err != nil {
-		return nil, err
-	}
-
-	// if height is longer then resize by height instead of width
-	if dim := srcImage.Bounds().Max; dim.Y > dim.X {
-		resizedImage = imaging.Resize(srcImage, 0, int(maxDimension), imaging.MitchellNetravali)
-	} else {
-		resizedImage = imaging.Resize(srcImage, int(maxDimension), 0, imaging.MitchellNetravali)
-	}
-
-	buf := new(bytes.Buffer)
-
-	if format == "png" {
-		err = png.Encode(buf, resizedImage)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		options := jpeg.Options{
-			Quality: 90,
-		}
-		err = jpeg.Encode(buf, resizedImage, &options)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return buf.Bytes(), nil
 }
 
 func calculateChecksum(file io.Reader) (string, error) {

@@ -30,6 +30,7 @@ require (
 )
 
 require (
+	github.com/Kagami/go-avif v0.1.0 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
