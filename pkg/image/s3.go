@@ -3,8 +3,7 @@ package image
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
-	"encoding/hex"
+	"io"
 	"net/http"
 
 	"github.com/minio/minio-go/v7"
@@ -21,33 +20,36 @@ func (s *S3Backend) WriteFile(file *bytes.Reader, image *models.Image) error {
 		Creds:  credentials.NewStaticV4(s3config.AccessKey, s3config.Secret, ""),
 		Secure: true,
 	})
+
 	if err != nil {
 		return err
 	}
 
-	buf := new(bytes.Buffer)
-	if _, err = buf.ReadFrom(file); err != nil {
-		return err
-	}
-	if err := uploadS3File(*minioClient, buf.Bytes(), s3config.Bucket, image.ID.String()); err != nil {
+	imagePath := GetImageFileNameFromUUID(image.ID)
+
+	// need to extract the first 512 bytes for content type detection
+	buf := bytes.NewBuffer(make([]byte, 512))
+	if _, err := io.CopyN(buf, file, 512); err != nil {
 		return err
 	}
 
-	if s3config.MaxDimension != 0 && (image.Width > s3config.MaxDimension || image.Height > s3config.MaxDimension) {
-		if _, err = file.Seek(0, 0); err != nil {
-			return err
-		}
-		resized, err := resizeImage(file, s3config.MaxDimension)
-		if err != nil {
-			return err
-		}
+	contentType := http.DetectContentType(buf.Bytes())
 
-		hash := md5.Sum([]byte(image.ID.String() + "-resized"))
-		resizedID := hex.EncodeToString(hash[:])
-		if err := uploadS3File(*minioClient, resized, s3config.Bucket, resizedID); err != nil {
-			return err
-		}
+	// reset to start
+	if _, err := file.Seek(0, 0); err != nil {
+		return err
 	}
+
+	_, err = minioClient.PutObject(
+		context.TODO(),
+		s3config.Bucket,
+		imagePath,
+		file,
+		int64(file.Len()),
+		minio.PutObjectOptions{
+			ContentType: contentType,
+		},
+	)
 
 	return nil
 }
@@ -58,47 +60,13 @@ func (s *S3Backend) DestroyFile(image *models.Image) error {
 		Creds:  credentials.NewStaticV4(s3config.AccessKey, s3config.Secret, ""),
 		Secure: true,
 	})
-	if err != nil {
-		return err
-	}
-
-	id := image.ID.String()
-	path := id[0:2] + "/" + id[2:4] + "/" + id
-	err = minioClient.RemoveObject(context.TODO(), s3config.Bucket, path, minio.RemoveObjectOptions{})
 
 	if err != nil {
 		return err
 	}
 
-	hash := md5.Sum([]byte(id + "-resized"))
-	resizedID := hex.EncodeToString(hash[:])
-	path = resizedID[0:2] + "/" + resizedID[2:4] + "/" + resizedID
-	// Resized versions may or may not exist, so we attempt to delete and ignore the results
-	_ = minioClient.RemoveObject(context.TODO(), s3config.Bucket, path, minio.RemoveObjectOptions{})
-
-	return nil
-}
-
-func uploadS3File(client minio.Client, file []byte, bucket string, id string) error {
-	ctx := context.TODO()
-
-	// SVG is not correctly detected so we set it manually if the file is xml
-	contentType := http.DetectContentType(file)
-	if contentType == "text/xml; charset=utf-8" || contentType == "text/plain; charset=utf-8" {
-		contentType = "image/svg+xml"
-	}
-
-	path := id[0:2] + "/" + id[2:4] + "/" + id
-	_, err := client.PutObject(
-		ctx,
-		bucket,
-		path,
-		bytes.NewReader(file),
-		int64(len(file)),
-		minio.PutObjectOptions{
-			ContentType: contentType,
-		},
-	)
+	imagePath := GetImageFileNameFromUUID(image.ID)
+	err = minioClient.RemoveObject(context.TODO(), s3config.Bucket, imagePath, minio.RemoveObjectOptions{})
 
 	return err
 }
