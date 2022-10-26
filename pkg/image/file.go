@@ -22,9 +22,14 @@ func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
 		return nil
 	}
 
+	basePath := filepath.Base(imagePath)
+	if err := os.MkdirAll(basePath, os.FileMode(0644)); err != nil {
+		return err
+	}
+
 	outputFile, err := os.OpenFile(imagePath, os.O_WRONLY|os.O_CREATE, os.FileMode(0644))
 	if err != nil {
-		return nil
+		return err
 	}
 
 	defer outputFile.Close()
