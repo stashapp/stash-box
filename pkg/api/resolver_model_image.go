@@ -18,7 +18,7 @@ func (r *imageResolver) ID(ctx context.Context, obj *models.Image) (string, erro
 func (r *imageResolver) URL(ctx context.Context, obj *models.Image) (string, error) {
 	if config.GetImageBackend() == config.FileBackend {
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-		builder := urlbuilders.NewImageURLBuilder(baseURL, obj.Checksum)
+		builder := urlbuilders.NewImageURLBuilder(baseURL, obj.ID)
 		return builder.GetImageURL(), nil
 	} else if config.GetImageBackend() == config.S3Backend {
 		builder := urlbuilders.NewS3ImageURLBuilder(obj)
