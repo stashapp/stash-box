@@ -51,7 +51,7 @@ func (s *S3Backend) WriteFile(file *bytes.Reader, image *models.Image) error {
 		},
 	)
 
-	return nil
+	return err
 }
 
 func (s *S3Backend) DestroyFile(image *models.Image) error {

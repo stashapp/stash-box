@@ -26,16 +26,22 @@ func manipulateImage(srcReader io.ReadSeeker) (*bytes.Reader, error) {
 		return nil, err
 	}
 
-	if imageRequiresResizing(srcImage, imageConfig.MaxWidth, imageConfig.MaxHeight) {
-		var resizedImage image.Image
-		resizedImage = resizeImage(srcImage, imageConfig.MaxWidth, imageConfig.MaxHeight, imageConfig.Filter)
-		return encodeImage(resizedImage, imageConfig.Format)
-	} else if needsEncoding(srcFormat, imageConfig.Format) {
-		// image doesn't require resizing but still needs to be encoded into the right format
-		return encodeImage(srcImage, imageConfig.Format)
-	} else {
-		// image doesn't need to be manipulated
-		return nil, nil
+	switch {
+	case imageRequiresResizing(srcImage, imageConfig.MaxWidth, imageConfig.MaxHeight):
+		{
+			resizedImage := resizeImage(srcImage, imageConfig.MaxWidth, imageConfig.MaxHeight, imageConfig.Filter)
+			return encodeImage(resizedImage, imageConfig.Format)
+		}
+	case needsEncoding(srcFormat, imageConfig.Format):
+		{
+			// image doesn't require resizing but still needs to be encoded into the right format
+			return encodeImage(srcImage, imageConfig.Format)
+		}
+	default:
+		{
+			// image doesn't need to be manipulated
+			return nil, nil
+		}
 	}
 }
 
@@ -118,16 +124,16 @@ func imageRequiresResizing(srcImage image.Image, maxWidth int64, maxHeight int64
 		}
 
 		return dim.X > int(maxWidth)
-	} else {
-		// image is vertical
-
-		// resizing is disabled for vertical images
-		if maxHeight == 0 {
-			return false
-		}
-
-		return dim.Y > int(maxHeight)
 	}
+
+	// image is vertical
+
+	// resizing is disabled for vertical images
+	if maxHeight == 0 {
+		return false
+	}
+
+	return dim.Y > int(maxHeight)
 }
 
 func getResamplingFilterFromConfig(filterType config.ImageFilterType) imaging.ResampleFilter {

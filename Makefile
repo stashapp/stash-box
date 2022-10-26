@@ -1,5 +1,4 @@
 LDFLAGS := $(LDFLAGS)
-export CGO_ENABLED = 0
 
 .PHONY: \
 	stash-box \
@@ -39,6 +38,9 @@ endif
 ifndef BUILD_TYPE
 	$(eval BUILD_TYPE := LOCAL)
 endif
+
+# required for libwebp and libaom
+export CGO_ENABLED = 1
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)')
