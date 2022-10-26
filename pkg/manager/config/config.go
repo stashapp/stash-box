@@ -25,6 +25,7 @@ type ImageFormatType string
 const (
 	PNG  ImageFormatType = "png"
 	JPEG ImageFormatType = "jpeg"
+	WEBP ImageFormatType = "webp"
 	AVIF ImageFormatType = "avif"
 )
 
@@ -151,7 +152,7 @@ var C = &config{
 		ImageConfig "mapstructure:\",squash\""
 	}{
 		ImageConfig: ImageConfig{
-			Format:       PNG,
+			Format:       WEBP,
 			Filter:       MitchellNetravaliFilter,
 			KeepOriginal: true,
 			MaxWidth:     3840,
