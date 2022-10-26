@@ -43,18 +43,16 @@ endif
 # required for libwebp
 export CGO_ENABLED = 1
 
-# libwebp needs to be linked to the standard math library (-lm)
-EXTRA_LDFLAGS_COMMON := -lm
-EXTRA_LDFLAGS_LINUX := -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/ -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib-linux-x86-64/
-EXTRA_LDFLAGS_WINDOWS := -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/ -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib-windows-x64/
-EXTRA_LDFLAGS := $(EXTRA_LDFLAGS_COMMON) $(EXTRA_LDFLAGS_LINUX)
+export CGO_CFLAGS := -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/
+# libwebp needs to be linked to the standard maths library (-lm)
+export CGO_LDFLAGS := -lm -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib/linux-x86-64
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)')
-	go build $(OUTPUT) -v -ldflags "$(LDFLAGS) $(STATIC_FLAGS) -extldflags '$(STATIC_FLAG) $(EXTRA_LDFLAGS)'"
+	go build $(OUTPUT) -v -ldflags "$(LDFLAGS) $(STATIC_FLAGS) $(EXTRA_LDFLAGS)"
 
+build-release-static: EXTRA_LDFLAGS := -extldflags '-static'
 build-release-static: STATIC_FLAGS := -s -w
-build-release-static: STATIC_FLAG := -static
 build-release-static: build
 
 # Regenerates GraphQL files
@@ -120,13 +118,15 @@ cross-compile-windows: export GOOS := windows
 cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
 cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
-cross-compile-windows: EXTRA_LDFLAGS := $(EXTRA_LDFLAGS_COMMON) $(EXTRA_LDFLAGS_WINDOWS)
+cross-compile-windows: export CGO_CFLAGS := -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/
+cross-compile-windows: export CGO_LDFLAGS := -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib/mingw-w64-x86_64
 cross-compile-windows: OUTPUT := -o dist/stash-box-windows.exe
 cross-compile-windows: build-release-static
 
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
-cross-compile-linux: EXTRA_LDFLAGS := $(EXTRA_LDFLAGS_COMMON) $(EXTRA_LDFLAGS_LINUX)
+cross-compile-linux: export CC := gcc
+cross-compile-linux: export CXX := g++
 cross-compile-linux: OUTPUT := -o dist/stash-box-linux
 cross-compile-linux: build-release-static
 
