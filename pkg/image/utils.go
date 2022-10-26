@@ -8,10 +8,10 @@ import (
 	"image"
 	_ "image/gif"
 	"io"
-	"path/filepath"
 
 	_ "golang.org/x/image/webp"
 
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -52,6 +52,11 @@ func calculateChecksum(file io.ReadSeeker) (string, error) {
 	return checksum, nil
 }
 
-func GetImagePath(imageDir string, checksum string) string {
-	return filepath.Join(imageDir, checksum)
+func GetImageFileNameFromUUID(id uuid.UUID) string {
+	sId := id.String()
+	return GetImageFileNameFromUUIDString(sId)
+}
+
+func GetImageFileNameFromUUIDString(id string) string {
+	return id[0:2] + "/" + id[2:4] + "/" + id
 }
