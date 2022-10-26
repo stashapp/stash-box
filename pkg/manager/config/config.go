@@ -26,7 +26,7 @@ const (
 	PNG  ImageFormatType = "png"
 	JPEG ImageFormatType = "jpeg"
 	WEBP ImageFormatType = "webp"
-	AVIF ImageFormatType = "avif"
+	// AVIF ImageFormatType = "avif"
 )
 
 type ImageConfig struct {

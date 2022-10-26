@@ -11,7 +11,6 @@ import (
 
 	_ "golang.org/x/image/webp"
 
-	"github.com/Kagami/go-avif"
 	"github.com/disintegration/imaging"
 	"github.com/kolesa-team/go-webp/encoder"
 	"github.com/kolesa-team/go-webp/webp"
@@ -53,8 +52,8 @@ func needsEncoding(srcFormat string, newFormatType config.ImageFormatType) bool 
 		return srcFormat != "jpeg"
 	case config.WEBP:
 		return srcFormat != "webp"
-	case config.AVIF:
-		return srcFormat != "avif"
+	// case config.AVIF:
+	// 	return srcFormat != "avif"
 	default:
 		return true
 	}
@@ -88,17 +87,6 @@ func encodeImage(inputImage image.Image, newFormatType config.ImageFormatType) (
 			}
 
 			if err := webp.Encode(buf, inputImage, options); err != nil {
-				return nil, err
-			}
-		}
-	case config.AVIF:
-		{
-			options := avif.Options{
-				Speed:   8,
-				Quality: 10,
-			}
-
-			if err := avif.Encode(buf, inputImage, &options); err != nil {
 				return nil, err
 			}
 		}
