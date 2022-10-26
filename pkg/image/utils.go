@@ -53,8 +53,7 @@ func calculateChecksum(file io.ReadSeeker) (string, error) {
 }
 
 func GetImageFileNameFromUUID(id uuid.UUID) string {
-	sId := id.String()
-	return GetImageFileNameFromUUIDString(sId)
+	return GetImageFileNameFromUUIDString(id.String())
 }
 
 func GetImageFileNameFromUUIDString(id string) string {

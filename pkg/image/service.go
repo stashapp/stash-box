@@ -108,7 +108,7 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 			return nil, err
 		}
 	} else if input.URL != nil {
-		return nil, errors.New("Missing URL or file")
+		return nil, errors.New("missing URL or file")
 	}
 
 	image, err := s.Repository.Create(newImage)
