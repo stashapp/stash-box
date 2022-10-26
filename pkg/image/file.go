@@ -22,8 +22,8 @@ func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
 		return nil
 	}
 
-	basePath := filepath.Base(imagePath)
-	if err := os.MkdirAll(basePath, os.FileMode(0644)); err != nil {
+	parentDir := filepath.Dir(imagePath)
+	if err := os.MkdirAll(parentDir, os.FileMode(0755)); err != nil {
 		return err
 	}
 
