@@ -7,6 +7,10 @@ import (
 	"image/png"
 	"io"
 
+	_ "image/gif"
+
+	_ "golang.org/x/image/webp"
+
 	"github.com/Kagami/go-avif"
 	"github.com/disintegration/imaging"
 	"github.com/kolesa-team/go-webp/encoder"
@@ -14,7 +18,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
-func manipulateImage(srcReader io.Reader) ([]byte, error) {
+func manipulateImage(srcReader io.ReadSeeker) (*bytes.Reader, error) {
 	imageConfig := config.GetImageConfig()
 
 	srcImage, srcFormat, err := image.Decode(srcReader)
@@ -50,7 +54,7 @@ func needsEncoding(srcFormat string, newFormatType config.ImageFormatType) bool 
 	}
 }
 
-func encodeImage(inputImage image.Image, newFormatType config.ImageFormatType) ([]byte, error) {
+func encodeImage(inputImage image.Image, newFormatType config.ImageFormatType) (*bytes.Reader, error) {
 	buf := new(bytes.Buffer)
 
 	switch newFormatType {
@@ -94,7 +98,7 @@ func encodeImage(inputImage image.Image, newFormatType config.ImageFormatType) (
 		}
 	}
 
-	return buf.Bytes(), nil
+	return bytes.NewReader(buf.Bytes()), nil
 }
 
 func imageRequiresResizing(srcImage image.Image, maxWidth int64, maxHeight int64) bool {
