@@ -30,11 +30,10 @@ const (
 )
 
 type ImageConfig struct {
-	Format       ImageFormatType `mapstructure:"format"`
-	Filter       ImageFilterType `mapstructure:"filter"`
-	MaxWidth     int64           `mapstructure:"max_width"`
-	MaxHeight    int64           `mapstructure:"max_height"`
-	KeepOriginal bool            `mapstructure:"keep_original"`
+	Format    ImageFormatType `mapstructure:"format"`
+	Filter    ImageFilterType `mapstructure:"filter"`
+	MaxWidth  int64           `mapstructure:"max_width"`
+	MaxHeight int64           `mapstructure:"max_height"`
 }
 
 type S3Config struct {
@@ -152,11 +151,10 @@ var C = &config{
 		ImageConfig "mapstructure:\",squash\""
 	}{
 		ImageConfig: ImageConfig{
-			Format:       WEBP,
-			Filter:       MitchellNetravaliFilter,
-			KeepOriginal: true,
-			MaxWidth:     3840,
-			MaxHeight:    2160,
+			Format:    WEBP,
+			Filter:    MitchellNetravaliFilter,
+			MaxWidth:  3840,
+			MaxHeight: 2160,
 		},
 	},
 }
