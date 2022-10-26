@@ -4,15 +4,16 @@ go 1.18
 
 require (
 	github.com/99designs/gqlgen v0.17.20
+	github.com/Kagami/go-avif v0.1.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/golang-migrate/migrate/v4 v4.15.3-0.20220826064501-5eb1604704fe
 	github.com/gorilla/sessions v1.2.1
-	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/klauspost/compress v1.15.11
+	github.com/kolesa-team/go-webp v1.0.1
 	github.com/lib/pq v1.10.7
 	github.com/minio/minio-go/v7 v7.0.39
 	github.com/pkg/errors v0.9.1
@@ -30,7 +31,6 @@ require (
 )
 
 require (
-	github.com/Kagami/go-avif v0.1.0 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -45,7 +45,6 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.1.0 // indirect
-	github.com/kolesa-team/go-webp v1.0.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect

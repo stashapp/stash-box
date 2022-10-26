@@ -12,30 +12,19 @@ import (
 
 	_ "golang.org/x/image/webp"
 
-	issvg "github.com/h2non/go-is-svg"
-
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
 var ErrImageZeroSize = errors.New("image has 0px dimension")
 
 func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error {
+	// reset to start
+	if _, err := imgReader.Seek(0, 0); err != nil {
+		return err
+	}
+
 	img, _, err := image.Decode(imgReader)
 	if err != nil {
-		// SVG is not an image so we have to manually check if the image is SVG
-		if _, readerErr := imgReader.Seek(0, 0); readerErr != nil {
-			return readerErr
-		}
-		buf := new(bytes.Buffer)
-		if _, bufErr := buf.ReadFrom(imgReader); bufErr != nil {
-			return bufErr
-		}
-		if issvg.IsSVG(buf.Bytes()) {
-			dest.Width = -1
-			dest.Height = -1
-			return nil
-		}
-
 		return err
 	}
 
@@ -49,7 +38,12 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 	return nil
 }
 
-func calculateChecksum(file io.Reader) (string, error) {
+func calculateChecksum(file io.ReadSeeker) (string, error) {
+	// reset to start
+	if _, err := file.Seek(0, 0); err != nil {
+		return "", err
+	}
+
 	hasher := md5.New()
 	if _, err := io.Copy(hasher, file); err != nil {
 		return "", err
