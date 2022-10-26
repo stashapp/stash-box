@@ -1,9 +1,7 @@
 package urlbuilders
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-
+	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 )
@@ -20,13 +18,5 @@ func NewS3ImageURLBuilder(image *models.Image) S3ImageURLBuilder {
 
 func (b S3ImageURLBuilder) GetImageURL() string {
 	config := config.GetS3Config()
-
-	if config.MaxDimension != 0 && (b.Image.Width > config.MaxDimension || b.Image.Height > config.MaxDimension) {
-		hash := md5.Sum([]byte(b.Image.ID.String() + "-resized"))
-		id := hex.EncodeToString(hash[:])
-		return config.BaseURL + "/" + id[0:2] + "/" + id[2:4] + "/" + id
-	}
-
-	id := b.Image.ID.String()
-	return config.BaseURL + "/" + id[0:2] + "/" + id[2:4] + "/" + id
+	return config.BaseURL + "/" + image.GetImageFileNameFromUUID(b.Image.ID)
 }
