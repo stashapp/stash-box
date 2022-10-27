@@ -43,9 +43,9 @@ endif
 # required for libwebp
 export CGO_ENABLED = 1
 
-export CGO_CFLAGS := -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/
+export CGO_CFLAGS := -g -O2 -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/
 # libwebp needs to be linked to the standard maths library (-lm)
-export CGO_LDFLAGS := -lm -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib/linux-x86-64
+export CGO_LDFLAGS := -g -O2 -lm -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib/linux-x86-64
 
 install:
 	go install
@@ -122,8 +122,8 @@ cross-compile-windows: export GOOS := windows
 cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
 cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
-cross-compile-windows: export CGO_CFLAGS := -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/
-cross-compile-windows: export CGO_LDFLAGS := -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib/mingw-w64-x86_64
+cross-compile-windows: export CGO_CFLAGS := -g -O2 -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/
+cross-compile-windows: export CGO_LDFLAGS := -g -O2 -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib/mingw-w64-x86_64
 cross-compile-windows: OUTPUT := -o dist/stash-box-windows.exe
 cross-compile-windows: build-release-static
 
