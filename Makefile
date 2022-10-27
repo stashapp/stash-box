@@ -47,6 +47,9 @@ export CGO_CFLAGS := -I $(CURRENT_DIR)/extern/libwebp-1.2.4/include/
 # libwebp needs to be linked to the standard maths library (-lm)
 export CGO_LDFLAGS := -lm -L $(CURRENT_DIR)/extern/libwebp-1.2.4/lib/linux-x86-64
 
+install:
+	go install
+
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash-box/pkg/api.version=$(STASH_BOX_VERSION)' -X 'github.com/stashapp/stash-box/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash-box/pkg/api.githash=$(GITHASH)' -X 'github.com/stashapp/stash-box/pkg/api.buildtype=$(BUILD_TYPE)')
 	go build $(OUTPUT) -v -ldflags "$(LDFLAGS) $(STATIC_FLAGS) $(EXTRA_LDFLAGS)"
@@ -56,6 +59,7 @@ build-release-static: STATIC_FLAGS := -s -w
 build-release-static: build
 
 # Regenerates GraphQL files
+generate: install
 generate: generate-backend generate-ui
 
 clean:
