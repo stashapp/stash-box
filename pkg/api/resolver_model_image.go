@@ -18,7 +18,9 @@ func (r *imageResolver) ID(ctx context.Context, obj *models.Image) (string, erro
 func (r *imageResolver) URL(ctx context.Context, obj *models.Image) (string, error) {
 	if config.GetImageBackend() == config.FileBackend {
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-		builder := urlbuilders.NewImageURLBuilder(baseURL, obj.ID)
+		// SVGs don't have a pixel width/height
+		isSVG := obj.Width == -1 && obj.Height == -1
+		builder := urlbuilders.NewImageURLBuilder(baseURL, obj.ID, isSVG)
 		return builder.GetImageURL(), nil
 	} else if config.GetImageBackend() == config.S3Backend {
 		builder := urlbuilders.NewS3ImageURLBuilder(obj)
