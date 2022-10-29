@@ -17,14 +17,15 @@ const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
 
+const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".webp", ".png", ".gif"]
+
 interface EditImagesProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<any>;
   file: File | undefined;
   setFile: (f: File | undefined) => void;
   maxImages?: number;
-  /** Whether to allow svg/png image input */
-  allowLossless?: boolean;
+  additionalImageExtensions?: string[] | undefined;
   original?: { id: string; url: string }[] | undefined;
 }
 
@@ -33,7 +34,7 @@ const EditImages: FC<EditImagesProps> = ({
   maxImages,
   file,
   setFile,
-  allowLossless = false,
+  additionalImageExtensions,
   original,
 }) => {
   const {
@@ -121,10 +122,10 @@ const EditImages: FC<EditImagesProps> = ({
                   type="file"
                   onChange={onFileChange}
                   accept={[
-                    ".jpg",
-                    ".webp",
-                    ...(allowLossless ? [".svg", ".png"] : []),
-                  ].join(",")}
+                      ...ALLOWED_IMAGE_EXTENSIONS,
+                      ...(additionalImageExtensions ?? [])
+                    ].join(",")
+                  }
                 />
                 <div className={CLASSNAME_PLACEHOLDER}>
                   <Icon icon={faImages} />
