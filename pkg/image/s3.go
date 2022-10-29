@@ -26,18 +26,27 @@ func (s *S3Backend) WriteFile(file *bytes.Reader, image *models.Image) error {
 	}
 
 	imagePath := GetImageFileNameFromUUID(image.ID)
+	isSVG := image.Height == -1 && image.Width == -1
 
-	// need to extract the first 512 bytes for content type detection
-	buf := bytes.NewBuffer(make([]byte, 512))
-	if _, err := io.CopyN(buf, file, 512); err != nil {
-		return err
-	}
+	var contentType string
 
-	contentType := http.DetectContentType(buf.Bytes())
+	// http.DetectContentType can not detect the SVG content type so we have to manually
+	// set it
+	if isSVG {
+		contentType = "image/svg+xml"
+	} else {
+		// need to extract the first 512 bytes for content type detection
+		buf := bytes.NewBuffer(make([]byte, 512))
+		if _, err := io.CopyN(buf, file, 512); err != nil {
+			return err
+		}
 
-	// reset to start
-	if _, err := file.Seek(0, 0); err != nil {
-		return err
+		contentType = http.DetectContentType(buf.Bytes())
+
+		// reset to start
+		if _, err := file.Seek(0, 0); err != nil {
+			return err
+		}
 	}
 
 	_, err = minioClient.PutObject(
