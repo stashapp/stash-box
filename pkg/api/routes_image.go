@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
@@ -27,7 +28,15 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := chi.URLParam(r, "uuid")
+	urlParam := chi.URLParam(r, "uuid")
+	isSVG := false
+	id := urlParam
+
+	if strings.HasSuffix(urlParam, ".svg") {
+		isSVG = true
+		id = strings.TrimSuffix(urlParam, ".svg")
+	}
+
 	imageID, err := uuid.FromString(id)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -36,6 +45,14 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 	fileDir := config.GetImageLocation()
 	imagePath := image.GetImageFileNameFromUUID(imageID)
+
+	// http.ServeFile uses http.DetectContentType under the hood
+	// it can not detect the SVG content type so we have to manually
+	// set it
+
+	if isSVG {
+		w.Header().Add("Content-Type", "image/svg+xml")
+	}
 
 	http.ServeFile(w, r, filepath.Join(fileDir, imagePath))
 }
