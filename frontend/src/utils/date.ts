@@ -20,7 +20,7 @@ export const dateWithinRange = (
   start?: string | Date,
   end?: string | Date
 ) => {
-  if (!date || (!start && !end)) return false;
+  if (!date || (!start && !end)) return true;
 
   const parsedDate = parseISO(date);
   if (start) {
