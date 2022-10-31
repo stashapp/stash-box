@@ -20,7 +20,7 @@ func (b ImageURLBuilder) GetImageURL() string {
 	if b.IsSVG {
 		// required for correct Content-Type header
 		return b.BaseURL + "/image/" + b.ID.String() + ".svg"
-	} else {
-		return b.BaseURL + "/image/" + b.ID.String()
 	}
+
+	return b.BaseURL + "/image/" + b.ID.String()
 }
