@@ -69,8 +69,8 @@ export const parseSceneDraft = (
     details: draft.details,
     urls: joinURLs(draft.url, existingScene?.urls),
     studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
-    director: null,
-    code: null,
+    director: draft.director,
+    code: draft.code,
     duration: draft.fingerprints?.[0]?.duration ?? null,
     images: draft.image ? [draft.image] : existingScene?.images,
     tags: joinTags(

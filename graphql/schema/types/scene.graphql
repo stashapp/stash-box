@@ -223,7 +223,9 @@ union SceneDraftTag = Tag | DraftEntity
 type SceneDraft {
   id: ID
   title: String
+  code: String
   details: String
+  director: String
   url: URL
   date: String
   studio: SceneDraftStudio
@@ -236,7 +238,9 @@ type SceneDraft {
 input SceneDraftInput {
   id: ID
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
   studio: DraftEntityInput

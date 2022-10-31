@@ -466,7 +466,9 @@ type SceneDestroyInput struct {
 type SceneDraftInput struct {
 	ID           *uuid.UUID          `json:"id"`
 	Title        *string             `json:"title"`
+	Code         *string             `json:"code"`
 	Details      *string             `json:"details"`
+	Director     *string             `json:"director"`
 	URL          *string             `json:"url"`
 	Date         *string             `json:"date"`
 	Studio       *DraftEntityInput   `json:"studio"`
