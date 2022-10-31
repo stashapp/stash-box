@@ -26,7 +26,7 @@ export const PerformerSchema = yup.object({
   disambiguation: yup.string().trim().transform(nullCheck).nullable(),
   birthdate: yup
     .string()
-    .defined()
+    .trim()
     .transform(nullCheck)
     .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
       excludeEmptyString: true,
