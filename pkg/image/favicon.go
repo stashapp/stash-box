@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/manager/config"
@@ -14,9 +15,21 @@ import (
 )
 
 var iconCache = map[uuid.UUID][]byte{}
+var iconCacheMutex = &sync.RWMutex{}
+
+func getCachedSiteIcon(site *models.Site) ([]byte, bool) {
+	iconCacheMutex.RLock()
+	defer iconCacheMutex.RUnlock()
+
+	if cachedIcon, hasIcon := iconCache[site.ID]; hasIcon {
+		return cachedIcon, true
+	}
+
+	return nil, false
+}
 
 func GetSiteIcon(ctx context.Context, site models.Site) []byte {
-	if cachedIcon, hasIcon := iconCache[site.ID]; hasIcon {
+	if cachedIcon, hasIcon := getCachedSiteIcon(&site); hasIcon {
 		return cachedIcon
 	}
 
@@ -34,6 +47,9 @@ func GetSiteIcon(ctx context.Context, site models.Site) []byte {
 	if err != nil || len(data) == 0 {
 		return nil
 	}
+
+	iconCacheMutex.Lock()
+	defer iconCacheMutex.Unlock()
 
 	iconCache[site.ID] = data
 	return iconCache[site.ID]
