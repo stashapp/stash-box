@@ -51,7 +51,7 @@ build-release-static: build
 generate: generate-backend generate-ui
 
 clean:
-	@ rm -rf stash-box stash-box-config.yml frontend/node_modules frontend/build dist
+	@ rm -rf stash-box frontend/node_modules frontend/build dist
 
 generate-backend:
 	go generate
