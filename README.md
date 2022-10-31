@@ -12,7 +12,7 @@ The graphql playground can be accessed at `host:port/playground`. The graphql in
 
 # Docker install
 
-A docker-compose file for production deployment can be found [here](https://github.com/stashapp/stash-box/blob/develop/docker/production/docker-compose.yml). Traefik can be omitted if you don't need a reverse proxy.
+A docker-compose file for production deployment can be found [here](docker/production/docker-compose.yml). Traefik can be omitted if you don't need a reverse proxy.
 
 Alternatively, if postgresql is already available, stash-box can be installed on its own from [dockerhub](https://hub.docker.com/r/stashapp/stash-box).
 
