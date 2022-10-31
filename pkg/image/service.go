@@ -74,6 +74,12 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 			if manipulatedImage == nil {
 				// image doesn't need to be manipulated, the original image
 				// can be used
+
+				// reset to start
+				if _, err = input.File.File.Seek(0, 0); err != nil {
+					return nil, err
+				}
+
 				file := make([]byte, input.File.Size)
 				if _, err := input.File.File.Read(file); err != nil {
 					return nil, err
