@@ -24,10 +24,7 @@ Releases TODO
 
 ## Initial setup
 
-Before building the binary the frontend project needs to be built.
-* Run `make pre-ui` to install frontend dependencies.
-* Run `make ui` to build the frontend bundles.
-* Run `make build` to build the binary.
+Run `make` to build the application.
 
 Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stash-box-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
 
