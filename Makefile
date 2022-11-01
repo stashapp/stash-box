@@ -59,6 +59,7 @@ build-release-static: STATIC_FLAGS := -s -w
 build-release-static: build
 
 # Regenerates GraphQL files
+generate: ui
 generate: install
 generate: generate-backend generate-ui
 
