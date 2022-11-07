@@ -131,6 +131,7 @@ export type DraftSubmissionStatus = {
 export type Edit = {
   __typename: "Edit";
   applied: Scalars["Boolean"];
+  bot: Scalars["Boolean"];
   closed?: Maybe<Scalars["Time"]>;
   comments: Array<EditComment>;
   created: Scalars["Time"];
@@ -173,6 +174,8 @@ export type EditCommentInput = {
 export type EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit;
 
 export type EditInput = {
+  /** Edit submitted by an automated script. Requires bot permission */
+  bot?: InputMaybe<Scalars["Boolean"]>;
   comment?: InputMaybe<Scalars["String"]>;
   /** Not required for create type */
   id?: InputMaybe<Scalars["ID"]>;
@@ -185,6 +188,8 @@ export type EditQueryInput = {
   /** Filter by applied status */
   applied?: InputMaybe<Scalars["Boolean"]>;
   direction?: SortDirectionEnum;
+  /** Filter to bot edits only */
+  is_bot?: InputMaybe<Scalars["Boolean"]>;
   /** Filter by favorite status */
   is_favorite?: InputMaybe<Scalars["Boolean"]>;
   /** Filter by operation */
@@ -1843,6 +1848,7 @@ export type EditFragment = {
   target_type: TargetTypeEnum;
   operation: OperationEnum;
   status: VoteStatusEnum;
+  bot: boolean;
   applied: boolean;
   created: string;
   updated?: string | null;
@@ -3165,6 +3171,7 @@ export type ApplyEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -4374,6 +4381,7 @@ export type PerformerEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -5402,6 +5410,7 @@ export type PerformerEditUpdateMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -6465,6 +6474,7 @@ export type SceneEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -7493,6 +7503,7 @@ export type SceneEditUpdateMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -8520,6 +8531,7 @@ export type StudioEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -9548,6 +9560,7 @@ export type StudioEditUpdateMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -10575,6 +10588,7 @@ export type TagEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -11603,6 +11617,7 @@ export type TagEditUpdateMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -12764,6 +12779,7 @@ export type VoteMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -14048,6 +14064,7 @@ export type EditQuery = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -15512,6 +15529,7 @@ export type EditsQuery = {
       target_type: TargetTypeEnum;
       operation: OperationEnum;
       status: VoteStatusEnum;
+      bot: boolean;
       applied: boolean;
       created: string;
       updated?: string | null;
@@ -16854,6 +16872,7 @@ export type QueryExistingSceneQuery = {
       target_type: TargetTypeEnum;
       operation: OperationEnum;
       status: VoteStatusEnum;
+      bot: boolean;
       applied: boolean;
       created: string;
       updated?: string | null;

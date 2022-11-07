@@ -99,6 +99,7 @@ type ComplexityRoot struct {
 
 	Edit struct {
 		Applied      func(childComplexity int) int
+		Bot          func(childComplexity int) int
 		Closed       func(childComplexity int) int
 		Comments     func(childComplexity int) int
 		Created      func(childComplexity int) int
@@ -592,6 +593,7 @@ type EditResolver interface {
 	TargetType(ctx context.Context, obj *Edit) (TargetTypeEnum, error)
 	MergeSources(ctx context.Context, obj *Edit) ([]EditTarget, error)
 	Operation(ctx context.Context, obj *Edit) (OperationEnum, error)
+
 	Details(ctx context.Context, obj *Edit) (EditDetails, error)
 	OldDetails(ctx context.Context, obj *Edit) (EditDetails, error)
 	Options(ctx context.Context, obj *Edit) (*PerformerEditOptions, error)
@@ -982,6 +984,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Edit.Applied(childComplexity), true
+
+	case "Edit.bot":
+		if e.complexity.Edit.Bot == nil {
+			break
+		}
+
+		return e.complexity.Edit.Bot(childComplexity), true
 
 	case "Edit.closed":
 		if e.complexity.Edit.Closed == nil {
@@ -4137,6 +4146,7 @@ type Edit {
     """Objects to merge with the target. Only applicable to merges"""
     merge_sources: [EditTarget!]!
     operation: OperationEnum!
+    bot: Boolean!
     details: EditDetails
     """Previous state of fields being modified - null if operation is create or delete."""
     old_details: EditDetails
@@ -4163,6 +4173,8 @@ input EditInput {
   """Only required for merge type"""
   merge_source_ids: [ID!]
   comment: String
+  """Edit submitted by an automated script. Requires bot permission"""
+  bot: Boolean
 }
 
 input EditVoteInput {
@@ -4203,6 +4215,8 @@ input EditQueryInput {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+  """Filter to bot edits only"""
+  is_bot: Boolean
 
   page: Int! = 1
   per_page: Int! = 25
@@ -7630,6 +7644,50 @@ func (ec *executionContext) fieldContext_Edit_operation(ctx context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type OperationEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Edit_bot(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Edit_bot(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Bot, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Edit_bot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12059,6 +12117,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneEdit(ctx context.Context,
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12178,6 +12238,8 @@ func (ec *executionContext) fieldContext_Mutation_performerEdit(ctx context.Cont
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12297,6 +12359,8 @@ func (ec *executionContext) fieldContext_Mutation_studioEdit(ctx context.Context
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12416,6 +12480,8 @@ func (ec *executionContext) fieldContext_Mutation_tagEdit(ctx context.Context, f
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12535,6 +12601,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneEditUpdate(ctx context.Co
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12654,6 +12722,8 @@ func (ec *executionContext) fieldContext_Mutation_performerEditUpdate(ctx contex
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12773,6 +12843,8 @@ func (ec *executionContext) fieldContext_Mutation_studioEditUpdate(ctx context.C
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12892,6 +12964,8 @@ func (ec *executionContext) fieldContext_Mutation_tagEditUpdate(ctx context.Cont
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -13011,6 +13085,8 @@ func (ec *executionContext) fieldContext_Mutation_editVote(ctx context.Context, 
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -13130,6 +13206,8 @@ func (ec *executionContext) fieldContext_Mutation_editComment(ctx context.Contex
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -13249,6 +13327,8 @@ func (ec *executionContext) fieldContext_Mutation_applyEdit(ctx context.Context,
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -13368,6 +13448,8 @@ func (ec *executionContext) fieldContext_Mutation_cancelEdit(ctx context.Context
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -15078,6 +15160,8 @@ func (ec *executionContext) fieldContext_Performer_edits(ctx context.Context, fi
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -19562,6 +19646,8 @@ func (ec *executionContext) fieldContext_Query_findEdit(ctx context.Context, fie
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -20941,6 +21027,8 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(ctx context.
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -21025,6 +21113,8 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_edits(ctx cont
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -22738,6 +22828,8 @@ func (ec *executionContext) fieldContext_Scene_edits(ctx context.Context, field 
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -26456,6 +26548,8 @@ func (ec *executionContext) fieldContext_Tag_edits(ctx context.Context, field gr
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -30686,7 +30780,7 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "operation", "merge_source_ids", "comment"}
+	fieldsInOrder := [...]string{"id", "operation", "merge_source_ids", "comment", "bot"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30725,6 +30819,14 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
+		case "bot":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bot"))
+			it.Bot, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -30751,7 +30853,7 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "is_bot", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30819,6 +30921,14 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
 			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_bot":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_bot"))
+			it.IsBot, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35333,6 +35443,13 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
+		case "bot":
+
+			out.Values[i] = ec._Edit_bot(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "details":
 			field := field
 

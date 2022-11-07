@@ -33,6 +33,7 @@ interface EditFilterProps {
   status?: VoteStatusEnum;
   operation?: OperationEnum;
   favorite?: boolean;
+  bot?: boolean;
   showFavoriteOption?: boolean;
   defaultVoteStatus?: VoteStatusEnum | "all";
 }
@@ -44,6 +45,7 @@ const useEditFilter = ({
   status: fixedStatus,
   operation: fixedOperation,
   favorite: fixedFavorite,
+  bot: fixedBot,
   showFavoriteOption = true,
   defaultVoteStatus = "all",
 }: EditFilterProps) => {
@@ -55,6 +57,7 @@ const useEditFilter = ({
     status: { name: "status", type: "string", default: defaultVoteStatus },
     type: { name: "type", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
+    bot: { name: "bot", type: "string", default: "false" },
   });
 
   const sort = ensureEnum(EditSortEnum, params.sort);
@@ -63,6 +66,7 @@ const useEditFilter = ({
   const status = resolveEnum(VoteStatusEnum, params.status, undefined);
   const type = resolveEnum(TargetTypeEnum, params.type);
   const favorite = params.favorite === "true";
+  const bot = params.bot === "true";
 
   const selectedSort = fixedSort ?? sort;
   const selectedDirection = fixedDirection ?? direction;
@@ -70,6 +74,7 @@ const useEditFilter = ({
   const selectedType = fixedType ?? type;
   const selectedOperation = fixedOperation ?? operation;
   const selectedFavorite = fixedFavorite ?? favorite;
+  const selectedBot = fixedBot ?? bot;
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -154,10 +159,10 @@ const useEditFilter = ({
         </Form.Select>
       </Form.Group>
       {showFavoriteOption && (
-        <Form.Group controlId="favorite">
+        <Form.Group controlId="favorite" className="text-center">
           <Form.Label>Favorites</Form.Label>
           <Form.Check
-            className="ms-3 mt-2"
+            className="mt-2"
             type="switch"
             defaultChecked={favorite}
             onChange={(e) =>
@@ -166,6 +171,15 @@ const useEditFilter = ({
           />
         </Form.Group>
       )}
+      <Form.Group controlId="bot" className="text-center ms-3">
+        <Form.Label>Bot Edits</Form.Label>
+        <Form.Check
+          className="mt-2"
+          type="switch"
+          defaultChecked={bot}
+          onChange={(e) => setParams("bot", e.currentTarget.checked.toString())}
+        />
+      </Form.Group>
     </Form>
   );
 
@@ -177,6 +191,7 @@ const useEditFilter = ({
     selectedStatus,
     selectedOperation,
     selectedFavorite,
+    selectedBot,
   };
 };
 

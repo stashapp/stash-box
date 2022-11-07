@@ -20,6 +20,7 @@ type Edit struct {
 	Status     string         `db:"status" json:"status"`
 	Applied    bool           `db:"applied" json:"applied"`
 	Data       types.JSONText `db:"data" json:"data"`
+	Bot        bool           `db:"bot" json:"bot"`
 	CreatedAt  time.Time      `db:"created_at" json:"created_at"`
 	UpdatedAt  sql.NullTime   `db:"updated_at" json:"updated_at"`
 	ClosedAt   sql.NullTime   `db:"closed_at" json:"closed_at"`
@@ -48,6 +49,12 @@ func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditI
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),
 		CreatedAt:  time.Now(),
+	}
+
+	if input.Bot != nil && *input.Bot {
+		ret.Bot = true
+	} else {
+		ret.Bot = false
 	}
 
 	return ret

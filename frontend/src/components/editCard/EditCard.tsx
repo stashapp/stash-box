@@ -2,6 +2,8 @@ import { FC } from "react";
 import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
+import { faRobot } from "@fortawesome/free-solid-svg-icons";
+import { Icon, Tooltip } from "src/components/fragments";
 
 import { OperationEnum, EditFragment } from "src/graphql";
 
@@ -55,6 +57,17 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
               </Link>
             ) : (
               <span>Deleted User</span>
+            )}
+            {edit.bot && (
+              <Tooltip
+                text="Edit submitted by an automated script"
+                delay={50}
+                placement="auto"
+              >
+                <span>
+                  <Icon icon={faRobot} className="ms-2" />
+                </span>
+              </Tooltip>
             )}
           </div>
           <div>
