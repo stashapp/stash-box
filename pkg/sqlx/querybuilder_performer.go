@@ -566,7 +566,7 @@ func (qb *performerQueryBuilder) SearchPerformers(term string, limit int) (model
 				FROM performers P
 				WHERE P.deleted = FALSE AND P.name % $1 AND similarity(P.name, $1) > 0.5
 			UNION
-				SELECT P.id, (similarity(COALESCE(PA.alias, ''), $1) * 0.7) AS similarity
+				SELECT P.id, (similarity(COALESCE(PA.alias, ''), $1) * 0.5) AS similarity
 				FROM performers P
 				LEFT JOIN performer_aliases PA on PA.performer_id = P.id
 				WHERE P.deleted = FALSE AND PA.alias % $1 AND similarity(COALESCE(PA.alias, ''), $1) > 0.6
