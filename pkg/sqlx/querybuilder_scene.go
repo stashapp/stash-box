@@ -494,6 +494,17 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 		query.Pagination = getPagination(filter.Page, filter.PerPage)
 	}
 
+	if filter.HasFingerprintSubmissions != nil && *filter.HasFingerprintSubmissions {
+		query.Body += `
+			JOIN (
+				SELECT scene_id
+				FROM scene_fingerprints
+				WHERE user_id = ?
+			) T ON scenes.id = T.scene_id
+		`
+		query.AddArg(userID)
+	}
+
 	query.Eq("scenes.deleted", false)
 
 	return query, nil
@@ -585,7 +596,7 @@ func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) (models.SceneFingerpr
 	return joins, err
 }
 
-func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []uuid.UUID) ([][]*models.Fingerprint, []error) {
+func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []uuid.UUID, onlySubmitted bool) ([][]*models.Fingerprint, []error) {
 	query := `
 		SELECT
 			f.scene_id,
@@ -598,15 +609,22 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 			bool_or(f.user_id = :userid) as user_submitted
 		FROM scene_fingerprints f
 		WHERE f.scene_id IN (:sceneids)
+	`
+
+	if onlySubmitted {
+		query += "AND f.user_id = :userid"
+	}
+
+	query += `
 		GROUP BY f.scene_id, f.algorithm, f.hash
 		ORDER BY submissions DESC`
-
-	m := make(map[uuid.UUID][]*models.Fingerprint)
 
 	arg := map[string]interface{}{
 		"userid":   currentUserID,
 		"sceneids": ids,
 	}
+	m := make(map[uuid.UUID][]*models.Fingerprint)
+
 	query, args, err := sqlx.Named(query, arg)
 	if err != nil {
 		return nil, utils.DuplicateError(err, len(ids))

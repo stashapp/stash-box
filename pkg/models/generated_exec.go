@@ -407,7 +407,7 @@ type ComplexityRoot struct {
 		Director     func(childComplexity int) int
 		Duration     func(childComplexity int) int
 		Edits        func(childComplexity int) int
-		Fingerprints func(childComplexity int) int
+		Fingerprints func(childComplexity int, isSubmitted *bool) int
 		ID           func(childComplexity int) int
 		Images       func(childComplexity int) int
 		Performers   func(childComplexity int) int
@@ -784,7 +784,7 @@ type SceneResolver interface {
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
 	Images(ctx context.Context, obj *Scene) ([]*Image, error)
 	Performers(ctx context.Context, obj *Scene) ([]*PerformerAppearance, error)
-	Fingerprints(ctx context.Context, obj *Scene) ([]*Fingerprint, error)
+	Fingerprints(ctx context.Context, obj *Scene, isSubmitted *bool) ([]*Fingerprint, error)
 	Duration(ctx context.Context, obj *Scene) (*int, error)
 	Director(ctx context.Context, obj *Scene) (*string, error)
 	Code(ctx context.Context, obj *Scene) (*string, error)
@@ -3000,7 +3000,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Scene.Fingerprints(childComplexity), true
+		args, err := ec.field_Scene_fingerprints_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Scene.Fingerprints(childComplexity, args["is_submitted"].(*bool)), true
 
 	case "Scene.id":
 		if e.complexity.Scene.ID == nil {
@@ -4784,7 +4789,7 @@ type Scene {
   tags: [Tag!]!
   images: [Image!]!
   performers: [PerformerAppearance!]!
-  fingerprints: [Fingerprint!]!
+  fingerprints(is_submitted: Boolean = False): [Fingerprint!]!
   duration: Int
   director: String
   code: String
@@ -4915,6 +4920,8 @@ input SceneQueryInput {
   fingerprints: MultiStringCriterionInput
   """Filter by favorited entity"""
   favorites: FavoriteFilter
+  """Filter to scenes with fingerprints submitted by the user"""
+  has_fingerprint_submissions: Boolean = False
 
   page: Int! = 1
   per_page: Int! = 25
@@ -6771,6 +6778,21 @@ func (ec *executionContext) field_Query_searchTag_args(ctx context.Context, rawA
 		}
 	}
 	args["limit"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Scene_fingerprints_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *bool
+	if tmp, ok := rawArgs["is_submitted"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_submitted"))
+		arg0, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["is_submitted"] = arg0
 	return args, nil
 }
 
@@ -22441,7 +22463,7 @@ func (ec *executionContext) _Scene_fingerprints(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().Fingerprints(rctx, obj)
+		return ec.resolvers.Scene().Fingerprints(rctx, obj, fc.Args["is_submitted"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -22483,6 +22505,17 @@ func (ec *executionContext) fieldContext_Scene_fingerprints(ctx context.Context,
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Scene_fingerprints_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -33190,6 +33223,9 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
+	if _, present := asMap["has_fingerprint_submissions"]; !present {
+		asMap["has_fingerprint_submissions"] = "False"
+	}
 	if _, present := asMap["page"]; !present {
 		asMap["page"] = 1
 	}
@@ -33295,6 +33331,14 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("favorites"))
 			it.Favorites, err = ec.unmarshalOFavoriteFilter2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFavoriteFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "has_fingerprint_submissions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("has_fingerprint_submissions"))
+			it.HasFingerprintSubmissions, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
