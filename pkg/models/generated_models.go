@@ -94,6 +94,8 @@ type EditInput struct {
 	// Only required for merge type
 	MergeSourceIds []uuid.UUID `json:"merge_source_ids"`
 	Comment        *string     `json:"comment"`
+	// Edit submitted by an automated script. Requires bot permission
+	Bot *bool `json:"bot"`
 }
 
 type EditQueryInput struct {
@@ -112,11 +114,13 @@ type EditQueryInput struct {
 	// Filter by target id
 	TargetID *uuid.UUID `json:"target_id"`
 	// Filter by favorite status
-	IsFavorite *bool             `json:"is_favorite"`
-	Page       int               `json:"page"`
-	PerPage    int               `json:"per_page"`
-	Direction  SortDirectionEnum `json:"direction"`
-	Sort       EditSortEnum      `json:"sort"`
+	IsFavorite *bool `json:"is_favorite"`
+	// Filter to bot edits only
+	IsBot     *bool             `json:"is_bot"`
+	Page      int               `json:"page"`
+	PerPage   int               `json:"per_page"`
+	Direction SortDirectionEnum `json:"direction"`
+	Sort      EditSortEnum      `json:"sort"`
 }
 
 type EditVoteInput struct {

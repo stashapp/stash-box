@@ -277,6 +277,12 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		query.AddArg(userID, userID, userID, userID, userID, userID)
 	}
 
+	if q := filter.IsBot; q != nil && *q {
+		query.Eq("bot", true)
+	} else {
+		query.Eq("bot", false)
+	}
+
 	if filter.Sort == models.EditSortEnumClosedAt || filter.Sort == models.EditSortEnumUpdatedAt {
 		// When closed_at/updated_at value is null, fallback to created_at
 		colName := getColumn(editTable, filter.Sort.String())
