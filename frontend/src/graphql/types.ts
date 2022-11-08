@@ -207,6 +207,10 @@ export type EditQueryInput = {
   user_id?: InputMaybe<Scalars["ID"]>;
   /** Filter by vote count */
   vote_count?: InputMaybe<IntCriterionInput>;
+  /** Filter by user voted status */
+  voted?: InputMaybe<UserVotedFilterEnum>;
+  /** Voted user id, this will be set to the current user */
+  voted_user_id?: InputMaybe<Scalars["ID"]>;
 };
 
 export enum EditSortEnum {
@@ -1799,6 +1803,13 @@ export type UserVoteCount = {
   immediate_reject: Scalars["Int"];
   reject: Scalars["Int"];
 };
+
+export enum UserVotedFilterEnum {
+  ABSTAIN = "ABSTAIN",
+  ACCEPT = "ACCEPT",
+  NOT_VOTED = "NOT_VOTED",
+  REJECT = "REJECT",
+}
 
 export enum ValidSiteTypeEnum {
   PERFORMER = "PERFORMER",

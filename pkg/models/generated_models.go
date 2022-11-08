@@ -94,6 +94,8 @@ type EditInput struct {
 	// Only required for merge type
 	MergeSourceIds []uuid.UUID `json:"merge_source_ids"`
 	Comment        *string     `json:"comment"`
+	// Edit submitted by an automated script. Requires bot permission
+	Bot *bool `json:"bot"`
 }
 
 type EditQueryInput struct {
@@ -116,11 +118,13 @@ type EditQueryInput struct {
 	// Filter by user voted status
 	Voted *UserVotedFilterEnum `json:"voted"`
 	// Voted user id, this will be set to the current user
-	VotedUserID *uuid.UUID        `json:"voted_user_id"`
-	Page        int               `json:"page"`
-	PerPage     int               `json:"per_page"`
-	Direction   SortDirectionEnum `json:"direction"`
-	Sort        EditSortEnum      `json:"sort"`
+	VotedUserID *uuid.UUID `json:"voted_user_id"`
+	// Filter to bot edits only
+	IsBot     *bool             `json:"is_bot"`
+	Page      int               `json:"page"`
+	PerPage   int               `json:"per_page"`
+	Direction SortDirectionEnum `json:"direction"`
+	Sort      EditSortEnum      `json:"sort"`
 }
 
 type EditVoteInput struct {
@@ -470,7 +474,9 @@ type SceneDestroyInput struct {
 type SceneDraftInput struct {
 	ID           *uuid.UUID          `json:"id"`
 	Title        *string             `json:"title"`
+	Code         *string             `json:"code"`
 	Details      *string             `json:"details"`
+	Director     *string             `json:"director"`
 	URL          *string             `json:"url"`
 	Date         *string             `json:"date"`
 	Studio       *DraftEntityInput   `json:"studio"`
@@ -524,11 +530,13 @@ type SceneQueryInput struct {
 	// Filter to only include scenes with these fingerprints
 	Fingerprints *MultiStringCriterionInput `json:"fingerprints"`
 	// Filter by favorited entity
-	Favorites *FavoriteFilter   `json:"favorites"`
-	Page      int               `json:"page"`
-	PerPage   int               `json:"per_page"`
-	Direction SortDirectionEnum `json:"direction"`
-	Sort      SceneSortEnum     `json:"sort"`
+	Favorites *FavoriteFilter `json:"favorites"`
+	// Filter to scenes with fingerprints submitted by the user
+	HasFingerprintSubmissions *bool             `json:"has_fingerprint_submissions"`
+	Page                      int               `json:"page"`
+	PerPage                   int               `json:"per_page"`
+	Direction                 SortDirectionEnum `json:"direction"`
+	Sort                      SceneSortEnum     `json:"sort"`
 }
 
 type SceneUpdateInput struct {
