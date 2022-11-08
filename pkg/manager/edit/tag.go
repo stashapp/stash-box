@@ -24,23 +24,23 @@ func Tag(fac models.Repo, edit *models.Edit) *TagEditProcessor {
 	}
 }
 
-func (m *TagEditProcessor) Edit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *TagEditProcessor) Edit(input models.TagEditInput, inputArgs utils.ArgumentsQuery) error {
 	var err error
 	switch input.Edit.Operation {
 	case models.OperationEnumModify:
-		err = m.modifyEdit(input, inputSpecified)
+		err = m.modifyEdit(input, inputArgs)
 	case models.OperationEnumMerge:
-		err = m.mergeEdit(input, inputSpecified)
+		err = m.mergeEdit(input, inputArgs)
 	case models.OperationEnumDestroy:
-		err = m.destroyEdit(input, inputSpecified)
+		err = m.destroyEdit(input)
 	case models.OperationEnumCreate:
-		err = m.createEdit(input, inputSpecified)
+		err = m.createEdit(input, inputArgs)
 	}
 
 	return err
 }
 
-func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputArgs utils.ArgumentsQuery) error {
 	tqb := m.fac.Tag()
 
 	// get the existing tag
@@ -56,14 +56,16 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified 
 	}
 
 	// perform a diff against the input and the current object
-	tagEdit := input.Details.TagEditFromDiff(*tag)
+	tagEdit := input.Details.TagEditFromDiff(*tag, inputArgs)
 
 	aliases, err := tqb.GetAliases(tagID)
 	if err != nil {
 		return err
 	}
 
-	tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases)
+	if input.Details.Aliases != nil || inputArgs.Field("aliases").IsNull() {
+		tagEdit.New.AddedAliases, tagEdit.New.RemovedAliases = utils.SliceCompare(input.Details.Aliases, aliases)
+	}
 
 	if reflect.DeepEqual(tagEdit.Old, tagEdit.New) {
 		return ErrNoChanges
@@ -72,7 +74,7 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputSpecified 
 	return m.edit.SetData(tagEdit)
 }
 
-func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputArgs utils.ArgumentsQuery) error {
 	tqb := m.fac.Tag()
 
 	// get the existing tag
@@ -111,7 +113,7 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 	}
 
 	// perform a diff against the input and the current object
-	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources)
+	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources, inputArgs)
 
 	aliases, err := tqb.GetAliases(tagID)
 
@@ -124,15 +126,15 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputSpecified I
 	return m.edit.SetData(tagEdit)
 }
 
-func (m *TagEditProcessor) createEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
-	tagEdit := input.Details.TagEditFromCreate()
+func (m *TagEditProcessor) createEdit(input models.TagEditInput, inputArgs utils.ArgumentsQuery) error {
+	tagEdit := input.Details.TagEditFromCreate(inputArgs)
 
 	tagEdit.New.AddedAliases = input.Details.Aliases
 
 	return m.edit.SetData(tagEdit)
 }
 
-func (m *TagEditProcessor) destroyEdit(input models.TagEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *TagEditProcessor) destroyEdit(input models.TagEditInput) error {
 	tqb := m.fac.Tag()
 
 	// Get the existing tag
