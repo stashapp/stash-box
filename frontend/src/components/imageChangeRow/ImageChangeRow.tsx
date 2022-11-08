@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 
-import { ImageFragment as Image } from "src/graphql/definitions/ImageFragment";
+import { ImageFragment as Image } from "src/graphql";
 
 const CLASSNAME = "ImageChangeRow";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;

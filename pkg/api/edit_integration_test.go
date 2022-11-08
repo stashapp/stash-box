@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
+	"gotest.tools/v3/assert"
 )
 
 type editTestRunner struct {
@@ -23,9 +24,7 @@ func createEditTestRunner(t *testing.T) *editTestRunner {
 
 func (s *editTestRunner) testAdminCancelEdit() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	editInput := models.CancelEditInput{
 		ID: createdEdit.ID,
@@ -33,10 +32,7 @@ func (s *editTestRunner) testAdminCancelEdit() {
 
 	pt := createEditTestRunner(s.t)
 	cancelEdit, err := s.resolver.Mutation().CancelEdit(pt.ctx, editInput)
-	if err != nil {
-		s.t.Errorf("Admin failed to cancel edit: %s", err)
-		return
-	}
+	assert.NilError(s.t, err, "Admin failed to cancel edit: %s")
 	s.verifyAdminCancelEdit(cancelEdit)
 }
 
@@ -49,14 +45,13 @@ func (s *editTestRunner) verifyAdminCancelEdit(edit *models.Edit) {
 
 func (s *editTestRunner) testOwnerCancelEdit() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	editInput := models.CancelEditInput{
 		ID: createdEdit.ID,
 	}
 	cancelEdit, err := s.resolver.Mutation().CancelEdit(s.ctx, editInput)
+	assert.NilError(s.t, err)
 	s.verifyOwnerCancelEdit(cancelEdit)
 }
 
@@ -69,9 +64,7 @@ func (s *editTestRunner) verifyOwnerCancelEdit(edit *models.Edit) {
 
 func (s *editTestRunner) testEditComment() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	text := "some comment text"
 	editInput := models.EditCommentInput{
@@ -79,42 +72,33 @@ func (s *editTestRunner) testEditComment() {
 		Comment: text,
 	}
 	editComment, err := s.resolver.Mutation().EditComment(s.ctx, editInput)
+	assert.NilError(s.t, err)
 	s.verifyEditComment(editComment, text)
 }
 
 func (s *editTestRunner) verifyEditComment(edit *models.Edit, comment string) {
 	comments, _ := s.resolver.Edit().Comments(s.ctx, edit)
-	if len(comments) != 1 {
-		s.fieldMismatch(1, len(comments), "Comment count")
-	} else {
-		if comments[0].Text != comment {
-			s.fieldMismatch(comments, comments[0].Text, "Comment text")
-		}
-	}
+	assert.Assert(s.t, len(comments) == 1)
+	assert.Equal(s.t, comments[0].Text, comment)
 }
 
 func (s *editTestRunner) testVotePermissionsPromotion() {
 	createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumEdit})
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	for i := 1; i <= 10; i++ {
 		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-		if err != nil {
-			return
-		}
+		assert.NilError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, user.ContextRoles, userDB.adminRoles)
 		_, err = s.applyEdit(createdEdit.ID)
-		if err != nil {
-			return
-		}
+		assert.NilError(s.t, err)
 	}
 	s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 
 	userID := createdUser.ID
 	user, err := s.resolver.Query().FindUser(s.ctx, &userID, nil)
+	assert.NilError(s.t, err)
 
 	s.verifyUserRolePromotion(user)
 }
@@ -128,22 +112,16 @@ func (s *editTestRunner) verifyUserRolePromotion(user *models.User) {
 			hasVotePermission = true
 		}
 	}
-	if !hasVotePermission {
-		s.fieldMismatch(hasVotePermission, true, "User has vote permission")
-	}
+	assert.Equal(s.t, hasVotePermission, true)
 }
 
 func (s *editTestRunner) testPositiveEditVoteApplication() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
-		if err != nil {
-			return
-		}
+		assert.NilError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
@@ -152,6 +130,7 @@ func (s *editTestRunner) testPositiveEditVoteApplication() {
 	}
 
 	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NilError(s.t, err)
 
 	s.verifyEditApplied(updatedEdit)
 }
@@ -166,15 +145,11 @@ func (s *editTestRunner) verifyEditRejected(edit *models.Edit) {
 
 func (s *editTestRunner) testNegativeEditVoteApplication() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
-		if err != nil {
-			return
-		}
+		assert.NilError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
@@ -183,21 +158,18 @@ func (s *editTestRunner) testNegativeEditVoteApplication() {
 	}
 
 	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NilError(s.t, err)
 
 	s.verifyEditRejected(updatedEdit)
 }
 
 func (s *editTestRunner) testEditVoteNotApplying() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
-		if err != nil {
-			return
-		}
+		assert.NilError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 
 		vote := models.VoteTypeEnumAccept
@@ -211,6 +183,7 @@ func (s *editTestRunner) testEditVoteNotApplying() {
 	}
 
 	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NilError(s.t, err)
 
 	s.verifyEditPending(updatedEdit)
 }
@@ -221,24 +194,19 @@ func (s *editTestRunner) verifyEditPending(edit *models.Edit) {
 
 func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	id := createdTag.UUID()
 	input := models.EditInput{
 		ID:        &id,
 		Operation: models.OperationEnumDestroy,
 	}
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumDestroy, nil, &input)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	for i := 1; i <= 3; i++ {
 		createdUser, err := s.createTestUser(nil, []models.RoleEnum{models.RoleEnumVote})
-		if err != nil {
-			return
-		}
+		assert.NilError(s.t, err)
 		s.ctx = context.WithValue(s.ctx, user.ContextUser, createdUser)
 		s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 			ID:   createdEdit.ID,
@@ -247,24 +215,20 @@ func (s *editTestRunner) testDestructiveEditsNotAutoApplied() {
 	}
 
 	updatedEdit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
+	assert.NilError(s.t, err)
 
 	s.verifyEditPending(updatedEdit)
 }
 
 func (s *editTestRunner) testVoteOwnedEditsDisallowed() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	_, err = s.resolver.Mutation().EditVote(s.ctx, models.EditVoteInput{
 		ID:   createdEdit.ID,
 		Vote: models.VoteTypeEnumAccept,
 	})
-
-	if err != user.ErrUnauthorized {
-		s.t.Errorf("Voting: got %v want %v", err, user.ErrUnauthorized)
-	}
+	assert.ErrorIs(s.t, err, user.ErrUnauthorized)
 }
 
 func TestAdminCancelEdit(t *testing.T) {

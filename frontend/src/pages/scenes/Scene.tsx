@@ -8,13 +8,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  Scene_findScene as Scene,
-  Scene_findScene_fingerprints as Fingerprint,
-} from "src/graphql/definitions/Scene";
-import {
   usePendingEditsCount,
   TargetTypeEnum,
   useUnmatchFingerprint,
+  SceneFragment as Scene,
 } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import { useToast } from "src/hooks";
@@ -43,6 +40,8 @@ import {
 } from "src/components/fragments";
 import { EditList, URLList } from "src/components/list";
 import Image from "src/components/image";
+
+type Fingerprint = NonNullable<Scene["fingerprints"][number]>;
 
 const DEFAULT_TAB = "description";
 
@@ -149,7 +148,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   ));
   const tags = [...scene.tags].sort(compareByName).map((tag) => (
     <li key={tag.name}>
-      <TagLink title={tag.name} link={tagHref(tag)} />
+      <TagLink
+        title={tag.name}
+        link={tagHref(tag)}
+        description={tag.description}
+      />
     </li>
   ));
 

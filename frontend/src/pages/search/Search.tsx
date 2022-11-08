@@ -12,11 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
-import {
-  SearchAll_searchPerformer as Performer,
-  SearchAll_searchScene as Scene,
-} from "src/graphql/definitions/SearchAll";
-import { useSearchAll } from "src/graphql";
+import { useSearchAll, SearchAllQuery } from "src/graphql";
 import {
   Icon,
   FavoriteStar,
@@ -34,6 +30,9 @@ import {
   formatDuration,
 } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
+
+type Performer = NonNullable<SearchAllQuery["searchPerformer"][number]>;
+type Scene = NonNullable<SearchAllQuery["searchScene"][number]>;
 
 const CLASSNAME = "SearchPage";
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;

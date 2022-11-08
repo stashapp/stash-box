@@ -1,8 +1,8 @@
 import { FC } from "react";
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
+import { PerformerFragment } from "src/graphql";
 
 interface PerformerNameProps {
-  performer: Pick<Performer, "name" | "disambiguation" | "deleted">;
+  performer: Pick<PerformerFragment, "name" | "disambiguation" | "deleted">;
   as?: string | null;
 }
 

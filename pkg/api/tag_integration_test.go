@@ -4,11 +4,11 @@
 package api_test
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"gotest.tools/v3/assert"
 )
 
 type tagTestRunner struct {
@@ -30,88 +30,57 @@ func (s *tagTestRunner) testCreateTag() {
 	}
 
 	tag, err := s.resolver.Mutation().TagCreate(s.ctx, input)
-
-	if err != nil {
-		s.t.Errorf("Error creating tag: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error creating tag")
 
 	s.verifyCreatedTag(input, tag)
 }
 
 func (s *tagTestRunner) verifyCreatedTag(input models.TagCreateInput, tag *models.Tag) {
 	// ensure basic attributes are set correctly
-	if input.Name != tag.Name {
-		s.fieldMismatch(input.Name, tag.Name, "Name")
-	}
+	assert.Equal(s.t, input.Name, tag.Name)
 
 	r := s.resolver.Tag()
 
-	if tag.ID == uuid.Nil {
-		s.t.Errorf("Expected created tag id to be non-zero")
-	}
+	assert.Assert(s.t, tag.ID != uuid.Nil, "Expected created tag id to be non-zero")
 
-	if v, _ := r.Description(s.ctx, tag); !reflect.DeepEqual(v, input.Description) {
-		s.fieldMismatch(*input.Description, v, "Description")
-	}
+	description, _ := r.Description(s.ctx, tag)
+	assert.DeepEqual(s.t, description, input.Description)
 }
 
 func (s *tagTestRunner) testFindTagById() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	tagID := createdTag.UUID()
 	tag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding tag: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding tag")
 
 	// ensure returned tag is not nil
-	if tag == nil {
-		s.t.Error("Did not find tag by id")
-		return
-	}
+	assert.Assert(s.t, tag != nil, "Did not find tag by id")
 
 	// ensure values were set
-	if createdTag.Name != tag.Name {
-		s.fieldMismatch(createdTag.Name, tag.Name, "Name")
-	}
+	assert.Equal(s.t, createdTag.Name, tag.Name)
 }
 
 func (s *tagTestRunner) testFindTagByName() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	tagName := createdTag.Name
 
 	tag, err := s.resolver.Query().FindTag(s.ctx, nil, &tagName)
-	if err != nil {
-		s.t.Errorf("Error finding tag: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding tag")
 
 	// ensure returned tag is not nil
-	if tag == nil {
-		s.t.Error("Did not find tag by name")
-		return
-	}
+	assert.Assert(s.t, tag != nil, "Did not find tag by name")
 
 	// ensure values were set
-	if createdTag.Name != tag.Name {
-		s.fieldMismatch(createdTag.Name, tag.Name, "Name")
-	}
+	assert.Equal(s.t, createdTag.Name, tag.Name)
 }
 
 func (s *tagTestRunner) testUpdateTag() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	tagID := createdTag.UUID()
 
@@ -123,10 +92,7 @@ func (s *tagTestRunner) testUpdateTag() {
 	}
 
 	updatedTag, err := s.resolver.Mutation().TagUpdate(s.ctx, updateInput)
-	if err != nil {
-		s.t.Errorf("Error updating tag: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error updating tag")
 
 	updateInput.Name = &createdTag.Name
 	s.verifyUpdatedTag(updateInput, updatedTag)
@@ -134,48 +100,32 @@ func (s *tagTestRunner) testUpdateTag() {
 
 func (s *tagTestRunner) verifyUpdatedTag(input models.TagUpdateInput, tag *models.Tag) {
 	// ensure basic attributes are set correctly
-	if input.Name != nil && *input.Name != tag.Name {
-		s.fieldMismatch(*input.Name, tag.Name, "Name")
-	}
+	assert.Assert(s.t, input.Name == nil || (*input.Name == tag.Name))
 
 	r := s.resolver.Tag()
 
-	if v, _ := r.Description(s.ctx, tag); !reflect.DeepEqual(v, input.Description) {
-		s.fieldMismatch(input.Description, v, "Description")
-	}
+	description, _ := r.Description(s.ctx, tag)
+	assert.DeepEqual(s.t, description, input.Description)
 }
 
 func (s *tagTestRunner) testDestroyTag() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	tagID := createdTag.UUID()
 
 	destroyed, err := s.resolver.Mutation().TagDestroy(s.ctx, models.TagDestroyInput{
 		ID: tagID,
 	})
-	if err != nil {
-		s.t.Errorf("Error destroying tag: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error destroying tag")
 
-	if !destroyed {
-		s.t.Error("Tag was not destroyed")
-		return
-	}
+	assert.Assert(s.t, destroyed, "Tag was not destroyed")
 
 	// ensure cannot find tag
 	foundTag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding tag after destroying: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding tag after destroying")
 
-	if foundTag != nil {
-		s.t.Error("Found tag after destruction")
-	}
+	assert.Assert(s.t, foundTag == nil, "Found tag after destruction")
 
 	// TODO - ensure scene was not removed
 }

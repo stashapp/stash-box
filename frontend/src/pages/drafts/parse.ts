@@ -1,11 +1,3 @@
-import {
-  Draft_findDraft_data_SceneDraft as SceneDraft,
-  Draft_findDraft_data_PerformerDraft as PerformerDraft,
-} from "src/graphql/definitions/Draft";
-import {
-  Scene_findScene_tags as Tag,
-  Scene_findScene_performers as ScenePerformer,
-} from "src/graphql/definitions/Scene";
 import { InitialScene } from "src/pages/scenes/sceneForm";
 import { InitialPerformer } from "src/pages/performers/performerForm";
 import {
@@ -15,12 +7,22 @@ import {
   EthnicityEnum,
   SceneFragment,
   PerformerFragment,
+  DraftQuery,
+  SceneQuery,
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
 
+type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
+type SceneDraft = DraftData & { __typename: "SceneDraft" };
+type PerformerDraft = DraftData & { __typename: "PerformerDraft" };
+type Tag = NonNullable<SceneQuery["findScene"]>["tags"][number];
+type ScenePerformer = NonNullable<
+  SceneQuery["findScene"]
+>["performers"][number];
+
 type URL = { url: string; site: { id: string } };
 const joinURLs = <T extends URL>(
-  newURL: T | null,
+  newURL: T | undefined | null,
   existingURLs: T[] | undefined
 ) =>
   uniqBy(
@@ -30,7 +32,7 @@ const joinURLs = <T extends URL>(
 
 type Entity = { id: string };
 const joinImages = <T extends Entity>(
-  newImage: T | null,
+  newImage: T | null | undefined,
   existingImages: T[] | undefined
 ) =>
   uniqBy(
@@ -43,7 +45,7 @@ const joinTags = <T extends Entity>(
   existingTags: T[] | undefined
 ) => uniqBy([...(newTags ?? []), ...(existingTags ?? [])], (t) => t.id);
 
-type Performer = { performer: { id: string }; as: string | null };
+type Performer = { performer: { id: string }; as?: string | null };
 const joinPerformers = <T extends Performer>(
   newPerformers: T[] | null,
   existingPerformers: T[] | undefined
@@ -67,9 +69,9 @@ export const parseSceneDraft = (
     details: draft.details,
     urls: joinURLs(draft.url, existingScene?.urls),
     studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
-    director: null,
-    code: null,
-    duration: draft.fingerprints?.[0].duration ?? null,
+    director: draft.director,
+    code: draft.code,
+    duration: draft.fingerprints?.[0]?.duration ?? null,
     images: draft.image ? [draft.image] : existingScene?.images,
     tags: joinTags(
       (draft.tags ?? []).reduce<Tag[]>(
@@ -113,7 +115,10 @@ export const parseSceneDraft = (
   return [scene, remainder];
 };
 
-const parseEnum = (value: string | null, enumObj: Record<string, string>) =>
+const parseEnum = (
+  value: string | null | undefined,
+  enumObj: Record<string, string>
+) =>
   Object.entries(enumObj).find(
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
@@ -153,13 +158,13 @@ export const parsePerformerDraft = (
   };
 
   const remainder = {
-    Aliases: draft?.aliases,
+    Aliases: draft?.aliases ?? null,
     Height: draft.height && !performer.height ? draft.height : null,
-    Country: draft?.country?.length !== 2 ? draft?.country : null,
+    Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
-    Measurements: draft?.measurements,
-    Piercings: draft?.piercings,
-    Tattoos: draft?.tattoos,
+    Measurements: draft?.measurements ?? null,
+    Piercings: draft?.piercings ?? null,
+    Tattoos: draft?.tattoos ?? null,
   };
 
   return [performer, remainder];

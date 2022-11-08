@@ -2,8 +2,7 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { sortBy } from "lodash-es";
 
-import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
-import { VoteTypeEnum } from "src/graphql";
+import { VoteTypeEnum, EditFragment } from "src/graphql";
 import { userHref, formatDateTime } from "src/utils";
 import { VoteTypes } from "src/constants/enums";
 import { Tooltip } from "src/components/fragments";
@@ -11,7 +10,7 @@ import { Tooltip } from "src/components/fragments";
 const CLASSNAME = "EditVotes";
 
 interface VotesProps {
-  edit: Edit;
+  edit: EditFragment;
 }
 
 const Votes: FC<VotesProps> = ({ edit }) => (

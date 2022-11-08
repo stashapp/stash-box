@@ -6,8 +6,8 @@ import {
   usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
+  TagFragment as Tag,
 } from "src/graphql";
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 
 import AuthContext from "src/AuthContext";
 import { Tooltip } from "src/components/fragments";

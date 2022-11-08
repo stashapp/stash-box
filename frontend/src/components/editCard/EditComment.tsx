@@ -2,7 +2,6 @@ import { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { Edit_findEdit_comments_user as User } from "src/graphql/definitions/Edit";
 import { formatDateTime, userHref, Markdown } from "src/utils";
 
 const CLASSNAME = "EditComment";
@@ -11,7 +10,7 @@ interface Props {
   id: string;
   comment: string;
   date: string;
-  user?: Pick<User, "name"> | null;
+  user?: { name: string; id: string } | null;
 }
 
 const EditComment: FC<Props> = ({ id, comment, date, user }) => (

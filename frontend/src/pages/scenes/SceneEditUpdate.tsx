@@ -1,15 +1,20 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useSceneEditUpdate, SceneEditDetailsInput } from "src/graphql";
-import { createHref, isScene, isSceneDetails } from "src/utils";
+import {
+  useSceneEditUpdate,
+  SceneEditDetailsInput,
+  EditUpdateQuery,
+} from "src/graphql";
+import { createHref, isScene, isSceneEdit } from "src/utils";
 import SceneForm from "./sceneForm";
 
-import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
+type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
+
 import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
 
-export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
+export const SceneEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
   const [updateSceneEdit, { loading: saving }] = useSceneEditUpdate({
@@ -21,11 +26,11 @@ export const SceneEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
     onError: (error) => setSubmissionError(error.message),
   });
 
-  if (!isSceneDetails(edit.details) || (edit.target && !isScene(edit.target)))
+  if (!isSceneEdit(edit.details) || (edit.target && !isScene(edit.target)))
     return null;
 
   const doUpdate = (updateData: SceneEditDetailsInput, editNote: string) => {
-    if (!isSceneDetails(edit.details)) return;
+    if (!isSceneEdit(edit.details)) return;
 
     const details: SceneEditDetailsInput = {
       ...updateData,

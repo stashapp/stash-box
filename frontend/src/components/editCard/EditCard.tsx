@@ -2,9 +2,10 @@ import { FC } from "react";
 import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
+import { faRobot } from "@fortawesome/free-solid-svg-icons";
+import { Icon, Tooltip } from "src/components/fragments";
 
-import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
-import { OperationEnum } from "src/graphql";
+import { OperationEnum, EditFragment } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
@@ -19,7 +20,7 @@ import Votes from "./Votes";
 const CLASSNAME = "EditCard";
 
 interface Props {
-  edit: Edit;
+  edit: EditFragment;
   showVotes?: boolean;
 }
 
@@ -56,6 +57,17 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
               </Link>
             ) : (
               <span>Deleted User</span>
+            )}
+            {edit.bot && (
+              <Tooltip
+                text="Edit submitted by an automated script"
+                delay={50}
+                placement="auto"
+              >
+                <span>
+                  <Icon icon={faRobot} className="ms-2" />
+                </span>
+              </Tooltip>
             )}
           </div>
           <div>

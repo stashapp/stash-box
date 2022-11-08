@@ -10,19 +10,19 @@
     "lint": "yarn lint:css && yarn lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
-    "generate": "apollo client:codegen --target typescript --outputFlat src/graphql/definitions --passthroughCustomScalars --customScalarsPrefix=GQL",
+    "generate": "graphql-codegen --config codegen.yml",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss,gql}\"",
-    "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss,gql}\"",
+    "format-check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,scss,gql}\"",
     "analyze": "analyze=true vite build"
   },
   "engines": {
     "node": ">=16",
     "yarn": ">=1.15.2"
   },
-  "resolutions": {
-    "**/graphql": "^15.8.0"
-  },
   "devDependencies": {
+    "@graphql-codegen/cli": "^2.12.1",
+    "@graphql-codegen/typescript": "^2.7.3",
+    "@graphql-codegen/typescript-operations": "^2.2.2",
     "@rollup/plugin-graphql": "^1.1.0",
     "@types/apollo-upload-client": "^17.0.1",
     "@types/lodash-es": "^4.17.6",
@@ -33,7 +33,6 @@
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
     "@vitejs/plugin-react": "^2.0.1",
-    "apollo": "^2.34.0",
     "eslint": "^8.23.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-prettier": "^8.5.0",
@@ -65,7 +64,7 @@
     "bootstrap": "^5.2.0",
     "classnames": "^2.3.1",
     "date-fns": "^2.29.2",
-    "graphql": "^15.8.0",
+    "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
     "i18n-iso-countries": "^7.5.0",
     "lodash-es": "^4.17.21",
@@ -73,6 +72,7 @@
     "query-string": "^7.1.1",
     "react": "^17.0.2",
     "react-bootstrap": "^2.5.0",
+    "react-bootstrap-typeahead": "^6.0.0",
     "react-dom": "^17.0.2",
     "react-helmet": "^6.1.0",
     "react-hook-form": "7.32.2",

@@ -4,7 +4,9 @@ import { TagLink } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
 import { performerHref } from "src/utils";
 
-import { SearchPerformers_searchPerformer as Performer } from "src/graphql/definitions/SearchPerformers";
+import { SearchPerformersQuery } from "src/graphql";
+
+type Performer = NonNullable<SearchPerformersQuery["searchPerformer"]>[number];
 
 interface PerformerSelectProps {
   performers: Performer[];

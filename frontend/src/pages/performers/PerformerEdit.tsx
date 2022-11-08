@@ -1,15 +1,17 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import {
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
+  FullPerformerQuery,
 } from "src/graphql";
 
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
+
+type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 
 interface Props {
   performer: Performer;

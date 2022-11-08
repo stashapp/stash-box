@@ -8,7 +8,7 @@ import { formatDateTime } from "src/utils";
 
 interface Props {
   status: VoteStatusEnum;
-  closed: string | null;
+  closed?: string | null;
 }
 
 const EditStatus: FC<Props> = ({ closed, status }) => {

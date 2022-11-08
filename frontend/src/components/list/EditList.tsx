@@ -51,6 +51,7 @@ const EditListComponent: FC<EditsProps> = ({
     selectedVoted,
     selectedStatus,
     selectedFavorite,
+    selectedBot,
   } = useEditFilter({
     sort,
     direction,
@@ -71,6 +72,7 @@ const EditListComponent: FC<EditsProps> = ({
       voted: selectedVoted,
       user_id: userId,
       is_favorite: selectedFavorite,
+      is_bot: selectedBot,
       page,
       per_page: PER_PAGE,
       sort: selectedSort,

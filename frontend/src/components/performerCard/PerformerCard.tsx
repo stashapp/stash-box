@@ -3,8 +3,13 @@ import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
-import { Performers_queryPerformers_performers as Performer } from "src/graphql/definitions/Performers";
-import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
+import { PerformersQuery, SearchPerformersQuery } from "src/graphql";
+type Performer = NonNullable<
+  PerformersQuery["queryPerformers"]
+>["performers"][number];
+type SearchPerformer = NonNullable<
+  SearchPerformersQuery["searchPerformer"]
+>[number];
 
 import {
   GenderIcon,

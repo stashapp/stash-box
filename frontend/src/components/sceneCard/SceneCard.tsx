@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
 
-import { Scenes_queryScenes_scenes as Performance } from "src/graphql/definitions/Scenes";
+import { ScenesQuery } from "src/graphql";
 import { getImage, sceneHref, studioHref, formatDuration } from "src/utils";
 import { Icon } from "src/components/fragments";
+
+type Performance = NonNullable<ScenesQuery["queryScenes"]>["scenes"][number];
 
 const CLASSNAME = "SceneCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;

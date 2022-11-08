@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"gotest.tools/v3/assert"
 )
 
 type studioTestRunner struct {
@@ -33,74 +34,46 @@ func (s *studioTestRunner) testCreateStudio() {
 	}
 
 	studio, err := s.resolver.Mutation().StudioCreate(s.ctx, input)
-
-	if err != nil {
-		s.t.Errorf("Error creating studio: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error creating studio")
 
 	s.verifyCreatedStudio(input, studio)
 }
 
 func (s *studioTestRunner) verifyCreatedStudio(input models.StudioCreateInput, studio *models.Studio) {
 	// ensure basic attributes are set correctly
-	if input.Name != studio.Name {
-		s.fieldMismatch(input.Name, studio.Name, "Name")
-	}
+	assert.Equal(s.t, input.Name, studio.Name)
 
-	if studio.ID == uuid.Nil {
-		s.t.Errorf("Expected created studio id to be non-zero")
-	}
+	assert.Assert(s.t, studio.ID != uuid.Nil, "Expected created studio id to be non-zero")
 }
 
 func (s *studioTestRunner) testFindStudioById() {
 	createdStudio, err := s.createTestStudio(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	studioID := createdStudio.UUID()
 	studio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding studio: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding studio")
 
 	// ensure returned studio is not nil
-	if studio == nil {
-		s.t.Error("Did not find studio by id")
-		return
-	}
+	assert.Assert(s.t, studio != nil, "Did not find studio by id")
 
 	// ensure values were set
-	if createdStudio.Name != studio.Name {
-		s.fieldMismatch(createdStudio.Name, studio.Name, "Name")
-	}
+	assert.Equal(s.t, createdStudio.Name, studio.Name)
 }
 
 func (s *studioTestRunner) testFindStudioByName() {
 	createdStudio, err := s.createTestStudio(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	studioName := createdStudio.Name
 	studio, err := s.resolver.Query().FindStudio(s.ctx, nil, &studioName)
-	if err != nil {
-		s.t.Errorf("Error finding studio: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding studio")
 
 	// ensure returned studio is not nil
-	if studio == nil {
-		s.t.Error("Did not find studio by name")
-		return
-	}
+	assert.Assert(s.t, studio != nil, "Did not find studio by name")
 
 	// ensure values were set
-	if createdStudio.Name != studio.Name {
-		s.fieldMismatch(createdStudio.Name, studio.Name, "Name")
-	}
+	assert.Equal(s.t, createdStudio.Name, studio.Name)
 }
 
 func (s *studioTestRunner) testUpdateStudioName() {
@@ -109,9 +82,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 	}
 
 	createdStudio, err := s.createTestStudio(input)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	studioID := createdStudio.UUID()
 
@@ -126,10 +97,7 @@ func (s *studioTestRunner) testUpdateStudioName() {
 		"name",
 	})
 	updatedStudio, err := s.resolver.Mutation().StudioUpdate(ctx, updateInput)
-	if err != nil {
-		s.t.Errorf("Error updating studio: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error updating studio")
 
 	input.Name = updatedName
 	s.verifyCreatedStudio(*input, updatedStudio)
@@ -137,42 +105,27 @@ func (s *studioTestRunner) testUpdateStudioName() {
 
 func (s *studioTestRunner) verifyUpdatedStudio(input models.StudioUpdateInput, studio *models.Studio) {
 	// ensure basic attributes are set correctly
-	if input.Name != nil && *input.Name != studio.Name {
-		s.fieldMismatch(input.Name, studio.Name, "Name")
-	}
+	assert.Assert(s.t, input.Name == nil || (*input.Name == studio.Name))
 }
 
 func (s *studioTestRunner) testDestroyStudio() {
 	createdStudio, err := s.createTestStudio(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	studioID := createdStudio.UUID()
 
 	destroyed, err := s.resolver.Mutation().StudioDestroy(s.ctx, models.StudioDestroyInput{
 		ID: studioID,
 	})
-	if err != nil {
-		s.t.Errorf("Error destroying studio: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error destroying studio")
 
-	if !destroyed {
-		s.t.Error("Studio was not destroyed")
-		return
-	}
+	assert.Assert(s.t, destroyed, "Studio was not destroyed")
 
 	// ensure cannot find studio
 	foundStudio, err := s.resolver.Query().FindStudio(s.ctx, &studioID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding studio after destroying: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding studio after destroying")
 
-	if foundStudio != nil {
-		s.t.Error("Found studio after destruction")
-	}
+	assert.Assert(s.t, foundStudio == nil, nil, "Found studio after destruction")
 
 	// TODO - ensure scene was not removed
 }

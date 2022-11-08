@@ -566,7 +566,7 @@ func (qb *performerQueryBuilder) SearchPerformers(term string, limit int) (model
 				FROM performers P
 				WHERE P.deleted = FALSE AND P.name % $1 AND similarity(P.name, $1) > 0.5
 			UNION
-				SELECT P.id, (similarity(COALESCE(PA.alias, ''), $1) * 0.7) AS similarity
+				SELECT P.id, (similarity(COALESCE(PA.alias, ''), $1) * 0.5) AS similarity
 				FROM performers P
 				LEFT JOIN performer_aliases PA on PA.performer_id = P.id
 				WHERE P.deleted = FALSE AND PA.alias % $1 AND similarity(COALESCE(PA.alias, ''), $1) > 0.6
@@ -628,10 +628,10 @@ func (qb *performerQueryBuilder) UpdateRedirects(oldTargetID uuid.UUID, newTarge
 	return qb.dbi.RawQuery(performerSourceRedirectTable.table, query, args, nil)
 }
 
-func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Performer, newTargetID uuid.UUID, setAliases bool) error {
+func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Performer, newTarget *models.Performer, setAliases bool) error {
 	// Set old name as scene performance alias where one isn't already set
 	if setAliases {
-		if err := qb.UpdateScenePerformerAlias(oldPerformer.ID, oldPerformer.Name); err != nil {
+		if err := qb.UpdateScenePerformerAlias(oldPerformer.ID, oldPerformer.Name, newTarget.Name); err != nil {
 			return err
 		}
 	}
@@ -641,7 +641,7 @@ func (qb *performerQueryBuilder) UpdateScenePerformers(oldPerformer *models.Perf
 					 SET performer_id = ?
 					 WHERE performer_id = ?
 					 AND scene_id NOT IN (SELECT scene_id from scene_performers WHERE performer_id = ?)`
-	args := []interface{}{newTargetID, oldPerformer.ID, newTargetID}
+	args := []interface{}{newTarget.ID, oldPerformer.ID, newTarget.ID}
 	err := qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 	if err != nil {
 		return err
@@ -671,17 +671,23 @@ func (qb *performerQueryBuilder) reassignFavorites(oldPerformer *models.Performe
 	return qb.dbi.RawQuery(performerFavoriteTable.table, query, args, nil)
 }
 
-func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID, name string) error {
+func (qb *performerQueryBuilder) UpdateScenePerformerAlias(performerID uuid.UUID, oldName string, newName string) error {
 	query := `UPDATE scene_performers
             SET "as" = ?
             WHERE performer_id = ?
             AND "as" IS NULL`
-	args := []interface{}{name, performerID}
+	args := []interface{}{oldName, performerID}
 	err := qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 	if err != nil {
 		return err
 	}
-	return nil
+
+	query = `UPDATE scene_performers
+            SET "as" = NULL
+            WHERE performer_id = ?
+            AND "as" = ?`
+	args = []interface{}{performerID, newName}
+	return qb.dbi.RawQuery(scenePerformerTable.table, query, args, nil)
 }
 
 func (qb *performerQueryBuilder) MergeInto(source *models.Performer, target *models.Performer, setAliases bool) error {
@@ -699,7 +705,7 @@ func (qb *performerQueryBuilder) MergeInto(source *models.Performer, target *mod
 	if err := qb.UpdateRedirects(source.ID, target.ID); err != nil {
 		return err
 	}
-	if err := qb.UpdateScenePerformers(source, target.ID, setAliases); err != nil {
+	if err := qb.UpdateScenePerformers(source, target, setAliases); err != nil {
 		return err
 	}
 	if err := qb.reassignFavorites(source, target.ID); err != nil {
@@ -748,7 +754,7 @@ func (qb *performerQueryBuilder) ApplyEdit(performer *models.Performer, create b
 	}
 
 	if data.New.Name != nil && data.SetModifyAliases {
-		if err = qb.UpdateScenePerformerAlias(updatedPerformer.ID, *data.Old.Name); err != nil {
+		if err = qb.UpdateScenePerformerAlias(updatedPerformer.ID, *data.Old.Name, *data.New.Name); err != nil {
 			return nil, err
 		}
 	}

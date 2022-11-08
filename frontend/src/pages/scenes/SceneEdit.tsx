@@ -1,11 +1,11 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
 import {
   useSceneEdit,
   SceneEditDetailsInput,
   OperationEnum,
+  SceneFragment as Scene,
 } from "src/graphql";
 import { createHref } from "src/utils";
 import { ROUTE_EDIT } from "src/constants";

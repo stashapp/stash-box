@@ -2,8 +2,7 @@ import { FC, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 
-import { GenderEnum } from "src/graphql";
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
+import { GenderEnum, PerformerFragment as Performer } from "src/graphql";
 
 import AuthContext from "src/AuthContext";
 import {

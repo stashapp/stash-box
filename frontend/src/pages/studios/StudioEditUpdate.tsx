@@ -1,15 +1,20 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useStudioEditUpdate, StudioEditDetailsInput } from "src/graphql";
-import { createHref, isStudio, isStudioDetails } from "src/utils";
+import {
+  useStudioEditUpdate,
+  StudioEditDetailsInput,
+  EditUpdateQuery,
+} from "src/graphql";
+import { createHref, isStudio, isStudioEdit } from "src/utils";
 import StudioForm from "./studioForm";
 
-import { EditUpdate_findEdit as Edit } from "src/graphql/definitions/EditUpdate";
+type EditUpdate = NonNullable<EditUpdateQuery["findEdit"]>;
+
 import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
 
-export const StudioEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
+export const StudioEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
   const history = useHistory();
   const [submissionError, setSubmissionError] = useState("");
   const [updateStudioEdit, { loading: saving }] = useStudioEditUpdate({
@@ -22,7 +27,7 @@ export const StudioEditUpdate: FC<{ edit: Edit }> = ({ edit }) => {
   });
 
   if (
-    !isStudioDetails(edit.details) ||
+    !isStudioEdit(edit.details) ||
     (edit.target !== null && !isStudio(edit.target))
   )
     return null;

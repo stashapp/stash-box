@@ -1,11 +1,11 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import {
   useStudioEdit,
   StudioEditDetailsInput,
   OperationEnum,
+  StudioFragment as Studio,
 } from "src/graphql";
 import { createHref } from "src/utils";
 import { ROUTE_EDIT } from "src/constants";
