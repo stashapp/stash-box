@@ -209,8 +209,6 @@ export type EditQueryInput = {
   vote_count?: InputMaybe<IntCriterionInput>;
   /** Filter by user voted status */
   voted?: InputMaybe<UserVotedFilterEnum>;
-  /** Voted user id, this will be set to the current user */
-  voted_user_id?: InputMaybe<Scalars["ID"]>;
 };
 
 export enum EditSortEnum {

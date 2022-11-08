@@ -117,8 +117,6 @@ type EditQueryInput struct {
 	IsFavorite *bool `json:"is_favorite"`
 	// Filter by user voted status
 	Voted *UserVotedFilterEnum `json:"voted"`
-	// Voted user id, this will be set to the current user
-	VotedUserID *uuid.UUID `json:"voted_user_id"`
 	// Filter to bot edits only
 	IsBot     *bool             `json:"is_bot"`
 	Page      int               `json:"page"`

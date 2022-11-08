@@ -16,9 +16,6 @@ func (r *queryResolver) FindEdit(ctx context.Context, id uuid.UUID) (*models.Edi
 }
 
 func (r *queryResolver) QueryEdits(ctx context.Context, input models.EditQueryInput) (*models.EditQuery, error) {
-	currentUser := getCurrentUser(ctx)
-	input.VotedUserID = &currentUser.ID
-
 	return &models.EditQuery{
 		Filter: input,
 	}, nil

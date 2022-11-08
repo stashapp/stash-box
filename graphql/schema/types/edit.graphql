@@ -136,8 +136,6 @@ input EditQueryInput {
   is_favorite: Boolean
   """Filter by user voted status"""
   voted: UserVotedFilterEnum
-  """Voted user id, this will be set to the current user"""
-  voted_user_id: ID
   """Filter to bot edits only"""
   is_bot: Boolean
 

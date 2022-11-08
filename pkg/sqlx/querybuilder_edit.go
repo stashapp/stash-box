@@ -251,11 +251,11 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 				)
 			`
 			query.AddWhere(where)
-			query.AddArg(&filter.VotedUserID)
+			query.AddArg(userID)
 		default:
 			query.AddLeftJoin(editVoteTable.table, editVoteTable.Name()+".edit_id = edits.id", true)
 			query.AddWhere("(" + editVoteTable.Name() + ".user_id = ? AND " + editVoteTable.Name() + ".vote = ?)")
-			query.AddArg(&filter.VotedUserID, q.String())
+			query.AddArg(userID, q.String())
 		}
 	}
 
