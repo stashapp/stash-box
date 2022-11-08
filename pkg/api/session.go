@@ -44,6 +44,10 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	newSession.Values[userIDKey] = userID
 	newSession.Options.MaxAge = maxCookieAge
+	newSession.Options.HttpOnly = true
+	if config.GetIsProduction() {
+		newSession.Options.Secure = true
+	}
 
 	err = newSession.Save(r, w)
 	if err != nil {

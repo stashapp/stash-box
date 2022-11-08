@@ -50,6 +50,7 @@ export const SceneSchema = yup.object({
           name: yup.string().required(),
           disambiguation: yup.string().nullable(),
           alias: yup.string().trim().transform(nullCheck).nullable(),
+          aliases: yup.array().of(yup.string().required()).nullable(),
           gender: yup
             .string()
             .oneOf([null, ...Object.keys(GenderEnum)])

@@ -4,6 +4,7 @@
 package api_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -311,23 +312,46 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 
 	id := createdScene.UUID()
 
-	sceneUnsetInput := models.SceneEditDetailsInput{
-		Urls: []*models.URLInput{},
+	var resp struct {
+		SceneEdit struct {
+			ID string
+		}
 	}
 
-	editInput := models.EditInput{
-		Operation: models.OperationEnumModify,
-		ID:        &id,
+	s.client.MustPost(fmt.Sprintf(`
+		mutation {
+			sceneEdit(input: {
+				edit: {id: "%v", operation: MODIFY}
+				details: { urls: [] }
+			}) {
+				id
+			}
+		}
+	`, id), &resp)
+
+	edit, _ := s.applyEdit(uuid.FromStringOrNil(resp.SceneEdit.ID))
+	s.verifyAppliedSceneEdit(edit)
+
+	var scene struct {
+		FindScene struct {
+			Director string
+			URLs     []models.URL
+		}
 	}
 
-	createdUpdateEdit, err := s.createTestSceneEdit(models.OperationEnumModify, &sceneUnsetInput, &editInput)
-	assert.NilError(s.t, err)
+	s.client.MustPost(fmt.Sprintf(`
+		query {
+			findScene(id: "%v") {
+				director
+				urls {
+					url
+				}
+			}
+		}
+	`, id), &scene)
 
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
-	assert.NilError(s.t, err)
-
-	modifiedScene, _ := s.resolver.Query().FindScene(s.ctx, id)
-	s.verifyApplyModifySceneEdit(sceneUnsetInput, modifiedScene, appliedEdit)
+	assert.Equal(s.t, scene.FindScene.Director, *sceneData.Director)
+	assert.Assert(s.t, len(scene.FindScene.URLs) == 0)
 }
 
 func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {

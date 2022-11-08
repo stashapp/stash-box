@@ -99,6 +99,7 @@ type ComplexityRoot struct {
 
 	Edit struct {
 		Applied      func(childComplexity int) int
+		Bot          func(childComplexity int) int
 		Closed       func(childComplexity int) int
 		Comments     func(childComplexity int) int
 		Created      func(childComplexity int) int
@@ -407,7 +408,7 @@ type ComplexityRoot struct {
 		Director     func(childComplexity int) int
 		Duration     func(childComplexity int) int
 		Edits        func(childComplexity int) int
-		Fingerprints func(childComplexity int) int
+		Fingerprints func(childComplexity int, isSubmitted *bool) int
 		ID           func(childComplexity int) int
 		Images       func(childComplexity int) int
 		Performers   func(childComplexity int) int
@@ -592,6 +593,7 @@ type EditResolver interface {
 	TargetType(ctx context.Context, obj *Edit) (TargetTypeEnum, error)
 	MergeSources(ctx context.Context, obj *Edit) ([]EditTarget, error)
 	Operation(ctx context.Context, obj *Edit) (OperationEnum, error)
+
 	Details(ctx context.Context, obj *Edit) (EditDetails, error)
 	OldDetails(ctx context.Context, obj *Edit) (EditDetails, error)
 	Options(ctx context.Context, obj *Edit) (*PerformerEditOptions, error)
@@ -784,7 +786,7 @@ type SceneResolver interface {
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
 	Images(ctx context.Context, obj *Scene) ([]*Image, error)
 	Performers(ctx context.Context, obj *Scene) ([]*PerformerAppearance, error)
-	Fingerprints(ctx context.Context, obj *Scene) ([]*Fingerprint, error)
+	Fingerprints(ctx context.Context, obj *Scene, isSubmitted *bool) ([]*Fingerprint, error)
 	Duration(ctx context.Context, obj *Scene) (*int, error)
 	Director(ctx context.Context, obj *Scene) (*string, error)
 	Code(ctx context.Context, obj *Scene) (*string, error)
@@ -982,6 +984,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Edit.Applied(childComplexity), true
+
+	case "Edit.bot":
+		if e.complexity.Edit.Bot == nil {
+			break
+		}
+
+		return e.complexity.Edit.Bot(childComplexity), true
 
 	case "Edit.closed":
 		if e.complexity.Edit.Closed == nil {
@@ -3000,7 +3009,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Scene.Fingerprints(childComplexity), true
+		args, err := ec.field_Scene_fingerprints_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Scene.Fingerprints(childComplexity, args["is_submitted"].(*bool)), true
 
 	case "Scene.id":
 		if e.complexity.Scene.ID == nil {
@@ -4132,6 +4146,7 @@ type Edit {
     """Objects to merge with the target. Only applicable to merges"""
     merge_sources: [EditTarget!]!
     operation: OperationEnum!
+    bot: Boolean!
     details: EditDetails
     """Previous state of fields being modified - null if operation is create or delete."""
     old_details: EditDetails
@@ -4158,6 +4173,8 @@ input EditInput {
   """Only required for merge type"""
   merge_source_ids: [ID!]
   comment: String
+  """Edit submitted by an automated script. Requires bot permission"""
+  bot: Boolean
 }
 
 input EditVoteInput {
@@ -4181,6 +4198,13 @@ enum EditSortEnum {
   CLOSED_AT
 }
 
+enum UserVotedFilterEnum {
+    ABSTAIN
+    ACCEPT
+    REJECT
+    NOT_VOTED
+}
+
 input EditQueryInput {
   """Filter by user id"""
   user_id: ID
@@ -4198,6 +4222,10 @@ input EditQueryInput {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+  """Filter by user voted status"""
+  voted: UserVotedFilterEnum
+  """Filter to bot edits only"""
+  is_bot: Boolean
 
   page: Int! = 1
   per_page: Int! = 25
@@ -4784,7 +4812,7 @@ type Scene {
   tags: [Tag!]!
   images: [Image!]!
   performers: [PerformerAppearance!]!
-  fingerprints: [Fingerprint!]!
+  fingerprints(is_submitted: Boolean = False): [Fingerprint!]!
   duration: Int
   director: String
   code: String
@@ -4915,6 +4943,8 @@ input SceneQueryInput {
   fingerprints: MultiStringCriterionInput
   """Filter by favorited entity"""
   favorites: FavoriteFilter
+  """Filter to scenes with fingerprints submitted by the user"""
+  has_fingerprint_submissions: Boolean = False
 
   page: Int! = 1
   per_page: Int! = 25
@@ -6774,6 +6804,21 @@ func (ec *executionContext) field_Query_searchTag_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Scene_fingerprints_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *bool
+	if tmp, ok := rawArgs["is_submitted"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_submitted"))
+		arg0, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["is_submitted"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -7608,6 +7653,50 @@ func (ec *executionContext) fieldContext_Edit_operation(ctx context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type OperationEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Edit_bot(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Edit_bot(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Bot, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Edit_bot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12037,6 +12126,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneEdit(ctx context.Context,
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12156,6 +12247,8 @@ func (ec *executionContext) fieldContext_Mutation_performerEdit(ctx context.Cont
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12275,6 +12368,8 @@ func (ec *executionContext) fieldContext_Mutation_studioEdit(ctx context.Context
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12394,6 +12489,8 @@ func (ec *executionContext) fieldContext_Mutation_tagEdit(ctx context.Context, f
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12513,6 +12610,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneEditUpdate(ctx context.Co
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12632,6 +12731,8 @@ func (ec *executionContext) fieldContext_Mutation_performerEditUpdate(ctx contex
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12751,6 +12852,8 @@ func (ec *executionContext) fieldContext_Mutation_studioEditUpdate(ctx context.C
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12870,6 +12973,8 @@ func (ec *executionContext) fieldContext_Mutation_tagEditUpdate(ctx context.Cont
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -12989,6 +13094,8 @@ func (ec *executionContext) fieldContext_Mutation_editVote(ctx context.Context, 
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -13108,6 +13215,8 @@ func (ec *executionContext) fieldContext_Mutation_editComment(ctx context.Contex
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -13227,6 +13336,8 @@ func (ec *executionContext) fieldContext_Mutation_applyEdit(ctx context.Context,
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -13346,6 +13457,8 @@ func (ec *executionContext) fieldContext_Mutation_cancelEdit(ctx context.Context
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -15056,6 +15169,8 @@ func (ec *executionContext) fieldContext_Performer_edits(ctx context.Context, fi
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -19540,6 +19655,8 @@ func (ec *executionContext) fieldContext_Query_findEdit(ctx context.Context, fie
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -20919,6 +21036,8 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(ctx context.
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -21003,6 +21122,8 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_edits(ctx cont
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -22441,7 +22562,7 @@ func (ec *executionContext) _Scene_fingerprints(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Scene().Fingerprints(rctx, obj)
+		return ec.resolvers.Scene().Fingerprints(rctx, obj, fc.Args["is_submitted"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -22483,6 +22604,17 @@ func (ec *executionContext) fieldContext_Scene_fingerprints(ctx context.Context,
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Scene_fingerprints_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -22705,6 +22837,8 @@ func (ec *executionContext) fieldContext_Scene_edits(ctx context.Context, field 
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -26423,6 +26557,8 @@ func (ec *executionContext) fieldContext_Tag_edits(ctx context.Context, field gr
 				return ec.fieldContext_Edit_merge_sources(ctx, field)
 			case "operation":
 				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
 			case "details":
 				return ec.fieldContext_Edit_details(ctx, field)
 			case "old_details":
@@ -30653,7 +30789,7 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "operation", "merge_source_ids", "comment"}
+	fieldsInOrder := [...]string{"id", "operation", "merge_source_ids", "comment", "bot"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30692,6 +30828,14 @@ func (ec *executionContext) unmarshalInputEditInput(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
+		case "bot":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bot"))
+			it.Bot, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -30718,7 +30862,7 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "voted", "is_bot", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30786,6 +30930,22 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
 			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "voted":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("voted"))
+			it.Voted, err = ec.unmarshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "is_bot":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_bot"))
+			it.IsBot, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -33190,6 +33350,9 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
+	if _, present := asMap["has_fingerprint_submissions"]; !present {
+		asMap["has_fingerprint_submissions"] = "False"
+	}
 	if _, present := asMap["page"]; !present {
 		asMap["page"] = 1
 	}
@@ -33203,7 +33366,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33295,6 +33458,14 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("favorites"))
 			it.Favorites, err = ec.unmarshalOFavoriteFilter2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFavoriteFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "has_fingerprint_submissions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("has_fingerprint_submissions"))
+			it.HasFingerprintSubmissions, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35289,6 +35460,13 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
+		case "bot":
+
+			out.Values[i] = ec._Edit_bot(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "details":
 			field := field
 
@@ -44481,6 +44659,22 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋstashappᚋstashᚑbo
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx context.Context, v interface{}) (*UserVotedFilterEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(UserVotedFilterEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx context.Context, sel ast.SelectionSet, v *UserVotedFilterEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOVoteStatusEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteStatusEnum(ctx context.Context, v interface{}) (*VoteStatusEnum, error) {

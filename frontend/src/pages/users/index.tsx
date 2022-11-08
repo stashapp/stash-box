@@ -12,6 +12,7 @@ import {
   ROUTE_USER_EDITS,
 } from "src/constants/route";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { isPrivateUser } from "src/utils";
 
 import Users from "./Users";
 import User from "./User";
@@ -48,7 +49,7 @@ const UserLoader: FC = () => {
       <Route exact path={ROUTE_USER_EDITS}>
         <>
           <Title page={`Edits by ${user.name}`} />
-          <UserEdits user={user} />
+          <UserEdits user={user} isPrivateUser={isPrivateUser(user)} />
         </>
       </Route>
     </Switch>
