@@ -29,6 +29,10 @@ func validateAdmin(ctx context.Context) error {
 	return user.ValidateRole(ctx, models.RoleEnumAdmin)
 }
 
+func validateBot(ctx context.Context) error {
+	return user.ValidateRole(ctx, models.RoleEnumBot)
+}
+
 func validateUser(ctx context.Context, userID uuid.UUID) error {
 	return user.ValidateOwner(ctx, userID)
 }

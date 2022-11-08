@@ -4,11 +4,11 @@
 package api_test
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
+	"gotest.tools/v3/assert"
 )
 
 type tagEditTestRunner struct {
@@ -23,9 +23,8 @@ func createTagEditTestRunner(t *testing.T) *tagEditTestRunner {
 
 func (s *tagEditTestRunner) testCreateTagEdit() {
 	category, err := s.createTestTagCategory(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	categoryID := category.ID
 	name := "Name"
 	description := "Description"
@@ -35,18 +34,16 @@ func (s *tagEditTestRunner) testCreateTagEdit() {
 		Aliases:     []string{"Alias1"},
 		CategoryID:  &categoryID,
 	}
+
 	edit, err := s.createTestTagEdit(models.OperationEnumCreate, &tagEditDetailsInput, nil)
-	if err == nil {
-		s.verifyCreatedTagEdit(tagEditDetailsInput, edit)
-	}
+	assert.NilError(s.t, err)
+	s.verifyCreatedTagEdit(tagEditDetailsInput, edit)
 }
 
 func (s *tagEditTestRunner) verifyCreatedTagEdit(input models.TagEditDetailsInput, edit *models.Edit) {
 	r := s.resolver.Edit()
 
-	if edit.ID == uuid.Nil {
-		s.t.Errorf("Expected created edit id to be non-zero")
-	}
+	assert.Assert(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
 
 	details, _ := r.Details(s.ctx, edit)
 	tagDetails := details.(*models.TagEdit)
@@ -57,47 +54,27 @@ func (s *tagEditTestRunner) verifyCreatedTagEdit(input models.TagEditDetailsInpu
 	s.verifyEditApplication(false, edit)
 
 	// ensure basic attributes are set correctly
-	if *input.Name != *tagDetails.Name {
-		s.fieldMismatch(input.Name, tagDetails.Name, "Name")
-	}
-
-	if *input.Description != *tagDetails.Description {
-		s.fieldMismatch(input.Description, tagDetails.Description, "Description")
-	}
-
-	if !reflect.DeepEqual(input.Aliases, tagDetails.AddedAliases) {
-		s.fieldMismatch(input.Aliases, tagDetails.AddedAliases, "Aliases")
-	}
-
-	if *input.CategoryID != *tagDetails.CategoryID {
-		s.fieldMismatch(*input.CategoryID, *tagDetails.CategoryID, "CategoryID")
-	}
+	assert.Equal(s.t, *input.Name, *tagDetails.Name)
+	assert.Equal(s.t, *input.Description, *tagDetails.Description)
+	assert.DeepEqual(s.t, input.Aliases, tagDetails.AddedAliases)
+	assert.Equal(s.t, *input.CategoryID, *tagDetails.CategoryID)
 }
 
 func (s *tagEditTestRunner) testFindEditById() {
 	createdEdit, err := s.createTestTagEdit(models.OperationEnumCreate, nil, nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	edit, err := s.resolver.Query().FindEdit(s.ctx, createdEdit.ID)
-	if err != nil {
-		s.t.Errorf("Error finding edit: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding edit")
 
 	// ensure returned tag is not nil
-	if edit == nil {
-		s.t.Error("Did not find edit by id")
-		return
-	}
+	assert.Assert(s.t, edit != nil, "Did not find edit by id")
 }
 
 func (s *tagEditTestRunner) testModifyTagEdit() {
 	existingCategory, err := s.createTestTagCategory(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	existingCategoryID := existingCategory.ID
 	existingName := "tagName"
 	existingAlias := "tagAlias"
@@ -107,14 +84,11 @@ func (s *tagEditTestRunner) testModifyTagEdit() {
 		CategoryID: &existingCategoryID,
 	}
 	createdTag, err := s.createTestTag(&tagCreateInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	newCategory, err := s.createTestTagCategory(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	newCategoryID := newCategory.ID
 	newDescription := "newDescription"
 	newAlias := "newTagAlias"
@@ -132,6 +106,7 @@ func (s *tagEditTestRunner) testModifyTagEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestTagEdit(models.OperationEnumModify, &tagEditDetailsInput, &editInput)
+	assert.NilError(s.t, err)
 
 	s.verifyUpdatedTagEdit(createdTag, tagEditDetailsInput, createdUpdateEdit)
 }
@@ -145,33 +120,19 @@ func (s *tagEditTestRunner) verifyUpdatedTagEdit(originalTag *tagOutput, input m
 	s.verifyEditApplication(false, edit)
 
 	// ensure basic attributes are set correctly
-	if *input.Name != *tagDetails.Name {
-		s.fieldMismatch(*input.Name, *tagDetails.Name, "Name")
-	}
-
-	if *input.Description != *tagDetails.Description {
-		s.fieldMismatch(input.Description, tagDetails.Description, "Description")
-	}
+	assert.Equal(s.t, *input.Name, *tagDetails.Name)
+	assert.Equal(s.t, *input.Description, *tagDetails.Description)
 
 	tagAliases := originalTag.Aliases
-	if !reflect.DeepEqual(tagAliases, tagDetails.RemovedAliases) {
-		s.fieldMismatch(tagAliases, tagDetails.RemovedAliases, "RemovedAliases")
-	}
+	assert.DeepEqual(s.t, tagAliases, tagDetails.RemovedAliases)
+	assert.DeepEqual(s.t, input.Aliases, tagDetails.AddedAliases)
 
-	if !reflect.DeepEqual(input.Aliases, tagDetails.AddedAliases) {
-		s.fieldMismatch(input.Aliases, tagDetails.AddedAliases, "AddedAliases")
-	}
-
-	if *input.CategoryID != *tagDetails.CategoryID {
-		s.fieldMismatch(*input.CategoryID, *tagDetails.CategoryID, "CategoryID")
-	}
+	assert.Equal(s.t, *input.CategoryID, *tagDetails.CategoryID)
 }
 
 func (s *tagEditTestRunner) testDestroyTagEdit() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	tagID := createdTag.UUID()
 
@@ -181,6 +142,7 @@ func (s *tagEditTestRunner) testDestroyTagEdit() {
 		ID:        &tagID,
 	}
 	destroyEdit, err := s.createTestTagEdit(models.OperationEnumDestroy, &tagEditDetailsInput, &editInput)
+	assert.NilError(s.t, err)
 
 	s.verifyDestroyTagEdit(tagID, destroyEdit)
 }
@@ -193,9 +155,7 @@ func (s *tagEditTestRunner) verifyDestroyTagEdit(tagID uuid.UUID, edit *models.E
 
 	editTarget := s.getEditTagTarget(edit)
 
-	if tagID != editTarget.ID {
-		s.fieldMismatch(tagID, editTarget.ID.String(), "ID")
-	}
+	assert.Equal(s.t, tagID, editTarget.ID)
 }
 
 func (s *tagEditTestRunner) testMergeTagEdit() {
@@ -206,11 +166,10 @@ func (s *tagEditTestRunner) testMergeTagEdit() {
 		Aliases: []string{existingAlias},
 	}
 	createdPrimaryTag, err := s.createTestTag(&tagCreateInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	createdMergeTag, err := s.createTestTag(nil)
+	assert.NilError(s.t, err)
 
 	newDescription := "newDescription2"
 	newAlias := "newTagAlias2"
@@ -229,6 +188,7 @@ func (s *tagEditTestRunner) testMergeTagEdit() {
 	}
 
 	createdMergeEdit, err := s.createTestTagEdit(models.OperationEnumMerge, &tagEditDetailsInput, &editInput)
+	assert.NilError(s.t, err)
 
 	s.verifyMergeTagEdit(createdPrimaryTag, tagEditDetailsInput, createdMergeEdit, mergeSources)
 }
@@ -242,22 +202,12 @@ func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *tagOutput, input mod
 	s.verifyEditApplication(false, edit)
 
 	// ensure basic attributes are set correctly
-	if *input.Name != *tagDetails.Name {
-		s.fieldMismatch(*input.Name, *tagDetails.Name, "Name")
-	}
-
-	if *input.Description != *tagDetails.Description {
-		s.fieldMismatch(input.Description, tagDetails.Description, "Description")
-	}
+	assert.Equal(s.t, *input.Name, *tagDetails.Name)
+	assert.Equal(s.t, *input.Description, *tagDetails.Description)
 
 	tagAliases := originalTag.Aliases
-	if !reflect.DeepEqual(tagAliases, tagDetails.RemovedAliases) {
-		s.fieldMismatch(tagAliases, tagDetails.RemovedAliases, "RemovedAliases")
-	}
-
-	if !reflect.DeepEqual(input.Aliases, tagDetails.AddedAliases) {
-		s.fieldMismatch(input.Aliases, tagDetails.AddedAliases, "AddedAliases")
-	}
+	assert.DeepEqual(s.t, tagAliases, tagDetails.RemovedAliases)
+	assert.DeepEqual(s.t, input.Aliases, tagDetails.AddedAliases)
 
 	var mergeSources []uuid.UUID
 	merges, _ := s.resolver.Edit().MergeSources(s.ctx, edit)
@@ -265,18 +215,15 @@ func (s *tagEditTestRunner) verifyMergeTagEdit(originalTag *tagOutput, input mod
 		merge := merges[i].(*models.Tag)
 		mergeSources = append(mergeSources, merge.ID)
 	}
-	if !reflect.DeepEqual(inputMergeSources, mergeSources) {
-		s.fieldMismatch(inputMergeSources, mergeSources, "MergeSources")
-	}
+	assert.DeepEqual(s.t, inputMergeSources, mergeSources)
 }
 
 func (s *tagEditTestRunner) testApplyCreateTagEdit() {
 	name := "Name"
 	description := "Description"
 	category, err := s.createTestTagCategory(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	categoryID := category.ID
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &name,
@@ -285,16 +232,16 @@ func (s *tagEditTestRunner) testApplyCreateTagEdit() {
 		CategoryID:  &categoryID,
 	}
 	edit, err := s.createTestTagEdit(models.OperationEnumCreate, &tagEditDetailsInput, nil)
+	assert.NilError(s.t, err)
+
 	appliedEdit, err := s.applyEdit(edit.ID)
-	if err == nil {
-		s.verifyAppliedTagCreateEdit(tagEditDetailsInput, appliedEdit)
-	}
+	assert.NilError(s.t, err)
+
+	s.verifyAppliedTagCreateEdit(tagEditDetailsInput, appliedEdit)
 }
 
 func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetailsInput, edit *models.Edit) {
-	if edit.ID == uuid.Nil {
-		s.t.Errorf("Expected created edit id to be non-zero")
-	}
+	assert.Assert(s.t, edit.ID != uuid.Nil, "Expected created edit id to be non-zero")
 
 	s.verifyEditOperation(models.OperationEnumCreate.String(), edit)
 	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
@@ -304,23 +251,18 @@ func (s *tagEditTestRunner) verifyAppliedTagCreateEdit(input models.TagEditDetai
 	tag := s.getEditTagTarget(edit)
 
 	// ensure basic attributes are set correctly
-	if *input.Name != tag.Name {
-		s.fieldMismatch(input.Name, tag.Name, "Name")
-	}
+	assert.Equal(s.t, *input.Name, tag.Name)
 
-	desc, _ := s.resolver.Tag().Description(s.ctx, tag)
-	if *input.Description != *desc {
-		s.fieldMismatch(*input.Description, *desc, "Description")
-	}
+	desc, err := s.resolver.Tag().Description(s.ctx, tag)
+	assert.NilError(s.t, err)
 
-	aliases, _ := s.resolver.Tag().Aliases(s.ctx, tag)
-	if !reflect.DeepEqual(input.Aliases, aliases) {
-		s.fieldMismatch(input.Aliases, aliases, "Aliases")
-	}
+	assert.Equal(s.t, *input.Description, *desc)
 
-	if *input.CategoryID != tag.CategoryID.UUID {
-		s.fieldMismatch(*input.CategoryID, tag.CategoryID.UUID.String(), "CategoryID")
-	}
+	aliases, err := s.resolver.Tag().Aliases(s.ctx, tag)
+	assert.NilError(s.t, err)
+	assert.DeepEqual(s.t, input.Aliases, aliases)
+
+	assert.Equal(s.t, *input.CategoryID, tag.CategoryID.UUID)
 }
 
 func (s *tagEditTestRunner) testApplyModifyTagEdit() {
@@ -331,17 +273,14 @@ func (s *tagEditTestRunner) testApplyModifyTagEdit() {
 		Aliases: []string{existingAlias},
 	}
 	createdTag, err := s.createTestTag(&tagCreateInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	newDescription := "newDescription3"
 	newAlias := "newTagAlias3"
 	newName := "newName3"
 	newCategory, err := s.createTestTagCategory(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	newCategoryID := newCategory.ID
 	tagEditDetailsInput := models.TagEditDetailsInput{
 		Name:        &newName,
@@ -356,15 +295,13 @@ func (s *tagEditTestRunner) testApplyModifyTagEdit() {
 	}
 
 	createdUpdateEdit, err := s.createTestTagEdit(models.OperationEnumModify, &tagEditDetailsInput, &editInput)
-	if err != nil {
-		return
-	}
-	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
-	modifiedTag, _ := s.resolver.Query().FindTag(s.ctx, &id, nil)
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	assert.NilError(s.t, err)
+
+	modifiedTag, err := s.resolver.Query().FindTag(s.ctx, &id, nil)
+	assert.NilError(s.t, err)
 	s.verifyApplyModifyTagEdit(tagEditDetailsInput, modifiedTag, appliedEdit)
 }
 
@@ -375,37 +312,28 @@ func (s *tagEditTestRunner) verifyApplyModifyTagEdit(input models.TagEditDetails
 	s.verifyEditApplication(true, edit)
 
 	// ensure basic attributes are set correctly
-	if *input.Name != updatedTag.Name {
-		s.fieldMismatch(*input.Name, updatedTag.Name, "Name")
-	}
+	assert.Equal(s.t, *input.Name, updatedTag.Name)
 
 	updatedDesc, _ := s.resolver.Tag().Description(s.ctx, updatedTag)
-	if *input.Description != *updatedDesc {
-		s.fieldMismatch(*input.Description, *updatedDesc, "Description")
-	}
+	assert.Equal(s.t, *input.Description, *updatedDesc)
 
 	tagAliases, _ := s.resolver.Tag().Aliases(s.ctx, updatedTag)
-	if !reflect.DeepEqual(input.Aliases, tagAliases) {
-		s.fieldMismatch(tagAliases, input.Aliases, "Aliases")
-	}
+	assert.DeepEqual(s.t, input.Aliases, tagAliases)
 
-	if !updatedTag.CategoryID.Valid || *input.CategoryID != updatedTag.CategoryID.UUID {
-		s.fieldMismatch(*input.CategoryID, updatedTag.CategoryID.UUID.String(), "CategoryID")
-	}
+	assert.Assert(s.t, updatedTag.CategoryID.Valid && (*input.CategoryID == updatedTag.CategoryID.UUID))
 }
 
 func (s *tagEditTestRunner) testApplyDestroyTagEdit() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	tagID := createdTag.UUID()
 	sceneInput := models.SceneCreateInput{
 		TagIds: []uuid.UUID{tagID},
 		Date:   "2020-03-02",
 	}
-	scene, _ := s.createTestScene(&sceneInput)
+	scene, err := s.createTestScene(&sceneInput)
+	assert.NilError(s.t, err)
 
 	tagEditDetailsInput := models.TagEditDetailsInput{}
 	editInput := models.EditInput{
@@ -413,18 +341,16 @@ func (s *tagEditTestRunner) testApplyDestroyTagEdit() {
 		ID:        &tagID,
 	}
 	destroyEdit, err := s.createTestTagEdit(models.OperationEnumDestroy, &tagEditDetailsInput, &editInput)
-	if err != nil {
-		return
-	}
-	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	assert.NilError(s.t, err)
 
-	destroyedTag, _ := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
+	appliedEdit, err := s.applyEdit(destroyEdit.ID)
+	assert.NilError(s.t, err)
+
+	destroyedTag, err := s.resolver.Query().FindTag(s.ctx, &tagID, nil)
+	assert.NilError(s.t, err)
 
 	scene, err = s.client.findScene(scene.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 	s.verifyApplyDestroyTagEdit(destroyedTag, appliedEdit, scene)
 }
 
@@ -434,29 +360,21 @@ func (s *tagEditTestRunner) verifyApplyDestroyTagEdit(destroyedTag *models.Tag, 
 	s.verifyEditTargetType(models.TargetTypeEnumTag.String(), edit)
 	s.verifyEditApplication(true, edit)
 
-	if destroyedTag.Deleted != true {
-		s.fieldMismatch(destroyedTag.Deleted, true, "Deleted")
-	}
+	assert.Equal(s.t, destroyedTag.Deleted, true)
 
 	sceneTags := scene.Tags
-	if len(sceneTags) > 0 {
-		s.fieldMismatch(len(sceneTags), 0, "Scene tag count")
-	}
+	assert.Assert(s.t, len(sceneTags) == 0)
 }
 
 func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 	mergeSource1, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	mergeSource2, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
+
 	mergeTarget, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	// Scene with tag from both source and target, should not cause db unique error
 	sceneInput := models.SceneCreateInput{
@@ -464,18 +382,14 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 		Date:   "2020-03-02",
 	}
 	scene1, err := s.createTestScene(&sceneInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	sceneInput = models.SceneCreateInput{
 		TagIds: []uuid.UUID{mergeSource1.UUID(), mergeSource2.UUID()},
 		Date:   "2020-03-02",
 	}
 	scene2, err := s.createTestScene(&sceneInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	newDescription := "newDescription4"
 	newAlias := "newTagAlias4"
@@ -494,25 +408,16 @@ func (s *tagEditTestRunner) testApplyMergeTagEdit() {
 	}
 
 	mergeEdit, err := s.createTestTagEdit(models.OperationEnumMerge, &tagEditDetailsInput, &editInput)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	appliedMerge, err := s.applyEdit(mergeEdit.ID)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	scene1, err = s.client.findScene(scene1.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
+
 	scene2, err = s.client.findScene(scene2.UUID())
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
 	s.verifyAppliedMergeTagEdit(tagEditDetailsInput, appliedMerge, scene1, scene2)
 }
@@ -524,42 +429,25 @@ func (s *tagEditTestRunner) verifyAppliedMergeTagEdit(input models.TagEditDetail
 	s.verifyEditApplication(true, edit)
 
 	tagDetails := s.getEditTagDetails(edit)
-	if *input.Name != *tagDetails.Name {
-		s.fieldMismatch(*input.Name, *tagDetails.Name, "Name")
-	}
+	assert.Equal(s.t, *input.Name, *tagDetails.Name)
+	assert.Equal(s.t, *input.Description, *tagDetails.Description)
 
-	if *input.Description != *tagDetails.Description {
-		s.fieldMismatch(input.Description, tagDetails.Description, "Description")
-	}
-
-	if !reflect.DeepEqual(input.Aliases, tagDetails.AddedAliases) {
-		s.fieldMismatch(input.Aliases, tagDetails.AddedAliases, "AddedAliases")
-	}
+	assert.DeepEqual(s.t, input.Aliases, tagDetails.AddedAliases)
 
 	merges, _ := s.resolver.Edit().MergeSources(s.ctx, edit)
-	for i, _ := range merges {
+	for i := range merges {
 		tag := merges[i].(*models.Tag)
-		if tag.Deleted != true {
-			s.fieldMismatch(tag.Deleted, true, "Deleted")
-		}
+		assert.Equal(s.t, tag.Deleted, true)
 	}
 
 	editTarget := s.getEditTagTarget(edit)
 	scene1Tags := scene1.Tags
-	if len(scene1Tags) > 1 {
-		s.fieldMismatch(len(scene1Tags), 1, "Scene 1 tag count")
-	}
-	if scene1Tags[0].ID != editTarget.ID.String() {
-		s.fieldMismatch(scene1Tags[0].ID, editTarget.ID, "Scene 1 tag ID")
-	}
+	assert.Equal(s.t, len(scene1Tags), 1)
+	assert.Equal(s.t, scene1Tags[0].ID, editTarget.ID.String())
 
 	scene2Tags := scene2.Tags
-	if len(scene2Tags) > 1 {
-		s.fieldMismatch(len(scene2Tags), 1, "Scene 2 tag count")
-	}
-	if scene2Tags[0].ID != editTarget.ID.String() {
-		s.fieldMismatch(scene2Tags[0].ID, editTarget.ID, "Scene 2 tag ID")
-	}
+	assert.Equal(s.t, len(scene2Tags), 1)
+	assert.Equal(s.t, scene2Tags[0].ID, editTarget.ID.String())
 }
 
 func TestCreateTagEdit(t *testing.T) {

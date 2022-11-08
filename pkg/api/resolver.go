@@ -3,11 +3,8 @@ package api
 import (
 	"context"
 
-	"github.com/99designs/gqlgen/graphql"
-
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
-	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type Resolver struct {
@@ -122,24 +119,4 @@ func (r *queryResolver) GetConfig(ctx context.Context) (*models.StashBoxConfig, 
 		MinDestructiveVotingPeriod: config.GetMinDestructiveVotingPeriod(),
 		VoteCronInterval:           config.GetVoteCronInterval(),
 	}, nil
-}
-
-// wasFieldIncluded returns true if the given field was included in the request.
-// Slices are unmarshalled to empty slices even if the field was omitted. This
-// method determines if it was omitted altogether.
-func wasFieldIncluded(ctx context.Context, qualifiedField string) bool {
-	rctx := graphql.GetOperationContext(ctx)
-
-	if rctx != nil {
-		_, ret := utils.FindField(rctx.Variables, qualifiedField)
-		return ret
-	}
-
-	return false
-}
-
-func wasFieldIncludedFunc(ctx context.Context) func(qualifiedField string) bool {
-	return func(qualifiedField string) bool {
-		return wasFieldIncluded(ctx, qualifiedField)
-	}
 }

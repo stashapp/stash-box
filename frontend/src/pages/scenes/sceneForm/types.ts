@@ -35,6 +35,7 @@ export type InitialScene = {
         performer: {
           id: string;
           name: string;
+          aliases?: string[] | null;
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           deleted: boolean;

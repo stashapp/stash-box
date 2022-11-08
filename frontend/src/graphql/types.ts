@@ -131,6 +131,7 @@ export type DraftSubmissionStatus = {
 export type Edit = {
   __typename: "Edit";
   applied: Scalars["Boolean"];
+  bot: Scalars["Boolean"];
   closed?: Maybe<Scalars["Time"]>;
   comments: Array<EditComment>;
   created: Scalars["Time"];
@@ -173,6 +174,8 @@ export type EditCommentInput = {
 export type EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit;
 
 export type EditInput = {
+  /** Edit submitted by an automated script. Requires bot permission */
+  bot?: InputMaybe<Scalars["Boolean"]>;
   comment?: InputMaybe<Scalars["String"]>;
   /** Not required for create type */
   id?: InputMaybe<Scalars["ID"]>;
@@ -185,6 +188,8 @@ export type EditQueryInput = {
   /** Filter by applied status */
   applied?: InputMaybe<Scalars["Boolean"]>;
   direction?: SortDirectionEnum;
+  /** Filter to bot edits only */
+  is_bot?: InputMaybe<Scalars["Boolean"]>;
   /** Filter by favorite status */
   is_favorite?: InputMaybe<Scalars["Boolean"]>;
   /** Filter by operation */
@@ -202,6 +207,8 @@ export type EditQueryInput = {
   user_id?: InputMaybe<Scalars["ID"]>;
   /** Filter by vote count */
   vote_count?: InputMaybe<IntCriterionInput>;
+  /** Filter by user voted status */
+  voted?: InputMaybe<UserVotedFilterEnum>;
 };
 
 export enum EditSortEnum {
@@ -1270,6 +1277,10 @@ export type Scene = {
   urls: Array<Url>;
 };
 
+export type SceneFingerprintsArgs = {
+  is_submitted?: InputMaybe<Scalars["Boolean"]>;
+};
+
 export type SceneCreateInput = {
   code?: InputMaybe<Scalars["String"]>;
   date: Scalars["String"];
@@ -1291,8 +1302,10 @@ export type SceneDestroyInput = {
 
 export type SceneDraft = {
   __typename: "SceneDraft";
+  code?: Maybe<Scalars["String"]>;
   date?: Maybe<Scalars["String"]>;
   details?: Maybe<Scalars["String"]>;
+  director?: Maybe<Scalars["String"]>;
   fingerprints: Array<DraftFingerprint>;
   id?: Maybe<Scalars["ID"]>;
   image?: Maybe<Image>;
@@ -1304,8 +1317,10 @@ export type SceneDraft = {
 };
 
 export type SceneDraftInput = {
+  code?: InputMaybe<Scalars["String"]>;
   date?: InputMaybe<Scalars["String"]>;
   details?: InputMaybe<Scalars["String"]>;
+  director?: InputMaybe<Scalars["String"]>;
   fingerprints: Array<FingerprintInput>;
   id?: InputMaybe<Scalars["ID"]>;
   image?: InputMaybe<Scalars["Upload"]>;
@@ -1382,6 +1397,8 @@ export type SceneQueryInput = {
   favorites?: InputMaybe<FavoriteFilter>;
   /** Filter to only include scenes with these fingerprints */
   fingerprints?: InputMaybe<MultiStringCriterionInput>;
+  /** Filter to scenes with fingerprints submitted by the user */
+  has_fingerprint_submissions?: InputMaybe<Scalars["Boolean"]>;
   page?: Scalars["Int"];
   /** Filter to only include scenes with this studio as primary or parent */
   parentStudio?: InputMaybe<Scalars["String"]>;
@@ -1785,6 +1802,13 @@ export type UserVoteCount = {
   reject: Scalars["Int"];
 };
 
+export enum UserVotedFilterEnum {
+  ABSTAIN = "ABSTAIN",
+  ACCEPT = "ACCEPT",
+  NOT_VOTED = "NOT_VOTED",
+  REJECT = "REJECT",
+}
+
 export enum ValidSiteTypeEnum {
   PERFORMER = "PERFORMER",
   SCENE = "SCENE",
@@ -1833,6 +1857,7 @@ export type EditFragment = {
   target_type: TargetTypeEnum;
   operation: OperationEnum;
   status: VoteStatusEnum;
+  bot: boolean;
   applied: boolean;
   created: string;
   updated?: string | null;
@@ -3044,7 +3069,9 @@ export type AddSceneMutation = {
     id: string;
     release_date?: string | null;
     title?: string | null;
+    code?: string | null;
     details?: string | null;
+    director?: string | null;
     urls: Array<{
       __typename: "URL";
       url: string;
@@ -3153,6 +3180,7 @@ export type ApplyEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -4362,6 +4390,7 @@ export type PerformerEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -5390,6 +5419,7 @@ export type PerformerEditUpdateMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -6453,6 +6483,7 @@ export type SceneEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -7481,6 +7512,7 @@ export type SceneEditUpdateMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -8508,6 +8540,7 @@ export type StudioEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -9536,6 +9569,7 @@ export type StudioEditUpdateMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -10563,6 +10597,7 @@ export type TagEditMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -11591,6 +11626,7 @@ export type TagEditUpdateMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -12752,6 +12788,7 @@ export type VoteMutation = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -13859,7 +13896,9 @@ export type DraftQuery = {
           __typename: "SceneDraft";
           id?: string | null;
           title?: string | null;
+          code?: string | null;
           details?: string | null;
+          director?: string | null;
           date?: string | null;
           url?: {
             __typename: "URL";
@@ -14034,6 +14073,7 @@ export type EditQuery = {
     target_type: TargetTypeEnum;
     operation: OperationEnum;
     status: VoteStatusEnum;
+    bot: boolean;
     applied: boolean;
     created: string;
     updated?: string | null;
@@ -15498,6 +15538,7 @@ export type EditsQuery = {
       target_type: TargetTypeEnum;
       operation: OperationEnum;
       status: VoteStatusEnum;
+      bot: boolean;
       applied: boolean;
       created: string;
       updated?: string | null;
@@ -16840,6 +16881,7 @@ export type QueryExistingSceneQuery = {
       target_type: TargetTypeEnum;
       operation: OperationEnum;
       status: VoteStatusEnum;
+      bot: boolean;
       applied: boolean;
       created: string;
       updated?: string | null;

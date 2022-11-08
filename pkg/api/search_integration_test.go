@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash-box/pkg/models"
+	"gotest.tools/v3/assert"
 )
 
 type searchTestRunner struct {
@@ -21,57 +22,35 @@ func createSearchTestRunner(t *testing.T) *searchTestRunner {
 
 func (s *searchTestRunner) testSearchPerformerByTerm() {
 	createdPerformer, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performers, err := s.resolver.Query().SearchPerformer(s.ctx, createdPerformer.Name, nil)
-	if err != nil {
-		s.t.Errorf("Error finding performer: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding performer")
 
 	// ensure returned performer is not nil
-	if len(performers) == 0 {
-		s.t.Error("Did not find performer by name search")
-		return
-	}
+	assert.Assert(s.t, len(performers) > 0, "Did not find performer by name search")
 
 	// ensure values were set
-	if createdPerformer.UUID() != performers[0].ID {
-		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
-	}
+	assert.Equal(s.t, createdPerformer.UUID(), performers[0].ID)
 }
 
 func (s *searchTestRunner) testSearchPerformerByID() {
 	createdPerformer, err := s.createTestPerformer(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	performers, err := s.resolver.Query().SearchPerformer(s.ctx, "   "+createdPerformer.ID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding performer: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding performer")
 
 	// ensure returned performer is not nil
-	if len(performers) == 0 {
-		s.t.Error("Did not find performer by name search")
-		return
-	}
+	assert.Assert(s.t, len(performers) > 0, "Did not find performer by name search")
 
 	// ensure values were set
-	if createdPerformer.UUID() != performers[0].ID {
-		s.fieldMismatch(createdPerformer.ID, performers[0].ID, "ID")
-	}
+	assert.Equal(s.t, createdPerformer.UUID(), performers[0].ID)
 }
 
 func (s *searchTestRunner) testSearchSceneByTerm() {
 	createdStudio, err := s.createTestStudio(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 	studioID := createdStudio.UUID()
 
 	title := "scene search title"
@@ -82,98 +61,57 @@ func (s *searchTestRunner) testSearchSceneByTerm() {
 		StudioID: &studioID,
 	}
 	createdScene, err := s.createTestScene(&input)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	scenes, err := s.resolver.Query().SearchScene(s.ctx, *createdScene.Title+" "+*createdScene.Date, nil)
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
-	// ensure a scene is returned
-	if len(scenes) == 0 {
-		s.t.Error("Did not find scene by search")
-		return
-	}
+	assert.Assert(s.t, len(scenes) > 0, "Did not find scene by search")
 
 	// ensure correct scene
-	if createdScene.UUID() != scenes[0].ID {
-		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
-	}
+	assert.Equal(s.t, createdScene.UUID(), scenes[0].ID)
 }
 
 func (s *searchTestRunner) testSearchSceneByID() {
 	createdScene, err := s.createTestScene(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	scenes, err := s.resolver.Query().SearchScene(s.ctx, "   "+createdScene.ID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding scene: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding scene")
 
 	// ensure a scene is returned
-	if len(scenes) == 0 {
-		s.t.Error("Did not find scene by id search")
-		return
-	}
+	assert.Assert(s.t, len(scenes) > 0, "Did not find scene by id search")
 
 	// ensure correct scene
-	if createdScene.UUID() != scenes[0].ID {
-		s.fieldMismatch(createdScene.ID, scenes[0].ID, "ID")
-	}
+	assert.Equal(s.t, createdScene.UUID(), scenes[0].ID)
 }
 
 func (s *searchTestRunner) testSearchTagByTerm() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	tags, err := s.resolver.Query().SearchTag(s.ctx, createdTag.Name, nil)
-	if err != nil {
-		s.t.Errorf("Error finding tag: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding tag")
 
 	// ensure returned tag is not nil
-	if len(tags) == 0 {
-		s.t.Error("Did not find tag by name search")
-		return
-	}
+	assert.Assert(s.t, len(tags) > 0, "Did not find tag by name search")
 
 	// ensure values were set
-	if createdTag.UUID() != tags[0].ID {
-		s.fieldMismatch(createdTag.ID, tags[0].ID, "ID")
-	}
+	assert.Equal(s.t, createdTag.UUID(), tags[0].ID)
 }
 
 func (s *searchTestRunner) testSearchTagByID() {
 	createdTag, err := s.createTestTag(nil)
-	if err != nil {
-		return
-	}
+	assert.NilError(s.t, err)
 
 	tags, err := s.resolver.Query().SearchTag(s.ctx, "   "+createdTag.ID, nil)
-	if err != nil {
-		s.t.Errorf("Error finding tag: %s", err.Error())
-		return
-	}
+	assert.NilError(s.t, err, "Error finding tag")
 
 	// ensure returned tag is not nil
-	if len(tags) == 0 {
-		s.t.Error("Did not find tag by name search")
-		return
-	}
+	assert.Assert(s.t, len(tags) > 0, "Did not find tag by name search")
 
 	// ensure values were set
-	if createdTag.UUID() != tags[0].ID {
-		s.fieldMismatch(createdTag.ID, tags[0].ID, "ID")
-	}
+	assert.Equal(s.t, createdTag.UUID(), tags[0].ID)
 }
 
 func TestSearchPerformerByTerm(t *testing.T) {

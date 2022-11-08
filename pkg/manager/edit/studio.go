@@ -24,23 +24,23 @@ func Studio(fac models.Repo, edit *models.Edit) *StudioEditProcessor {
 	}
 }
 
-func (m *StudioEditProcessor) Edit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) Edit(input models.StudioEditInput, inputArgs utils.ArgumentsQuery) error {
 	var err error
 	switch input.Edit.Operation {
 	case models.OperationEnumModify:
-		err = m.modifyEdit(input, inputSpecified)
+		err = m.modifyEdit(input, inputArgs)
 	case models.OperationEnumMerge:
-		err = m.mergeEdit(input, inputSpecified)
+		err = m.mergeEdit(input, inputArgs)
 	case models.OperationEnumDestroy:
-		err = m.destroyEdit(input, inputSpecified)
+		err = m.destroyEdit(input)
 	case models.OperationEnumCreate:
-		err = m.createEdit(input, inputSpecified)
+		err = m.createEdit(input)
 	}
 
 	return err
 }
 
-func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputArgs utils.ArgumentsQuery) error {
 	sqb := m.fac.Studio()
 
 	// get the existing studio
@@ -56,13 +56,12 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputSpec
 	}
 
 	// perform a diff against the input and the current object
-	studioEdit := input.Details.StudioEditFromDiff(*studio)
-
-	if err := m.diffURLs(&studioEdit, studioID, input.Details.Urls); err != nil {
+	studioEdit, err := input.Details.StudioEditFromDiff(*studio, inputArgs)
+	if err != nil {
 		return err
 	}
 
-	if err := m.diffImages(&studioEdit, studioID, input.Details.ImageIds); err != nil {
+	if err = m.diffRelationships(studioEdit, studioID, input, inputArgs); err != nil {
 		return err
 	}
 
@@ -99,7 +98,7 @@ func (m *StudioEditProcessor) diffImages(studioEdit *models.StudioEditData, stud
 	return nil
 }
 
-func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputArgs utils.ArgumentsQuery) error {
 	sqb := m.fac.Studio()
 
 	// get the existing studio
@@ -138,44 +137,28 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputSpeci
 	}
 
 	// perform a diff against the input and the current object
-	studioEdit := input.Details.StudioEditFromMerge(*studio, mergeSources)
-
-	urls, err := sqb.GetURLs(studioID)
-	if err != nil {
-		return err
-	}
-	studioEdit.New.AddedUrls, studioEdit.New.RemovedUrls = urlCompare(input.Details.Urls, urls)
-
-	iqb := m.fac.Image()
-	images, err := iqb.FindByStudioID(studioID)
+	studioEdit, err := input.Details.StudioEditFromMerge(*studio, mergeSources, inputArgs)
 	if err != nil {
 		return err
 	}
 
-	var existingImages []uuid.UUID
-	for _, image := range images {
-		existingImages = append(existingImages, image.ID)
+	if err = m.diffRelationships(studioEdit, studioID, input, inputArgs); err != nil {
+		return err
 	}
-	studioEdit.New.AddedImages, studioEdit.New.RemovedImages = utils.SliceCompare(input.Details.ImageIds, existingImages)
 
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) createEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) createEdit(input models.StudioEditInput) error {
 	studioEdit := input.Details.StudioEditFromCreate()
 
-	if len(input.Details.Urls) != 0 || inputSpecified("urls") {
-		studioEdit.New.AddedUrls = models.ParseURLInput(input.Details.Urls)
-	}
-
-	if len(input.Details.ImageIds) != 0 || inputSpecified("image_ids") {
-		studioEdit.New.AddedImages = input.Details.ImageIds
-	}
+	studioEdit.New.AddedUrls = models.ParseURLInput(input.Details.Urls)
+	studioEdit.New.AddedImages = input.Details.ImageIds
 
 	return m.edit.SetData(studioEdit)
 }
 
-func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput) error {
 	tqb := m.fac.Studio()
 
 	// Get the existing studio
@@ -239,5 +222,20 @@ func (m *StudioEditProcessor) apply() error {
 		}
 	}
 
+	return nil
+}
+
+func (m *StudioEditProcessor) diffRelationships(studioEdit *models.StudioEditData, studioID uuid.UUID, input models.StudioEditInput, inputArgs utils.ArgumentsQuery) error {
+	if input.Details.Urls != nil || inputArgs.Field("urls").IsNull() {
+		if err := m.diffURLs(studioEdit, studioID, input.Details.Urls); err != nil {
+			return err
+		}
+	}
+
+	if input.Details.ImageIds != nil || inputArgs.Field("image_ids").IsNull() {
+		if err := m.diffImages(studioEdit, studioID, input.Details.ImageIds); err != nil {
+			return err
+		}
+	}
 	return nil
 }

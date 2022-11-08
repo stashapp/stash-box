@@ -11,6 +11,7 @@ fragment EditFragment on Edit {
   target_type
   operation
   status
+  bot
   applied
   created
   updated

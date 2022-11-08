@@ -34,7 +34,9 @@ query Draft($id: ID!) {
       ... on SceneDraft {
         id
         title
+        code
         details
+        director
         date
         url {
           ...URLFragment
