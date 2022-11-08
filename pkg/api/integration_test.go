@@ -648,6 +648,20 @@ func (s *testRunner) verifyEditTargetType(targetType string, edit *models.Edit) 
 	}
 }
 
+func (s *testRunner) verifyAppliedPerformerEdit(edit *models.Edit) {
+	s.verifyEditOperation(models.OperationEnumModify.String(), edit)
+	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
+	s.verifyEditTargetType(models.TargetTypeEnumPerformer.String(), edit)
+	s.verifyEditApplication(true, edit)
+}
+
+func (s *testRunner) verifyAppliedSceneEdit(edit *models.Edit) {
+	s.verifyEditOperation(models.OperationEnumModify.String(), edit)
+	s.verifyEditStatus(models.VoteStatusEnumImmediateAccepted.String(), edit)
+	s.verifyEditTargetType(models.TargetTypeEnumScene.String(), edit)
+	s.verifyEditApplication(true, edit)
+}
+
 func (s *testRunner) createTestPerformerEdit(operation models.OperationEnum, detailsInput *models.PerformerEditDetailsInput, editInput *models.EditInput, options *models.PerformerEditOptionsInput) (*models.Edit, error) {
 	s.t.Helper()
 

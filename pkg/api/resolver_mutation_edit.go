@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/manager/edit"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
@@ -33,7 +34,8 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 	fac := r.getRepoFactory(ctx)
 	err = fac.WithTxn(func() error {
 		p := edit.Scene(fac, newEdit)
-		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
@@ -82,7 +84,8 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 
 	err = fac.WithTxn(func() error {
 		p := edit.Scene(fac, existingEdit)
-		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
@@ -114,7 +117,8 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 	fac := r.getRepoFactory(ctx)
 	err = fac.WithTxn(func() error {
 		p := edit.Studio(fac, newEdit)
-		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
@@ -157,7 +161,8 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 
 	err = fac.WithTxn(func() error {
 		p := edit.Studio(fac, existingEdit)
-		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
@@ -189,7 +194,8 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 	fac := r.getRepoFactory(ctx)
 	err = fac.WithTxn(func() error {
 		p := edit.Tag(fac, newEdit)
-		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
@@ -232,7 +238,8 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 
 	err = fac.WithTxn(func() error {
 		p := edit.Tag(fac, existingEdit)
-		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
@@ -264,7 +271,8 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	fac := r.getRepoFactory(ctx)
 	err = fac.WithTxn(func() error {
 		p := edit.Performer(fac, newEdit)
-		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 
@@ -313,7 +321,8 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 
 	err = fac.WithTxn(func() error {
 		p := edit.Performer(fac, existingEdit)
-		if err := p.Edit(input, wasFieldIncludedFunc(ctx)); err != nil {
+		inputArgs := utils.Arguments(ctx).Field("input")
+		if err := p.Edit(input, inputArgs); err != nil {
 			return err
 		}
 

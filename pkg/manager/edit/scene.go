@@ -24,23 +24,23 @@ func Scene(fac models.Repo, edit *models.Edit) *SceneEditProcessor {
 	}
 }
 
-func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
 	var err error
 	switch input.Edit.Operation {
 	case models.OperationEnumModify:
-		err = m.modifyEdit(input, inputSpecified)
+		err = m.modifyEdit(input, inputArgs)
 	case models.OperationEnumMerge:
-		err = m.mergeEdit(input, inputSpecified)
+		err = m.mergeEdit(input, inputArgs)
 	case models.OperationEnumDestroy:
-		err = m.destroyEdit(input, inputSpecified)
+		err = m.destroyEdit(input, inputArgs)
 	case models.OperationEnumCreate:
-		err = m.createEdit(input, inputSpecified)
+		err = m.createEdit(input, inputArgs)
 	}
 
 	return err
 }
 
-func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
 	sqb := m.fac.Scene()
 
 	// get the existing scene
@@ -56,12 +56,12 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 	}
 
 	// perform a diff against the input and the current object
-	sceneEdit, err := input.Details.SceneEditFromDiff(*scene)
+	sceneEdit, err := input.Details.SceneEditFromDiff(*scene, inputArgs)
 	if err != nil {
 		return err
 	}
 
-	if err = m.diffRelationships(sceneEdit, sceneID, input); err != nil {
+	if err = m.diffRelationships(sceneEdit, sceneID, input, inputArgs); err != nil {
 		return err
 	}
 
@@ -74,20 +74,32 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputSpecif
 	return m.edit.SetData(*sceneEdit)
 }
 
-func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, sceneID uuid.UUID, input models.SceneEditInput) error {
-	if err := m.diffURLs(sceneEdit, sceneID, input.Details.Urls); err != nil {
-		return err
+func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, sceneID uuid.UUID, input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
+	if input.Details.Urls != nil || inputArgs.Field("urls").IsNull() {
+		if err := m.diffURLs(sceneEdit, sceneID, input.Details.Urls); err != nil {
+			return err
+		}
 	}
 
-	if err := m.diffTags(sceneEdit, sceneID, input.Details.TagIds); err != nil {
-		return err
+	if input.Details.TagIds != nil || inputArgs.Field("tag_ids").IsNull() {
+		if err := m.diffTags(sceneEdit, sceneID, input.Details.TagIds); err != nil {
+			return err
+		}
 	}
 
-	if err := m.diffImages(sceneEdit, sceneID, input.Details.ImageIds); err != nil {
-		return err
+	if input.Details.ImageIds != nil || inputArgs.Field("image_ids").IsNull() {
+		if err := m.diffImages(sceneEdit, sceneID, input.Details.ImageIds); err != nil {
+			return err
+		}
 	}
 
-	return m.diffPerformers(sceneEdit, sceneID, input.Details.Performers)
+	if input.Details.Performers != nil || inputArgs.Field("performers").IsNull() {
+		if err := m.diffPerformers(sceneEdit, sceneID, input.Details.Performers); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m *SceneEditProcessor) diffTags(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newImageIds []uuid.UUID) error {
@@ -219,7 +231,7 @@ func (m *SceneEditProcessor) diffImages(sceneEdit *models.SceneEditData, sceneID
 	return nil
 }
 
-func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
 	sqb := m.fac.Scene()
 
 	// get the existing scene
@@ -259,20 +271,20 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputSpecifi
 	}
 
 	// perform a diff against the input and the current object
-	sceneEdit, err := input.Details.SceneEditFromMerge(*scene, mergeSources)
+	sceneEdit, err := input.Details.SceneEditFromMerge(*scene, mergeSources, inputArgs)
 	if err != nil {
 		return err
 	}
 
-	if err = m.diffRelationships(sceneEdit, sceneID, input); err != nil {
+	if err = m.diffRelationships(sceneEdit, sceneID, input, inputArgs); err != nil {
 		return err
 	}
 
 	return m.edit.SetData(*sceneEdit)
 }
 
-func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
-	sceneEdit, err := input.Details.SceneEditFromCreate()
+func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
+	sceneEdit, err := input.Details.SceneEditFromCreate(inputArgs)
 	if err != nil {
 		return err
 	}
@@ -287,7 +299,7 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputSpecif
 	return m.edit.SetData(*sceneEdit)
 }
 
-func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputSpecified InputSpecifiedFunc) error {
+func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
 	tqb := m.fac.Scene()
 
 	// get the existing scene
