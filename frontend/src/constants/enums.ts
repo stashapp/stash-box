@@ -8,6 +8,7 @@ import {
   GenderFilterEnum,
   OperationEnum,
   TargetTypeEnum,
+  UserVotedFilterEnum,
   VoteStatusEnum,
   VoteTypeEnum,
 } from "src/graphql";
@@ -104,3 +105,11 @@ export const VoteTypes: EnumDictionary<VoteTypeEnum, string> = {
   [VoteTypeEnum.ABSTAIN]: "Abstain",
   [VoteTypeEnum.REJECT]: "No",
 };
+
+export const UserVotedFilterTypes: EnumDictionary<UserVotedFilterEnum, string> =
+  {
+    [UserVotedFilterEnum.NOT_VOTED]: "Not Yet Voted",
+    [UserVotedFilterEnum.ACCEPT]: "Yes",
+    [UserVotedFilterEnum.ABSTAIN]: "Abstain",
+    [UserVotedFilterEnum.REJECT]: "No",
+  };

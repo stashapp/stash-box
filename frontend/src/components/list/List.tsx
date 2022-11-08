@@ -34,7 +34,7 @@ const List: FC<Props> = ({
 
   return (
     <div className={`${entityName}-list`}>
-      <div className="d-flex mt-2 align-items-start">
+      <div className="d-flex mt-2 align-items-start flex-wrap">
         {filters}
         <Pagination
           onClick={setPage}

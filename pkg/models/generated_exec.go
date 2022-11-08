@@ -4198,6 +4198,13 @@ enum EditSortEnum {
   CLOSED_AT
 }
 
+enum UserVotedFilterEnum {
+    ABSTAIN
+    ACCEPT
+    REJECT
+    NOT_VOTED
+}
+
 input EditQueryInput {
   """Filter by user id"""
   user_id: ID
@@ -4215,6 +4222,8 @@ input EditQueryInput {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+  """Filter by user voted status"""
+  voted: UserVotedFilterEnum
   """Filter to bot edits only"""
   is_bot: Boolean
 
@@ -30853,7 +30862,7 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "is_bot", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "voted", "is_bot", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30921,6 +30930,14 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is_favorite"))
 			it.IsFavorite, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "voted":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("voted"))
+			it.Voted, err = ec.unmarshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -33349,7 +33366,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -44642,6 +44659,22 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋstashappᚋstashᚑbo
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx context.Context, v interface{}) (*UserVotedFilterEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(UserVotedFilterEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUserVotedFilterEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserVotedFilterEnum(ctx context.Context, sel ast.SelectionSet, v *UserVotedFilterEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOVoteStatusEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐVoteStatusEnum(ctx context.Context, v interface{}) (*VoteStatusEnum, error) {
