@@ -60,6 +60,14 @@ export const getImage = (
   return images?.[0]?.url ?? "";
 };
 
+export const imageType = (image: ImageFragment) => {
+  if (image.height > image.width) {
+    return `vertical-img`;
+  } else {
+    return `horizontal-img`;
+  }
+};
+
 export const getUrlBySite = (urls: UrlFragment[], name: string) =>
   (urls && (urls.find((url) => url.site.name === name) || {}).url) || "";
 
