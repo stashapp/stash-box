@@ -11,14 +11,19 @@ interface Props {
     id: string;
     name: string;
   };
+  isPrivateUser: boolean;
 }
 
-const UserEditsComponent: FC<Props> = ({ user }) => (
+const UserEditsComponent: FC<Props> = ({ user, isPrivateUser }) => (
   <>
     <h3>
       Edits by <Link to={createHref(ROUTE_USER, user)}>{user.name}</Link>
     </h3>
-    <EditList userId={user.id} defaultVoteStatus={VoteStatusEnum.PENDING} />
+    <EditList
+      userId={user.id}
+      defaultVoteStatus={VoteStatusEnum.PENDING}
+      showVotedFilter={!isPrivateUser}
+    />
   </>
 );
 

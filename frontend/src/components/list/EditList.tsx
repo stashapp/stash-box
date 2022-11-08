@@ -8,6 +8,7 @@ import {
   VoteStatusEnum,
   OperationEnum,
   EditSortEnum,
+  UserVotedFilterEnum,
 } from "src/graphql";
 import { ErrorMessage } from "src/components/fragments";
 import EditCard from "src/components/editCard";
@@ -20,8 +21,10 @@ interface EditsProps {
   type?: TargetTypeEnum;
   status?: VoteStatusEnum;
   operation?: OperationEnum;
+  voted?: UserVotedFilterEnum;
   userId?: string;
   defaultVoteStatus?: VoteStatusEnum;
+  showVotedFilter?: boolean;
 }
 
 const PER_PAGE = 20;
@@ -33,8 +36,10 @@ const EditListComponent: FC<EditsProps> = ({
   type,
   status,
   operation,
+  voted,
   userId,
   defaultVoteStatus,
+  showVotedFilter,
 }) => {
   const { page, setPage } = usePagination();
   const {
@@ -43,6 +48,7 @@ const EditListComponent: FC<EditsProps> = ({
     selectedDirection,
     selectedType,
     selectedOperation,
+    selectedVoted,
     selectedStatus,
     selectedFavorite,
     selectedBot,
@@ -52,7 +58,9 @@ const EditListComponent: FC<EditsProps> = ({
     type,
     status,
     operation,
+    voted,
     showFavoriteOption: id === undefined,
+    showVotedFilter,
     defaultVoteStatus,
   });
   const { data, loading } = useEdits({
@@ -61,6 +69,7 @@ const EditListComponent: FC<EditsProps> = ({
       target_id: id,
       status: selectedStatus,
       operation: selectedOperation,
+      voted: selectedVoted,
       user_id: userId,
       is_favorite: selectedFavorite,
       is_bot: selectedBot,
