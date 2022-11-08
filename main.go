@@ -13,7 +13,8 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-//nolint
+// nolint
+//
 //go:embed frontend/build
 var ui embed.FS
 

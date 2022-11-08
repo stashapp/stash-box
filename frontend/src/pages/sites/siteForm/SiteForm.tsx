@@ -96,10 +96,18 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
           {...register("regex")}
         />
         <Form.Text>
-          A regular expression that will be optionally used to clean links. Must
-          contain a capture group of the portion of the URL that is considered
-          valid. For instance: <code>(https://example.org/.*)\??</code> which
-          will capture everything before the first question mark.
+          An optional regular expression that will be used to clean links and
+          autofill the Site selection with this Site. Must contain a capture
+          group of the portion of the URL that will be kept.
+          <br />
+          Example:
+          <br />
+          This regexp <code>(https?://(?:www.)?example\.org/[^?#]*)</code>
+          <br />
+          will match this string{" "}
+          <code>http://example.org/foo/bar?id=69#top</code>
+          <br />
+          and will clean it into <code>http://example.org/foo/bar</code>
         </Form.Text>
       </Form.Group>
 

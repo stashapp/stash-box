@@ -23,6 +23,7 @@
 @import "./components/editImages/styles";
 @import "./components/urlInput/styles";
 @import "./components/image/styles";
+@import "react-bootstrap-typeahead/css/Typeahead.css";
 
 /* this is a bit of a hack, because we can't supply direct class names
    to the react-select controls */

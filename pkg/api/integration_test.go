@@ -985,3 +985,120 @@ func (s *testRunner) compareSiteURLs(input []*models.URLInput, output []*siteURL
 
 	assert.DeepEqual(s.t, input, convertedURLs)
 }
+
+func comparePerformers(input []*models.PerformerAppearanceInput, performers []*performerAppearance) bool {
+	if len(performers) != len(input) {
+		return false
+	}
+
+	for i, v := range performers {
+		performerID := v.Performer.ID
+		if performerID != input[i].PerformerID.String() {
+			return false
+		}
+
+		if v.As != input[i].As {
+			if v.As == nil || input[i].As == nil {
+				return false
+			}
+
+			if *v.As != *input[i].As {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func comparePerformersInput(input, performers []*models.PerformerAppearanceInput) bool {
+	if len(performers) != len(input) {
+		return false
+	}
+
+	for i, v := range performers {
+		performerID := v.PerformerID
+		if performerID != input[i].PerformerID {
+			return false
+		}
+
+		if v.As != input[i].As {
+			if v.As == nil || input[i].As == nil {
+				return false
+			}
+
+			if *v.As != *input[i].As {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func compareTags(tagIDs []uuid.UUID, tags []*idObject) bool {
+	if len(tags) != len(tagIDs) {
+		return false
+	}
+
+	for i, v := range tags {
+		tagID := v.ID
+		if tagID != tagIDs[i].String() {
+			return false
+		}
+	}
+
+	return true
+}
+
+func compareFingerprints(input []*models.FingerprintEditInput, fingerprints []*fingerprint) bool {
+	if len(input) != len(fingerprints) {
+		return false
+	}
+
+	for i, v := range fingerprints {
+		if input[i].Algorithm != v.Algorithm || input[i].Hash != v.Hash {
+			return false
+		}
+	}
+
+	return true
+}
+
+func compareFingerprintsInput(input, fingerprints []*models.FingerprintEditInput) bool {
+	if len(input) != len(fingerprints) {
+		return false
+	}
+
+	for i, v := range fingerprints {
+		if input[i].Algorithm != v.Algorithm || input[i].Hash != v.Hash {
+			return false
+		}
+	}
+
+	return true
+}
+
+func compareBodyMods(input []*models.BodyModificationInput, bodyMods []*models.BodyModification) bool {
+	if len(bodyMods) != len(input) {
+		return false
+	}
+
+	for i, v := range bodyMods {
+		if v.Location != input[i].Location {
+			return false
+		}
+
+		if v.Description != input[i].Description {
+			if v.Description == nil || input[i].Description == nil {
+				return false
+			}
+
+			if *v.Description != *input[i].Description {
+				return false
+			}
+		}
+	}
+
+	return true
+}

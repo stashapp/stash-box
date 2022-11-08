@@ -58,6 +58,7 @@ type Edit {
     """Objects to merge with the target. Only applicable to merges"""
     merge_sources: [EditTarget!]!
     operation: OperationEnum!
+    bot: Boolean!
     details: EditDetails
     """Previous state of fields being modified - null if operation is create or delete."""
     old_details: EditDetails
@@ -84,6 +85,8 @@ input EditInput {
   """Only required for merge type"""
   merge_source_ids: [ID!]
   comment: String
+  """Edit submitted by an automated script. Requires bot permission"""
+  bot: Boolean
 }
 
 input EditVoteInput {
@@ -107,6 +110,13 @@ enum EditSortEnum {
   CLOSED_AT
 }
 
+enum UserVotedFilterEnum {
+    ABSTAIN
+    ACCEPT
+    REJECT
+    NOT_VOTED
+}
+
 input EditQueryInput {
   """Filter by user id"""
   user_id: ID
@@ -124,6 +134,10 @@ input EditQueryInput {
   target_id: ID
   """Filter by favorite status"""
   is_favorite: Boolean
+  """Filter by user voted status"""
+  voted: UserVotedFilterEnum
+  """Filter to bot edits only"""
+  is_bot: Boolean
 
   page: Int! = 1
   per_page: Int! = 25

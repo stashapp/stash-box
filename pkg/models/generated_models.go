@@ -94,6 +94,8 @@ type EditInput struct {
 	// Only required for merge type
 	MergeSourceIds []uuid.UUID `json:"merge_source_ids"`
 	Comment        *string     `json:"comment"`
+	// Edit submitted by an automated script. Requires bot permission
+	Bot *bool `json:"bot"`
 }
 
 type EditQueryInput struct {
@@ -112,11 +114,15 @@ type EditQueryInput struct {
 	// Filter by target id
 	TargetID *uuid.UUID `json:"target_id"`
 	// Filter by favorite status
-	IsFavorite *bool             `json:"is_favorite"`
-	Page       int               `json:"page"`
-	PerPage    int               `json:"per_page"`
-	Direction  SortDirectionEnum `json:"direction"`
-	Sort       EditSortEnum      `json:"sort"`
+	IsFavorite *bool `json:"is_favorite"`
+	// Filter by user voted status
+	Voted *UserVotedFilterEnum `json:"voted"`
+	// Filter to bot edits only
+	IsBot     *bool             `json:"is_bot"`
+	Page      int               `json:"page"`
+	PerPage   int               `json:"per_page"`
+	Direction SortDirectionEnum `json:"direction"`
+	Sort      EditSortEnum      `json:"sort"`
 }
 
 type EditVoteInput struct {
@@ -466,7 +472,9 @@ type SceneDestroyInput struct {
 type SceneDraftInput struct {
 	ID           *uuid.UUID          `json:"id"`
 	Title        *string             `json:"title"`
+	Code         *string             `json:"code"`
 	Details      *string             `json:"details"`
+	Director     *string             `json:"director"`
 	URL          *string             `json:"url"`
 	Date         *string             `json:"date"`
 	Studio       *DraftEntityInput   `json:"studio"`
@@ -520,11 +528,13 @@ type SceneQueryInput struct {
 	// Filter to only include scenes with these fingerprints
 	Fingerprints *MultiStringCriterionInput `json:"fingerprints"`
 	// Filter by favorited entity
-	Favorites *FavoriteFilter   `json:"favorites"`
-	Page      int               `json:"page"`
-	PerPage   int               `json:"per_page"`
-	Direction SortDirectionEnum `json:"direction"`
-	Sort      SceneSortEnum     `json:"sort"`
+	Favorites *FavoriteFilter `json:"favorites"`
+	// Filter to scenes with fingerprints submitted by the user
+	HasFingerprintSubmissions *bool             `json:"has_fingerprint_submissions"`
+	Page                      int               `json:"page"`
+	PerPage                   int               `json:"per_page"`
+	Direction                 SortDirectionEnum `json:"direction"`
+	Sort                      SceneSortEnum     `json:"sort"`
 }
 
 type SceneUpdateInput struct {
@@ -1771,6 +1781,51 @@ func (e *TargetTypeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e TargetTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type UserVotedFilterEnum string
+
+const (
+	UserVotedFilterEnumAbstain  UserVotedFilterEnum = "ABSTAIN"
+	UserVotedFilterEnumAccept   UserVotedFilterEnum = "ACCEPT"
+	UserVotedFilterEnumReject   UserVotedFilterEnum = "REJECT"
+	UserVotedFilterEnumNotVoted UserVotedFilterEnum = "NOT_VOTED"
+)
+
+var AllUserVotedFilterEnum = []UserVotedFilterEnum{
+	UserVotedFilterEnumAbstain,
+	UserVotedFilterEnumAccept,
+	UserVotedFilterEnumReject,
+	UserVotedFilterEnumNotVoted,
+}
+
+func (e UserVotedFilterEnum) IsValid() bool {
+	switch e {
+	case UserVotedFilterEnumAbstain, UserVotedFilterEnumAccept, UserVotedFilterEnumReject, UserVotedFilterEnumNotVoted:
+		return true
+	}
+	return false
+}
+
+func (e UserVotedFilterEnum) String() string {
+	return string(e)
+}
+
+func (e *UserVotedFilterEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserVotedFilterEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserVotedFilterEnum", str)
+	}
+	return nil
+}
+
+func (e UserVotedFilterEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

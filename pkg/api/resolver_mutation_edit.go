@@ -15,6 +15,7 @@ import (
 var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
 var ErrAlreadyUpdated = fmt.Errorf("Edits can only be updated once")
 var ErrClosedEdit = fmt.Errorf("Votes can only be cast on pending edits")
+var ErrUnauthorizedBot = fmt.Errorf("You do not have permission to submit bot edits")
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
@@ -23,12 +24,14 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 	}
 
 	currentUser := getCurrentUser(ctx)
+	if err := validateBotEdit(ctx, input.Edit); err != nil {
+		return nil, err
+	}
 
 	// create the edit
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumScene, input.Edit)
 
 	fac := r.getRepoFactory(ctx)
-
 	err = fac.WithTxn(func() error {
 		p := edit.Scene(fac, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
@@ -105,11 +108,13 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 
 	// create the edit
 	currentUser := getCurrentUser(ctx)
+	if err := validateBotEdit(ctx, input.Edit); err != nil {
+		return nil, err
+	}
 
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumStudio, input.Edit)
 
 	fac := r.getRepoFactory(ctx)
-
 	err = fac.WithTxn(func() error {
 		p := edit.Studio(fac, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
@@ -180,11 +185,13 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 
 	// create the edit
 	currentUser := getCurrentUser(ctx)
+	if err := validateBotEdit(ctx, input.Edit); err != nil {
+		return nil, err
+	}
 
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumTag, input.Edit)
 
 	fac := r.getRepoFactory(ctx)
-
 	err = fac.WithTxn(func() error {
 		p := edit.Tag(fac, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
@@ -255,8 +262,12 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 
 	// create the edit
 	currentUser := getCurrentUser(ctx)
+	if err := validateBotEdit(ctx, input.Edit); err != nil {
+		return nil, err
+	}
 
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumPerformer, input.Edit)
+
 	fac := r.getRepoFactory(ctx)
 	err = fac.WithTxn(func() error {
 		p := edit.Performer(fac, newEdit)
@@ -449,4 +460,14 @@ func (r *mutationResolver) ApplyEdit(ctx context.Context, input models.ApplyEdit
 	}
 
 	return edit.ApplyEdit(fac, input.ID, true)
+}
+
+func validateBotEdit(ctx context.Context, input *models.EditInput) error {
+	if input.Bot != nil && *input.Bot {
+		if err := validateBot(ctx); err != nil {
+			return ErrUnauthorizedBot
+		}
+	}
+
+	return nil
 }
