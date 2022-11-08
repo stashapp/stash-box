@@ -379,6 +379,9 @@ func (s *performerEditTestRunner) testApplyModifyPerformerEdit() {
 	createdUpdateEdit, err := s.createTestPerformerEdit(models.OperationEnumModify, performerEditDetailsInput, &editInput, nil)
 	assert.NilError(s.t, err)
 
+	appliedEdit, err := s.applyEdit(createdUpdateEdit.ID)
+	assert.NilError(s.t, err)
+
 	modifiedPerformer, _ := s.resolver.Query().FindPerformer(s.ctx, id)
 
 	s.verifyAppliedPerformerEdit(appliedEdit)
