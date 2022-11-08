@@ -21,8 +21,13 @@
       height: 100%;
       image-rendering: smooth;
       object-fit: cover;
-      object-position: top;
+      object-position: center;
       width: 100%;
+    }
+
+    .vertical-img {
+      background-color: rgba(0 0 0 / 50%);
+      object-fit: scale-down;
     }
   }
 
