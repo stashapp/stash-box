@@ -28,6 +28,7 @@ import {
   ROUTE_USER_PASSWORD,
   ROUTE_USERS,
   ROUTE_USER_EDITS,
+  ROUTE_USER_MY_SCENES,
 } from "src/constants/route";
 import Modal from "src/components/modal";
 import { Icon, Tooltip } from "src/components/fragments";
@@ -192,9 +193,14 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               <Button variant="secondary">User Edits</Button>
             </Link>
             {showPrivate && (
-              <Link to={ROUTE_USER_PASSWORD} className="ms-2">
-                <Button>Change Password</Button>
-              </Link>
+              <>
+                <Link to={createHref(ROUTE_USER_MY_SCENES, user)} className="ms-2">
+                  <Button variant="secondary">My Scenes</Button>
+                </Link>
+                <Link to={ROUTE_USER_PASSWORD} className="ms-2">
+                  <Button>Change Password</Button>
+                </Link>
+              </>
             )}
             {isAdmin(Auth.user) && (
               <>

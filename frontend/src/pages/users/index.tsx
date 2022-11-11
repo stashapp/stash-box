@@ -10,6 +10,7 @@ import {
   ROUTE_USER_EDIT,
   ROUTE_USER_PASSWORD,
   ROUTE_USER_EDITS,
+  ROUTE_USER_MY_SCENES,
 } from "src/constants/route";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { isPrivateUser } from "src/utils";
@@ -20,6 +21,7 @@ import UserAdd from "./UserAdd";
 import UserEdit from "./UserEdit";
 import UserPassword from "./UserPassword";
 import UserEdits from "./UserEdits";
+import UserScenes from "./UserScenes";
 
 const UserLoader: FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -50,6 +52,12 @@ const UserLoader: FC = () => {
         <>
           <Title page={`Edits by ${user.name}`} />
           <UserEdits user={user} isPrivateUser={isPrivateUser(user)} />
+        </>
+      </Route>
+      <Route exact path={ROUTE_USER_MY_SCENES}>
+        <>
+          <Title page={`My Scenes`} />
+          <UserScenes user={user} />
         </>
       </Route>
     </Switch>
