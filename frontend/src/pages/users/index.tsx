@@ -54,12 +54,6 @@ const UserLoader: FC = () => {
           <UserEdits user={user} isPrivateUser={isPrivateUser(user)} />
         </>
       </Route>
-      <Route exact path={ROUTE_USER_MY_SCENES}>
-        <>
-          <Title page={`My Scenes`} />
-          <UserScenes user={user} />
-        </>
-      </Route>
     </Switch>
   );
 };
@@ -84,6 +78,12 @@ const UserRoutes: FC = () => (
         <UserPassword />
       </>
     </Route>
+    <Route exact path={ROUTE_USER_MY_SCENES}>
+        <>
+          <Title page={`My Scenes`} />
+          <UserScenes/>
+        </>
+      </Route>
     <Route path={ROUTE_USER}>
       <UserLoader />
     </Route>

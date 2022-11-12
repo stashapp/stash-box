@@ -11,7 +11,7 @@ import {
   SceneQueryInput,
   SortDirectionEnum,
   SceneSortEnum,
-  useSubmitFingerPrint,
+  useUnmatchFingerprint,
   FingerprintAlgorithm,
   FingerprintSubmission,
 } from "src/graphql";
@@ -21,7 +21,6 @@ import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "src/components/list/List";
 import { Link } from "react-router-dom";
 import { sceneHref, studioHref, formatDuration } from "src/utils";
-import { MyFingerprints_myFingerprints_fingerprints as FingerprintInput } from "src/graphql/definitions/MyFingerprints";
 import Modal from "src/components/modal";
 
 
@@ -30,7 +29,6 @@ const PER_PAGE = 20;
 interface Props {
   perPage?: number;
   filter?: Partial<SceneQueryInput>;
-  userFingerprints?: Array<FingerprintInput>;
 }
 
 const sortOptions = [
@@ -40,10 +38,10 @@ const sortOptions = [
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
 ];
 
-const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter , userFingerprints}) => {
+const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
   const [dataForDeletion, setDataForDeletion] = useState<FingerprintSubmission[]>([])
   const [showDelete, setShowDelete] = useState(false);
-  const [deleteFingerprint, { loading: deleting }] = useSubmitFingerPrint();
+  const [deleteFingerprint, { loading: deleting }] = useUnmatchFingerprint();
   const [params, setParams] = useQueryParams({
     sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
     dir: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
@@ -115,7 +113,7 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter , userFingerprint
       <td>{scene.release_date}</td>
       <td><Button
         variant="danger"
-        onClick={()=> {
+        onClick={()=> {/*
           setDataForDeletion(data => {
             const linkedFingerprint = userFingerprints?.find(fing => fing.scene_id)
 
@@ -129,6 +127,8 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter , userFingerprint
             unmatch: true
           }]})
           setShowDelete(true)
+          */
+          console.log(scene)
         }}
         disabled={showDelete || deleting}
         >x</Button></td>
@@ -139,7 +139,12 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter , userFingerprint
     if (status)
     {
       dataForDeletion.forEach(deletion => {
-        deleteFingerprint({ variables: { input: deletion } })
+        deleteFingerprint({ variables: {
+          hash: deletion.fingerprint.hash,
+          scene_id: deletion.scene_id,
+          algorithm: deletion.fingerprint.algorithm,
+          duration: deletion.fingerprint.duration
+        } })
       })
       setDataForDeletion([])
       

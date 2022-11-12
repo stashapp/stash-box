@@ -12,29 +12,15 @@ import {
   import AuthContext from "src/AuthContext";
 import { Button } from "react-bootstrap";
 import { CriterionModifier } from "src/graphql";
+import UserSceneList from "./UserScenes/UserSceneList";
 
 type User = NonNullable<UserQuery["findUser"]>;
 
 type PublicUser = NonNullable<PublicUserQuery["findUser"]>;
 
-interface Props {
-    user: User | PublicUser;
-  }
-  
-const UserScenesComponent: FC<Props> = ({ user }) => {
-    const showPrivate = isPrivateUser(user);
-
-    const { loading, data :userFingerprints} = useMyFingerprints()
-
-    if (!loading && !userFingerprints) return <ErrorMessage error="Failed to load scenes." />;
-    
-    console.log(userFingerprints)
-  
+const UserScenesComponent: FC = () => {
     const filter = {
-          fingerprints: {
-            modifier: CriterionModifier.INCLUDES,
-            value: userFingerprints?.myFingerprints.fingerprints.map(fing => fing.hash) ?? [''],
-          },
+          has_fingerprint_submissions:true,
         }
   
     
@@ -43,7 +29,7 @@ const UserScenesComponent: FC<Props> = ({ user }) => {
         <h3>
           My scenes
         </h3>
-        <UserSceneList filter={filter} userFingerprints={userFingerprints?.myFingerprints.fingerprints}/>
+        <UserSceneList filter={filter}/>
       </>
     );
   
