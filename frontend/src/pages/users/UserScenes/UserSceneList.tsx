@@ -22,6 +22,7 @@ import List from "src/components/list/List";
 import { Link } from "react-router-dom";
 import { sceneHref, studioHref, formatDuration } from "src/utils";
 import Modal from "src/components/modal";
+import UserSceneLine from "./UserSceneLine";
 
 
 const PER_PAGE = 20;
@@ -97,43 +98,17 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
     </InputGroup>
   );
 
-  const scenes = (data?.queryScenes.scenes ?? []).map((scene) => (
-    <tr key={scene.id}>
-      <td><Link className="text-truncate w-100" to={sceneHref(scene)}>{scene.title}</Link></td>
-      <td>{scene.studio && (
-            <Link
-              to={studioHref(scene.studio)}
-              className="float-end text-truncate SceneCard-studio-name"
-            >
-              <Icon icon={faVideo} className="me-1" />
-              {scene.studio.name}
-            </Link>
-          )}</td>
-      <td>{scene.duration ? formatDuration(scene.duration) : ""}</td>
-      <td>{scene.release_date}</td>
-      <td><Button
-        variant="danger"
-        onClick={()=> {/*
-          setDataForDeletion(data => {
-            const linkedFingerprint = userFingerprints?.find(fing => fing.scene_id)
-
-            return [...data, {
-            scene_id: scene.id,
-            fingerprint: {
-              hash: linkedFingerprint?.hash ?? '',
-              algorithm: linkedFingerprint?.algorithm ?? FingerprintAlgorithm.PHASH,
-              duration: linkedFingerprint?.duration ?? 0
-            },
-            unmatch: true
-          }]})
-          setShowDelete(true)
-          */
-          console.log(scene)
-        }}
-        disabled={showDelete || deleting}
-        >x</Button></td>
-    </tr>
-  ));
+  const deleteOne = (sceneId: string, hash: string, algo: FingerprintAlgorithm, duration: number) => {
+    dataForDeletion.push({
+      fingerprint: {
+        hash: hash,
+        algorithm: algo,
+        duration: duration
+      },
+      scene_id: sceneId
+    })
+    setShowDelete(true)
+  }
 
   const handleDelete = (status: boolean): void => {
     if (status)
@@ -151,7 +126,6 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
     }
     else {
       setDataForDeletion([])
-      // TODO: reload scenes list
     }
     setShowDelete(false);
   };
@@ -162,6 +136,14 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
       callback={handleDelete}
     />
   );
+
+  // Temporary fix while the API endpoint returns dupes
+  const scenes_dupe = data?.queryScenes.scenes ?? []
+  const dedupScenes = scenes_dupe.filter((value, index) => scenes_dupe.indexOf(value) === index)
+
+  const scenes = dedupScenes.map((scene) => (
+    <UserSceneLine key={scene.id} sceneId={scene.id} deleteFingerprint={deleteOne} ></UserSceneLine>
+  ));
 
   return (
     <>
@@ -184,6 +166,8 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
                 <th>Duration</th>
                 <th>Release Date</th>
                 <th>PHASH</th>
+                <th>OSHASH</th>
+                <th>MD5</th>
               </tr>
             </thead>
             <tbody>
