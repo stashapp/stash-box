@@ -128,7 +128,7 @@ const parseEnum = (
     if (!measurements)
       return null
     
-    const parsedMeasurements = measurements.match(/^(\d\d)([a-zA-Z])-(\d\d)-(\d\d)$/)
+    const parsedMeasurements = measurements.match(/^(\d\d)([a-zA-Z])(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/)
     console.log(parsedMeasurements)
     if (!parsedMeasurements || parsedMeasurements?.length!=5)
       return null
