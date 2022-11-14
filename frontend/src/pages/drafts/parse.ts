@@ -123,29 +123,32 @@ const parseEnum = (
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
 
-  const parseMeasurements = (attribute: string, measurements: string | null | undefined) : number | string | null => {
-    console.log(measurements)
-    if (!measurements)
-      return null
-    
-    const parsedMeasurements = measurements.match(/^(\d\d)([a-zA-Z])(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/)
-    console.log(parsedMeasurements)
-    if (!parsedMeasurements || parsedMeasurements?.length!=5)
-      return null
+const parseMeasurements = (
+  attribute: string,
+  measurements: string | null | undefined
+): number | string | null => {
+  console.log(measurements);
+  if (!measurements) return null;
 
-    switch (attribute) {
-      case "band":
-        return parseInt(parsedMeasurements[1])
-      case "waist":
-        return parseInt(parsedMeasurements[3])
-      case "hip":
-        return parseInt(parsedMeasurements[4])
-      case "cup":
-        return parsedMeasurements[2]
-      default:
-        return null
-    }
+  const parsedMeasurements = measurements.match(
+    /^(\d\d)([a-zA-Z])(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
+  );
+  console.log(parsedMeasurements);
+  if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
+
+  switch (attribute) {
+    case "band":
+      return parseInt(parsedMeasurements[1]);
+    case "waist":
+      return parseInt(parsedMeasurements[3]);
+    case "hip":
+      return parseInt(parsedMeasurements[4]);
+    case "cup":
+      return parsedMeasurements[2];
+    default:
+      return null;
   }
+};
 
 export const parsePerformerDraft = (
   draft: PerformerDraft,
@@ -172,10 +175,18 @@ export const parsePerformerDraft = (
     career_start_year: existingPerformer?.career_start_year,
     career_end_year: existingPerformer?.career_end_year,
     breast_type: existingPerformer?.breast_type,
-    band_size: <number>parseMeasurements("band", draft?.measurements) ?? existingPerformer?.band_size,
-    waist_size: <number>parseMeasurements("waist", draft?.measurements) ?? existingPerformer?.waist_size,
-    hip_size: <number>parseMeasurements("hip", draft?.measurements) ?? existingPerformer?.hip_size,
-    cup_size: <string>parseMeasurements("cup", draft?.measurements) ?? existingPerformer?.cup_size,
+    band_size:
+      <number>parseMeasurements("band", draft?.measurements) ??
+      existingPerformer?.band_size,
+    waist_size:
+      <number>parseMeasurements("waist", draft?.measurements) ??
+      existingPerformer?.waist_size,
+    hip_size:
+      <number>parseMeasurements("hip", draft?.measurements) ??
+      existingPerformer?.hip_size,
+    cup_size:
+      <string>parseMeasurements("cup", draft?.measurements) ??
+      existingPerformer?.cup_size,
     tattoos: existingPerformer?.tattoos ?? undefined,
     piercings: existingPerformer?.piercings ?? undefined,
     urls: existingPerformer?.urls,
