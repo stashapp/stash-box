@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { Button, Form, InputGroup, Row, Table } from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
 import {
   faSortAmountUp,
   faSortAmountDown,
@@ -26,6 +26,10 @@ import UserSceneLine from "./UserSceneLine";
 
 
 const PER_PAGE = 20;
+
+export interface Checkboxes {
+  [key: string] : boolean
+}
 
 interface Props {
   perPage?: number;
@@ -157,6 +161,11 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
         filters={filters}
         entityName="scenes"
       >
+        <Row>
+          <Col md={{offset:10}}>
+            <Button variant="secondary">Clear</Button> <Button variant="danger">Delete</Button>
+          </Col>
+        </Row>
         <Row>
           <Table striped variant="dark">
             <thead>
