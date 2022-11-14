@@ -127,13 +127,11 @@ const parseMeasurements = (
   attribute: string,
   measurements: string | null | undefined
 ): number | string | null => {
-  console.log(measurements);
   if (!measurements) return null;
 
   const parsedMeasurements = measurements.match(
     /^(\d\d)([a-zA-Z])(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
   );
-  console.log(parsedMeasurements);
   if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
 
   switch (attribute) {
@@ -197,6 +195,10 @@ export const parsePerformerDraft = (
     Height: draft.height && !performer.height ? draft.height : null,
     Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
+    Measurements:
+      draft?.measurements && !parseMeasurements("hip", draft?.measurements)
+        ? draft.measurements
+        : null,
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,
   };
