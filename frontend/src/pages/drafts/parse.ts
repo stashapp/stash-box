@@ -123,6 +123,30 @@ const parseEnum = (
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
 
+  const parseMeasurements = (attribute: string, measurements: string | null | undefined) : number | string | null => {
+    console.log(measurements)
+    if (!measurements)
+      return null
+    
+    const parsedMeasurements = measurements.match(/^(\d\d)([a-zA-Z])-(\d\d)-(\d\d)$/)
+    console.log(parsedMeasurements)
+    if (!parsedMeasurements || parsedMeasurements?.length!=5)
+      return null
+
+    switch (attribute) {
+      case "band":
+        return parseInt(parsedMeasurements[1])
+      case "waist":
+        return parseInt(parsedMeasurements[3])
+      case "hip":
+        return parseInt(parsedMeasurements[4])
+      case "cup":
+        return parsedMeasurements[2]
+      default:
+        return null
+    }
+  }
+
 export const parsePerformerDraft = (
   draft: PerformerDraft,
   existingPerformer: PerformerFragment | undefined
@@ -148,10 +172,10 @@ export const parsePerformerDraft = (
     career_start_year: existingPerformer?.career_start_year,
     career_end_year: existingPerformer?.career_end_year,
     breast_type: existingPerformer?.breast_type,
-    band_size: existingPerformer?.band_size,
-    waist_size: existingPerformer?.waist_size,
-    hip_size: existingPerformer?.hip_size,
-    cup_size: existingPerformer?.cup_size,
+    band_size: <number>parseMeasurements("band", draft?.measurements) ?? existingPerformer?.band_size,
+    waist_size: <number>parseMeasurements("waist", draft?.measurements) ?? existingPerformer?.waist_size,
+    hip_size: <number>parseMeasurements("hip", draft?.measurements) ?? existingPerformer?.hip_size,
+    cup_size: <string>parseMeasurements("cup", draft?.measurements) ?? existingPerformer?.cup_size,
     tattoos: existingPerformer?.tattoos ?? undefined,
     piercings: existingPerformer?.piercings ?? undefined,
     urls: existingPerformer?.urls,
@@ -162,7 +186,6 @@ export const parsePerformerDraft = (
     Height: draft.height && !performer.height ? draft.height : null,
     Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
-    Measurements: draft?.measurements ?? null,
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,
   };
