@@ -1,5 +1,5 @@
-import { FC, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { FC } from "react";
+import { Button } from "react-bootstrap";
 
 import { FingerprintAlgorithm, useScene } from "src/graphql";
 import { Icon } from "src/components/fragments";
@@ -8,8 +8,7 @@ import { Link } from "react-router-dom";
 import { sceneHref, studioHref, formatDuration } from "src/utils";
 import Modal from "src/components/modal";
 import { faCheckCircle, faCircleXmark, faTimesCircle, faVideo } from "@fortawesome/free-solid-svg-icons";
-import { boolean } from "yup";
-import { Checkboxes } from "./UserSceneList";
+
 
 const PER_PAGE = 20;
 
@@ -28,41 +27,13 @@ const UserSceneLine: FC<Props> = ({ sceneId, deleteFingerprint }) => {
                 <td colSpan={0} ></td>
             </tr>
         )
-    }
+        }
 
-    const filteredFingerprints = scene.fingerprints.filter((fing) => (fing.user_submitted))
-    const initialCheckboxes:Checkboxes = {}
-    filteredFingerprints.forEach(fing => {
-        initialCheckboxes[scene.id+'_'+fing.hash] = false
-    })
+    const getFingerprintLines = (alg: FingerprintAlgorithm) => {
+        const filteredFingerprints = scene.fingerprints.filter((fing) => (fing.user_submitted && fing.algorithm == alg))
 
-
-    const [checked, setChecked] = useState<Checkboxes>(initialCheckboxes)
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const name = e.target.name
-        setChecked(prevState => ({
-            ...prevState,
-            [name]: !prevState[name]
-        }))
-    }
-
-    const getFingerprintLines = (sceneId: string, alg: FingerprintAlgorithm) => {
-        const reFilteredFingerprints = scene.fingerprints.filter((fing) => (fing.algorithm == alg))
-
-        const ret = reFilteredFingerprints.map((fing, index) => {
-            const fing_id = scene.id+'_'+fing.hash
-            
-            return (
-            <div key={fing_id}>
-                <Form.Check
-                    inline
-                    type='checkbox'
-                    id={fing_id+'_'+index}
-                    name={fing_id}
-                    aria-label='select this fingerprint for deletion'
-                    checked={checked[fing_id]}
-                    onChange={handleChange}
-                />
+        const ret = filteredFingerprints.map((fing, index) =>  (
+            <div key={fing.hash+'_'+index}>
                 {fing.hash} ({formatDuration(fing.duration)})
                 <span
                 className="user-submitted "
@@ -73,8 +44,7 @@ const UserSceneLine: FC<Props> = ({ sceneId, deleteFingerprint }) => {
                     <Icon icon={faTimesCircle} />
                 </span>
             </div>
-        )}
-        )
+        ))
 
         return ret
 
@@ -95,9 +65,9 @@ const UserSceneLine: FC<Props> = ({ sceneId, deleteFingerprint }) => {
                 )}</td>
             <td>{scene.duration ? formatDuration(scene.duration) : ""}</td>
             <td>{scene.release_date}</td>
-            <td>{getFingerprintLines(scene.id, FingerprintAlgorithm.PHASH)}</td>
-            <td>{getFingerprintLines(scene.id, FingerprintAlgorithm.OSHASH)}</td>
-            <td>{getFingerprintLines(scene.id, FingerprintAlgorithm.MD5)}</td>
+            <td>{getFingerprintLines(FingerprintAlgorithm.PHASH)}</td>
+            <td>{getFingerprintLines(FingerprintAlgorithm.OSHASH)}</td>
+            <td>{getFingerprintLines(FingerprintAlgorithm.MD5)}</td>
         </tr>
     );
 };
