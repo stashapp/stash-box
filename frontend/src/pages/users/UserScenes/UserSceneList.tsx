@@ -3,7 +3,6 @@ import { Button, Form, InputGroup, Row, Table } from "react-bootstrap";
 import {
   faSortAmountUp,
   faSortAmountDown,
-  faVideo,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -19,11 +18,8 @@ import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum } from "src/utils";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "src/components/list/List";
-import { Link } from "react-router-dom";
-import { sceneHref, studioHref, formatDuration } from "src/utils";
 import Modal from "src/components/modal";
 import UserSceneLine from "./UserSceneLine";
-
 
 const PER_PAGE = 20;
 
@@ -39,10 +35,12 @@ const sortOptions = [
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
 ];
 
-const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
-  const [dataForDeletion, setDataForDeletion] = useState<FingerprintSubmission[]>([])
+const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
+  const [dataForDeletion, setDataForDeletion] = useState<
+    FingerprintSubmission[]
+  >([]);
   const [showDelete, setShowDelete] = useState(false);
-  const [deleteFingerprint, { loading: deleting }] = useUnmatchFingerprint();
+  const [deleteFingerprint] = useUnmatchFingerprint();
   const [params, setParams] = useQueryParams({
     sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
     dir: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
@@ -98,34 +96,38 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
     </InputGroup>
   );
 
-  const deleteOne = (sceneId: string, hash: string, algo: FingerprintAlgorithm, duration: number) => {
+  const deleteOne = (
+    sceneId: string,
+    hash: string,
+    algo: FingerprintAlgorithm,
+    duration: number
+  ) => {
     dataForDeletion.push({
       fingerprint: {
         hash: hash,
         algorithm: algo,
-        duration: duration
+        duration: duration,
       },
-      scene_id: sceneId
-    })
-    setShowDelete(true)
-  }
+      scene_id: sceneId,
+    });
+    setShowDelete(true);
+  };
 
   const handleDelete = (status: boolean): void => {
-    if (status)
-    {
-      dataForDeletion.forEach(deletion => {
-        deleteFingerprint({ variables: {
-          hash: deletion.fingerprint.hash,
-          scene_id: deletion.scene_id,
-          algorithm: deletion.fingerprint.algorithm,
-          duration: deletion.fingerprint.duration
-        } })
-      })
-      setDataForDeletion([])
-      
-    }
-    else {
-      setDataForDeletion([])
+    if (status) {
+      dataForDeletion.forEach((deletion) => {
+        deleteFingerprint({
+          variables: {
+            hash: deletion.fingerprint.hash,
+            scene_id: deletion.scene_id,
+            algorithm: deletion.fingerprint.algorithm,
+            duration: deletion.fingerprint.duration,
+          },
+        });
+      });
+      setDataForDeletion([]);
+    } else {
+      setDataForDeletion([]);
     }
     setShowDelete(false);
   };
@@ -138,11 +140,17 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
   );
 
   // Temporary fix while the API endpoint returns dupes
-  const scenes_dupe = data?.queryScenes.scenes ?? []
-  const dedupScenes = scenes_dupe.filter((value, index) => scenes_dupe.indexOf(value) === index)
+  const scenesDupe = data?.queryScenes.scenes ?? [];
+  const dedupScenes = scenesDupe.filter(
+    (value, index) => scenesDupe.indexOf(value) === index
+  );
 
   const scenes = dedupScenes.map((scene) => (
-    <UserSceneLine key={scene.id} sceneId={scene.id} deleteFingerprint={deleteOne} ></UserSceneLine>
+    <UserSceneLine
+      key={scene.id}
+      sceneId={scene.id}
+      deleteFingerprint={deleteOne}
+    ></UserSceneLine>
   ));
 
   return (
@@ -170,9 +178,7 @@ const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter}) => {
                 <th>MD5</th>
               </tr>
             </thead>
-            <tbody>
-            {scenes}
-            </tbody>
+            <tbody>{scenes}</tbody>
           </Table>
         </Row>
       </List>
