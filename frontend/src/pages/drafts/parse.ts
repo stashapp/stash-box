@@ -9,6 +9,7 @@ import {
   PerformerFragment,
   DraftQuery,
   SceneQuery,
+  BreastTypeEnum,
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
 
@@ -123,29 +124,43 @@ const parseEnum = (
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
 
-const parseMeasurements = (
+const parseStashFormat = (
   attribute: string,
-  measurements: string | null | undefined
-): number | string | null => {
-  if (!measurements) return null;
+  value: string | null | undefined
+): number | string | BreastTypeEnum | null => {
+  if (!value) return null;
 
-  const parsedMeasurements = measurements.match(
-    /^(\d\d)([a-zA-Z])(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
-  );
-  if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
+  if (["band", "waist", "hip", "cup"].includes(attribute)) {
+    const parsedMeasurements = value.match(
+      /^(\d\d)([a-zA-Z])(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
+    );
+    if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
 
-  switch (attribute) {
-    case "band":
-      return parseInt(parsedMeasurements[1]);
-    case "waist":
-      return parseInt(parsedMeasurements[3]);
-    case "hip":
-      return parseInt(parsedMeasurements[4]);
-    case "cup":
-      return parsedMeasurements[2];
-    default:
-      return null;
+    switch (attribute) {
+      case "band":
+        return parseInt(parsedMeasurements[1]);
+      case "waist":
+        return parseInt(parsedMeasurements[3]);
+      case "hip":
+        return parseInt(parsedMeasurements[4]);
+      case "cup":
+        return parsedMeasurements[2];
+      default:
+        return null;
+    }
+  } else if (attribute == "breast_type") {
+    switch (value.toLocaleUpperCase()) {
+      case "FAKE":
+      case "AUGMENTED":
+        return BreastTypeEnum.FAKE;
+      case "NATURAL":
+        return BreastTypeEnum.NATURAL;
+      default:
+        return null;
+    }
   }
+
+  return null;
 };
 
 export const parsePerformerDraft = (
@@ -172,18 +187,20 @@ export const parsePerformerDraft = (
     aliases: existingPerformer?.aliases,
     career_start_year: existingPerformer?.career_start_year,
     career_end_year: existingPerformer?.career_end_year,
-    breast_type: existingPerformer?.breast_type,
+    breast_type:
+      <BreastTypeEnum>parseStashFormat("breast_type", draft?.breast_type) ??
+      existingPerformer?.breast_type,
     band_size:
-      <number>parseMeasurements("band", draft?.measurements) ??
+      <number>parseStashFormat("band", draft?.measurements) ??
       existingPerformer?.band_size,
     waist_size:
-      <number>parseMeasurements("waist", draft?.measurements) ??
+      <number>parseStashFormat("waist", draft?.measurements) ??
       existingPerformer?.waist_size,
     hip_size:
-      <number>parseMeasurements("hip", draft?.measurements) ??
+      <number>parseStashFormat("hip", draft?.measurements) ??
       existingPerformer?.hip_size,
     cup_size:
-      <string>parseMeasurements("cup", draft?.measurements) ??
+      <string>parseStashFormat("cup", draft?.measurements) ??
       existingPerformer?.cup_size,
     tattoos: existingPerformer?.tattoos ?? undefined,
     piercings: existingPerformer?.piercings ?? undefined,
@@ -196,8 +213,12 @@ export const parsePerformerDraft = (
     Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
     Measurements:
-      draft?.measurements && !parseMeasurements("hip", draft?.measurements)
+      draft?.measurements && !parseStashFormat("hip", draft?.measurements)
         ? draft.measurements
+        : null,
+    "Breast Type":
+      draft?.breast_type && !parseStashFormat("breast_type", draft?.breast_type)
+        ? draft.breast_type
         : null,
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,
