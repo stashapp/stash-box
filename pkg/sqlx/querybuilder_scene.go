@@ -500,6 +500,7 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 				SELECT scene_id
 				FROM scene_fingerprints
 				WHERE user_id = ?
+				GROUP BY scene_id
 			) T ON scenes.id = T.scene_id
 		`
 		query.AddArg(userID)
