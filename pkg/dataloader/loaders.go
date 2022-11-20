@@ -34,6 +34,7 @@ type Loaders struct {
 	StudioUrlsByID                 URLLoader
 	SceneTagIDsByID                UUIDsLoader
 	SiteByID                       SiteLoader
+	StudioByID                     StudioLoader
 	TagByID                        TagLoader
 	TagCategoryByID                TagCategoryLoader
 }
@@ -192,6 +193,14 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Site, []error) {
 				qb := fac.Site()
+				return qb.FindByIds(ids)
+			},
+		},
+		StudioByID: StudioLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.Studio, []error) {
+				qb := fac.Studio()
 				return qb.FindByIds(ids)
 			},
 		},

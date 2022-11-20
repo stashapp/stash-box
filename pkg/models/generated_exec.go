@@ -244,6 +244,7 @@ type ComplexityRoot struct {
 		Name            func(childComplexity int) int
 		Piercings       func(childComplexity int) int
 		SceneCount      func(childComplexity int) int
+		Scenes          func(childComplexity int, input *PerformerScenesInput) int
 		Studios         func(childComplexity int) int
 		Tattoos         func(childComplexity int) int
 		Updated         func(childComplexity int) int
@@ -700,6 +701,7 @@ type PerformerResolver interface {
 
 	Edits(ctx context.Context, obj *Performer) ([]*Edit, error)
 	SceneCount(ctx context.Context, obj *Performer) (int, error)
+	Scenes(ctx context.Context, obj *Performer, input *PerformerScenesInput) ([]*Scene, error)
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer) ([]*PerformerStudio, error)
 	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
@@ -2076,6 +2078,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Performer.SceneCount(childComplexity), true
+
+	case "Performer.scenes":
+		if e.complexity.Performer.Scenes == nil {
+			break
+		}
+
+		args, err := ec.field_Performer_scenes_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Performer.Scenes(childComplexity, args["input"].(*PerformerScenesInput)), true
 
 	case "Performer.studios":
 		if e.complexity.Performer.Studios == nil {
@@ -3955,6 +3969,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPerformerEditInput,
 		ec.unmarshalInputPerformerEditOptionsInput,
 		ec.unmarshalInputPerformerQueryInput,
+		ec.unmarshalInputPerformerScenesInput,
 		ec.unmarshalInputPerformerUpdateInput,
 		ec.unmarshalInputQueryExistingSceneInput,
 		ec.unmarshalInputResetPasswordInput,
@@ -4457,11 +4472,17 @@ type Performer {
   deleted: Boolean!
   edits: [Edit!]!
   scene_count: Int!
+  scenes(input: PerformerScenesInput): [Scene!]!
   merged_ids: [ID!]!
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
   updated: Time!
+}
+
+input PerformerScenesInput {
+  """Filter by another performer that also performs in the scenes"""
+  performed_with: ID
 }
 
 type PerformerStudio {
@@ -4683,6 +4704,9 @@ input PerformerQueryInput {
   piercings: BodyModificationCriterionInput
   """Filter by performerfavorite status for the current user"""
   is_favorite: Boolean
+
+  """Filter by a performer they have performed in scenes with"""
+  performed_with: ID
 
   page: Int! = 1
   per_page: Int! = 25
@@ -6382,6 +6406,21 @@ func (ec *executionContext) field_Mutation_userUpdate_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNUserUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserUpdateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Performer_scenes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *PerformerScenesInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOPerformerScenesInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerScenesInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -9789,6 +9828,8 @@ func (ec *executionContext) fieldContext_Mutation_performerCreate(ctx context.Co
 				return ec.fieldContext_Performer_edits(ctx, field)
 			case "scene_count":
 				return ec.fieldContext_Performer_scene_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
 			case "studios":
@@ -9933,6 +9974,8 @@ func (ec *executionContext) fieldContext_Mutation_performerUpdate(ctx context.Co
 				return ec.fieldContext_Performer_edits(ctx, field)
 			case "scene_count":
 				return ec.fieldContext_Performer_scene_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
 			case "studios":
@@ -15248,6 +15291,99 @@ func (ec *executionContext) fieldContext_Performer_scene_count(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Performer_scenes(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_scenes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().Scenes(rctx, obj, fc.Args["input"].(*PerformerScenesInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Scene)
+	fc.Result = res
+	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_scenes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Scene_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Scene_title(ctx, field)
+			case "details":
+				return ec.fieldContext_Scene_details(ctx, field)
+			case "date":
+				return ec.fieldContext_Scene_date(ctx, field)
+			case "release_date":
+				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "urls":
+				return ec.fieldContext_Scene_urls(ctx, field)
+			case "studio":
+				return ec.fieldContext_Scene_studio(ctx, field)
+			case "tags":
+				return ec.fieldContext_Scene_tags(ctx, field)
+			case "images":
+				return ec.fieldContext_Scene_images(ctx, field)
+			case "performers":
+				return ec.fieldContext_Scene_performers(ctx, field)
+			case "fingerprints":
+				return ec.fieldContext_Scene_fingerprints(ctx, field)
+			case "duration":
+				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
+			case "code":
+				return ec.fieldContext_Scene_code(ctx, field)
+			case "deleted":
+				return ec.fieldContext_Scene_deleted(ctx, field)
+			case "edits":
+				return ec.fieldContext_Scene_edits(ctx, field)
+			case "created":
+				return ec.fieldContext_Scene_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Scene_updated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Performer_scenes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Performer_merged_ids(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Performer_merged_ids(ctx, field)
 	if err != nil {
@@ -15569,6 +15705,8 @@ func (ec *executionContext) fieldContext_PerformerAppearance_performer(ctx conte
 				return ec.fieldContext_Performer_edits(ctx, field)
 			case "scene_count":
 				return ec.fieldContext_Performer_scene_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
 			case "studios":
@@ -18109,6 +18247,8 @@ func (ec *executionContext) fieldContext_Query_findPerformer(ctx context.Context
 				return ec.fieldContext_Performer_edits(ctx, field)
 			case "scene_count":
 				return ec.fieldContext_Performer_scene_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
 			case "studios":
@@ -20155,6 +20295,8 @@ func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Conte
 				return ec.fieldContext_Performer_edits(ctx, field)
 			case "scene_count":
 				return ec.fieldContext_Performer_scene_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
 			case "studios":
@@ -21378,6 +21520,8 @@ func (ec *executionContext) fieldContext_QueryPerformersResultType_performers(ct
 				return ec.fieldContext_Performer_edits(ctx, field)
 			case "scene_count":
 				return ec.fieldContext_Performer_scene_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
 			case "studios":
@@ -32346,7 +32490,7 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32545,6 +32689,14 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
+		case "performed_with":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performed_with"))
+			it.PerformedWith, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "page":
 			var err error
 
@@ -32574,6 +32726,34 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
 			it.Sort, err = ec.unmarshalNPerformerSortEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerSortEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPerformerScenesInput(ctx context.Context, obj interface{}) (PerformerScenesInput, error) {
+	var it PerformerScenesInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"performed_with"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "performed_with":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performed_with"))
+			it.PerformedWith, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -36951,6 +37131,26 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 					}
 				}()
 				res = ec._Performer_scene_count(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "scenes":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_scenes(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -44206,6 +44406,14 @@ func (ec *executionContext) unmarshalOPerformerEditOptionsInput2ᚖgithubᚗcom�
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputPerformerEditOptionsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOPerformerScenesInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerScenesInput(ctx context.Context, v interface{}) (*PerformerScenesInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPerformerScenesInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
 
-import { ScenesQuery } from "src/graphql";
+import { Scene, Studio } from "src/graphql";
 import {
   getImage,
   sceneHref,
@@ -13,43 +13,48 @@ import {
 } from "src/utils";
 import { Icon } from "src/components/fragments";
 
-type Performance = NonNullable<ScenesQuery["queryScenes"]>["scenes"][number];
+type Performance = Pick<
+  Scene,
+  "id" | "title" | "images" | "duration" | "release_date"
+> & {
+  studio?: Pick<Studio, "id" | "name"> | null;
+};
 
 const CLASSNAME = "SceneCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_BODY = `${CLASSNAME}-body`;
 
-const SceneCard: FC<{ performance: Performance }> = ({ performance }) => (
+const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
   <Card className={CLASSNAME}>
     <Card.Body className={CLASSNAME_BODY}>
-      <Link className={CLASSNAME_IMAGE} to={sceneHref(performance)}>
+      <Link className={CLASSNAME_IMAGE} to={sceneHref(scene)}>
         <img
           alt=""
-          className={imageType(performance.images[0])}
-          src={getImage(performance.images, "landscape")}
+          className={imageType(scene.images[0])}
+          src={getImage(scene.images, "landscape")}
         />
       </Link>
     </Card.Body>
     <Card.Footer>
       <div className="d-flex">
-        <Link className="text-truncate w-100" to={sceneHref(performance)}>
-          <h6 className="text-truncate">{performance.title}</h6>
+        <Link className="text-truncate w-100" to={sceneHref(scene)}>
+          <h6 className="text-truncate">{scene.title}</h6>
         </Link>
         <span className="text-muted">
-          {performance.duration ? formatDuration(performance.duration) : ""}
+          {scene.duration ? formatDuration(scene.duration) : ""}
         </span>
       </div>
       <div className="text-muted">
-        {performance.studio && (
+        {scene.studio && (
           <Link
-            to={studioHref(performance.studio)}
+            to={studioHref(scene.studio)}
             className="float-end text-truncate SceneCard-studio-name"
           >
             <Icon icon={faVideo} className="me-1" />
-            {performance.studio.name}
+            {scene.studio.name}
           </Link>
         )}
-        <strong>{performance.release_date}</strong>
+        <strong>{scene.release_date}</strong>
       </div>
     </Card.Footer>
   </Card>

@@ -1,0 +1,53 @@
+#import "../fragments/ImageFragment.gql"
+query ScenePairings(
+  $performerId: ID!
+  $names: String
+  $gender: GenderFilterEnum
+  $favorite: Boolean
+  $page: Int! = 1
+  $per_page: Int! = 25
+  $direction: SortDirectionEnum!
+  $sort: PerformerSortEnum!
+) {
+  queryPerformers(
+    input: {
+      performed_with: $performerId
+      names: $names
+      gender: $gender
+      is_favorite: $favorite
+      page: $page
+      per_page: $per_page
+      direction: $direction
+      sort: $sort
+    }
+  ) {
+    count
+    performers {
+      id
+      name
+      disambiguation
+      deleted
+      aliases
+      gender
+      birth_date
+      is_favorite
+      images {
+        ...ImageFragment
+      }
+      scenes(input: { performed_with: $performerId }) {
+        id
+        title
+        date
+        duration
+        release_date
+        studio {
+          id
+          name
+        }
+        images {
+          ...ImageFragment
+        }
+      }
+    }
+  }
+}

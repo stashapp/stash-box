@@ -39,13 +39,13 @@ const ScenesComponent: FC = () => {
 
   const scenes = (sceneData?.queryScenes?.scenes ?? []).map((scene) => (
     <Col key={scene.id}>
-      <SceneCard performance={scene} />
+      <SceneCard scene={scene} />
     </Col>
   ));
   const trendingScenes = (trendingData?.queryScenes?.scenes ?? []).map(
     (scene) => (
       <Col key={scene.id}>
-        <SceneCard performance={scene} />
+        <SceneCard scene={scene} />
       </Col>
     )
   );

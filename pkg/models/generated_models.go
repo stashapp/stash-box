@@ -373,11 +373,18 @@ type PerformerQueryInput struct {
 	Tattoos         *BodyModificationCriterionInput `json:"tattoos"`
 	Piercings       *BodyModificationCriterionInput `json:"piercings"`
 	// Filter by performerfavorite status for the current user
-	IsFavorite *bool             `json:"is_favorite"`
-	Page       int               `json:"page"`
-	PerPage    int               `json:"per_page"`
-	Direction  SortDirectionEnum `json:"direction"`
-	Sort       PerformerSortEnum `json:"sort"`
+	IsFavorite *bool `json:"is_favorite"`
+	// Filter by a performer they have performed in scenes with
+	PerformedWith *uuid.UUID        `json:"performed_with"`
+	Page          int               `json:"page"`
+	PerPage       int               `json:"per_page"`
+	Direction     SortDirectionEnum `json:"direction"`
+	Sort          PerformerSortEnum `json:"sort"`
+}
+
+type PerformerScenesInput struct {
+	// Filter by another performer that also performs in the scenes
+	PerformedWith *uuid.UUID `json:"performed_with"`
 }
 
 type PerformerUpdateInput struct {

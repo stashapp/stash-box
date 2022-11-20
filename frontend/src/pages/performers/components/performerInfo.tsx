@@ -79,7 +79,7 @@ const Actions: FC<Props> = ({ performer }) => {
   );
 };
 
-const PerformerInfo: FC<Props> = ({ performer }) => (
+export const PerformerInfo: FC<Props> = ({ performer }) => (
   <div className={CLASSNAME}>
     <Actions performer={performer} />
     <Row>
@@ -195,5 +195,3 @@ const PerformerInfo: FC<Props> = ({ performer }) => (
     </Row>
   </div>
 );
-
-export default PerformerInfo;

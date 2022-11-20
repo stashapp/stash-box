@@ -113,11 +113,17 @@ type Performer {
   deleted: Boolean!
   edits: [Edit!]!
   scene_count: Int!
+  scenes(input: PerformerScenesInput): [Scene!]!
   merged_ids: [ID!]!
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
   updated: Time!
+}
+
+input PerformerScenesInput {
+  """Filter by another performer that also performs in the scenes"""
+  performed_with: ID
 }
 
 type PerformerStudio {
@@ -339,6 +345,9 @@ input PerformerQueryInput {
   piercings: BodyModificationCriterionInput
   """Filter by performerfavorite status for the current user"""
   is_favorite: Boolean
+
+  """Filter by a performer they have performed in scenes with"""
+  performed_with: ID
 
   page: Int! = 1
   per_page: Int! = 25

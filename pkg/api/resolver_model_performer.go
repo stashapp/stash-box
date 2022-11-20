@@ -181,6 +181,31 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 	return sqb.CountByPerformer(obj.ID)
 }
 
+func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, input *models.PerformerScenesInput) ([]*models.Scene, error) {
+	sqb := r.getRepoFactory(ctx).Scene()
+
+	performers := []uuid.UUID{
+		obj.ID,
+	}
+	if input != nil && input.PerformedWith != nil {
+		performers = append(performers, *input.PerformedWith)
+	}
+
+	filter := models.SceneQueryInput{
+		Performers: &models.MultiIDCriterionInput{
+			Modifier: models.CriterionModifierIncludesAll,
+			Value:    performers,
+		},
+		Sort:      "DATE",
+		Direction: "DESC",
+		Page:      1,
+		PerPage:   10,
+	}
+	user := getCurrentUser(ctx)
+
+	return sqb.QueryScenes(filter, user.ID)
+}
+
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
 	return dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
 }

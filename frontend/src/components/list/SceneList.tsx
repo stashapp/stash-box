@@ -143,7 +143,7 @@ const SceneList: FC<Props> = ({
 
   const scenes = (data?.queryScenes.scenes ?? []).map((scene) => (
     <Col xs={3} key={scene.id}>
-      <SceneCard performance={scene} />
+      <SceneCard scene={scene} />
     </Col>
   ));
 
