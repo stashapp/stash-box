@@ -20,9 +20,9 @@
     "yarn": ">=1.15.2"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^2.12.1",
-    "@graphql-codegen/typescript": "^2.7.3",
-    "@graphql-codegen/typescript-operations": "^2.2.2",
+    "@graphql-codegen/cli": "^2.13.12",
+    "@graphql-codegen/typescript": "^2.8.2",
+    "@graphql-codegen/typescript-operations": "^2.5.7",
     "@rollup/plugin-graphql": "^1.1.0",
     "@types/apollo-upload-client": "^17.0.1",
     "@types/lodash-es": "^4.17.6",
