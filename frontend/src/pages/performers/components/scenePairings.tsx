@@ -138,7 +138,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
   return (
     <>
       <List
-        entityName="scenePairings"
+        entityName="Scene Pairings"
         page={page}
         filters={filters}
         setPage={setPage}
