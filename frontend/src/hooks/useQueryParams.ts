@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import querystring from "query-string";
 import { isEqual } from "lodash-es";
 
@@ -77,7 +77,7 @@ const getParamValue = (
 export const useQueryParams = <T extends QueryParamConfig>(
   queryParams: T
 ): [QueryParams<T>, SetParamsCallback<T>] => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const allParams = useMemo(() => {
@@ -134,13 +134,14 @@ export const useQueryParams = <T extends QueryParamConfig>(
         {}
       );
       const hash = location.hash ?? "";
-      history.replace(
+      navigate(
         `${location.pathname}?${querystring
           .stringify(finalParams)
-          .toLowerCase()}${hash}`
+          .toLowerCase()}${hash}`,
+        { replace: true }
       );
     },
-    [history, location.hash, location.pathname, location.search, queryParams]
+    [navigate, location.hash, location.pathname, location.search, queryParams]
   );
 
   return [allParams, setParams];

@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { isApolloError } from "@apollo/client";
 
 import { useAddUser } from "src/graphql";
@@ -8,7 +8,7 @@ import UserForm, { UserData } from "./UserForm";
 
 const AddUserComponent: FC = () => {
   const [queryError, setQueryError] = useState<string>();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [insertUser] = useAddUser({
     onCompleted: () => {
       window.location.href = ROUTE_USERS;
@@ -17,7 +17,7 @@ const AddUserComponent: FC = () => {
 
   const doInsert = (userData: UserData) => {
     insertUser({ variables: { userData } })
-      .then(() => history.push(ROUTE_USERS))
+      .then(() => navigate(ROUTE_USERS))
       .catch(
         (error: unknown) =>
           error instanceof Error &&

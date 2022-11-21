@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useUpdateSite, SiteCreateInput, SiteQuery } from "src/graphql";
 import { siteHref } from "src/utils";
@@ -12,10 +12,10 @@ interface Props {
 }
 
 const UpdateSite: FC<Props> = ({ site }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [updateSite] = useUpdateSite({
     onCompleted: (result) => {
-      if (result?.siteUpdate?.id) history.push(siteHref(result.siteUpdate));
+      if (result?.siteUpdate?.id) navigate(siteHref(result.siteUpdate));
     },
   });
 

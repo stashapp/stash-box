@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useSceneEdit,
@@ -11,12 +11,12 @@ import { editHref } from "src/utils";
 import SceneForm from "./sceneForm";
 
 const SceneAdd: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [submitSceneEdit, { loading: saving }] = useSceneEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.sceneEdit.id) history.push(editHref(data.sceneEdit));
+      if (data.sceneEdit.id) navigate(editHref(data.sceneEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });

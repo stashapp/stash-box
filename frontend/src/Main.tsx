@@ -1,6 +1,6 @@
 import { FC, useEffect } from "react";
 import { Navbar, Nav } from "react-bootstrap";
-import { NavLink, useHistory } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import SearchField, { SearchType } from "src/components/searchField";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
@@ -26,22 +26,23 @@ import {
 import AuthContext from "./AuthContext";
 
 const Main: FC = ({ children }) => {
-  const history = useHistory();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { loading, user } = useAuth();
 
   useEffect(() => {
     if (loading || user) return;
 
     if (
-      history.location.pathname !== ROUTE_ACTIVATE &&
-      history.location.pathname !== ROUTE_REGISTER &&
-      history.location.pathname !== ROUTE_LOGIN &&
-      history.location.pathname !== ROUTE_FORGOT_PASSWORD &&
-      history.location.pathname !== ROUTE_RESET_PASSWORD
+      location.pathname !== ROUTE_ACTIVATE &&
+      location.pathname !== ROUTE_REGISTER &&
+      location.pathname !== ROUTE_LOGIN &&
+      location.pathname !== ROUTE_FORGOT_PASSWORD &&
+      location.pathname !== ROUTE_RESET_PASSWORD
     ) {
-      history.push(ROUTE_LOGIN);
+      navigate(ROUTE_LOGIN);
     }
-  }, [loading, user, history]);
+  }, [loading, user, location, navigate]);
 
   const contextValue = {
     authenticated: user !== undefined,
@@ -76,7 +77,7 @@ const Main: FC = ({ children }) => {
           {contextValue.user.name}
         </NavLink>
         {isAdmin(user) && (
-          <NavLink exact to={ROUTE_USERS} className="nav-link">
+          <NavLink to={ROUTE_USERS} className="nav-link">
             Users
           </NavLink>
         )}
@@ -94,7 +95,7 @@ const Main: FC = ({ children }) => {
     <div>
       <Navbar bg="dark" variant="dark" className="px-4">
         <Nav className="me-auto">
-          <NavLink exact to={ROUTE_HOME} className="nav-link">
+          <NavLink to={ROUTE_HOME} className="nav-link">
             Home
           </NavLink>
           <NavLink to={ROUTE_PERFORMERS} className="nav-link">
@@ -125,7 +126,7 @@ const Main: FC = ({ children }) => {
         </Nav>
         <Nav className="align-items-center">
           {contextValue.authenticated && renderUserNav()}
-          <SearchField searchType={SearchType.Combined} navigate showAllLink />
+          <SearchField searchType={SearchType.Combined} nav showAllLink />
         </Nav>
       </Navbar>
       <AuthContext.Provider value={contextValue}>

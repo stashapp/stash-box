@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm, Controller, FieldError } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
@@ -28,7 +28,7 @@ interface TagProps {
 }
 
 const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const initialAliases = initial?.aliases ?? tag?.aliases ?? [];
   const {
     register,
@@ -142,7 +142,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
         <Button type="reset" className="ms-auto me-2">
           Reset
         </Button>
-        <Button variant="danger" onClick={() => history.goBack()}>
+        <Button variant="danger" onClick={() => navigate(-1)}>
           Cancel
         </Button>
       </Form.Group>

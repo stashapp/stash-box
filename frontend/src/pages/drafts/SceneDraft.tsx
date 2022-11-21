@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Alert, Col, Row } from "react-bootstrap";
 
 import { sceneHref } from "src/utils/route";
@@ -26,12 +26,12 @@ interface Props {
 
 const SceneDraftAdd: FC<Props> = ({ draft }) => {
   const isUpdate = Boolean(draft.data.id);
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [submitSceneEdit, { loading: saving }] = useSceneEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.sceneEdit.id) history.push(editHref(data.sceneEdit));
+      if (data.sceneEdit.id) navigate(editHref(data.sceneEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });

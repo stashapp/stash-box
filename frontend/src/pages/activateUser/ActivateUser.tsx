@@ -2,7 +2,7 @@ import { FC, useContext, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Form } from "react-bootstrap";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
@@ -34,7 +34,7 @@ function useQuery() {
 
 const ActivateNewUserPage: FC = () => {
   const query = useQuery();
-  const history = useHistory();
+  const navigate = useNavigate();
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
@@ -48,7 +48,7 @@ const ActivateNewUserPage: FC = () => {
 
   const [activateNewUser] = useActivateUser();
 
-  if (Auth.authenticated) history.push(ROUTE_HOME);
+  if (Auth.authenticated) navigate(ROUTE_HOME);
 
   const onSubmit = (formData: ActivateNewUserFormData) => {
     const userData = {
@@ -60,7 +60,7 @@ const ActivateNewUserPage: FC = () => {
     setSubmitError(undefined);
     activateNewUser({ variables: { input: userData } })
       .then(() => {
-        history.push(`${ROUTE_LOGIN}?msg=account-created`);
+        navigate(`${ROUTE_LOGIN}?msg=account-created`);
       })
       .catch((err?: ApolloError) => {
         if (err?.message) {

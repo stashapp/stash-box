@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   usePerformer,
@@ -23,10 +23,10 @@ interface Props {
 
 const AddPerformerDraft: FC<Props> = ({ draft }) => {
   const isUpdate = Boolean(draft.data.id);
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
-      if (data.performerEdit.id) history.push(editHref(data.performerEdit));
+      if (data.performerEdit.id) navigate(editHref(data.performerEdit));
     },
   });
   const { data: performer, loading: loadingPerformer } = usePerformer(

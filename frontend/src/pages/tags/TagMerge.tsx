@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 import { flatMap, uniq } from "lodash-es";
 
@@ -25,13 +25,13 @@ type TagSlim = {
 };
 
 const TagMerge: FC<Props> = ({ tag }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [mergeSources, setMergeSources] = useState<TagSlim[]>([]);
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.tagEdit.id) history.push(editHref(data.tagEdit));
+      if (data.tagEdit.id) navigate(editHref(data.tagEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });
