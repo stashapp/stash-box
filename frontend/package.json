@@ -49,7 +49,7 @@
     "stylelint-config-standard": "^29.0.0",
     "stylelint-config-standard-scss": "^6.1.0",
     "stylelint-scss": "^4.3.0",
-    "typescript": "~4.8.2",
+    "typescript": "~4.9.3",
     "vite": "^3.0.9",
     "vite-tsconfig-paths": "^3.5.0"
   },
