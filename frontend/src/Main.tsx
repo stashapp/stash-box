@@ -25,7 +25,11 @@ import {
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
-const Main: FC = ({ children }) => {
+interface Props {
+  children?: React.ReactNode;
+}
+
+const Main: FC<Props> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { loading, user } = useAuth();

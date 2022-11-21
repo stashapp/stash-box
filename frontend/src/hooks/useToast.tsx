@@ -56,7 +56,11 @@ const Toasts: React.FC<ToastsProps> = ({ messages, setMessages }) => {
   return <div className="ToastContainer">{toasts}</div>;
 };
 
-export const ToastProvider: React.FC = ({ children }) => {
+interface Props {
+  children?: React.ReactNode;
+}
+
+export const ToastProvider: React.FC<Props> = ({ children }) => {
   const id = React.useRef(0);
   const [messages, setMessages] = useState<Message[]>([]);
 

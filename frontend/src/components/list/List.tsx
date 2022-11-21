@@ -12,6 +12,7 @@ interface Props {
   loading: boolean;
   filters?: ReactNode;
   entityName?: string;
+  children?: React.ReactNode;
 }
 
 const List: FC<Props> = ({
