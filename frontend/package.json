@@ -55,9 +55,9 @@
   },
   "dependencies": {
     "@apollo/client": "^3.6.9",
-    "@fortawesome/fontawesome-svg-core": "^6.2.0",
-    "@fortawesome/free-regular-svg-icons": "^6.2.0",
-    "@fortawesome/free-solid-svg-icons": "6.2.0",
+    "@fortawesome/fontawesome-svg-core": "^6.2.1",
+    "@fortawesome/free-regular-svg-icons": "^6.2.1",
+    "@fortawesome/free-solid-svg-icons": "6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@hookform/resolvers": "2.9.7",
     "apollo-upload-client": "^17.0.0",
