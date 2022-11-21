@@ -24,7 +24,7 @@
     "@graphql-codegen/typescript": "^2.8.2",
     "@graphql-codegen/typescript-operations": "^2.5.7",
     "@rollup/plugin-graphql": "^1.1.0",
-    "@types/apollo-upload-client": "^17.0.1",
+    "@types/apollo-upload-client": "^17.0.2",
     "@types/lodash-es": "^4.17.6",
     "@types/react": "^17.0.45",
     "@types/react-dom": "^17.0.16",
@@ -54,7 +54,7 @@
     "vite-tsconfig-paths": "^3.6.0"
   },
   "dependencies": {
-    "@apollo/client": "^3.6.9",
+    "@apollo/client": "^3.7.1",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/free-regular-svg-icons": "^6.2.1",
     "@fortawesome/free-solid-svg-icons": "6.2.1",
