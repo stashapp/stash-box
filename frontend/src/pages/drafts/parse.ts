@@ -123,6 +123,15 @@ const parseEnum = (
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
 
+const parseAliases = (action: string, value: string | null | undefined) => {
+  if (!value) return null;
+
+  const aliases = value?.split(",").map((alias) => alias.trim());
+  if (aliases.length > 0 && action == "parse") return aliases;
+  else if (aliases.length > 0 && action != "parse") return null;
+  return value;
+};
+
 export const parsePerformerDraft = (
   draft: PerformerDraft,
   existingPerformer: PerformerFragment | undefined
@@ -144,7 +153,9 @@ export const parsePerformerDraft = (
     birthdate: draft.birthdate,
     height: Number.parseInt(draft.height ?? "") || null,
     country: draft?.country?.length === 2 ? draft.country : null,
-    aliases: existingPerformer?.aliases,
+    aliases:
+      (parseAliases("parse", draft?.aliases) as string[]) ??
+      existingPerformer?.aliases,
     career_start_year: existingPerformer?.career_start_year,
     career_end_year: existingPerformer?.career_end_year,
     breast_type: existingPerformer?.breast_type,
@@ -158,7 +169,7 @@ export const parsePerformerDraft = (
   };
 
   const remainder = {
-    Aliases: draft?.aliases ?? null,
+    Aliases: (parseAliases("remainder", draft?.aliases) as string) ?? null,
     Height: draft.height && !performer.height ? draft.height : null,
     Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
