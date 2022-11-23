@@ -132,7 +132,7 @@ const parseStashFormat = (
 
   if (["band", "waist", "hip", "cup"].includes(attribute)) {
     const parsedMeasurements = value.match(
-      /^(\d\d)([a-zA-Z])(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
+      /^(\d\d)([a-zA-Z]+)(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
     );
     if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
 
