@@ -124,49 +124,37 @@ const parseEnum = (
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
 
-const parseStashFormat = (
-  attribute: string,
-  value: string | null | undefined
-): number | string | BreastTypeEnum | null => {
-  if (!value) return null;
-
-  if (["band", "waist", "hip", "cup"].includes(attribute)) {
-    const parsedMeasurements = value.match(
-      /^(\d\d)([a-zA-Z]+)(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
-    );
-    if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
-
-    switch (attribute) {
-      case "band":
-        return parseInt(parsedMeasurements[1]);
-      case "waist":
-        return parseInt(parsedMeasurements[3]);
-      case "hip":
-        return parseInt(parsedMeasurements[4]);
-      case "cup":
-        return parsedMeasurements[2];
-      default:
-        return null;
-    }
-  } else if (attribute == "breast_type") {
-    switch (value.toLocaleUpperCase()) {
-      case "FAKE":
-      case "AUGMENTED":
-        return BreastTypeEnum.FAKE;
-      case "NATURAL":
-        return BreastTypeEnum.NATURAL;
-      default:
-        return null;
-    }
+const parseBreastType = (value: string | null | undefined) => {
+  switch (value?.toLocaleUpperCase()) {
+    case "FAKE":
+    case "AUGMENTED":
+      return BreastTypeEnum.FAKE;
+    case "NATURAL":
+      return BreastTypeEnum.NATURAL;
+    default:
+      return null;
   }
+};
 
-  return null;
+const parseMeasurements = (value: string | null | undefined) => {
+  const parsedMeasurements = value?.match(
+    /^(\d\d)([a-zA-Z]+)(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
+  );
+  if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
+
+  return {
+    band: Number.parseInt(parsedMeasurements[1]),
+    cup: parsedMeasurements[2],
+    waist: Number.parseInt(parsedMeasurements[3]),
+    hip: Number.parseInt(parsedMeasurements[4]),
+  };
 };
 
 export const parsePerformerDraft = (
   draft: PerformerDraft,
   existingPerformer: PerformerFragment | undefined
 ): [InitialPerformer, Record<string, string | null>] => {
+  const measurements = parseMeasurements(draft?.measurements);
   const performer: InitialPerformer = {
     name: draft.name,
     disambiguation: null,
@@ -188,20 +176,11 @@ export const parsePerformerDraft = (
     career_start_year: existingPerformer?.career_start_year,
     career_end_year: existingPerformer?.career_end_year,
     breast_type:
-      <BreastTypeEnum>parseStashFormat("breast_type", draft?.breast_type) ??
-      existingPerformer?.breast_type,
-    band_size:
-      <number>parseStashFormat("band", draft?.measurements) ??
-      existingPerformer?.band_size,
-    waist_size:
-      <number>parseStashFormat("waist", draft?.measurements) ??
-      existingPerformer?.waist_size,
-    hip_size:
-      <number>parseStashFormat("hip", draft?.measurements) ??
-      existingPerformer?.hip_size,
-    cup_size:
-      <string>parseStashFormat("cup", draft?.measurements) ??
-      existingPerformer?.cup_size,
+      parseBreastType(draft?.breast_type) ?? existingPerformer?.breast_type,
+    band_size: measurements?.band ?? existingPerformer?.band_size,
+    waist_size: measurements?.waist ?? existingPerformer?.band_size,
+    hip_size: measurements?.hip ?? existingPerformer?.hip_size,
+    cup_size: measurements?.cup ?? existingPerformer?.cup_size,
     tattoos: existingPerformer?.tattoos ?? undefined,
     piercings: existingPerformer?.piercings ?? undefined,
     urls: existingPerformer?.urls,
@@ -213,11 +192,9 @@ export const parsePerformerDraft = (
     Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
     Measurements:
-      draft?.measurements && !parseStashFormat("hip", draft?.measurements)
-        ? draft.measurements
-        : null,
+      draft?.measurements && !measurements ? draft.measurements : null,
     "Breast Type":
-      draft?.breast_type && !parseStashFormat("breast_type", draft?.breast_type)
+      draft?.breast_type && !parseBreastType(draft?.breast_type)
         ? draft.breast_type
         : null,
     Piercings: draft?.piercings ?? null,
