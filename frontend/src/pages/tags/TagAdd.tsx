@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
 
@@ -7,12 +7,12 @@ import { editHref } from "src/utils";
 import TagForm from "./tagForm";
 
 const TagAddComponent: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [insertTagEdit, { loading: saving }] = useTagEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.tagEdit.id) history.push(editHref(data.tagEdit));
+      if (data.tagEdit.id) navigate(editHref(data.tagEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });

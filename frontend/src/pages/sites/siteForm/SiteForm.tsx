@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -33,7 +33,7 @@ interface SiteProps {
 }
 
 const SiteForm: FC<SiteProps> = ({ site, callback }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     control,
     register,
@@ -148,7 +148,7 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
         <Button type="reset" className="ms-auto me-2">
           Reset
         </Button>
-        <Button variant="danger" onClick={() => history.goBack()}>
+        <Button variant="danger" onClick={() => navigate(-1)}>
           Cancel
         </Button>
       </Form.Group>

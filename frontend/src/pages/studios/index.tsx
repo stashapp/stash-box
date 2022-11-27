@@ -1,17 +1,10 @@
 import { FC } from "react";
-import { Route, Switch, useParams } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 
 import { useStudio } from "src/graphql";
 import Title from "src/components/title";
-import {
-  ROUTE_STUDIO,
-  ROUTE_STUDIO_ADD,
-  ROUTE_STUDIOS,
-  ROUTE_STUDIO_EDIT,
-  ROUTE_STUDIO_DELETE,
-} from "src/constants/route";
 
 import Studio from "./Studio";
 import Studios from "./Studios";
@@ -20,8 +13,8 @@ import StudioAdd from "./StudioAdd";
 import StudioDelete from "./StudioDelete";
 
 const StudioLoader: FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { loading, data } = useStudio({ id });
+  const { id } = useParams();
+  const { loading, data } = useStudio({ id: id ?? "" }, !id);
 
   if (loading) return <LoadingIndicator message="Loading studio..." />;
 
@@ -31,47 +24,60 @@ const StudioLoader: FC = () => {
   if (!studio) return <ErrorMessage error="Studio not found." />;
 
   return (
-    <Switch>
-      <Route exact path={ROUTE_STUDIO_DELETE}>
-        <>
-          <Title page={`Delete "${studio.name}"`} />
-          <StudioDelete studio={studio} />
-        </>
-      </Route>
-      <Route exact path={ROUTE_STUDIO_EDIT}>
-        <>
-          <Title page={`Edit "${studio.name}"`} />
-          <StudioEdit studio={studio} />
-        </>
-      </Route>
-      <Route exact path={ROUTE_STUDIO}>
-        <>
-          <Title page={studio.name} />
-          <Studio studio={studio} />
-        </>
-      </Route>
-    </Switch>
+    <Routes>
+      <Route
+        path="/delete"
+        element={
+          <>
+            <Title page={`Delete "${studio.name}"`} />
+            <StudioDelete studio={studio} />
+          </>
+        }
+      />
+      <Route
+        path="/edit"
+        element={
+          <>
+            <Title page={`Edit "${studio.name}"`} />
+            <StudioEdit studio={studio} />
+          </>
+        }
+      />
+      <Route
+        path="/"
+        element={
+          <>
+            <Title page={studio.name} />
+            <Studio studio={studio} />
+          </>
+        }
+      />
+    </Routes>
   );
 };
 
-const SceneRoutes: FC = () => (
-  <Switch>
-    <Route exact path={ROUTE_STUDIO_ADD}>
-      <>
-        <Title page="Add Studio" />
-        <StudioAdd />
-      </>
-    </Route>
-    <Route exact path={ROUTE_STUDIOS}>
-      <>
-        <Title page="Studios" />
-        <Studios />
-      </>
-    </Route>
-    <Route path={ROUTE_STUDIO}>
-      <StudioLoader />
-    </Route>
-  </Switch>
+const StudioRoutes: FC = () => (
+  <Routes>
+    <Route
+      path="/add"
+      element={
+        <>
+          <Title page="Add Studio" />
+          <StudioAdd />
+        </>
+      }
+    />
+    <Route
+      path="/"
+      element={
+        <>
+          <Title page="Studios" />
+          <Studios />
+        </>
+      }
+    />
+    <Route path="/:id/*" element={<StudioLoader />} />
+  </Routes>
 );
 
-export default SceneRoutes;
+export default StudioRoutes;

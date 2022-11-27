@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useSceneEditUpdate,
@@ -15,13 +15,13 @@ import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
 
 export const SceneEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [updateSceneEdit, { loading: saving }] = useSceneEditUpdate({
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.sceneEditUpdate.id)
-        history.push(createHref(ROUTE_EDIT, result.sceneEditUpdate));
+        navigate(createHref(ROUTE_EDIT, result.sceneEditUpdate));
     },
     onError: (error) => setSubmissionError(error.message),
   });

@@ -1,8 +1,7 @@
 import React from "react";
-import { Route, Switch, useParams } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 
 import { useDraft, DraftQuery } from "src/graphql";
-import { ROUTE_DRAFT, ROUTE_DRAFTS } from "src/constants/route";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
 
@@ -14,8 +13,8 @@ import Draft from "./Draft";
 import Drafts from "./Drafts";
 
 const DraftLoader: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data, loading } = useDraft({ id });
+  const { id } = useParams();
+  const { data, loading } = useDraft({ id: id ?? "" }, !id);
 
   if (loading) return <LoadingIndicator message="Loading draft..." />;
 
@@ -38,17 +37,18 @@ const DraftLoader: React.FC = () => {
 };
 
 const DraftRoutes: React.FC = () => (
-  <Switch>
-    <Route exact path={ROUTE_DRAFTS}>
-      <>
-        <Title page="Drafts" />
-        <Drafts />
-      </>
-    </Route>
-    <Route path={ROUTE_DRAFT}>
-      <DraftLoader />
-    </Route>
-  </Switch>
+  <Routes>
+    <Route
+      path="/"
+      element={
+        <>
+          <Title page="Drafts" />
+          <Drafts />
+        </>
+      }
+    />
+    <Route path="/:id/*" element={<DraftLoader />} />
+  </Routes>
 );
 
 export default DraftRoutes;

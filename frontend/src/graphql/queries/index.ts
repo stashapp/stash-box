@@ -105,14 +105,16 @@ export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
 
 export const useCategories = () => useQuery<CategoriesQuery>(CategoriesGQL);
 
-export const useEdit = (variables: EditQueryVariables) =>
+export const useEdit = (variables: EditQueryVariables, skip = false) =>
   useQuery<EditQuery, EditQueryVariables>(EditGQL, {
     variables,
+    skip,
   });
 
-export const useEditUpdate = (variables: EditQueryVariables) =>
+export const useEditUpdate = (variables: EditQueryVariables, skip = false) =>
   useQuery<EditUpdateQuery, EditUpdateQueryVariables>(EditUpdateGQL, {
     variables,
+    skip,
   });
 
 export const useEdits = (variables: EditsQueryVariables) =>

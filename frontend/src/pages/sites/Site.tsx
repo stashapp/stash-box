@@ -1,5 +1,5 @@
 import { FC, useContext } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
 import { useDeleteSite, SiteQuery } from "src/graphql";
@@ -16,12 +16,12 @@ interface Props {
 }
 
 const SiteComponent: FC<Props> = ({ site }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const auth = useContext(AuthContext);
 
   const [deleteSite, { loading: deleting }] = useDeleteSite({
     onCompleted: (result) => {
-      if (result) history.push(ROUTE_SITES);
+      if (result) navigate(ROUTE_SITES);
     },
   });
 

@@ -1,5 +1,5 @@
 import { FC, useContext, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -25,9 +25,10 @@ const Messages: Record<string, string> = {
 
 const Login: FC = () => {
   const [loading, setLoading] = useState(false);
-  const history = useHistory();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loginError, setLoginError] = useState("");
-  const msg = new URLSearchParams(history.location.search.substr(1)).get("msg");
+  const msg = new URLSearchParams(location.search.substr(1)).get("msg");
   const Auth = useContext<ContextType>(AuthContext);
   const {
     register,
@@ -37,7 +38,7 @@ const Login: FC = () => {
     resolver: yupResolver(schema),
   });
 
-  if (Auth.authenticated) history.push("/");
+  if (Auth.authenticated) navigate("/");
 
   const onSubmit = async (formData: LoginFormData) => {
     setLoading(true);

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -20,7 +20,7 @@ interface Props {
 }
 
 const TagDelete: FC<Props> = ({ tag }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -31,7 +31,7 @@ const TagDelete: FC<Props> = ({ tag }) => {
   });
   const [deleteTagEdit, { loading: deleting }] = useTagEdit({
     onCompleted: (data) => {
-      if (data.tagEdit.id) history.push(editHref(data.tagEdit));
+      if (data.tagEdit.id) navigate(editHref(data.tagEdit));
     },
   });
 
@@ -63,7 +63,7 @@ const TagDelete: FC<Props> = ({ tag }) => {
             <Button
               variant="danger"
               className="ms-auto me-2"
-              onClick={() => history.goBack()}
+              onClick={() => navigate(-1)}
             >
               Cancel
             </Button>

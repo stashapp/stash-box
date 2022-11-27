@@ -2,7 +2,7 @@ import { FC, useContext, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import cx from "classnames";
 
 import Title from "src/components/title";
@@ -19,7 +19,7 @@ const schema = yup.object({
 type RegisterFormData = yup.Asserts<typeof schema>;
 
 const Register: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [awaitingActivation, setAwaitingActivation] = useState(false);
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
@@ -34,7 +34,7 @@ const Register: FC = () => {
 
   const [newUser] = useNewUser();
 
-  if (Auth.authenticated) history.push(ROUTE_HOME);
+  if (Auth.authenticated) navigate(ROUTE_HOME);
 
   const onSubmit = (formData: RegisterFormData) => {
     const userData = {
@@ -45,7 +45,7 @@ const Register: FC = () => {
     newUser({ variables: { input: userData } })
       .then((response) => {
         if (response.data?.newUser) {
-          history.push(
+          navigate(
             `${ROUTE_ACTIVATE}?email=${formData.email}&key=${response.data.newUser}`
           );
         } else {
