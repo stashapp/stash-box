@@ -2,7 +2,7 @@ import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { isApolloError } from "@apollo/client";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
@@ -24,7 +24,7 @@ function useQuery() {
 }
 
 const ResetPassword: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const query = useQuery();
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
@@ -39,7 +39,7 @@ const ResetPassword: FC = () => {
 
   const [changePassword, { loading }] = useChangePassword();
 
-  if (Auth.authenticated) history.push(ROUTE_HOME);
+  if (Auth.authenticated) navigate(ROUTE_HOME);
 
   const onSubmit = (formData: ResetPasswordFormData) => {
     const userData = {
@@ -49,7 +49,7 @@ const ResetPassword: FC = () => {
     setSubmitError(undefined);
     changePassword({ variables: { userData } })
       .then(() => {
-        history.push(`${ROUTE_LOGIN}?msg=password-reset`);
+        navigate(`${ROUTE_LOGIN}?msg=password-reset`);
       })
       .catch(
         (error: unknown) =>

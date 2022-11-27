@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import {
   ROUTE_HOME,
@@ -40,65 +40,34 @@ import Sites from "src/pages/sites";
 import Drafts from "src/pages/drafts";
 
 const Pages: FC = () => (
-  <Switch>
-    <Route exact path={ROUTE_HOME}>
-      <Home />
-    </Route>
-    <Route>
-      <div className="NarrowPage">
-        <Switch>
-          <Route exact path={ROUTE_LOGIN}>
-            <Login />
-          </Route>
-          <Route path={ROUTE_USERS}>
-            <Users />
-          </Route>
-          <Route path={ROUTE_PERFORMERS}>
-            <Performers />
-          </Route>
-          <Route path={ROUTE_SCENES}>
-            <Scenes />
-          </Route>
-          <Route path={ROUTE_STUDIOS}>
-            <Studios />
-          </Route>
-          <Route path={ROUTE_TAGS}>
-            <Tags />
-          </Route>
-          <Route path={ROUTE_EDITS}>
-            <Edits />
-          </Route>
-          <Route path={ROUTE_CATEGORIES}>
-            <Categories />
-          </Route>
-          <Route exact path={ROUTE_REGISTER}>
-            <RegisterUser />
-          </Route>
-          <Route exact path={ROUTE_ACTIVATE}>
-            <ActivateUser />
-          </Route>
-          <Route exact path={ROUTE_FORGOT_PASSWORD}>
-            <ForgotPassword />
-          </Route>
-          <Route exact path={ROUTE_RESET_PASSWORD}>
-            <ResetPassword />
-          </Route>
-          <Route exact path={ROUTE_SEARCH}>
-            <Search />
-          </Route>
-          <Route exact path={ROUTE_VERSION}>
-            <Version />
-          </Route>
-          <Route path={ROUTE_SITES}>
-            <Sites />
-          </Route>
-          <Route path={ROUTE_DRAFTS}>
-            <Drafts />
-          </Route>
-        </Switch>
-      </div>
-    </Route>
-  </Switch>
+  <Routes>
+    <Route path={ROUTE_HOME} element={<Home />} />
+    <Route
+      path="/*"
+      element={
+        <div className="NarrowPage">
+          <Routes>
+            <Route path={ROUTE_LOGIN} element={<Login />} />
+            <Route path={`${ROUTE_USERS}/*`} element={<Users />} />
+            <Route path={`${ROUTE_PERFORMERS}/*`} element={<Performers />} />
+            <Route path={`${ROUTE_SCENES}/*`} element={<Scenes />} />
+            <Route path={`${ROUTE_STUDIOS}/*`} element={<Studios />} />
+            <Route path={`${ROUTE_TAGS}/*`} element={<Tags />} />
+            <Route path={`${ROUTE_EDITS}/*`} element={<Edits />} />
+            <Route path={`${ROUTE_CATEGORIES}/*`} element={<Categories />} />
+            <Route path={ROUTE_REGISTER} element={<RegisterUser />} />
+            <Route path={ROUTE_ACTIVATE} element={<ActivateUser />} />
+            <Route path={ROUTE_FORGOT_PASSWORD} element={<ForgotPassword />} />
+            <Route path={ROUTE_RESET_PASSWORD} element={<ResetPassword />} />
+            <Route path={ROUTE_SEARCH} element={<Search />} />
+            <Route path={ROUTE_VERSION} element={<Version />} />
+            <Route path={`${ROUTE_SITES}/*`} element={<Sites />} />
+            <Route path={`${ROUTE_DRAFTS}/*`} element={<Drafts />} />
+          </Routes>
+        </div>
+      }
+    />
+  </Routes>
 );
 
 export default Pages;

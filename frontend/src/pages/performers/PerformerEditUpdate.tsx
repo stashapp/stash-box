@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   usePerformerEditUpdate,
@@ -15,13 +15,13 @@ import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
 
 export const PerformerEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [updatePerformerEdit, { loading: saving }] = usePerformerEditUpdate({
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.performerEditUpdate.id)
-        history.push(createHref(ROUTE_EDIT, result.performerEditUpdate));
+        navigate(createHref(ROUTE_EDIT, result.performerEditUpdate));
     },
     onError: (error) => setSubmissionError(error.message),
   });

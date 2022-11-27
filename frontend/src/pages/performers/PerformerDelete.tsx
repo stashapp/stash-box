@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -26,7 +26,7 @@ interface Props {
 }
 
 const PerformerDelete: FC<Props> = ({ performer }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -37,7 +37,7 @@ const PerformerDelete: FC<Props> = ({ performer }) => {
   });
   const [deletePerformerEdit, { loading: deleting }] = usePerformerEdit({
     onCompleted: (data) => {
-      if (data.performerEdit.id) history.push(editHref(data.performerEdit));
+      if (data.performerEdit.id) navigate(editHref(data.performerEdit));
     },
   });
 
@@ -69,7 +69,7 @@ const PerformerDelete: FC<Props> = ({ performer }) => {
             <Button
               variant="danger"
               className="ms-auto me-2"
-              onClick={() => history.goBack()}
+              onClick={() => navigate(-1)}
             >
               Cancel
             </Button>
