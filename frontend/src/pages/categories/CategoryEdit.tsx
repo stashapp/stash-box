@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useUpdateCategory,
@@ -16,11 +16,11 @@ interface Props {
 }
 
 const UpdateCategory: FC<Props> = ({ category }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [updateCategory] = useUpdateCategory({
     onCompleted: (result) => {
       if (result?.tagCategoryUpdate?.id)
-        history.push(categoryHref(result.tagCategoryUpdate));
+        navigate(categoryHref(result.tagCategoryUpdate));
     },
   });
 

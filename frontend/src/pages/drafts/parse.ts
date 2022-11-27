@@ -145,8 +145,10 @@ export const parsePerformerDraft = (
     height: Number.parseInt(draft.height ?? "") || null,
     country: draft?.country?.length === 2 ? draft.country : null,
     aliases: existingPerformer?.aliases,
-    career_start_year: existingPerformer?.career_start_year,
-    career_end_year: existingPerformer?.career_end_year,
+    career_start_year:
+      draft?.career_start_year ?? existingPerformer?.career_start_year,
+    career_end_year:
+      draft?.career_end_year ?? existingPerformer?.career_end_year,
     breast_type: existingPerformer?.breast_type,
     band_size: existingPerformer?.band_size,
     waist_size: existingPerformer?.waist_size,

@@ -1,16 +1,8 @@
 import { FC } from "react";
-import { Route, Switch, useParams } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 
 import { useTag } from "src/graphql";
 import Title from "src/components/title";
-import {
-  ROUTE_TAG,
-  ROUTE_TAGS,
-  ROUTE_TAG_ADD,
-  ROUTE_TAG_MERGE,
-  ROUTE_TAG_EDIT,
-  ROUTE_TAG_DELETE,
-} from "src/constants/route";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 
 import Tag from "./Tag";
@@ -32,53 +24,69 @@ const TagLoader: FC = () => {
   if (!tag) return <ErrorMessage error="Tag not found." />;
 
   return (
-    <Switch>
-      <Route exact path={ROUTE_TAG_MERGE}>
-        <>
-          <Title page={`Merge Tag "${tag.name}"`} />
-          <TagMerge tag={tag} />
-        </>
-      </Route>
-      <Route exact path={ROUTE_TAG_DELETE}>
-        <>
-          <Title page={`Delete Tag "${tag.name}"`} />
-          <TagDelete tag={tag} />
-        </>
-      </Route>
-      <Route exact path={ROUTE_TAG_EDIT}>
-        <>
-          <Title page={`Edit Tag "${tag.name}"`} />
-          <TagEdit tag={tag} />
-        </>
-      </Route>
-      <Route exact path={ROUTE_TAG}>
-        <>
-          <Title page={`Tag "${tag.name}"`} />
-          <Tag tag={tag} />
-        </>
-      </Route>
-    </Switch>
+    <Routes>
+      <Route
+        path="/merge"
+        element={
+          <>
+            <Title page={`Merge Tag "${tag.name}"`} />
+            <TagMerge tag={tag} />
+          </>
+        }
+      />
+      <Route
+        path="/delete"
+        element={
+          <>
+            <Title page={`Delete Tag "${tag.name}"`} />
+            <TagDelete tag={tag} />
+          </>
+        }
+      />
+      <Route
+        path="/edit"
+        element={
+          <>
+            <Title page={`Edit Tag "${tag.name}"`} />
+            <TagEdit tag={tag} />
+          </>
+        }
+      />
+      <Route
+        path="/"
+        element={
+          <>
+            <Title page={`Tag "${tag.name}"`} />
+            <Tag tag={tag} />
+          </>
+        }
+      />
+    </Routes>
   );
 };
 
 const TagRoutes: FC = () => (
-  <Switch>
-    <Route exact path={ROUTE_TAGS}>
-      <>
-        <Title page="Tags" />
-        <Tags />
-      </>
-    </Route>
-    <Route exact path={ROUTE_TAG_ADD}>
-      <>
-        <Title page="Add Tag" />
-        <TagAdd />
-      </>
-    </Route>
-    <Route path={ROUTE_TAG}>
-      <TagLoader />
-    </Route>
-  </Switch>
+  <Routes>
+    <Route
+      path="/"
+      element={
+        <>
+          <Title page="Tags" />
+          <Tags />
+        </>
+      }
+    />
+    <Route
+      path="/add"
+      element={
+        <>
+          <Title page="Add Tag" />
+          <TagAdd />
+        </>
+      }
+    />
+    <Route path="/:id/*" element={<TagLoader />} />
+  </Routes>
 );
 
 export default TagRoutes;

@@ -1,15 +1,15 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAddSite, SiteCreateInput } from "src/graphql";
 import { siteHref } from "src/utils";
 import SiteForm from "./siteForm";
 
 const AddSite: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [createSite] = useAddSite({
     onCompleted: (data) => {
-      if (data?.siteCreate?.id) history.push(siteHref(data.siteCreate));
+      if (data?.siteCreate?.id) navigate(siteHref(data.siteCreate));
     },
   });
 

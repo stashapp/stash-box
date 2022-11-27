@@ -29,10 +29,10 @@ import {
 
 const EditComponent: FC = () => {
   const auth = useContext(AuthContext);
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const [showApply, setShowApply] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
-  const { data, loading } = useEdit({ id });
+  const { data, loading } = useEdit({ id: id ?? "" }, !id);
   const [cancelEdit, { loading: cancelling }] = useCancelEdit();
   const [applyEdit, { loading: applying }] = useApplyEdit();
 

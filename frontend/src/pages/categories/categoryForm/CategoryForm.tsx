@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -33,7 +33,7 @@ interface TagProps {
 }
 
 const TagForm: FC<TagProps> = ({ id, category, callback }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -96,7 +96,7 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
           Reset
         </Button>
         <Link to={createHref(id ? ROUTE_CATEGORY : ROUTE_CATEGORIES, { id })}>
-          <Button variant="danger" onClick={() => history.goBack()}>
+          <Button variant="danger" onClick={() => navigate(-1)}>
             Cancel
           </Button>
         </Link>

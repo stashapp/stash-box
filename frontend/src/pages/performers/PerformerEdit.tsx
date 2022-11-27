@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   usePerformerEdit,
@@ -18,13 +18,12 @@ interface Props {
 }
 
 const PerformerModify: FC<Props> = ({ performer }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (editData) => {
       if (submissionError) setSubmissionError("");
-      if (editData.performerEdit.id)
-        history.push(editHref(editData.performerEdit));
+      if (editData.performerEdit.id) navigate(editHref(editData.performerEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });

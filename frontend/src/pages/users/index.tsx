@@ -1,17 +1,8 @@
 import { FC } from "react";
-import { Route, Switch, useParams } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 
 import { useUser } from "src/graphql";
 import Title from "src/components/title";
-import {
-  ROUTE_USERS,
-  ROUTE_USER,
-  ROUTE_USER_ADD,
-  ROUTE_USER_EDIT,
-  ROUTE_USER_PASSWORD,
-  ROUTE_USER_EDITS,
-  ROUTE_USER_MY_SCENES,
-} from "src/constants/route";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import { isPrivateUser } from "src/utils";
 
@@ -35,59 +26,75 @@ const UserLoader: FC = () => {
   if (!user) return <ErrorMessage error="User not found." />;
 
   return (
-    <Switch>
-      <Route exact path={ROUTE_USER}>
-        <>
-          <Title page={user.name} />
-          <User user={user} refetch={refetch} />
-        </>
-      </Route>
-      <Route exact path={ROUTE_USER_EDIT}>
-        <>
-          <Title page={`Edit ${user.name}`} />
-          <UserEdit user={user} />
-        </>
-      </Route>
-      <Route exact path={ROUTE_USER_EDITS}>
-        <>
-          <Title page={`Edits by ${user.name}`} />
-          <UserEdits user={user} isPrivateUser={isPrivateUser(user)} />
-        </>
-      </Route>
-    </Switch>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <>
+            <Title page={user.name} />
+            <User user={user} refetch={refetch} />
+          </>
+        }
+      />
+      <Route
+        path="/edit"
+        element={
+          <>
+            <Title page={`Edit ${user.name}`} />
+            <UserEdit user={user} />
+          </>
+        }
+      />
+      <Route
+        path="/edits"
+        element={
+          <>
+            <Title page={`Edits by ${user.name}`} />
+            <UserEdits user={user} isPrivateUser={isPrivateUser(user)} />
+          </>
+        }
+      />
+    </Routes>
   );
 };
 
 const UserRoutes: FC = () => (
-  <Switch>
-    <Route exact path={ROUTE_USERS}>
-      <>
-        <Title page="Users" />
-        <Users />
-      </>
-    </Route>
-    <Route exact path={ROUTE_USER_ADD}>
-      <>
-        <Title page="Add User" />
-        <UserAdd />
-      </>
-    </Route>
-    <Route exact path={ROUTE_USER_PASSWORD}>
-      <>
-        <Title page="Change Password" />
-        <UserPassword />
-      </>
-    </Route>
-    <Route exact path={ROUTE_USER_MY_SCENES}>
+  <Routes>
+    <Route
+      path="/"
+      element={
+        <>
+          <Title page="Users" />
+          <Users />
+        </>
+      }
+    />
+    <Route
+      path="/add"
+      element={
+        <>
+          <Title page="Add User" />
+          <UserAdd />
+        </>
+      }
+    />
+    <Route
+      path="/change-password"
+      element={
+        <>
+          <Title page="Change Password" />
+          <UserPassword />
+        </>
+      }
+    />
+    <Route path="/scenes">
       <>
         <Title page={`My Scenes`} />
         <UserScenes />
       </>
     </Route>
-    <Route path={ROUTE_USER}>
-      <UserLoader />
-    </Route>
-  </Switch>
+    <Route path="/:name/*" element={<UserLoader />} />
+  </Routes>
 );
 
 export default UserRoutes;

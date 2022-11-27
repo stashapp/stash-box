@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Button, Form, Row } from "react-bootstrap";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import * as yup from "yup";
 import { useForm, Controller } from "react-hook-form";
@@ -53,7 +53,7 @@ const roles = Object.keys(RoleEnum).map((role) => ({
 }));
 
 const UserForm: FC<UserProps> = ({ user, callback, error }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -142,7 +142,7 @@ const UserForm: FC<UserProps> = ({ user, callback, error }) => {
           <Button
             variant="secondary"
             className="ms-2"
-            onClick={() => history.goBack()}
+            onClick={() => navigate(-1)}
           >
             Cancel
           </Button>
