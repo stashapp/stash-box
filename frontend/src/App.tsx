@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { ApolloProvider } from "@apollo/client";
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Main from "src/Main";
 import createClient from "src/utils/createClient";
@@ -16,12 +16,17 @@ const App: FC = () => (
   <ApolloProvider client={client}>
     <BrowserRouter>
       <ToastProvider>
-        <Route path="/">
-          <Main>
-            <Title />
-            <Pages />
-          </Main>
-        </Route>
+        <Routes>
+          <Route
+            path="/*"
+            element={
+              <Main>
+                <Title />
+                <Pages />
+              </Main>
+            }
+          />
+        </Routes>
       </ToastProvider>
     </BrowserRouter>
   </ApolloProvider>

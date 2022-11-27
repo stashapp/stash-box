@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { isApolloError } from "@apollo/client";
 
 import { useUpdateUser, PublicUserQuery, UserQuery } from "src/graphql";
@@ -17,14 +17,14 @@ interface Props {
 
 const EditUserComponent: FC<Props> = ({ user }) => {
   const [queryError, setQueryError] = useState<string>();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [updateUser] = useUpdateUser();
 
   if (!isPrivateUser(user)) return <ErrorMessage error="Access Denied" />;
 
   const doUpdate = (userData: UserEditData) => {
     updateUser({ variables: { userData } })
-      .then((res) => history.push(userHref(res.data?.userUpdate ?? user)))
+      .then((res) => navigate(userHref(res.data?.userUpdate ?? user)))
       .catch(
         (error: unknown) =>
           error instanceof Error &&

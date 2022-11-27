@@ -4,7 +4,7 @@ import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object({
   id: yup.string(),
@@ -43,7 +43,7 @@ interface UserProps {
 }
 
 const UserForm: FC<UserProps> = ({ callback, error }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -98,7 +98,7 @@ const UserForm: FC<UserProps> = ({ callback, error }) => {
         <Button
           variant="secondary"
           className="ms-2"
-          onClick={() => history.goBack()}
+          onClick={() => navigate(-1)}
         >
           Cancel
         </Button>

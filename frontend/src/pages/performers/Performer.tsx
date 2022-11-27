@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import { groupBy, keyBy, sortBy } from "lodash-es";
 
@@ -25,8 +25,9 @@ interface Props {
 }
 
 const PerformerComponent: FC<Props> = ({ performer }) => {
-  const history = useHistory();
-  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
   const [{ studioFilter }, setParams] = useQueryParams({
     studioFilter: { name: "studios", type: "string[]" },
   });
@@ -38,7 +39,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
   const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
-    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   const studios = keyBy(performer.studios, (s) => s.studio.id);
   const studioGroups = groupBy(

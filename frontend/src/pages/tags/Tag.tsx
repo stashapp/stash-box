@@ -1,5 +1,5 @@
 import { FC, useContext } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 
 import {
@@ -28,8 +28,9 @@ interface Props {
 
 const TagComponent: FC<Props> = ({ tag }) => {
   const auth = useContext(AuthContext);
-  const history = useHistory();
-  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.TAG,
@@ -38,7 +39,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
   const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
-    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { FC, useContext } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { sortBy } from "lodash-es";
 
@@ -31,8 +31,9 @@ interface Props {
 
 const StudioComponent: FC<Props> = ({ studio }) => {
   const auth = useContext(AuthContext);
-  const history = useHistory();
-  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.STUDIO,
@@ -51,7 +52,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   ));
 
   const setTab = (tab: string | null) =>
-    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   const homeURL = getUrlBySite(studio.urls, "Home");
 

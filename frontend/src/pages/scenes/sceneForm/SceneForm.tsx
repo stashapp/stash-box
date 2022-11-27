@@ -278,7 +278,7 @@ const SceneForm: FC<SceneProps> = ({
                           position={idx + 1}
                           key={`${result}-idx`}
                         >
-                          {result}
+                          {result as string}
                         </MenuItem>
                       ))}
                     </Menu>
