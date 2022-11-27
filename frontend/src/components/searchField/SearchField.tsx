@@ -3,7 +3,7 @@ import { useApolloClient } from "@apollo/client";
 import { OnChangeValue } from "react-select";
 import Async from "react-select/async";
 import debounce from "p-debounce";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
 import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
@@ -31,7 +31,7 @@ interface SearchFieldProps {
   onClickPerformer?: (result: PerformerResult) => void;
   searchType: SearchType;
   excludeIDs?: string[];
-  navigate?: boolean;
+  nav?: boolean;
   placeholder?: string;
   showAllLink?: boolean;
   autoFocus?: boolean;
@@ -153,13 +153,13 @@ const SearchField: FC<SearchFieldProps> = ({
   onClickPerformer,
   searchType = SearchType.Performer,
   excludeIDs = [],
-  navigate = false,
+  nav = false,
   placeholder,
   showAllLink = false,
   autoFocus = false,
 }) => {
   const client = useApolloClient();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [selectedValue, setSelected] = useState(null);
   const searchTerm = useRef("");
 
@@ -189,14 +189,12 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {
     if (result?.type === "ALL")
-      return history.push(
-        createHref(ROUTE_SEARCH, { term: searchTerm.current })
-      );
+      return navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
 
     if (result?.value) {
       if (valueIsPerformer(result.value)) onClickPerformer?.(result.value);
       onClick?.(result.value);
-      if (navigate) history.push(`/${result.type}s/${result.value.id}`);
+      if (nav) navigate(`/${result.type}s/${result.value.id}`);
     }
 
     setSelected(null);
@@ -204,7 +202,7 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
-      history.push(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+      navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
     }
   };
 

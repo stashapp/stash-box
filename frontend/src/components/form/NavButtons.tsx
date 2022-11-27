@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Button } from "react-bootstrap";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   onNext: () => void;
@@ -8,13 +8,13 @@ interface Props {
 }
 
 export const NavButtons: FC<Props> = ({ onNext, disabled = false }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   return (
     <div className="d-flex mt-2">
       <Button
         variant="danger"
         className="ms-auto me-2"
-        onClick={() => history.goBack()}
+        onClick={() => navigate(-1)}
       >
         Cancel
       </Button>

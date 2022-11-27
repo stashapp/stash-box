@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   usePerformerEdit,
@@ -11,12 +11,12 @@ import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
 
 const PerformerAdd: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [submitPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.performerEdit.id) history.push(editHref(data.performerEdit));
+      if (data.performerEdit.id) navigate(editHref(data.performerEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });

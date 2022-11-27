@@ -1,5 +1,5 @@
 import { FC, useContext } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import {
   faCheckCircle,
@@ -50,8 +50,9 @@ interface Props {
 }
 
 const SceneComponent: FC<Props> = ({ scene }) => {
-  const history = useHistory();
-  const activeTab = history.location.hash?.slice(1) || DEFAULT_TAB;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
   const auth = useContext(AuthContext);
   const addToast = useToast();
 
@@ -64,7 +65,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
-    history.push({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
+    navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   const performers = scene.performers
     .map((performance) => {

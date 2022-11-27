@@ -1,5 +1,5 @@
 import { FC, useContext } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button, Row } from "react-bootstrap";
 
 import { useDeleteCategory, CategoryQuery } from "src/graphql";
@@ -16,12 +16,12 @@ interface Props {
 }
 
 const CategoryComponent: FC<Props> = ({ category }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const auth = useContext(AuthContext);
 
   const [deleteCategory, { loading: deleting }] = useDeleteCategory({
     onCompleted: (result) => {
-      if (result) history.push(ROUTE_CATEGORIES);
+      if (result) navigate(ROUTE_CATEGORIES);
     },
   });
 

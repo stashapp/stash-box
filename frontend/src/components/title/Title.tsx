@@ -10,6 +10,8 @@ interface Props {
 }
 
 const Title: FC<Props> = ({ page }) => (
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  /* @ts-ignore */
   <Helmet>
     <title>{page ? `${page} | ${INSTANCE_TITLE}` : INSTANCE_TITLE}</title>
   </Helmet>

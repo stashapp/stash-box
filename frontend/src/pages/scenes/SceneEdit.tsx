@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useSceneEdit,
@@ -16,13 +16,13 @@ interface Props {
 }
 
 const SceneEdit: FC<Props> = ({ scene }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [insertSceneEdit, { loading: saving }] = useSceneEdit({
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.sceneEdit.id)
-        history.push(createHref(ROUTE_EDIT, result.sceneEdit));
+        navigate(createHref(ROUTE_EDIT, result.sceneEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });

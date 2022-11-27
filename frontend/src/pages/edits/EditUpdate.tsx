@@ -11,8 +11,8 @@ import { StudioEditUpdate } from "src/pages/studios/StudioEditUpdate";
 
 const EditUpdateComponent: FC = () => {
   const auth = useContext(AuthContext);
-  const { id } = useParams<{ id: string }>();
-  const { data, loading } = useEditUpdate({ id });
+  const { id } = useParams();
+  const { data, loading } = useEditUpdate({ id: id ?? "" }, !id);
 
   if (loading) return <LoadingIndicator message="Loading..." />;
 

@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useStudioEdit,
@@ -11,12 +11,12 @@ import { editHref } from "src/utils";
 import StudioForm from "./studioForm";
 
 const StudioAdd: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [insertStudioEdit, { loading: saving }] = useStudioEdit({
     onCompleted: (data) => {
       if (submissionError) setSubmissionError("");
-      if (data.studioEdit.id) history.push(editHref(data.studioEdit));
+      if (data.studioEdit.id) navigate(editHref(data.studioEdit));
     },
     onError: (error) => setSubmissionError(error.message),
   });

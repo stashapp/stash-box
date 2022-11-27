@@ -2,7 +2,7 @@ import { FC, useContext, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
@@ -17,7 +17,7 @@ const schema = yup.object({
 type ResetPasswordFormData = yup.Asserts<typeof schema>;
 
 const ForgotPassword: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [resetEmail, setResetEmail] = useState("");
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
@@ -32,7 +32,7 @@ const ForgotPassword: FC = () => {
 
   const [resetPassword, { loading }] = useResetPassword();
 
-  if (Auth.authenticated) history.push(ROUTE_HOME);
+  if (Auth.authenticated) navigate(ROUTE_HOME);
 
   const onSubmit = (formData: ResetPasswordFormData) => {
     const userData = {

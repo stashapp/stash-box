@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button, Col, Row, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -24,7 +24,7 @@ interface Props {
 }
 
 const SceneDelete: FC<Props> = ({ scene }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -35,7 +35,7 @@ const SceneDelete: FC<Props> = ({ scene }) => {
   });
   const [deleteSceneEdit, { loading: deleting }] = useSceneEdit({
     onCompleted: (data) => {
-      if (data.sceneEdit.id) history.push(editHref(data.sceneEdit));
+      if (data.sceneEdit.id) navigate(editHref(data.sceneEdit));
     },
   });
 
@@ -67,7 +67,7 @@ const SceneDelete: FC<Props> = ({ scene }) => {
             <Button
               variant="danger"
               className="ms-auto me-2"
-              onClick={() => history.goBack()}
+              onClick={() => navigate(-1)}
             >
               Cancel
             </Button>

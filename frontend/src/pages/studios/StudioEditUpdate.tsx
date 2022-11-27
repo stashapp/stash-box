@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useStudioEditUpdate,
@@ -15,13 +15,13 @@ import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
 
 export const StudioEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [updateStudioEdit, { loading: saving }] = useStudioEditUpdate({
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.studioEditUpdate.id)
-        history.push(createHref(ROUTE_EDIT, result.studioEditUpdate));
+        navigate(createHref(ROUTE_EDIT, result.studioEditUpdate));
     },
     onError: (error) => setSubmissionError(error.message),
   });

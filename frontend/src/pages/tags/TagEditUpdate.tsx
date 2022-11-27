@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   useTagEditUpdate,
@@ -15,13 +15,13 @@ import { ROUTE_EDIT } from "src/constants";
 import Title from "src/components/title";
 
 export const TagEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [submissionError, setSubmissionError] = useState("");
   const [updateTagEdit, { loading: saving }] = useTagEditUpdate({
     onCompleted: (result) => {
       if (submissionError) setSubmissionError("");
       if (result.tagEditUpdate.id)
-        history.push(createHref(ROUTE_EDIT, result.tagEditUpdate));
+        navigate(createHref(ROUTE_EDIT, result.tagEditUpdate));
     },
     onError: (error) => setSubmissionError(error.message),
   });

@@ -1,5 +1,5 @@
 import { FC, useMemo } from "react";
-import { useHistory, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { Card, Col, Form, Row } from "react-bootstrap";
 import { debounce } from "lodash-es";
 import {
@@ -124,13 +124,9 @@ const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
   </Link>
 );
 
-interface IParams {
-  term?: string;
-}
-
 const Search: FC = () => {
-  const { term } = useParams<IParams>();
-  const history = useHistory();
+  const { term } = useParams();
+  const navigate = useNavigate();
   const { loading, data } = useSearchAll(
     {
       term: term ?? "",
@@ -143,12 +139,13 @@ const Search: FC = () => {
     () =>
       debounce(
         (searchTerm: string) =>
-          history.replace(
-            createHref(ROUTE_SEARCH, { term: searchTerm || undefined })
+          navigate(
+            createHref(ROUTE_SEARCH, { term: searchTerm || undefined }),
+            { replace: true }
           ),
         200
       ),
-    [history]
+    [navigate]
   );
 
   return (
