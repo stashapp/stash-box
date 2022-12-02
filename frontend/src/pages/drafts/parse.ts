@@ -123,10 +123,20 @@ const parseEnum = (
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
 
+const parseAliases = (value: string | null | undefined) => {
+  if (!value) return null;
+
+  const aliases = value?.split(",").map((alias) => alias.trim());
+  if (aliases.length > 0) return aliases;
+  return null;
+};
+
 export const parsePerformerDraft = (
   draft: PerformerDraft,
   existingPerformer: PerformerFragment | undefined
 ): [InitialPerformer, Record<string, string | null>] => {
+  const draftAliases = parseAliases(draft?.aliases);
+
   const performer: InitialPerformer = {
     name: draft.name,
     disambiguation: null,
@@ -144,7 +154,7 @@ export const parsePerformerDraft = (
     birthdate: draft.birthdate,
     height: Number.parseInt(draft.height ?? "") || null,
     country: draft?.country?.length === 2 ? draft.country : null,
-    aliases: existingPerformer?.aliases,
+    aliases: draftAliases ?? existingPerformer?.aliases,
     career_start_year:
       draft?.career_start_year ?? existingPerformer?.career_start_year,
     career_end_year:
@@ -160,7 +170,7 @@ export const parsePerformerDraft = (
   };
 
   const remainder = {
-    Aliases: draft?.aliases ?? null,
+    Aliases: draftAliases ? null : draft?.aliases ?? null,
     Height: draft.height && !performer.height ? draft.height : null,
     Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
