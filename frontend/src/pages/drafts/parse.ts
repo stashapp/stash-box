@@ -9,6 +9,7 @@ import {
   PerformerFragment,
   DraftQuery,
   SceneQuery,
+  BreastTypeEnum,
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
 
@@ -123,6 +124,32 @@ const parseEnum = (
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
 
+const parseBreastType = (value: string | null | undefined) => {
+  switch (value?.toLocaleUpperCase()) {
+    case "FAKE":
+    case "AUGMENTED":
+      return BreastTypeEnum.FAKE;
+    case "NATURAL":
+      return BreastTypeEnum.NATURAL;
+    default:
+      return null;
+  }
+};
+
+const parseMeasurements = (value: string | null | undefined) => {
+  const parsedMeasurements = value?.match(
+    /^(\d\d)([a-zA-Z]+)(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
+  );
+  if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
+
+  return {
+    band: Number.parseInt(parsedMeasurements[1]),
+    cup: parsedMeasurements[2],
+    waist: Number.parseInt(parsedMeasurements[3]),
+    hip: Number.parseInt(parsedMeasurements[4]),
+  };
+};
+
 const parseAliases = (value: string | null | undefined) => {
   if (!value) return null;
 
@@ -135,6 +162,7 @@ export const parsePerformerDraft = (
   draft: PerformerDraft,
   existingPerformer: PerformerFragment | undefined
 ): [InitialPerformer, Record<string, string | null>] => {
+  const measurements = parseMeasurements(draft?.measurements);
   const draftAliases = parseAliases(draft?.aliases);
 
   const performer: InitialPerformer = {
@@ -159,11 +187,12 @@ export const parsePerformerDraft = (
       draft?.career_start_year ?? existingPerformer?.career_start_year,
     career_end_year:
       draft?.career_end_year ?? existingPerformer?.career_end_year,
-    breast_type: existingPerformer?.breast_type,
-    band_size: existingPerformer?.band_size,
-    waist_size: existingPerformer?.waist_size,
-    hip_size: existingPerformer?.hip_size,
-    cup_size: existingPerformer?.cup_size,
+    breast_type:
+      parseBreastType(draft?.breast_type) ?? existingPerformer?.breast_type,
+    band_size: measurements?.band ?? existingPerformer?.band_size,
+    waist_size: measurements?.waist ?? existingPerformer?.band_size,
+    hip_size: measurements?.hip ?? existingPerformer?.hip_size,
+    cup_size: measurements?.cup ?? existingPerformer?.cup_size,
     tattoos: existingPerformer?.tattoos ?? undefined,
     piercings: existingPerformer?.piercings ?? undefined,
     urls: existingPerformer?.urls,
@@ -174,7 +203,12 @@ export const parsePerformerDraft = (
     Height: draft.height && !performer.height ? draft.height : null,
     Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
-    Measurements: draft?.measurements ?? null,
+    Measurements:
+      draft?.measurements && !measurements ? draft.measurements : null,
+    "Breast Type":
+      draft?.breast_type && !parseBreastType(draft?.breast_type)
+        ? draft.breast_type
+        : null,
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,
   };
