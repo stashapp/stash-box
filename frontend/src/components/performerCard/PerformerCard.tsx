@@ -3,13 +3,7 @@ import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
-import { PerformersQuery, SearchPerformersQuery } from "src/graphql";
-type Performer = NonNullable<
-  PerformersQuery["queryPerformers"]
->["performers"][number];
-type SearchPerformer = NonNullable<
-  SearchPerformersQuery["searchPerformer"]
->[number];
+import { Performer } from "src/graphql";
 
 import {
   GenderIcon,
@@ -18,8 +12,13 @@ import {
 } from "src/components/fragments";
 import { getImage, performerHref } from "src/utils";
 
+type PerformerType = Pick<
+  Performer,
+  "id" | "name" | "images" | "gender" | "is_favorite" | "deleted"
+>;
+
 interface PerformerCardProps {
-  performer: Performer | SearchPerformer;
+  performer: PerformerType;
   className?: string;
 }
 

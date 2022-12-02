@@ -64,6 +64,8 @@ import {
   DraftsQuery,
   QueryExistingSceneQuery,
   QueryExistingSceneQueryVariables,
+  ScenePairingsQuery,
+  ScenePairingsQueryVariables,
 } from "../types";
 
 import CategoryGQL from "./Category.gql";
@@ -96,6 +98,7 @@ import SitesGQL from "./Sites.gql";
 import DraftGQL from "./Draft.gql";
 import DraftsGQL from "./Drafts.gql";
 import QueryExistingSceneGQL from "./QueryExistingScene.gql";
+import ScenePairingsGQL from "./ScenePairings.gql";
 
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   useQuery<CategoryQuery, CategoryQueryVariables>(CategoryGQL, {
@@ -305,3 +308,8 @@ export const useQueryExistingScene = (
       skip,
     }
   );
+
+export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
+  useQuery<ScenePairingsQuery, ScenePairingsQueryVariables>(ScenePairingsGQL, {
+    variables,
+  });

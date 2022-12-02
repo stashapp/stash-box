@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/edit"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -82,6 +83,29 @@ func (qb *studioQueryBuilder) UpdateURLs(studioID uuid.UUID, updatedJoins models
 func (qb *studioQueryBuilder) Find(id uuid.UUID) (*models.Studio, error) {
 	ret, err := qb.dbi.Find(id, studioDBTable)
 	return qb.toModel(ret), err
+}
+
+func (qb *studioQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Studio, []error) {
+	query := `
+		SELECT studios.* FROM studios
+		WHERE id IN (?)
+	`
+	query, args, _ := sqlx.In(query, ids)
+	studios, err := qb.queryStudios(query, args)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID]*models.Studio)
+	for _, studio := range studios {
+		m[studio.ID] = studio
+	}
+
+	result := make([]*models.Studio, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *studioQueryBuilder) FindWithRedirect(id uuid.UUID) (*models.Studio, error) {

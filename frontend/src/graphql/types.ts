@@ -744,11 +744,16 @@ export type Performer = {
   name: Scalars["String"];
   piercings?: Maybe<Array<BodyModification>>;
   scene_count: Scalars["Int"];
+  scenes: Array<Scene>;
   studios: Array<PerformerStudio>;
   tattoos?: Maybe<Array<BodyModification>>;
   updated: Scalars["Time"];
   urls: Array<Url>;
   waist_size?: Maybe<Scalars["Int"]>;
+};
+
+export type PerformerScenesArgs = {
+  input?: InputMaybe<PerformerScenesInput>;
 };
 
 export type PerformerAppearance = {
@@ -949,12 +954,19 @@ export type PerformerQueryInput = {
   names?: InputMaybe<Scalars["String"]>;
   page?: Scalars["Int"];
   per_page?: Scalars["Int"];
+  /** Filter by a performer they have performed in scenes with */
+  performed_with?: InputMaybe<Scalars["ID"]>;
   piercings?: InputMaybe<BodyModificationCriterionInput>;
   sort?: PerformerSortEnum;
   tattoos?: InputMaybe<BodyModificationCriterionInput>;
   /** Filter to search urls - assumes like query unless quoted */
   url?: InputMaybe<Scalars["String"]>;
   waist_size?: InputMaybe<IntCriterionInput>;
+};
+
+export type PerformerScenesInput = {
+  /** Filter by another performer that also performs in the scenes */
+  performed_with?: InputMaybe<Scalars["ID"]>;
 };
 
 export enum PerformerSortEnum {
@@ -17987,6 +17999,59 @@ export type SceneQuery = {
       aliases: Array<string>;
     }>;
   } | null;
+};
+
+export type ScenePairingsQueryVariables = Exact<{
+  performerId: Scalars["ID"];
+  names?: InputMaybe<Scalars["String"]>;
+  gender?: InputMaybe<GenderFilterEnum>;
+  favorite?: InputMaybe<Scalars["Boolean"]>;
+  page?: Scalars["Int"];
+  per_page?: Scalars["Int"];
+  direction: SortDirectionEnum;
+  sort: PerformerSortEnum;
+}>;
+
+export type ScenePairingsQuery = {
+  __typename: "Query";
+  queryPerformers: {
+    __typename: "QueryPerformersResultType";
+    count: number;
+    performers: Array<{
+      __typename: "Performer";
+      id: string;
+      name: string;
+      disambiguation?: string | null;
+      deleted: boolean;
+      aliases: Array<string>;
+      gender?: GenderEnum | null;
+      birth_date?: string | null;
+      is_favorite: boolean;
+      images: Array<{
+        __typename: "Image";
+        id: string;
+        url: string;
+        width: number;
+        height: number;
+      }>;
+      scenes: Array<{
+        __typename: "Scene";
+        id: string;
+        title?: string | null;
+        date?: string | null;
+        duration?: number | null;
+        release_date?: string | null;
+        studio?: { __typename: "Studio"; id: string; name: string } | null;
+        images: Array<{
+          __typename: "Image";
+          id: string;
+          url: string;
+          width: number;
+          height: number;
+        }>;
+      }>;
+    }>;
+  };
 };
 
 export type ScenesQueryVariables = Exact<{

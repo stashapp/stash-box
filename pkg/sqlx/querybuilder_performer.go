@@ -221,7 +221,6 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 
 func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, userID uuid.UUID) *queryBuilder {
 	query := newQueryBuilder(performerDBTable)
-	query.Eq("deleted", false)
 
 	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"performers.name"}
@@ -284,6 +283,19 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		}
 	}
 
+	if filter.PerformedWith != nil {
+		q := `performers.id IN (
+				SELECT SP.performer_id from scene_performers SP 
+				JOIN scene_performers SPP
+				ON SP.scene_id = SPP.scene_id
+				WHERE SPP.performer_id = ?
+				AND SP.performer_id != ?
+				GROUP BY SP.performer_id
+			)`
+		query.AddWhere(q)
+		query.AddArg(filter.PerformedWith, filter.PerformedWith)
+	}
+
 	handleStringCriterion("disambiguation", filter.Disambiguation, query)
 	handleStringCriterion("country", filter.Country, query)
 	/*
@@ -315,6 +327,8 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 	default:
 		query.Sort = qb.getPerformerSort(filter)
 	}
+
+	query.Eq("deleted", false)
 
 	return query
 }

@@ -14,7 +14,7 @@ import { formatPendingEdits } from "src/utils";
 import { EditList, SceneList, URLList } from "src/components/list";
 import CheckboxSelect from "src/components/checkboxSelect";
 import { useQueryParams } from "src/hooks";
-import PerformerInfo from "./performerInfo";
+import { PerformerInfo, ScenePairings } from "./components";
 
 type Performer = NonNullable<FullPerformerQuery["findPerformer"]>;
 
@@ -124,6 +124,9 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
             favoriteFilter={"studio"}
             key={`performer-${performer.id}-scene-list`}
           />
+        </Tab>
+        <Tab eventKey="scenePairings" title="Scene Pairings">
+          <ScenePairings id={performer.id} />
         </Tab>
         <Tab eventKey="links" title="Links">
           <URLList urls={performer.urls} />

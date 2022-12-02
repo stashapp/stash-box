@@ -48,14 +48,12 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 		return nil, nil
 	}
 
-	qb := r.getRepoFactory(ctx).Studio()
-	parent, err := qb.Find(obj.StudioID.UUID)
-
+	studio, err := dataloader.For(ctx).StudioByID.Load(obj.StudioID.UUID)
 	if err != nil {
 		return nil, err
 	}
 
-	return parent, nil
+	return studio, nil
 }
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
