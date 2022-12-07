@@ -34,6 +34,7 @@ const sortOptions = [
   { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
   { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
   { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
+  { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
   { value: PerformerSortEnum.CREATED_AT, label: "Created At" },
 ];
 
