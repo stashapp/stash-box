@@ -70,3 +70,10 @@ func (r *studioResolver) Created(ctx context.Context, obj *models.Studio) (*time
 func (r *studioResolver) Updated(ctx context.Context, obj *models.Studio) (*time.Time, error) {
 	return &obj.UpdatedAt, nil
 }
+
+func (r *studioResolver) Performers(ctx context.Context, obj *models.Studio, input models.PerformerQueryInput) (*models.PerformerQuery, error) {
+	input.StudioID = &obj.ID
+	return &models.PerformerQuery{
+		Filter: input,
+	}, nil
+}

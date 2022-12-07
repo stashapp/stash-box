@@ -10,6 +10,7 @@ import {
   StudioFragment as Studio,
 } from "src/graphql";
 import { EditList, SceneList, URLList } from "src/components/list";
+import { StudioPerformers } from "./components";
 
 import {
   getImage,
@@ -145,6 +146,9 @@ const StudioComponent: FC<Props> = ({ studio }) => {
             />
           </Tab>
         )}
+        <Tab eventKey="performers" title="Performers">
+          <StudioPerformers id={studio.id} />
+        </Tab>
         <Tab eventKey="links" title="Links">
           <URLList urls={studio.urls} />
         </Tab>

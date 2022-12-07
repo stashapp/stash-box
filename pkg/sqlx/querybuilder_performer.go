@@ -222,6 +222,20 @@ func (qb *performerQueryBuilder) Count() (int, error) {
 func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, userID uuid.UUID) *queryBuilder {
 	query := newQueryBuilder(performerDBTable)
 
+	if filter.StudioID != nil {
+		query.Body += `
+			JOIN (
+			  SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
+				FROM scene_performers
+				JOIN scenes ON scene_id = id
+				AND studio_id = ?
+				GROUP BY performer_id
+			) D
+			ON performers.id = D.performer_id
+		`
+		query.AddArg(filter.StudioID)
+	}
+
 	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"performers.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
@@ -311,17 +325,30 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 
 	switch {
 	case filter.Sort == models.PerformerSortEnumDebut:
-		query.Body += `
-			JOIN (SELECT performer_id, MIN(date) as debut FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
-			ON performers.id = D.performer_id
-		`
+		if filter.StudioID == nil {
+			query.Body += `
+				JOIN (SELECT performer_id, MIN(date) as debut FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
+				ON performers.id = D.performer_id
+			`
+		}
 		direction := filter.Direction.String() + nullsLast()
 		query.Sort = " ORDER BY debut " + direction + ", name " + direction
+	case filter.Sort == models.PerformerSortEnumLastScene:
+		if filter.StudioID == nil {
+			query.Body += `
+				JOIN (SELECT performer_id, MAX(date) as last_scene FROM scene_performers JOIN scenes ON scene_id = id GROUP BY performer_id) D
+				ON performers.id = D.performer_id
+			`
+		}
+		direction := filter.Direction.String() + nullsLast()
+		query.Sort = " ORDER BY last_scene " + direction + ", name " + direction
 	case filter.Sort == models.PerformerSortEnumSceneCount:
-		query.Body += `
-			JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
-			ON performers.id = D.performer_id
-		`
+		if filter.StudioID == nil {
+			query.Body += `
+				JOIN (SELECT performer_id, COUNT(*) as scene_count FROM scene_performers GROUP BY performer_id) D
+				ON performers.id = D.performer_id
+			`
+		}
 		direction := filter.Direction.String() + nullsLast()
 		query.Sort = " ORDER BY scene_count " + direction + ", name " + direction
 	default:
