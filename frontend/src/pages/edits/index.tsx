@@ -8,7 +8,7 @@ import EditUpdate from "./EditUpdate";
 const SceneRoutes: FC = () => (
   <Routes>
     <Route path="/" element={<Edits />} />
-    <Route path="/update" element={<EditUpdate />} />
+    <Route path="/:id/update" element={<EditUpdate />} />
     <Route path="/:id/*" element={<Edit />} />
   </Routes>
 );
