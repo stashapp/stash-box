@@ -60,8 +60,8 @@ export const getImage = (
   return images?.[0]?.url ?? "";
 };
 
-export const imageType = (image: ImageFragment) => {
-  if (image.height > image.width) {
+export const imageType = (image?: ImageFragment) => {
+  if (image && image.height > image.width) {
     return `vertical-img`;
   } else {
     return `horizontal-img`;
