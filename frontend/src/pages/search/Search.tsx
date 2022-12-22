@@ -29,7 +29,7 @@ import {
   createHref,
   formatDuration,
 } from "src/utils";
-import { ROUTE_SEARCH } from "src/constants/route";
+import { ROUTE_SEARCH, ROUTE_SEARCH_INDEX } from "src/constants/route";
 
 type Performer = NonNullable<SearchAllQuery["searchPerformer"][number]>;
 type Scene = NonNullable<SearchAllQuery["searchScene"][number]>;
@@ -140,7 +140,9 @@ const Search: FC = () => {
       debounce(
         (searchTerm: string) =>
           navigate(
-            createHref(ROUTE_SEARCH, { term: searchTerm || undefined }),
+            searchTerm
+              ? createHref(ROUTE_SEARCH, { term: searchTerm })
+              : ROUTE_SEARCH_INDEX,
             { replace: true }
           ),
         200
