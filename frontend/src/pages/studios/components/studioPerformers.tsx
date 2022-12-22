@@ -1,26 +1,25 @@
-import { FC, useContext } from "react";
-import { Link } from "react-router-dom";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import Select from "react-select";
+import { FC } from "react";
+import { Button, Form, InputGroup, Row, Col } from "react-bootstrap";
 import { debounce } from "lodash-es";
+import Select from "react-select";
 import {
   faSortAmountUp,
   faSortAmountDown,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  usePerformers,
-  SortDirectionEnum,
+  useStudioPerformers,
   GenderFilterEnum,
   PerformerSortEnum,
+  SortDirectionEnum,
 } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
-import { ErrorMessage, Icon } from "src/components/fragments";
+import { Icon } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
-import { canEdit, ensureEnum, resolveEnum } from "src/utils";
-import AuthContext from "src/AuthContext";
+import SceneCard from "src/components/sceneCard";
+import { GenderFilterTypes } from "src/constants";
+import { usePagination, useQueryParams } from "src/hooks";
+import { ensureEnum, resolveEnum } from "src/utils";
 import { List } from "src/components/list";
-import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
 
 const PER_PAGE = 25;
 
@@ -29,22 +28,26 @@ const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
   label: GenderFilterTypes[g as GenderFilterEnum],
 }));
 const sortOptions = [
-  { value: PerformerSortEnum.NAME, label: "Name" },
-  { value: PerformerSortEnum.BIRTHDATE, label: "Birthdate" },
-  { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
-  { value: PerformerSortEnum.CAREER_START_YEAR, label: "Career Start" },
-  { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
   { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
-  { value: PerformerSortEnum.CREATED_AT, label: "Created At" },
+  { value: PerformerSortEnum.DEBUT, label: "First Scene" },
+  { value: PerformerSortEnum.NAME, label: "Name" },
+  { value: PerformerSortEnum.SCENE_COUNT, label: "Scene Count" },
 ];
 
-const PerformersComponent: FC = () => {
-  const auth = useContext(AuthContext);
+interface Props {
+  id: string;
+}
+
+export const StudioPerformers: FC<Props> = ({ id }) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
     gender: { name: "gender", type: "string" },
-    direction: { name: "dir", type: "string", default: SortDirectionEnum.ASC },
-    sort: { name: "sort", type: "string", default: PerformerSortEnum.NAME },
+    direction: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
+    sort: {
+      name: "sort",
+      type: "string",
+      default: PerformerSortEnum.LAST_SCENE,
+    },
     favorite: { name: "favorite", type: "string", default: "false" },
   });
   const gender = resolveEnum(GenderFilterEnum, params.gender);
@@ -52,28 +55,18 @@ const PerformersComponent: FC = () => {
   const sort = ensureEnum(PerformerSortEnum, params.sort);
   const favorite = params.favorite === "true" || undefined;
   const { page, setPage } = usePagination();
-  const { loading, data } = usePerformers({
-    input: {
-      names: params.query,
-      gender,
-      is_favorite: favorite,
-      page,
-      per_page: PER_PAGE,
-      sort,
-      direction,
-    },
+
+  const { data, loading } = useStudioPerformers({
+    studioId: id,
+    gender,
+    favorite,
+    page,
+    per_page: PER_PAGE,
+    sort,
+    direction,
   });
 
-  if (!loading && !data)
-    return <ErrorMessage error="Failed to load performers" />;
-
-  const performers = (data?.queryPerformers.performers ?? []).map(
-    (performer) => (
-      <Col xs="auto" key={performer.id}>
-        <PerformerCard performer={performer} />
-      </Col>
-    )
-  );
+  const performers = data?.queryPerformers.performers;
 
   const debouncedHandler = debounce(setParams, 200);
 
@@ -145,27 +138,33 @@ const PerformersComponent: FC = () => {
 
   return (
     <>
-      <div className="d-flex">
-        <h3 className="me-4">Performers</h3>
-        {canEdit(auth.user) && (
-          <Link to={ROUTE_PERFORMER_ADD} className="ms-auto">
-            <Button>Create</Button>
-          </Link>
-        )}
-      </div>
       <List
-        entityName="performers"
+        entityName="Scene Pairings"
         page={page}
         filters={filters}
         setPage={setPage}
         perPage={PER_PAGE}
         loading={loading}
-        listCount={data?.queryPerformers.count}
+        listCount={data?.queryPerformers?.count}
       >
-        <Row>{performers}</Row>
+        {performers?.map((p, i) => (
+          <Row key={p.id}>
+            <Col xs={3} key={p.id}>
+              <PerformerCard performer={p} />
+            </Col>
+            <Col xs={9}>
+              <Row>
+                {p.scenes.map((s) => (
+                  <Col xs={4} key={s.id}>
+                    <SceneCard scene={s} />
+                  </Col>
+                ))}
+              </Row>
+            </Col>
+            {i < performers.length - 1 && <hr />}
+          </Row>
+        ))}
       </List>
     </>
   );
 };
-
-export default PerformersComponent;

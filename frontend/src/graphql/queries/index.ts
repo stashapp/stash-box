@@ -66,6 +66,8 @@ import {
   QueryExistingSceneQueryVariables,
   ScenePairingsQuery,
   ScenePairingsQueryVariables,
+  StudioPerformersQuery,
+  StudioPerformersQueryVariables,
 } from "../types";
 
 import CategoryGQL from "./Category.gql";
@@ -99,6 +101,7 @@ import DraftGQL from "./Draft.gql";
 import DraftsGQL from "./Drafts.gql";
 import QueryExistingSceneGQL from "./QueryExistingScene.gql";
 import ScenePairingsGQL from "./ScenePairings.gql";
+import StudioPerformersGQL from "./StudioPerformers.gql";
 
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   useQuery<CategoryQuery, CategoryQueryVariables>(CategoryGQL, {
@@ -313,3 +316,13 @@ export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
   useQuery<ScenePairingsQuery, ScenePairingsQueryVariables>(ScenePairingsGQL, {
     variables,
   });
+
+export const useStudioPerformers = (
+  variables: StudioPerformersQueryVariables
+) =>
+  useQuery<StudioPerformersQuery, StudioPerformersQueryVariables>(
+    StudioPerformersGQL,
+    {
+      variables,
+    }
+  );

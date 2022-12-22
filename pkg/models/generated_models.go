@@ -375,16 +375,20 @@ type PerformerQueryInput struct {
 	// Filter by performerfavorite status for the current user
 	IsFavorite *bool `json:"is_favorite"`
 	// Filter by a performer they have performed in scenes with
-	PerformedWith *uuid.UUID        `json:"performed_with"`
-	Page          int               `json:"page"`
-	PerPage       int               `json:"per_page"`
-	Direction     SortDirectionEnum `json:"direction"`
-	Sort          PerformerSortEnum `json:"sort"`
+	PerformedWith *uuid.UUID `json:"performed_with"`
+	// Filter by a studio
+	StudioID  *uuid.UUID        `json:"studio_id"`
+	Page      int               `json:"page"`
+	PerPage   int               `json:"per_page"`
+	Direction SortDirectionEnum `json:"direction"`
+	Sort      PerformerSortEnum `json:"sort"`
 }
 
 type PerformerScenesInput struct {
 	// Filter by another performer that also performs in the scenes
 	PerformedWith *uuid.UUID `json:"performed_with"`
+	// Filter by a studio
+	StudioID *uuid.UUID `json:"studio_id"`
 }
 
 type PerformerUpdateInput struct {
@@ -1431,6 +1435,7 @@ const (
 	PerformerSortEnumSceneCount      PerformerSortEnum = "SCENE_COUNT"
 	PerformerSortEnumCareerStartYear PerformerSortEnum = "CAREER_START_YEAR"
 	PerformerSortEnumDebut           PerformerSortEnum = "DEBUT"
+	PerformerSortEnumLastScene       PerformerSortEnum = "LAST_SCENE"
 	PerformerSortEnumCreatedAt       PerformerSortEnum = "CREATED_AT"
 	PerformerSortEnumUpdatedAt       PerformerSortEnum = "UPDATED_AT"
 )
@@ -1441,13 +1446,14 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 	PerformerSortEnumSceneCount,
 	PerformerSortEnumCareerStartYear,
 	PerformerSortEnumDebut,
+	PerformerSortEnumLastScene,
 	PerformerSortEnumCreatedAt,
 	PerformerSortEnumUpdatedAt,
 }
 
 func (e PerformerSortEnum) IsValid() bool {
 	switch e {
-	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
 		return true
 	}
 	return false

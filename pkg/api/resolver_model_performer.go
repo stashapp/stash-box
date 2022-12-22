@@ -191,11 +191,20 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 		performers = append(performers, *input.PerformedWith)
 	}
 
+	var studios *models.MultiIDCriterionInput
+	if input != nil && input.StudioID != nil {
+		studios = &models.MultiIDCriterionInput{
+			Modifier: models.CriterionModifierIncludes,
+			Value:    []uuid.UUID{*input.StudioID},
+		}
+	}
+
 	filter := models.SceneQueryInput{
 		Performers: &models.MultiIDCriterionInput{
 			Modifier: models.CriterionModifierIncludesAll,
 			Value:    performers,
 		},
+		Studios:   studios,
 		Sort:      "DATE",
 		Direction: "DESC",
 		Page:      1,

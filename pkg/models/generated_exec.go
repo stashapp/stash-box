@@ -494,6 +494,7 @@ type ComplexityRoot struct {
 		IsFavorite   func(childComplexity int) int
 		Name         func(childComplexity int) int
 		Parent       func(childComplexity int) int
+		Performers   func(childComplexity int, input PerformerQueryInput) int
 		Updated      func(childComplexity int) int
 		Urls         func(childComplexity int) int
 	}
@@ -841,6 +842,7 @@ type StudioResolver interface {
 	IsFavorite(ctx context.Context, obj *Studio) (bool, error)
 	Created(ctx context.Context, obj *Studio) (*time.Time, error)
 	Updated(ctx context.Context, obj *Studio) (*time.Time, error)
+	Performers(ctx context.Context, obj *Studio, input PerformerQueryInput) (*PerformerQuery, error)
 }
 type StudioEditResolver interface {
 	Parent(ctx context.Context, obj *StudioEdit) (*Studio, error)
@@ -3513,6 +3515,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Studio.Parent(childComplexity), true
 
+	case "Studio.performers":
+		if e.complexity.Studio.Performers == nil {
+			break
+		}
+
+		args, err := ec.field_Studio_performers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Studio.Performers(childComplexity, args["input"].(PerformerQueryInput)), true
+
 	case "Studio.updated":
 		if e.complexity.Studio.Updated == nil {
 			break
@@ -4483,6 +4497,9 @@ type Performer {
 input PerformerScenesInput {
   """Filter by another performer that also performs in the scenes"""
   performed_with: ID
+
+  """Filter by a studio"""
+  studio_id: ID
 }
 
 type PerformerStudio {
@@ -4660,6 +4677,7 @@ enum PerformerSortEnum {
   SCENE_COUNT
   CAREER_START_YEAR
   DEBUT
+  LAST_SCENE
   CREATED_AT
   UPDATED_AT
 }
@@ -4707,6 +4725,9 @@ input PerformerQueryInput {
 
   """Filter by a performer they have performed in scenes with"""
   performed_with: ID
+
+  """Filter by a studio"""
+  studio_id: ID
 
   page: Int! = 1
   per_page: Int! = 25
@@ -5076,6 +5097,8 @@ enum ValidSiteTypeEnum {
   is_favorite: Boolean!
   created: Time!
   updated: Time!
+
+  performers(input: PerformerQueryInput!): QueryPerformersResultType!
 }
 
 input StudioCreateInput {
@@ -6855,6 +6878,21 @@ func (ec *executionContext) field_Scene_fingerprints_args(ctx context.Context, r
 		}
 	}
 	args["is_submitted"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Studio_performers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 PerformerQueryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNPerformerQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQueryInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -10163,6 +10201,8 @@ func (ec *executionContext) fieldContext_Mutation_studioCreate(ctx context.Conte
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -10261,6 +10301,8 @@ func (ec *executionContext) fieldContext_Mutation_studioUpdate(ctx context.Conte
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -18080,6 +18122,8 @@ func (ec *executionContext) fieldContext_PerformerStudio_studio(ctx context.Cont
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -18442,6 +18486,8 @@ func (ec *executionContext) fieldContext_Query_findStudio(ctx context.Context, f
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -21876,6 +21922,8 @@ func (ec *executionContext) fieldContext_QueryStudiosResultType_studios(ctx cont
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -22517,6 +22565,8 @@ func (ec *executionContext) fieldContext_Scene_studio(ctx context.Context, field
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -23905,6 +23955,8 @@ func (ec *executionContext) fieldContext_SceneEdit_studio(ctx context.Context, f
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -25720,6 +25772,8 @@ func (ec *executionContext) fieldContext_Studio_parent(ctx context.Context, fiel
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -25786,6 +25840,8 @@ func (ec *executionContext) fieldContext_Studio_child_studios(ctx context.Contex
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -26023,6 +26079,67 @@ func (ec *executionContext) fieldContext_Studio_updated(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Studio_performers(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studio_performers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studio().Performers(rctx, obj, fc.Args["input"].(PerformerQueryInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*PerformerQuery)
+	fc.Result = res
+	return ec.marshalNQueryPerformersResultType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQuery(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Studio_performers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Studio",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "count":
+				return ec.fieldContext_QueryPerformersResultType_count(ctx, field)
+			case "performers":
+				return ec.fieldContext_QueryPerformersResultType_performers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryPerformersResultType", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Studio_performers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _StudioEdit_name(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_StudioEdit_name(ctx, field)
 	if err != nil {
@@ -26218,6 +26335,8 @@ func (ec *executionContext) fieldContext_StudioEdit_parent(ctx context.Context, 
 				return ec.fieldContext_Studio_created(ctx, field)
 			case "updated":
 				return ec.fieldContext_Studio_updated(ctx, field)
+			case "performers":
+				return ec.fieldContext_Studio_performers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studio", field.Name)
 		},
@@ -32490,7 +32609,7 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32697,6 +32816,14 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
+		case "studio_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
+			it.StudioID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "page":
 			var err error
 
@@ -32742,7 +32869,7 @@ func (ec *executionContext) unmarshalInputPerformerScenesInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"performed_with"}
+	fieldsInOrder := [...]string{"performed_with", "studio_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32754,6 +32881,14 @@ func (ec *executionContext) unmarshalInputPerformerScenesInput(ctx context.Conte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performed_with"))
 			it.PerformedWith, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "studio_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
+			it.StudioID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -40106,6 +40241,26 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 					}
 				}()
 				res = ec._Studio_updated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "performers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studio_performers(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

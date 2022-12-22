@@ -958,6 +958,8 @@ export type PerformerQueryInput = {
   performed_with?: InputMaybe<Scalars["ID"]>;
   piercings?: InputMaybe<BodyModificationCriterionInput>;
   sort?: PerformerSortEnum;
+  /** Filter by a studio */
+  studio_id?: InputMaybe<Scalars["ID"]>;
   tattoos?: InputMaybe<BodyModificationCriterionInput>;
   /** Filter to search urls - assumes like query unless quoted */
   url?: InputMaybe<Scalars["String"]>;
@@ -967,6 +969,8 @@ export type PerformerQueryInput = {
 export type PerformerScenesInput = {
   /** Filter by another performer that also performs in the scenes */
   performed_with?: InputMaybe<Scalars["ID"]>;
+  /** Filter by a studio */
+  studio_id?: InputMaybe<Scalars["ID"]>;
 };
 
 export enum PerformerSortEnum {
@@ -974,6 +978,7 @@ export enum PerformerSortEnum {
   CAREER_START_YEAR = "CAREER_START_YEAR",
   CREATED_AT = "CREATED_AT",
   DEBUT = "DEBUT",
+  LAST_SCENE = "LAST_SCENE",
   NAME = "NAME",
   SCENE_COUNT = "SCENE_COUNT",
   UPDATED_AT = "UPDATED_AT",
@@ -1520,8 +1525,13 @@ export type Studio = {
   is_favorite: Scalars["Boolean"];
   name: Scalars["String"];
   parent?: Maybe<Studio>;
+  performers: QueryPerformersResultType;
   updated: Scalars["Time"];
   urls: Array<Url>;
+};
+
+export type StudioPerformersArgs = {
+  input: PerformerQueryInput;
 };
 
 export type StudioCreateInput = {
@@ -18335,6 +18345,58 @@ export type StudioQuery = {
       width: number;
     }>;
   } | null;
+};
+
+export type StudioPerformersQueryVariables = Exact<{
+  studioId: Scalars["ID"];
+  gender?: InputMaybe<GenderFilterEnum>;
+  favorite?: InputMaybe<Scalars["Boolean"]>;
+  page?: Scalars["Int"];
+  per_page?: Scalars["Int"];
+  direction: SortDirectionEnum;
+  sort: PerformerSortEnum;
+}>;
+
+export type StudioPerformersQuery = {
+  __typename: "Query";
+  queryPerformers: {
+    __typename: "QueryPerformersResultType";
+    count: number;
+    performers: Array<{
+      __typename: "Performer";
+      id: string;
+      name: string;
+      disambiguation?: string | null;
+      deleted: boolean;
+      aliases: Array<string>;
+      gender?: GenderEnum | null;
+      birth_date?: string | null;
+      is_favorite: boolean;
+      images: Array<{
+        __typename: "Image";
+        id: string;
+        url: string;
+        width: number;
+        height: number;
+      }>;
+      scenes: Array<{
+        __typename: "Scene";
+        id: string;
+        title?: string | null;
+        date?: string | null;
+        duration?: number | null;
+        release_date?: string | null;
+        studio?: { __typename: "Studio"; id: string; name: string } | null;
+        images: Array<{
+          __typename: "Image";
+          id: string;
+          url: string;
+          width: number;
+          height: number;
+        }>;
+      }>;
+    }>;
+  };
 };
 
 export type StudiosQueryVariables = Exact<{

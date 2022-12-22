@@ -9,6 +9,8 @@ type Studio {
   is_favorite: Boolean!
   created: Time!
   updated: Time!
+
+  performers(input: PerformerQueryInput!): QueryPerformersResultType!
 }
 
 input StudioCreateInput {

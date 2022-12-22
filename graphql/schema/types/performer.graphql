@@ -124,6 +124,9 @@ type Performer {
 input PerformerScenesInput {
   """Filter by another performer that also performs in the scenes"""
   performed_with: ID
+
+  """Filter by a studio"""
+  studio_id: ID
 }
 
 type PerformerStudio {
@@ -301,6 +304,7 @@ enum PerformerSortEnum {
   SCENE_COUNT
   CAREER_START_YEAR
   DEBUT
+  LAST_SCENE
   CREATED_AT
   UPDATED_AT
 }
@@ -348,6 +352,9 @@ input PerformerQueryInput {
 
   """Filter by a performer they have performed in scenes with"""
   performed_with: ID
+
+  """Filter by a studio"""
+  studio_id: ID
 
   page: Int! = 1
   per_page: Int! = 25
