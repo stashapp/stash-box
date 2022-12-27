@@ -12,10 +12,12 @@ import {
   SceneQueryInput,
   SortDirectionEnum,
   SceneSortEnum,
+  CriterionModifier,
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum } from "src/utils";
 import SceneCard from "src/components/sceneCard";
+import TagFilter from "src/components/tagFilter";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "./List";
 
@@ -44,6 +46,7 @@ const SceneList: FC<Props> = ({
     sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
     dir: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
     favorite: { name: "favorite", type: "string", default: "NONE" },
+    tag: { name: "tag", type: "string" },
   });
   const sort = ensureEnum(SceneSortEnum, params.sort);
   const direction = ensureEnum(SortDirectionEnum, params.dir);
@@ -59,6 +62,9 @@ const SceneList: FC<Props> = ({
       direction,
       ...filter,
       favorites: (favoriteFilter !== undefined && favorite) || undefined,
+      tags: params.tag
+        ? { value: [params.tag], modifier: CriterionModifier.INCLUDES }
+        : undefined,
     },
   });
 
@@ -66,6 +72,7 @@ const SceneList: FC<Props> = ({
 
   const filters = (
     <>
+      <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
       <InputGroup className="scene-sort w-auto">
         <Form.Select
           className="w-auto"

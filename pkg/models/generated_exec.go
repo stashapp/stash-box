@@ -4500,6 +4500,9 @@ input PerformerScenesInput {
 
   """Filter by a studio"""
   studio_id: ID
+
+  """Filter by tags"""
+  tags: MultiIDCriterionInput
 }
 
 type PerformerStudio {
@@ -32869,7 +32872,7 @@ func (ec *executionContext) unmarshalInputPerformerScenesInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"performed_with", "studio_id"}
+	fieldsInOrder := [...]string{"performed_with", "studio_id", "tags"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32889,6 +32892,14 @@ func (ec *executionContext) unmarshalInputPerformerScenesInput(ctx context.Conte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
 			it.StudioID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tags":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			it.Tags, err = ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiIDCriterionInput(ctx, v)
 			if err != nil {
 				return it, err
 			}

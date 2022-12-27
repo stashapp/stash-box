@@ -127,6 +127,9 @@ input PerformerScenesInput {
 
   """Filter by a studio"""
   studio_id: ID
+
+  """Filter by tags"""
+  tags: MultiIDCriterionInput
 }
 
 type PerformerStudio {

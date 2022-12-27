@@ -971,6 +971,8 @@ export type PerformerScenesInput = {
   performed_with?: InputMaybe<Scalars["ID"]>;
   /** Filter by a studio */
   studio_id?: InputMaybe<Scalars["ID"]>;
+  /** Filter by tags */
+  tags?: InputMaybe<MultiIdCriterionInput>;
 };
 
 export enum PerformerSortEnum {
