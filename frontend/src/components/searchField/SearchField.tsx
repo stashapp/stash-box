@@ -9,7 +9,7 @@ import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
 import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 
 import { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
-import { createHref, filterData } from "src/utils";
+import { createHref, filterData, getImage } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
 import { GenderIcon } from "src/components/fragments";
 
@@ -56,13 +56,22 @@ const valueIsPerformer = (
 ): arg is PerformerResult => arg?.__typename === "Performer";
 
 const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
-  <>
-    <div className="search-value">
-      {valueIsPerformer(value) && <GenderIcon gender={value.gender} />}
-      {value?.deleted ? <del>{label}</del> : label}
+  <div className="d-flex">
+    {valueIsPerformer(value) && (
+      <img
+        src={getImage(value.images, "portrait")}
+        className="SearchField-thumb"
+        alt=""
+      />
+    )}
+    <div>
+      <div className="search-value">
+        {valueIsPerformer(value) && <GenderIcon gender={value.gender} />}
+        {value?.deleted ? <del>{label}</del> : label}
+      </div>
+      <div className="search-subvalue">{sublabel}</div>
     </div>
-    <div className="search-subvalue">{sublabel}</div>
-  </>
+  </div>
 );
 
 const resultIsSearchAll = (
