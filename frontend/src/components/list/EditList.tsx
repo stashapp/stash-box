@@ -24,6 +24,7 @@ interface EditsProps {
   voted?: UserVotedFilterEnum;
   userId?: string;
   defaultVoteStatus?: VoteStatusEnum;
+  defaultVoted?: UserVotedFilterEnum;
   showVotedFilter?: boolean;
 }
 
@@ -39,6 +40,7 @@ const EditListComponent: FC<EditsProps> = ({
   voted,
   userId,
   defaultVoteStatus,
+  defaultVoted,
   showVotedFilter,
 }) => {
   const { page, setPage } = usePagination();
@@ -62,6 +64,7 @@ const EditListComponent: FC<EditsProps> = ({
     showFavoriteOption: id === undefined,
     showVotedFilter,
     defaultVoteStatus,
+    defaultVoted,
   });
   const { data, loading } = useEdits({
     input: {

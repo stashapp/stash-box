@@ -40,6 +40,7 @@ interface EditFilterProps {
   showFavoriteOption?: boolean;
   showVotedFilter?: boolean;
   defaultVoteStatus?: VoteStatusEnum | "all";
+  defaultVoted?: UserVotedFilterEnum;
 }
 
 const useEditFilter = ({
@@ -54,6 +55,7 @@ const useEditFilter = ({
   showFavoriteOption = true,
   showVotedFilter = true,
   defaultVoteStatus = "all",
+  defaultVoted,
 }: EditFilterProps) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
@@ -63,7 +65,7 @@ const useEditFilter = ({
     voted: {
       name: "voted",
       type: "string",
-      default: UserVotedFilterEnum.NOT_VOTED,
+      default: defaultVoted,
     },
     status: { name: "status", type: "string", default: defaultVoteStatus },
     type: { name: "type", type: "string", default: "" },
