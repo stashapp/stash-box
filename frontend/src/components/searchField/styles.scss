@@ -10,4 +10,15 @@
   .search-subvalue {
     font-size: 12px;
   }
+
+  &-thumb {
+    aspect-ratio: 2 / 3;
+    height: 4rem;
+    object-fit: cover;
+    margin-right: 0.5rem;
+  }
+
+  .react-select__menu-list {
+    max-height: 600px;
+  }
 }
