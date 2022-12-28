@@ -18022,6 +18022,7 @@ export type ScenePairingsQueryVariables = Exact<{
   per_page?: Scalars["Int"];
   direction: SortDirectionEnum;
   sort: PerformerSortEnum;
+  fetchScenes: Scalars["Boolean"];
 }>;
 
 export type ScenePairingsQuery = {
@@ -18046,7 +18047,7 @@ export type ScenePairingsQuery = {
         width: number;
         height: number;
       }>;
-      scenes: Array<{
+      scenes?: Array<{
         __typename: "Scene";
         id: string;
         title?: string | null;

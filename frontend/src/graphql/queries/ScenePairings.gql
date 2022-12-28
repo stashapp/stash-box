@@ -8,6 +8,7 @@ query ScenePairings(
   $per_page: Int! = 25
   $direction: SortDirectionEnum!
   $sort: PerformerSortEnum!
+  $fetchScenes: Boolean!
 ) {
   queryPerformers(
     input: {
@@ -34,7 +35,8 @@ query ScenePairings(
       images {
         ...ImageFragment
       }
-      scenes(input: { performed_with: $performerId }) {
+      scenes(input: { performed_with: $performerId })
+        @include(if: $fetchScenes) {
         id
         title
         date
