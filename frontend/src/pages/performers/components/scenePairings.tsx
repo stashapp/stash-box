@@ -47,11 +47,13 @@ export const ScenePairings: FC<Props> = ({ id }) => {
     direction: { name: "dir", type: "string", default: SortDirectionEnum.ASC },
     sort: { name: "sort", type: "string", default: PerformerSortEnum.NAME },
     favorite: { name: "favorite", type: "string", default: "false" },
+    scenes: { name: "scenes", type: "string", default: "false" },
   });
   const gender = resolveEnum(GenderFilterEnum, params.gender);
   const direction = ensureEnum(SortDirectionEnum, params.direction);
   const sort = ensureEnum(PerformerSortEnum, params.sort);
   const favorite = params.favorite === "true" || undefined;
+  const fetchScenes = params.scenes === "true";
   const { page, setPage } = usePagination();
 
   const { data, loading } = useScenePairings({
@@ -63,6 +65,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
     per_page: PER_PAGE,
     sort,
     direction,
+    fetchScenes,
   });
 
   const performers = data?.queryPerformers.performers;
@@ -125,10 +128,21 @@ export const ScenePairings: FC<Props> = ({ id }) => {
         <Form.Check
           className="mt-2"
           type="switch"
-          label="Only favorites"
+          label="Favorites"
           defaultChecked={favorite}
           onChange={(e) =>
             setParams("favorite", e.currentTarget.checked.toString())
+          }
+        />
+      </Form.Group>
+      <Form.Group controlId="scenes">
+        <Form.Check
+          className="mt-2 ms-2"
+          type="switch"
+          label="Scenes"
+          defaultChecked={fetchScenes}
+          onChange={(e) =>
+            setParams("scenes", e.currentTarget.checked.toString())
           }
         />
       </Form.Group>
@@ -146,23 +160,33 @@ export const ScenePairings: FC<Props> = ({ id }) => {
         loading={loading}
         listCount={data?.queryPerformers?.count}
       >
-        {performers?.map((p, i) => (
-          <Row key={p.id}>
-            <Col xs={3} key={p.id}>
-              <PerformerCard performer={p} />
-            </Col>
-            <Col xs={9}>
-              <Row>
-                {p.scenes.map((s) => (
-                  <Col xs={4} key={s.id}>
-                    <SceneCard scene={s} />
-                  </Col>
-                ))}
-              </Row>
-            </Col>
-            {i < performers.length - 1 && <hr />}
+        {fetchScenes ? (
+          performers?.map((p, i) => (
+            <Row key={p.id}>
+              <Col xs={3} key={p.id}>
+                <PerformerCard performer={p} />
+              </Col>
+              <Col xs={9}>
+                <Row>
+                  {p?.scenes?.map((s) => (
+                    <Col xs={4} key={s.id}>
+                      <SceneCard scene={s} />
+                    </Col>
+                  ))}
+                </Row>
+              </Col>
+              {i < performers.length - 1 && <hr />}
+            </Row>
+          ))
+        ) : (
+          <Row>
+            {performers?.map((p) => (
+              <Col xs={3} key={p.id}>
+                <PerformerCard performer={p} />
+              </Col>
+            ))}
           </Row>
-        ))}
+        )}
       </List>
     </>
   );
