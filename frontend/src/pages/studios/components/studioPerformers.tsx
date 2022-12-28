@@ -107,8 +107,8 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
           onClick={() =>
             setParams(
               "direction",
-              direction === SortDirectionEnum.ASC
-                ? SortDirectionEnum.DESC
+              direction === SortDirectionEnum.DESC
+                ? SortDirectionEnum.ASC
                 : undefined
             )
           }
