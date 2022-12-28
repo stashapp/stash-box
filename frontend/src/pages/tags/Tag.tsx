@@ -94,7 +94,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
       <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
         <Tab eventKey="scenes" title="Scenes">
           <SceneList
-            tags={{
+            tagsFilter={{
               value: [tag.id],
               modifier: CriterionModifier.INCLUDES,
             }}

@@ -27,7 +27,7 @@ interface Props {
   perPage?: number;
   filter?: Partial<SceneQueryInput>;
   favoriteFilter?: "performer" | "studio" | "all";
-  tags?: SceneQueryInput["tags"];
+  tagsFilter?: SceneQueryInput["tags"];
 }
 
 const sortOptions = [
@@ -42,7 +42,7 @@ const SceneList: FC<Props> = ({
   perPage = PER_PAGE,
   filter,
   favoriteFilter,
-  tags,
+  tagsFilter,
 }) => {
   const [params, setParams] = useQueryParams({
     sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
@@ -65,7 +65,7 @@ const SceneList: FC<Props> = ({
       ...filter,
       favorites: (favoriteFilter !== undefined && favorite) || undefined,
       tags:
-        tags ||
+        tagsFilter ||
         (params.tag
           ? { value: [params.tag], modifier: CriterionModifier.INCLUDES }
           : undefined),
@@ -76,7 +76,7 @@ const SceneList: FC<Props> = ({
 
   const filters = (
     <>
-      {!tags && (
+      {!tagsFilter && (
         <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
       )}
       <InputGroup className="scene-sort w-auto">
