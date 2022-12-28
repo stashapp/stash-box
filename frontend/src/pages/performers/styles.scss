@@ -2,6 +2,7 @@
   .PerformerCard {
     &-image {
       height: 8rem;
+      aspect-ratio: 1 / 1;
     }
 
     .card-footer {
