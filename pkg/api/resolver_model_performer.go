@@ -205,6 +205,7 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 			Value:    performers,
 		},
 		Studios:   studios,
+		Tags:      input.Tags,
 		Sort:      "DATE",
 		Direction: "DESC",
 		Page:      1,

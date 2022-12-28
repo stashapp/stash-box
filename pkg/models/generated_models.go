@@ -389,6 +389,8 @@ type PerformerScenesInput struct {
 	PerformedWith *uuid.UUID `json:"performed_with"`
 	// Filter by a studio
 	StudioID *uuid.UUID `json:"studio_id"`
+	// Filter by tags
+	Tags *MultiIDCriterionInput `json:"tags"`
 }
 
 type PerformerUpdateInput struct {
