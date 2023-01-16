@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
+	"path/filepath"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -21,7 +22,10 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 		return nil, err
 	}
 
-	// Generate uuid that does not start with AD to prevent adblock issues
+	// Generate uuid that does not start with "ad" to prevent adblock issues
+	// see https://discord.com/channels/559159668438728723/642050893549928449/831269018454851644
+	// if the UUID starts with "ad" the final URL with be "/ad/xx/xxxx" which can be blocked by some
+	// adblockers
 	for {
 		if !strings.HasPrefix(UUID.String(), "ad") {
 			break
@@ -48,13 +52,47 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 
 	// handle image upload
 	if input.File != nil {
-		file := make([]byte, input.File.Size)
-		if _, err := input.File.File.Read(file); err != nil {
-			return nil, err
-		}
-		fileReader := bytes.NewReader(file)
+		extension := strings.ToLower(filepath.Ext(input.File.Filename))
+		isSVG := extension == ".svg"
 
-		checksum, err := calculateChecksum(fileReader)
+		var imageReader *bytes.Reader
+
+		// Studio images can be SVGs and should not be converted
+		if isSVG {
+			file := make([]byte, input.File.Size)
+			if _, err := input.File.File.Read(file); err != nil {
+				return nil, err
+			}
+
+			imageReader = bytes.NewReader(file)
+		} else {
+			manipulatedImage, err := manipulateImage(input.File.File)
+			if err != nil {
+				return nil, err
+			}
+
+			if manipulatedImage == nil {
+				// image doesn't need to be manipulated, the original image
+				// can be used
+
+				// reset to start
+				if _, err = input.File.File.Seek(0, 0); err != nil {
+					return nil, err
+				}
+
+				file := make([]byte, input.File.Size)
+				if _, err := input.File.File.Read(file); err != nil {
+					return nil, err
+				}
+
+				imageReader = bytes.NewReader(file)
+			} else {
+				// use the manipulated image
+				imageReader = manipulatedImage
+			}
+		}
+
+		checksum, err := calculateChecksum(imageReader)
 		if err != nil {
 			return nil, err
 		}
@@ -73,21 +111,26 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 		// set the checksum in the new image
 		newImage.Checksum = checksum
 
-		if _, err = fileReader.Seek(0, 0); err != nil {
-			return nil, err
+		if isSVG {
+			// vectore images don't have pixel width/height
+			newImage.Width = -1
+			newImage.Height = -1
+		} else {
+			if err := populateImageDimensions(imageReader, &newImage); err != nil {
+				return nil, err
+			}
 		}
-		if err := populateImageDimensions(fileReader, &newImage); err != nil {
+
+		// reset to start
+		if _, err = imageReader.Seek(0, 0); err != nil {
 			return nil, err
 		}
 
-		if _, err = fileReader.Seek(0, 0); err != nil {
-			return nil, err
-		}
-		if err := s.Backend.WriteFile(fileReader, &newImage); err != nil {
+		if err := s.Backend.WriteFile(imageReader, &newImage); err != nil {
 			return nil, err
 		}
 	} else if input.URL != nil {
-		return nil, errors.New("Missing URL or file")
+		return nil, errors.New("missing URL or file")
 	}
 
 	image, err := s.Repository.Create(newImage)

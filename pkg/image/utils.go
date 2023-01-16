@@ -7,38 +7,24 @@ import (
 	"errors"
 	"image"
 	_ "image/gif"
-	"image/jpeg"
-	"image/png"
 	"io"
-	"path/filepath"
 
 	_ "golang.org/x/image/webp"
 
-	"github.com/disintegration/imaging"
-	issvg "github.com/h2non/go-is-svg"
-
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
 var ErrImageZeroSize = errors.New("image has 0px dimension")
 
 func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error {
+	// reset to start
+	if _, err := imgReader.Seek(0, 0); err != nil {
+		return err
+	}
+
 	img, _, err := image.Decode(imgReader)
 	if err != nil {
-		// SVG is not an image so we have to manually check if the image is SVG
-		if _, readerErr := imgReader.Seek(0, 0); readerErr != nil {
-			return readerErr
-		}
-		buf := new(bytes.Buffer)
-		if _, bufErr := buf.ReadFrom(imgReader); bufErr != nil {
-			return bufErr
-		}
-		if issvg.IsSVG(buf.Bytes()) {
-			dest.Width = -1
-			dest.Height = -1
-			return nil
-		}
-
 		return err
 	}
 
@@ -52,40 +38,12 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 	return nil
 }
 
-func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
-	var resizedImage image.Image
-	srcImage, format, err := image.Decode(srcReader)
-	if err != nil {
-		return nil, err
+func calculateChecksum(file io.ReadSeeker) (string, error) {
+	// reset to start
+	if _, err := file.Seek(0, 0); err != nil {
+		return "", err
 	}
 
-	// if height is longer then resize by height instead of width
-	if dim := srcImage.Bounds().Max; dim.Y > dim.X {
-		resizedImage = imaging.Resize(srcImage, 0, int(maxDimension), imaging.MitchellNetravali)
-	} else {
-		resizedImage = imaging.Resize(srcImage, int(maxDimension), 0, imaging.MitchellNetravali)
-	}
-
-	buf := new(bytes.Buffer)
-
-	if format == "png" {
-		err = png.Encode(buf, resizedImage)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		options := jpeg.Options{
-			Quality: 90,
-		}
-		err = jpeg.Encode(buf, resizedImage, &options)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return buf.Bytes(), nil
-}
-
-func calculateChecksum(file io.Reader) (string, error) {
 	hasher := md5.New()
 	if _, err := io.Copy(hasher, file); err != nil {
 		return "", err
@@ -94,6 +52,10 @@ func calculateChecksum(file io.Reader) (string, error) {
 	return checksum, nil
 }
 
-func GetImagePath(imageDir string, checksum string) string {
-	return filepath.Join(imageDir, checksum)
+func GetImageFileNameFromUUID(id uuid.UUID) string {
+	return GetImageFileNameFromUUIDString(id.String())
+}
+
+func GetImageFileNameFromUUIDString(id string) string {
+	return id[0:2] + "/" + id[2:4] + "/" + id
 }

@@ -78,13 +78,16 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `host_url` | (none) | Base URL for the server. Used when sending emails. Should be in the form of `https://hostname.com`. |
 | `image_location` | (none) | Path to store images, for local image storage. An error will be displayed if this is not set when creating non-URL images. |
 | `image_backend` | (`file`) | Storage solution for images. Can be set to either `file` or `s3`. |
+| `images.format` | `webp` | The format used to store images. Can be set to one of the following: `png`, `jpeg` or `webp` |
+| `images.max_width` | 3840 | The max width of an horizontal image. If the uploaded image is horizontal and exceeds this value, it will be resized to match it. Resizing keeps the original aspect ratio. Example: if `max_width: 1920` then `3840x2160` -> `1920x1080`. Can be set to `0` to disable resizing of horizontal images. |
+| `images.max_height` | 3840 | The max height of an vertical image. If the uploaded image is vertical and exceeds this value, it will be resized to match it. Resizing keeps the original aspect ratio. Example: if `max_height: 1920` then `2160x3840` -> `1080x1920`. Can be set to `0` to disable resizing of vertical images. |
+| `images.filter` | `mitchell_netravali` | Resampling filter used when resizing an image. Can be set to one of the following: `lanczos` (slowest but highest quality), `mitchell_netravali`, `linear`, `box`, `nearest_neighbor` (fastes but lowest quality). See [disintegration/imaging](https://github.com/disintegration/imaging#image-resizing) for a more detailed description of these filters. |
 | `userLogFile` | (none) | Path to the user log file, which logs user operations. If not set, then these will be output to stderr. |
 | `s3.endpoint` | (none) | Hostname to s3 endpoint used for image storage. |
 | `s3.base_url` | (none) | Base URL to access images in S3. Should be in the form of `https://hostname.com`. |
 | `s3.bucket` | (none) | Name of S3 bucket used to store images. |
 | `s3.access_key` | (none) | Access key used for authentication. |
 | `s3.secret ` | (none) | Secret Access key used for authentication. |
-| `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original.
 | `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a phash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
 | `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 | `draft_time_limit` | (24h) | Time, in seconds, before a draft is deleted. |

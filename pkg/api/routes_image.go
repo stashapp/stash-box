@@ -2,6 +2,8 @@ package api
 
 import (
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
@@ -14,21 +16,45 @@ type imageRoutes struct{}
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/{checksum}", rs.image)
+	r.Get("/{uuid}", rs.image)
 	r.Get("/site/{uuid}", rs.siteImage)
 
 	return r
 }
 
 func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
-	checksum := chi.URLParam(r, "checksum")
-
 	if err := config.ValidateImageLocation(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	http.ServeFile(w, r, image.GetImagePath(config.GetImageLocation(), checksum))
+	urlParam := chi.URLParam(r, "uuid")
+	isSVG := false
+	id := urlParam
+
+	if strings.HasSuffix(urlParam, ".svg") {
+		isSVG = true
+		id = strings.TrimSuffix(urlParam, ".svg")
+	}
+
+	imageID, err := uuid.FromString(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	fileDir := config.GetImageLocation()
+	imagePath := image.GetImageFileNameFromUUID(imageID)
+
+	// http.ServeFile uses http.DetectContentType under the hood
+	// it can not detect the SVG content type so we have to manually
+	// set it
+
+	if isSVG {
+		w.Header().Add("Content-Type", "image/svg+xml")
+	}
+
+	http.ServeFile(w, r, filepath.Join(fileDir, imagePath))
 }
 
 func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
