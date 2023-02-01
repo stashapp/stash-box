@@ -9,6 +9,7 @@ services:
       POSTGRES_USER: <USER>
       POSTGRES_PASSWORD: <PASSWORD>
       POSTGRES_DB: <DATABASE>
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - /pgdata:/var/lib/postgresql/data
 
