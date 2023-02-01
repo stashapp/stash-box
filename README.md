@@ -34,7 +34,8 @@ The `sslmode` parameter is documented in the [pq documentation](https://godoc.or
 
 After ensuring the database connection string is correct and the database server is available, the stash-box executable may be rerun.
 
-The second time that stash-box is run, stash-box will run the schema migrations to create the required tables. It will also generate a `root` user with a random password and an API key. These credentials are printed once to stdout and are not logged. The root user will be regenerated on startup if it does not exist, so a new root user may be created by deleting the root user row from the database and restarting stash-box.
+#### Scheema migrations and initial Admin user.
+The second time that stash-box is run, stash-box will run the schema migrations to create the required tables. It will also generate a `root` user with a random password and an API key. These credentials are printed once to stdout and are not logged. The root user will be regenerated on startup if it does not exist, so a new root user may be created by deleting the root user row from the database and restarting stash-box. You will need to capture the console output with your Admin user on first successful StashDB executable start otherwise you will need to allow postgres to re-create the database before it will re-post a new `root` user.
 
 ## CLI
 
