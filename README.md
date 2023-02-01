@@ -4,8 +4,6 @@
 
 Stash-box is an open-source video indexing and metadata API server for porn developed by Stash App. The purpose of stash-box is to provide a community-driven database of porn metadata, similar to what MusicBrainz does for music. The submission and editing of metadata should follow the same principles as MusicBrainz. [Learn more here](https://musicbrainz.org/doc/Editing_FAQ). Installing Stash-box will create an empty database for you to populate.
 
-You can access the GraphQL playground at `host:port/playground`, and the GraphQL interface can be found at `host:port/graphql`.
-
 **Note**: If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt).
 
 # Docker install
@@ -16,7 +14,7 @@ If you already have PostgreSQL installed, you can install stash-box on its own f
 
 # Bare-metal install
 
-Stash-box supports macOS, Windows, and Linux. Releases are coming soon.
+Stash-box supports macOS, Windows, and Linux. Releases for Windows and Linux can be found [here](https://github.com/stashapp/stash-box/releases).
 
 ## Initial setup
 
@@ -44,7 +42,7 @@ When you start stash-box for the first time, it generates a configuration file c
 - Host: `0.0.0.0`
 - Port: `9998`
 
-You can change these defaults if needed. For example, if you want to disable the Graphql playground and cross-domain cookies, you can set `is_production` to `true`.
+You can change these defaults if needed. For example, if you want to disable the GraphQL playground and cross-domain cookies, you can set `is_production` to `true`.
 
 ## API keys and authorization
 
@@ -125,7 +123,7 @@ Suppose you install the extension after you've run the migrations. In that case,
 
 ## Commands
 
-* `make generate` - Generate Go GraphQL files. This command should be run if the Graphql schema has changed.
+* `make generate` - Generate Go GraphQL files. This command should be run if the GraphQL schema has changed.
 * `make ui` - Builds the UI.
 * `make pre-ui` - Download frontend dependencies
 * `make build` - Builds the binary
@@ -143,6 +141,10 @@ To run the frontend in development mode, run `yarn start` from the frontend dire
 When developing, the API key can be set in `frontend/.env.development.local` to avoid having to log in.  
 When `is_production` is enabled on the server, this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  
 See `frontend/.env.development.local.shadow` for examples.
+
+## GraphQL playground
+
+You can access the GraphQL playground at `host:port/playground`, and the GraphQL interface can be found at `host:port/graphql`. To execute queries add a header with your API key: `{"APIKey":"<API_KEY>"}`. The API key can be found on your user page in stash-box.
 
 ## Building a release
 
