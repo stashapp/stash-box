@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    container_name: postgres
+    image: stashapp/postgres:latest
     build: ./postgres
     restart: always
     environment:
@@ -13,7 +13,6 @@ services:
       - /pgdata:/var/lib/postgresql/data
 
   stash-box:
-    container_name: stash-box
     image: stashapp/stash-box:development
     restart: always
     logging:
@@ -21,8 +20,6 @@ services:
       options:
         max-file: "10"
         max-size: "2m"
-    links:
-      - postgres
     volumes:
       - <CONFIG_DIR>:/root/.stash-box
     labels:
@@ -32,7 +29,6 @@ services:
       - traefik.port=9998
 
   traefik:
-    container_name: traefik
     image: traefik:2.3
     restart: always
     ports:
