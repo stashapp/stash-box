@@ -2,58 +2,55 @@
 
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
 
-**stash-box is Stash App's own OpenSource video indexing and Perceptual Hashing MetaData API server for porn.**
+Stash-box is an open-source video indexing and metadata API server for porn developed by Stash App. The purpose of stash-box is to provide a community-driven database of porn metadata, similar to what MusicBrainz does for music. The submission and editing of metadata should follow the same principles as MusicBrainz. [Learn more here](https://musicbrainz.org/doc/Editing_FAQ). Installing Stash-box will create an empty database for you to populate.
 
-The intent of stash-box is to provide a collaborative, crowd-sourced database of porn metadata, in the same way as [MusicBrainz](https://musicbrainz.org/) does for music. The submission and editing of metadata is expected to follow the same principle as that of the MusicBrainz database. [See here](https://musicbrainz.org/doc/Editing_FAQ) for how MusicBrainz does it.  Installing this software will create a blank stash-box database that you can populate yourself.
-
-The graphql playground can be accessed at `host:port/playground`. The graphql interface is at `host:port/graphql`.
-
-**Note: If you are a [Stash](https://github.com/stashapp/stash) user, you do not need to install stash-box.  The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt).**
+**Note**: If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt).
 
 # Docker install
 
-A docker-compose file for production deployment can be found [here](docker/production/docker-compose.yml). Traefik can be omitted if you don't need a reverse proxy.
+You can find a `docker-compose` file for production deployment [here](docker/production/docker-compose.yml). You can omit Traefik if you don't need a reverse proxy.
 
-Alternatively, if postgresql is already available, stash-box can be installed on its own from [dockerhub](https://hub.docker.com/r/stashapp/stash-box).
+If you already have PostgreSQL installed, you can install stash-box on its own from [Docker Hub](https://hub.docker.com/r/stashapp/stash-box).
 
-# Bare-metal Install
+# Bare-metal install
 
-Stash-box supports macOS, Windows, and Linux.  
-
-Releases TODO
+Stash-box supports macOS, Windows, and Linux. Releases for Windows and Linux can be found [here](https://github.com/stashapp/stash-box/releases).
 
 ## Initial setup
 
-Run `make` to build the application.
+1. Run `make` to build the application.
+2. Stash-box requires access to a PostgreSQL database server. Suppose stash-box doesn't find a configuration file (defaults to `stash-box-config.yml` in the current directory). In that case, it will generate a default configuration file with a default PostgreSQL connection string (`postgres@localhost/stash-box?sslmode=disable`). You can adjust the connection string as needed.
+3. The database must be created and available. If the PostgreSQL user is not a superuser, run `CREATE EXTENSION pg_trgm; CREATE EXTENSION pgcrypto;` by a superuser before rerunning Stash-box. If the schema is not present, it will be created within the database.
+4. The `sslmode` parameter is documented [here](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default is `require`.
+5. After ensuring the database connection and availability, rerun Stash-box.
+#### Schema migrations and initial Admin user
+The second time that stash-box is run, stash-box will run the schema migrations to create the required tables. It will also generate a `root` user with a random password and an API key. These credentials are printed once to stdout and are not logged. The system will regenerate the root user on startup if it does not exist. You can force the system to create a new root user by deleting the root user row from the database and restarting Stash-box. You'll need to capture the console output with your Admin user on the first successful StashDB executable start. Otherwise, you will need to allow Postgres to re-create the database before it will re-post a new `root` user.
 
-Stash-box requires access to a postgres database server. When stash-box is first run, or when it cannot find a configuration file (defaulting to `stash-box-config.yml` in the current working directory), then it generates a new configuration file with a default postgres connection string (`postgres@localhost/stash-box?sslmode=disable`). It prints a message indicating that the configuration file is generated, and allows you to adjust the default connection string as needed.
+# Stash-box CLI and configuration
 
-The database must be created and available. If the postgres user is not a superuser, `CREATE EXTENSION pg_trgm; CREATE EXTENSION pgcrypto;` needs to be run by a superuser before rerunning stash-box, otherwise you will get a migration error. The schema will be created within the database if it is not already present.
+Stash-box is a tool with command line options to make it easier. To see what options are available, run `stash-box --help` in your terminal.
 
-The `sslmode` parameter is documented in the [pq documentation](https://godoc.org/github.com/lib/pq). Use `sslmode=disable` to not use SSL for the database connection. The default value is `require`.
+Here's an example of how you can run stash-box locally on port 80:
 
-After ensuring the database connection string is correct and the database server is available, the stash-box executable may be rerun.
+`stash-box --host 127.0.0.1 --port 80`
 
-The second time that stash-box is run, stash-box will run the schema migrations to create the required tables. It will also generate a `root` user with a random password and an API key. These credentials are printed once to stdout and are not logged. The root user will be regenerated on startup if it does not exist, so a new root user may be created by deleting the root user row from the database and restarting stash-box.
 
-## CLI
+**Note:** This command should work on OSX / Linux.
 
-Stash-box provides some command line options.  See what is currently available by running `stash-box --help`.
+When you start stash-box for the first time, it generates a configuration file called `stash-box-config.yml` in your current working directory. This file contains default settings for stash-box, including:
 
-For example, to run stash locally on port 80 run it like this (OSX / Linux) `stash-box --host 127.0.0.1 --port 80`.
+- Host: `0.0.0.0`
+- Port: `9998`
 
-## Configuration
+You can change these defaults if needed. For example, if you want to disable the GraphQL playground and cross-domain cookies, you can set `is_production` to `true`.
 
-Stash-box generates a configuration file `stash-box-config.yml` in the current working directory when it is first started up. This configuration file is generated with the following defaults:
-- running on `0.0.0.0` port `9998`
+## API keys and authorization
 
-The graphql playground and cross-domain cookies can be disabled by setting `is_production: true`.
+There are two ways to authenticate a user in Stash-box: a session or an API key.
 
-### API keys and authorisation
+1. Session-based authentication: To log in, send a request to `/login` with the `username` and `password` in plain text as form values. Session-based authentication will set a cookie that is required for all subsequent requests. To log out, send a request to `/logout`.
 
-A user may be authenticated in one of two ways. Session-based management is possible by logging in via `/login`, passing form values for `username` and `password` in plain text. This sets a cookie which is required for subsequent requests. The session can be ended with a request to `/logout`.
-
-The alternative is to use the user's api key. For this, the `ApiKey` header must be set to the user's api key value.
+2. API key authentication: To use an API key, set the `ApiKey` header to the user's API key value.
 
 ### Configuration keys
 
@@ -85,7 +82,7 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 | `s3.access_key` | (none) | Access key used for authentication. |
 | `s3.secret ` | (none) | Secret Access key used for authentication. |
 | `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original.
-| `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a phash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
+| `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a pHash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
 | `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 | `draft_time_limit` | (24h) | Time, in seconds, before a draft is deleted. |
 | `profiler_port` | 0 | Port on which to serve pprof output. Omit to disable entirely. |
@@ -95,18 +92,24 @@ The alternative is to use the user's api key. For this, the `ApiKey` header must
 
 ## SSL (HTTPS)
 
-Stash-box supports HTTPS with some additional work.  First you must generate a SSL certificate and key combo.  Here is an example using openssl:
+Stash-box is runnable, preferably over HTTPS, for added security, but it requires some setup. You'll need to generate an SSL certificate and key pair to set this up. Or use a TLS terminating proxy of your choice, such as Traefik, Nginx (unsupported), or Caddy Server (unsupported)
+
+Here's an example of how you can do this using OpenSSL:
 
 `openssl req -x509 -newkey rsa:4096 -sha256 -days 7300 -nodes -keyout stash-box.key -out stash-box.crt -extensions san -config <(echo "[req]"; echo distinguished_name=req; echo "[san]"; echo subjectAltName=DNS:stash-box.server,IP:127.0.0.1) -subj /CN=stash-box.server`
 
-This command would need customizing for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
 
-Once you have a certificate and key file name them `stash-box.crt` and `stash-box.key` and place them in the directory where stash-box is run from. Stash-box detects these and starts up using HTTPS rather than HTTP.
+You might need to modify the command for your specific setup. You can find more information about creating a self-signed certificate with OpenSSL [here](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl).
 
-## PHash Distance Matching
-Enabling distance matching for phashes requires installation of the [pg-spgist_hamming](https://github.com/fake-name/pg-spgist_hamming) postgres extension. The recommended method is using the [docker image](docker/production/postgres/Dockerfile). Alternatively it can be installed manually by following the build instructions in the pg-spgist_hamming repo.
+Once you've generated the certificate and key pair, make sure they're named `stash-box.crt` and `stash-box.key` respectively, and place them in the same directory as stash-box. When Stash-box detects these files, it will use HTTPS instead of HTTP.
 
-If the extension is installed after the migrations have been run, migration #14 will have to be run manually to install the extension and add the index. Alternatively the database can be wiped so the migrations will run the next time stash-box is started.
+## pHash Distance Matching
+
+If you want to enable distance matching for pHashes in stash-box, you'll need to install the [pg-spgist_hamming](https://github.com/fake-name/pg-spgist_hamming) Postgres extension.
+
+The recommended way to do this is to use the [docker image](docker/production/postgres/Dockerfile). Still, you can also install it manually by following the build instructions in the pg-spgist_hamming repository.
+
+Suppose you install the extension after you've run the migrations. In that case, you'll need to run migration #14 manually to install the extension and add the index. If you don't want to do this, you can wipe the database, and the migrations will run the next time you start stash-box.
 
 # Development
 
@@ -120,32 +123,36 @@ If the extension is installed after the migrations have been run, migration #14 
 
 ## Commands
 
-* `make generate` - Generate Go GraphQL files. This should be run if the graphql schema has changed.
+* `make generate` - Generate Go GraphQL files. This command should be run if the GraphQL schema has changed.
 * `make ui` - Builds the UI.
 * `make pre-ui` - Download frontend dependencies
 * `make build` - Builds the binary
 * `make test` - Runs the unit tests
 * `make it` - Runs the unit and integration tests
-* `make lint` - Run the linters
+* `make lint` - Run the linter
 * `make fmt` - Formats and aligns whitespace
 
-**Note:** the integration tests run against a temporary sqlite3 database by default. They can be run against a postgres server by setting the environment variable `POSTGRES_DB` to the postgres connection string. For example: `postgres@localhost/stash-box-test?sslmode=disable`. **Be aware that the integration tests drop all tables before and after the tests.**
+**Note:** the integration tests run against a temporary sqlite3 database by default. They can be run against a Postgres server by setting the environment variable `POSTGRES_DB` to the Postgres connection string. For example: `postgres@localhost/stash-box-test?sslmode=disable`. **Be aware that the integration tests drop all tables before and after the tests.**
 
 ## Frontend development
 
 To run the frontend in development mode, run `yarn start` from the frontend directory.
 
-When developing the API key can be set in `frontend/.env.development.local` to avoid having to log in.  
-When `is_production` is enabled on the server this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  
+When developing, the API key can be set in `frontend/.env.development.local` to avoid having to log in.  
+When `is_production` is enabled on the server, this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  
 See `frontend/.env.development.local.shadow` for examples.
+
+## GraphQL playground
+
+You can access the GraphQL playground at `host:port/playground`, and the GraphQL interface can be found at `host:port/graphql`. To execute queries add a header with your API key: `{"APIKey":"<API_KEY>"}`. The API key can be found on your user page in stash-box.
 
 ## Building a release
 
-1. Run `make generate` to create generated files, if they have been changed.
+1. Run `make generate` to create generated files if they have been changed.
 2. Run `make ui build` to build the executable for your current platform.
 
 # FAQ
 
-> I have a question not answered here.
+> I have a question that needs to be answered here.
 
 Join the [Discord server](https://discord.gg/2TsNFKt).
