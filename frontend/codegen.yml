@@ -4,8 +4,9 @@ documents: "src/graphql/**/*.gql"
 generates:
   src/graphql/types.ts:
     plugins:
-      - "typescript"
-      - "typescript-operations"
+      - typescript
+      - typescript-operations
+      - typed-document-node
     config:
       dedupeOperationSuffix: true
       scalars:

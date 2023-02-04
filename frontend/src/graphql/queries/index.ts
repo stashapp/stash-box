@@ -10,132 +10,102 @@ import AuthContext from "src/AuthContext";
 import { isAdmin } from "src/utils";
 
 import {
-  CategoryQuery,
+  CategoryDocument,
   CategoryQueryVariables,
-  CategoriesQuery,
-  EditQuery,
+  CategoriesDocument,
+  EditDocument,
   EditQueryVariables,
-  EditUpdateQuery,
-  EditUpdateQueryVariables,
-  EditsQuery,
+  EditUpdateDocument,
+  EditsDocument,
   EditsQueryVariables,
+  MeDocument,
   MeQuery,
-  PerformerQuery,
+  PerformerDocument,
   PerformerQueryVariables,
-  FullPerformerQuery,
-  FullPerformerQueryVariables,
-  PerformersQuery,
+  FullPerformerDocument,
+  PerformersDocument,
   PerformersQueryVariables,
-  SceneQuery,
+  SceneDocument,
   SceneQueryVariables,
-  ScenesQuery,
+  ScenesDocument,
   ScenesQueryVariables,
-  ScenesWithoutCountQuery,
-  ScenesWithoutCountQueryVariables,
+  ScenesWithoutCountDocument,
+  SearchAllDocument,
   SearchAllQuery,
   SearchAllQueryVariables,
+  SearchPerformersDocument,
   SearchPerformersQuery,
   SearchPerformersQueryVariables,
-  SearchTagsQuery,
+  SearchTagsDocument,
   SearchTagsQueryVariables,
-  StudioQuery,
+  StudioDocument,
   StudioQueryVariables,
+  StudiosDocument,
   StudiosQuery,
   StudiosQueryVariables,
-  TagQuery,
+  TagDocument,
   TagQueryVariables,
+  TagsDocument,
   TagsQuery,
   TagsQueryVariables,
-  UserQuery,
+  UserDocument,
   UserQueryVariables,
-  UsersQuery,
+  UsersDocument,
   UsersQueryVariables,
-  PublicUserQuery,
+  PublicUserDocument,
   PublicUserQueryVariables,
-  ConfigQuery,
-  VersionQuery,
-  PendingEditsCountQuery,
+  ConfigDocument,
+  PendingEditsCountDocument,
   PendingEditsCountQueryVariables,
-  SiteQuery,
+  SiteDocument,
   SiteQueryVariables,
-  SitesQuery,
-  DraftQuery,
+  SitesDocument,
+  DraftDocument,
   DraftQueryVariables,
-  DraftsQuery,
-  QueryExistingSceneQuery,
+  DraftsDocument,
+  QueryExistingSceneDocument,
   QueryExistingSceneQueryVariables,
-  ScenePairingsQuery,
+  ScenePairingsDocument,
   ScenePairingsQueryVariables,
-  StudioPerformersQuery,
+  StudioPerformersDocument,
   StudioPerformersQueryVariables,
+  VersionDocument,
+  MeQueryVariables,
 } from "../types";
 
-import CategoryGQL from "./Category.gql";
-import CategoriesGQL from "./Categories.gql";
-import EditGQL from "./Edit.gql";
-import EditUpdateGQL from "./EditUpdate.gql";
-import EditsGQL from "./Edits.gql";
-import MeGQL from "./Me.gql";
-import PerformerGQL from "./Performer.gql";
-import FullPerformerGQL from "./FullPerformer.gql";
-import PerformersGQL from "./Performers.gql";
-import SceneGQL from "./Scene.gql";
-import ScenesGQL from "./Scenes.gql";
-import ScenesWithoutCountGQL from "./ScenesWithoutCount.gql";
-import SearchAllGQL from "./SearchAll.gql";
-import SearchPerformersGQL from "./SearchPerformers.gql";
-import SearchTagsGQL from "./SearchTags.gql";
-import StudioGQL from "./Studio.gql";
-import StudiosGQL from "./Studios.gql";
-import TagGQL from "./Tag.gql";
-import TagsGQL from "./Tags.gql";
-import UserGQL from "./User.gql";
-import UsersGQL from "./Users.gql";
-import PublicUserGQL from "./PublicUser.gql";
-import ConfigGQL from "./Config.gql";
-import VersionGQL from "./Version.gql";
-import PendingEditsCountGQL from "./PendingEditsCount.gql";
-import SiteGQL from "./Site.gql";
-import SitesGQL from "./Sites.gql";
-import DraftGQL from "./Draft.gql";
-import DraftsGQL from "./Drafts.gql";
-import QueryExistingSceneGQL from "./QueryExistingScene.gql";
-import ScenePairingsGQL from "./ScenePairings.gql";
-import StudioPerformersGQL from "./StudioPerformers.gql";
-
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
-  useQuery<CategoryQuery, CategoryQueryVariables>(CategoryGQL, {
+  useQuery(CategoryDocument, {
     variables,
     skip,
   });
 
-export const useCategories = () => useQuery<CategoriesQuery>(CategoriesGQL);
+export const useCategories = () => useQuery(CategoriesDocument);
 
 export const useEdit = (variables: EditQueryVariables, skip = false) =>
-  useQuery<EditQuery, EditQueryVariables>(EditGQL, {
+  useQuery(EditDocument, {
     variables,
     skip,
   });
 
 export const useEditUpdate = (variables: EditQueryVariables, skip = false) =>
-  useQuery<EditUpdateQuery, EditUpdateQueryVariables>(EditUpdateGQL, {
+  useQuery(EditUpdateDocument, {
     variables,
     skip,
   });
 
 export const useEdits = (variables: EditsQueryVariables) =>
-  useQuery<EditsQuery, EditsQueryVariables>(EditsGQL, {
+  useQuery(EditsDocument, {
     variables,
   });
 
-export const useMe = (options?: QueryHookOptions<MeQuery>) =>
-  useQuery<MeQuery>(MeGQL, options);
+export const useMe = (options?: QueryHookOptions<MeQuery, MeQueryVariables>) =>
+  useQuery(MeDocument, options);
 
 export const usePerformer = (
   variables: PerformerQueryVariables,
   skip = false
 ) =>
-  useQuery<PerformerQuery, PerformerQueryVariables>(PerformerGQL, {
+  useQuery(PerformerDocument, {
     variables,
     skip,
   });
@@ -144,24 +114,24 @@ export const useFullPerformer = (
   variables: PerformerQueryVariables,
   skip = false
 ) =>
-  useQuery<FullPerformerQuery, FullPerformerQueryVariables>(FullPerformerGQL, {
+  useQuery(FullPerformerDocument, {
     variables,
     skip,
   });
 
 export const usePerformers = (variables: PerformersQueryVariables) =>
-  useQuery<PerformersQuery, PerformersQueryVariables>(PerformersGQL, {
+  useQuery(PerformersDocument, {
     variables,
   });
 
 export const useScene = (variables: SceneQueryVariables, skip = false) =>
-  useQuery<SceneQuery, SceneQueryVariables>(SceneGQL, {
+  useQuery(SceneDocument, {
     variables,
     skip,
   });
 
 export const useScenes = (variables: ScenesQueryVariables, skip = false) =>
-  useQuery<ScenesQuery, ScenesQueryVariables>(ScenesGQL, {
+  useQuery(ScenesDocument, {
     variables,
     skip,
   });
@@ -170,19 +140,16 @@ export const useScenesWithoutCount = (
   variables: ScenesQueryVariables,
   skip = false
 ) =>
-  useQuery<ScenesWithoutCountQuery, ScenesWithoutCountQueryVariables>(
-    ScenesWithoutCountGQL,
-    {
-      variables,
-      skip,
-    }
-  );
+  useQuery(ScenesWithoutCountDocument, {
+    variables,
+    skip,
+  });
 
 export const useSearchAll = (
   variables: SearchAllQueryVariables,
   skip = false
 ) =>
-  useQuery<SearchAllQuery, SearchAllQueryVariables>(SearchAllGQL, {
+  useQuery(SearchAllDocument, {
     variables,
     skip,
   });
@@ -190,60 +157,57 @@ export const useSearchAll = (
 export const useSearchPerformers = (
   variables: SearchPerformersQueryVariables
 ) =>
-  useQuery<SearchPerformersQuery, SearchPerformersQueryVariables>(
-    SearchPerformersGQL,
-    {
-      variables,
-    }
-  );
+  useQuery(SearchPerformersDocument, {
+    variables,
+  });
 
 export const useLazySearchAll = (
   options?: LazyQueryHookOptions<SearchAllQuery, SearchAllQueryVariables>
-) => useLazyQuery(SearchAllGQL, options);
+) => useLazyQuery(SearchAllDocument, options);
 
 export const useLazySearchPerformers = (
   options?: LazyQueryHookOptions<
     SearchPerformersQuery,
     SearchPerformersQueryVariables
   >
-) => useLazyQuery(SearchPerformersGQL, options);
+) => useLazyQuery(SearchPerformersDocument, options);
 
 export const useSearchTags = (variables: SearchTagsQueryVariables) =>
-  useQuery<SearchTagsQuery, SearchTagsQueryVariables>(SearchTagsGQL, {
+  useQuery(SearchTagsDocument, {
     variables,
   });
 
 export const useStudio = (variables: StudioQueryVariables, skip = false) =>
-  useQuery<StudioQuery, StudioQueryVariables>(StudioGQL, {
+  useQuery(StudioDocument, {
     variables,
     skip,
   });
 
 export const useStudios = (variables: StudiosQueryVariables) =>
-  useQuery<StudiosQuery, StudiosQueryVariables>(StudiosGQL, {
+  useQuery(StudiosDocument, {
     variables,
   });
 
 export const useLazyStudios = (
   options?: LazyQueryHookOptions<StudiosQuery, StudiosQueryVariables>
-) => useLazyQuery(StudiosGQL, options);
+) => useLazyQuery(StudiosDocument, options);
 
 export const useTag = (variables: TagQueryVariables, skip = false) =>
-  useQuery<TagQuery, TagQueryVariables>(TagGQL, {
+  useQuery(TagDocument, {
     variables,
     skip,
   });
 
 export const useTags = (variables: TagsQueryVariables) =>
-  useQuery<TagsQuery, TagsQueryVariables>(TagsGQL, {
+  useQuery(TagsDocument, {
     variables,
   });
 export const useLazyTags = (
   options?: LazyQueryHookOptions<TagsQuery, TagsQueryVariables>
-) => useLazyQuery(TagsGQL, options);
+) => useLazyQuery(TagsDocument, options);
 
 export const usePrivateUser = (variables: UserQueryVariables, skip = false) =>
-  useQuery<UserQuery, UserQueryVariables>(UserGQL, {
+  useQuery(UserDocument, {
     variables,
     skip,
   });
@@ -251,7 +215,7 @@ export const usePublicUser = (
   variables: PublicUserQueryVariables,
   skip = false
 ) =>
-  useQuery<PublicUserQuery, PublicUserQueryVariables>(PublicUserGQL, {
+  useQuery(PublicUserDocument, {
     variables,
     skip,
   });
@@ -268,61 +232,51 @@ export const useUser = (variables: UserQueryVariables, skip = false) => {
 };
 
 export const useUsers = (variables: UsersQueryVariables) =>
-  useQuery<UsersQuery, UsersQueryVariables>(UsersGQL, {
+  useQuery(UsersDocument, {
     variables,
   });
 
-export const useConfig = () => useQuery<ConfigQuery>(ConfigGQL);
+export const useConfig = () => useQuery(ConfigDocument);
 
-export const useVersion = () => useQuery<VersionQuery>(VersionGQL);
+export const useVersion = () => useQuery(VersionDocument);
 
 export const usePendingEditsCount = (
   variables: PendingEditsCountQueryVariables
-) =>
-  useQuery<PendingEditsCountQuery, PendingEditsCountQueryVariables>(
-    PendingEditsCountGQL,
-    { variables }
-  );
+) => useQuery(PendingEditsCountDocument, { variables });
 
 export const useSite = (variables: SiteQueryVariables, skip = false) =>
-  useQuery<SiteQuery, SiteQueryVariables>(SiteGQL, {
+  useQuery(SiteDocument, {
     variables,
     skip,
   });
 
-export const useSites = () => useQuery<SitesQuery>(SitesGQL);
+export const useSites = () => useQuery(SitesDocument);
 
 export const useDraft = (variables: DraftQueryVariables, skip = false) =>
-  useQuery<DraftQuery, DraftQueryVariables>(DraftGQL, {
+  useQuery(DraftDocument, {
     variables,
     skip,
   });
 
-export const useDrafts = () => useQuery<DraftsQuery>(DraftsGQL);
+export const useDrafts = () => useQuery(DraftsDocument);
 
 export const useQueryExistingScene = (
   variables: QueryExistingSceneQueryVariables,
   skip = false
 ) =>
-  useQuery<QueryExistingSceneQuery, QueryExistingSceneQueryVariables>(
-    QueryExistingSceneGQL,
-    {
-      variables,
-      skip,
-    }
-  );
+  useQuery(QueryExistingSceneDocument, {
+    variables,
+    skip,
+  });
 
 export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
-  useQuery<ScenePairingsQuery, ScenePairingsQueryVariables>(ScenePairingsGQL, {
+  useQuery(ScenePairingsDocument, {
     variables,
   });
 
 export const useStudioPerformers = (
   variables: StudioPerformersQueryVariables
 ) =>
-  useQuery<StudioPerformersQuery, StudioPerformersQueryVariables>(
-    StudioPerformersGQL,
-    {
-      variables,
-    }
-  );
+  useQuery(StudioPerformersDocument, {
+    variables,
+  });
