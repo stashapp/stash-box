@@ -66,8 +66,6 @@ type Edit {
     options: PerformerEditOptions
     comments: [EditComment!]!
     votes: [EditVote!]!
-    """ = Accepted - Rejected"""
-    vote_count: Int!
     """Is the edit considered destructive."""
     destructive: Boolean!
     status: VoteStatusEnum!
@@ -124,8 +122,6 @@ input EditQueryInput {
   status: VoteStatusEnum
   """Filter by operation"""
   operation: OperationEnum
-  """Filter by vote count"""
-  vote_count: IntCriterionInput
   """Filter by applied status"""
   applied: Boolean
   """Filter by target type"""

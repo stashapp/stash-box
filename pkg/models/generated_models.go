@@ -105,8 +105,6 @@ type EditQueryInput struct {
 	Status *VoteStatusEnum `json:"status"`
 	// Filter by operation
 	Operation *OperationEnum `json:"operation"`
-	// Filter by vote count
-	VoteCount *IntCriterionInput `json:"vote_count"`
 	// Filter by applied status
 	Applied *bool `json:"applied"`
 	// Filter by target type

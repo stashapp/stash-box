@@ -243,11 +243,13 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 	if q := filter.Voted; q != nil && *q != "" {
 		switch *filter.Voted {
 		case models.UserVotedFilterEnumNotVoted:
+			// Filter out edits that the user has voted on, unless the edit has been updated since their vote
 			where := `
 				NOT EXISTS (
 				  SELECT 1 FROM edit_votes ev
 				  WHERE ev.edit_id = edits.id
 				  AND ev.user_id = ?
+				  AND (edits.updated_at IS NULL OR ev.created_at > edits.updated_at)
 				)
 			`
 			query.AddWhere(where)
@@ -364,10 +366,19 @@ func (qb *editQueryBuilder) CreateVote(newJoin models.EditVote) error {
 }
 
 func (qb *editQueryBuilder) GetVotes(id uuid.UUID) (models.EditVotes, error) {
-	joins := models.EditVotes{}
-	err := qb.dbi.FindJoins(editVoteTable, id, &joins)
+	query := newQueryBuilder(editVoteTable.table)
 
-	return joins, err
+	query.AddJoin(editDBTable, editVoteTable.table.Name()+"."+editVoteTable.joinColumn+" = "+editDBTable.Name()+".id", false)
+	query.AddWhere(editVoteTable.table.Name() + ".edit_id = ?")
+	query.AddArg(id.String())
+
+	// Find all votes if the edit has not been updated, or only votes that happened after the update
+	query.AddWhere("(" + editDBTable.Name() + ".updated_at IS NULL OR " + editVoteTable.table.Name() + ".created_at > " + editDBTable.Name() + ".updated_at" + ")")
+
+	var editVotes models.EditVotes
+	err := qb.dbi.QueryOnly(*query, &editVotes)
+
+	return editVotes, err
 }
 
 func (qb *editQueryBuilder) findByJoin(id uuid.UUID, table tableJoin, idColumn string) ([]*models.Edit, error) {
@@ -410,7 +421,18 @@ func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPe
 			OR
 			(updated_at <= (now()::timestamp - (INTERVAL '1 second' * $1)) AND updated_at IS NOT NULL)
 			OR (
-				VOTES >= $2
+				$2 <= (
+					SELECT SUM(
+					  CASE
+						WHEN vote = 'ACCEPT' THEN 1
+						WHEN vote = 'REJECT' THEN -1
+						ELSE 0
+					  END
+					) as votesum
+					FROM edit_votes
+					WHERE edit_id = edits.id
+					AND (edits.updated_at IS NULL OR edit_votes.created_at > edits.updated_at)
+				)
 				AND (
 					(created_at <= (now()::timestamp - (INTERVAL '1 second' * $3)) AND updated_at IS NULL)
 					OR

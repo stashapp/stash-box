@@ -20,8 +20,6 @@ const EditUpdateComponent: FC = () => {
   if (!edit) return <ErrorMessage error="Failed to load edit." />;
   if (edit.user?.id != auth.user?.id)
     return <ErrorMessage error="Only the creator can update edits." />;
-  if (edit.updated)
-    return <ErrorMessage error="Edits can only be updated once." />;
   if (edit.operation === OperationEnum.DESTROY)
     return <ErrorMessage error="Destroy edits can't be edited." />;
 

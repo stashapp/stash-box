@@ -58,9 +58,27 @@ func (r *editResolver) Expires(ctx context.Context, obj *models.Edit) (*time.Tim
 		startTime = obj.UpdatedAt.Time
 	}
 
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
+	editVotes, err := qb.GetVotes(obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	accept := 0
+	reject := 0
+	for _, vote := range editVotes {
+		if vote.Vote == models.VoteTypeEnumAccept.String() {
+			accept++
+		} else if vote.Vote == models.VoteTypeEnumReject.String() {
+			reject++
+		}
+	}
+
 	// Pending edits that have reached the voting threshold have shorter voting periods.
 	// This will happen for destructive edits, or when votes are not unanimous.
-	short := config.GetVoteApplicationThreshold() > 0 && obj.VoteCount >= config.GetVoteApplicationThreshold()
+	short := config.GetVoteApplicationThreshold() > 0 && (accept-reject) >= config.GetVoteApplicationThreshold()
 	duration := config.GetVotingPeriod()
 	if short {
 		duration = config.GetMinDestructiveVotingPeriod()

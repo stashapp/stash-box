@@ -116,7 +116,6 @@ type ComplexityRoot struct {
 		TargetType   func(childComplexity int) int
 		Updated      func(childComplexity int) int
 		User         func(childComplexity int) int
-		VoteCount    func(childComplexity int) int
 		Votes        func(childComplexity int) int
 	}
 
@@ -601,7 +600,6 @@ type EditResolver interface {
 	Options(ctx context.Context, obj *Edit) (*PerformerEditOptions, error)
 	Comments(ctx context.Context, obj *Edit) ([]*EditComment, error)
 	Votes(ctx context.Context, obj *Edit) ([]*EditVote, error)
-
 	Destructive(ctx context.Context, obj *Edit) (bool, error)
 	Status(ctx context.Context, obj *Edit) (VoteStatusEnum, error)
 
@@ -1107,13 +1105,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Edit.User(childComplexity), true
-
-	case "Edit.vote_count":
-		if e.complexity.Edit.VoteCount == nil {
-			break
-		}
-
-		return e.complexity.Edit.VoteCount(childComplexity), true
 
 	case "Edit.votes":
 		if e.complexity.Edit.Votes == nil {
@@ -4183,8 +4174,6 @@ type Edit {
     options: PerformerEditOptions
     comments: [EditComment!]!
     votes: [EditVote!]!
-    """ = Accepted - Rejected"""
-    vote_count: Int!
     """Is the edit considered destructive."""
     destructive: Boolean!
     status: VoteStatusEnum!
@@ -4241,8 +4230,6 @@ input EditQueryInput {
   status: VoteStatusEnum
   """Filter by operation"""
   operation: OperationEnum
-  """Filter by vote count"""
-  vote_count: IntCriterionInput
   """Filter by applied status"""
   applied: Boolean
   """Filter by target type"""
@@ -8012,50 +7999,6 @@ func (ec *executionContext) fieldContext_Edit_votes(ctx context.Context, field g
 				return ec.fieldContext_EditVote_vote(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type EditVote", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Edit_vote_count(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Edit_vote_count(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.VoteCount, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Edit_vote_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Edit",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12226,8 +12169,6 @@ func (ec *executionContext) fieldContext_Mutation_sceneEdit(ctx context.Context,
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -12347,8 +12288,6 @@ func (ec *executionContext) fieldContext_Mutation_performerEdit(ctx context.Cont
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -12468,8 +12407,6 @@ func (ec *executionContext) fieldContext_Mutation_studioEdit(ctx context.Context
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -12589,8 +12526,6 @@ func (ec *executionContext) fieldContext_Mutation_tagEdit(ctx context.Context, f
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -12710,8 +12645,6 @@ func (ec *executionContext) fieldContext_Mutation_sceneEditUpdate(ctx context.Co
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -12831,8 +12764,6 @@ func (ec *executionContext) fieldContext_Mutation_performerEditUpdate(ctx contex
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -12952,8 +12883,6 @@ func (ec *executionContext) fieldContext_Mutation_studioEditUpdate(ctx context.C
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -13073,8 +13002,6 @@ func (ec *executionContext) fieldContext_Mutation_tagEditUpdate(ctx context.Cont
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -13194,8 +13121,6 @@ func (ec *executionContext) fieldContext_Mutation_editVote(ctx context.Context, 
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -13315,8 +13240,6 @@ func (ec *executionContext) fieldContext_Mutation_editComment(ctx context.Contex
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -13436,8 +13359,6 @@ func (ec *executionContext) fieldContext_Mutation_applyEdit(ctx context.Context,
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -13557,8 +13478,6 @@ func (ec *executionContext) fieldContext_Mutation_cancelEdit(ctx context.Context
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -15269,8 +15188,6 @@ func (ec *executionContext) fieldContext_Performer_edits(ctx context.Context, fi
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -19856,8 +19773,6 @@ func (ec *executionContext) fieldContext_Query_findEdit(ctx context.Context, fie
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -21239,8 +21154,6 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(ctx context.
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -21325,8 +21238,6 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_edits(ctx cont
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -23046,8 +22957,6 @@ func (ec *executionContext) fieldContext_Scene_edits(ctx context.Context, field 
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -26835,8 +26744,6 @@ func (ec *executionContext) fieldContext_Tag_edits(ctx context.Context, field gr
 				return ec.fieldContext_Edit_comments(ctx, field)
 			case "votes":
 				return ec.fieldContext_Edit_votes(ctx, field)
-			case "vote_count":
-				return ec.fieldContext_Edit_vote_count(ctx, field)
 			case "destructive":
 				return ec.fieldContext_Edit_destructive(ctx, field)
 			case "status":
@@ -31128,7 +31035,7 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "voted", "is_bot", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"user_id", "status", "operation", "applied", "target_type", "target_id", "is_favorite", "voted", "is_bot", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31156,14 +31063,6 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operation"))
 			it.Operation, err = ec.unmarshalOOperationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "vote_count":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("vote_count"))
-			it.VoteCount, err = ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35884,13 +35783,6 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
-		case "vote_count":
-
-			out.Values[i] = ec._Edit_vote_count(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "destructive":
 			field := field
 

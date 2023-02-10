@@ -13,7 +13,6 @@ import (
 )
 
 var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
-var ErrAlreadyUpdated = fmt.Errorf("Edits can only be updated once")
 var ErrClosedEdit = fmt.Errorf("Votes can only be cast on pending edits")
 var ErrUnauthorizedBot = fmt.Errorf("You do not have permission to submit bot edits")
 
@@ -76,10 +75,6 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 
 	if existingEdit.UserID != currentUser.ID {
 		return nil, ErrUnauthorizedUpdate
-	}
-
-	if existingEdit.UpdatedAt.Valid {
-		return nil, ErrAlreadyUpdated
 	}
 
 	err = fac.WithTxn(func() error {
@@ -155,10 +150,6 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 		return nil, ErrUnauthorizedUpdate
 	}
 
-	if existingEdit.UpdatedAt.Valid {
-		return nil, ErrAlreadyUpdated
-	}
-
 	err = fac.WithTxn(func() error {
 		p := edit.Studio(fac, existingEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
@@ -230,10 +221,6 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 
 	if existingEdit.UserID != currentUser.ID {
 		return nil, ErrUnauthorizedUpdate
-	}
-
-	if existingEdit.UpdatedAt.Valid {
-		return nil, ErrAlreadyUpdated
 	}
 
 	err = fac.WithTxn(func() error {
@@ -313,10 +300,6 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 
 	if existingEdit.UserID != currentUser.ID {
 		return nil, ErrUnauthorizedUpdate
-	}
-
-	if existingEdit.UpdatedAt.Valid {
-		return nil, ErrAlreadyUpdated
 	}
 
 	err = fac.WithTxn(func() error {

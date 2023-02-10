@@ -12,7 +12,6 @@ query EditUpdate($id: ID!) {
     applied
     created
     updated
-    vote_count
     merge_sources {
       ... on Tag {
         id
