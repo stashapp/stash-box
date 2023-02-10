@@ -29,14 +29,18 @@ const VoteBar: FC<Props> = ({ edit }) => {
   );
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
   const [submitVote, { loading: savingVote }] = useVote();
-  const voteTotal = edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length - edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length
+  const voteTotal =
+    edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length -
+    edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length;
 
   if (edit.status !== VoteStatusEnum.PENDING) return <></>;
 
   const currentVote = (
     <h6>
       <span className="me-2">Current Vote:</span>
-      <span>{`${voteTotal > 0 ? "+" : ""}${voteTotal === 0 ? "-" : voteTotal}`}</span>
+      <span>{`${voteTotal > 0 ? "+" : ""}${
+        voteTotal === 0 ? "-" : voteTotal
+      }`}</span>
     </h6>
   );
 

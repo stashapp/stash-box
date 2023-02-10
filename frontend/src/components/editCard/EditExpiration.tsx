@@ -3,7 +3,10 @@ import { formatDistance } from "date-fns";
 
 import { Tooltip } from "src/components/fragments";
 import {
-  useConfig, VoteStatusEnum, EditFragment, VoteTypeEnum,
+  useConfig,
+  VoteStatusEnum,
+  EditFragment,
+  VoteTypeEnum,
 } from "src/graphql";
 
 interface Props {
@@ -32,7 +35,9 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
   )
     return <></>;
 
-  const voteTotal = edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length - edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length
+  const voteTotal =
+    edit.votes.filter((v) => v.vote === VoteTypeEnum.ACCEPT).length -
+    edit.votes.filter((v) => v.vote === VoteTypeEnum.REJECT).length;
   // Pending edits that have reached the voting threshold have shorter voting periods.
   // This will happen for destructive edits, or when votes are not unanimous.
   const shortVotingPeriod =
