@@ -62,7 +62,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
     <div className={CLASSNAME}>
       <div className={CLASSNAME_SAVE}>
         {currentVote}
-        {(vote || userVote) && vote !== userVote?.vote && (
+        {vote && vote !== userVote?.vote && (
           <Button
             variant="secondary"
             onClick={handleSave}
