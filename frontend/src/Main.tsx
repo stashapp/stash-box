@@ -3,6 +3,7 @@ import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import SearchField, { SearchType } from "src/components/searchField";
+import { useConfig } from "src/graphql";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
 import { useAuth } from "src/hooks";
@@ -33,6 +34,9 @@ const Main: FC<Props> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { loading, user } = useAuth();
+  const { data: configData } = useConfig();
+
+  const guidelinesURL = configData?.getConfig.guidelines_url;
 
   useEffect(() => {
     if (loading || user) return;
@@ -126,6 +130,11 @@ const Main: FC<Props> = ({ children }) => {
             <NavLink to={ROUTE_SITES} className="nav-link">
               Sites
             </NavLink>
+          )}
+          {guidelinesURL && (
+            <a href={guidelinesURL} target="_blank" className="nav-link">
+              Guidelines
+            </a>
           )}
         </Nav>
         <Nav className="align-items-center">

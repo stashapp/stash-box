@@ -46,6 +46,8 @@ type config struct {
 	EmailCooldown     int      `mapstructure:"email_cooldown"`
 	DefaultUserRoles  []string `mapstructure:"default_user_roles"`
 
+	// URL link for contributor guidelines for submitting edits
+	GuidelinesURL string `mapstructure:"guidelines_url"`
 	// Number of approved edits before user automatically gets VOTE role
 	VotePromotionThreshold int `mapstructure:"vote_promotion_threshold"`
 	// Number of positive votes required for immediate approval
@@ -217,6 +219,10 @@ func GetEmailFrom() string {
 
 func GetHostURL() string {
 	return C.HostURL
+}
+
+func GetGuidelinesURL() string {
+	return C.GuidelinesURL
 }
 
 // GetImageLocation returns the path of where to locally store images.
