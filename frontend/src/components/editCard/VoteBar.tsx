@@ -62,18 +62,16 @@ const VoteBar: FC<Props> = ({ edit }) => {
     <div className={CLASSNAME}>
       <div className={CLASSNAME_SAVE}>
         {currentVote}
-        {vote &&
-          vote !== userVote?.vote &&
-          (userVote || vote !== VoteTypeEnum.ABSTAIN) && (
-            <Button
-              variant="secondary"
-              onClick={handleSave}
-              disabled={savingVote}
-            >
-              <span className="me-2">Save</span>
-              <Icon icon={faCheck} color="green" />
-            </Button>
-          )}
+        {(vote || userVote) && vote !== userVote?.vote && (
+          <Button
+            variant="secondary"
+            onClick={handleSave}
+            disabled={savingVote}
+          >
+            <span className="me-2">Save</span>
+            <Icon icon={faCheck} color="green" />
+          </Button>
+        )}
       </div>
       <Form.Group
         controlId={`${edit.id}-vote-yes`}
