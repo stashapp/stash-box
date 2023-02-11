@@ -132,7 +132,7 @@ const Main: FC<Props> = ({ children }) => {
             </NavLink>
           )}
           {guidelinesURL && (
-            <a href={guidelinesURL} target="_blank" className="nav-link">
+            <a href={guidelinesURL} target="_blank" rel="noopener noreferrer" className="nav-link">
               Guidelines
             </a>
           )}
