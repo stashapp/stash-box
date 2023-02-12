@@ -11,7 +11,7 @@ import {
   ValidSiteTypeEnum,
   StudioFragment as Studio,
 } from "src/graphql";
-import { Icon } from "src/components/fragments";
+import { Icon, Tooltip } from "src/components/fragments";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
@@ -21,6 +21,7 @@ import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 import { StudioSchema, StudioFormData } from "./schema";
 import { InitialStudio } from "./types";
 import DiffStudio from "./diff";
+import { faCircleQuestion } from "@fortawesome/free-regular-svg-icons";
 
 interface StudioProps {
   studio?: Studio | null;
@@ -105,7 +106,16 @@ const StudioForm: FC<StudioProps> = ({
 
           {showNetworkSelect && (
             <Form.Group controlId="network" className="mb-3">
-              <Form.Label>Network</Form.Label>
+              <div className="d-flex">
+                <Form.Label className="d-flex flex-grow-1">Network</Form.Label>
+                <span>
+                  <Tooltip text='Add " to the end to include all words, or paste in a Stash ID'>
+                    <span>
+                      <Icon icon={faCircleQuestion}></Icon>
+                    </span>
+                  </Tooltip>
+                </span>
+              </div>
               <Controller
                 name="parent"
                 control={control}
