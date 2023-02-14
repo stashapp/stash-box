@@ -373,7 +373,9 @@ const SceneForm: FC<SceneProps> = ({
           <Row>
             <Form.Group className="col mb-3">
               <div className="d-flex">
-                <Form.Label className="d-flex flex-grow-1">Performers</Form.Label>
+                <Form.Label className="d-flex flex-grow-1">
+                  Performers
+                </Form.Label>
                 <span>
                   <Tooltip text='Add " to the end to include all words, or paste in a Stash ID'>
                     <span>
