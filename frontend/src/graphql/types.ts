@@ -361,12 +361,13 @@ export enum HairColorEnum {
   AUBURN = "AUBURN",
   BALD = "BALD",
   BLACK = "BLACK",
-  BLONDE = "BLONDE",
-  BRUNETTE = "BRUNETTE",
+  BLOND = "BLOND",
+  BROWN = "BROWN",
   GREY = "GREY",
   OTHER = "OTHER",
   RED = "RED",
   VARIOUS = "VARIOUS",
+  WHITE = "WHITE",
 }
 
 export type IdCriterionInput = {

@@ -4435,14 +4435,15 @@ enum EyeColorEnum {
 }
 
 enum HairColorEnum {
-  BLONDE
-  BRUNETTE
+  BLOND
+  BROWN
   BLACK
   RED
   AUBURN
   GREY
   BALD
   VARIOUS
+  WHITE
   OTHER
 }
 

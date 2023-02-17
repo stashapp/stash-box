@@ -1332,32 +1332,34 @@ func (e GenderFilterEnum) MarshalGQL(w io.Writer) {
 type HairColorEnum string
 
 const (
-	HairColorEnumBlonde   HairColorEnum = "BLONDE"
-	HairColorEnumBrunette HairColorEnum = "BRUNETTE"
-	HairColorEnumBlack    HairColorEnum = "BLACK"
-	HairColorEnumRed      HairColorEnum = "RED"
-	HairColorEnumAuburn   HairColorEnum = "AUBURN"
-	HairColorEnumGrey     HairColorEnum = "GREY"
-	HairColorEnumBald     HairColorEnum = "BALD"
-	HairColorEnumVarious  HairColorEnum = "VARIOUS"
-	HairColorEnumOther    HairColorEnum = "OTHER"
+	HairColorEnumBlond   HairColorEnum = "BLOND"
+	HairColorEnumBrown   HairColorEnum = "BROWN"
+	HairColorEnumBlack   HairColorEnum = "BLACK"
+	HairColorEnumRed     HairColorEnum = "RED"
+	HairColorEnumAuburn  HairColorEnum = "AUBURN"
+	HairColorEnumGrey    HairColorEnum = "GREY"
+	HairColorEnumBald    HairColorEnum = "BALD"
+	HairColorEnumVarious HairColorEnum = "VARIOUS"
+	HairColorEnumWhite   HairColorEnum = "WHITE"
+	HairColorEnumOther   HairColorEnum = "OTHER"
 )
 
 var AllHairColorEnum = []HairColorEnum{
-	HairColorEnumBlonde,
-	HairColorEnumBrunette,
+	HairColorEnumBlond,
+	HairColorEnumBrown,
 	HairColorEnumBlack,
 	HairColorEnumRed,
 	HairColorEnumAuburn,
 	HairColorEnumGrey,
 	HairColorEnumBald,
 	HairColorEnumVarious,
+	HairColorEnumWhite,
 	HairColorEnumOther,
 }
 
 func (e HairColorEnum) IsValid() bool {
 	switch e {
-	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumOther:
+	case HairColorEnumBlond, HairColorEnumBrown, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumWhite, HairColorEnumOther:
 		return true
 	}
 	return false

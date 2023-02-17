@@ -53,12 +53,13 @@ export const HairColorTypes: EnumDictionary<HairColorEnum, string> = {
   [HairColorEnum.AUBURN]: "Auburn",
   [HairColorEnum.BALD]: "Bald",
   [HairColorEnum.BLACK]: "Black",
-  [HairColorEnum.BLONDE]: "Blonde",
-  [HairColorEnum.BRUNETTE]: "Brunette",
+  [HairColorEnum.BLOND]: "Blond",
+  [HairColorEnum.BROWN]: "Brown",
   [HairColorEnum.GREY]: "Grey",
   [HairColorEnum.OTHER]: "Other",
   [HairColorEnum.RED]: "Red",
   [HairColorEnum.VARIOUS]: "Various",
+  [HairColorEnum.WHITE]: "White",
 };
 
 export const GenderTypes: EnumDictionary<GenderEnum, string> = {
