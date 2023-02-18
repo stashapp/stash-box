@@ -32,7 +32,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 	gender := models.GenderEnumFemale
 	ethnicity := models.EthnicityEnumCaucasian
 	eyeColor := models.EyeColorEnumBlue
-	hairColor := models.HairColorEnumBlonde
+	hairColor := models.HairColorEnumBlond
 	breastType := models.BreastTypeEnumNatural
 	birthdate := "2001-02-03"
 	site, err := s.createTestSite(nil)
