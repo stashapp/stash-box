@@ -27,6 +27,7 @@ const schema = yup.object({
     .required("Password is required"),
   confirmNewPassword: yup
     .string()
+    .nullable()
     .oneOf([yup.ref("newPassword"), null], "Passwords don't match")
     .required("Password is required"),
 });

@@ -17,6 +17,15 @@ const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
 
+type Image = {
+  id: string;
+  url: string;
+};
+
+type ControlType =
+  | Control<{ images?: Image[] | undefined }, "images">
+  | undefined;
+
 interface EditImagesProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<any>;
@@ -41,12 +50,8 @@ const EditImages: FC<EditImagesProps> = ({
     append,
     remove,
     replace,
-  } = useFieldArray<
-    { images: Array<{ id: string; url: string; key: string }> },
-    "images",
-    "key"
-  >({
-    control,
+  } = useFieldArray({
+    control: control as ControlType,
     name: "images",
     keyName: "key",
   });

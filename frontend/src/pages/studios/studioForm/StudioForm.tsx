@@ -65,7 +65,7 @@ const StudioForm: FC<StudioProps> = ({
   const onSubmit = (data: StudioFormData) => {
     const callbackData: StudioEditDetailsInput = {
       name: data.name,
-      urls: data.urls.map((u) => ({
+      urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
       })),
@@ -78,7 +78,7 @@ const StudioForm: FC<StudioProps> = ({
   const metadataErrors = [
     { error: errors.name?.message, tab: "details" },
     {
-      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
   ].filter((e) => e.error) as { error: string; tab: string }[];

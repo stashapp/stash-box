@@ -15,12 +15,10 @@ import {
   parseBraSize,
 } from "src/utils";
 
-import { CastedPerformerFormData } from "./schema";
+import { PerformerFormData } from "./schema";
 
 const diffBodyMods = (
-  newMods:
-    | { location: string | undefined; description: string | null | undefined }[]
-    | undefined,
+  newMods: { location?: string; description?: string | null }[] | undefined,
   oldMods: { location: string; description?: string | null }[] | null
 ) =>
   diffArray(
@@ -39,7 +37,7 @@ const diffBodyMods = (
   );
 
 const selectPerformerDetails = (
-  data: CastedPerformerFormData,
+  data: PerformerFormData,
   original: PerformerFragment | null | undefined
 ): [
   Required<OldPerformerDetails>,
