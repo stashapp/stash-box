@@ -4,11 +4,9 @@
   ],
   "extends": [
     "stylelint-config-standard",
-    "stylelint-config-standard-scss",
-    "stylelint-config-prettier"
+    "stylelint-config-standard-scss"
   ],
   "rules": {
-    "indentation": 2,
     "selector-class-pattern": null,
     "property-no-vendor-prefix": null
   },
