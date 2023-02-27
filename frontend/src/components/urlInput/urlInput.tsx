@@ -7,9 +7,7 @@ import type {
   Merge,
   FieldErrorsImpl,
 } from "react-hook-form";
-import {
-  useFieldArray
-} from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { useSites, ValidSiteTypeEnum, SiteQuery } from "src/graphql";

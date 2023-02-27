@@ -5,5 +5,5 @@ if (container) {
   const root = createRoot(container);
   root.render(<App />);
 } else {
-  throw Error("Root not found")
+  throw Error("Root not found");
 }
