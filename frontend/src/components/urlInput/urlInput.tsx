@@ -1,12 +1,14 @@
 import { FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import {
+import type {
   Control,
-  useFieldArray,
   FieldError,
   Merge,
   FieldErrorsImpl,
+} from "react-hook-form";
+import {
+  useFieldArray
 } from "react-hook-form";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 

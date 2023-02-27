@@ -1,6 +1,7 @@
 import { FC, ChangeEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { Control, useFieldArray } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
+import type { Control } from "react-hook-form";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
