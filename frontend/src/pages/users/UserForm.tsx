@@ -29,7 +29,7 @@ const schema = yup.object({
           .join("").length >= 5
     )
     .required("Password is required"),
-  roles: yup.array().of(yup.string().required()).ensure(),
+  roles: yup.array().of(yup.string().required()).required(),
 });
 
 type UserFormData = yup.Asserts<typeof schema>;

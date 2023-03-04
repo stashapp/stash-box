@@ -1,6 +1,7 @@
 import { FC, ChangeEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { Control, useFieldArray } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
+import type { Control } from "react-hook-form";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
@@ -16,6 +17,15 @@ const CLASSNAME_DROP = `${CLASSNAME}-drop`;
 const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
+
+type Image = {
+  id: string;
+  url: string;
+};
+
+type ControlType =
+  | Control<{ images?: Image[] | undefined }, "images">
+  | undefined;
 
 interface EditImagesProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,12 +51,8 @@ const EditImages: FC<EditImagesProps> = ({
     append,
     remove,
     replace,
-  } = useFieldArray<
-    { images: Array<{ id: string; url: string; key: string }> },
-    "images",
-    "key"
-  >({
-    control,
+  } = useFieldArray({
+    control: control as ControlType,
     name: "images",
     keyName: "key",
   });

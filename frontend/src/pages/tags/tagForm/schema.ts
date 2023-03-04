@@ -15,4 +15,3 @@ export const TagSchema = yup.object({
 });
 
 export type TagFormData = yup.Asserts<typeof TagSchema>;
-export type CastedTagFormData = yup.TypeOf<typeof TagSchema>;
