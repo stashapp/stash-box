@@ -97,7 +97,9 @@ const ForgotPassword: FC = () => {
             xs={{ span: 3, offset: 9 }}
             className="justify-content-end mt-2 d-flex"
           >
-            <Button type="submit">Reset Password</Button>
+            <Button type="submit" disabled={loading}>
+              Reset Password
+            </Button>
           </Col>
         </Row>
 
