@@ -155,6 +155,12 @@ type ComplexityRoot struct {
 		Width  func(childComplexity int) int
 	}
 
+	InviteKey struct {
+		Expires func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Uses    func(childComplexity int) int
+	}
+
 	Measurements struct {
 		BandSize func(childComplexity int) int
 		CupSize  func(childComplexity int) int
@@ -551,6 +557,7 @@ type ComplexityRoot struct {
 		EditCount         func(childComplexity int) int
 		Email             func(childComplexity int) int
 		ID                func(childComplexity int) int
+		InviteCodes       func(childComplexity int) int
 		InviteTokens      func(childComplexity int) int
 		InvitedBy         func(childComplexity int) int
 		Name              func(childComplexity int) int
@@ -881,6 +888,7 @@ type UserResolver interface {
 	InvitedBy(ctx context.Context, obj *User) (*User, error)
 
 	ActiveInviteCodes(ctx context.Context, obj *User) ([]string, error)
+	InviteCodes(ctx context.Context, obj *User) ([]*InviteKey, error)
 }
 
 type executableSchema struct {
@@ -1261,6 +1269,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Image.Width(childComplexity), true
+
+	case "InviteKey.expires":
+		if e.complexity.InviteKey.Expires == nil {
+			break
+		}
+
+		return e.complexity.InviteKey.Expires(childComplexity), true
+
+	case "InviteKey.id":
+		if e.complexity.InviteKey.ID == nil {
+			break
+		}
+
+		return e.complexity.InviteKey.ID(childComplexity), true
+
+	case "InviteKey.uses":
+		if e.complexity.InviteKey.Uses == nil {
+			break
+		}
+
+		return e.complexity.InviteKey.Uses(childComplexity), true
 
 	case "Measurements.band_size":
 		if e.complexity.Measurements.BandSize == nil {
@@ -3793,6 +3822,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ID(childComplexity), true
 
+	case "User.invite_codes":
+		if e.complexity.User.InviteCodes == nil {
+			break
+		}
+
+		return e.complexity.User.InviteCodes(childComplexity), true
+
 	case "User.invite_tokens":
 		if e.complexity.User.InviteTokens == nil {
 			break
@@ -5310,6 +5346,12 @@ enum RoleEnum {
   BOT
 }
 
+type InviteKey {
+  id: ID!
+  uses: Int
+  expires: Time
+}
+
 type User {
   id: ID!
   name: String!
@@ -5329,7 +5371,8 @@ type User {
   api_calls: Int! @isUserOwner
   invited_by: User @isUserOwner
   invite_tokens: Int @isUserOwner
-  active_invite_codes: [String!] @isUserOwner
+  active_invite_codes: [String!] @isUserOwner @deprecated(reason: "Use invite_codes instead")
+  invite_codes: [InviteKey!] @isUserOwner
 }
 
 input UserCreateInput {
@@ -7558,6 +7601,8 @@ func (ec *executionContext) fieldContext_Edit_user(ctx context.Context, field gr
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -8462,6 +8507,8 @@ func (ec *executionContext) fieldContext_EditComment_user(ctx context.Context, f
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -8615,6 +8662,8 @@ func (ec *executionContext) fieldContext_EditVote_user(ctx context.Context, fiel
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -9277,6 +9326,132 @@ func (ec *executionContext) fieldContext_Image_height(ctx context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _InviteKey_id(ctx context.Context, field graphql.CollectedField, obj *InviteKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_InviteKey_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_InviteKey_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "InviteKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _InviteKey_uses(ctx context.Context, field graphql.CollectedField, obj *InviteKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_InviteKey_uses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Uses, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_InviteKey_uses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "InviteKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _InviteKey_expires(ctx context.Context, field graphql.CollectedField, obj *InviteKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_InviteKey_expires(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Expires, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_InviteKey_expires(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "InviteKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10743,6 +10918,8 @@ func (ec *executionContext) fieldContext_Mutation_userCreate(ctx context.Context
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -10842,6 +11019,8 @@ func (ec *executionContext) fieldContext_Mutation_userUpdate(ctx context.Context
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -11209,6 +11388,8 @@ func (ec *executionContext) fieldContext_Mutation_activateNewUser(ctx context.Co
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -19988,6 +20169,8 @@ func (ec *executionContext) fieldContext_Query_findUser(ctx context.Context, fie
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -20147,6 +20330,8 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -22164,6 +22349,8 @@ func (ec *executionContext) fieldContext_QueryUsersResultType_users(ctx context.
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -28029,6 +28216,8 @@ func (ec *executionContext) fieldContext_User_invited_by(ctx context.Context, fi
 				return ec.fieldContext_User_invite_tokens(ctx, field)
 			case "active_invite_codes":
 				return ec.fieldContext_User_active_invite_codes(ctx, field)
+			case "invite_codes":
+				return ec.fieldContext_User_invite_codes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -28153,6 +28342,75 @@ func (ec *executionContext) fieldContext_User_active_invite_codes(ctx context.Co
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_invite_codes(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_invite_codes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().InviteCodes(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsUserOwner == nil {
+				return nil, errors.New("directive isUserOwner is not implemented")
+			}
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*InviteKey); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.InviteKey`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*InviteKey)
+	fc.Result = res
+	return ec.marshalOInviteKey2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKeyᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_invite_codes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_InviteKey_id(ctx, field)
+			case "uses":
+				return ec.fieldContext_InviteKey_uses(ctx, field)
+			case "expires":
+				return ec.fieldContext_InviteKey_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type InviteKey", field.Name)
 		},
 	}
 	return fc, nil
@@ -36269,6 +36527,42 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var inviteKeyImplementors = []string{"InviteKey"}
+
+func (ec *executionContext) _InviteKey(ctx context.Context, sel ast.SelectionSet, obj *InviteKey) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, inviteKeyImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("InviteKey")
+		case "id":
+
+			out.Values[i] = ec._InviteKey_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "uses":
+
+			out.Values[i] = ec._InviteKey_uses(ctx, field, obj)
+
+		case "expires":
+
+			out.Values[i] = ec._InviteKey_expires(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var measurementsImplementors = []string{"Measurements"}
 
 func (ec *executionContext) _Measurements(ctx context.Context, sel ast.SelectionSet, obj *Measurements) graphql.Marshaler {
@@ -40679,6 +40973,23 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
+		case "invite_codes":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_invite_codes(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -42006,6 +42317,16 @@ func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.Selec
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNInviteKey2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKey(ctx context.Context, sel ast.SelectionSet, v *InviteKey) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._InviteKey(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNMeasurements2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMeasurements(ctx context.Context, sel ast.SelectionSet, v Measurements) graphql.Marshaler {
@@ -44202,6 +44523,53 @@ func (ec *executionContext) unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstasha
 	}
 	res, err := ec.unmarshalInputIntCriterionInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInviteKey2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKeyᚄ(ctx context.Context, sel ast.SelectionSet, v []*InviteKey) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNInviteKey2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐInviteKey(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiIDCriterionInput(ctx context.Context, v interface{}) (*MultiIDCriterionInput, error) {

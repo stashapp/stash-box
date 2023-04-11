@@ -14,6 +14,12 @@ enum RoleEnum {
   BOT
 }
 
+type InviteKey {
+  id: ID!
+  uses: Int
+  expires: Time
+}
+
 type User {
   id: ID!
   name: String!
@@ -33,7 +39,8 @@ type User {
   api_calls: Int! @isUserOwner
   invited_by: User @isUserOwner
   invite_tokens: Int @isUserOwner
-  active_invite_codes: [String!] @isUserOwner
+  active_invite_codes: [String!] @isUserOwner @deprecated(reason: "Use invite_codes instead")
+  invite_codes: [InviteKey!] @isUserOwner
 }
 
 input UserCreateInput {

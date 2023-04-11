@@ -402,6 +402,13 @@ export type IntCriterionInput = {
   value: Scalars["Int"];
 };
 
+export type InviteKey = {
+  __typename: "InviteKey";
+  expires?: Maybe<Scalars["Time"]>;
+  id: Scalars["ID"];
+  uses?: Maybe<Scalars["Int"]>;
+};
+
 export type Measurements = {
   __typename: "Measurements";
   band_size?: Maybe<Scalars["Int"]>;
@@ -1734,6 +1741,7 @@ export type UrlInput = {
 
 export type User = {
   __typename: "User";
+  /** @deprecated Use invite_codes instead */
   active_invite_codes?: Maybe<Array<Scalars["String"]>>;
   /** Calls to the API from this user over a configurable time period */
   api_calls: Scalars["Int"];
@@ -1744,6 +1752,7 @@ export type User = {
   /** Should not be visible to other users */
   email?: Maybe<Scalars["String"]>;
   id: Scalars["ID"];
+  invite_codes?: Maybe<Array<InviteKey>>;
   invite_tokens?: Maybe<Scalars["Int"]>;
   invited_by?: Maybe<User>;
   name: Scalars["String"];
