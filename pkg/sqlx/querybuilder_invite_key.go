@@ -125,3 +125,20 @@ func (qb *inviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireT
 func (qb *inviteKeyQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT invite_keys.id FROM invite_keys"), nil)
 }
+
+func (qb *inviteKeyQueryBuilder) KeyUsed(id uuid.UUID) (*int, error) {
+	query := `UPDATE ` + inviteKeyTable + ` SET uses = uses - 1 WHERE id = ?`
+	var args []interface{}
+	args = append(args, id)
+	err := qb.dbi.RawExec(query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	n, err := qb.Find(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return n.Uses, nil
+}

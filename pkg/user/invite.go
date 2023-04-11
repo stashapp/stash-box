@@ -89,7 +89,7 @@ func RepealInviteTokens(uf FinderUpdater, userID uuid.UUID, tokens int) (int, er
 // GenerateInviteKey creates and returns an invite key, using a token if
 // required. If useToken is true and the user has no invite tokens, then
 // an error is returned.
-func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, useToken bool) (*uuid.UUID, error) {
+func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, input *models.GenerateInviteCodeInput, useToken bool) (*uuid.UUID, error) {
 	if useToken {
 		u, err := uf.Find(userID)
 		if err != nil {
@@ -120,6 +120,17 @@ func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid
 		ID:          UUID,
 		GeneratedAt: time.Now(),
 		GeneratedBy: userID,
+	}
+
+	if input != nil {
+		if input.Uses != nil {
+			uses := *input.Uses
+			newKey.Uses = &uses
+		}
+		if input.TTL != nil {
+			expires := time.Now().Add(time.Duration(*input.TTL) * time.Second)
+			newKey.Expires = &expires
+		}
 	}
 
 	_, err = ic.Create(newKey)

@@ -178,7 +178,7 @@ type ComplexityRoot struct {
 		EditVote             func(childComplexity int, input EditVoteInput) int
 		FavoritePerformer    func(childComplexity int, id uuid.UUID, favorite bool) int
 		FavoriteStudio       func(childComplexity int, id uuid.UUID, favorite bool) int
-		GenerateInviteCode   func(childComplexity int) int
+		GenerateInviteCode   func(childComplexity int, input *GenerateInviteCodeInput) int
 		GrantInvite          func(childComplexity int, input GrantInviteInput) int
 		ImageCreate          func(childComplexity int, input ImageCreateInput) int
 		ImageDestroy         func(childComplexity int, input ImageDestroyInput) int
@@ -650,7 +650,7 @@ type MutationResolver interface {
 	ImageDestroy(ctx context.Context, input ImageDestroyInput) (bool, error)
 	NewUser(ctx context.Context, input NewUserInput) (*string, error)
 	ActivateNewUser(ctx context.Context, input ActivateNewUserInput) (*User, error)
-	GenerateInviteCode(ctx context.Context) (*uuid.UUID, error)
+	GenerateInviteCode(ctx context.Context, input *GenerateInviteCodeInput) (*uuid.UUID, error)
 	RescindInviteCode(ctx context.Context, code uuid.UUID) (bool, error)
 	GrantInvite(ctx context.Context, input GrantInviteInput) (int, error)
 	RevokeInvite(ctx context.Context, input RevokeInviteInput) (int, error)
@@ -1432,7 +1432,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Mutation.GenerateInviteCode(childComplexity), true
+		args, err := ec.field_Mutation_generateInviteCode_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.GenerateInviteCode(childComplexity, args["input"].(*GenerateInviteCodeInput)), true
 
 	case "Mutation.grantInvite":
 		if e.complexity.Mutation.GrantInvite == nil {
@@ -4001,6 +4006,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputFingerprintInput,
 		ec.unmarshalInputFingerprintQueryInput,
 		ec.unmarshalInputFingerprintSubmission,
+		ec.unmarshalInputGenerateInviteCodeInput,
 		ec.unmarshalInputGrantInviteInput,
 		ec.unmarshalInputHairColorCriterionInput,
 		ec.unmarshalInputIDCriterionInput,
@@ -5484,7 +5490,12 @@ type UserVoteCount {
   immediate_accept: Int!
   immediate_reject: Int!
 }
-`, BuiltIn: false},
+
+input GenerateInviteCodeInput {
+  uses: Int
+  # the number of seconds until the invite code expires. If not set, the invite code will never expire
+  ttl: Int
+}`, BuiltIn: false},
 	{Name: "../../graphql/schema/types/version.graphql", Input: `type Version {
   hash: String!
   build_time: String!
@@ -5600,7 +5611,7 @@ type Mutation {
   activateNewUser(input: ActivateNewUserInput!): User
 
   """Generates an invite code using an invite token"""
-  generateInviteCode: ID
+  generateInviteCode(input: GenerateInviteCodeInput): ID
   """Removes a pending invite code - refunding the token"""
   rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""
@@ -5844,6 +5855,21 @@ func (ec *executionContext) field_Mutation_favoriteStudio_args(ctx context.Conte
 		}
 	}
 	args["favorite"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_generateInviteCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *GenerateInviteCodeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOGenerateInviteCodeInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐGenerateInviteCodeInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -11422,7 +11448,7 @@ func (ec *executionContext) _Mutation_generateInviteCode(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GenerateInviteCode(rctx)
+		return ec.resolvers.Mutation().GenerateInviteCode(rctx, fc.Args["input"].(*GenerateInviteCodeInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11444,6 +11470,17 @@ func (ec *executionContext) fieldContext_Mutation_generateInviteCode(ctx context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_generateInviteCode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -31710,6 +31747,42 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputGenerateInviteCodeInput(ctx context.Context, obj interface{}) (GenerateInviteCodeInput, error) {
+	var it GenerateInviteCodeInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"uses", "ttl"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "uses":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uses"))
+			it.Uses, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ttl":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ttl"))
+			it.TTL, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputGrantInviteInput(ctx context.Context, obj interface{}) (GrantInviteInput, error) {
 	var it GrantInviteInput
 	asMap := map[string]interface{}{}
@@ -44339,6 +44412,14 @@ func (ec *executionContext) marshalOGenderFilterEnum2ᚖgithubᚗcomᚋstashapp�
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) unmarshalOGenerateInviteCodeInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐGenerateInviteCodeInput(ctx context.Context, v interface{}) (*GenerateInviteCodeInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputGenerateInviteCodeInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOHairColorCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐHairColorCriterionInput(ctx context.Context, v interface{}) (*HairColorCriterionInput, error) {

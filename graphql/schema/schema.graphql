@@ -106,7 +106,7 @@ type Mutation {
   activateNewUser(input: ActivateNewUserInput!): User
 
   """Generates an invite code using an invite token"""
-  generateInviteCode: ID
+  generateInviteCode(input: GenerateInviteCodeInput): ID
   """Removes a pending invite code - refunding the token"""
   rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""

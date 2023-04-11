@@ -239,7 +239,7 @@ func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.Act
 	return ret, err
 }
 
-func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (*uuid.UUID, error) {
+func (r *mutationResolver) GenerateInviteCode(ctx context.Context, input *models.GenerateInviteCodeInput) (*uuid.UUID, error) {
 	// INVITE role allows generating invite keys without tokens
 	requireToken := true
 	if err := validateInvite(ctx); err == nil {
@@ -254,7 +254,7 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (*uuid.UUID, 
 		ikqb := fac.Invite()
 
 		var txnErr error
-		ret, txnErr = user.GenerateInviteKey(uqb, ikqb, currentUser.ID, requireToken)
+		ret, txnErr = user.GenerateInviteKey(uqb, ikqb, currentUser.ID, input, requireToken)
 		if txnErr != nil {
 			return txnErr
 		}

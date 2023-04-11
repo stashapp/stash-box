@@ -152,3 +152,9 @@ type UserVoteCount {
   immediate_accept: Int!
   immediate_reject: Int!
 }
+
+input GenerateInviteCodeInput {
+  uses: Int
+  # the number of seconds until the invite code expires. If not set, the invite code will never expire
+  ttl: Int
+}
