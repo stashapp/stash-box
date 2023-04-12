@@ -16,11 +16,12 @@ import {
   useDeleteUser,
   useRegenerateAPIKey,
   useRescindInviteCode,
-  useGenerateInviteCode,
   useGrantInvite,
   useRevokeInvite,
   UserQuery,
   PublicUserQuery,
+  useGenerateInviteCodes,
+  GenerateInviteCodeInput,
 } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
@@ -33,6 +34,7 @@ import Modal from "src/components/modal";
 import { Icon, Tooltip } from "src/components/fragments";
 import { isAdmin, isPrivateUser, createHref } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
+import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
 
 type User = NonNullable<UserQuery["findUser"]>;
 type EditCounts = User["edit_count"];
@@ -76,11 +78,12 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [showDelete, setShowDelete] = useState(false);
   const [showRegenerateAPIKey, setShowRegenerateAPIKey] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
+  const [showGenerateInviteKey, setShowGenerateInviteKey] = useState(false);
 
   const [deleteUser, { loading: deleting }] = useDeleteUser();
   const [regenerateAPIKey] = useRegenerateAPIKey();
   const [rescindInviteCode] = useRescindInviteCode();
-  const [generateInviteCode] = useGenerateInviteCode();
+  const [generateInviteCode] = useGenerateInviteCodes();
   const [grantInvite] = useGrantInvite();
   const [revokeInvite] = useRevokeInvite();
 
@@ -144,11 +147,26 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
     />
   );
 
-  const handleGenerateCode = () => {
-    generateInviteCode().then(() => {
+  const handleGenerateCode = (input: GenerateInviteCodeInput) => {
+    generateInviteCode({
+      variables: {
+        input,
+      },
+    }).then(() => {
       refetch();
     });
   };
+
+  const generateInviteCodeModal = showGenerateInviteKey && (
+    <GenerateInviteKeyModal
+      callback={(i) => {
+        if (i) {
+          handleGenerateCode(i);
+        }
+        setShowGenerateInviteKey(false);
+      }}
+    />
+  );
 
   const handleGrantInvite = () => {
     grantInvite({
@@ -186,6 +204,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           <h3>{user.name}</h3>
           {deleteModal}
           {regenerateAPIKeyModal}
+          {generateInviteCodeModal}
           {rescindCodeModal}
           <div className="ms-auto">
             <Link to={createHref(ROUTE_USER_EDITS, user)} className="ms-2">
@@ -348,7 +367,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                   {showPrivate && (
                     <Button
                       variant="link"
-                      onClick={() => handleGenerateCode()}
+                      onClick={() => setShowGenerateInviteKey(true)}
                       disabled={user.invite_tokens === 0}
                     >
                       <Icon icon={faPlus} className="me-2" />

@@ -348,6 +348,12 @@ export enum GenderFilterEnum {
   UNKNOWN = "UNKNOWN",
 }
 
+export type GenerateInviteCodeInput = {
+  keys?: InputMaybe<Scalars["Int"]>;
+  ttl?: InputMaybe<Scalars["Int"]>;
+  uses?: InputMaybe<Scalars["Int"]>;
+};
+
 export type GrantInviteInput = {
   amount: Scalars["Int"];
   user_id: Scalars["ID"];
@@ -445,8 +451,10 @@ export type Mutation = {
   favoritePerformer: Scalars["Boolean"];
   /** Favorite or unfavorite a studio */
   favoriteStudio: Scalars["Boolean"];
-  /** Generates an invite code using an invite token */
+  /** @deprecated Use generateInviteCodes */
   generateInviteCode?: Maybe<Scalars["ID"]>;
+  /** Generates an invite code using an invite token */
+  generateInviteCodes: Array<Scalars["ID"]>;
   /** Adds invite tokens for a user */
   grantInvite: Scalars["Int"];
   imageCreate?: Maybe<Image>;
@@ -541,6 +549,10 @@ export type MutationFavoritePerformerArgs = {
 export type MutationFavoriteStudioArgs = {
   favorite: Scalars["Boolean"];
   id: Scalars["ID"];
+};
+
+export type MutationGenerateInviteCodesArgs = {
+  input?: InputMaybe<GenerateInviteCodeInput>;
 };
 
 export type MutationGrantInviteArgs = {
@@ -4385,13 +4397,13 @@ export type FavoriteStudioMutation = {
   favoriteStudio: boolean;
 };
 
-export type GenerateInviteCodeMutationVariables = Exact<{
-  [key: string]: never;
+export type GenerateInviteCodesMutationVariables = Exact<{
+  input?: InputMaybe<GenerateInviteCodeInput>;
 }>;
 
-export type GenerateInviteCodeMutation = {
+export type GenerateInviteCodesMutation = {
   __typename: "Mutation";
-  generateInviteCode?: string | null;
+  generateInviteCodes: Array<string>;
 };
 
 export type GrantInviteMutationVariables = Exact<{
@@ -23743,27 +23755,50 @@ export const FavoriteStudioDocument = {
   FavoriteStudioMutation,
   FavoriteStudioMutationVariables
 >;
-export const GenerateInviteCodeDocument = {
+export const GenerateInviteCodesDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "mutation",
-      name: { kind: "Name", value: "GenerateInviteCode" },
+      name: { kind: "Name", value: "GenerateInviteCodes" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "input" },
+          },
+          type: {
+            kind: "NamedType",
+            name: { kind: "Name", value: "GenerateInviteCodeInput" },
+          },
+        },
+      ],
       selectionSet: {
         kind: "SelectionSet",
         selections: [
           {
             kind: "Field",
-            name: { kind: "Name", value: "generateInviteCode" },
+            name: { kind: "Name", value: "generateInviteCodes" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "input" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "input" },
+                },
+              },
+            ],
           },
         ],
       },
     },
   ],
 } as unknown as DocumentNode<
-  GenerateInviteCodeMutation,
-  GenerateInviteCodeMutationVariables
+  GenerateInviteCodesMutation,
+  GenerateInviteCodesMutationVariables
 >;
 export const GrantInviteDocument = {
   kind: "Document",
