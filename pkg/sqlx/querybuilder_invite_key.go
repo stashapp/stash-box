@@ -142,3 +142,10 @@ func (qb *inviteKeyQueryBuilder) KeyUsed(id uuid.UUID) (*int, error) {
 
 	return n.Uses, nil
 }
+
+func (qb *inviteKeyQueryBuilder) DestroyExpired() error {
+	query := `DELETE FROM ` + inviteKeyTable + ` WHERE expire_time IS NOT NULL AND expire_time < ?`
+	var args []interface{}
+	args = append(args, time.Now())
+	return qb.dbi.RawExec(query, args)
+}

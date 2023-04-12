@@ -89,13 +89,18 @@ func RepealInviteTokens(uf FinderUpdater, userID uuid.UUID, tokens int) (int, er
 // GenerateInviteKeys creates and returns an invite key, using a token if
 // required. If useToken is true and the user has no invite tokens, then
 // an error is returned.
-func GenerateInviteKeys(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, input *models.GenerateInviteCodeInput, useToken bool) ([]uuid.UUID, error) {
+func GenerateInviteKeys(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, input *models.GenerateInviteCodeInput, useToken bool) ([]*models.InviteKey, error) {
 	keys := 1
 	if input.Keys != nil {
 		keys = *input.Keys
 	}
 
-	var ret []uuid.UUID
+	// don't allow more than 50 keys to be generated at a time
+	if keys > 50 {
+		keys = 50
+	}
+
+	var ret []*models.InviteKey
 
 	for i := 0; i < keys; i++ {
 		if useToken {
@@ -141,12 +146,12 @@ func GenerateInviteKeys(uf FinderUpdater, ic models.InviteKeyCreator, userID uui
 			}
 		}
 
-		_, err = ic.Create(newKey)
+		k, err := ic.Create(newKey)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, UUID)
+		ret = append(ret, k)
 	}
 
 	return ret, nil

@@ -253,14 +253,17 @@ func (r *mutationResolver) GenerateInviteCodes(ctx context.Context, input *model
 		uqb := fac.User()
 		ikqb := fac.Invite()
 
-		var txnErr error
-		ret, txnErr = user.GenerateInviteKeys(uqb, ikqb, currentUser.ID, input, requireToken)
+		keys, txnErr := user.GenerateInviteKeys(uqb, ikqb, currentUser.ID, input, requireToken)
 		if txnErr != nil {
 			return txnErr
 		}
 
+		for _, k := range keys {
+			ret = append(ret, k.ID)
+		}
+
 		// Log the operation
-		logger.Userf(currentUser.Name, "GenerateInviteCode", "%s", ret)
+		logger.Userf(currentUser.Name, "GenerateInviteCode", "%s", keys)
 
 		return nil
 	})
@@ -276,7 +279,7 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (*uuid.UUID, 
 	}
 
 	currentUser := getCurrentUser(ctx)
-	var ret []uuid.UUID
+	var ret *uuid.UUID
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		uqb := fac.User()
@@ -289,11 +292,16 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (*uuid.UUID, 
 			Uses: &uses,
 		}
 
-		var txnErr error
-		ret, txnErr = user.GenerateInviteKeys(uqb, ikqb, currentUser.ID, input, requireToken)
+		key, txnErr := user.GenerateInviteKeys(uqb, ikqb, currentUser.ID, input, requireToken)
 		if txnErr != nil {
 			return txnErr
 		}
+
+		if len(key) == 0 {
+			return errors.New("no invite code generated")
+		}
+
+		ret = &key[0].ID
 
 		// Log the operation
 		logger.Userf(currentUser.Name, "GenerateInviteCode", "%s", ret)
@@ -305,11 +313,7 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (*uuid.UUID, 
 		return nil, err
 	}
 
-	if len(ret) == 0 {
-		return nil, errors.New("no invite code generated")
-	}
-
-	return &ret[0], err
+	return ret, err
 }
 
 func (r *mutationResolver) RescindInviteCode(ctx context.Context, inviteKeyID uuid.UUID) (bool, error) {

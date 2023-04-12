@@ -25,6 +25,7 @@ type InviteKeyFinder interface {
 type InviteKeyDestroyer interface {
 	InviteKeyFinder
 	Destroy(id uuid.UUID) error
+	DestroyExpired() error
 }
 
 type InviteKeyUser interface {
