@@ -51,6 +51,8 @@ const UserInviteKeys: FC<UserInviteKeysProps> = ({
   inviteCodes,
   rescindInvite,
 }) => {
+  if (inviteCodes.length === 0) return <></>;
+
   return (
     <Table>
       <thead>
@@ -397,7 +399,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </InputGroup>
             </Row>
           )}
-          {isPrivateUser(user) && user.id === Auth.user?.id && (
+          {isPrivateUser(user) && (
             <div>
               <Row>
                 <Col xs={2}>Invite Keys</Col>
@@ -405,7 +407,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               <Row className="my-2">
                 <Col>
                   <div>
-                    {showPrivate && (
+                    {showPrivate && user.id === Auth.user?.id && (
                       <Button
                         variant="link"
                         onClick={() => setShowGenerateInviteKey(true)}
