@@ -67,7 +67,7 @@ func (p inviteKeyRows) resolve() models.InviteKeys {
 
 var (
 	inviteKeyDBTable = newTable(inviteKeyTable, func() interface{} {
-		return inviteKeyRow{}
+		return &inviteKeyRow{}
 	})
 )
 
@@ -86,7 +86,7 @@ func (qb *inviteKeyQueryBuilder) toModel(ro interface{}) *models.InviteKey {
 		return nil
 	}
 
-	r := ro.(inviteKeyRow)
+	r := ro.(*inviteKeyRow)
 	ret := r.resolve()
 	return &ret
 }

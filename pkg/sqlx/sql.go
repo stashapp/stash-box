@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"gopkg.in/guregu/null.v4"
 )
 
 type queryBuilder struct {
@@ -253,6 +254,14 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 				addPlaceholder(key)
 			}
 		case sql.NullTime:
+			if t.Valid {
+				addPlaceholder(key)
+			}
+		case null.Int:
+			if t.Valid {
+				addPlaceholder(key)
+			}
+		case null.Time:
 			if t.Valid {
 				addPlaceholder(key)
 			}

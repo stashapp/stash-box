@@ -154,6 +154,9 @@ type UserVoteCount {
 }
 
 input GenerateInviteCodeInput {
+  # the number of invite keys to generate. If not set, a single invite key will be generated
+  keys: Int
+  # the number of uses for each invite key. If not set, the invite key will have one use
   uses: Int
   # the number of seconds until the invite code expires. If not set, the invite code will never expire
   ttl: Int

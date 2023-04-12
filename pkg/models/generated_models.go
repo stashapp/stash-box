@@ -180,6 +180,7 @@ type FuzzyDate struct {
 }
 
 type GenerateInviteCodeInput struct {
+	Keys *int `json:"keys"`
 	Uses *int `json:"uses"`
 	TTL  *int `json:"ttl"`
 }

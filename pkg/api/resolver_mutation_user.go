@@ -239,7 +239,7 @@ func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.Act
 	return ret, err
 }
 
-func (r *mutationResolver) GenerateInviteCode(ctx context.Context, input *models.GenerateInviteCodeInput) (*uuid.UUID, error) {
+func (r *mutationResolver) GenerateInviteCodes(ctx context.Context, input *models.GenerateInviteCodeInput) ([]uuid.UUID, error) {
 	// INVITE role allows generating invite keys without tokens
 	requireToken := true
 	if err := validateInvite(ctx); err == nil {
@@ -247,14 +247,14 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context, input *models
 	}
 
 	currentUser := getCurrentUser(ctx)
-	var ret *uuid.UUID
+	var ret []uuid.UUID
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		uqb := fac.User()
 		ikqb := fac.Invite()
 
 		var txnErr error
-		ret, txnErr = user.GenerateInviteKey(uqb, ikqb, currentUser.ID, input, requireToken)
+		ret, txnErr = user.GenerateInviteKeys(uqb, ikqb, currentUser.ID, input, requireToken)
 		if txnErr != nil {
 			return txnErr
 		}
@@ -266,6 +266,50 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context, input *models
 	})
 
 	return ret, err
+}
+
+func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (*uuid.UUID, error) {
+	// INVITE role allows generating invite keys without tokens
+	requireToken := true
+	if err := validateInvite(ctx); err == nil {
+		requireToken = false
+	}
+
+	currentUser := getCurrentUser(ctx)
+	var ret []uuid.UUID
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		uqb := fac.User()
+		ikqb := fac.Invite()
+
+		keys := 1
+		uses := 1
+		input := &models.GenerateInviteCodeInput{
+			Keys: &keys,
+			Uses: &uses,
+		}
+
+		var txnErr error
+		ret, txnErr = user.GenerateInviteKeys(uqb, ikqb, currentUser.ID, input, requireToken)
+		if txnErr != nil {
+			return txnErr
+		}
+
+		// Log the operation
+		logger.Userf(currentUser.Name, "GenerateInviteCode", "%s", ret)
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, errors.New("no invite code generated")
+	}
+
+	return &ret[0], err
 }
 
 func (r *mutationResolver) RescindInviteCode(ctx context.Context, inviteKeyID uuid.UUID) (bool, error) {
