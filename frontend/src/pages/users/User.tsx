@@ -78,7 +78,11 @@ const UserInviteKeys: FC<UserInviteKeysProps> = ({
             </td>
             <td>{(ic.uses ?? 0) == 0 ? "unlimited" : ic.uses}</td>
             <td>
-              {ic.expires ? <span>{formatDateTime(ic.expires)}</span> : "never"}
+              {ic.expires ? (
+                <span>{formatDateTime(ic.expires, true)}</span>
+              ) : (
+                "never"
+              )}
             </td>
             <td>
               <Button variant="danger" onClick={() => rescindInvite(ic.id)}>
