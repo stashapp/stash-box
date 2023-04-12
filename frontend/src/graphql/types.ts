@@ -18514,8 +18514,13 @@ export type UserQuery = {
     api_key?: string | null;
     api_calls: number;
     invite_tokens?: number | null;
-    active_invite_codes?: Array<string> | null;
     invited_by?: { __typename: "User"; id: string; name: string } | null;
+    invite_codes?: Array<{
+      __typename: "InviteKey";
+      id: string;
+      uses?: number | null;
+      expires?: string | null;
+    }> | null;
     vote_count: {
       __typename: "UserVoteCount";
       accept: number;
@@ -49049,7 +49054,18 @@ export const UserDocument = {
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "active_invite_codes" },
+                  name: { kind: "Name", value: "invite_codes" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "uses" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "expires" },
+                      },
+                    ],
+                  },
                 },
                 {
                   kind: "Field",
