@@ -4,7 +4,6 @@ import { Button, Tab, Tabs } from "react-bootstrap";
 
 import {
   usePendingEditsCount,
-  useBotPendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
   TagFragment as Tag,
@@ -37,13 +36,7 @@ const TagComponent: FC<Props> = ({ tag }) => {
     type: TargetTypeEnum.TAG,
     id: tag.id,
   });
-  const pendingEditCount = editData?.queryEdits.count || 0;
-  const { data: botEditData } = useBotPendingEditsCount({
-    type: TargetTypeEnum.SCENE,
-    id: tag.id,
-  });
-  const botPendingEditCount = botEditData?.queryEdits.count || 0;
-  const combinedPendingEditCount = pendingEditCount + botPendingEditCount;
+  const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
     navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
@@ -110,8 +103,8 @@ const TagComponent: FC<Props> = ({ tag }) => {
         </Tab>
         <Tab
           eventKey="edits"
-          title={`Edits${formatPendingEdits(combinedPendingEditCount)}`}
-          tabClassName={combinedPendingEditCount ? "PendingEditTab" : ""}
+          title={`Edits${formatPendingEdits(pendingEditCount)}`}
+          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
           <EditList type={TargetTypeEnum.TAG} id={tag.id} />
         </Tab>

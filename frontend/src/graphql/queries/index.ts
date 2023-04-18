@@ -57,8 +57,6 @@ import {
   ConfigDocument,
   PendingEditsCountDocument,
   PendingEditsCountQueryVariables,
-  BotPendingEditsCountDocument,
-  BotPendingEditsCountQueryVariables,
   SiteDocument,
   SiteQueryVariables,
   SitesDocument,
@@ -245,10 +243,6 @@ export const useVersion = () => useQuery(VersionDocument);
 export const usePendingEditsCount = (
   variables: PendingEditsCountQueryVariables
 ) => useQuery(PendingEditsCountDocument, { variables });
-
-export const useBotPendingEditsCount = (
-  variables: BotPendingEditsCountQueryVariables
-) => useQuery(BotPendingEditsCountDocument, { variables });
 
 export const useSite = (variables: SiteQueryVariables, skip = false) =>
   useQuery(SiteDocument, {

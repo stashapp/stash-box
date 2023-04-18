@@ -13829,16 +13829,6 @@ export type VoteMutation = {
   };
 };
 
-export type BotPendingEditsCountQueryVariables = Exact<{
-  type: TargetTypeEnum;
-  id: Scalars["ID"];
-}>;
-
-export type BotPendingEditsCountQuery = {
-  __typename: "Query";
-  queryEdits: { __typename: "QueryEditsResultType"; count: number };
-};
-
 export type CategoriesQueryVariables = Exact<{ [key: string]: never }>;
 
 export type CategoriesQuery = {
@@ -39025,97 +39015,6 @@ export const VoteDocument = {
     },
   ],
 } as unknown as DocumentNode<VoteMutation, VoteMutationVariables>;
-export const BotPendingEditsCountDocument = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "OperationDefinition",
-      operation: "query",
-      name: { kind: "Name", value: "BotPendingEditsCount" },
-      variableDefinitions: [
-        {
-          kind: "VariableDefinition",
-          variable: { kind: "Variable", name: { kind: "Name", value: "type" } },
-          type: {
-            kind: "NonNullType",
-            type: {
-              kind: "NamedType",
-              name: { kind: "Name", value: "TargetTypeEnum" },
-            },
-          },
-        },
-        {
-          kind: "VariableDefinition",
-          variable: { kind: "Variable", name: { kind: "Name", value: "id" } },
-          type: {
-            kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "queryEdits" },
-            arguments: [
-              {
-                kind: "Argument",
-                name: { kind: "Name", value: "input" },
-                value: {
-                  kind: "ObjectValue",
-                  fields: [
-                    {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "target_type" },
-                      value: {
-                        kind: "Variable",
-                        name: { kind: "Name", value: "type" },
-                      },
-                    },
-                    {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "target_id" },
-                      value: {
-                        kind: "Variable",
-                        name: { kind: "Name", value: "id" },
-                      },
-                    },
-                    {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "is_bot" },
-                      value: { kind: "BooleanValue", value: true },
-                    },
-                    {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "status" },
-                      value: { kind: "EnumValue", value: "PENDING" },
-                    },
-                    {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "per_page" },
-                      value: { kind: "IntValue", value: "1" },
-                    },
-                  ],
-                },
-              },
-            ],
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [
-                { kind: "Field", name: { kind: "Name", value: "count" } },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<
-  BotPendingEditsCountQuery,
-  BotPendingEditsCountQueryVariables
->;
 export const CategoriesDocument = {
   kind: "Document",
   definitions: [

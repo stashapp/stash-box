@@ -5,7 +5,6 @@ import { groupBy, keyBy, sortBy } from "lodash-es";
 
 import {
   usePendingEditsCount,
-  useBotPendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
   FullPerformerQuery,
@@ -37,13 +36,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
     type: TargetTypeEnum.PERFORMER,
     id: performer.id,
   });
-  const pendingEditCount = editData?.queryEdits.count || 0;
-  const { data: botEditData } = useBotPendingEditsCount({
-    type: TargetTypeEnum.SCENE,
-    id: performer.id,
-  });
-  const botPendingEditCount = botEditData?.queryEdits.count || 0;
-  const combinedPendingEditCount = pendingEditCount + botPendingEditCount;
+  const pendingEditCount = editData?.queryEdits.count;
 
   const setTab = (tab: string | null) =>
     navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
@@ -140,8 +133,8 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
         </Tab>
         <Tab
           eventKey="edits"
-          title={`Edits${formatPendingEdits(combinedPendingEditCount)}`}
-          tabClassName={combinedPendingEditCount ? "PendingEditTab" : ""}
+          title={`Edits${formatPendingEdits(pendingEditCount)}`}
+          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
         >
           <EditList type={TargetTypeEnum.PERFORMER} id={performer.id} />
         </Tab>
