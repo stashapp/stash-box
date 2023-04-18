@@ -5,6 +5,7 @@ import { sortBy } from "lodash-es";
 
 import {
   usePendingEditsCount,
+  useBotPendingEditsCount,
   TargetTypeEnum,
   CriterionModifier,
   StudioFragment as Studio,
@@ -40,7 +41,13 @@ const StudioComponent: FC<Props> = ({ studio }) => {
     type: TargetTypeEnum.STUDIO,
     id: studio.id,
   });
-  const pendingEditCount = editData?.queryEdits.count;
+  const pendingEditCount = editData?.queryEdits.count || 0;
+  const { data: botEditData } = useBotPendingEditsCount({
+    type: TargetTypeEnum.SCENE,
+    id: studio.id,
+  });
+  const botPendingEditCount = botEditData?.queryEdits.count || 0;
+  const combinedPendingEditCount = pendingEditCount + botPendingEditCount;
 
   const studioImage = getImage(studio.images, "landscape");
 
@@ -154,8 +161,8 @@ const StudioComponent: FC<Props> = ({ studio }) => {
         </Tab>
         <Tab
           eventKey="edits"
-          title={`Edits${formatPendingEdits(pendingEditCount)}`}
-          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
+          title={`Edits${formatPendingEdits(combinedPendingEditCount)}`}
+          tabClassName={combinedPendingEditCount ? "PendingEditTab" : ""}
         >
           <EditList type={TargetTypeEnum.STUDIO} id={studio.id} />
         </Tab>
