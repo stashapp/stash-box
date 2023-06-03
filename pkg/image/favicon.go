@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
+	"go.deanishe.net/favicon"
 )
 
 var iconCache = map[uuid.UUID][]byte{}
@@ -70,9 +71,14 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 	if err != nil {
 		return
 	}
-	u.Path = path.Join(u.Path, "favicon.ico")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	icons, err := favicon.Find(u.Scheme + "://" + u.Host)
+	if err != nil {
+		return
+	}
+
+	// Icons are sorted widest first. We currently get the first one (icons[0]).
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, icons[0].URL, nil)
 	if err != nil {
 		return
 	}
