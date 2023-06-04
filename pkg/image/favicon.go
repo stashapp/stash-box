@@ -73,7 +73,7 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 	}
 
 	icons, err := favicon.Find(u.Scheme + "://" + u.Host)
-	if err != nil {
+	if err != nil || len(icons) < 1 {
 		return
 	}
 
