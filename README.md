@@ -68,7 +68,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `min_destructive_voting_period` | `172800` | Minimum time, in seconds, that needs to pass before a destructive edit can be immediately applied with sufficient positive votes. |
 | `vote_cron_interval` | `5m` | Time between runs to close edits whose voting periods have ended. |
 | `email_host` | (none) | Address of the SMTP server. Required to send emails for activation and recovery purposes. |
-| `email_port` | `25` | Port of the SMTP server. |
+| `email_port` | `25` | Port of the SMTP server. Only STARTTLS is supported. Direct TLS connections are not supported. |
 | `email_user` | (none) | Username for the SMTP server. Optional. |
 | `email_password` | (none) | Password for the SMTP server. Optional. |
 | `email_from` | (none) | Email address from which to send emails. |
