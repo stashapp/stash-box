@@ -57,12 +57,6 @@ func GetSiteIcon(ctx context.Context, site models.Site) []byte {
 }
 
 func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
-	out, err := os.Create(iconPath)
-	if err != nil {
-		return
-	}
-	defer out.Close()
-
 	if siteURL == "" {
 		return
 	}
@@ -87,6 +81,12 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 		return
 	}
 	defer resp.Body.Close()
+
+	out, err := os.Create(iconPath)
+	if err != nil {
+		return
+	}
+	defer out.Close()
 
 	//nolint
 	io.Copy(out, resp.Body)
