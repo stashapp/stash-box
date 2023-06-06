@@ -105,7 +105,9 @@ const SceneForm: FC<SceneProps> = ({
   const [oldSceneChanges, newSceneChanges] = useMemo(
     () =>
       DiffScene(
-        SceneSchema.cast(fieldData, { assert: "ignore-optionality" }),
+        SceneSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as SceneFormData,
         scene
       ),
     [fieldData, scene]

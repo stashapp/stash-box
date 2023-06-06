@@ -58,7 +58,9 @@ const StudioForm: FC<StudioProps> = ({
   const [oldStudioChanges, newStudioChanges] = useMemo(
     () =>
       DiffStudio(
-        StudioSchema.cast(fieldData, { assert: "ignore-optionality" }),
+        StudioSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as StudioFormData,
         studio
       ),
     [fieldData, studio]

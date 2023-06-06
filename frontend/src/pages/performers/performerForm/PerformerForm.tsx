@@ -189,7 +189,9 @@ const PerformerForm: FC<PerformerProps> = ({
   const [oldChanges, newChanges] = useMemo(
     () =>
       DiffPerformer(
-        PerformerSchema.cast(fieldData, { assert: "ignore-optionality" }),
+        PerformerSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as PerformerFormData,
         performer
       ),
     [fieldData, performer]
