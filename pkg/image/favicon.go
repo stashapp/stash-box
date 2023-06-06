@@ -71,8 +71,10 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 		return
 	}
 
-	// Icons are sorted widest first. We currently get the first one (icons[0]).
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, icons[0].URL, nil)
+	// Icons are sorted widest first. Based on the design of the stash-box UI,
+	// it makes sense to grab the _smallest_ icon, i.e. the last one.
+	// TODO: Find the ideal size favicon for the stash-box UI and try to get the same here.
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, icons[len(icons)-1].URL, nil)
 	if err != nil {
 		return
 	}
