@@ -1,10 +1,18 @@
 # stash-box
 
+[![Build](https://github.com/stashapp/stash-box/actions/workflows/build.yml/badge.svg?branch=master&event=push)](https://github.com/stashapp/stash-box/actions/workflows/build.yml)
+[![Open Collective backers](https://img.shields.io/opencollective/backers/stashapp?logo=opencollective)](https://opencollective.com/stashapp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash-box)](https://goreportcard.com/report/github.com/stashapp/stash-box)
+[![Matrix](https://img.shields.io/matrix/stashapp:unredacted.org?logo=matrix&server_fqdn=matrix.org)](https://matrix.to/#/#stashapp:unredacted.org)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/stashapp/stash-box?logo=github)](https://github.com/stashapp/stash-box/releases/latest)
+[![GitHub issues by-label](https://img.shields.io/github/issues-raw/stashapp/stash-box/bounty)](https://github.com/stashapp/stash-box/labels/bounty)
 
 Stash-box is an open-source video indexing and metadata API server for porn developed by Stash App. The purpose of stash-box is to provide a community-driven database of porn metadata, similar to what MusicBrainz does for music. The submission and editing of metadata should follow the same principles as MusicBrainz. [Learn more here](https://musicbrainz.org/doc/Editing_FAQ). Installing Stash-box will create an empty database for you to populate.
 
-**Note**: If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt).
+# Canonical community-database
+
+If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt) or [#stashdb-invites:unredacted.org](https://matrix.to/#/#stashdb-invites:unredacted.org) room on our [Matrix space](https://matrix.to/#/#stashapp:unredacted.org).
 
 # Docker install
 
@@ -155,4 +163,7 @@ You can access the GraphQL playground at `host:port/playground`, and the GraphQL
 
 > I have a question that needs to be answered here.
 
-Join the [Discord server](https://discord.gg/2TsNFKt).
+* Join the [Matrix space](https://matrix.to/#/#stashapp:unredacted.org)
+* Join the [Discord server](https://discord.gg/2TsNFKt), where the community can offer support.
+* Start a [discussion on GitHub](https://github.com/stashapp/stash-box/discussions)
+
