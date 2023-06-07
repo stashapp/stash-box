@@ -3,6 +3,7 @@ export CGO_ENABLED = 0
 
 .PHONY: \
 	stash-box \
+	generate \
 	generate-backend \
 	generate-ui \
 	generate-dataloaders \
@@ -21,7 +22,7 @@ ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
 endif
 
-stash-box: pre-ui ui build
+stash-box: pre-ui generate ui build
 
 pre-build:
 ifndef BUILD_DATE
@@ -54,7 +55,7 @@ clean:
 	@ rm -rf stash-box frontend/node_modules frontend/build dist
 
 generate-backend:
-	go generate
+	@ go generate
 
 generate-ui:
 	cd frontend && yarn generate
