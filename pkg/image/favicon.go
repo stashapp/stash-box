@@ -70,8 +70,8 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 
 	// We need a client with a cookiejar for the favicon finder because some websites
 	// simply don't work without cookies.
-	// For instance, at the time of writing, twitter.com at the time of writing returns an
-	// http 302 redirect with location `/` and a `guest_id` cookie. We must include this cookie
+	// For instance, at the time of writing, twitter.com returns an http 302 redirect
+	// with location `/` and a `guest_id` cookie. We must include this cookie
 	// in the subsequent request otherwise we are stuck in a redirect loop.
 	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	if err != nil {
