@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"path"
@@ -13,6 +14,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"go.deanishe.net/favicon"
+	"golang.org/x/net/publicsuffix"
 )
 
 var iconCache = map[uuid.UUID][]byte{}
@@ -66,7 +68,19 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 		return
 	}
 
-	icons, err := favicon.Find(u.Scheme + "://" + u.Host)
+	// We need a client with a cookiejar for the favicon finder because some websites
+	// simply don't work without cookies.
+	// For instance, at the time of writing, twitter.com at the time of writing returns an
+	// http 302 redirect with location `/` and a `guest_id` cookie. We must include this cookie
+	// in the subsequent request otherwise we are stuck in a redirect loop.
+	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+	if err != nil {
+		return
+	}
+
+	c := &http.Client{Jar: jar}
+	finder := favicon.New(favicon.WithClient(c))
+	icons, err := finder.Find(u.Scheme + "://" + u.Host)
 	if err != nil || len(icons) < 1 {
 		return
 	}
