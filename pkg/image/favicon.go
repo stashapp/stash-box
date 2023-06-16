@@ -64,7 +64,7 @@ func GetSiteIcon(ctx context.Context, site models.Site) ([]byte, error) {
 }
 
 func downloadIcon(ctx context.Context, iconPath string, siteURL string) error {
-	err := errors.New("No site url given.")
+	err := errors.New("no site url given")
 	if siteURL == "" {
 		return err
 	}
