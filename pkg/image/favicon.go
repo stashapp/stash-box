@@ -2,6 +2,7 @@ package image
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
@@ -31,41 +32,46 @@ func getCachedSiteIcon(site *models.Site) ([]byte, bool) {
 	return nil, false
 }
 
-func GetSiteIcon(ctx context.Context, site models.Site) []byte {
+func GetSiteIcon(ctx context.Context, site models.Site) ([]byte, error) {
 	if cachedIcon, hasIcon := getCachedSiteIcon(&site); hasIcon {
-		return cachedIcon
+		return cachedIcon, nil
 	}
 
-	faviconPath := config.GetFaviconPath()
+	faviconPath, err := config.GetFaviconPath()
 	if faviconPath == nil {
-		return nil
+		return nil, err
 	}
 	iconPath := path.Join(*faviconPath, site.ID.String())
 
 	if _, err := os.Stat(iconPath); os.IsNotExist(err) {
-		downloadIcon(ctx, iconPath, site.URL.String)
+		if err := downloadIcon(ctx, iconPath, site.URL.String); err != nil {
+			return nil, err
+		}
+	} else if err != nil {
+		return nil, err
 	}
 
 	data, err := os.ReadFile(iconPath)
 	if err != nil || len(data) == 0 {
-		return nil
+		return nil, err
 	}
 
 	iconCacheMutex.Lock()
 	defer iconCacheMutex.Unlock()
 
 	iconCache[site.ID] = data
-	return iconCache[site.ID]
+	return iconCache[site.ID], nil
 }
 
-func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
+func downloadIcon(ctx context.Context, iconPath string, siteURL string) error {
+	err := errors.New("No site url given.")
 	if siteURL == "" {
-		return
+		return err
 	}
 
 	u, err := url.Parse(siteURL)
 	if err != nil {
-		return
+		return err
 	}
 
 	// We need a client with a cookiejar for the favicon finder because some websites
@@ -75,14 +81,14 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 	// in the subsequent request otherwise we are stuck in a redirect loop.
 	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	if err != nil {
-		return
+		return err
 	}
 
 	c := &http.Client{Jar: jar}
 	finder := favicon.New(favicon.WithClient(c))
 	icons, err := finder.Find(u.Scheme + "://" + u.Host)
 	if err != nil || len(icons) < 1 {
-		return
+		return err
 	}
 
 	// Icons are sorted widest first. Based on the design of the stash-box UI,
@@ -90,20 +96,23 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 	// TODO: Find the ideal size favicon for the stash-box UI and try to get the same here.
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, icons[len(icons)-1].URL, nil)
 	if err != nil {
-		return
+		return err
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return err
 	}
 	defer resp.Body.Close()
 
 	out, err := os.Create(iconPath)
 	if err != nil {
-		return
+		return err
 	}
 	defer out.Close()
 
-	//nolint
-	io.Copy(out, resp.Body)
+	if _, err := io.Copy(out, resp.Body); err != nil {
+		return err
+	}
+
+	return nil
 }
