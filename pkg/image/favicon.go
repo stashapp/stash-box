@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"path"
@@ -12,6 +13,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
+	"go.deanishe.net/favicon"
+	"golang.org/x/net/publicsuffix"
 )
 
 var iconCache = map[uuid.UUID][]byte{}
@@ -56,12 +59,6 @@ func GetSiteIcon(ctx context.Context, site models.Site) []byte {
 }
 
 func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
-	out, err := os.Create(iconPath)
-	if err != nil {
-		return
-	}
-	defer out.Close()
-
 	if siteURL == "" {
 		return
 	}
@@ -70,9 +67,28 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 	if err != nil {
 		return
 	}
-	u.Path = path.Join(u.Path, "favicon.ico")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	// We need a client with a cookiejar for the favicon finder because some websites
+	// simply don't work without cookies.
+	// For instance, at the time of writing, twitter.com returns an http 302 redirect
+	// with location `/` and a `guest_id` cookie. We must include this cookie
+	// in the subsequent request otherwise we are stuck in a redirect loop.
+	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+	if err != nil {
+		return
+	}
+
+	c := &http.Client{Jar: jar}
+	finder := favicon.New(favicon.WithClient(c))
+	icons, err := finder.Find(u.Scheme + "://" + u.Host)
+	if err != nil || len(icons) < 1 {
+		return
+	}
+
+	// Icons are sorted widest first. Based on the design of the stash-box UI,
+	// it makes sense to grab the _smallest_ icon, i.e. the last one.
+	// TODO: Find the ideal size favicon for the stash-box UI and try to get the same here.
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, icons[len(icons)-1].URL, nil)
 	if err != nil {
 		return
 	}
@@ -81,6 +97,12 @@ func downloadIcon(ctx context.Context, iconPath string, siteURL string) {
 		return
 	}
 	defer resp.Body.Close()
+
+	out, err := os.Create(iconPath)
+	if err != nil {
+		return
+	}
+	defer out.Close()
 
 	//nolint
 	io.Copy(out, resp.Body)
