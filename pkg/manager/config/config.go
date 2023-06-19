@@ -11,12 +11,13 @@ import (
 )
 
 type S3Config struct {
-	BaseURL      string `mapstructure:"base_url"`
-	Endpoint     string `mapstructure:"endpoint"`
-	Bucket       string `mapstructure:"bucket"`
-	AccessKey    string `mapstructure:"access_key"`
-	Secret       string `mapstructure:"secret"`
-	MaxDimension int64  `mapstructure:"max_dimension"`
+	BaseURL       string            `mapstructure:"base_url"`
+	Endpoint      string            `mapstructure:"endpoint"`
+	Bucket        string            `mapstructure:"bucket"`
+	AccessKey     string            `mapstructure:"access_key"`
+	Secret        string            `mapstructure:"secret"`
+	MaxDimension  int64             `mapstructure:"max_dimension"`
+	UploadHeaders map[string]string `mapstructure:"upload_headers"`
 }
 
 type PostgresConfig struct {
