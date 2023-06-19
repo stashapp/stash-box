@@ -361,11 +361,11 @@ func GetTitle() string {
 	return C.Title
 }
 
-func GetFaviconPath() *string {
+func GetFaviconPath() (*string, error) {
 	if len(C.FaviconPath) == 0 {
-		return nil
+		return nil, errors.New("favicon_path not set")
 	}
-	return &C.FaviconPath
+	return &C.FaviconPath, nil
 }
 
 func GetDraftTimeLimit() int {

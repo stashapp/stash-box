@@ -22,7 +22,7 @@ ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
 endif
 
-stash-box: pre-ui generate ui build
+stash-box: pre-ui generate ui lint build
 
 pre-build:
 ifndef BUILD_DATE
