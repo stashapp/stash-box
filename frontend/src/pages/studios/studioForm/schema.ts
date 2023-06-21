@@ -37,4 +37,3 @@ export const StudioSchema = yup.object({
 });
 
 export type StudioFormData = yup.Asserts<typeof StudioSchema>;
-export type CastedStudioFormData = yup.TypeOf<typeof StudioSchema>;

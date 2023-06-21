@@ -13,7 +13,7 @@ import {
   diffURLs,
 } from "src/utils";
 
-import { CastedSceneFormData } from "./schema";
+import { SceneFormData } from "./schema";
 
 type OmittedKeys = "draft_id" | "added_fingerprints" | "removed_fingerprints";
 
@@ -32,7 +32,7 @@ type Tag = {
 };
 
 const selectSceneDetails = (
-  data: CastedSceneFormData,
+  data: SceneFormData,
   original: SceneFragment | null | undefined
 ): [Required<OldSceneDetails>, Required<Omit<SceneDetails, OmittedKeys>>] => {
   const [addedPerformers, removedPerformers] = diffArray<Performer>(

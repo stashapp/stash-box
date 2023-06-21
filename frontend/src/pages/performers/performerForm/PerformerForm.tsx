@@ -187,7 +187,13 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const fieldData = watch();
   const [oldChanges, newChanges] = useMemo(
-    () => DiffPerformer(PerformerSchema.cast(fieldData), performer),
+    () =>
+      DiffPerformer(
+        PerformerSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as PerformerFormData,
+        performer
+      ),
     [fieldData, performer]
   );
 
@@ -239,7 +245,7 @@ const PerformerForm: FC<PerformerProps> = ({
       breast_type:
         BreastTypeEnum[data.breastType as keyof typeof BreastTypeEnum] || null,
       image_ids: data.images.map((i) => i.id),
-      urls: data.urls.map((u) => ({
+      urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
       })),
@@ -289,7 +295,7 @@ const PerformerForm: FC<PerformerProps> = ({
     { error: errors.braSize?.message, tab: "personal" },
     { error: errors.waistSize?.message, tab: "personal" },
     {
-      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
   ].filter((e) => e.error) as { error: string; tab: string }[];
@@ -583,7 +589,7 @@ const PerformerForm: FC<PerformerProps> = ({
             className={cx({ "d-block": errors.tattoos })}
             type="invalid"
           >
-            {errors?.tattoos?.map((mod, idx) => (
+            {errors?.tattoos?.map?.((mod, idx) => (
               <div key={idx}>
                 Tattoo {idx + 1}: {mod?.location?.message}
               </div>
@@ -601,7 +607,7 @@ const PerformerForm: FC<PerformerProps> = ({
             className={cx({ "d-block": errors.piercings })}
             type="invalid"
           >
-            {errors?.piercings?.map((mod, idx) => (
+            {errors?.piercings?.map?.((mod, idx) => (
               <div key={idx}>
                 Piercing {idx + 1}: {mod?.location?.message}
               </div>

@@ -238,12 +238,11 @@ func ResetPassword(fac models.Repo, em *email.Manager, email string) error {
 		return err
 	}
 
-	if u == nil {
-		// Sleep between 500-1500ms to avoid leaking email presence
-		rand.Seed(time.Now().UnixNano())
-		n := rand.Intn(1000)
-		time.Sleep(time.Duration(500+n) * time.Millisecond)
+	// Sleep between 500-1500ms to avoid leaking email presence
+	n := rand.Intn(1000)
+	time.Sleep(time.Duration(500+n) * time.Millisecond)
 
+	if u == nil {
 		// return silently
 		return nil
 	}

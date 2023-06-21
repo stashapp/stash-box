@@ -3,11 +3,11 @@ import {
   StudioDetails,
 } from "src/components/editCard/ModifyEdit";
 import { StudioFragment } from "src/graphql";
-import { CastedStudioFormData } from "./schema";
+import { StudioFormData } from "./schema";
 import { diffValue, diffImages, diffURLs } from "src/utils";
 
 const selectStudioDetails = (
-  data: CastedStudioFormData,
+  data: StudioFormData,
   original: StudioFragment | null | undefined
 ): [Required<OldStudioDetails>, Required<StudioDetails>] => {
   const [addedImages, removedImages] = diffImages(

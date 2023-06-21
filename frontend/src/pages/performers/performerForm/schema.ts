@@ -136,4 +136,3 @@ export const PerformerSchema = yup.object({
 });
 
 export type PerformerFormData = yup.Asserts<typeof PerformerSchema>;
-export type CastedPerformerFormData = yup.TypeOf<typeof PerformerSchema>;

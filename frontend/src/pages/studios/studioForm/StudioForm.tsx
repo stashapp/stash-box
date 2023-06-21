@@ -56,7 +56,13 @@ const StudioForm: FC<StudioProps> = ({
   const [file, setFile] = useState<File | undefined>();
   const fieldData = watch();
   const [oldStudioChanges, newStudioChanges] = useMemo(
-    () => DiffStudio(StudioSchema.cast(fieldData), studio),
+    () =>
+      DiffStudio(
+        StudioSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as StudioFormData,
+        studio
+      ),
     [fieldData, studio]
   );
 
@@ -65,7 +71,7 @@ const StudioForm: FC<StudioProps> = ({
   const onSubmit = (data: StudioFormData) => {
     const callbackData: StudioEditDetailsInput = {
       name: data.name,
-      urls: data.urls.map((u) => ({
+      urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
       })),
@@ -78,7 +84,7 @@ const StudioForm: FC<StudioProps> = ({
   const metadataErrors = [
     { error: errors.name?.message, tab: "details" },
     {
-      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
   ].filter((e) => e.error) as { error: string; tab: string }[];

@@ -1,10 +1,18 @@
 # stash-box
 
+[![Build](https://github.com/stashapp/stash-box/actions/workflows/build.yml/badge.svg?branch=master&event=push)](https://github.com/stashapp/stash-box/actions/workflows/build.yml)
+[![Open Collective backers](https://img.shields.io/opencollective/backers/stashapp?logo=opencollective)](https://opencollective.com/stashapp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash-box)](https://goreportcard.com/report/github.com/stashapp/stash-box)
+[![Matrix](https://img.shields.io/matrix/stashapp:unredacted.org?logo=matrix&server_fqdn=matrix.org)](https://matrix.to/#/#stashapp:unredacted.org)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/stashapp/stash-box?logo=github)](https://github.com/stashapp/stash-box/releases/latest)
+[![GitHub issues by-label](https://img.shields.io/github/issues-raw/stashapp/stash-box/bounty)](https://github.com/stashapp/stash-box/labels/bounty)
 
 Stash-box is an open-source video indexing and metadata API server for porn developed by Stash App. The purpose of stash-box is to provide a community-driven database of porn metadata, similar to what MusicBrainz does for music. The submission and editing of metadata should follow the same principles as MusicBrainz. [Learn more here](https://musicbrainz.org/doc/Editing_FAQ). Installing Stash-box will create an empty database for you to populate.
 
-**Note**: If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt).
+# Canonical community-database
+
+If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt) or [#stashdb-invites:unredacted.org](https://matrix.to/#/#stashdb-invites:unredacted.org) room on our [Matrix space](https://matrix.to/#/#stashapp:unredacted.org).
 
 # Docker install
 
@@ -68,7 +76,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `min_destructive_voting_period` | `172800` | Minimum time, in seconds, that needs to pass before a destructive edit can be immediately applied with sufficient positive votes. |
 | `vote_cron_interval` | `5m` | Time between runs to close edits whose voting periods have ended. |
 | `email_host` | (none) | Address of the SMTP server. Required to send emails for activation and recovery purposes. |
-| `email_port` | `25` | Port of the SMTP server. |
+| `email_port` | `25` | Port of the SMTP server. Only STARTTLS is supported. Direct TLS connections are not supported. |
 | `email_user` | (none) | Username for the SMTP server. Optional. |
 | `email_password` | (none) | Password for the SMTP server. Optional. |
 | `email_from` | (none) | Email address from which to send emails. |
@@ -81,7 +89,8 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `s3.bucket` | (none) | Name of S3 bucket used to store images. |
 | `s3.access_key` | (none) | Access key used for authentication. |
 | `s3.secret ` | (none) | Secret Access key used for authentication. |
-| `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original.
+| `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original. |
+| `s3.upload_headers` | (none) | A map of headers to send with each upload request. For example, DigitalOcean requires the `x-amz-acl` header to be set to `public-read` or it does not make the uploaded images available. |
 | `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a pHash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
 | `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 | `draft_time_limit` | (24h) | Time, in seconds, before a draft is deleted. |
@@ -155,4 +164,7 @@ You can access the GraphQL playground at `host:port/playground`, and the GraphQL
 
 > I have a question that needs to be answered here.
 
-Join the [Discord server](https://discord.gg/2TsNFKt).
+* Join the [Matrix space](https://matrix.to/#/#stashapp:unredacted.org)
+* Join the [Discord server](https://discord.gg/2TsNFKt), where the community can offer support.
+* Start a [discussion on GitHub](https://github.com/stashapp/stash-box/discussions)
+
