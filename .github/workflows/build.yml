@@ -32,10 +32,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    - name: Install libvips
-      run: sudo apt-get install -y libvips-dev
-
     steps:
+
+    - uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: libvips-dev
+        version: 1.0
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
