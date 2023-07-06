@@ -117,7 +117,7 @@ cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
 cross-compile-linux: OUTPUT := -o dist/stash-box-linux
 cross-compile-linux: export CGO_ENABLED = 1
-cross-compile-linux: build-release-static
+cross-compile-linux: build
 
 cross-compile:
 	make cross-compile-windows
