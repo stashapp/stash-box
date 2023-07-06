@@ -10,12 +10,14 @@ interface Props {
   images: ImageFragment[] | ImageFragment;
   orientation?: "landscape" | "portrait";
   emptyMessage?: string;
+  size?: number;
 }
 
 const Image: FC<Props> = ({
   images,
   orientation = "landscape",
   emptyMessage = "No image",
+  size,
 }) => {
   const url = Array.isArray(images)
     ? getImage(images, orientation)
@@ -25,6 +27,8 @@ const Image: FC<Props> = ({
   );
 
   if (!url) return <div className={`${CLASSNAME}-missing`}>{emptyMessage}</div>;
+
+  const sizeQuery = size ? `?size=${size}` : '';
 
   return (
     <>
@@ -41,7 +45,7 @@ const Image: FC<Props> = ({
       )}
       <img
         alt=""
-        src={url}
+        src={`${url}${sizeQuery}`}
         className={`${CLASSNAME}-image`}
         onLoad={() => setImageState("done")}
         onError={() => setImageState("error")}

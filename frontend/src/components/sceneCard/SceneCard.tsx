@@ -11,7 +11,7 @@ import {
   formatDuration,
   imageType,
 } from "src/utils";
-import { Icon } from "src/components/fragments";
+import { Icon, Thumbnail } from "src/components/fragments";
 
 type Performance = Pick<
   Scene,
@@ -28,10 +28,12 @@ const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
   <Card className={CLASSNAME}>
     <Card.Body className={CLASSNAME_BODY}>
       <Link className={CLASSNAME_IMAGE} to={sceneHref(scene)}>
-        <img
-          alt=""
+
+        <Thumbnail
+          alt={scene.title}
           className={imageType(scene.images[0])}
-          src={getImage(scene.images, "landscape")}
+          image={getImage(scene.images, "landscape")}
+          size={300}
         />
       </Link>
     </Card.Body>

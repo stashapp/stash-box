@@ -25,7 +25,7 @@ func (rr rootRoutes) Routes() chi.Router {
 	r.Post("/login", handleLogin)
 	r.HandleFunc("/logout", handleLogout)
 
-	r.Mount("/image", imageRoutes{}.Routes())
+	r.Mount("/images", imageRoutes{}.Routes())
 
 	// Serve static assets
 	r.HandleFunc("/assets/*", rr.assets)

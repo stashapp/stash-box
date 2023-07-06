@@ -11,7 +11,6 @@ import (
 )
 
 type S3Config struct {
-	BaseURL      string `mapstructure:"base_url"`
 	Endpoint     string `mapstructure:"endpoint"`
 	Bucket       string `mapstructure:"bucket"`
 	AccessKey    string `mapstructure:"access_key"`

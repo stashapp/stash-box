@@ -17,6 +17,8 @@ export CGO_ENABLED = 0
 	pre-ui \
 	clean
 
+export CGO_ENABLED = 1
+
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
 endif
