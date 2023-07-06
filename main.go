@@ -4,9 +4,9 @@ package main
 import (
 	"embed"
 
-	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/cron"
@@ -29,9 +29,7 @@ func main() {
 	api.Start(txnMgr, ui)
 	cron.Init(txnMgr)
 
-	vips.LoggingSettings(nil, vips.LogLevelWarning)
-	vips.Startup(nil)
-	defer vips.Shutdown()
+	image.InitResizer()
 
 	blockForever()
 }

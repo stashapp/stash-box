@@ -1,5 +1,4 @@
 LDFLAGS := $(LDFLAGS)
-export CGO_ENABLED = 0
 
 .PHONY: \
 	stash-box \
@@ -17,8 +16,6 @@ export CGO_ENABLED = 0
 	ui-validate \
 	pre-ui \
 	clean
-
-export CGO_ENABLED = 1
 
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
@@ -113,14 +110,13 @@ ui-validate:
 # cross-compile- targets should be run within the compiler docker container
 cross-compile-windows: export GOOS := windows
 cross-compile-windows: export GOARCH := amd64
-cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
-cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: OUTPUT := -o dist/stash-box-windows.exe
 cross-compile-windows: build-release-static
 
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
 cross-compile-linux: OUTPUT := -o dist/stash-box-linux
+cross-compile-linux: export CGO_ENABLED = 1
 cross-compile-linux: build-release-static
 
 cross-compile:

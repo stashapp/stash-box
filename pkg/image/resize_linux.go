@@ -1,3 +1,5 @@
+//go:build linux
+
 package image
 
 import (
@@ -31,4 +33,9 @@ func Resize(reader io.Reader, max int) ([]byte, error) {
 
 	imageBytes, _, err := image.ExportJpeg(ep)
 	return imageBytes, err
+}
+
+func InitResizer() {
+	vips.LoggingSettings(nil, vips.LogLevelWarning)
+	vips.Startup(nil)
 }
