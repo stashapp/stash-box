@@ -16,6 +16,9 @@ If you already have PostgreSQL installed, you can install stash-box on its own f
 
 Stash-box supports macOS, Windows, and Linux. Releases for Windows and Linux can be found [here](https://github.com/stashapp/stash-box/releases).
 
+## Prerequisites
+To build stash-box, [libvips](https://www.libvips.org/) must be installed, as well as gcc.
+
 ## Initial setup
 
 1. Run `make` to build the application.
