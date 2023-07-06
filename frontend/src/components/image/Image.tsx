@@ -28,7 +28,7 @@ const Image: FC<Props> = ({
 
   if (!url) return <div className={`${CLASSNAME}-missing`}>{emptyMessage}</div>;
 
-  const sizeQuery = size ? `?size=${size}` : '';
+  const sizeQuery = size ? `?size=${size}` : "";
 
   return (
     <>

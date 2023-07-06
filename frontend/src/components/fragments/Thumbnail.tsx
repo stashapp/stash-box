@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC } from "react";
 
 interface Props {
   image: string;
@@ -8,9 +8,9 @@ interface Props {
 }
 
 export const Thumbnail: FC<Props> = ({ image, size, alt, className }) => (
-    <img
-      alt={alt ?? ''}
-      className={className}
-      src={image + (size ? `?size=${size}` : '')}
-    />
-)
+  <img
+    alt={alt ?? ""}
+    className={className}
+    src={image + (size ? `?size=${size}` : "")}
+  />
+);

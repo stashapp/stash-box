@@ -196,7 +196,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           </h6>
         </Card.Header>
         <Card.Body className="ScenePhoto">
-          <Image images={scene.images} emptyMessage="Scene has no image" size={1280} />
+          <Image
+            images={scene.images}
+            emptyMessage="Scene has no image"
+            size={1280}
+          />
         </Card.Body>
         <Card.Footer className="d-flex mx-1">
           <div className="scene-performers me-auto">{performers}</div>

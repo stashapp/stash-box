@@ -28,7 +28,6 @@ const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
   <Card className={CLASSNAME}>
     <Card.Body className={CLASSNAME_BODY}>
       <Link className={CLASSNAME_IMAGE} to={sceneHref(scene)}>
-
         <Thumbnail
           alt={scene.title}
           className={imageType(scene.images[0])}
