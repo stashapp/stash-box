@@ -56,7 +56,13 @@ const StudioForm: FC<StudioProps> = ({
   const [file, setFile] = useState<File | undefined>();
   const fieldData = watch();
   const [oldStudioChanges, newStudioChanges] = useMemo(
-    () => DiffStudio(StudioSchema.cast(fieldData), studio),
+    () =>
+      DiffStudio(
+        StudioSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as StudioFormData,
+        studio
+      ),
     [fieldData, studio]
   );
 

@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/image"
+	"github.com/stashapp/stash-box/pkg/logger"
 )
 
 type imageRoutes struct{}
@@ -82,7 +83,10 @@ func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := image.GetSiteIcon(r.Context(), *site)
+	data, err := image.GetSiteIcon(r.Context(), *site)
+	if err != nil {
+		logger.Error("Couldn't get favicon:", err)
+	}
 
 	if data == nil {
 		w.Header().Add("Cache-Control", "max-age=86400")
