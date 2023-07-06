@@ -14,8 +14,7 @@ func (r *imageResolver) ID(ctx context.Context, obj *models.Image) (string, erro
 	return obj.ID.String(), nil
 }
 func (r *imageResolver) URL(ctx context.Context, obj *models.Image) (string, error) {
-	//baseURL := ctx.Value(BaseURLCtxKey).(string)
-	baseURL := "http://venus"
+	baseURL := ctx.Value(BaseURLCtxKey).(string)
 	id := obj.ID.String()
 	return baseURL + "/images/" + id, nil
 }
