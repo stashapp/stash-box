@@ -279,9 +279,8 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 	}
 
 	if q := filter.URL; q != nil && *q != "" {
-		clause := fmt.Sprintf("EXISTS (SELECT %[1]s.performer_id FROM %[1]s WHERE %[1]s.performer_id = performers.id AND %[1]s.url = ?)", performerURLTable.Name())
-		query.AddWhere(clause)
-		query.AddArg(*q)
+		where := fmt.Sprintf("%s.url = ?", performerURLTable.Name())
+		query.AddJoinTableFilter(performerURLTable, where, nil, false, *q)
 	}
 
 	if filter.IsFavorite != nil {

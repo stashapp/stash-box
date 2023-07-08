@@ -48,6 +48,26 @@ func (qb *queryBuilder) AddJoin(jt table, on string) {
 	qb.Body += " JOIN " + jt.Name() + " ON " + on
 }
 
+func (qb *queryBuilder) AddJoinTableFilter(tj tableJoin, query string, having *string, not bool, args ...interface{}) {
+	clause := fmt.Sprintf("EXISTS (SELECT %[1]s.%[2]s FROM %[1]s WHERE %[3]s.id = %[1]s.%[2]s AND %[4]s", tj.Name(), tj.joinColumn, tj.primaryTable, query)
+	if len(args) > 1 {
+		clause += fmt.Sprintf(" GROUP BY %s.%s", tj.Name(), tj.joinColumn)
+
+		if having != nil {
+			clause += fmt.Sprintf(" HAVING %s", *having)
+		}
+	}
+
+	clause += ")"
+
+	if not {
+		clause = "NOT " + clause
+	}
+
+	qb.AddWhere(clause)
+	qb.AddArg(args...)
+}
+
 func (qb *queryBuilder) AddWhere(clauses ...string) {
 	qb.whereClauses = append(qb.whereClauses, clauses...)
 }

@@ -207,9 +207,8 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 	}
 
 	if q := filter.URL; q != nil && *q != "" {
-		clause := fmt.Sprintf("EXISTS (SELECT %[1]s.studio_id FROM %[1]s WHERE %[1]s.studio_id = studios.id AND %[1]s.url = ?)", studioURLTable.Name())
-		query.AddWhere(clause)
-		query.AddArg(*q)
+		where := fmt.Sprintf("%s.url = ?", studioURLTable.Name())
+		query.AddJoinTableFilter(studioURLTable, where, nil, false, *q)
 	}
 
 	query.Sort = qb.getStudioSort(filter)
