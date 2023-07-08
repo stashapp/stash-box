@@ -360,11 +360,9 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 	}
 
 	if q := filter.URL; q != nil && *q != "" {
-		query.AddJoin(sceneURLTable.table, sceneURLTable.Name()+"."+sceneJoinKey+" = scenes.id", true)
-		searchColumns := []string{sceneURLTable.Name() + ".url"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		clause := fmt.Sprintf("EXISTS (SELECT %[1]s.scene_id FROM %[1]s WHERE %[1]s.scene_id = scenes.id AND %[1]s.url = ?)", sceneURLTable.Name(), *q)
 		query.AddWhere(clause)
-		query.AddArg(thisArgs...)
+		query.AddArg(*q)
 	}
 
 	if q := filter.Studios; q != nil && len(q.Value) > 0 {
@@ -405,13 +403,11 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 	}
 
 	if q := filter.Performers; q != nil && len(q.Value) > 0 {
-		query.AddJoin(scenePerformerTable.table, scenePerformerTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
-		whereClause, havingClause, err := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
+		whereClause, err := getMultiCriterionClause(scenePerformerTable, performerJoinKey, q)
 		if err != nil {
 			return nil, err
 		}
 		query.AddWhere(whereClause)
-		query.AddHaving(havingClause)
 
 		for _, performerID := range q.Value {
 			query.AddArg(performerID)
@@ -419,13 +415,11 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 	}
 
 	if q := filter.Tags; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneTagTable.table, sceneTagTable.Name()+".scene_id = scenes.id", len(q.Value) > 1)
-		whereClause, havingClause, err := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
+		whereClause, err := getMultiCriterionClause(sceneTagTable, tagJoinKey, q)
 		if err != nil {
 			return nil, err
 		}
 		query.AddWhere(whereClause)
-		query.AddHaving(havingClause)
 
 		for _, tagID := range q.Value {
 			query.AddArg(tagID)
@@ -433,13 +427,11 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 	}
 
 	if q := filter.Fingerprints; q != nil && len(q.Value) > 0 {
-		query.AddJoin(sceneFingerprintTable.table, sceneFingerprintTable.Name()+".scene_id = scenes.id", true)
-		whereClause, havingClause, err := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
+		whereClause, err := getMultiCriterionClause(sceneFingerprintTable, "hash", q)
 		if err != nil {
 			return nil, err
 		}
 		query.AddWhere(whereClause)
-		query.AddHaving(havingClause)
 
 		for _, fingerprint := range q.Value {
 			query.AddArg(fingerprint)
@@ -531,27 +523,25 @@ func (qb *sceneQueryBuilder) QueryCount(filter models.SceneQueryInput, userID uu
 	return qb.dbi.CountOnly(*query)
 }
 
-func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion models.MultiCriterionInput) (string, string, error) {
+func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion models.MultiCriterionInput) (string, error) {
 	joinTableName := joinTable.Name()
 	whereClause := ""
-	havingClause := ""
 
 	switch criterion.GetModifier() {
 	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
-		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(criterion.Count())
+		whereClause = fmt.Sprintf("scenes.id IN (SELECT %[1]s.scene_id FROM %[1]s WHERE %[1]s.scene_id = scenes.id AND %[1]s.%[2]s IN %[3]s GROUP BY %[1]s.scene_id)", joinTableName, joinTableField, getInBinding(criterion.Count()))
 	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
-		whereClause = joinTableName + "." + joinTableField + " IN " + getInBinding(criterion.Count())
-		havingClause = "count(distinct " + joinTableName + "." + joinTableField + ") = " + strconv.Itoa(criterion.Count())
+		whereClause = fmt.Sprintf("scenes.id IN (SELECT %[1]s.scene_id FROM %[1]s WHERE %[1]s.scene_id = scenes.id AND %[1]s.%[2]s IN %[3]s GROUP BY %[1]s.scene_id HAVING COUNT(*) = %[4]d)", joinTableName, joinTableField, getInBinding(criterion.Count()), criterion.Count())
 	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids
-		whereClause = "not exists (select " + joinTableName + ".scene_id from " + joinTableName + " where " + joinTableName + ".scene_id = scenes.id and " + joinTableName + "." + joinTableField + " in " + getInBinding(criterion.Count()) + ")"
+		whereClause = fmt.Sprintf("NOT EXISTS (SELECT %[1]s.scene_id FROM %[1]s WHERE %[1]s.scene_id = scenes.id AND %[1]s.%[2]s IN %[3]s GROUP BY %[1]s.scene_id)", joinTableName, joinTableField, getInBinding(criterion.Count()))
 	default:
-		return "", "", fmt.Errorf("unsupported modifier %s for %s.%s", criterion.GetModifier(), joinTableName, joinTableField)
+		return "", fmt.Errorf("unsupported modifier %s for %s.%s", criterion.GetModifier(), joinTableName, joinTableField)
 	}
 
-	return whereClause, havingClause, nil
+	return whereClause, nil
 }
 
 func (qb *sceneQueryBuilder) getSceneSort(filter models.SceneQueryInput) string {

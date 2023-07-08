@@ -11,9 +11,8 @@ import (
 )
 
 type queryBuilder struct {
-	Table    table
-	Body     string
-	Distinct bool
+	Table table
+	Body  string
 
 	whereClauses  []string
 	havingClauses []string
@@ -25,8 +24,7 @@ type queryBuilder struct {
 
 func newQueryBuilder(t table) *queryBuilder {
 	ret := &queryBuilder{
-		Table:    t,
-		Distinct: false,
+		Table: t,
 	}
 
 	tableName := t.Name()
@@ -37,8 +35,7 @@ func newQueryBuilder(t table) *queryBuilder {
 
 func newDeleteQueryBuilder(t table) *queryBuilder {
 	ret := &queryBuilder{
-		Table:    t,
-		Distinct: false,
+		Table: t,
 	}
 
 	tableName := t.Name()
@@ -47,18 +44,8 @@ func newDeleteQueryBuilder(t table) *queryBuilder {
 	return ret
 }
 
-func (qb *queryBuilder) AddJoin(jt table, on string, isOneToMany bool) {
+func (qb *queryBuilder) AddJoin(jt table, on string) {
 	qb.Body += " JOIN " + jt.Name() + " ON " + on
-	if isOneToMany {
-		qb.Distinct = true
-	}
-}
-
-func (qb *queryBuilder) AddLeftJoin(jt table, on string, isOneToMany bool) {
-	qb.Body += " LEFT JOIN " + jt.Name() + " ON " + on
-	if isOneToMany {
-		qb.Distinct = true
-	}
 }
 
 func (qb *queryBuilder) AddWhere(clauses ...string) {
@@ -106,10 +93,6 @@ func (qb queryBuilder) buildBody(isCount bool) string {
 
 	if !isCount {
 		body += qb.Sort
-	}
-
-	if qb.Distinct {
-		body = "SELECT DISTINCT ON (query.id) query.* FROM (" + body + ") query"
 	}
 
 	return body

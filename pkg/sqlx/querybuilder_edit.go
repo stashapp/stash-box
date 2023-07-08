@@ -212,16 +212,16 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		}
 		switch *filter.TargetType {
 		case models.TargetTypeEnumTag:
-			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id", false)
+			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		case models.TargetTypeEnumPerformer:
-			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id", false)
+			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		case models.TargetTypeEnumStudio:
-			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id", false)
+			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		case models.TargetTypeEnumScene:
-			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id", false)
+			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		}
 		jsonID, _ := json.Marshal(*targetID)
@@ -253,8 +253,15 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 			query.AddWhere(where)
 			query.AddArg(userID)
 		default:
-			query.AddLeftJoin(editVoteTable.table, editVoteTable.Name()+".edit_id = edits.id", true)
-			query.AddWhere("(" + editVoteTable.Name() + ".user_id = ? AND " + editVoteTable.Name() + ".vote = ?)")
+			where := `
+				EXISTS (
+				  SELECT EV.edit_id FROM edit_votes EV
+				  WHERE EV.edit_id = edits.id
+				  AND EV.user_id = ?
+					AND EV.vote = ?
+				)
+			`
+			query.AddWhere(where)
 			query.AddArg(userID, q.String())
 		}
 	}
