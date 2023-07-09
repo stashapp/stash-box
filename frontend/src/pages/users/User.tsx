@@ -85,6 +85,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [revokeInvite] = useRevokeInvite();
 
   const showPrivate = isPrivateUser(user);
+  const isOwner = isPrivateUser(user) && user.id === Auth.user?.id;
 
   const endpointURL = configData && `${configData.getConfig.host_url}/graphql`;
 
@@ -191,7 +192,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
             <Link to={createHref(ROUTE_USER_EDITS, user)} className="ms-2">
               <Button variant="secondary">User Edits</Button>
             </Link>
-            {showPrivate && (
+            {isOwner && (
               <Link to={ROUTE_USER_PASSWORD} className="ms-2">
                 <Button>Change Password</Button>
               </Link>
@@ -214,7 +215,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           </div>
         </div>
         <hr />
-        {isPrivateUser(user) && (
+        {showPrivate && (
           <>
             <Row>
               <Col xs={2}>Email</Col>
@@ -306,7 +307,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </Table>
             </Col>
           </Row>
-          {isPrivateUser(user) && (
+          {showPrivate && (
             <Row>
               <Col xs={2}>Invite Tokens</Col>
               <InputGroup className="col">
@@ -324,7 +325,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </InputGroup>
             </Row>
           )}
-          {isPrivateUser(user) && user.id === Auth.user?.id && (
+          {isOwner && (
             <Row className="my-2">
               <Col xs={2}>Invite Keys</Col>
               <Col>
@@ -344,18 +345,15 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
                     </Button>
                   </InputGroup>
                 ))}
-                <div>
-                  {showPrivate && (
-                    <Button
-                      variant="link"
-                      onClick={() => handleGenerateCode()}
-                      disabled={user.invite_tokens === 0}
-                    >
-                      <Icon icon={faPlus} className="me-2" />
-                      Generate Key
-                    </Button>
-                  )}
-                </div>
+                <Button
+                  variant="link"
+                  onClick={() => handleGenerateCode()}
+                  disabled={user.invite_tokens === 0}
+                  className="d-block"
+                >
+                  <Icon icon={faPlus} className="me-2" />
+                  Generate Key
+                </Button>
               </Col>
             </Row>
           )}
