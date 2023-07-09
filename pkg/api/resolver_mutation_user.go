@@ -103,7 +103,7 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 			return err
 		}
 
-		return nil
+		return fac.Edit().CancelUserEdits(input.ID)
 	})
 
 	if err != nil {

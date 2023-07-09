@@ -467,3 +467,11 @@ func (qb *editQueryBuilder) FindPendingSceneCreation(input models.QueryExistingS
 
 	return qb.queryEdits(query, args)
 }
+
+func (qb *editQueryBuilder) CancelUserEdits(userID uuid.UUID) error {
+	var args []interface{}
+	args = append(args, userID)
+	query := `UPDATE edits SET status = 'CANCELED', updated_at = NOW() WHERE user_id = ?`
+	err := qb.dbi.RawQuery(editDBTable, query, args, nil)
+	return err
+}
