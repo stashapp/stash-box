@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
-import { Form } from "react-bootstrap";
+import { Button, Form, Row, Col } from "react-bootstrap";
 
 import Title from "src/components/title";
 import { useChangePassword } from "src/graphql";
@@ -59,10 +59,17 @@ const ResetPassword: FC = () => {
       );
   };
 
+  const errorList = [
+    errors.resetKey?.message,
+    errors.email?.message,
+    errors.password?.message,
+    submitError,
+  ].filter((err): err is string => err !== undefined);
+
   return (
-    <div className="LoginPrompt mx-auto d-flex">
+    <div className="LoginPrompt">
       <Title page="Reset Password" />
-      <form
+      <Form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
       >
@@ -71,38 +78,46 @@ const ResetPassword: FC = () => {
           value={query.get("email") ?? ""}
           {...register("email")}
         />
+
         <Form.Control
           type="hidden"
           value={query.get("key") ?? ""}
           {...register("resetKey")}
         />
-        <label className="row" htmlFor="password">
-          <span className="col-4">New Password: </span>
-          <input
-            className={cx("col-8", { "is-invalid": errors?.password })}
-            type="password"
-            placeholder="Password"
-            {...register("password")}
-          />
-          <div className="invalid-feedback">{errors?.password?.message}</div>
-        </label>
-        <div className="row">
-          <div className="col-3 offset-9 d-flex justify-content-end">
-            <div>
-              <button
-                type="submit"
-                className="register-button btn btn-primary"
-                disabled={loading}
-              >
-                Set Password
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="text-danger">{submitError}</div>
-        </div>
-      </form>
+
+        <Form.Group controlId="password" className="mt-2">
+          <Row>
+            <Col xs={4}>
+              <Form.Label>New Password:</Form.Label>
+            </Col>
+            <Col xs={8}>
+              <Form.Control
+                className={cx({ "is-invalid": errors?.password })}
+                type="password"
+                placeholder="Password"
+                {...register("password")}
+              />
+            </Col>
+          </Row>
+        </Form.Group>
+
+        {errorList.map((error) => (
+          <Row key={error} className="text-end text-danger">
+            <div>{error}</div>
+          </Row>
+        ))}
+
+        <Row>
+          <Col
+            xs={{ span: 3, offset: 9 }}
+            className="justify-content-end mt-2 d-flex"
+          >
+            <Button type="submit" disabled={loading}>
+              Set Password
+            </Button>
+          </Col>
+        </Row>
+      </Form>
     </div>
   );
 };
