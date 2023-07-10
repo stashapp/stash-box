@@ -76,7 +76,7 @@ const StudioForm: FC<StudioProps> = ({
         site_id: u.site.id,
       })),
       image_ids: data.images.map((i) => i.id),
-      parent_id: data.parent?.id,
+      parent_id: data.parent?.id ?? null,
     };
     callback(callbackData, data.note);
   };
