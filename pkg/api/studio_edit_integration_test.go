@@ -295,7 +295,7 @@ func (s *studioEditTestRunner) verifyApplyModifyStudioEdit(input models.StudioEd
 	s.compareURLs(input.Urls, urls)
 }
 
-func (s *studioEditTestRunner) testApplyClearStudioEdit() {
+func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
 	existingName := "studioName4"
 	site, err := s.createTestSite(nil)
 	assert.NilError(s.t, err)
@@ -337,19 +337,33 @@ func (s *studioEditTestRunner) testApplyClearStudioEdit() {
 	_, err = s.applyEdit(uuid.FromStringOrNil(resp.StudioEdit.ID))
 	assert.NilError(s.t, err)
 
-	modifiedStudio, err := s.resolver.Query().FindStudio(s.ctx, &id, nil)
-	assert.NilError(s.t, err)
+	var studio struct {
+		FindStudio struct {
+			Name   string
+			Parent struct {
+				Id uuid.NullUUID
+			}
+			URLs []models.URL
+		}
+	}
 
-	s.verifyApplyClearStudioEdit(newName, modifiedStudio)
-}
+	s.client.MustPost(fmt.Sprintf(`
+		query {
+			findStudio(id: "%v") {
+			  name
+			  parent {
+				  id
+				}
+				urls {
+					url
+				}
+			}
+		}
+	`, id), &studio)
 
-func (s *studioEditTestRunner) verifyApplyClearStudioEdit(newName string, updatedStudio *models.Studio) {
-	// ensure basic attributes are set correctly
-	assert.Equal(s.t, newName, updatedStudio.Name)
-	assert.Assert(s.t, !updatedStudio.ParentStudioID.Valid)
-
-	urls, _ := s.resolver.Studio().Urls(s.ctx, updatedStudio)
-	s.compareURLs(nil, urls)
+	assert.Equal(s.t, newName, studio.FindStudio.Name)
+	assert.Assert(s.t, studio.FindStudio.Parent.Id.UUID.IsNil())
+	assert.Assert(s.t, len(studio.FindStudio.URLs) == 0)
 }
 
 func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
@@ -498,9 +512,9 @@ func TestApplyModifyStudioEdit(t *testing.T) {
 	pt.testApplyModifyStudioEdit()
 }
 
-func TestApplyClearStudioEdit(t *testing.T) {
+func TestApplyModifyUnsetStudioEdit(t *testing.T) {
 	pt := createStudioEditTestRunner(t)
-	pt.testApplyClearStudioEdit()
+	pt.testApplyModifyUnsetStudioEdit()
 }
 
 func TestApplyDestroyStudioEdit(t *testing.T) {
