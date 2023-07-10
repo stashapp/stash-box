@@ -54,12 +54,14 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
   const direction = ensureEnum(SortDirectionEnum, params.direction);
   const sort = ensureEnum(PerformerSortEnum, params.sort);
   const favorite = params.favorite === "true" || undefined;
+  const names = params.query || undefined;
   const { page, setPage } = usePagination();
 
   const { data, loading } = useStudioPerformers({
     studioId: id,
     gender,
     favorite,
+    names,
     page,
     per_page: PER_PAGE,
     sort,
