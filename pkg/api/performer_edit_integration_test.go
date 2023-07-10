@@ -508,7 +508,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		mutation {
 			performerEdit(input: {
 				edit: {id: "%v", operation: MODIFY}
-				details: { aliases: [], tattoos: [], piercings: [], urls: [] }
+				details: { aliases: [], tattoos: [], piercings: [], urls: [], disambiguation: null }
 			}) {
 				id
 			}
@@ -547,7 +547,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		}
 	`, id), &performer)
 
-	assert.Equal(s.t, performer.FindPerformer.Disambiguation, *performerData.Disambiguation)
+	assert.Equal(s.t, performer.FindPerformer.Disambiguation, "")
 	assert.Check(s.t, len(performer.FindPerformer.Aliases) == 0)
 	assert.Check(s.t, len(performer.FindPerformer.URLs) == 0)
 	assert.Check(s.t, len(performer.FindPerformer.Piercings) == 0)
