@@ -1,4 +1,5 @@
 import { Button, Form, InputGroup } from "react-bootstrap";
+import Select from "react-select";
 import {
   faSortAmountUp,
   faSortAmountDown,
@@ -70,7 +71,7 @@ const useEditFilter = ({
     status: { name: "status", type: "string", default: defaultVoteStatus },
     type: { name: "type", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
-    bot: { name: "bot", type: "string", default: "false" },
+    bot: { name: "bot", type: "string", default: "" },
   });
 
   const sort = ensureEnum(EditSortEnum, params.sort);
@@ -80,7 +81,7 @@ const useEditFilter = ({
   const status = resolveEnum(VoteStatusEnum, params.status, undefined);
   const type = resolveEnum(TargetTypeEnum, params.type);
   const favorite = params.favorite === "true";
-  const bot = params.bot === "true";
+  const bot = params.bot === "true" ? true : params.bot === "false" ? false : undefined;
 
   const selectedSort = fixedSort ?? sort;
   const selectedDirection = fixedDirection ?? direction;
@@ -203,11 +204,28 @@ const useEditFilter = ({
       )}
       <Form.Group controlId="bot" className="text-center ms-3">
         <Form.Label>Bot Edits</Form.Label>
-        <Form.Check
-          className="mt-2"
-          type="switch"
-          defaultChecked={bot}
-          onChange={(e) => setParams("bot", e.currentTarget.checked.toString())}
+        <Select
+          className="BotFilter"
+          classNamePrefix="react-select"
+          onChange={(option) => setParams("bot", option?.value ?? "")}
+          defaultValue={{ label: "Include", value: ""}}
+          isClearable={false}
+          components={{ IndicatorSeparator: null }}
+          styles={{ valueContainer: (props) => ({ ...props, fontWeight: 400 })}}
+          options={[
+            {
+              label: "Include",
+              value: "",
+            },
+            {
+              label: "Exclude",
+              value: "false",
+            },
+            {
+              label: "Only",
+              value: "true",
+            },
+          ]}
         />
       </Form.Group>
     </Form>
