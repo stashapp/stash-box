@@ -16,7 +16,6 @@ type Edit struct {
 	UserID     uuid.UUID      `db:"user_id" json:"user_id"`
 	TargetType string         `db:"target_type" json:"target_type"`
 	Operation  string         `db:"operation" json:"operation"`
-	VoteCount  int            `db:"votes" json:"votes"`
 	Status     string         `db:"status" json:"status"`
 	Applied    bool           `db:"applied" json:"applied"`
 	Data       types.JSONText `db:"data" json:"data"`

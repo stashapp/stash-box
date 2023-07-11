@@ -154,8 +154,6 @@ export type Edit = {
   target_type: TargetTypeEnum;
   updated?: Maybe<Scalars["Time"]>;
   user?: Maybe<User>;
-  /**  = Accepted - Rejected */
-  vote_count: Scalars["Int"];
   votes: Array<EditVote>;
 };
 
@@ -206,8 +204,6 @@ export type EditQueryInput = {
   target_type?: InputMaybe<TargetTypeEnum>;
   /** Filter by user id */
   user_id?: InputMaybe<Scalars["ID"]>;
-  /** Filter by vote count */
-  vote_count?: InputMaybe<IntCriterionInput>;
   /** Filter by user voted status */
   voted?: InputMaybe<UserVotedFilterEnum>;
 };
@@ -1888,7 +1884,6 @@ export type EditFragment = {
   updated?: string | null;
   closed?: string | null;
   expires?: string | null;
-  vote_count: number;
   destructive: boolean;
   comments: Array<{
     __typename: "EditComment";
@@ -3211,7 +3206,6 @@ export type ApplyEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -4421,7 +4415,6 @@ export type PerformerEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -5450,7 +5443,6 @@ export type PerformerEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -6514,7 +6506,6 @@ export type SceneEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -7543,7 +7534,6 @@ export type SceneEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -8571,7 +8561,6 @@ export type StudioEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -9600,7 +9589,6 @@ export type StudioEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -10628,7 +10616,6 @@ export type TagEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -11657,7 +11644,6 @@ export type TagEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -12819,7 +12805,6 @@ export type VoteMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -14104,7 +14089,6 @@ export type EditQuery = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
-    vote_count: number;
     destructive: boolean;
     comments: Array<{
       __typename: "EditComment";
@@ -15129,7 +15113,6 @@ export type EditUpdateQuery = {
     applied: boolean;
     created: string;
     updated?: string | null;
-    vote_count: number;
     merge_sources: Array<
       | { __typename: "Performer"; id: string }
       | { __typename: "Scene"; id: string }
@@ -15569,7 +15552,6 @@ export type EditsQuery = {
       updated?: string | null;
       closed?: string | null;
       expires?: string | null;
-      vote_count: number;
       destructive: boolean;
       comments: Array<{
         __typename: "EditComment";
@@ -16912,7 +16894,6 @@ export type QueryExistingSceneQuery = {
       updated?: string | null;
       closed?: string | null;
       expires?: string | null;
-      vote_count: number;
       destructive: boolean;
       comments: Array<{
         __typename: "EditComment";
@@ -19156,7 +19137,6 @@ export const EditFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -21911,7 +21891,6 @@ export const ApplyEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -24323,7 +24302,6 @@ export const PerformerEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -25931,7 +25909,6 @@ export const PerformerEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -27703,7 +27680,6 @@ export const SceneEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -29308,7 +29284,6 @@ export const SceneEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -30900,7 +30875,6 @@ export const StudioEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -32505,7 +32479,6 @@ export const StudioEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -34097,7 +34070,6 @@ export const TagEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -35702,7 +35674,6 @@ export const TagEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -37903,7 +37874,6 @@ export const VoteDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -40338,7 +40308,6 @@ export const EditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -41493,7 +41462,6 @@ export const EditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "applied" } },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
-                { kind: "Field", name: { kind: "Name", value: "vote_count" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "merge_sources" },
@@ -42970,7 +42938,6 @@ export const EditsDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",
@@ -45440,7 +45407,6 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
-          { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
             kind: "Field",

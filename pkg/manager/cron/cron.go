@@ -41,8 +41,23 @@ func (c Cron) processEdits() {
 				voteThreshold = 1
 			}
 
-			var err error
-			if e.VoteCount >= voteThreshold {
+			editVotes, err := c.rfp.Repo().Edit().GetVotes(e.ID)
+			if err != nil {
+				logger.Errorf("Edit cronjob failed to fetch edit votes for edit %s: %s", e.ID.String(), err.Error())
+				return err
+			}
+
+			accept := 0
+			reject := 0
+			for _, vote := range editVotes {
+				if vote.Vote == models.VoteTypeEnumAccept.String() {
+					accept++
+				} else if vote.Vote == models.VoteTypeEnumReject.String() {
+					reject++
+				}
+			}
+
+			if (accept - reject) >= voteThreshold {
 				_, err = edit.ApplyEdit(c.rfp.Repo(), e.ID, false)
 			} else {
 				_, err = edit.CloseEdit(c.rfp.Repo(), e.ID, models.VoteStatusEnumRejected)
