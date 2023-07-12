@@ -279,11 +279,8 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 	}
 
 	if q := filter.URL; q != nil && *q != "" {
-		query.AddJoin(performerURLTable.table, performerURLTable.Name()+"."+performerJoinKey+" = performers.id", true)
-		searchColumns := []string{performerURLTable.Name() + ".url"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
-		query.AddWhere(clause)
-		query.AddArg(thisArgs...)
+		where := fmt.Sprintf("%s.url = ?", performerURLTable.Name())
+		query.AddJoinTableFilter(performerURLTable, where, nil, false, *q)
 	}
 
 	if filter.IsFavorite != nil {

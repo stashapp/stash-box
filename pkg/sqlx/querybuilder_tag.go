@@ -2,6 +2,7 @@ package sqlx
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -265,9 +266,11 @@ func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, in
 	}
 
 	if q := filter.Names; q != nil && *q != "" {
-		searchColumns := []string{"tags.name", "tag_aliases.alias"}
-		query.AddLeftJoin(tagAliasTable.table, "tag_aliases.tag_id = tags.id", true)
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		searchColumns := []string{"T.name", "TA.alias"}
+
+		searchClause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		clause := fmt.Sprintf("EXISTS (SELECT T.id FROM tags T JOIN %[1]s TA ON T.id = TA.tag_id WHERE tags.id = T.id AND %[2]s GROUP BY T.id)", tagAliasTable.Name(), searchClause)
+
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
