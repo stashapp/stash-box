@@ -6,8 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import cx from "classnames";
 
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
-import { useNewUser } from "src/graphql";
+import { useNewUser, useConfig, ConfigQuery } from "src/graphql";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 
@@ -19,11 +20,17 @@ const schema = yup.object({
 });
 type RegisterFormData = yup.Asserts<typeof schema>;
 
-const Register: FC = () => {
+interface Props {
+  config: ConfigQuery["getConfig"];
+}
+
+const Register: FC<Props> = ({ config }) => {
   const navigate = useNavigate();
   const [awaitingActivation, setAwaitingActivation] = useState(false);
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
+
+  const inviteRequired = config.require_invite ?? true;
 
   const {
     register,
@@ -102,21 +109,25 @@ const Register: FC = () => {
           </Row>
         </Form.Group>
 
-        <Form.Group controlId="inviteKey" className="mt-2">
-          <Row>
-            <Col xs={4}>
-              <Form.Label>Invite Key:</Form.Label>
-            </Col>
-            <Col xs={8}>
-              <Form.Control
-                className={cx({ "is-invalid": errors?.inviteKey })}
-                type="text"
-                placeholder="Invite Key"
-                {...register("inviteKey")}
-              />
-            </Col>
-          </Row>
-        </Form.Group>
+        {inviteRequired ? (
+          <Form.Group controlId="inviteKey" className="mt-2">
+            <Row>
+              <Col xs={4}>
+                <Form.Label>Invite Key:</Form.Label>
+              </Col>
+              <Col xs={8}>
+                <Form.Control
+                  className={cx({ "is-invalid": errors?.inviteKey })}
+                  type="text"
+                  placeholder="Invite Key"
+                  {...register("inviteKey")}
+                />
+              </Col>
+            </Row>
+          </Form.Group>
+        ) : (
+          <Form.Control type="hidden" value="-" {...register("inviteKey")} />
+        )}
 
         {errorList.map((error) => (
           <Row key={error} className="text-end text-danger">
@@ -137,4 +148,14 @@ const Register: FC = () => {
   );
 };
 
-export default Register;
+const ConfigLoader = () => {
+  const { data: config, loading } = useConfig();
+  if (loading) return <LoadingIndicator message="Loading config..." />;
+
+  if (!config)
+    return <ErrorMessage error="Unable to load server configuration" />;
+
+  return <Register config={config.getConfig} />;
+};
+
+export default ConfigLoader;
