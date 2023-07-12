@@ -377,7 +377,11 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) (*models.Scene, erro
 
 	switch operation {
 	case models.OperationEnumCreate:
-		return m.applyCreate(data, &m.edit.UserID)
+		var userID *uuid.UUID
+		if m.edit.UserID.Valid {
+			userID = &m.edit.UserID.UUID
+		}
+		return m.applyCreate(data, userID)
 	case models.OperationEnumDestroy:
 		return m.applyDestroy(scene)
 	case models.OperationEnumModify:

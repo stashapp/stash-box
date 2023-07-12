@@ -168,8 +168,8 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 
 		if success {
 			userPromotionThreshold := config.GetVotePromotionThreshold()
-			if userPromotionThreshold != nil {
-				return user.PromoteUserVoteRights(fac, updatedEdit.UserID, *userPromotionThreshold)
+			if userPromotionThreshold != nil && updatedEdit.UserID.Valid {
+				return user.PromoteUserVoteRights(fac, updatedEdit.UserID.UUID, *userPromotionThreshold)
 			}
 		}
 
