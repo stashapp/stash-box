@@ -45,7 +45,7 @@
     "prettier": "2.8.4",
     "rollup-plugin-analyzer": "^4.0.0",
     "sass": "~1.58.3",
-    "stylelint": "^15.2.0",
+    "stylelint": "^15.10.1",
     "stylelint-config-standard": "^30.0.1",
     "stylelint-config-standard-scss": "^7.0.1",
     "stylelint-scss": "^4.4.0",
