@@ -56,7 +56,8 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 	}
 
 	// perform a diff against the input and the current object
-	performerEdit, err := input.Details.PerformerEditFromDiff(*performer, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	performerEdit, err := input.Details.PerformerEditFromDiff(*performer, detailArgs)
 	if err != nil {
 		return err
 	}
