@@ -322,7 +322,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 		mutation {
 			sceneEdit(input: {
 				edit: {id: "%v", operation: MODIFY}
-				details: { urls: [] }
+				details: { urls: [], director: null }
 			}) {
 				id
 			}
@@ -336,6 +336,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 		FindScene struct {
 			Director string
 			URLs     []models.URL
+			Tags     []models.Tag
 		}
 	}
 
@@ -346,12 +347,16 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 				urls {
 					url
 				}
+				tags {
+				  id
+				}
 			}
 		}
 	`, id), &scene)
 
-	assert.Equal(s.t, scene.FindScene.Director, *sceneData.Director)
+	assert.Equal(s.t, scene.FindScene.Director, "")
 	assert.Assert(s.t, len(scene.FindScene.URLs) == 0)
+	assert.Assert(s.t, len(scene.FindScene.Tags) == len(sceneData.TagIds))
 }
 
 func (s *sceneEditTestRunner) testApplyDestroySceneEdit() {

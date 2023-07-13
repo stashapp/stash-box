@@ -78,6 +78,7 @@ export const PerformerEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
       <PerformerForm
         performer={edit.target}
         initial={edit.details}
+        options={edit.options}
         callback={doUpdate}
         saving={saving}
       />

@@ -508,7 +508,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		mutation {
 			performerEdit(input: {
 				edit: {id: "%v", operation: MODIFY}
-				details: { aliases: [], tattoos: [], piercings: [], urls: [] }
+				details: { aliases: [], tattoos: [], piercings: [], urls: [], disambiguation: null }
 			}) {
 				id
 			}
@@ -520,6 +520,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 
 	var performer struct {
 		FindPerformer struct {
+			Height         int
 			ID             string
 			Disambiguation string
 			Aliases        []string
@@ -533,6 +534,7 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		query {
 			findPerformer(id: "%v") {
 				disambiguation
+				height
 				aliases
 				urls {
 					url
@@ -547,7 +549,8 @@ func (s *performerEditTestRunner) testApplyModifyUnsetPerformerEdit() {
 		}
 	`, id), &performer)
 
-	assert.Equal(s.t, performer.FindPerformer.Disambiguation, *performerData.Disambiguation)
+	assert.Equal(s.t, performer.FindPerformer.Disambiguation, "")
+	assert.Equal(s.t, performer.FindPerformer.Height, *performerData.Height)
 	assert.Check(s.t, len(performer.FindPerformer.Aliases) == 0)
 	assert.Check(s.t, len(performer.FindPerformer.URLs) == 0)
 	assert.Check(s.t, len(performer.FindPerformer.Piercings) == 0)

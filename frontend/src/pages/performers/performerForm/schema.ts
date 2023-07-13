@@ -52,6 +52,7 @@ export const PerformerSchema = yup.object({
   height: yup
     .number()
     .transform(zeroCheck)
+    .integer("Invalid height, decimals are not allowed")
     .min(100, "Invalid height, Height must be in centimeters.")
     .max(230, "Invalid height")
     .nullable(),

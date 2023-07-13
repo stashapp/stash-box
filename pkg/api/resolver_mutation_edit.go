@@ -74,7 +74,7 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 		return nil, err
 	}
 
-	if existingEdit.UserID != currentUser.ID {
+	if existingEdit.UserID.UUID != currentUser.ID {
 		return nil, ErrUnauthorizedUpdate
 	}
 
@@ -151,7 +151,7 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 		return nil, err
 	}
 
-	if existingEdit.UserID != currentUser.ID {
+	if existingEdit.UserID.UUID != currentUser.ID {
 		return nil, ErrUnauthorizedUpdate
 	}
 
@@ -228,7 +228,7 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 		return nil, err
 	}
 
-	if existingEdit.UserID != currentUser.ID {
+	if existingEdit.UserID.UUID != currentUser.ID {
 		return nil, ErrUnauthorizedUpdate
 	}
 
@@ -311,7 +311,7 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 		return nil, err
 	}
 
-	if existingEdit.UserID != currentUser.ID {
+	if existingEdit.UserID.UUID != currentUser.ID {
 		return nil, ErrUnauthorizedUpdate
 	}
 
@@ -354,7 +354,7 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 			return ErrClosedEdit
 		}
 
-		if err := user.ValidateOwner(ctx, voteEdit.UserID); err == nil {
+		if err := user.ValidateOwner(ctx, voteEdit.UserID.UUID); err == nil {
 			return user.ErrUnauthorized
 		}
 
@@ -421,7 +421,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 		return nil, err
 	}
 
-	if err = validateUser(ctx, e.UserID); err == nil {
+	if err = validateUser(ctx, e.UserID.UUID); err == nil {
 		return edit.CloseEdit(fac, input.ID, models.VoteStatusEnumCanceled)
 	} else if err = validateAdmin(ctx); err == nil {
 		currentUser := getCurrentUser(ctx)

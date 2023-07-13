@@ -97,13 +97,13 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 			return err
 		}
 
-		ret, err = user.Destroy(fac, input)
-
-		if err != nil {
+		if err := fac.Edit().CancelUserEdits(input.ID); err != nil {
 			return err
 		}
 
-		return nil
+		ret, err = user.Destroy(fac, input)
+
+		return err
 	})
 
 	if err != nil {

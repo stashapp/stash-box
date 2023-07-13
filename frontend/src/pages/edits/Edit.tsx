@@ -63,7 +63,8 @@ const EditComponent: FC = () => {
     <Modal
       message="Are you sure you want to cancel this edit?"
       callback={handleCancel}
-      acceptTerm="Cancel edit"
+      acceptTerm="Yes, cancel edit"
+      cancelTerm="Cancel"
     />
   );
 

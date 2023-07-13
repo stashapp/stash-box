@@ -56,7 +56,8 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputArgs u
 	}
 
 	// perform a diff against the input and the current object
-	sceneEdit, err := input.Details.SceneEditFromDiff(*scene, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	sceneEdit, err := input.Details.SceneEditFromDiff(*scene, detailArgs)
 	if err != nil {
 		return err
 	}
@@ -377,7 +378,11 @@ func (m *SceneEditProcessor) applyEdit(scene *models.Scene) (*models.Scene, erro
 
 	switch operation {
 	case models.OperationEnumCreate:
-		return m.applyCreate(data, &m.edit.UserID)
+		var userID *uuid.UUID
+		if m.edit.UserID.Valid {
+			userID = &m.edit.UserID.UUID
+		}
+		return m.applyCreate(data, userID)
 	case models.OperationEnumDestroy:
 		return m.applyDestroy(scene)
 	case models.OperationEnumModify:
