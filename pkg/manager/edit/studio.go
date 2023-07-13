@@ -56,7 +56,8 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputArgs
 	}
 
 	// perform a diff against the input and the current object
-	studioEdit, err := input.Details.StudioEditFromDiff(*studio, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	studioEdit, err := input.Details.StudioEditFromDiff(*studio, detailArgs)
 	if err != nil {
 		return err
 	}

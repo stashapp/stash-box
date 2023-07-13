@@ -3,10 +3,12 @@ import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { Button, Form, Row, Col } from "react-bootstrap";
 import cx from "classnames";
 
+import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
-import { useNewUser } from "src/graphql";
+import { useNewUser, useConfig, ConfigQuery } from "src/graphql";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 
@@ -18,11 +20,17 @@ const schema = yup.object({
 });
 type RegisterFormData = yup.Asserts<typeof schema>;
 
-const Register: FC = () => {
+interface Props {
+  config: ConfigQuery["getConfig"];
+}
+
+const Register: FC<Props> = ({ config }) => {
   const navigate = useNavigate();
   const [awaitingActivation, setAwaitingActivation] = useState(false);
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
+
+  const inviteRequired = config.require_invite ?? true;
 
   const {
     register,
@@ -46,7 +54,9 @@ const Register: FC = () => {
       .then((response) => {
         if (response.data?.newUser) {
           navigate(
-            `${ROUTE_ACTIVATE}?email=${formData.email}&key=${response.data.newUser}`
+            `${ROUTE_ACTIVATE}?email=${encodeURIComponent(
+              formData.email
+            )}&key=${response.data.newUser}`
           );
         } else {
           setAwaitingActivation(true);
@@ -61,7 +71,7 @@ const Register: FC = () => {
 
   if (awaitingActivation)
     return (
-      <div className="LoginPrompt mx-auto d-flex">
+      <div className="LoginPrompt">
         <div className="align-self-center col-8 mx-auto">
           <h5>Invite key accepted</h5>
           <p>Please check your email to complete your registration.</p>
@@ -70,52 +80,82 @@ const Register: FC = () => {
       </div>
     );
 
+  const errorList = [
+    errors.inviteKey?.message,
+    errors.email?.message,
+    submitError,
+  ].filter((err): err is string => err !== undefined);
+
   return (
     <div className="LoginPrompt mx-auto d-flex">
       <Title page="Register Account" />
-      <form
+      <Form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <label className="row" htmlFor="email">
-          <span className="col-4">Email: </span>
-          <input
-            className={cx("col-8", { "is-invalid": errors?.email })}
-            type="email"
-            placeholder="Email"
-            {...register("email")}
-          />
-          <div className="invalid-feedback text-end">
-            {errors?.email?.message}
-          </div>
-        </label>
-        <label className="row" htmlFor="inviteKey">
-          <span className="col-4">Invite Key: </span>
-          <input
-            className={cx("col-8", { "is-invalid": errors?.inviteKey })}
-            type="text"
-            placeholder="Invite Key"
-            {...register("inviteKey")}
-          />
-          <div className="invalid-feedback text-end">
-            {errors?.inviteKey?.message}
-          </div>
-        </label>
-        <div className="row">
-          <div className="col-3 offset-9 d-flex justify-content-end">
-            <div>
-              <button type="submit" className="register-button btn btn-primary">
-                Register
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <p className="col text-danger text-end">{submitError}</p>
-        </div>
-      </form>
+        <Form.Group controlId="email">
+          <Row>
+            <Col xs={4}>
+              <Form.Label>Email:</Form.Label>
+            </Col>
+            <Col xs={8}>
+              <Form.Control
+                className={cx({ "is-invalid": errors?.email })}
+                type="text"
+                placeholder="Email"
+                {...register("email")}
+              />
+            </Col>
+          </Row>
+        </Form.Group>
+
+        {inviteRequired ? (
+          <Form.Group controlId="inviteKey" className="mt-2">
+            <Row>
+              <Col xs={4}>
+                <Form.Label>Invite Key:</Form.Label>
+              </Col>
+              <Col xs={8}>
+                <Form.Control
+                  className={cx({ "is-invalid": errors?.inviteKey })}
+                  type="text"
+                  placeholder="Invite Key"
+                  {...register("inviteKey")}
+                />
+              </Col>
+            </Row>
+          </Form.Group>
+        ) : (
+          <Form.Control type="hidden" value="-" {...register("inviteKey")} />
+        )}
+
+        {errorList.map((error) => (
+          <Row key={error} className="text-end text-danger">
+            <div>{error}</div>
+          </Row>
+        ))}
+
+        <Row>
+          <Col
+            xs={{ span: 2, offset: 10 }}
+            className="justify-content-end mt-2 d-flex"
+          >
+            <Button type="submit">Register</Button>
+          </Col>
+        </Row>
+      </Form>
     </div>
   );
 };
 
-export default Register;
+const ConfigLoader = () => {
+  const { data: config, loading } = useConfig();
+  if (loading) return <LoadingIndicator message="Loading config..." />;
+
+  if (!config)
+    return <ErrorMessage error="Unable to load server configuration" />;
+
+  return <Register config={config.getConfig} />;
+};
+
+export default ConfigLoader;

@@ -38,6 +38,21 @@ const sortOptions = [
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
 ];
 
+const favoriteOptions = [
+  {
+    label: "All Favorites",
+    value: FavoriteFilter.ALL,
+  },
+  {
+    label: "Favorite Performers",
+    value: FavoriteFilter.PERFORMER,
+  },
+  {
+    label: "Favorite Studios",
+    value: FavoriteFilter.STUDIO,
+  },
+];
+
 const SceneList: FC<Props> = ({
   perPage = PER_PAGE,
   filter,
@@ -135,20 +150,12 @@ const SceneList: FC<Props> = ({
           onChange={(val) => setParams("favorite", val ? val.value : "NONE")}
           placeholder="Favorite filter"
           isClearable
-          options={[
-            {
-              label: "All Favorites",
-              value: FavoriteFilter.ALL,
-            },
-            {
-              label: "Favorite Performers",
-              value: FavoriteFilter.PERFORMER,
-            },
-            {
-              label: "Favorite Studios",
-              value: FavoriteFilter.STUDIO,
-            },
-          ]}
+          defaultValue={
+            favorite
+              ? favoriteOptions.find((fav) => fav.value === favorite)
+              : undefined
+          }
+          options={favoriteOptions}
         />
       ) : null}
     </>

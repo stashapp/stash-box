@@ -73,7 +73,7 @@ type Query {
   version: Version! @hasRole(role: READ)
 
   ### Instance Config ###
-  getConfig: StashBoxConfig! @hasRole(role: READ)
+  getConfig: StashBoxConfig!
 }
 
 type Mutation {

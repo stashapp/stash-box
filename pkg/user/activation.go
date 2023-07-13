@@ -187,24 +187,25 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 		return nil, ErrInvalidActivationKey
 	}
 
-	// check expiry
+	var invitedBy *uuid.UUID
+	if config.GetRequireInvite() {
+		i, err := iqb.Find(a.InviteKey.UUID)
+		if err != nil {
+			return nil, err
+		}
 
-	i, err := iqb.Find(a.InviteKey.UUID)
-	if err != nil {
-		return nil, err
+		if i == nil {
+			return nil, errors.New("cannot find invite key")
+		}
+
+		invitedBy = &i.GeneratedBy
 	}
-
-	if i == nil {
-		return nil, errors.New("cannot find invite key")
-	}
-
-	invitedBy := i.GeneratedBy
 
 	createInput := models.UserCreateInput{
 		Name:        name,
 		Email:       email,
 		Password:    password,
-		InvitedByID: &invitedBy,
+		InvitedByID: invitedBy,
 		Roles:       getDefaultUserRoles(),
 	}
 
@@ -232,17 +233,19 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 		return nil, err
 	}
 
-	// decrement the invite key uses
-	usesLeft, err := iqb.KeyUsed(i.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	// if all used up, then delete the invite key
-	if usesLeft != nil && *usesLeft <= 0 {
-		// delete the invite key
-		if err := iqb.Destroy(a.InviteKey.UUID); err != nil {
+	if config.GetRequireInvite() {
+		// decrement the invite key uses
+		usesLeft, err := iqb.KeyUsed(a.InviteKey.UUID)
+		if err != nil {
 			return nil, err
+		}
+
+		// if all used up, then delete the invite key
+		if usesLeft != nil && *usesLeft <= 0 {
+			// delete the invite key
+			if err := iqb.Destroy(a.InviteKey.UUID); err != nil {
+				return nil, err
+			}
 		}
 	}
 

@@ -11,7 +11,7 @@ import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 import { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { createHref, filterData, getImage } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-import { GenderIcon } from "src/components/fragments";
+import { GenderIcon, SearchHint } from "src/components/fragments";
 
 type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
 type PerformerAllResult = NonNullable<
@@ -234,6 +234,12 @@ const SearchField: FC<SearchFieldProps> = ({
         components={{
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null,
+          ValueContainer: ({ children }) => (
+            <>
+              <SearchHint />
+              {children}
+            </>
+          ),
         }}
         noOptionsMessage={({ inputValue }) =>
           inputValue === "" ? null : `No result found for "${inputValue}"`

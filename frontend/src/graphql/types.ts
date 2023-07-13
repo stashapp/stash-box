@@ -18376,6 +18376,7 @@ export type StudioPerformersQueryVariables = Exact<{
   studioId: Scalars["ID"];
   gender?: InputMaybe<GenderFilterEnum>;
   favorite?: InputMaybe<Scalars["Boolean"]>;
+  names?: InputMaybe<Scalars["String"]>;
   page?: Scalars["Int"];
   per_page?: Scalars["Int"];
   direction: SortDirectionEnum;
@@ -48412,6 +48413,14 @@ export const StudioPerformersDocument = {
         },
         {
           kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "names" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "String" } },
+        },
+        {
+          kind: "VariableDefinition",
           variable: { kind: "Variable", name: { kind: "Name", value: "page" } },
           type: {
             kind: "NonNullType",
@@ -48492,6 +48501,14 @@ export const StudioPerformersDocument = {
                       value: {
                         kind: "Variable",
                         name: { kind: "Name", value: "favorite" },
+                      },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "names" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "names" },
                       },
                     },
                     {

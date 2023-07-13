@@ -20,7 +20,12 @@ func (r *editResolver) ID(ctx context.Context, obj *models.Edit) (string, error)
 func (r *editResolver) User(ctx context.Context, obj *models.Edit) (*models.User, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.User()
-	user, err := qb.Find(obj.UserID)
+
+	if obj.UserID.UUID.IsNil() {
+		return nil, nil
+	}
+
+	user, err := qb.Find(obj.UserID.UUID)
 
 	if err != nil {
 		return nil, err

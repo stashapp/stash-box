@@ -1,4 +1,5 @@
 import { Button, Form, InputGroup } from "react-bootstrap";
+import Select from "react-select";
 import {
   faSortAmountUp,
   faSortAmountDown,
@@ -28,6 +29,21 @@ const sortOptions = [
   { value: EditSortEnum.UPDATED_AT, label: "Date updated" },
 ];
 
+const botOptions = [
+  {
+    label: "Include",
+    value: "include",
+  },
+  {
+    label: "Exclude",
+    value: "exclude",
+  },
+  {
+    label: "Only",
+    value: "only",
+  },
+];
+
 interface EditFilterProps {
   sort?: EditSortEnum;
   direction?: SortDirectionEnum;
@@ -41,6 +57,7 @@ interface EditFilterProps {
   showVotedFilter?: boolean;
   defaultVoteStatus?: VoteStatusEnum | "all";
   defaultVoted?: UserVotedFilterEnum;
+  defaultBot?: "include" | "exclude" | "only";
 }
 
 const useEditFilter = ({
@@ -56,6 +73,7 @@ const useEditFilter = ({
   showVotedFilter = true,
   defaultVoteStatus = "all",
   defaultVoted,
+  defaultBot = "include",
 }: EditFilterProps) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
@@ -70,7 +88,7 @@ const useEditFilter = ({
     status: { name: "status", type: "string", default: defaultVoteStatus },
     type: { name: "type", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
-    bot: { name: "bot", type: "string", default: "false" },
+    bot: { name: "bot", type: "string", default: defaultBot },
   });
 
   const sort = ensureEnum(EditSortEnum, params.sort);
@@ -80,7 +98,6 @@ const useEditFilter = ({
   const status = resolveEnum(VoteStatusEnum, params.status, undefined);
   const type = resolveEnum(TargetTypeEnum, params.type);
   const favorite = params.favorite === "true";
-  const bot = params.bot === "true";
 
   const selectedSort = fixedSort ?? sort;
   const selectedDirection = fixedDirection ?? direction;
@@ -89,7 +106,7 @@ const useEditFilter = ({
   const selectedOperation = fixedOperation ?? operation;
   const selectedVoted = fixedVoted ?? voted;
   const selectedFavorite = fixedFavorite ?? favorite;
-  const selectedBot = fixedBot ?? bot;
+  const selectedBot = fixedBot ?? params.bot;
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -203,11 +220,17 @@ const useEditFilter = ({
       )}
       <Form.Group controlId="bot" className="text-center ms-3">
         <Form.Label>Bot Edits</Form.Label>
-        <Form.Check
-          className="mt-2"
-          type="switch"
-          defaultChecked={bot}
-          onChange={(e) => setParams("bot", e.currentTarget.checked.toString())}
+        <Select
+          className="BotFilter"
+          classNamePrefix="react-select"
+          onChange={(option) => setParams("bot", option?.value ?? "")}
+          isClearable={false}
+          components={{ IndicatorSeparator: null }}
+          styles={{
+            valueContainer: (props) => ({ ...props, fontWeight: 400 }),
+          }}
+          options={botOptions}
+          value={botOptions.find((opt) => opt.value === selectedBot)}
         />
       </Form.Group>
     </Form>

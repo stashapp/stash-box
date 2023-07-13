@@ -56,7 +56,13 @@ const StudioForm: FC<StudioProps> = ({
   const [file, setFile] = useState<File | undefined>();
   const fieldData = watch();
   const [oldStudioChanges, newStudioChanges] = useMemo(
-    () => DiffStudio(StudioSchema.cast(fieldData), studio),
+    () =>
+      DiffStudio(
+        StudioSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as StudioFormData,
+        studio
+      ),
     [fieldData, studio]
   );
 
@@ -70,7 +76,7 @@ const StudioForm: FC<StudioProps> = ({
         site_id: u.site.id,
       })),
       image_ids: data.images.map((i) => i.id),
-      parent_id: data.parent?.id,
+      parent_id: data.parent?.id ?? null,
     };
     callback(callbackData, data.note);
   };

@@ -212,16 +212,16 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		}
 		switch *filter.TargetType {
 		case models.TargetTypeEnumTag:
-			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id", false)
+			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		case models.TargetTypeEnumPerformer:
-			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id", false)
+			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		case models.TargetTypeEnumStudio:
-			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id", false)
+			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		case models.TargetTypeEnumScene:
-			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id", false)
+			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id")
 			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
 		}
 		jsonID, _ := json.Marshal(*targetID)
@@ -243,19 +243,11 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 	if q := filter.Voted; q != nil && *q != "" {
 		switch *filter.Voted {
 		case models.UserVotedFilterEnumNotVoted:
-			where := `
-				NOT EXISTS (
-				  SELECT 1 FROM edit_votes ev
-				  WHERE ev.edit_id = edits.id
-				  AND ev.user_id = ?
-				)
-			`
-			query.AddWhere(where)
-			query.AddArg(userID)
+			where := fmt.Sprintf("%s.user_id = ?", editVoteTable.name)
+			query.AddJoinTableFilter(editVoteTable, where, nil, true, userID)
 		default:
-			query.AddLeftJoin(editVoteTable.table, editVoteTable.Name()+".edit_id = edits.id", true)
-			query.AddWhere("(" + editVoteTable.Name() + ".user_id = ? AND " + editVoteTable.Name() + ".vote = ?)")
-			query.AddArg(userID, q.String())
+			where := fmt.Sprintf("%[1]s.user_id = ? AND %[1]s.vote = ?", editVoteTable.Name())
+			query.AddJoinTableFilter(editVoteTable, where, nil, false, userID, q.String())
 		}
 	}
 
@@ -296,10 +288,8 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		query.AddArg(userID, userID, userID, userID, userID, userID)
 	}
 
-	if q := filter.IsBot; q != nil && *q {
-		query.Eq("bot", true)
-	} else {
-		query.Eq("bot", false)
+	if q := filter.IsBot; q != nil {
+		query.Eq("bot", *q)
 	}
 
 	if filter.Sort == models.EditSortEnumClosedAt || filter.Sort == models.EditSortEnumUpdatedAt {
@@ -466,4 +456,12 @@ func (qb *editQueryBuilder) FindPendingSceneCreation(input models.QueryExistingS
 	}
 
 	return qb.queryEdits(query, args)
+}
+
+func (qb *editQueryBuilder) CancelUserEdits(userID uuid.UUID) error {
+	var args []interface{}
+	args = append(args, userID)
+	query := `UPDATE edits SET status = 'CANCELED', updated_at = NOW() WHERE user_id = ?`
+	err := qb.dbi.RawQuery(editDBTable, query, args, nil)
+	return err
 }

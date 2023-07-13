@@ -247,11 +247,22 @@ hr {
 }
 
 .modal {
-  color: $dark-text;
+  color: $text-color;
 
-  .modal-body,
-  .modal-footer {
-    background-color: rgb(235 241 245);
+  .btn-close {
+    background-color: $text-color;
+  }
+
+  &-header,
+  &-body,
+  &-footer {
+    background-color: #30404d;
+    border-color: transparent;
+    color: $text-color;
+  }
+
+  &-content {
+    background-color: transparent;
   }
 }
 
