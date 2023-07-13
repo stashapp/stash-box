@@ -11,7 +11,7 @@ const EditsComponent: FC = () => (
     <EditList
       defaultVoteStatus={VoteStatusEnum.PENDING}
       defaultVoted={UserVotedFilterEnum.NOT_VOTED}
-      defaultBot="false"
+      defaultBot="exclude"
     />
   </>
 );

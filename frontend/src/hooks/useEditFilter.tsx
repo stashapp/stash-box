@@ -32,15 +32,15 @@ const sortOptions = [
 const botOptions = [
   {
     label: "Include",
-    value: "all",
+    value: "include",
   },
   {
     label: "Exclude",
-    value: "false",
+    value: "exclude",
   },
   {
     label: "Only",
-    value: "true",
+    value: "only",
   },
 ];
 
@@ -57,7 +57,7 @@ interface EditFilterProps {
   showVotedFilter?: boolean;
   defaultVoteStatus?: VoteStatusEnum | "all";
   defaultVoted?: UserVotedFilterEnum;
-  defaultBot?: "true" | "false" | "all";
+  defaultBot?: "include" | "exclude" | "only";
 }
 
 const useEditFilter = ({
@@ -73,7 +73,7 @@ const useEditFilter = ({
   showVotedFilter = true,
   defaultVoteStatus = "all",
   defaultVoted,
-  defaultBot = "all",
+  defaultBot = "include",
 }: EditFilterProps) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
@@ -107,7 +107,6 @@ const useEditFilter = ({
   const selectedVoted = fixedVoted ?? voted;
   const selectedFavorite = fixedFavorite ?? favorite;
   const selectedBot = fixedBot ?? params.bot;
-  console.log(selectedBot);
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (

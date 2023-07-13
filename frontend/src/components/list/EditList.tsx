@@ -25,7 +25,7 @@ interface EditsProps {
   userId?: string;
   defaultVoteStatus?: VoteStatusEnum;
   defaultVoted?: UserVotedFilterEnum;
-  defaultBot?: "false" | "true" | undefined;
+  defaultBot?: "include" | "exclude" | "only";
   showVotedFilter?: boolean;
 }
 
@@ -79,9 +79,9 @@ const EditListComponent: FC<EditsProps> = ({
       user_id: userId,
       is_favorite: selectedFavorite,
       is_bot:
-        selectedBot === "true"
+        selectedBot === "only"
           ? true
-          : selectedBot === "false"
+          : selectedBot === "exclude"
           ? false
           : undefined,
       page,
