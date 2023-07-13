@@ -2,6 +2,7 @@ import { FC } from "react";
 import Async from "react-select/async";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
+import { SearchHint } from "src/components/fragments";
 
 import StudiosGQL from "src/graphql/queries/Studios.gql";
 import StudioGQL from "src/graphql/queries/Studio.gql";
@@ -130,6 +131,14 @@ const StudioSelect: FC<StudioSelectProps> = ({
         }
         isClearable={isClearable}
         formatOptionLabel={formatStudioName}
+        components={{
+          ValueContainer: ({ children }) => (
+            <>
+              <SearchHint />
+              {children}
+            </>
+          ),
+        }}
       />
     </div>
   );

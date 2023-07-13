@@ -9,7 +9,6 @@ import {
   faExclamationTriangle,
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { faCircleQuestion } from "@fortawesome/free-regular-svg-icons";
 
 import { formatDuration, parseDuration, performerHref } from "src/utils";
 import {
@@ -21,7 +20,7 @@ import {
 } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
-import { GenderIcon, Icon, Tooltip } from "src/components/fragments";
+import { GenderIcon, Icon } from "src/components/fragments";
 import SearchField, {
   SearchType,
   PerformerResult,
@@ -372,18 +371,7 @@ const SceneForm: FC<SceneProps> = ({
 
           <Row>
             <Form.Group className="col mb-3">
-              <div className="d-flex">
-                <Form.Label className="d-flex flex-grow-1">
-                  Performers
-                </Form.Label>
-                <span>
-                  <Tooltip text='Add " to the end to include all words, or paste in a Stash ID'>
-                    <span>
-                      <Icon icon={faCircleQuestion}></Icon>
-                    </span>
-                  </Tooltip>
-                </span>
-              </div>
+              <Form.Label>Performers</Form.Label>
               {performerList}
               <div className="add-performer">
                 <span>Add performer:</span>
@@ -403,16 +391,7 @@ const SceneForm: FC<SceneProps> = ({
               controlId="studioId"
               className="studio-select col-6 mb-3"
             >
-              <div className="d-flex">
-                <Form.Label className="d-flex flex-grow-1">Studio</Form.Label>
-                <span>
-                  <Tooltip text='Add " to the end to include all words, or paste in a Stash ID'>
-                    <span>
-                      <Icon icon={faCircleQuestion}></Icon>
-                    </span>
-                  </Tooltip>
-                </span>
-              </div>
+              <Form.Label>Studio</Form.Label>
               <Controller
                 name="studio"
                 control={control}
