@@ -1,6 +1,6 @@
 import { FC, KeyboardEvent, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client";
-import { OnChangeValue } from "react-select";
+import { OnChangeValue, components } from "react-select";
 import Async from "react-select/async";
 import debounce from "p-debounce";
 import { useNavigate } from "react-router-dom";
@@ -234,10 +234,10 @@ const SearchField: FC<SearchFieldProps> = ({
         components={{
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null,
-          ValueContainer: ({ children }) => (
+          ValueContainer: (props) => (
             <>
               <SearchHint />
-              {children}
+              <components.ValueContainer {...props} />
             </>
           ),
         }}

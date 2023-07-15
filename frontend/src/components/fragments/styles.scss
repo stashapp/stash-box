@@ -121,6 +121,9 @@
 
 .SearchHint {
   margin-left: 10px;
-  margin-right: 7px;
   cursor: help;
+}
+
+.Tooltip {
+  position: absolute !important;
 }
