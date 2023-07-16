@@ -230,16 +230,6 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		query.Eq("target_type", q.String())
 	}
 
-	if q := filter.Status; q != nil {
-		query.Eq("status", q.String())
-	}
-	if q := filter.Operation; q != nil {
-		query.Eq("operation", q.String())
-	}
-	if q := filter.Applied; q != nil {
-		query.Eq("applied", *q)
-	}
-
 	if q := filter.Voted; q != nil && *q != "" {
 		switch *filter.Voted {
 		case models.UserVotedFilterEnumNotVoted:
@@ -286,6 +276,16 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		`
 		query.AddWhere(q)
 		query.AddArg(userID, userID, userID, userID, userID, userID)
+	}
+
+	if q := filter.Status; q != nil {
+		query.Eq("status", q.String())
+	}
+	if q := filter.Operation; q != nil {
+		query.Eq("operation", q.String())
+	}
+	if q := filter.Applied; q != nil {
+		query.Eq("applied", *q)
 	}
 
 	if q := filter.IsBot; q != nil {
