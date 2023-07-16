@@ -171,8 +171,6 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 	query := newQueryBuilder(studioDBTable)
 	query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
 
-	query.Eq("studios.deleted", false)
-
 	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
@@ -213,6 +211,8 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 
 	query.Sort = qb.getStudioSort(filter)
 	query.Pagination = getPagination(filter.Page, filter.PerPage)
+
+	query.Eq("studios.deleted", false)
 
 	var studios models.Studios
 	countResult, err := qb.dbi.Query(*query, &studios)

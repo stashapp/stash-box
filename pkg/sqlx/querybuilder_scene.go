@@ -345,6 +345,47 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uuid.UUID, isCount bool) (*queryBuilder, error) {
 	query := newQueryBuilder(sceneDBTable)
 
+	if q := filter.URL; q != nil && *q != "" {
+		where := fmt.Sprintf("%s.url = ?", sceneURLTable.Name())
+		query.AddJoinTableFilter(sceneURLTable, where, nil, false, *q)
+	}
+
+	if filter.ParentStudio != nil {
+		query.Body += "LEFT JOIN studios ON scenes.studio_id = studios.id"
+		query.AddWhere("(studios.parent_studio_id = ? OR studios.id = ?)")
+		query.AddArg(*filter.ParentStudio, *filter.ParentStudio)
+	}
+
+	if q := filter.Performers; q != nil && len(q.Value) > 0 {
+		if err := setMultiCriterionClause(query, scenePerformerTable, performerJoinKey, q); err != nil {
+			return nil, err
+		}
+	}
+
+	if q := filter.Tags; q != nil && len(q.Value) > 0 {
+		if err := setMultiCriterionClause(query, sceneTagTable, tagJoinKey, q); err != nil {
+			return nil, err
+		}
+	}
+
+	if q := filter.Fingerprints; q != nil && len(q.Value) > 0 {
+		if err := setMultiCriterionClause(query, sceneFingerprintTable, "hash", q); err != nil {
+			return nil, err
+		}
+	}
+
+	if filter.HasFingerprintSubmissions != nil && *filter.HasFingerprintSubmissions {
+		query.Body += `
+			JOIN (
+				SELECT scene_id
+				FROM scene_fingerprints
+				WHERE user_id = ?
+				GROUP BY scene_id
+			) T ON scenes.id = T.scene_id
+		`
+		query.AddArg(userID)
+	}
+
 	if q := filter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
@@ -357,11 +398,6 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
-	}
-
-	if q := filter.URL; q != nil && *q != "" {
-		where := fmt.Sprintf("%s.url = ?", sceneURLTable.Name())
-		query.AddJoinTableFilter(sceneURLTable, where, nil, false, *q)
 	}
 
 	if q := filter.Studios; q != nil && len(q.Value) > 0 {
@@ -392,30 +428,6 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 			fallthrough
 		case models.CriterionModifierLessThan:
 			return nil, fmt.Errorf("unsupported modifier %s for scenes.studio_id", q.Modifier)
-		}
-	}
-
-	if filter.ParentStudio != nil {
-		query.Body += "LEFT JOIN studios ON scenes.studio_id = studios.id"
-		query.AddWhere("(studios.parent_studio_id = ? OR studios.id = ?)")
-		query.AddArg(*filter.ParentStudio, *filter.ParentStudio)
-	}
-
-	if q := filter.Performers; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, scenePerformerTable, performerJoinKey, q); err != nil {
-			return nil, err
-		}
-	}
-
-	if q := filter.Tags; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, sceneTagTable, tagJoinKey, q); err != nil {
-			return nil, err
-		}
-	}
-
-	if q := filter.Fingerprints; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, sceneFingerprintTable, "hash", q); err != nil {
-			return nil, err
 		}
 	}
 
@@ -465,18 +477,6 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 	} else {
 		query.Sort = qb.getSceneSort(filter)
 		query.Pagination = getPagination(filter.Page, filter.PerPage)
-	}
-
-	if filter.HasFingerprintSubmissions != nil && *filter.HasFingerprintSubmissions {
-		query.Body += `
-			JOIN (
-				SELECT scene_id
-				FROM scene_fingerprints
-				WHERE user_id = ?
-				GROUP BY scene_id
-			) T ON scenes.id = T.scene_id
-		`
-		query.AddArg(userID)
 	}
 
 	query.Eq("scenes.deleted", false)
