@@ -340,7 +340,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Check
                   id="update-modify-aliases"
                   checked={updateAliases}
-                  defaultChecked={options?.set_modify_aliases ?? false}
+                  defaultChecked={options?.set_modify_aliases ?? true}
                   onChange={() => setUpdateAliases(!updateAliases)}
                   label="Set unset performance aliases to old name"
                   className="d-inline-block"
