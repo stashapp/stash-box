@@ -202,8 +202,15 @@ func (qb *editQueryBuilder) Count() (int, error) {
 func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid.UUID) (*queryBuilder, error) {
 	query := newQueryBuilder(editDBTable)
 
-	if q := filter.UserID; q != nil {
-		query.Eq(editDBTable.Name()+".user_id", *q)
+	if q := filter.Voted; q != nil && *q != "" {
+		switch *filter.Voted {
+		case models.UserVotedFilterEnumNotVoted:
+			where := fmt.Sprintf("%s.user_id = ?", editVoteTable.name)
+			query.AddJoinTableFilter(editVoteTable, where, nil, true, userID)
+		default:
+			where := fmt.Sprintf("%[1]s.user_id = ? AND %[1]s.vote = ?", editVoteTable.Name())
+			query.AddJoinTableFilter(editVoteTable, where, nil, false, userID, q.String())
+		}
 	}
 
 	if targetID := filter.TargetID; targetID != nil {
@@ -228,17 +235,6 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		query.AddArg(*targetID, jsonID)
 	} else if q := filter.TargetType; q != nil && *q != "" {
 		query.Eq("target_type", q.String())
-	}
-
-	if q := filter.Voted; q != nil && *q != "" {
-		switch *filter.Voted {
-		case models.UserVotedFilterEnumNotVoted:
-			where := fmt.Sprintf("%s.user_id = ?", editVoteTable.name)
-			query.AddJoinTableFilter(editVoteTable, where, nil, true, userID)
-		default:
-			where := fmt.Sprintf("%[1]s.user_id = ? AND %[1]s.vote = ?", editVoteTable.Name())
-			query.AddJoinTableFilter(editVoteTable, where, nil, false, userID, q.String())
-		}
 	}
 
 	if q := filter.IsFavorite; q != nil && *q {
@@ -276,6 +272,10 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		`
 		query.AddWhere(q)
 		query.AddArg(userID, userID, userID, userID, userID, userID)
+	}
+
+	if q := filter.UserID; q != nil {
+		query.Eq(editDBTable.Name()+".user_id", *q)
 	}
 
 	if q := filter.Status; q != nil {

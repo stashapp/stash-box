@@ -236,6 +236,11 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		query.AddArg(filter.StudioID)
 	}
 
+	if q := filter.URL; q != nil && *q != "" {
+		where := fmt.Sprintf("%s.url = ?", performerURLTable.Name())
+		query.AddJoinTableFilter(performerURLTable, where, nil, false, *q)
+	}
+
 	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"performers.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
@@ -276,11 +281,6 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		} else {
 			query.Eq("performers.ethnicity", q.String())
 		}
-	}
-
-	if q := filter.URL; q != nil && *q != "" {
-		where := fmt.Sprintf("%s.url = ?", performerURLTable.Name())
-		query.AddJoinTableFilter(performerURLTable, where, nil, false, *q)
 	}
 
 	if filter.IsFavorite != nil {
