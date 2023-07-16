@@ -185,7 +185,9 @@ const PerformerForm: FC<PerformerProps> = ({
   });
 
   const [activeTab, setActiveTab] = useState("personal");
-  const [updateAliases, setUpdateAliases] = useState<boolean>();
+  const [updateAliases, setUpdateAliases] = useState<boolean | undefined>(
+    options?.set_modify_aliases ?? undefined
+  );
   const [file, setFile] = useState<File | undefined>();
 
   const fieldData = watch();
@@ -341,7 +343,11 @@ const PerformerForm: FC<PerformerProps> = ({
                   id="update-modify-aliases"
                   checked={updateAliases}
                   defaultChecked={options?.set_modify_aliases ?? true}
-                  onChange={() => setUpdateAliases(prev => prev === undefined ? false : !prev)}
+                  onChange={() =>
+                    setUpdateAliases((prev) =>
+                      prev === undefined ? false : !prev
+                    )
+                  }
                   label="Set unset performance aliases to old name"
                   className="d-inline-block"
                 />
