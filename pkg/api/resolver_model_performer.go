@@ -199,13 +199,18 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 		}
 	}
 
+	var tags *models.MultiIDCriterionInput
+	if input != nil {
+		tags = input.Tags
+	}
+
 	filter := models.SceneQueryInput{
 		Performers: &models.MultiIDCriterionInput{
 			Modifier: models.CriterionModifierIncludesAll,
 			Value:    performers,
 		},
 		Studios:   studios,
-		Tags:      input.Tags,
+		Tags:      tags,
 		Sort:      "DATE",
 		Direction: "DESC",
 		Page:      1,
