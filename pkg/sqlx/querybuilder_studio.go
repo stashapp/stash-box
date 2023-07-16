@@ -171,6 +171,11 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 	query := newQueryBuilder(studioDBTable)
 	query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
 
+	if q := filter.URL; q != nil && *q != "" {
+		where := fmt.Sprintf("%s.url = ?", studioURLTable.Name())
+		query.AddJoinTableFilter(studioURLTable, where, nil, false, *q)
+	}
+
 	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
@@ -202,11 +207,6 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 			query.Body += " LEFT" + q
 			query.AddWhere("F.studio_id IS NULL")
 		}
-	}
-
-	if q := filter.URL; q != nil && *q != "" {
-		where := fmt.Sprintf("%s.url = ?", studioURLTable.Name())
-		query.AddJoinTableFilter(studioURLTable, where, nil, false, *q)
 	}
 
 	query.Sort = qb.getStudioSort(filter)
