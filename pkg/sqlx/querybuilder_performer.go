@@ -238,7 +238,7 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 
 	if q := filter.URL; q != nil && *q != "" {
 		where := fmt.Sprintf("%s.url = ?", performerURLTable.Name())
-		query.AddJoinTableFilter(performerURLTable, where, nil, false, *q)
+		query.AddJoinTableFilter(performerURLTable, where, false, nil, false, *q)
 	}
 
 	if q := filter.Name; q != nil && *q != "" {

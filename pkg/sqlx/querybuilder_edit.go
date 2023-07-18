@@ -206,10 +206,10 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		switch *filter.Voted {
 		case models.UserVotedFilterEnumNotVoted:
 			where := fmt.Sprintf("%s.user_id = ?", editVoteTable.name)
-			query.AddJoinTableFilter(editVoteTable, where, nil, true, userID)
+			query.AddJoinTableFilter(editVoteTable, where, false, nil, true, userID)
 		default:
 			where := fmt.Sprintf("%[1]s.user_id = ? AND %[1]s.vote = ?", editVoteTable.Name())
-			query.AddJoinTableFilter(editVoteTable, where, nil, false, userID, q.String())
+			query.AddJoinTableFilter(editVoteTable, where, false, nil, false, userID, q.String())
 		}
 	}
 

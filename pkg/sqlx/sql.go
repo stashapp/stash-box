@@ -48,9 +48,9 @@ func (qb *queryBuilder) AddJoin(jt table, on string) {
 	qb.Body += " JOIN " + jt.Name() + " ON " + on
 }
 
-func (qb *queryBuilder) AddJoinTableFilter(tj tableJoin, query string, having *string, not bool, args ...interface{}) {
+func (qb *queryBuilder) AddJoinTableFilter(tj tableJoin, query string, group bool, having *string, not bool, args ...interface{}) {
 	clause := fmt.Sprintf(" JOIN (SELECT %[1]s.%[2]s FROM %[1]s WHERE %[3]s", tj.Name(), tj.joinColumn, query)
-	if len(args) > 1 {
+	if group {
 		clause += fmt.Sprintf(" GROUP BY %s.%s", tj.Name(), tj.joinColumn)
 
 		if having != nil {
