@@ -351,8 +351,7 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 	}
 
 	if filter.ParentStudio != nil {
-		query.Body += "LEFT JOIN studios ON scenes.studio_id = studios.id"
-		query.AddWhere("(studios.parent_studio_id = ? OR studios.id = ?)")
+		query.Body += "JOIN studios ON scenes.studio_id = studios.id AND (studios.parent_studio_id = ? OR studios.id = ?)"
 		query.AddArg(*filter.ParentStudio, *filter.ParentStudio)
 	}
 
