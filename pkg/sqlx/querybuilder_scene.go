@@ -110,8 +110,7 @@ func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins 
 
 func (qb *sceneQueryBuilder) DestroyFingerprints(sceneID uuid.UUID, toDestroy models.SceneFingerprints) error {
 	for _, fp := range toDestroy {
-		fmt.Println(fp)
-		res, err := qb.dbi.db().Exec(`
+		res, err := qb.dbi.db().ExecContext(qb.dbi.txn.ctx, `
 		DELETE FROM scene_fingerprints SFP
 		USING fingerprints FP
 		WHERE SFP.fingerprint_id = FP.id
@@ -329,7 +328,7 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 }
 
 func (qb *sceneQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
 func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uuid.UUID, isCount bool) (*queryBuilder, error) {
@@ -749,7 +748,7 @@ func (qb *sceneQueryBuilder) SearchScenes(term string, limit int) ([]*models.Sce
 func (qb *sceneQueryBuilder) CountByPerformer(id uuid.UUID) (int, error) {
 	var args []interface{}
 	args = append(args, id)
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT scene_id FROM scene_performers WHERE performer_id = ?"), args)
 }
 
 func (qb *sceneQueryBuilder) SoftDelete(scene models.Scene) (*models.Scene, error) {

@@ -88,5 +88,5 @@ func (qb *pendingActivationQueryBuilder) FindByInviteKey(key string, activationT
 }
 
 func (qb *pendingActivationQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT "+pendingActivationTable+".id FROM "+pendingActivationTable), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT "+pendingActivationTable+".id FROM "+pendingActivationTable), nil)
 }

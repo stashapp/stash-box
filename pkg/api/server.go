@@ -14,13 +14,19 @@ import (
 	"strings"
 
 	"github.com/klauspost/compress/flate"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
+	"github.com/ravilushqa/otelgqlgen"
+
+	"github.com/99designs/gqlgen/graphql"
 	gqlHandler "github.com/99designs/gqlgen/graphql/handler"
 	gqlExtension "github.com/99designs/gqlgen/graphql/handler/extension"
 	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/riandyrn/otelchi"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/logger"
@@ -93,6 +99,11 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			ctx = context.WithValue(ctx, user.ContextUser, u)
 			ctx = context.WithValue(ctx, user.ContextRoles, roles)
 
+			span := trace.SpanFromContext(ctx)
+			if span.SpanContext().IsValid() {
+				span.SetAttributes(attribute.String("user.id", u.ID.String()))
+			}
+
 			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
@@ -110,6 +121,7 @@ func redirect(w http.ResponseWriter, req *http.Request) {
 
 func Start(rfp RepoProvider, ui embed.FS) {
 	r := chi.NewRouter()
+	r.Use(otelchi.Middleware("", otelchi.WithChiRoutes(r)))
 
 	var corsConfig *cors.Cors
 	if config.GetIsProduction() {
@@ -154,8 +166,9 @@ func Start(rfp RepoProvider, ui embed.FS) {
 	gqlSrv.AddTransport(gqlTransport.POST{})
 	gqlSrv.AddTransport(gqlTransport.MultipartForm{})
 	gqlSrv.Use(gqlExtension.Introspection{})
+	gqlSrv.Use(otelgqlgen.Middleware(otelgqlgen.WithCreateSpanFromFields(func(fieldCtx *graphql.FieldContext) bool { return fieldCtx.IsResolver })))
 
-	r.Handle("/graphql", dataloader.Middleware(rfp.Repo())(gqlSrv))
+	r.Handle("/graphql", dataloader.Middleware(getRepo)(gqlSrv))
 
 	if !config.GetIsProduction() {
 		r.Handle("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))

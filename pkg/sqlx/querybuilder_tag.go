@@ -222,7 +222,7 @@ func (qb *tagQueryBuilder) FindWithRedirect(id uuid.UUID) (*models.Tag, error) {
 }
 
 func (qb *tagQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT tags.id FROM tags"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
 func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, int, error) {
