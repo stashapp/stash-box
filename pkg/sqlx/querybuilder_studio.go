@@ -173,7 +173,7 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 
 	if q := filter.URL; q != nil && *q != "" {
 		where := fmt.Sprintf("%s.url = ?", studioURLTable.Name())
-		query.AddJoinTableFilter(studioURLTable, where, nil, false, *q)
+		query.AddJoinTableFilter(studioURLTable, where, false, nil, false, *q)
 	}
 
 	if q := filter.Name; q != nil && *q != "" {

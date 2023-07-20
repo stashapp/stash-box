@@ -347,7 +347,7 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 
 	if q := filter.URL; q != nil && *q != "" {
 		where := fmt.Sprintf("%s.url = ?", sceneURLTable.Name())
-		query.AddJoinTableFilter(sceneURLTable, where, nil, false, *q)
+		query.AddJoinTableFilter(sceneURLTable, where, false, nil, false, *q)
 	}
 
 	if filter.ParentStudio != nil {
@@ -357,19 +357,19 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 	}
 
 	if q := filter.Performers; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, scenePerformerTable, performerJoinKey, q); err != nil {
+		if err := setMultiCriterionClause(query, scenePerformerTable, performerJoinKey, q, false); err != nil {
 			return nil, err
 		}
 	}
 
 	if q := filter.Tags; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, sceneTagTable, tagJoinKey, q); err != nil {
+		if err := setMultiCriterionClause(query, sceneTagTable, tagJoinKey, q, false); err != nil {
 			return nil, err
 		}
 	}
 
 	if q := filter.Fingerprints; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, sceneFingerprintTable, "hash", q); err != nil {
+		if err := setMultiCriterionClause(query, sceneFingerprintTable, "hash", q, true); err != nil {
 			return nil, err
 		}
 	}
@@ -504,23 +504,25 @@ func (qb *sceneQueryBuilder) QueryCount(filter models.SceneQueryInput, userID uu
 	return qb.dbi.CountOnly(*query)
 }
 
-func setMultiCriterionClause(query *queryBuilder, joinTable tableJoin, joinTableField string, criterion models.MultiCriterionInput) error {
+func setMultiCriterionClause(query *queryBuilder, joinTable tableJoin, joinTableField string, criterion models.MultiCriterionInput, group bool) error {
 	args := criterion.GetValues()
 	inClause := fmt.Sprintf("%s.%s IN %s", joinTable.Name(), joinTableField, getInBinding(criterion.Count()))
+
+	groupBy := group || len(args) > 1
 
 	switch criterion.GetModifier() {
 	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
-		query.AddJoinTableFilter(joinTable, inClause, nil, false, args...)
+		query.AddJoinTableFilter(joinTable, inClause, groupBy, nil, false, args...)
 
 	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
 		having := fmt.Sprintf("COUNT(*) = %d", criterion.Count())
-		query.AddJoinTableFilter(joinTable, inClause, &having, false, args...)
+		query.AddJoinTableFilter(joinTable, inClause, true, &having, false, args...)
 
 	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids
-		query.AddJoinTableFilter(joinTable, inClause, nil, true, args...)
+		query.AddJoinTableFilter(joinTable, inClause, groupBy, nil, true, args...)
 
 	default:
 		return fmt.Errorf("unsupported modifier %s for %s.%s", criterion.GetModifier(), joinTable.Name(), joinTableField)
