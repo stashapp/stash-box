@@ -146,7 +146,7 @@ func (qb *studioQueryBuilder) FindByNames(names []string) (models.Studios, error
 }
 
 func (qb *studioQueryBuilder) FindByName(name string) (*models.Studio, error) {
-	query := "SELECT * FROM studios WHERE upper(name) = upper(?)"
+	query := "SELECT * FROM studios WHERE upper(name) = upper(?) AND deleted = FALSE"
 	var args []interface{}
 	args = append(args, name)
 	results, err := qb.queryStudios(query, args)
