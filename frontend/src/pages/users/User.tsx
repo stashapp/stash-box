@@ -404,7 +404,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </InputGroup>
             </Row>
           )}
-          { showPrivate && (
+          {showPrivate && (
             <div>
               <Row>
                 <Col xs={2}>Invite Keys</Col>
