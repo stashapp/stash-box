@@ -1,10 +1,11 @@
-import { FC, useContext } from "react";
+import { FC, useContext, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import {
   faCheckCircle,
   faTimesCircle,
   faSpinner,
+  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -83,70 +84,86 @@ const SceneComponent: FC<Props> = ({ scene }) => {
     })
     .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
 
-  async function handleFingerprintUnmatch(fingerprint: Fingerprint) {
-    if (unmatching) return;
+  const fingerprints = useMemo(() => {
+    async function handleFingerprintUnmatch(fingerprint: Fingerprint) {
+      if (unmatching) return;
 
-    const { data } = await unmatchFingerprint({
-      variables: {
-        scene_id: scene.id,
-        algorithm: fingerprint.algorithm,
-        hash: fingerprint.hash,
-        duration: fingerprint.duration,
-      },
-    });
-    const success = data?.unmatchFingerprint;
-    addToast({
-      variant: success ? "success" : "danger",
-      content: `${
-        success ? "Removed" : "Failed to remove"
-      } fingerprint submission`,
-    });
-  }
+      const { data } = await unmatchFingerprint({
+        variables: {
+          scene_id: scene.id,
+          algorithm: fingerprint.algorithm,
+          hash: fingerprint.hash,
+          duration: fingerprint.duration,
+        },
+      });
+      const success = data?.unmatchFingerprint;
+      addToast({
+        variant: success ? "success" : "danger",
+        content: `${
+          success ? "Removed" : "Failed to remove"
+        } fingerprint submission`,
+      });
+    }
 
-  function maybeRenderSubmitted(fingerprint: Fingerprint) {
-    if (fingerprint.user_submitted) {
+    function maybeRenderSubmitted(fingerprint: Fingerprint) {
+      if (fingerprint.user_submitted) {
+        return (
+          <span
+            className="user-submitted"
+            title="Submitted by you - click to remove submission"
+            onClick={() => handleFingerprintUnmatch(fingerprint)}
+          >
+            {!unmatching ? (
+              <>
+                <Icon icon={faCheckCircle} />
+                <Icon icon={faTimesCircle} />
+              </>
+            ) : (
+              <Icon icon={faSpinner} className="fa-spin" />
+            )}
+          </span>
+        );
+      }
+    }
+
+    function renderSubmissions(fingerprint: Fingerprint) {
       return (
-        <span
-          className="user-submitted"
-          title="Submitted by you - click to remove submission"
-          onClick={() => handleFingerprintUnmatch(fingerprint)}
-        >
-          {!unmatching ? (
-            <>
-              <Icon icon={faCheckCircle} />
-              <Icon icon={faTimesCircle} />
-            </>
-          ) : (
-            <Icon icon={faSpinner} className="fa-spin" />
+        <span className="fingerprint-submissions">
+          <span className="fingerprint-submissions-plus">
+            {fingerprint.submissions}
+          </span>
+          {fingerprint.reports > 0 && (
+            <span className="fingerprint-reports">
+              {fingerprint.reports} <Icon icon={faTriangleExclamation} />
+            </span>
           )}
+          {maybeRenderSubmitted(fingerprint)}
         </span>
       );
     }
-  }
 
-  const fingerprints = scene.fingerprints.map((fingerprint) => (
-    <tr key={fingerprint.hash}>
-      <td>{fingerprint.algorithm}</td>
-      <td className="font-monospace">
-        <Link
-          to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
-        >
-          {fingerprint.hash}
-        </Link>
-      </td>
-      <td>
-        <span title={`${fingerprint.duration}s`}>
-          {formatDuration(fingerprint.duration)}
-        </span>
-      </td>
-      <td>
-        {fingerprint.submissions}
-        {maybeRenderSubmitted(fingerprint)}
-      </td>
-      <td>{formatDateTime(fingerprint.created)}</td>
-      <td>{formatDateTime(fingerprint.updated)}</td>
-    </tr>
-  ));
+    return scene.fingerprints.map((fingerprint) => (
+      <tr key={fingerprint.hash}>
+        <td>{fingerprint.algorithm}</td>
+        <td className="font-monospace">
+          <Link
+            to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
+          >
+            {fingerprint.hash}
+          </Link>
+        </td>
+        <td>
+          <span title={`${fingerprint.duration}s`}>
+            {formatDuration(fingerprint.duration)}
+          </span>
+        </td>
+        <td>{renderSubmissions(fingerprint)}</td>
+        <td>{formatDateTime(fingerprint.created)}</td>
+        <td>{formatDateTime(fingerprint.updated)}</td>
+      </tr>
+    ));
+  }, [scene.fingerprints, unmatchFingerprint, unmatching, addToast, scene.id]);
+
   const tags = [...scene.tags].sort(compareByName).map((tag) => (
     <li key={tag.name}>
       <TagLink
