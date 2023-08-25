@@ -552,16 +552,17 @@ func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}) (mode
 }
 
 type sceneFingerprintGroup struct {
-	SceneID       uuid.UUID                   `db:"scene_id"`
-	Hash          string                      `db:"hash"`
-	Algorithm     models.FingerprintAlgorithm `db:"algorithm"`
-	Duration      float64                     `db:"duration"`
-	Submissions   int                         `db:"submissions"`
-	Reports       int                         `db:"reports"`
-	UserSubmitted bool                        `db:"user_submitted"`
-	UserReported  bool                        `db:"user_reported"`
-	CreatedAt     time.Time                   `db:"created_at"`
-	UpdatedAt     time.Time                   `db:"updated_at"`
+	SceneID        uuid.UUID                   `db:"scene_id"`
+	Hash           string                      `db:"hash"`
+	Algorithm      models.FingerprintAlgorithm `db:"algorithm"`
+	Duration       float64                     `db:"duration"`
+	Submissions    int                         `db:"submissions"`
+	Reports        int                         `db:"reports"`
+	NetSubmissions int                         `db:"net_submissions"`
+	UserSubmitted  bool                        `db:"user_submitted"`
+	UserReported   bool                        `db:"user_reported"`
+	CreatedAt      time.Time                   `db:"created_at"`
+	UpdatedAt      time.Time                   `db:"updated_at"`
 }
 
 func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
@@ -598,6 +599,7 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 			mode() WITHIN GROUP (ORDER BY SFP.duration) as duration,
 			COUNT(CASE WHEN SFP.vote = 1 THEN 1 END) as submissions,
 			COUNT(CASE WHEN SFP.vote = -1 THEN 1 END) as reports,
+			SUM(SFP.vote) as net_submissions,
 			MIN(created_at) as created_at,
 			MAX(created_at) as updated_at,
 			bool_or(SFP.user_id = :userid AND SFP.vote = 1) as user_submitted,
@@ -613,7 +615,7 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 
 	query += `
 		GROUP BY SFP.scene_id, FP.algorithm, FP.hash
-		ORDER BY submissions DESC`
+		ORDER BY net_submissions DESC`
 
 	arg := map[string]interface{}{
 		"userid":   currentUserID,
