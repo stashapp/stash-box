@@ -4961,7 +4961,9 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
-  unmatch: Boolean
+  unmatch: Boolean @deprecated(reason: "Use ` + "`" + `vote` + "`" + ` with 0 instead")
+  "positive for default behaviour, negative to report as invalid, zero to remove vote"
+  vote: Int
 }
 
 type Scene {
@@ -31927,7 +31929,7 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"scene_id", "fingerprint", "unmatch"}
+	fieldsInOrder := [...]string{"scene_id", "fingerprint", "unmatch", "vote"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31955,6 +31957,13 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 				return it, err
 			}
 			it.Unmatch = data
+		case "vote":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("vote"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Vote = data
 		}
 	}
 

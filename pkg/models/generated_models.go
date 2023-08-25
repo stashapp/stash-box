@@ -174,6 +174,8 @@ type FingerprintSubmission struct {
 	SceneID     uuid.UUID         `json:"scene_id"`
 	Fingerprint *FingerprintInput `json:"fingerprint"`
 	Unmatch     *bool             `json:"unmatch,omitempty"`
+	// positive for default behaviour, negative to report as invalid, zero to remove vote
+	Vote *int `json:"vote,omitempty"`
 }
 
 type FuzzyDate struct {

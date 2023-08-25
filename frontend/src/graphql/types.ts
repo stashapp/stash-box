@@ -322,7 +322,10 @@ export type FingerprintQueryInput = {
 export type FingerprintSubmission = {
   fingerprint: FingerprintInput;
   scene_id: Scalars["ID"];
+  /** @deprecated Use `vote` with 0 instead */
   unmatch?: InputMaybe<Scalars["Boolean"]>;
+  /** positive for default behaviour, negative to report as invalid, zero to remove vote */
+  vote?: InputMaybe<Scalars["Int"]>;
 };
 
 export type FuzzyDate = {

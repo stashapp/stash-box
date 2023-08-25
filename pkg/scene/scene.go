@@ -48,7 +48,7 @@ func Create(ctx context.Context, fac models.Repo, input models.SceneCreateInput)
 	}
 
 	sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
-	if err := qb.CreateFingerprints(sceneFingerprints); err != nil {
+	if err := qb.CreateOrReplaceFingerprints(sceneFingerprints); err != nil {
 		return nil, err
 	}
 
@@ -257,11 +257,20 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 		input.Fingerprint.UserIds = []uuid.UUID{currentUserID}
 	}
 
-	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
+	vote := 1
+	if input.Vote != nil {
+		vote = *input.Vote
+	}
 
-	if input.Unmatch == nil || !*input.Unmatch {
+	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint}, vote)
+
+	// vote == 0 means the user is unmatching the fingerprint
+	// Unmatch is the deprecated field, but we still need to support it
+	unmatch := vote == 0 || (input.Unmatch != nil && *input.Unmatch)
+
+	if !unmatch {
 		// set the new fingerprints
-		if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
+		if err := qb.CreateOrReplaceFingerprints(sceneFingerprint); err != nil {
 			return false, err
 		}
 	} else {

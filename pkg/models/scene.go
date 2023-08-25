@@ -9,7 +9,7 @@ type SceneRepo interface {
 	SoftDelete(scene Scene) (*Scene, error)
 	CreateURLs(newJoins SceneURLs) error
 	UpdateURLs(scene uuid.UUID, updatedJoins SceneURLs) error
-	CreateFingerprints(newJoins SceneFingerprints) error
+	CreateOrReplaceFingerprints(newJoins SceneFingerprints) error
 	UpdateFingerprints(sceneID uuid.UUID, updatedJoins SceneFingerprints) error
 	DestroyFingerprints(sceneID uuid.UUID, toDelete SceneFingerprints) error
 	Find(id uuid.UUID) (*Scene, error)

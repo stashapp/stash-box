@@ -27,7 +27,7 @@ var (
 	})
 
 	sceneFingerprintTable = newTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
-		return &models.DBSceneFingerprint{}
+		return &dbSceneFingerprint{}
 	})
 
 	sceneURLTable = newTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
@@ -79,21 +79,27 @@ func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.Sce
 	return qb.dbi.ReplaceJoins(sceneURLTable, scene, &updatedJoins)
 }
 
-func (qb *sceneQueryBuilder) CreateFingerprints(sceneFingerprints models.SceneFingerprints) error {
-	conflictHandling := `ON CONFLICT DO NOTHING`
+func (qb *sceneQueryBuilder) CreateOrReplaceFingerprints(sceneFingerprints models.SceneFingerprints) error {
+	conflictHandling := `
+		ON CONFLICT ON CONSTRAINT scene_hash_unique
+		DO UPDATE SET 
+		duration = EXCLUDED.duration,
+		vote = EXCLUDED.vote
+	`
 
-	var fingerprints models.DBSceneFingerprints
+	var fingerprints DBSceneFingerprints
 	for _, fp := range sceneFingerprints {
 		id, err := qb.getOrCreateFingerprintID(fp.Hash, fp.Algorithm)
 		if err != nil {
 			return err
 		}
 
-		fingerprints = append(fingerprints, &models.DBSceneFingerprint{
+		fingerprints = append(fingerprints, &dbSceneFingerprint{
 			FingerprintID: id,
 			SceneID:       fp.SceneID,
 			UserID:        fp.UserID,
 			Duration:      fp.Duration,
+			// TODO: vote
 		})
 	}
 
@@ -105,7 +111,7 @@ func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins 
 		return err
 	}
 
-	return qb.CreateFingerprints(updatedJoins)
+	return qb.CreateOrReplaceFingerprints(updatedJoins)
 }
 
 func (qb *sceneQueryBuilder) DestroyFingerprints(sceneID uuid.UUID, toDestroy models.SceneFingerprints) error {
@@ -985,7 +991,7 @@ func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *
 		}
 	}
 
-	return qb.CreateFingerprints(newFingerprints)
+	return qb.CreateOrReplaceFingerprints(newFingerprints)
 }
 
 func (qb *sceneQueryBuilder) getOrCreateFingerprintID(hash string, algorithm string) (int, error) {
