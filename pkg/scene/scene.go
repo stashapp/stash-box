@@ -232,6 +232,19 @@ func Destroy(fac models.Repo, input models.SceneDestroyInput) (bool, error) {
 	return true, nil
 }
 
+// clampVote ensures that vote is between -1 and 1
+func clampVote(vote int) int {
+	if vote > 1 {
+		return 1
+	}
+
+	if vote < -1 {
+		return -1
+	}
+
+	return vote
+}
+
 func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.FingerprintSubmission) (bool, error) {
 	qb := fac.Scene()
 
@@ -259,7 +272,19 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 
 	vote := 1
 	if input.Vote != nil {
-		vote = *input.Vote
+		vote = clampVote(*input.Vote)
+	}
+
+	// if the user is reporting a fingerprint, ensure that the fingerprint has at least one submission
+	if vote == -1 {
+		submissionExists, err := qb.SubmittedHashExists(input.SceneID, input.Fingerprint.Hash, input.Fingerprint.Algorithm)
+		if err != nil {
+			return false, err
+		}
+
+		if !submissionExists {
+			return false, errors.New("fingerprint has no submissions")
+		}
 	}
 
 	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint}, vote)

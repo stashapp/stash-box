@@ -27,6 +27,7 @@ type SceneRepo interface {
 	// GetAllFingerprints returns fingerprints for each of the scene ids provided.
 	// currentUserID is used to populate the UserSubmitted field.
 	GetAllFingerprints(currentUserID uuid.UUID, ids []uuid.UUID, onlySubmitted bool) ([][]*Fingerprint, []error)
+	SubmittedHashExists(sceneID uuid.UUID, hash string, algorithm FingerprintAlgorithm) (bool, error)
 	GetPerformers(id uuid.UUID) (PerformersScenes, error)
 	GetAllAppearances(ids []uuid.UUID) ([]PerformersScenes, []error)
 	GetURLs(id uuid.UUID) ([]*URL, error)

@@ -655,6 +655,37 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 	return result, nil
 }
 
+// SubmittedHashExists returns true if the given hash exists for the given scene
+func (qb *sceneQueryBuilder) SubmittedHashExists(sceneID uuid.UUID, hash string, algorithm models.FingerprintAlgorithm) (bool, error) {
+	query := `
+		SELECT
+			1
+		FROM scene_fingerprints f
+		WHERE f.scene_id = :sceneid AND f.hash = :hash AND f.algorithm = :algorithm AND vote = 1
+	`
+
+	arg := map[string]interface{}{
+		"sceneid":   sceneID,
+		"hash":      hash,
+		"algorithm": algorithm,
+	}
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return false, err
+	}
+
+	result := false
+	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		result = true
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
+	return result, nil
+}
+
 func (qb *sceneQueryBuilder) GetPerformers(id uuid.UUID) (models.PerformersScenes, error) {
 	joins := models.PerformersScenes{}
 	err := qb.dbi.FindJoins(scenePerformerTable, id, &joins)
