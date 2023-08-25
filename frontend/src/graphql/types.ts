@@ -283,6 +283,9 @@ export type Fingerprint = {
   created: Scalars["Time"];
   duration: Scalars["Int"];
   hash: Scalars["String"];
+  /** number of times this fingerprint has been reported */
+  reports: Scalars["Int"];
+  /** number of times this fingerprint has been submitted (excluding reports) */
   submissions: Scalars["Int"];
   updated: Scalars["Time"];
   user_submitted: Scalars["Boolean"];
