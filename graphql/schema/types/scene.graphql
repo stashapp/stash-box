@@ -32,7 +32,10 @@ type Fingerprint {
   reports: Int!
   created: Time!
   updated: Time!
+  "true if the current user submitted this fingerprint"
   user_submitted: Boolean!
+  "true if the current user reported this fingerprint"
+  user_reported: Boolean!
 }
 
 type DraftFingerprint {

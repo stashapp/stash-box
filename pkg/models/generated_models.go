@@ -144,10 +144,13 @@ type Fingerprint struct {
 	// number of times this fingerprint has been submitted (excluding reports)
 	Submissions int `json:"submissions"`
 	// number of times this fingerprint has been reported
-	Reports       int       `json:"reports"`
-	Created       time.Time `json:"created"`
-	Updated       time.Time `json:"updated"`
-	UserSubmitted bool      `json:"user_submitted"`
+	Reports int       `json:"reports"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"updated"`
+	// true if the current user submitted this fingerprint
+	UserSubmitted bool `json:"user_submitted"`
+	// true if the current user reported this fingerprint
+	UserReported bool `json:"user_reported"`
 }
 
 type FingerprintEditInput struct {

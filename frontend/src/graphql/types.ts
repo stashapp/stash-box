@@ -288,6 +288,9 @@ export type Fingerprint = {
   /** number of times this fingerprint has been submitted (excluding reports) */
   submissions: Scalars["Int"];
   updated: Scalars["Time"];
+  /** true if the current user reported this fingerprint */
+  user_reported: Scalars["Boolean"];
+  /** true if the current user submitted this fingerprint */
   user_submitted: Scalars["Boolean"];
 };
 
@@ -36995,8 +36998,8 @@ export const UnmatchFingerprintDocument = {
                   fields: [
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "unmatch" },
-                      value: { kind: "BooleanValue", value: true },
+                      name: { kind: "Name", value: "vote" },
+                      value: { kind: "IntValue", value: "0" },
                     },
                     {
                       kind: "ObjectField",

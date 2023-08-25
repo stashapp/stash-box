@@ -143,6 +143,7 @@ type ComplexityRoot struct {
 		Reports       func(childComplexity int) int
 		Submissions   func(childComplexity int) int
 		Updated       func(childComplexity int) int
+		UserReported  func(childComplexity int) int
 		UserSubmitted func(childComplexity int) int
 	}
 
@@ -1238,6 +1239,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Fingerprint.Updated(childComplexity), true
+
+	case "Fingerprint.user_reported":
+		if e.complexity.Fingerprint.UserReported == nil {
+			break
+		}
+
+		return e.complexity.Fingerprint.UserReported(childComplexity), true
 
 	case "Fingerprint.user_submitted":
 		if e.complexity.Fingerprint.UserSubmitted == nil {
@@ -4937,7 +4945,10 @@ type Fingerprint {
   reports: Int!
   created: Time!
   updated: Time!
+  "true if the current user submitted this fingerprint"
   user_submitted: Boolean!
+  "true if the current user reported this fingerprint"
+  user_reported: Boolean!
 }
 
 type DraftFingerprint {
@@ -9215,6 +9226,50 @@ func (ec *executionContext) _Fingerprint_user_submitted(ctx context.Context, fie
 }
 
 func (ec *executionContext) fieldContext_Fingerprint_user_submitted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Fingerprint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Fingerprint_user_reported(ctx context.Context, field graphql.CollectedField, obj *Fingerprint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Fingerprint_user_reported(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserReported, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Fingerprint_user_reported(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Fingerprint",
 		Field:      field,
@@ -23221,6 +23276,8 @@ func (ec *executionContext) fieldContext_Scene_fingerprints(ctx context.Context,
 				return ec.fieldContext_Fingerprint_updated(ctx, field)
 			case "user_submitted":
 				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			case "user_reported":
+				return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
@@ -24760,6 +24817,8 @@ func (ec *executionContext) fieldContext_SceneEdit_added_fingerprints(ctx contex
 				return ec.fieldContext_Fingerprint_updated(ctx, field)
 			case "user_submitted":
 				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			case "user_reported":
+				return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
@@ -24819,6 +24878,8 @@ func (ec *executionContext) fieldContext_SceneEdit_removed_fingerprints(ctx cont
 				return ec.fieldContext_Fingerprint_updated(ctx, field)
 			case "user_submitted":
 				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			case "user_reported":
+				return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
@@ -25265,6 +25326,8 @@ func (ec *executionContext) fieldContext_SceneEdit_fingerprints(ctx context.Cont
 				return ec.fieldContext_Fingerprint_updated(ctx, field)
 			case "user_submitted":
 				return ec.fieldContext_Fingerprint_user_submitted(ctx, field)
+			case "user_reported":
+				return ec.fieldContext_Fingerprint_user_reported(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Fingerprint", field.Name)
 		},
@@ -36934,6 +36997,11 @@ func (ec *executionContext) _Fingerprint(ctx context.Context, sel ast.SelectionS
 			}
 		case "user_submitted":
 			out.Values[i] = ec._Fingerprint_user_submitted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user_reported":
+			out.Values[i] = ec._Fingerprint_user_reported(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
