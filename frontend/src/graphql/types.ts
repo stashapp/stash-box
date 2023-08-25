@@ -2035,6 +2035,7 @@ export type EditFragment = {
           submissions: number;
           reports: number;
           user_submitted: boolean;
+          user_reported: boolean;
           created: string;
           updated: string;
         }>;
@@ -2807,6 +2808,7 @@ export type EditFragment = {
           submissions: number;
           reports: number;
           user_submitted: boolean;
+          user_reported: boolean;
           created: string;
           updated: string;
         }>;
@@ -3009,6 +3011,7 @@ export type SceneFragment = {
     submissions: number;
     reports: number;
     user_submitted: boolean;
+    user_reported: boolean;
     created: string;
     updated: string;
   }>;
@@ -3371,6 +3374,7 @@ export type ApplyEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -4198,6 +4202,7 @@ export type ApplyEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -4583,6 +4588,7 @@ export type PerformerEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -5410,6 +5416,7 @@ export type PerformerEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -5614,6 +5621,7 @@ export type PerformerEditUpdateMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -6441,6 +6449,7 @@ export type PerformerEditUpdateMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -6680,6 +6689,7 @@ export type SceneEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -7507,6 +7517,7 @@ export type SceneEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -7711,6 +7722,7 @@ export type SceneEditUpdateMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -8538,6 +8550,7 @@ export type SceneEditUpdateMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -8741,6 +8754,7 @@ export type StudioEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -9568,6 +9582,7 @@ export type StudioEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -9772,6 +9787,7 @@ export type StudioEditUpdateMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -10599,6 +10615,7 @@ export type StudioEditUpdateMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -10802,6 +10819,7 @@ export type TagEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -11629,6 +11647,7 @@ export type TagEditMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -11833,6 +11852,7 @@ export type TagEditUpdateMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -12660,6 +12680,7 @@ export type TagEditUpdateMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -12997,6 +13018,7 @@ export type VoteMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -13824,6 +13846,7 @@ export type VoteMutation = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -14286,6 +14309,7 @@ export type EditQuery = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -15113,6 +15137,7 @@ export type EditQuery = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -15310,6 +15335,7 @@ export type EditUpdateQuery = {
             submissions: number;
             reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -15758,6 +15784,7 @@ export type EditsQuery = {
               submissions: number;
               reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -16605,6 +16632,7 @@ export type EditsQuery = {
               submissions: number;
               reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -16955,6 +16983,7 @@ export type QueryExistingSceneQuery = {
         submissions: number;
         reports: number;
         user_submitted: boolean;
+        user_reported: boolean;
         created: string;
         updated: string;
       }>;
@@ -17104,6 +17133,7 @@ export type QueryExistingSceneQuery = {
               submissions: number;
               reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -17951,6 +17981,7 @@ export type QueryExistingSceneQuery = {
               submissions: number;
               reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -18070,6 +18101,7 @@ export type SceneQuery = {
       submissions: number;
       reports: number;
       user_submitted: boolean;
+      user_reported: boolean;
       created: string;
       updated: string;
     }>;
@@ -19102,6 +19134,10 @@ export const SceneFragmentDoc = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -20711,6 +20747,10 @@ export const EditFragmentDoc = {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
               ],
@@ -21931,6 +21971,10 @@ export const ApplyEditDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -24368,6 +24412,10 @@ export const PerformerEditDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
               ],
@@ -25976,6 +26024,10 @@ export const PerformerEditUpdateDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -27750,6 +27802,10 @@ export const SceneEditDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
               ],
@@ -29356,6 +29412,10 @@ export const SceneEditUpdateDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
               ],
@@ -30948,6 +31008,10 @@ export const StudioEditDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -32555,6 +32619,10 @@ export const StudioEditUpdateDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
               ],
@@ -34147,6 +34215,10 @@ export const TagEditDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -35753,6 +35825,10 @@ export const TagEditUpdateDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -37955,6 +38031,10 @@ export const VoteDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -40400,6 +40480,10 @@ export const EditDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
               ],
@@ -42564,6 +42648,10 @@ export const EditUpdateDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
               ],
@@ -43033,6 +43121,10 @@ export const EditsDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -45505,6 +45597,10 @@ export const QueryExistingSceneDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
               ],
@@ -46888,6 +46984,10 @@ export const SceneDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
