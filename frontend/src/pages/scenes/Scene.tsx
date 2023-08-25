@@ -105,8 +105,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
       });
     }
 
-    function maybeRenderSubmitted(fingerprint: Fingerprint) {
-      if (fingerprint.user_submitted) {
+    function maybeRenderSubmitted(fingerprint: Fingerprint, reported: boolean) {
+      if (
+        (!reported && fingerprint.user_submitted) ||
+        (reported && fingerprint.user_reported)
+      ) {
         return (
           <span
             className="user-submitted"
@@ -135,9 +138,10 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           {fingerprint.reports > 0 && (
             <span className="fingerprint-reports">
               {fingerprint.reports} <Icon icon={faTriangleExclamation} />
+              {maybeRenderSubmitted(fingerprint, true)}
             </span>
           )}
-          {maybeRenderSubmitted(fingerprint)}
+          {maybeRenderSubmitted(fingerprint, false)}
         </span>
       );
     }
