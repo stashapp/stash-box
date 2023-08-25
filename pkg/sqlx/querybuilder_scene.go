@@ -576,6 +576,7 @@ type sceneFingerprintGroup struct {
 	Algorithm     models.FingerprintAlgorithm `db:"algorithm"`
 	Duration      float64                     `db:"duration"`
 	Submissions   int                         `db:"submissions"`
+	Reports       int                         `db:"reports"`
 	UserSubmitted bool                        `db:"user_submitted"`
 	CreatedAt     time.Time                   `db:"created_at"`
 	UpdatedAt     time.Time                   `db:"updated_at"`
@@ -587,6 +588,7 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 		Algorithm:     fpg.Algorithm,
 		Duration:      int(fpg.Duration),
 		Submissions:   fpg.Submissions,
+		Reports:       fpg.Reports,
 		UserSubmitted: fpg.UserSubmitted,
 		Created:       fpg.CreatedAt,
 		Updated:       fpg.UpdatedAt,
@@ -606,7 +608,8 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 			f.hash,
 			f.algorithm,
 			mode() WITHIN GROUP (ORDER BY f.duration) as duration,
-			COUNT(f.hash) as submissions,
+			COUNT(CASE WHEN vote = 1 THEN 1 END) as submissions,
+			COUNT(CASE WHEN vote = -1 THEN 1 END) as reports,
 			MIN(created_at) as created_at,
 			MAX(created_at) as updated_at,
 			bool_or(f.user_id = :userid) as user_submitted

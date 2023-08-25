@@ -26,7 +26,10 @@ type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
+  "number of times this fingerprint has been submitted (excluding reports)"
   submissions: Int!
+  "number of times this fingerprint has been reported"
+  reports: Int!
   created: Time!
   updated: Time!
   user_submitted: Boolean!
