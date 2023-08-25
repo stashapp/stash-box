@@ -77,10 +77,12 @@ func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.Sce
 	return qb.dbi.ReplaceJoins(sceneURLTable, scene, &updatedJoins)
 }
 
-func (qb *sceneQueryBuilder) CreateFingerprints(newJoins models.SceneFingerprints) error {
+func (qb *sceneQueryBuilder) CreateOrReplaceFingerprints(newJoins models.SceneFingerprints) error {
 	conflictHandling := `
 		ON CONFLICT ON CONSTRAINT scene_hash_unique
-		DO NOTHING
+		DO UPDATE SET 
+		duration = EXCLUDED.duration,
+		vote = EXCLUDED.vote
 	`
 
 	return qb.dbi.InsertJoinsWithConflictHandling(sceneFingerprintTable, &newJoins, conflictHandling)
