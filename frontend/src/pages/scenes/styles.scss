@@ -74,3 +74,17 @@
     color: $warning;
   }
 }
+
+.fingerprint-submissions .fingerprint-reports {
+  &::before {
+    content: " (";
+    color: white;
+  }
+
+  &::after {
+    content: ")";
+    color: white;
+  }
+
+  color: $danger;
+}

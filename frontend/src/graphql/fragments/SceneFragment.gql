@@ -35,6 +35,7 @@ fragment SceneFragment on Scene {
     algorithm
     duration
     submissions
+    reports
     user_submitted
     created
     updated

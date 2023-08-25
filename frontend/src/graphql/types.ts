@@ -2004,6 +2004,7 @@ export type EditFragment = {
           algorithm: FingerprintAlgorithm;
           duration: number;
           submissions: number;
+          reports: number;
           user_submitted: boolean;
           created: string;
           updated: string;
@@ -2775,6 +2776,7 @@ export type EditFragment = {
           algorithm: FingerprintAlgorithm;
           duration: number;
           submissions: number;
+          reports: number;
           user_submitted: boolean;
           created: string;
           updated: string;
@@ -2976,6 +2978,7 @@ export type SceneFragment = {
     algorithm: FingerprintAlgorithm;
     duration: number;
     submissions: number;
+    reports: number;
     user_submitted: boolean;
     created: string;
     updated: string;
@@ -3337,6 +3340,7 @@ export type ApplyEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -4163,6 +4167,7 @@ export type ApplyEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -4547,6 +4552,7 @@ export type PerformerEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -5373,6 +5379,7 @@ export type PerformerEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -5576,6 +5583,7 @@ export type PerformerEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -6402,6 +6410,7 @@ export type PerformerEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -6640,6 +6649,7 @@ export type SceneEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -7466,6 +7476,7 @@ export type SceneEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -7669,6 +7680,7 @@ export type SceneEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -8495,6 +8507,7 @@ export type SceneEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -8697,6 +8710,7 @@ export type StudioEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -9523,6 +9537,7 @@ export type StudioEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -9726,6 +9741,7 @@ export type StudioEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -10552,6 +10568,7 @@ export type StudioEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -10754,6 +10771,7 @@ export type TagEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -11580,6 +11598,7 @@ export type TagEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -11783,6 +11802,7 @@ export type TagEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -12609,6 +12629,7 @@ export type TagEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -12945,6 +12966,7 @@ export type VoteMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -13771,6 +13793,7 @@ export type VoteMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -14230,6 +14253,7 @@ export type EditQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -15056,6 +15080,7 @@ export type EditQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -15252,6 +15277,7 @@ export type EditUpdateQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
             created: string;
             updated: string;
@@ -15699,6 +15725,7 @@ export type EditsQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
               created: string;
               updated: string;
@@ -16545,6 +16572,7 @@ export type EditsQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
               created: string;
               updated: string;
@@ -16894,6 +16922,7 @@ export type QueryExistingSceneQuery = {
         algorithm: FingerprintAlgorithm;
         duration: number;
         submissions: number;
+        reports: number;
         user_submitted: boolean;
         created: string;
         updated: string;
@@ -17042,6 +17071,7 @@ export type QueryExistingSceneQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
               created: string;
               updated: string;
@@ -17888,6 +17918,7 @@ export type QueryExistingSceneQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
               created: string;
               updated: string;
@@ -18006,6 +18037,7 @@ export type SceneQuery = {
       algorithm: FingerprintAlgorithm;
       duration: number;
       submissions: number;
+      reports: number;
       user_submitted: boolean;
       created: string;
       updated: string;
@@ -19029,6 +19061,7 @@ export const SceneFragmentDoc = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -20636,6 +20669,7 @@ export const EditFragmentDoc = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -21856,6 +21890,7 @@ export const ApplyEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -24268,6 +24303,7 @@ export const PerformerEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -25876,6 +25912,7 @@ export const PerformerEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -27648,6 +27685,7 @@ export const SceneEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -29253,6 +29291,7 @@ export const SceneEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -30845,6 +30884,7 @@ export const StudioEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -32450,6 +32490,7 @@ export const StudioEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -34042,6 +34083,7 @@ export const TagEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -35647,6 +35689,7 @@ export const TagEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -37848,6 +37891,7 @@ export const VoteDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -40283,6 +40327,7 @@ export const EditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -42446,6 +42491,7 @@ export const EditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -42915,6 +42961,7 @@ export const EditsDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -45385,6 +45432,7 @@ export const QueryExistingSceneDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
@@ -46768,6 +46816,7 @@ export const SceneDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
