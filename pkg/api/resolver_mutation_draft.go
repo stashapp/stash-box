@@ -84,6 +84,7 @@ func (r *mutationResolver) SubmitPerformerDraft(ctx context.Context, input model
 	data := models.PerformerDraft{
 		ID:              input.ID,
 		Name:            input.Name,
+		Disambiguation:  input.Disambiguation,
 		Aliases:         input.Aliases,
 		Gender:          input.Gender,
 		Birthdate:       input.Birthdate,

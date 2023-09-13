@@ -278,6 +278,7 @@ type PerformerDestroyInput struct {
 
 type PerformerDraftInput struct {
 	ID              *uuid.UUID      `json:"id"`
+	Disambiguation  *string         `json:"disambiguation"`
 	Name            string          `json:"name"`
 	Aliases         *string         `json:"aliases"`
 	Gender          *string         `json:"gender"`

@@ -46,6 +46,7 @@ func (SceneDraft) IsDraftData() {}
 type PerformerDraft struct {
 	ID              *uuid.UUID `json:"id,omitempty"`
 	Name            string     `json:"name"`
+	Disambiguation  *string    `json:"disambiguation,omitempty"`
 	Aliases         *string    `json:"aliases,omitempty"`
 	Gender          *string    `json:"gender,omitempty"`
 	Birthdate       *string    `json:"birthdate,omitempty"`
