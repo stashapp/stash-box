@@ -26,10 +26,16 @@ type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
+  "number of times this fingerprint has been submitted (excluding reports)"
   submissions: Int!
+  "number of times this fingerprint has been reported"
+  reports: Int!
   created: Time!
   updated: Time!
+  "true if the current user submitted this fingerprint"
   user_submitted: Boolean!
+  "true if the current user reported this fingerprint"
+  user_reported: Boolean!
 }
 
 type DraftFingerprint {
@@ -64,7 +70,9 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
-  unmatch: Boolean
+  unmatch: Boolean @deprecated(reason: "Use `vote` with 0 instead")
+  "positive for default behaviour, negative to report as invalid, zero to remove vote"
+  vote: Int
 }
 
 type Scene {

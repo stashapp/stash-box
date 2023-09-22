@@ -77,10 +77,12 @@ func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.Sce
 	return qb.dbi.ReplaceJoins(sceneURLTable, scene, &updatedJoins)
 }
 
-func (qb *sceneQueryBuilder) CreateFingerprints(newJoins models.SceneFingerprints) error {
+func (qb *sceneQueryBuilder) CreateOrReplaceFingerprints(newJoins models.SceneFingerprints) error {
 	conflictHandling := `
 		ON CONFLICT ON CONSTRAINT scene_hash_unique
-		DO NOTHING
+		DO UPDATE SET 
+		duration = EXCLUDED.duration,
+		vote = EXCLUDED.vote
 	`
 
 	return qb.dbi.InsertJoinsWithConflictHandling(sceneFingerprintTable, &newJoins, conflictHandling)
@@ -545,14 +547,17 @@ func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}) (mode
 }
 
 type sceneFingerprintGroup struct {
-	SceneID       uuid.UUID                   `db:"scene_id"`
-	Hash          string                      `db:"hash"`
-	Algorithm     models.FingerprintAlgorithm `db:"algorithm"`
-	Duration      float64                     `db:"duration"`
-	Submissions   int                         `db:"submissions"`
-	UserSubmitted bool                        `db:"user_submitted"`
-	CreatedAt     time.Time                   `db:"created_at"`
-	UpdatedAt     time.Time                   `db:"updated_at"`
+	SceneID        uuid.UUID                   `db:"scene_id"`
+	Hash           string                      `db:"hash"`
+	Algorithm      models.FingerprintAlgorithm `db:"algorithm"`
+	Duration       float64                     `db:"duration"`
+	Submissions    int                         `db:"submissions"`
+	Reports        int                         `db:"reports"`
+	NetSubmissions int                         `db:"net_submissions"`
+	UserSubmitted  bool                        `db:"user_submitted"`
+	UserReported   bool                        `db:"user_reported"`
+	CreatedAt      time.Time                   `db:"created_at"`
+	UpdatedAt      time.Time                   `db:"updated_at"`
 }
 
 func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprint {
@@ -561,7 +566,9 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 		Algorithm:     fpg.Algorithm,
 		Duration:      int(fpg.Duration),
 		Submissions:   fpg.Submissions,
+		Reports:       fpg.Reports,
 		UserSubmitted: fpg.UserSubmitted,
+		UserReported:  fpg.UserReported,
 		Created:       fpg.CreatedAt,
 		Updated:       fpg.UpdatedAt,
 	}
@@ -580,10 +587,13 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 			f.hash,
 			f.algorithm,
 			mode() WITHIN GROUP (ORDER BY f.duration) as duration,
-			COUNT(f.hash) as submissions,
+			COUNT(CASE WHEN vote = 1 THEN 1 END) as submissions,
+			COUNT(CASE WHEN vote = -1 THEN 1 END) as reports,
+			SUM(vote) as net_submissions,
 			MIN(created_at) as created_at,
 			MAX(created_at) as updated_at,
-			bool_or(f.user_id = :userid) as user_submitted
+			bool_or(f.user_id = :userid AND vote = 1) as user_submitted,
+			bool_or(f.user_id = :userid AND vote = -1) as user_reported
 		FROM scene_fingerprints f
 		WHERE f.scene_id IN (:sceneids)
 	`
@@ -594,7 +604,7 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 
 	query += `
 		GROUP BY f.scene_id, f.algorithm, f.hash
-		ORDER BY submissions DESC`
+		ORDER BY net_submissions DESC`
 
 	arg := map[string]interface{}{
 		"userid":   currentUserID,
@@ -631,6 +641,37 @@ func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []u
 	for i, id := range ids {
 		result[i] = m[id]
 	}
+	return result, nil
+}
+
+// SubmittedHashExists returns true if the given hash exists for the given scene
+func (qb *sceneQueryBuilder) SubmittedHashExists(sceneID uuid.UUID, hash string, algorithm models.FingerprintAlgorithm) (bool, error) {
+	query := `
+		SELECT
+			1
+		FROM scene_fingerprints f
+		WHERE f.scene_id = :sceneid AND f.hash = :hash AND f.algorithm = :algorithm AND vote = 1
+	`
+
+	arg := map[string]interface{}{
+		"sceneid":   sceneID,
+		"hash":      hash,
+		"algorithm": algorithm,
+	}
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return false, err
+	}
+
+	result := false
+	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		result = true
+		return nil
+	}); err != nil {
+		return false, err
+	}
+
 	return result, nil
 }
 

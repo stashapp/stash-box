@@ -105,6 +105,8 @@ type SceneFingerprint struct {
 	Algorithm string    `db:"algorithm" json:"algorithm"`
 	Duration  int       `db:"duration" json:"duration"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	Vote      int       `db:"vote" json:"vote"`
+
 	// unused fields
 	Submissions int       `db:"submissions" json:"submissions"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
@@ -149,7 +151,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditI
 	return ret
 }
 
-func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput) SceneFingerprints {
+func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput, vote int) SceneFingerprints {
 	var ret SceneFingerprints
 
 	for _, fingerprint := range fingerprints {
@@ -161,6 +163,7 @@ func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*Fingerp
 					Hash:      fingerprint.Hash,
 					Algorithm: fingerprint.Algorithm.String(),
 					Duration:  fingerprint.Duration,
+					Vote:      vote,
 				})
 			}
 		}
