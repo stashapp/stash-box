@@ -177,39 +177,8 @@ func (qb *performerQueryBuilder) FindBySceneID(sceneID uuid.UUID) (models.Perfor
 	return qb.queryPerformers(query, args)
 }
 
-func (qb *performerQueryBuilder) FindByNames(names []string) (models.Performers, error) {
-	query := "SELECT * FROM performers WHERE name IN " + getInBinding(len(names))
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryPerformers(query, args)
-}
-
-func (qb *performerQueryBuilder) FindByAliases(names []string) (models.Performers, error) {
-	query := `SELECT performers.* FROM performers
-		left join performer_aliases on performers.id = performer_aliases.performer_id
-		WHERE performer_aliases.alias IN ` + getInBinding(len(names))
-
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryPerformers(query, args)
-}
-
 func (qb *performerQueryBuilder) FindByName(name string) (models.Performers, error) {
 	query := "SELECT * FROM performers WHERE upper(name) = upper(?)"
-	var args []interface{}
-	args = append(args, name)
-	return qb.queryPerformers(query, args)
-}
-
-func (qb *performerQueryBuilder) FindByAlias(name string) (models.Performers, error) {
-	query := `SELECT performers.* FROM performers
-		left join performer_aliases on performers.id = performer_aliases.performer_id
-		WHERE upper(performer_aliases.alias) = UPPER(?)`
-
 	var args []interface{}
 	args = append(args, name)
 	return qb.queryPerformers(query, args)

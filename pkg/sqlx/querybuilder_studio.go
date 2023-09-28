@@ -136,15 +136,6 @@ func (qb *studioQueryBuilder) FindBySceneID(sceneID int) (models.Studios, error)
 	return qb.queryStudios(query, args)
 }
 
-func (qb *studioQueryBuilder) FindByNames(names []string) (models.Studios, error) {
-	query := "SELECT * FROM studios WHERE name IN " + getInBinding(len(names))
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryStudios(query, args)
-}
-
 func (qb *studioQueryBuilder) FindByName(name string) (*models.Studio, error) {
 	query := "SELECT * FROM studios WHERE upper(name) = upper(?) AND deleted = FALSE"
 	var args []interface{}
