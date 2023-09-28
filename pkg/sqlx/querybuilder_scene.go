@@ -726,12 +726,12 @@ func (qb *sceneQueryBuilder) SearchScenes(term string, limit int) ([]*models.Sce
         SELECT S.* FROM scenes S
         LEFT JOIN scene_search SS ON SS.scene_id = S.id
         WHERE (
-			to_tsvector('simple', COALESCE(scene_date, '')) ||
+			to_tsvector('english', COALESCE(scene_date, '')) ||
 			to_tsvector('english', studio_name) ||
 			to_tsvector('english', COALESCE(performer_names, '')) ||
 			to_tsvector('english', scene_title) ||
-			to_tsvector('simple', COALESCE(scene_code, ''))
-        ) @@ plainto_tsquery(?)
+			to_tsvector('english', COALESCE(scene_code, ''))
+        ) @@ websearch_to_tsquery('english', ?)
         AND S.deleted = FALSE
         LIMIT ?`
 	var args []interface{}
