@@ -1,5 +1,5 @@
 -- Update the index to match the format of querybuilder_scene.SearchScenes()
-DROP INDEX ts_idx;
+DROP INDEX scene_search_ts_idx;
 CREATE INDEX scene_search_ts_idx ON scene_search USING gist (
     (
         to_tsvector('english', COALESCE(scene_date, '')) ||
@@ -16,7 +16,7 @@ BEGIN
 IF (NEW.title != OLD.title OR NEW.date != OLD.date OR NEW.studio_id != OLD.studio_id OR COALESCE(NEW.code, '') != COALESCE(OLD.code, '')) THEN
 UPDATE scene_search
 SET
-    scene_title = REGEXP_REPLACE(NEW.title, '(-?\d+)|[^a-zA-Z0-9 ]+', '\1', 'g'),
+    scene_title = REGEXP_REPLACE(NEW.title, '[^a-zA-Z0-9 -:]+', '', 'g'),
     scene_date = NEW.date,
     studio_name = SUBQUERY.studio_name,
     scene_code = NEW.code
@@ -38,7 +38,7 @@ BEGIN
 INSERT INTO scene_search (scene_id, scene_title, scene_date, studio_name, scene_code)
 SELECT
     NEW.id,
-    REGEXP_REPLACE(NEW.title, '(-?\d+)|[^a-zA-Z0-9 ]+', '\1', 'g'),
+    REGEXP_REPLACE(NEW.title, '[^a-zA-Z0-9 -:]+', '', 'g'),
     NEW.date,
     T.name || ' ' || REGEXP_REPLACE(T.name, '[^a-zA-Z0-9]', '', 'g') || ' ' || CASE WHEN TP.name IS NOT NULL THEN (TP.name || ' ' || REGEXP_REPLACE(TP.name, '[^a-zA-Z0-9]', '', 'g') ) ELSE '' END,
     NEW.code
@@ -56,7 +56,7 @@ TRUNCATE TABLE scene_search;
 INSERT INTO scene_search
 SELECT
     S.id as scene_id,
-    REGEXP_REPLACE(S.title, '(-?\d+)|[^a-zA-Z0-9 ]+', '\1', 'g') AS scene_title,
+    REGEXP_REPLACE(S.title, '[^a-zA-Z0-9 -:]+', '', 'g') AS scene_title,
     S.date::TEXT AS scene_date,
     T.name || ' ' || REGEXP_REPLACE(T.name, '[^a-zA-Z0-9]', '', 'g') || ' ' || CASE WHEN TP.name IS NOT NULL THEN (TP.name || ' ' || REGEXP_REPLACE(TP.name, '[^a-zA-Z0-9]', '', 'g') ) ELSE '' END AS studio_name,
     ARRAY_TO_STRING(ARRAY_CAT(ARRAY_AGG(P.name), ARRAY_AGG(PS.as)), ' ', '') AS performer_names,
