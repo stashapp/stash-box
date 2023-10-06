@@ -69,7 +69,8 @@ export const imageType = (image?: ImageFragment) => {
 };
 
 export const getUrlBySite = (urls: UrlFragment[], name: string) =>
-  (urls && (urls.find((url) => url.site.name === name) || {}).url) || "";
+  (urls && (urls.find((url) => url.site.name === name) || urls[0] || {}).url) ||
+  "";
 
 export const formatBodyModification = (
   bodyMod?: { location: string; description?: string | null } | null
