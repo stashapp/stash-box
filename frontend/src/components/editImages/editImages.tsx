@@ -5,7 +5,7 @@ import type { Control } from "react-hook-form";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
-import { useAddImage } from "src/graphql";
+import { ImageFragment as Image, useAddImage } from "src/graphql";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
@@ -17,11 +17,6 @@ const CLASSNAME_DROP = `${CLASSNAME}-drop`;
 const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
-
-type Image = {
-  id: string;
-  url: string;
-};
 
 type ControlType =
   | Control<{ images?: Image[] | undefined }, "images">
@@ -35,7 +30,7 @@ interface EditImagesProps {
   maxImages?: number;
   /** Whether to allow svg/png image input */
   allowLossless?: boolean;
-  original?: { id: string; url: string }[] | undefined;
+  original?: Image[] | undefined;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -72,6 +67,7 @@ const EditImages: FC<EditImagesProps> = ({
         if (i.data?.imageCreate?.id) {
           if (!images.some((image) => image.id === i.data?.imageCreate?.id)) {
             append(i.data.imageCreate);
+            console.log(i.data.imageCreate);
           }
           setFile(undefined);
           setImageData("");

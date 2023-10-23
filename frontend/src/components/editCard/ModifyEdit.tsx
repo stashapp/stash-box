@@ -34,6 +34,13 @@ type Details = EditFragment["details"];
 type OldDetails = EditFragment["old_details"];
 type Options = EditFragment["options"];
 
+type Image = {
+  height?: number | undefined;
+  id: string;
+  url: string;
+  width?: number | undefined;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
 type TargetOldDetails<T> = Omit<
@@ -95,11 +102,6 @@ type BodyMod = {
   description?: string | null;
 };
 
-type Image = {
-  id: string;
-  url: string;
-};
-
 export interface PerformerDetails {
   name?: string | null;
   gender?: GenderEnum | null;
@@ -123,8 +125,8 @@ export interface PerformerDetails {
   removed_piercings?: BodyMod[] | null;
   added_aliases?: string[] | null;
   removed_aliases?: string[] | null;
-  added_images?: NullableImage[] | null;
-  removed_images?: NullableImage[] | null;
+  added_images?: (Image | null)[] | null;
+  removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
   draft_id?: string | null;
@@ -303,8 +305,6 @@ type ScenePerformance = {
   >;
 };
 
-type NullableImage = Image | null;
-
 export interface SceneDetails {
   title?: string | null;
   date?: string | null;
@@ -318,8 +318,8 @@ export interface SceneDetails {
   } | null;
   added_performers?: ScenePerformance[] | null;
   removed_performers?: ScenePerformance[] | null;
-  added_images?: NullableImage[] | null;
-  removed_images?: NullableImage[] | null;
+  added_images?: (Image | null)[] | null;
+  removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
   added_tags?:
@@ -464,8 +464,8 @@ export interface StudioDetails {
     id: string;
     name: string;
   } | null;
-  added_images?: NullableImage[] | null;
-  removed_images?: NullableImage[] | null;
+  added_images?: (Image | null)[] | null;
+  removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
 }
