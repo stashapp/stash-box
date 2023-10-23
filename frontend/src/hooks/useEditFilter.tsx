@@ -53,6 +53,7 @@ interface EditFilterProps {
   voted?: UserVotedFilterEnum;
   favorite?: boolean;
   bot?: boolean;
+  userSubmitted?: boolean;
   showFavoriteOption?: boolean;
   showVotedFilter?: boolean;
   defaultVoteStatus?: VoteStatusEnum | "all";
@@ -69,6 +70,7 @@ const useEditFilter = ({
   voted: fixedVoted,
   favorite: fixedFavorite,
   bot: fixedBot,
+  userSubmitted: fixedUserSubmitted,
   showFavoriteOption = true,
   showVotedFilter = true,
   defaultVoteStatus = "all",
@@ -89,6 +91,11 @@ const useEditFilter = ({
     type: { name: "type", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
     bot: { name: "bot", type: "string", default: defaultBot },
+    include_user_submitted: {
+      name: "include_user_submitted",
+      type: "string",
+      default: "true",
+    },
   });
 
   const sort = ensureEnum(EditSortEnum, params.sort);
@@ -107,6 +114,8 @@ const useEditFilter = ({
   const selectedVoted = fixedVoted ?? voted;
   const selectedFavorite = fixedFavorite ?? favorite;
   const selectedBot = fixedBot ?? params.bot;
+  const selectedUserSubmitted =
+    fixedUserSubmitted ?? params.include_user_submitted;
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -233,6 +242,20 @@ const useEditFilter = ({
           value={botOptions.find((opt) => opt.value === selectedBot)}
         />
       </Form.Group>
+      <Form.Group controlId="include_user_submitted" className="text-center">
+        <Form.Label>Include My Edits</Form.Label>
+        <Form.Check
+          className="mt-2"
+          type="switch"
+          defaultChecked={true}
+          onChange={(e) =>
+            setParams(
+              "include_user_submitted",
+              e.currentTarget.checked.toString()
+            )
+          }
+        />
+      </Form.Group>
     </Form>
   );
 
@@ -246,6 +269,7 @@ const useEditFilter = ({
     selectedVoted,
     selectedFavorite,
     selectedBot,
+    selectedUserSubmitted,
   };
 };
 
