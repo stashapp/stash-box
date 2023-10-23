@@ -118,11 +118,13 @@ type EditQueryInput struct {
 	// Filter by user voted status
 	Voted *UserVotedFilterEnum `json:"voted"`
 	// Filter to bot edits only
-	IsBot     *bool             `json:"is_bot"`
-	Page      int               `json:"page"`
-	PerPage   int               `json:"per_page"`
-	Direction SortDirectionEnum `json:"direction"`
-	Sort      EditSortEnum      `json:"sort"`
+	IsBot *bool `json:"is_bot"`
+	// Filter out user's own edits
+	IncludeUserSubmitted *bool             `json:"include_user_submitted"`
+	Page                 int               `json:"page"`
+	PerPage              int               `json:"per_page"`
+	Direction            SortDirectionEnum `json:"direction"`
+	Sort                 EditSortEnum      `json:"sort"`
 }
 
 type EditVoteInput struct {
