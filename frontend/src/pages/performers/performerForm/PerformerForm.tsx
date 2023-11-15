@@ -37,6 +37,7 @@ import URLInput from "src/components/urlInput";
 import DiffPerformer from "./diff";
 import { PerformerSchema, PerformerFormData } from "./schema";
 import { InitialPerformer } from "./types";
+import { NativeBeforeUnload } from "src/utils/beforeUnload";
 
 Countries.registerLocale(english);
 const CountryList = Countries.getNames("en", { select: "alias" });
@@ -127,6 +128,7 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
 }) => {
+  NativeBeforeUnload();
   const {
     register,
     control,

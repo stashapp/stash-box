@@ -32,6 +32,7 @@ import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
+import { NativeBeforeUnload } from "src/utils/beforeUnload";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
@@ -44,6 +45,7 @@ interface SceneProps {
 }
 
 const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
+  NativeBeforeUnload
   const {
     register,
     control,
