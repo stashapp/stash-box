@@ -34,6 +34,7 @@ import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
 import ExistingSceneAlert from "./ExistingSceneAlert";
+import { NativeBeforeUnload } from "src/utils/beforeUnload";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
@@ -59,6 +60,7 @@ const SceneForm: FC<SceneProps> = ({
   isCreate = false,
   draftFingerprints,
 }) => {
+  NativeBeforeUnload
   const {
     register,
     control,

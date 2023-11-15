@@ -19,6 +19,7 @@ import MultiSelect from "src/components/multiSelect";
 
 import { TagSchema, TagFormData } from "./schema";
 import { InitialTag } from "./types";
+import { NativeBeforeUnload } from "src/utils/beforeUnload";
 
 interface TagProps {
   tag?: Tag | null;
@@ -28,6 +29,7 @@ interface TagProps {
 }
 
 const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
+  NativeBeforeUnload();
   const navigate = useNavigate();
   const initialAliases = initial?.aliases ?? tag?.aliases ?? [];
   const {
