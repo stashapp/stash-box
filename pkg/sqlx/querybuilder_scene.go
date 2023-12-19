@@ -195,7 +195,7 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 	return qb.queryScenes(query, args)
 }
 
-func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, []error) {
 	query := `
 		SELECT scenes.* FROM scenes
 		WHERE id IN (?)
@@ -203,7 +203,7 @@ func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, error)
 	query, args, _ := sqlx.In(query, ids)
 	scenes, err := qb.queryScenes(query, args)
 	if err != nil {
-		return nil, err
+		return nil, utils.DuplicateError(err, len(ids))
 	}
 
 	m := make(map[uuid.UUID]*models.Scene)

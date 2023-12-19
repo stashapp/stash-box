@@ -66,16 +66,34 @@ type CancelEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
-type CommentNotification struct {
+type CommentCommentedEdit struct {
 	Comment *EditComment `json:"comment"`
 }
 
-func (CommentNotification) IsNotificationData() {}
+func (CommentCommentedEdit) IsNotificationData() {}
+
+type CommentOwnEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentOwnEdit) IsNotificationData() {}
+
+type CommentVotedEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentVotedEdit) IsNotificationData() {}
 
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+
+type DownvoteOwnEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (DownvoteOwnEdit) IsNotificationData() {}
 
 type DraftEntityInput struct {
 	Name string     `json:"name"`
@@ -145,11 +163,35 @@ type EyeColorCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
-type FailedVoteNotification struct {
-	Message string `json:"message"`
+type FailedOwnEdit struct {
+	Edit *Edit `json:"edit"`
 }
 
-func (FailedVoteNotification) IsNotificationData() {}
+func (FailedOwnEdit) IsNotificationData() {}
+
+type FavoritePerformerEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FavoritePerformerEdit) IsNotificationData() {}
+
+type FavoritePerformerScene struct {
+	Scene *Scene `json:"scene"`
+}
+
+func (FavoritePerformerScene) IsNotificationData() {}
+
+type FavoriteStudioEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FavoriteStudioEdit) IsNotificationData() {}
+
+type FavoriteStudioScene struct {
+	Scene *Scene `json:"scene"`
+}
+
+func (FavoriteStudioScene) IsNotificationData() {}
 
 type Fingerprint struct {
 	Hash          string               `json:"hash"`
@@ -246,28 +288,14 @@ type MultiStringCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
-type NegativeVoteNotification struct {
-	User *User `json:"user"`
-}
-
-func (NegativeVoteNotification) IsNotificationData() {}
-
 type NewUserInput struct {
 	Email     string  `json:"email"`
 	InviteKey *string `json:"invite_key"`
 }
 
-type Notification struct {
-	User    *User            `json:"user"`
-	Edit    *Edit            `json:"edit"`
-	Data    NotificationData `json:"data"`
-	Created time.Time        `json:"created"`
-	Read    bool             `json:"read"`
-}
-
-type Notifications struct {
-	Notifications []*Notification `json:"notifications"`
-	UnreadCount   int             `json:"unreadCount"`
+type NotificationQueryInput struct {
+	Page    int `json:"page"`
+	PerPage int `json:"per_page"`
 }
 
 type PerformerAppearance struct {
@@ -750,6 +778,12 @@ type TagUpdateInput struct {
 	Aliases     []string   `json:"aliases"`
 	CategoryID  *uuid.UUID `json:"category_id"`
 }
+
+type UpdatedEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (UpdatedEdit) IsNotificationData() {}
 
 type UserChangePasswordInput struct {
 	// Password in plain text

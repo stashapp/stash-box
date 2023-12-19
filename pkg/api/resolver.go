@@ -93,6 +93,10 @@ func (r *Resolver) QueryExistingSceneResult() models.QueryExistingSceneResultRes
 	return &queryExistingSceneResolver{r}
 }
 
+func (r *Resolver) Notification() models.NotificationResolver {
+	return &notificationResolver{r}
+}
+
 type mutationResolver struct{ *Resolver }
 
 type queryResolver struct{ *Resolver }

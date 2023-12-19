@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/manager/notifications"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -176,6 +177,10 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 		return nil
 	})
 
+	if err == nil {
+		go notifications.OnApplyEdit(fac, updatedEdit)
+	}
+
 	return updatedEdit, err
 }
 
@@ -211,6 +216,10 @@ func CloseEdit(fac models.Repo, editID uuid.UUID, status models.VoteStatusEnum) 
 
 		return err
 	})
+
+	if err == nil && status != models.VoteStatusEnumCanceled {
+		go notifications.OnCancelEdit(fac, updatedEdit)
+	}
 
 	return updatedEdit, err
 }

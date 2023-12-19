@@ -10,6 +10,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 const (
@@ -464,4 +465,45 @@ func (qb *editQueryBuilder) CancelUserEdits(userID uuid.UUID) error {
 	query := `UPDATE edits SET status = 'CANCELED', updated_at = NOW() WHERE user_id = ?`
 	err := qb.dbi.RawQuery(editDBTable, query, args, nil)
 	return err
+}
+
+func (qb *editQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Edit, []error) {
+	query := "SELECT edits.* FROM edits WHERE id IN (?)"
+	query, args, _ := sqlx.In(query, ids)
+	edits, err := qb.queryEdits(query, args)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID]*models.Edit)
+	for _, edit := range edits {
+		m[edit.ID] = edit
+	}
+
+	result := make([]*models.Edit, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
+func (qb *editQueryBuilder) FindCommentsByIds(ids []uuid.UUID) ([]*models.EditComment, []error) {
+	query := "SELECT EC.* FROM edit_comments EC WHERE id IN (?)"
+	query, args, _ := sqlx.In(query, ids)
+	comments := models.EditComments{}
+	err := qb.dbi.RawQuery(editCommentTable.table, query, args, &comments)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID]*models.EditComment)
+	for _, comment := range comments {
+		m[comment.ID] = comment
+	}
+
+	result := make([]*models.EditComment, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }

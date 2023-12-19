@@ -1,26 +1,62 @@
 type Notification {
-  user: User!
-  edit: Edit!
-  data: NotificationData!
   created: Time!
   read: Boolean!
+  data: NotificationData!
 }
 
-type Notifications {
-  notifications: [Notification!]!
-  unreadCount: Int!
+union NotificationData =
+   | FavoritePerformerScene
+   | FavoritePerformerEdit
+   | FavoriteStudioScene 
+   | FavoriteStudioEdit
+   | CommentOwnEdit
+   | CommentCommentedEdit
+   | CommentVotedEdit
+   | DownvoteOwnEdit
+   | FailedOwnEdit
+   | UpdatedEdit
+
+type FavoritePerformerScene {
+  scene: Scene!
 }
 
-type NegativeVoteNotification {
-  user: User!
+type FavoritePerformerEdit {
+  edit: Edit!
 }
 
-type CommentNotification {
+type FavoriteStudioScene {
+  scene: Scene!
+}
+
+type FavoriteStudioEdit {
+  edit: Edit!
+}
+
+type CommentOwnEdit {
   comment: EditComment!
 }
 
-type FailedVoteNotification {
-  message: String!
+type DownvoteOwnEdit {
+  edit: Edit!
 }
 
-union NotificationData = NegativeVoteNotification | CommentNotification | FailedVoteNotification
+type FailedOwnEdit {
+  edit: Edit!
+}
+
+type CommentCommentedEdit {
+  comment: EditComment!
+}
+
+type CommentVotedEdit {
+  comment: EditComment!
+}
+
+type UpdatedEdit {
+  edit: Edit!
+}
+
+input NotificationQueryInput {
+  page: Int! = 1
+  per_page: Int! = 25
+}

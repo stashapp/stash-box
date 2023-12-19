@@ -27,6 +27,7 @@ type Loaders struct {
 	PerformerPiercingsByID         BodyModificationsLoader
 	PerformerTattoosByID           BodyModificationsLoader
 	PerformerUrlsByID              URLLoader
+	SceneById                      SceneLoader
 	SceneImageIDsByID              UUIDsLoader
 	SceneAppearancesByID           SceneAppearancesLoader
 	SceneUrlsByID                  URLLoader
@@ -37,6 +38,8 @@ type Loaders struct {
 	StudioByID                     StudioLoader
 	TagByID                        TagLoader
 	TagCategoryByID                TagCategoryLoader
+	EditById                       EditLoader
+	EditCommentById                EditCommentLoader
 }
 
 func Middleware(fac models.Repo) func(next http.Handler) http.Handler {
@@ -217,6 +220,30 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.TagCategory, []error) {
 				qb := fac.TagCategory()
+				return qb.FindByIds(ids)
+			},
+		},
+		EditById: EditLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.Edit, []error) {
+				qb := fac.Edit()
+				return qb.FindByIds(ids)
+			},
+		},
+		EditCommentById: EditCommentLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.EditComment, []error) {
+				qb := fac.Edit()
+				return qb.FindCommentsByIds(ids)
+			},
+		},
+		SceneById: SceneLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]*models.Scene, []error) {
+				qb := fac.Scene()
 				return qb.FindByIds(ids)
 			},
 		},

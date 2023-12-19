@@ -66,6 +66,21 @@ export type CancelEditInput = {
   id: Scalars["ID"];
 };
 
+export type CommentCommentedEdit = {
+  __typename: "CommentCommentedEdit";
+  comment: EditComment;
+};
+
+export type CommentOwnEdit = {
+  __typename: "CommentOwnEdit";
+  comment: EditComment;
+};
+
+export type CommentVotedEdit = {
+  __typename: "CommentVotedEdit";
+  comment: EditComment;
+};
+
 export enum CriterionModifier {
   /** = */
   EQUALS = "EQUALS",
@@ -94,6 +109,11 @@ export enum DateAccuracyEnum {
 export type DateCriterionInput = {
   modifier: CriterionModifier;
   value: Scalars["Date"];
+};
+
+export type DownvoteOwnEdit = {
+  __typename: "DownvoteOwnEdit";
+  edit: Edit;
 };
 
 export type Draft = {
@@ -269,11 +289,36 @@ export enum EyeColorEnum {
   RED = "RED",
 }
 
+export type FailedOwnEdit = {
+  __typename: "FailedOwnEdit";
+  edit: Edit;
+};
+
 export enum FavoriteFilter {
   ALL = "ALL",
   PERFORMER = "PERFORMER",
   STUDIO = "STUDIO",
 }
+
+export type FavoritePerformerEdit = {
+  __typename: "FavoritePerformerEdit";
+  edit: Edit;
+};
+
+export type FavoritePerformerScene = {
+  __typename: "FavoritePerformerScene";
+  scene: Scene;
+};
+
+export type FavoriteStudioEdit = {
+  __typename: "FavoriteStudioEdit";
+  edit: Edit;
+};
+
+export type FavoriteStudioScene = {
+  __typename: "FavoriteStudioScene";
+  scene: Scene;
+};
 
 export type Fingerprint = {
   __typename: "Fingerprint";
@@ -444,6 +489,8 @@ export type Mutation = {
   grantInvite: Scalars["Int"];
   imageCreate?: Maybe<Image>;
   imageDestroy: Scalars["Boolean"];
+  /** Mark all of the current users notifications as read. */
+  markNotificationsRead: Scalars["Boolean"];
   /** User interface for registering */
   newUser?: Maybe<Scalars["String"]>;
   performerCreate?: Maybe<Performer>;
@@ -703,6 +750,30 @@ export type MutationUserUpdateArgs = {
 export type NewUserInput = {
   email: Scalars["String"];
   invite_key?: InputMaybe<Scalars["String"]>;
+};
+
+export type Notification = {
+  __typename: "Notification";
+  created: Scalars["Time"];
+  data: NotificationData;
+  read: Scalars["Boolean"];
+};
+
+export type NotificationData =
+  | CommentCommentedEdit
+  | CommentOwnEdit
+  | CommentVotedEdit
+  | DownvoteOwnEdit
+  | FailedOwnEdit
+  | FavoritePerformerEdit
+  | FavoritePerformerScene
+  | FavoriteStudioEdit
+  | FavoriteStudioScene
+  | UpdatedEdit;
+
+export type NotificationQueryInput = {
+  page?: Scalars["Int"];
+  per_page?: Scalars["Int"];
 };
 
 export enum OperationEnum {
@@ -1049,10 +1120,12 @@ export type Query = {
   /** Find user by ID or username */
   findUser?: Maybe<User>;
   getConfig: StashBoxConfig;
+  getUnreadNotificationCount: Scalars["Int"];
   /** Returns currently authenticated user */
   me?: Maybe<User>;
   queryEdits: QueryEditsResultType;
   queryExistingScene: QueryExistingSceneResult;
+  queryNotifications: Array<Notification>;
   queryPerformers: QueryPerformersResultType;
   queryScenes: QueryScenesResultType;
   querySites: QuerySitesResultType;
@@ -1142,6 +1215,11 @@ export type QueryQueryEditsArgs = {
 /** The query root for this schema */
 export type QueryQueryExistingSceneArgs = {
   input: QueryExistingSceneInput;
+};
+
+/** The query root for this schema */
+export type QueryQueryNotificationsArgs = {
+  input: NotificationQueryInput;
 };
 
 /** The query root for this schema */
@@ -1730,6 +1808,11 @@ export type Url = {
 export type UrlInput = {
   site_id: Scalars["ID"];
   url: Scalars["String"];
+};
+
+export type UpdatedEdit = {
+  __typename: "UpdatedEdit";
+  edit: Edit;
 };
 
 export type User = {
