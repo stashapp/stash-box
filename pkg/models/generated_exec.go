@@ -50,6 +50,7 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	QueryEditsResultType() QueryEditsResultTypeResolver
 	QueryExistingSceneResult() QueryExistingSceneResultResolver
+	QueryNotificationsResult() QueryNotificationsResultResolver
 	QueryPerformersResultType() QueryPerformersResultTypeResolver
 	QueryScenesResultType() QueryScenesResultTypeResolver
 	Scene() SceneResolver
@@ -387,7 +388,7 @@ type ComplexityRoot struct {
 		Me                            func(childComplexity int) int
 		QueryEdits                    func(childComplexity int, input EditQueryInput) int
 		QueryExistingScene            func(childComplexity int, input QueryExistingSceneInput) int
-		QueryNotifications            func(childComplexity int, input NotificationQueryInput) int
+		QueryNotifications            func(childComplexity int, input QueryNotificationsInput) int
 		QueryPerformers               func(childComplexity int, input PerformerQueryInput) int
 		QueryScenes                   func(childComplexity int, input SceneQueryInput) int
 		QuerySites                    func(childComplexity int) int
@@ -409,6 +410,11 @@ type ComplexityRoot struct {
 	QueryExistingSceneResult struct {
 		Edits  func(childComplexity int) int
 		Scenes func(childComplexity int) int
+	}
+
+	QueryNotificationsResult struct {
+		Count         func(childComplexity int) int
+		Notifications func(childComplexity int) int
 	}
 
 	QueryPerformersResultType struct {
@@ -818,7 +824,7 @@ type QueryResolver interface {
 	QueryExistingScene(ctx context.Context, input QueryExistingSceneInput) (*QueryExistingSceneResult, error)
 	Version(ctx context.Context) (*Version, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
-	QueryNotifications(ctx context.Context, input NotificationQueryInput) ([]*Notification, error)
+	QueryNotifications(ctx context.Context, input QueryNotificationsInput) (*QueryNotificationsResult, error)
 	GetUnreadNotificationCount(ctx context.Context) (int, error)
 }
 type QueryEditsResultTypeResolver interface {
@@ -828,6 +834,10 @@ type QueryEditsResultTypeResolver interface {
 type QueryExistingSceneResultResolver interface {
 	Edits(ctx context.Context, obj *QueryExistingSceneResult) ([]*Edit, error)
 	Scenes(ctx context.Context, obj *QueryExistingSceneResult) ([]*Scene, error)
+}
+type QueryNotificationsResultResolver interface {
+	Count(ctx context.Context, obj *QueryNotificationsResult) (int, error)
+	Notifications(ctx context.Context, obj *QueryNotificationsResult) ([]*Notification, error)
 }
 type QueryPerformersResultTypeResolver interface {
 	Count(ctx context.Context, obj *PerformerQuery) (int, error)
@@ -2887,7 +2897,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.QueryNotifications(childComplexity, args["input"].(NotificationQueryInput)), true
+		return e.complexity.Query.QueryNotifications(childComplexity, args["input"].(QueryNotificationsInput)), true
 
 	case "Query.queryPerformers":
 		if e.complexity.Query.QueryPerformers == nil {
@@ -3033,6 +3043,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.QueryExistingSceneResult.Scenes(childComplexity), true
+
+	case "QueryNotificationsResult.count":
+		if e.complexity.QueryNotificationsResult.Count == nil {
+			break
+		}
+
+		return e.complexity.QueryNotificationsResult.Count(childComplexity), true
+
+	case "QueryNotificationsResult.notifications":
+		if e.complexity.QueryNotificationsResult.Notifications == nil {
+			break
+		}
+
+		return e.complexity.QueryNotificationsResult.Notifications(childComplexity), true
 
 	case "QueryPerformersResultType.count":
 		if e.complexity.QueryPerformersResultType.Count == nil {
@@ -4150,7 +4174,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputMultiIDCriterionInput,
 		ec.unmarshalInputMultiStringCriterionInput,
 		ec.unmarshalInputNewUserInput,
-		ec.unmarshalInputNotificationQueryInput,
 		ec.unmarshalInputPerformerAppearanceInput,
 		ec.unmarshalInputPerformerCreateInput,
 		ec.unmarshalInputPerformerDestroyInput,
@@ -4162,6 +4185,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPerformerScenesInput,
 		ec.unmarshalInputPerformerUpdateInput,
 		ec.unmarshalInputQueryExistingSceneInput,
+		ec.unmarshalInputQueryNotificationsInput,
 		ec.unmarshalInputResetPasswordInput,
 		ec.unmarshalInputRevokeInviteInput,
 		ec.unmarshalInputRoleCriterionInput,
@@ -4605,9 +4629,14 @@ type UpdatedEdit {
   edit: Edit!
 }
 
-input NotificationQueryInput {
+input QueryNotificationsInput {
   page: Int! = 1
   per_page: Int! = 25
+}
+
+type QueryNotificationsResult {
+  count: Int!
+  notifications: [Notification!]!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/performer.graphql", Input: `enum GenderEnum {
@@ -5765,7 +5794,7 @@ type Query {
   ### Instance Config ###
   getConfig: StashBoxConfig!
 
-  queryNotifications(input: NotificationQueryInput!): [Notification!]! @hasRole(role: READ)
+  queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
   getUnreadNotificationCount: Int! @hasRole(role: READ)
 }
 
@@ -6970,10 +6999,10 @@ func (ec *executionContext) field_Query_queryExistingScene_args(ctx context.Cont
 func (ec *executionContext) field_Query_queryNotifications_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 NotificationQueryInput
+	var arg0 QueryNotificationsInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNotificationQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationQueryInput(ctx, tmp)
+		arg0, err = ec.unmarshalNQueryNotificationsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -22044,7 +22073,7 @@ func (ec *executionContext) _Query_queryNotifications(ctx context.Context, field
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().QueryNotifications(rctx, fc.Args["input"].(NotificationQueryInput))
+			return ec.resolvers.Query().QueryNotifications(rctx, fc.Args["input"].(QueryNotificationsInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
@@ -22064,10 +22093,10 @@ func (ec *executionContext) _Query_queryNotifications(ctx context.Context, field
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.([]*Notification); ok {
+		if data, ok := tmp.(*QueryNotificationsResult); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/stashapp/stash-box/pkg/models.Notification`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryNotificationsResult`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -22078,9 +22107,9 @@ func (ec *executionContext) _Query_queryNotifications(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*Notification)
+	res := resTmp.(*QueryNotificationsResult)
 	fc.Result = res
-	return ec.marshalNNotification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationᚄ(ctx, field.Selections, res)
+	return ec.marshalNQueryNotificationsResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_queryNotifications(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -22091,14 +22120,12 @@ func (ec *executionContext) fieldContext_Query_queryNotifications(ctx context.Co
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "created":
-				return ec.fieldContext_Notification_created(ctx, field)
-			case "read":
-				return ec.fieldContext_Notification_read(ctx, field)
-			case "data":
-				return ec.fieldContext_Notification_data(ctx, field)
+			case "count":
+				return ec.fieldContext_QueryNotificationsResult_count(ctx, field)
+			case "notifications":
+				return ec.fieldContext_QueryNotificationsResult_notifications(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Notification", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type QueryNotificationsResult", field.Name)
 		},
 	}
 	defer func() {
@@ -22602,6 +22629,102 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_scenes(ctx con
 				return ec.fieldContext_Scene_updated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Scene", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryNotificationsResult_count(ctx context.Context, field graphql.CollectedField, obj *QueryNotificationsResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryNotificationsResult_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryNotificationsResult().Count(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryNotificationsResult_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryNotificationsResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryNotificationsResult_notifications(ctx context.Context, field graphql.CollectedField, obj *QueryNotificationsResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryNotificationsResult_notifications(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryNotificationsResult().Notifications(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Notification)
+	fc.Result = res
+	return ec.marshalNNotification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryNotificationsResult_notifications(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryNotificationsResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "created":
+				return ec.fieldContext_Notification_created(ctx, field)
+			case "read":
+				return ec.fieldContext_Notification_read(ctx, field)
+			case "data":
+				return ec.fieldContext_Notification_data(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Notification", field.Name)
 		},
 	}
 	return fc, nil
@@ -33148,49 +33271,6 @@ func (ec *executionContext) unmarshalInputNewUserInput(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputNotificationQueryInput(ctx context.Context, obj interface{}) (NotificationQueryInput, error) {
-	var it NotificationQueryInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	if _, present := asMap["page"]; !present {
-		asMap["page"] = 1
-	}
-	if _, present := asMap["per_page"]; !present {
-		asMap["per_page"] = 25
-	}
-
-	fieldsInOrder := [...]string{"page", "per_page"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "page":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-			it.Page, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "per_page":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
-			it.PerPage, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputPerformerAppearanceInput(ctx context.Context, obj interface{}) (PerformerAppearanceInput, error) {
 	var it PerformerAppearanceInput
 	asMap := map[string]interface{}{}
@@ -34446,6 +34526,49 @@ func (ec *executionContext) unmarshalInputQueryExistingSceneInput(ctx context.Co
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
 			it.Fingerprints, err = ec.unmarshalNFingerprintInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputQueryNotificationsInput(ctx context.Context, obj interface{}) (QueryNotificationsInput, error) {
+	var it QueryNotificationsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
+	}
+	if _, present := asMap["per_page"]; !present {
+		asMap["per_page"] = 25
+	}
+
+	fieldsInOrder := [...]string{"page", "per_page"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "per_page":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("per_page"))
+			it.PerPage, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -40366,6 +40489,67 @@ func (ec *executionContext) _QueryExistingSceneResult(ctx context.Context, sel a
 	return out
 }
 
+var queryNotificationsResultImplementors = []string{"QueryNotificationsResult"}
+
+func (ec *executionContext) _QueryNotificationsResult(ctx context.Context, sel ast.SelectionSet, obj *QueryNotificationsResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryNotificationsResultImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryNotificationsResult")
+		case "count":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryNotificationsResult_count(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "notifications":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryNotificationsResult_notifications(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryPerformersResultTypeImplementors = []string{"QueryPerformersResultType"}
 
 func (ec *executionContext) _QueryPerformersResultType(ctx context.Context, sel ast.SelectionSet, obj *PerformerQuery) graphql.Marshaler {
@@ -43964,11 +44148,6 @@ func (ec *executionContext) marshalNNotificationData2githubᚗcomᚋstashappᚋs
 	return ec._NotificationData(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNNotificationQueryInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationQueryInput(ctx context.Context, v interface{}) (NotificationQueryInput, error) {
-	res, err := ec.unmarshalInputNotificationQueryInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNOperationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx context.Context, v interface{}) (OperationEnum, error) {
 	var res OperationEnum
 	err := res.UnmarshalGQL(v)
@@ -44217,6 +44396,25 @@ func (ec *executionContext) marshalNQueryExistingSceneResult2ᚖgithubᚗcomᚋs
 		return graphql.Null
 	}
 	return ec._QueryExistingSceneResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNQueryNotificationsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsInput(ctx context.Context, v interface{}) (QueryNotificationsInput, error) {
+	res, err := ec.unmarshalInputQueryNotificationsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNQueryNotificationsResult2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsResult(ctx context.Context, sel ast.SelectionSet, v QueryNotificationsResult) graphql.Marshaler {
+	return ec._QueryNotificationsResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQueryNotificationsResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryNotificationsResult(ctx context.Context, sel ast.SelectionSet, v *QueryNotificationsResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QueryNotificationsResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNQueryPerformersResultType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerQuery(ctx context.Context, sel ast.SelectionSet, v PerformerQuery) graphql.Marshaler {

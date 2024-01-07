@@ -293,11 +293,6 @@ type NewUserInput struct {
 	InviteKey *string `json:"invite_key"`
 }
 
-type NotificationQueryInput struct {
-	Page    int `json:"page"`
-	PerPage int `json:"per_page"`
-}
-
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer"`
 	// Performing as alias
@@ -485,6 +480,11 @@ type QueryExistingSceneInput struct {
 	Title        *string             `json:"title"`
 	StudioID     *uuid.UUID          `json:"studio_id"`
 	Fingerprints []*FingerprintInput `json:"fingerprints"`
+}
+
+type QueryNotificationsInput struct {
+	Page    int `json:"page"`
+	PerPage int `json:"per_page"`
 }
 
 type QuerySitesResultType struct {

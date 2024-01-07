@@ -56,7 +56,12 @@ type UpdatedEdit {
   edit: Edit!
 }
 
-input NotificationQueryInput {
+input QueryNotificationsInput {
   page: Int! = 1
   per_page: Int! = 25
+}
+
+type QueryNotificationsResult {
+  count: Int!
+  notifications: [Notification!]!
 }

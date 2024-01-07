@@ -172,13 +172,19 @@ INSERT INTO notifications
 	return err
 }
 
-func (qb *notificationsQueryBuilder) GetUnreadCount(userID uuid.UUID) (int, error) {
+func (qb *notificationsQueryBuilder) GetUnreadNotificationsCount(userID uuid.UUID) (int, error) {
 	var args []interface{}
 	args = append(args, userID)
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT * FROM notifications WHERE user_id = ? AND read_at IS NULL"), args)
 }
 
-func (qb *notificationsQueryBuilder) GetNotifications(filter models.NotificationQueryInput, userID uuid.UUID) ([]*models.Notification, error) {
+func (qb *notificationsQueryBuilder) GetNotificationsCount(userID uuid.UUID) (int, error) {
+	var args []interface{}
+	args = append(args, userID)
+	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT * FROM notifications WHERE user_id = ?"), args)
+}
+
+func (qb *notificationsQueryBuilder) GetNotifications(filter models.QueryNotificationsInput, userID uuid.UUID) ([]*models.Notification, error) {
 	query := newQueryBuilder(notificationDBTable)
 	query.Eq("user_id", userID)
 	query.Pagination = getPagination(filter.Page, filter.PerPage)

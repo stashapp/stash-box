@@ -41,3 +41,7 @@ func (s Notifications) Each(fn func(interface{})) {
 func (s *Notifications) Add(o interface{}) {
 	*s = append(*s, o.(*Notification))
 }
+
+type QueryNotificationsResult struct {
+	Input QueryNotificationsInput
+}

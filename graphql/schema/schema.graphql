@@ -75,7 +75,7 @@ type Query {
   ### Instance Config ###
   getConfig: StashBoxConfig!
 
-  queryNotifications(input: NotificationQueryInput!): [Notification!]! @hasRole(role: READ)
+  queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
   getUnreadNotificationCount: Int! @hasRole(role: READ)
 }
 
