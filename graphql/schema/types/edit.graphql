@@ -36,6 +36,7 @@ type EditComment {
     user: User
     date: Time!
     comment: String!
+    edit: Edit!
 }
 
 union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit

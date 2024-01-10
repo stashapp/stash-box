@@ -2,6 +2,13 @@
 #import "../fragments/EditFragment.gql"
 #import "../fragments/CommentFragment.gql"
 
+fragment NotificationCommentFragment on EditComment {
+  ...CommentFragment
+  edit {
+    ...EditFragment
+  }
+}
+
 query Notifications($input: QueryNotificationsInput!) {
   queryNotifications(input: $input) {
     count
@@ -32,17 +39,17 @@ query Notifications($input: QueryNotificationsInput!) {
         }
         ...on CommentOwnEdit {
           comment {
-            ...CommentFragment
+            ...NotificationCommentFragment
           }
         }
         ...on CommentCommentedEdit{
           comment {
-            ...CommentFragment
+            ...NotificationCommentFragment
           }
         }
         ...on CommentVotedEdit {
           comment {
-            ...CommentFragment
+            ...NotificationCommentFragment
           }
         }
         ...on DownvoteOwnEdit {

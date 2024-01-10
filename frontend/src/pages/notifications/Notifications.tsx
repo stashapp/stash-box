@@ -3,6 +3,7 @@ import { useNotifications } from "src/graphql";
 import { usePagination } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import { List } from "src/components/list";
+import { Notification } from "./Notification";
 
 const PER_PAGE = 20;
 
@@ -19,13 +20,11 @@ const Notifications: FC = () => {
       page={page}
       setPage={setPage}
       perPage={PER_PAGE}
-      listCount={data?.queryNotifications?.length ?? 0}
+      listCount={data?.queryNotifications.count}
       loading={loading}
       entityName="notifications"
     >
-      {data?.queryNotifications?.map(n => (
-        <div key={n.created}>{ n.data.__typename }</div>
-      ))}
+      {data?.queryNotifications?.notifications?.map(n => <Notification key={`${n.created}-${n.data.__typename}`} notification={n} />)}
     </List>
   );
 };

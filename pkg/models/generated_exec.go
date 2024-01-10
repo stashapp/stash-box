@@ -141,6 +141,7 @@ type ComplexityRoot struct {
 	EditComment struct {
 		Comment func(childComplexity int) int
 		Date    func(childComplexity int) int
+		Edit    func(childComplexity int) int
 		ID      func(childComplexity int) int
 		User    func(childComplexity int) int
 	}
@@ -670,6 +671,7 @@ type EditCommentResolver interface {
 	User(ctx context.Context, obj *EditComment) (*User, error)
 	Date(ctx context.Context, obj *EditComment) (*time.Time, error)
 	Comment(ctx context.Context, obj *EditComment) (string, error)
+	Edit(ctx context.Context, obj *EditComment) (*Edit, error)
 }
 type EditVoteResolver interface {
 	User(ctx context.Context, obj *EditVote) (*User, error)
@@ -1231,6 +1233,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.EditComment.Date(childComplexity), true
+
+	case "EditComment.edit":
+		if e.complexity.EditComment.Edit == nil {
+			break
+		}
+
+		return e.complexity.EditComment.Edit(childComplexity), true
 
 	case "EditComment.id":
 		if e.complexity.EditComment.ID == nil {
@@ -4353,6 +4362,7 @@ type EditComment {
     user: User
     date: Time!
     comment: String!
+    edit: Edit!
 }
 
 union EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit
@@ -7358,6 +7368,8 @@ func (ec *executionContext) fieldContext_CommentCommentedEdit_comment(ctx contex
 				return ec.fieldContext_EditComment_date(ctx, field)
 			case "comment":
 				return ec.fieldContext_EditComment_comment(ctx, field)
+			case "edit":
+				return ec.fieldContext_EditComment_edit(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
 		},
@@ -7412,6 +7424,8 @@ func (ec *executionContext) fieldContext_CommentOwnEdit_comment(ctx context.Cont
 				return ec.fieldContext_EditComment_date(ctx, field)
 			case "comment":
 				return ec.fieldContext_EditComment_comment(ctx, field)
+			case "edit":
+				return ec.fieldContext_EditComment_edit(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
 		},
@@ -7466,6 +7480,8 @@ func (ec *executionContext) fieldContext_CommentVotedEdit_comment(ctx context.Co
 				return ec.fieldContext_EditComment_date(ctx, field)
 			case "comment":
 				return ec.fieldContext_EditComment_comment(ctx, field)
+			case "edit":
+				return ec.fieldContext_EditComment_edit(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
 		},
@@ -8495,6 +8511,8 @@ func (ec *executionContext) fieldContext_Edit_comments(ctx context.Context, fiel
 				return ec.fieldContext_EditComment_date(ctx, field)
 			case "comment":
 				return ec.fieldContext_EditComment_comment(ctx, field)
+			case "edit":
+				return ec.fieldContext_EditComment_edit(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type EditComment", field.Name)
 		},
@@ -9089,6 +9107,92 @@ func (ec *executionContext) fieldContext_EditComment_comment(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EditComment_edit(ctx context.Context, field graphql.CollectedField, obj *EditComment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EditComment_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.EditComment().Edit(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EditComment_edit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EditComment",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
 	}
 	return fc, nil
@@ -37704,6 +37808,26 @@ func (ec *executionContext) _EditComment(ctx context.Context, sel ast.SelectionS
 					}
 				}()
 				res = ec._EditComment_comment(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "edit":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EditComment_edit(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
