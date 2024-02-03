@@ -75,6 +75,18 @@ export const SceneSchema = yup.object({
       })
     )
     .ensure(),
+  fingerprints: yup
+    .array()
+    .of(
+      yup
+        .object({
+          hash: yup.string().required(),
+          algorithm: yup.string().required(),
+          duration: yup.number().required(),
+        })
+        .required()
+    )
+    .ensure(),
   images: yup
     .array()
     .of(
