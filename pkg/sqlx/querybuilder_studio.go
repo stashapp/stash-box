@@ -524,3 +524,41 @@ func (qb *studioQueryBuilder) deleteSceneStudios(id uuid.UUID) error {
 func (qb *studioQueryBuilder) deleteStudioFavorites(id uuid.UUID) error {
 	return qb.dbi.DeleteJoins(studioFavoriteTable, id)
 }
+
+func (qb *studioQueryBuilder) IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
+	query := "SELECT studio_id FROM studio_favorites WHERE user_id = :userid AND studio_id IN (:studio_ids)"
+
+	arg := map[string]interface{}{
+		"userid":     userID,
+		"studio_ids": ids,
+	}
+	m := make(map[uuid.UUID]bool)
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return err
+		}
+		m[id] = true
+
+		return nil
+	}); err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	result := make([]bool, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
