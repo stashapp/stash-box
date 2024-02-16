@@ -434,6 +434,73 @@ func (s *sceneEditTestRunner) verifyAppliedMergeSceneEdit(input models.SceneEdit
 	}
 }
 
+func (s *sceneEditTestRunner) testQueryExistingScene() {
+	studio, err := s.createTestStudio(nil)
+	assert.NilError(s.t, err)
+	sceneEditDetailsInput := s.createFullSceneEditDetailsInput()
+	sceneEditDetailsInput.Fingerprints = []*models.FingerprintInput{{
+		Hash:      "asd",
+		Algorithm: models.FingerprintAlgorithmPhash,
+		Duration:  123,
+	}}
+	studioID := studio.UUID()
+	sceneEditDetailsInput.StudioID = &studioID
+
+	edit, err := s.createTestSceneEdit(models.OperationEnumCreate, sceneEditDetailsInput, nil)
+	assert.NilError(s.t, err)
+
+	var resp struct {
+		QueryExistingScene struct {
+			Edits []struct {
+				ID string
+			}
+		}
+	}
+
+	s.client.MustPost(fmt.Sprintf(`
+		query {
+			queryExistingScene(input: {
+				title: "%v"
+				studio_id: "%v"
+				fingerprints: [{
+				  duration: 123
+					hash: "%v"
+					algorithm: %v
+				}]
+			}) {
+			  edits {
+					id
+				}
+			}
+		}
+	`, *sceneEditDetailsInput.Title, sceneEditDetailsInput.StudioID, sceneEditDetailsInput.Fingerprints[0].Hash, sceneEditDetailsInput.Fingerprints[0].Algorithm), &resp)
+	assert.Assert(s.t, len(resp.QueryExistingScene.Edits) > 0)
+
+	_, err = s.resolver.Mutation().CancelEdit(s.ctx, models.CancelEditInput{
+		ID: edit.ID,
+	})
+	assert.NilError(s.t, err)
+
+	s.client.MustPost(fmt.Sprintf(`
+		query {
+			queryExistingScene(input: {
+				title: "%v"
+				studio_id: "%v"
+				fingerprints: [{
+				  duration: 123
+					hash: "%v"
+					algorithm: %v
+				}]
+			}) {
+			  edits {
+					id
+				}
+			}
+		}
+	`, *sceneEditDetailsInput.Title, sceneEditDetailsInput.StudioID, sceneEditDetailsInput.Fingerprints[0].Hash, sceneEditDetailsInput.Fingerprints[0].Algorithm), &resp)
+	assert.Assert(s.t, len(resp.QueryExistingScene.Edits) == 0)
+}
+
 func TestCreateSceneEdit(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testCreateSceneEdit()
@@ -477,4 +544,9 @@ func TestApplyDestroySceneEdit(t *testing.T) {
 func TestApplyMergeSceneEdit(t *testing.T) {
 	pt := createSceneEditTestRunner(t)
 	pt.testApplyMergeSceneEdit()
+}
+
+func TestQueryExistingScene(t *testing.T) {
+	pt := createSceneEditTestRunner(t)
+	pt.testQueryExistingScene()
 }

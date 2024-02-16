@@ -448,7 +448,7 @@ func (qb *editQueryBuilder) FindPendingSceneCreation(input models.QueryExistingS
 		WHERE status = 'PENDING'
 		AND target_type = 'SCENE'
 		AND
-	` + strings.Join(clauses, " OR ")
+	(` + strings.Join(clauses, " OR ") + `)`
 
 	query, args, err := sqlx.Named(query, arg)
 	if err != nil {
