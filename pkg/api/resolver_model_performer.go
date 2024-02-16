@@ -231,9 +231,7 @@ func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) 
 }
 
 func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performer) (bool, error) {
-	jqb := r.getRepoFactory(ctx).Joins()
-	user := getCurrentUser(ctx)
-	return jqb.IsPerformerFavorite(models.PerformerFavorite{PerformerID: obj.ID, UserID: user.ID})
+	return dataloader.For(ctx).PerformerIsFavoriteByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Created(ctx context.Context, obj *models.Performer) (*time.Time, error) {

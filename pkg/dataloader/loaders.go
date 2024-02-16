@@ -27,10 +27,12 @@ type Loaders struct {
 	PerformerPiercingsByID         BodyModificationsLoader
 	PerformerTattoosByID           BodyModificationsLoader
 	PerformerUrlsByID              URLLoader
+	PerformerIsFavoriteByID        BoolsLoader
 	SceneImageIDsByID              UUIDsLoader
 	SceneAppearancesByID           SceneAppearancesLoader
 	SceneUrlsByID                  URLLoader
 	StudioImageIDsByID             UUIDsLoader
+	StudioIsFavoriteByID           BoolsLoader
 	StudioUrlsByID                 URLLoader
 	SceneTagIDsByID                UUIDsLoader
 	SiteByID                       SiteLoader
@@ -218,6 +220,22 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]*models.TagCategory, []error) {
 				qb := fac.TagCategory()
 				return qb.FindByIds(ids)
+			},
+		},
+		PerformerIsFavoriteByID: BoolsLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]bool, []error) {
+				qb := fac.Performer()
+				return qb.IsFavoriteByIds(currentUser.ID, ids)
+			},
+		},
+		StudioIsFavoriteByID: BoolsLoader{
+			maxBatch: 1000,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([]bool, []error) {
+				qb := fac.Studio()
+				return qb.IsFavoriteByIds(currentUser.ID, ids)
 			},
 		},
 	}

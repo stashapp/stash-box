@@ -75,13 +75,13 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 	}
 
 	// Find ids for all scenes matching a fingerprint
-	sceneIds, err := qb.FindIdsBySceneFingerprints(fingerprints)
+	sceneIDs, err := qb.FindIdsBySceneFingerprints(fingerprints)
 	if err != nil {
 		return nil, err
 	}
 
 	var ids []uuid.UUID
-	for _, id := range sceneIds {
+	for _, id := range sceneIDs {
 		ids = append(ids, id...)
 	}
 
@@ -100,7 +100,7 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 	for i, scene := range sceneFingerprints {
 		sceneIDMap := make(map[uuid.UUID]bool)
 		for _, fp := range scene {
-			for _, id := range sceneIds[fp.Hash] {
+			for _, id := range sceneIDs[fp.Hash] {
 				sceneIDMap[id] = true
 			}
 		}
