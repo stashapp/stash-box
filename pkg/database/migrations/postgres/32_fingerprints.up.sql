@@ -31,7 +31,6 @@ JOIN "fingerprints" F ON SF.hash = F.hash AND SF.algorithm = F.algorithm;
 
 DROP TABLE "_scene_fingerprints";
 
-CREATE INDEX "scenes_deleted_idx" ON "scenes" (id, deleted);
 CREATE INDEX "scene_fingerprints_fingerprint_idx" ON "scene_fingerprints" (fingerprint_id);
 CREATE INDEX "scene_fingerprints_user_idx" on "scene_fingerprints" (user_id);
 CREATE INDEX "scene_fingerprints_created_at" on "scene_fingerprints" (created_at);
