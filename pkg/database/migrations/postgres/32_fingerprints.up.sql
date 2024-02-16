@@ -33,7 +33,7 @@ DROP TABLE "_scene_fingerprints";
 
 CREATE INDEX "scene_fingerprints_fingerprint_idx" ON "scene_fingerprints" (fingerprint_id);
 CREATE INDEX "scene_fingerprints_user_idx" on "scene_fingerprints" (user_id);
-CREATE INDEX "scene_fingerprints_created_at" on "scene_fingerprints" (created_at);
+CREATE INDEX "scene_fingerprints_created_at" on "scene_fingerprints" (created_at, scene_id);
 
 
 -- Create phash index if bktree is available
