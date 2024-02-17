@@ -115,8 +115,7 @@ const useEditFilter = ({
   const selectedVoted = fixedVoted ?? voted;
   const selectedFavorite = fixedFavorite ?? favorite;
   const selectedBot = fixedBot ?? params.bot;
-  const selectedUserSubmitted =
-    fixedUserSubmitted ?? userSubmitted;
+  const selectedUserSubmitted = fixedUserSubmitted ?? userSubmitted;
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -243,17 +242,17 @@ const useEditFilter = ({
           value={botOptions.find((opt) => opt.value === selectedBot)}
         />
       </Form.Group>
-      <Form.Group controlId="include_user_submitted" className="text-center ms-3">
+      <Form.Group
+        controlId="include_user_submitted"
+        className="text-center ms-3"
+      >
         <Form.Label>My Edits</Form.Label>
         <Form.Check
           className="mt-2"
           type="switch"
           defaultChecked={userSubmitted}
           onChange={(e) =>
-            setParams(
-              "user_submitted",
-              e.currentTarget.checked.toString()
-            )
+            setParams("user_submitted", e.currentTarget.checked.toString())
           }
         />
       </Form.Group>
