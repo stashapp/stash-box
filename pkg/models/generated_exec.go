@@ -4298,6 +4298,8 @@ input EditQueryInput {
   voted: UserVotedFilterEnum
   """Filter to bot edits only"""
   is_bot: Boolean
+  """Filter out user's own edits"""
+  include_user_submitted: Boolean
 
   page: Int! = 1
   per_page: Int! = 25
@@ -31123,7 +31125,7 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "voted", "is_bot", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"user_id", "status", "operation", "vote_count", "applied", "target_type", "target_id", "is_favorite", "voted", "is_bot", "include_user_submitted", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31200,6 +31202,13 @@ func (ec *executionContext) unmarshalInputEditQueryInput(ctx context.Context, ob
 				return it, err
 			}
 			it.IsBot = data
+		case "include_user_submitted":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("include_user_submitted"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IncludeUserSubmitted = data
 		case "page":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
 			data, err := ec.unmarshalNInt2int(ctx, v)

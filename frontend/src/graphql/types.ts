@@ -189,6 +189,8 @@ export type EditQueryInput = {
   /** Filter by applied status */
   applied?: InputMaybe<Scalars["Boolean"]>;
   direction?: SortDirectionEnum;
+  /** Filter out user's own edits */
+  include_user_submitted?: InputMaybe<Scalars["Boolean"]>;
   /** Filter to bot edits only */
   is_bot?: InputMaybe<Scalars["Boolean"]>;
   /** Filter by favorite status */
