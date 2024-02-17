@@ -90,7 +90,7 @@ const EditListComponent: FC<EditsProps> = ({
       per_page: PER_PAGE,
       sort: selectedSort,
       direction: selectedDirection,
-      include_user_submitted: selectedUserSubmitted === "true",
+      include_user_submitted: selectedUserSubmitted,
     },
   });
 

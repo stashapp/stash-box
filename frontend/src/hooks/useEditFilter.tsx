@@ -91,8 +91,8 @@ const useEditFilter = ({
     type: { name: "type", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
     bot: { name: "bot", type: "string", default: defaultBot },
-    include_user_submitted: {
-      name: "include_user_submitted",
+    user_submitted: {
+      name: "user_submitted",
       type: "string",
       default: "true",
     },
@@ -105,6 +105,7 @@ const useEditFilter = ({
   const status = resolveEnum(VoteStatusEnum, params.status, undefined);
   const type = resolveEnum(TargetTypeEnum, params.type);
   const favorite = params.favorite === "true";
+  const userSubmitted = params.user_submitted !== "false";
 
   const selectedSort = fixedSort ?? sort;
   const selectedDirection = fixedDirection ?? direction;
@@ -115,7 +116,7 @@ const useEditFilter = ({
   const selectedFavorite = fixedFavorite ?? favorite;
   const selectedBot = fixedBot ?? params.bot;
   const selectedUserSubmitted =
-    fixedUserSubmitted ?? params.include_user_submitted;
+    fixedUserSubmitted ?? userSubmitted;
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -242,15 +243,15 @@ const useEditFilter = ({
           value={botOptions.find((opt) => opt.value === selectedBot)}
         />
       </Form.Group>
-      <Form.Group controlId="include_user_submitted" className="text-center">
-        <Form.Label>Include My Edits</Form.Label>
+      <Form.Group controlId="include_user_submitted" className="text-center ms-3">
+        <Form.Label>My Edits</Form.Label>
         <Form.Check
           className="mt-2"
           type="switch"
-          defaultChecked={true}
+          defaultChecked={userSubmitted}
           onChange={(e) =>
             setParams(
-              "include_user_submitted",
+              "user_submitted",
               e.currentTarget.checked.toString()
             )
           }
