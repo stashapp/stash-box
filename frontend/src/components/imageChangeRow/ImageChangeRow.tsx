@@ -2,10 +2,10 @@ import { FC } from "react";
 import { Col, Row } from "react-bootstrap";
 
 type Image = {
-  height?: number | undefined;
+  height: number;
   id: string;
   url: string;
-  width?: number | undefined;
+  width: number;
 };
 
 const CLASSNAME = "ImageChangeRow";

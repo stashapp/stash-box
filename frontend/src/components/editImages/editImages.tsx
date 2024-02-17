@@ -67,7 +67,6 @@ const EditImages: FC<EditImagesProps> = ({
         if (i.data?.imageCreate?.id) {
           if (!images.some((image) => image.id === i.data?.imageCreate?.id)) {
             append(i.data.imageCreate);
-            console.log(i.data.imageCreate);
           }
           setFile(undefined);
           setImageData("");

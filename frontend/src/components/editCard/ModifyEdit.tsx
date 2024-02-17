@@ -35,10 +35,10 @@ type OldDetails = EditFragment["old_details"];
 type Options = EditFragment["options"];
 
 type Image = {
-  height?: number | undefined;
+  height: number;
   id: string;
   url: string;
-  width?: number | undefined;
+  width: number;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

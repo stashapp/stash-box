@@ -27,7 +27,7 @@ export const diffImages = (
 ) =>
   diffArray(
     (newImages ?? []).flatMap((i) =>
-      i.id && i.url
+      i.id && i.url && i.height && i.width
         ? [
             {
               id: i.id,
