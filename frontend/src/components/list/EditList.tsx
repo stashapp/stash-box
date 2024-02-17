@@ -27,6 +27,7 @@ interface EditsProps {
   defaultVoted?: UserVotedFilterEnum;
   defaultBot?: "include" | "exclude" | "only";
   showVotedFilter?: boolean;
+  userSubmitted?: boolean;
   defaultUserSubmitted?: boolean;
 }
 
@@ -45,6 +46,8 @@ const EditListComponent: FC<EditsProps> = ({
   defaultVoted,
   defaultBot,
   showVotedFilter,
+  userSubmitted,
+  defaultUserSubmitted,
 }) => {
   const { page, setPage } = usePagination();
   const {
@@ -70,6 +73,8 @@ const EditListComponent: FC<EditsProps> = ({
     defaultVoteStatus,
     defaultVoted,
     defaultBot,
+    userSubmitted,
+    defaultUserSubmitted,
   });
   const { data, loading } = useEdits({
     input: {

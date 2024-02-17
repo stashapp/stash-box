@@ -59,6 +59,7 @@ interface EditFilterProps {
   defaultVoteStatus?: VoteStatusEnum | "all";
   defaultVoted?: UserVotedFilterEnum;
   defaultBot?: "include" | "exclude" | "only";
+  defaultUserSubmitted?: boolean;
 }
 
 const useEditFilter = ({
@@ -76,6 +77,7 @@ const useEditFilter = ({
   defaultVoteStatus = "all",
   defaultVoted,
   defaultBot = "include",
+  defaultUserSubmitted = true,
 }: EditFilterProps) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
@@ -94,7 +96,7 @@ const useEditFilter = ({
     user_submitted: {
       name: "user_submitted",
       type: "string",
-      default: "true",
+      default: defaultUserSubmitted.toString(),
     },
   });
 
@@ -242,20 +244,22 @@ const useEditFilter = ({
           value={botOptions.find((opt) => opt.value === selectedBot)}
         />
       </Form.Group>
-      <Form.Group
-        controlId="include_user_submitted"
-        className="text-center ms-3"
-      >
-        <Form.Label>My Edits</Form.Label>
-        <Form.Check
-          className="mt-2"
-          type="switch"
-          defaultChecked={userSubmitted}
-          onChange={(e) =>
-            setParams("user_submitted", e.currentTarget.checked.toString())
-          }
-        />
-      </Form.Group>
+      {fixedUserSubmitted === undefined && (
+        <Form.Group
+          controlId="include_user_submitted"
+          className="text-center ms-3"
+        >
+          <Form.Label>My Edits</Form.Label>
+          <Form.Check
+            className="mt-2"
+            type="switch"
+            defaultChecked={userSubmitted}
+            onChange={(e) =>
+              setParams("user_submitted", e.currentTarget.checked.toString())
+            }
+          />
+        </Form.Group>
+      )}
     </Form>
   );
 
