@@ -187,18 +187,25 @@ func resolveTags(tags []*models.DraftEntityInput, fac models.Repo) ([]models.Dra
 	var results []models.DraftEntity
 	resultMap := make(map[string]bool)
 	for _, tag := range tags {
-		foundTag, err := tqb.FindByNameOrAlias(tag.Name)
-		if err != nil {
-			return nil, err
+		res := models.DraftEntity{}
+
+		if tag.ID != nil {
+			res = *translateDraftEntity(tag)
+		} else {
+			foundTag, err := tqb.FindByNameOrAlias(tag.Name)
+			if err != nil {
+				return nil, err
+			}
+
+			res := models.DraftEntity{
+				Name: tag.Name,
+			}
+			if foundTag != nil {
+				res.Name = foundTag.Name
+				res.ID = &foundTag.ID
+			}
 		}
 
-		res := models.DraftEntity{
-			Name: tag.Name,
-		}
-		if foundTag != nil {
-			res.Name = foundTag.Name
-			res.ID = &foundTag.ID
-		}
 		if _, exists := resultMap[res.Name]; !exists {
 			resultMap[res.Name] = true
 			results = append(results, res)
