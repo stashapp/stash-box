@@ -190,19 +190,25 @@ func resolveTags(tags []*models.DraftEntityInput, fac models.Repo) ([]models.Dra
 		res := models.DraftEntity{}
 
 		if tag.ID != nil {
-			res = *translateDraftEntity(tag)
+			dbTag, _ := tqb.Find(*tag.ID)
+			if dbTag.ID == *tag.ID {
+				res = *translateDraftEntity(tag)
+			}
 		} else {
 			foundTag, err := tqb.FindByNameOrAlias(tag.Name)
 			if err != nil {
 				return nil, err
 			}
 
-			res := models.DraftEntity{
-				Name: tag.Name,
-			}
 			if foundTag != nil {
 				res.Name = foundTag.Name
 				res.ID = &foundTag.ID
+			}
+		}
+
+		if res.Name == "" {
+			res = models.DraftEntity{
+				Name: tag.Name,
 			}
 		}
 
