@@ -809,6 +809,7 @@ export type PerformerDraft = {
   career_end_year?: Maybe<Scalars["Int"]>;
   career_start_year?: Maybe<Scalars["Int"]>;
   country?: Maybe<Scalars["String"]>;
+  disambiguation?: Maybe<Scalars["String"]>;
   ethnicity?: Maybe<Scalars["String"]>;
   eye_color?: Maybe<Scalars["String"]>;
   gender?: Maybe<Scalars["String"]>;
@@ -830,6 +831,7 @@ export type PerformerDraftInput = {
   career_end_year?: InputMaybe<Scalars["Int"]>;
   career_start_year?: InputMaybe<Scalars["Int"]>;
   country?: InputMaybe<Scalars["String"]>;
+  disambiguation?: InputMaybe<Scalars["String"]>;
   ethnicity?: InputMaybe<Scalars["String"]>;
   eye_color?: InputMaybe<Scalars["String"]>;
   gender?: InputMaybe<Scalars["String"]>;
@@ -13896,6 +13898,7 @@ export type DraftQuery = {
           __typename: "PerformerDraft";
           id?: string | null;
           name: string;
+          disambiguation?: string | null;
           aliases?: string | null;
           gender?: string | null;
           birthdate?: string | null;
@@ -39224,6 +39227,10 @@ export const DraftDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "name" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "disambiguation" },
                             },
                             {
                               kind: "Field",

@@ -266,6 +266,7 @@ type ComplexityRoot struct {
 		CareerEndYear   func(childComplexity int) int
 		CareerStartYear func(childComplexity int) int
 		Country         func(childComplexity int) int
+		Disambiguation  func(childComplexity int) int
 		Ethnicity       func(childComplexity int) int
 		EyeColor        func(childComplexity int) int
 		Gender          func(childComplexity int) int
@@ -2189,6 +2190,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerDraft.Country(childComplexity), true
+
+	case "PerformerDraft.disambiguation":
+		if e.complexity.PerformerDraft.Disambiguation == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Disambiguation(childComplexity), true
 
 	case "PerformerDraft.ethnicity":
 		if e.complexity.PerformerDraft.Ethnicity == nil {
@@ -4786,6 +4794,7 @@ input PerformerQueryInput {
 type PerformerDraft {
   id: ID
   name: String!
+  disambiguation: String
   aliases: String
   gender: String
   birthdate: String
@@ -4806,6 +4815,7 @@ type PerformerDraft {
 
 input PerformerDraftInput {
   id: ID
+  disambiguation: String
   name: String!
   aliases: String
   gender: String
@@ -15928,6 +15938,47 @@ func (ec *executionContext) _PerformerDraft_name(ctx context.Context, field grap
 }
 
 func (ec *executionContext) fieldContext_PerformerDraft_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PerformerDraft_disambiguation(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PerformerDraft_disambiguation(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Disambiguation, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PerformerDraft_disambiguation(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PerformerDraft",
 		Field:      field,
@@ -32078,7 +32129,7 @@ func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "aliases", "gender", "birthdate", "urls", "ethnicity", "country", "eye_color", "hair_color", "height", "measurements", "breast_type", "tattoos", "piercings", "career_start_year", "career_end_year", "image"}
+	fieldsInOrder := [...]string{"id", "disambiguation", "name", "aliases", "gender", "birthdate", "urls", "ethnicity", "country", "eye_color", "hair_color", "height", "measurements", "breast_type", "tattoos", "piercings", "career_start_year", "career_end_year", "image"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32092,6 +32143,13 @@ func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Contex
 				return it, err
 			}
 			it.ID = data
+		case "disambiguation":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("disambiguation"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Disambiguation = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -38053,6 +38111,8 @@ func (ec *executionContext) _PerformerDraft(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "disambiguation":
+			out.Values[i] = ec._PerformerDraft_disambiguation(ctx, field, obj)
 		case "aliases":
 			out.Values[i] = ec._PerformerDraft_aliases(ctx, field, obj)
 		case "gender":
