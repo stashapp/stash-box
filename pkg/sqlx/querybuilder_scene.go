@@ -292,52 +292,6 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	return res, nil
 }
 
-// func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*models.Scene, error) {
-// 	query := `
-// 		SELECT scenes.* FROM scenes
-// 		LEFT JOIN scenes_scenes as scenes_join on scenes_join.scene_id = scenes.id
-// 		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-// 		WHERE scenes.id = ?
-// 		GROUP BY scenes.id
-// 	`
-// 	args := []interface{}{sceneID}
-// 	return qb.queryScenes(query, args)
-// }
-
-// func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*models.Scene, error) {
-// 	query := `SELECT scenes.* FROM scenes
-// 		left join scene_checksums on scenes.id = scene_checksums.scene_id
-// 		WHERE scene_checksums.checksum = ?`
-
-// 	var args []interface{}
-// 	args = append(args, checksum)
-
-// 	results, err := qb.queryScenes(query, args)
-// 	if err != nil || len(results) < 1 {
-// 		return nil, err
-// 	}
-// 	return results[0], nil
-// }
-
-// func (qb *SceneQueryBuilder) FindByChecksums(checksums []string) ([]*models.Scene, error) {
-// 	query := `SELECT scenes.* FROM scenes
-// 		left join scene_checksums on scenes.id = scene_checksums.scene_id
-// 		WHERE scene_checksums.checksum IN ` + getInBinding(len(checksums))
-
-// 	var args []interface{}
-// 	for _, name := range checksums {
-// 		args = append(args, name)
-// 	}
-// 	return qb.queryScenes(query, args)
-// }
-
-func (qb *sceneQueryBuilder) FindByTitle(name string) ([]*models.Scene, error) {
-	query := "SELECT * FROM scenes WHERE upper(title) = upper(?)"
-	var args []interface{}
-	args = append(args, name)
-	return qb.queryScenes(query, args)
-}
-
 func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }

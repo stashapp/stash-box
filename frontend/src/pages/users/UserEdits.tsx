@@ -23,6 +23,7 @@ const UserEditsComponent: FC<Props> = ({ user, isPrivateUser }) => (
       userId={user.id}
       defaultVoteStatus={VoteStatusEnum.PENDING}
       showVotedFilter={!isPrivateUser}
+      userSubmitted={true}
     />
   </>
 );

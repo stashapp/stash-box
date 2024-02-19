@@ -217,22 +217,23 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		if filter.TargetType == nil || *filter.TargetType == "" {
 			return nil, errors.New("TargetType is required when TargetID filter is used")
 		}
-		switch *filter.TargetType {
-		case models.TargetTypeEnumTag:
-			query.AddJoin(editTagTable.table, editTagTable.Name()+".edit_id = edits.id")
-			query.AddWhere("(" + editTagTable.Name() + ".tag_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-		case models.TargetTypeEnumPerformer:
-			query.AddJoin(editPerformerTable.table, editPerformerTable.Name()+".edit_id = edits.id")
-			query.AddWhere("(" + editPerformerTable.Name() + ".performer_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-		case models.TargetTypeEnumStudio:
-			query.AddJoin(editStudioTable.table, editStudioTable.Name()+".edit_id = edits.id")
-			query.AddWhere("(" + editStudioTable.Name() + ".studio_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-		case models.TargetTypeEnumScene:
-			query.AddJoin(editSceneTable.table, editSceneTable.Name()+".edit_id = edits.id")
-			query.AddWhere("(" + editSceneTable.Name() + ".scene_id = ? OR " + editDBTable.Name() + ".data->'merge_sources' @> ?)")
-		}
+
+		// Union is significantly faster than an OR query
+		query.AddWhere(fmt.Sprintf(`
+			edits.id IN (
+				SELECT id
+				FROM edits E
+				WHERE E.data->'merge_sources' @> ?
+				UNION
+				SELECT id
+				FROM edits E
+				JOIN %[1]s_edits TJ ON TJ.edit_id = E.id
+				WHERE TJ.%[1]s_id = ?
+			)
+    `, strings.ToLower(filter.TargetType.String())))
+
 		jsonID, _ := json.Marshal(*targetID)
-		query.AddArg(*targetID, jsonID)
+		query.AddArg(jsonID, *targetID)
 	} else if q := filter.TargetType; q != nil && *q != "" {
 		query.Eq("target_type", q.String())
 	}
@@ -290,6 +291,12 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 
 	if q := filter.IsBot; q != nil {
 		query.Eq("bot", *q)
+	}
+
+	if q := filter.IncludeUserSubmitted; q != nil {
+		if !*q {
+			query.NotEq(editDBTable.Name()+".user_id", userID)
+		}
 	}
 
 	if filter.Sort == models.EditSortEnumClosedAt || filter.Sort == models.EditSortEnumUpdatedAt {
@@ -448,7 +455,7 @@ func (qb *editQueryBuilder) FindPendingSceneCreation(input models.QueryExistingS
 		WHERE status = 'PENDING'
 		AND target_type = 'SCENE'
 		AND
-	` + strings.Join(clauses, " OR ")
+	(` + strings.Join(clauses, " OR ") + `)`
 
 	query, args, err := sqlx.Named(query, arg)
 	if err != nil {
