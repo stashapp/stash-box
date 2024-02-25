@@ -126,8 +126,10 @@ func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*models.Tag, error) {
 	query := `
 		SELECT T.* FROM tags T
 		LEFT JOIN tag_aliases TA ON T.id = TA.tag_id
-		WHERE LOWER(TA.alias) = LOWER($1) OR LOWER(T.name) = LOWER($1)
-		ORDER BY T.deleted ASC
+		WHERE (
+		  LOWER(TA.alias) = LOWER($1)
+			OR LOWER(T.name) = LOWER($1)
+		) AND T.deleted = 'F'
 	`
 
 	args := []interface{}{name}
