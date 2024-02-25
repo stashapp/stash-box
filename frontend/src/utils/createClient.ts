@@ -5,7 +5,7 @@ import {
   TypePolicies,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
-import { setContext, ContextSetter } from "@apollo/client/link/context";
+import { setContext } from "@apollo/client/link/context";
 import { createUploadLink } from "apollo-upload-client";
 
 const typePolicies: TypePolicies = {
@@ -45,18 +45,16 @@ const httpLink = createUploadLink({
   },
 });
 
-const authLink = setContext(
-  (_, { headers, ...context }): ContextSetter => ({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    headers: {
-      ...headers,
-      ...(import.meta.env.VITE_APIKEY && {
-        ApiKey: import.meta.env.VITE_APIKEY,
-      }),
-    },
-    ...context,
-  })
-);
+const authLink = setContext((_, { headers, ...context }) => ({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  headers: {
+    ...headers,
+    ...(import.meta.env.VITE_APIKEY && {
+      ApiKey: import.meta.env.VITE_APIKEY,
+    }),
+  },
+  ...context,
+}));
 
 const createClient = () =>
   new ApolloClient({

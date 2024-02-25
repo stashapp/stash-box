@@ -1,10 +1,11 @@
 import { FC, ChangeEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { Control, useFieldArray } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
+import type { Control } from "react-hook-form";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
-import { useAddImage } from "src/graphql";
+import { ImageFragment as Image, useAddImage } from "src/graphql";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 
@@ -17,6 +18,10 @@ const CLASSNAME_PLACEHOLDER = `${CLASSNAME}-placeholder`;
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_UPLOADING = `${CLASSNAME_IMAGE}-uploading`;
 
+type ControlType =
+  | Control<{ images?: Image[] | undefined }, "images">
+  | undefined;
+
 interface EditImagesProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<any>;
@@ -25,7 +30,7 @@ interface EditImagesProps {
   maxImages?: number;
   /** Whether to allow svg/png image input */
   allowLossless?: boolean;
-  original?: { id: string; url: string }[] | undefined;
+  original?: Image[] | undefined;
 }
 
 const EditImages: FC<EditImagesProps> = ({
@@ -41,12 +46,8 @@ const EditImages: FC<EditImagesProps> = ({
     append,
     remove,
     replace,
-  } = useFieldArray<
-    { images: Array<{ id: string; url: string; key: string }> },
-    "images",
-    "key"
-  >({
-    control,
+  } = useFieldArray({
+    control: control as ControlType,
     name: "images",
     keyName: "key",
   });

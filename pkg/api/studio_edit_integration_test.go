@@ -4,6 +4,7 @@
 package api_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -294,6 +295,77 @@ func (s *studioEditTestRunner) verifyApplyModifyStudioEdit(input models.StudioEd
 	s.compareURLs(input.Urls, urls)
 }
 
+func (s *studioEditTestRunner) testApplyModifyUnsetStudioEdit() {
+	existingName := "studioName4"
+	site, err := s.createTestSite(nil)
+	assert.NilError(s.t, err)
+
+	newParent, err := s.createTestStudio(nil)
+	assert.NilError(s.t, err)
+	newParentID := newParent.UUID()
+
+	studioCreateInput := models.StudioCreateInput{
+		Name: existingName,
+		Urls: []*models.URLInput{{
+			URL:    "http://example.org/old",
+			SiteID: site.ID,
+		}},
+		ParentID: &newParentID,
+	}
+	createdStudio, err := s.createTestStudio(&studioCreateInput)
+	assert.NilError(s.t, err)
+
+	var resp struct {
+		StudioEdit struct {
+			ID string
+		}
+	}
+
+	newName := "cleared-name"
+	id := createdStudio.UUID()
+	s.client.MustPost(fmt.Sprintf(`
+		mutation {
+			studioEdit(input: {
+				edit: {id: "%v", operation: MODIFY}
+				details: { parent_id: null, urls: [], name: "%s"}
+			}) {
+				id
+			}
+		}
+	`, id, newName), &resp)
+
+	_, err = s.applyEdit(uuid.FromStringOrNil(resp.StudioEdit.ID))
+	assert.NilError(s.t, err)
+
+	var studio struct {
+		FindStudio struct {
+			Name   string
+			Parent struct {
+				Id uuid.NullUUID
+			}
+			URLs []models.URL
+		}
+	}
+
+	s.client.MustPost(fmt.Sprintf(`
+		query {
+			findStudio(id: "%v") {
+			  name
+			  parent {
+				  id
+				}
+				urls {
+					url
+				}
+			}
+		}
+	`, id), &studio)
+
+	assert.Equal(s.t, newName, studio.FindStudio.Name)
+	assert.Assert(s.t, studio.FindStudio.Parent.Id.UUID.IsNil())
+	assert.Assert(s.t, len(studio.FindStudio.URLs) == 0)
+}
+
 func (s *studioEditTestRunner) testApplyDestroyStudioEdit() {
 	createdStudio, err := s.createTestStudio(nil)
 	assert.NilError(s.t, err)
@@ -438,6 +510,11 @@ func TestApplyCreateStudioEdit(t *testing.T) {
 func TestApplyModifyStudioEdit(t *testing.T) {
 	pt := createStudioEditTestRunner(t)
 	pt.testApplyModifyStudioEdit()
+}
+
+func TestApplyModifyUnsetStudioEdit(t *testing.T) {
+	pt := createStudioEditTestRunner(t)
+	pt.testApplyModifyUnsetStudioEdit()
 }
 
 func TestApplyDestroyStudioEdit(t *testing.T) {

@@ -3,6 +3,7 @@ import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { Button, Form, Row, Col } from "react-bootstrap";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
@@ -52,7 +53,7 @@ const ForgotPassword: FC = () => {
 
   if (resetEmail)
     return (
-      <div className="LoginPrompt mx-auto d-flex">
+      <div className="LoginPrompt">
         <div className="align-self-center col-8 mx-auto">
           <h5>Pasword reset</h5>
           <p>
@@ -64,40 +65,50 @@ const ForgotPassword: FC = () => {
       </div>
     );
 
+  const errorList = [errors.email?.message, submitError].filter(
+    (err): err is string => err !== undefined
+  );
+
   return (
     <div className="LoginPrompt mx-auto d-flex">
       <Title page="Forgot Password" />
-      <form
+      <Form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <label className="row" htmlFor="email">
-          <span className="col-4">Email: </span>
-          <input
-            className={cx("col-8", { "is-invalid": errors?.email })}
-            type="email"
-            placeholder="Email"
-            {...register("email")}
-          />
-          <div className="invalid-feedback">{errors?.email?.message}</div>
-        </label>
-        <div className="row">
-          <div className="col-3 offset-9 d-flex justify-content-end">
-            <div>
-              <button
-                type="submit"
-                className="register-button btn btn-primary"
-                disabled={loading}
-              >
-                Reset Password
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="text-danger">{submitError}</div>
-        </div>
-      </form>
+        <Form.Group controlId="email">
+          <Row>
+            <Col xs={4}>
+              <Form.Label>Email:</Form.Label>
+            </Col>
+            <Col xs={8}>
+              <Form.Control
+                className={cx({ "is-invalid": errors?.email })}
+                type="text"
+                placeholder="Email"
+                {...register("email")}
+              />
+            </Col>
+          </Row>
+        </Form.Group>
+
+        <Row>
+          <Col
+            xs={{ span: 3, offset: 9 }}
+            className="justify-content-end mt-2 d-flex"
+          >
+            <Button type="submit" disabled={loading}>
+              Reset Password
+            </Button>
+          </Col>
+        </Row>
+
+        {errorList.map((error) => (
+          <Row key={error} className="text-end text-danger">
+            <div>{error}</div>
+          </Row>
+        ))}
+      </Form>
     </div>
   );
 };

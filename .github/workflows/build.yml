@@ -14,11 +14,11 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     services:
       postgres:
-        image: postgres:14.2
+        image: postgres:16.1
         env:
           POSTGRES_DB: postgres
           POSTGRES_PASSWORD: postgres
@@ -41,12 +41,12 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v3
       with:
-        go-version: 1.19.x
+        go-version: 1.22.x
 
     - name: Install Node
       uses: actions/setup-node@v2
       with:
-        node-version: '16'
+        node-version: '20'
 
     - name: Cache node modules
       uses: actions/cache@v2

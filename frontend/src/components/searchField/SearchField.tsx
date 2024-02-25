@@ -1,6 +1,11 @@
 import { FC, KeyboardEvent, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client";
-import { OnChangeValue } from "react-select";
+import {
+  OnChangeValue,
+  components,
+  SelectInstance,
+  GroupBase,
+} from "react-select";
 import Async from "react-select/async";
 import debounce from "p-debounce";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +16,7 @@ import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 import { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { createHref, filterData, getImage } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-import { GenderIcon } from "src/components/fragments";
+import { GenderIcon, SearchHint } from "src/components/fragments";
 
 type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
 type PerformerAllResult = NonNullable<
@@ -171,6 +176,8 @@ const SearchField: FC<SearchFieldProps> = ({
   const navigate = useNavigate();
   const [selectedValue, setSelected] = useState(null);
   const searchTerm = useRef("");
+  const selectRef =
+    useRef<SelectInstance<SearchResult, false, GroupBase<SearchResult>>>(null);
 
   const handleSearch = async (term: string) => {
     if (term) {
@@ -212,6 +219,7 @@ const SearchField: FC<SearchFieldProps> = ({
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
       navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+      selectRef?.current?.blur();
     }
   };
 
@@ -224,6 +232,7 @@ const SearchField: FC<SearchFieldProps> = ({
         loadOptions={handleLoad}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        ref={selectRef}
         placeholder={
           placeholder ??
           (searchType === SearchType.Performer
@@ -234,6 +243,12 @@ const SearchField: FC<SearchFieldProps> = ({
         components={{
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null,
+          ValueContainer: (props) => (
+            <>
+              <SearchHint />
+              <components.ValueContainer {...props} />
+            </>
+          ),
         }}
         noOptionsMessage={({ inputValue }) =>
           inputValue === "" ? null : `No result found for "${inputValue}"`

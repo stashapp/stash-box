@@ -73,7 +73,7 @@ type Query {
   version: Version! @hasRole(role: READ)
 
   ### Instance Config ###
-  getConfig: StashBoxConfig! @hasRole(role: READ)
+  getConfig: StashBoxConfig!
 }
 
 type Mutation {
@@ -105,8 +105,9 @@ type Mutation {
   newUser(input: NewUserInput!): String
   activateNewUser(input: ActivateNewUserInput!): User
 
+  generateInviteCode: ID @deprecated(reason: "Use generateInviteCodes")
   """Generates an invite code using an invite token"""
-  generateInviteCode: ID
+  generateInviteCodes(input: GenerateInviteCodeInput): [ID!]!
   """Removes a pending invite code - refunding the token"""
   rescindInviteCode(code: ID!): Boolean!
   """Adds invite tokens for a user"""

@@ -20,6 +20,9 @@ func NewUser(fac models.Repo, em *email.Manager, email, inviteKey string) (*stri
 	if err := ClearExpiredActivations(fac); err != nil {
 		return nil, err
 	}
+	if err := ClearExpiredInviteKeys(fac); err != nil {
+		return nil, err
+	}
 
 	// ensure user or pending activation with email does not already exist
 	uqb := fac.User()
@@ -102,13 +105,18 @@ func validateInviteKey(iqb models.InviteKeyFinder, aqb models.PendingActivationF
 			return ret, errors.New("invalid invite key")
 		}
 
+		// ensure invite key is not expired
+		if key.Expires != nil && key.Expires.Before(time.Now()) {
+			return ret, errors.New("invite key expired")
+		}
+
 		// ensure key isn't already used
 		a, err := aqb.FindByInviteKey(inviteKey, models.PendingActivationTypeNewUser)
 		if err != nil {
 			return ret, err
 		}
 
-		if a != nil {
+		if key.Uses != nil && len(a) >= *key.Uses {
 			return ret, errors.New("key already used")
 		}
 	}
@@ -145,6 +153,11 @@ func ClearExpiredActivations(fac models.Repo) error {
 	return aqb.DestroyExpired(expireTime)
 }
 
+func ClearExpiredInviteKeys(fac models.Repo) error {
+	iqb := fac.Invite()
+	return iqb.DestroyExpired()
+}
+
 func sendNewUserEmail(em *email.Manager, email, activationKey string) error {
 	subject := "Subject: Activate stash-box account"
 
@@ -174,24 +187,25 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 		return nil, ErrInvalidActivationKey
 	}
 
-	// check expiry
+	var invitedBy *uuid.UUID
+	if config.GetRequireInvite() {
+		i, err := iqb.Find(a.InviteKey.UUID)
+		if err != nil {
+			return nil, err
+		}
 
-	i, err := iqb.Find(a.InviteKey.UUID)
-	if err != nil {
-		return nil, err
+		if i == nil {
+			return nil, errors.New("cannot find invite key")
+		}
+
+		invitedBy = &i.GeneratedBy
 	}
-
-	if i == nil {
-		return nil, errors.New("cannot find invite key")
-	}
-
-	invitedBy := i.GeneratedBy
 
 	createInput := models.UserCreateInput{
 		Name:        name,
 		Email:       email,
 		Password:    password,
-		InvitedByID: &invitedBy,
+		InvitedByID: invitedBy,
 		Roles:       getDefaultUserRoles(),
 	}
 
@@ -219,9 +233,20 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 		return nil, err
 	}
 
-	// delete the invite key
-	if err := iqb.Destroy(a.InviteKey.UUID); err != nil {
-		return nil, err
+	if config.GetRequireInvite() {
+		// decrement the invite key uses
+		usesLeft, err := iqb.KeyUsed(a.InviteKey.UUID)
+		if err != nil {
+			return nil, err
+		}
+
+		// if all used up, then delete the invite key
+		if usesLeft != nil && *usesLeft <= 0 {
+			// delete the invite key
+			if err := iqb.Destroy(a.InviteKey.UUID); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return ret, nil
@@ -238,12 +263,11 @@ func ResetPassword(fac models.Repo, em *email.Manager, email string) error {
 		return err
 	}
 
-	if u == nil {
-		// Sleep between 500-1500ms to avoid leaking email presence
-		rand.Seed(time.Now().UnixNano())
-		n := rand.Intn(1000)
-		time.Sleep(time.Duration(500+n) * time.Millisecond)
+	// Sleep between 500-1500ms to avoid leaking email presence
+	n := rand.Intn(1000)
+	time.Sleep(time.Duration(500+n) * time.Millisecond)
 
+	if u == nil {
 		// return silently
 		return nil
 	}

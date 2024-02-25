@@ -118,3 +118,12 @@
     box-shadow: none;
   }
 }
+
+.SearchHint {
+  margin-left: 10px;
+  cursor: help;
+}
+
+.Tooltip {
+  position: absolute !important;
+}

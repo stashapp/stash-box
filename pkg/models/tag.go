@@ -13,7 +13,6 @@ type TagRepo interface {
 	FindBySceneID(sceneID uuid.UUID) ([]*Tag, error)
 	FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error)
 	FindByIds(ids []uuid.UUID) ([]*Tag, []error)
-	FindByNames(names []string) ([]*Tag, error)
 	FindByName(name string) (*Tag, error)
 	FindByNameOrAlias(name string) (*Tag, error)
 	FindWithRedirect(id uuid.UUID) (*Tag, error)

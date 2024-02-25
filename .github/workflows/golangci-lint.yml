@@ -6,7 +6,7 @@ on:
 jobs:
   golangci:
     name: lint
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -15,7 +15,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.18.x
+          go-version: 1.22.x
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3

@@ -28,7 +28,7 @@ const Login: FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [loginError, setLoginError] = useState("");
-  const msg = new URLSearchParams(location.search.substr(1)).get("msg");
+  const msg = new URLSearchParams(location.search).get("msg");
   const Auth = useContext<ContextType>(AuthContext);
   const {
     register,
@@ -55,7 +55,7 @@ const Login: FC = () => {
   };
 
   return (
-    <div className="LoginPrompt mx-auto d-flex">
+    <div className="LoginPrompt">
       <Form
         className="align-self-center col-4 mx-auto"
         onSubmit={handleSubmit(onSubmit)}

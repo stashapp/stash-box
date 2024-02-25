@@ -11,12 +11,13 @@ import (
 )
 
 type S3Config struct {
-	BaseURL      string `mapstructure:"base_url"`
-	Endpoint     string `mapstructure:"endpoint"`
-	Bucket       string `mapstructure:"bucket"`
-	AccessKey    string `mapstructure:"access_key"`
-	Secret       string `mapstructure:"secret"`
-	MaxDimension int64  `mapstructure:"max_dimension"`
+	BaseURL       string            `mapstructure:"base_url"`
+	Endpoint      string            `mapstructure:"endpoint"`
+	Bucket        string            `mapstructure:"bucket"`
+	AccessKey     string            `mapstructure:"access_key"`
+	Secret        string            `mapstructure:"secret"`
+	MaxDimension  int64             `mapstructure:"max_dimension"`
+	UploadHeaders map[string]string `mapstructure:"upload_headers"`
 }
 
 type PostgresConfig struct {
@@ -366,11 +367,11 @@ func GetTitle() string {
 	return C.Title
 }
 
-func GetFaviconPath() *string {
+func GetFaviconPath() (*string, error) {
 	if len(C.FaviconPath) == 0 {
-		return nil
+		return nil, errors.New("favicon_path not set")
 	}
-	return &C.FaviconPath
+	return &C.FaviconPath, nil
 }
 
 func GetDraftTimeLimit() int {

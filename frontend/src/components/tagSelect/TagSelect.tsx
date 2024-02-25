@@ -21,7 +21,7 @@ type TagSlim = {
 };
 
 interface TagSelectProps {
-  tags: TagSlim[];
+  tags?: TagSlim[];
   onChange: (tags: TagSlim[]) => void;
   message?: string;
   excludeTags?: string[];
@@ -41,7 +41,7 @@ const CLASSNAME_SELECT = `${CLASSNAME}-select`;
 const CLASSNAME_CONTAINER = `${CLASSNAME}-container`;
 
 const TagSelect: FC<TagSelectProps> = ({
-  tags: initialTags,
+  tags: initialTags = [],
   onChange,
   message = "Add tag:",
   excludeTags = [],

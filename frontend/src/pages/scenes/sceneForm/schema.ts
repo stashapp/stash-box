@@ -53,8 +53,8 @@ export const SceneSchema = yup.object({
           aliases: yup.array().of(yup.string().required()).nullable(),
           gender: yup
             .string()
-            .oneOf([null, ...Object.keys(GenderEnum)])
-            .nullable(),
+            .nullable()
+            .oneOf([null, ...Object.keys(GenderEnum)]),
           deleted: yup.bool().required(),
         })
         .transform((s: { name?: string; alias?: string }) => ({
@@ -81,6 +81,8 @@ export const SceneSchema = yup.object({
       yup.object({
         id: yup.string().required(),
         url: yup.string().required(),
+        width: yup.number().required(),
+        height: yup.number().required(),
       })
     )
     .required(),
@@ -103,4 +105,3 @@ export const SceneSchema = yup.object({
 });
 
 export type SceneFormData = yup.Asserts<typeof SceneSchema>;
-export type CastedSceneFormData = yup.TypeOf<typeof SceneSchema>;

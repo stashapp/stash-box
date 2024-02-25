@@ -103,7 +103,13 @@ const SceneForm: FC<SceneProps> = ({
 
   const fieldData = watch();
   const [oldSceneChanges, newSceneChanges] = useMemo(
-    () => DiffScene(SceneSchema.cast(fieldData), scene),
+    () =>
+      DiffScene(
+        SceneSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as SceneFormData,
+        scene
+      ),
     [fieldData, scene]
   );
 
@@ -125,8 +131,8 @@ const SceneForm: FC<SceneProps> = ({
         as: performance.alias,
       })),
       image_ids: data.images.map((i) => i.id),
-      tag_ids: data.tags.map((t) => t.id),
-      urls: data.urls.map((u) => ({
+      tag_ids: data.tags?.map((t) => t.id),
+      urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
       })),
@@ -302,7 +308,7 @@ const SceneForm: FC<SceneProps> = ({
       tab: "details",
     },
     {
-      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
   ].filter((e) => e.error) as { error: string; tab: string }[];

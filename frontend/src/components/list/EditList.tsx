@@ -25,7 +25,10 @@ interface EditsProps {
   userId?: string;
   defaultVoteStatus?: VoteStatusEnum;
   defaultVoted?: UserVotedFilterEnum;
+  defaultBot?: "include" | "exclude" | "only";
   showVotedFilter?: boolean;
+  userSubmitted?: boolean;
+  defaultUserSubmitted?: boolean;
 }
 
 const PER_PAGE = 20;
@@ -41,7 +44,10 @@ const EditListComponent: FC<EditsProps> = ({
   userId,
   defaultVoteStatus,
   defaultVoted,
+  defaultBot,
   showVotedFilter,
+  userSubmitted,
+  defaultUserSubmitted,
 }) => {
   const { page, setPage } = usePagination();
   const {
@@ -54,6 +60,7 @@ const EditListComponent: FC<EditsProps> = ({
     selectedStatus,
     selectedFavorite,
     selectedBot,
+    selectedUserSubmitted,
   } = useEditFilter({
     sort,
     direction,
@@ -65,6 +72,9 @@ const EditListComponent: FC<EditsProps> = ({
     showVotedFilter,
     defaultVoteStatus,
     defaultVoted,
+    defaultBot,
+    userSubmitted,
+    defaultUserSubmitted,
   });
   const { data, loading } = useEdits({
     input: {
@@ -75,11 +85,17 @@ const EditListComponent: FC<EditsProps> = ({
       voted: selectedVoted,
       user_id: userId,
       is_favorite: selectedFavorite,
-      is_bot: selectedBot,
+      is_bot:
+        selectedBot === "only"
+          ? true
+          : selectedBot === "exclude"
+          ? false
+          : undefined,
       page,
       per_page: PER_PAGE,
       sort: selectedSort,
       direction: selectedDirection,
+      include_user_submitted: selectedUserSubmitted,
     },
   });
 

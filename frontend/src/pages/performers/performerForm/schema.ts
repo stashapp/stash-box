@@ -52,6 +52,7 @@ export const PerformerSchema = yup.object({
   height: yup
     .number()
     .transform(zeroCheck)
+    .integer("Invalid height, decimals are not allowed")
     .min(100, "Invalid height, Height must be in centimeters.")
     .max(230, "Invalid height")
     .nullable(),
@@ -114,6 +115,8 @@ export const PerformerSchema = yup.object({
       yup.object({
         id: yup.string().required(),
         url: yup.string().required(),
+        width: yup.number().default(0),
+        height: yup.number().default(0),
       })
     )
     .required(),
@@ -136,4 +139,3 @@ export const PerformerSchema = yup.object({
 });
 
 export type PerformerFormData = yup.Asserts<typeof PerformerSchema>;
-export type CastedPerformerFormData = yup.TypeOf<typeof PerformerSchema>;
