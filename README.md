@@ -92,6 +92,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `s3.max_dimension` | (none) | If set, a resized copy will be created for any image whose dimensions exceed this number. This copy will be served in place of the original. |
 | `s3.upload_headers` | (none) | A map of headers to send with each upload request. For example, DigitalOcean requires the `x-amz-acl` header to be set to `public-read` or it does not make the uploaded images available. |
 | `phash_distance` | 0 | Determines what binary distance is considered a match when querying with a pHash fingeprint. Using more than 8 is not recommended and may lead to large amounts of false positives. **Note**: The [pg-spgist_hamming extension](#phash-distance-matching) must be installed to use distance matching, otherwise you will get errors. |
+| `phash_duration_cutoff` | 0 | Optionally sets a minimum duration for pHash fingerprint submission, in seconds. Fingerprints below this cutoff will be quietly dropped. Set to 0 to disable cutoff. |
 | `favicon_path` | (none) | Location where favicons for linked sites should be stored. Leave empty to disable. |
 | `draft_time_limit` | (24h) | Time, in seconds, before a draft is deleted. |
 | `profiler_port` | 0 | Port on which to serve pprof output. Omit to disable entirely. |
