@@ -1,6 +1,11 @@
 import { FC, KeyboardEvent, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client";
-import { OnChangeValue } from "react-select";
+import {
+  OnChangeValue,
+  components,
+  SelectInstance,
+  GroupBase,
+} from "react-select";
 import Async from "react-select/async";
 import debounce from "p-debounce";
 import { useNavigate } from "react-router-dom";
@@ -171,6 +176,8 @@ const SearchField: FC<SearchFieldProps> = ({
   const navigate = useNavigate();
   const [selectedValue, setSelected] = useState(null);
   const searchTerm = useRef("");
+  const selectRef =
+    useRef<SelectInstance<SearchResult, false, GroupBase<SearchResult>>>(null);
 
   const handleSearch = async (term: string) => {
     if (term) {
@@ -212,6 +219,7 @@ const SearchField: FC<SearchFieldProps> = ({
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
       navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+      selectRef?.current?.blur();
     }
   };
 
@@ -224,6 +232,7 @@ const SearchField: FC<SearchFieldProps> = ({
         loadOptions={handleLoad}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        ref={selectRef}
         placeholder={
           placeholder ??
           (searchType === SearchType.Performer
@@ -234,10 +243,10 @@ const SearchField: FC<SearchFieldProps> = ({
         components={{
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null,
-          ValueContainer: ({ children }) => (
+          ValueContainer: (props) => (
             <>
               <SearchHint />
-              {children}
+              <components.ValueContainer {...props} />
             </>
           ),
         }}

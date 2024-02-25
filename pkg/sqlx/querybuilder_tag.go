@@ -191,27 +191,6 @@ func (qb *tagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Tag, []error) {
 	return result, nil
 }
 
-func (qb *tagQueryBuilder) FindByNames(names []string) ([]*models.Tag, error) {
-	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryTags(query, args)
-}
-
-func (qb *tagQueryBuilder) FindByAliases(names []string) ([]*models.Tag, error) {
-	query := `SELECT tags.* FROM tags
-		left join tag_aliases on tags.id = tag_aliases.tag_id
-		WHERE tag_aliases.alias IN ` + getInBinding(len(names))
-
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryTags(query, args)
-}
-
 func (qb *tagQueryBuilder) FindByName(name string) (*models.Tag, error) {
 	query := "SELECT * FROM tags WHERE upper(name) = upper(?)"
 
@@ -221,16 +200,6 @@ func (qb *tagQueryBuilder) FindByName(name string) (*models.Tag, error) {
 		return nil, err
 	}
 	return results[0], nil
-}
-
-func (qb *tagQueryBuilder) FindByAlias(name string) ([]*models.Tag, error) {
-	query := `SELECT tags.* FROM tags
-		left join tag_aliases on tag.id = tag_aliases.tag_id
-		WHERE upper(tag_aliases.alias) = UPPER(?)`
-
-	var args []interface{}
-	args = append(args, name)
-	return qb.queryTags(query, args)
 }
 
 func (qb *tagQueryBuilder) FindWithRedirect(id uuid.UUID) (*models.Tag, error) {
@@ -269,7 +238,7 @@ func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, in
 		searchColumns := []string{"T.name", "TA.alias"}
 
 		searchClause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
-		clause := fmt.Sprintf("EXISTS (SELECT T.id FROM tags T JOIN %[1]s TA ON T.id = TA.tag_id WHERE tags.id = T.id AND %[2]s GROUP BY T.id)", tagAliasTable.Name(), searchClause)
+		clause := fmt.Sprintf("EXISTS (SELECT T.id FROM tags T LEFT JOIN %[1]s TA ON T.id = TA.tag_id WHERE tags.id = T.id AND %[2]s GROUP BY T.id)", tagAliasTable.Name(), searchClause)
 
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)

@@ -185,7 +185,9 @@ const PerformerForm: FC<PerformerProps> = ({
   });
 
   const [activeTab, setActiveTab] = useState("personal");
-  const [updateAliases, setUpdateAliases] = useState<boolean>();
+  const [updateAliases, setUpdateAliases] = useState<boolean>(
+    options?.set_modify_aliases ?? true
+  );
   const [file, setFile] = useState<File | undefined>();
 
   const fieldData = watch();
@@ -262,7 +264,7 @@ const PerformerForm: FC<PerformerProps> = ({
     )
       performerData.breast_type = BreastTypeEnum.NA;
 
-    callback(performerData, data.note, updateAliases ?? false, data.id);
+    callback(performerData, data.note, updateAliases, data.id);
   };
 
   const countryObj = [
@@ -340,8 +342,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Check
                   id="update-modify-aliases"
                   checked={updateAliases}
-                  defaultChecked={options?.set_modify_aliases ?? false}
-                  onChange={() => setUpdateAliases(!updateAliases)}
+                  onChange={() => setUpdateAliases((prev) => !prev)}
                   label="Set unset performance aliases to old name"
                   className="d-inline-block"
                 />

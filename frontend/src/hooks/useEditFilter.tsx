@@ -53,11 +53,13 @@ interface EditFilterProps {
   voted?: UserVotedFilterEnum;
   favorite?: boolean;
   bot?: boolean;
+  userSubmitted?: boolean;
   showFavoriteOption?: boolean;
   showVotedFilter?: boolean;
   defaultVoteStatus?: VoteStatusEnum | "all";
   defaultVoted?: UserVotedFilterEnum;
   defaultBot?: "include" | "exclude" | "only";
+  defaultUserSubmitted?: boolean;
 }
 
 const useEditFilter = ({
@@ -69,11 +71,13 @@ const useEditFilter = ({
   voted: fixedVoted,
   favorite: fixedFavorite,
   bot: fixedBot,
+  userSubmitted: fixedUserSubmitted,
   showFavoriteOption = true,
   showVotedFilter = true,
   defaultVoteStatus = "all",
   defaultVoted,
   defaultBot = "include",
+  defaultUserSubmitted = true,
 }: EditFilterProps) => {
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
@@ -89,6 +93,11 @@ const useEditFilter = ({
     type: { name: "type", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
     bot: { name: "bot", type: "string", default: defaultBot },
+    user_submitted: {
+      name: "user_submitted",
+      type: "string",
+      default: defaultUserSubmitted.toString(),
+    },
   });
 
   const sort = ensureEnum(EditSortEnum, params.sort);
@@ -98,6 +107,7 @@ const useEditFilter = ({
   const status = resolveEnum(VoteStatusEnum, params.status, undefined);
   const type = resolveEnum(TargetTypeEnum, params.type);
   const favorite = params.favorite === "true";
+  const userSubmitted = params.user_submitted !== "false";
 
   const selectedSort = fixedSort ?? sort;
   const selectedDirection = fixedDirection ?? direction;
@@ -107,6 +117,7 @@ const useEditFilter = ({
   const selectedVoted = fixedVoted ?? voted;
   const selectedFavorite = fixedFavorite ?? favorite;
   const selectedBot = fixedBot ?? params.bot;
+  const selectedUserSubmitted = fixedUserSubmitted ?? userSubmitted;
 
   const enumToOptions = (e: Record<string, string>) =>
     Object.keys(e).map((key) => (
@@ -233,6 +244,22 @@ const useEditFilter = ({
           value={botOptions.find((opt) => opt.value === selectedBot)}
         />
       </Form.Group>
+      {fixedUserSubmitted === undefined && (
+        <Form.Group
+          controlId="include_user_submitted"
+          className="text-center ms-3"
+        >
+          <Form.Label>My Edits</Form.Label>
+          <Form.Check
+            className="mt-2"
+            type="switch"
+            defaultChecked={userSubmitted}
+            onChange={(e) =>
+              setParams("user_submitted", e.currentTarget.checked.toString())
+            }
+          />
+        </Form.Group>
+      )}
     </Form>
   );
 
@@ -246,6 +273,7 @@ const useEditFilter = ({
     selectedVoted,
     selectedFavorite,
     selectedBot,
+    selectedUserSubmitted,
   };
 };
 

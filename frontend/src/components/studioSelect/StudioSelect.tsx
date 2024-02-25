@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { components } from "react-select";
 import Async from "react-select/async";
 import { useApolloClient } from "@apollo/client";
 import debounce from "p-debounce";
@@ -132,10 +133,10 @@ const StudioSelect: FC<StudioSelectProps> = ({
         isClearable={isClearable}
         formatOptionLabel={formatStudioName}
         components={{
-          ValueContainer: ({ children }) => (
+          ValueContainer: (props) => (
             <>
               <SearchHint />
-              {children}
+              <components.ValueContainer {...props} />
             </>
           ),
         }}

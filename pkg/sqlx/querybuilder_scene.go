@@ -292,58 +292,52 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	return res, nil
 }
 
-// func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*models.Scene, error) {
-// 	query := `
-// 		SELECT scenes.* FROM scenes
-// 		LEFT JOIN scenes_scenes as scenes_join on scenes_join.scene_id = scenes.id
-// 		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-// 		WHERE scenes.id = ?
-// 		GROUP BY scenes.id
-// 	`
-// 	args := []interface{}{sceneID}
-// 	return qb.queryScenes(query, args)
-// }
-
-// func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*models.Scene, error) {
-// 	query := `SELECT scenes.* FROM scenes
-// 		left join scene_checksums on scenes.id = scene_checksums.scene_id
-// 		WHERE scene_checksums.checksum = ?`
-
-// 	var args []interface{}
-// 	args = append(args, checksum)
-
-// 	results, err := qb.queryScenes(query, args)
-// 	if err != nil || len(results) < 1 {
-// 		return nil, err
-// 	}
-// 	return results[0], nil
-// }
-
-// func (qb *SceneQueryBuilder) FindByChecksums(checksums []string) ([]*models.Scene, error) {
-// 	query := `SELECT scenes.* FROM scenes
-// 		left join scene_checksums on scenes.id = scene_checksums.scene_id
-// 		WHERE scene_checksums.checksum IN ` + getInBinding(len(checksums))
-
-// 	var args []interface{}
-// 	for _, name := range checksums {
-// 		args = append(args, name)
-// 	}
-// 	return qb.queryScenes(query, args)
-// }
-
-func (qb *sceneQueryBuilder) FindByTitle(name string) ([]*models.Scene, error) {
-	query := "SELECT * FROM scenes WHERE upper(title) = upper(?)"
-	var args []interface{}
-	args = append(args, name)
-	return qb.queryScenes(query, args)
-}
-
 func (qb *sceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
 func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uuid.UUID, isCount bool) (*queryBuilder, error) {
 	query := newQueryBuilder(sceneDBTable)
+
+	if q := filter.URL; q != nil && *q != "" {
+		where := fmt.Sprintf("%s.url = ?", sceneURLTable.Name())
+		query.AddJoinTableFilter(sceneURLTable, where, false, nil, false, *q)
+	}
+
+	if filter.ParentStudio != nil {
+		query.Body += "JOIN studios ON scenes.studio_id = studios.id AND (studios.parent_studio_id = ? OR studios.id = ?)"
+		query.AddArg(*filter.ParentStudio, *filter.ParentStudio)
+	}
+
+	if q := filter.Performers; q != nil && len(q.Value) > 0 {
+		if err := setMultiCriterionClause(query, scenePerformerTable, performerJoinKey, q, false); err != nil {
+			return nil, err
+		}
+	}
+
+	if q := filter.Tags; q != nil && len(q.Value) > 0 {
+		if err := setMultiCriterionClause(query, sceneTagTable, tagJoinKey, q, false); err != nil {
+			return nil, err
+		}
+	}
+
+	if q := filter.Fingerprints; q != nil && len(q.Value) > 0 {
+		if err := setMultiCriterionClause(query, sceneFingerprintTable, "hash", q, true); err != nil {
+			return nil, err
+		}
+	}
+
+	if filter.HasFingerprintSubmissions != nil && *filter.HasFingerprintSubmissions {
+		query.Body += `
+			JOIN (
+				SELECT scene_id
+				FROM scene_fingerprints
+				WHERE user_id = ?
+				GROUP BY scene_id
+			) T ON scenes.id = T.scene_id
+		`
+		query.AddArg(userID)
+	}
 
 	if q := filter.Text; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details"}
@@ -357,11 +351,6 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false, false)
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
-	}
-
-	if q := filter.URL; q != nil && *q != "" {
-		where := fmt.Sprintf("%s.url = ?", sceneURLTable.Name())
-		query.AddJoinTableFilter(sceneURLTable, where, nil, false, *q)
 	}
 
 	if q := filter.Studios; q != nil && len(q.Value) > 0 {
@@ -392,30 +381,6 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 			fallthrough
 		case models.CriterionModifierLessThan:
 			return nil, fmt.Errorf("unsupported modifier %s for scenes.studio_id", q.Modifier)
-		}
-	}
-
-	if filter.ParentStudio != nil {
-		query.Body += "LEFT JOIN studios ON scenes.studio_id = studios.id"
-		query.AddWhere("(studios.parent_studio_id = ? OR studios.id = ?)")
-		query.AddArg(*filter.ParentStudio, *filter.ParentStudio)
-	}
-
-	if q := filter.Performers; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, scenePerformerTable, performerJoinKey, q); err != nil {
-			return nil, err
-		}
-	}
-
-	if q := filter.Tags; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, sceneTagTable, tagJoinKey, q); err != nil {
-			return nil, err
-		}
-	}
-
-	if q := filter.Fingerprints; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, sceneFingerprintTable, "hash", q); err != nil {
-			return nil, err
 		}
 	}
 
@@ -467,18 +432,6 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 		query.Pagination = getPagination(filter.Page, filter.PerPage)
 	}
 
-	if filter.HasFingerprintSubmissions != nil && *filter.HasFingerprintSubmissions {
-		query.Body += `
-			JOIN (
-				SELECT scene_id
-				FROM scene_fingerprints
-				WHERE user_id = ?
-				GROUP BY scene_id
-			) T ON scenes.id = T.scene_id
-		`
-		query.AddArg(userID)
-	}
-
 	query.Eq("scenes.deleted", false)
 
 	return query, nil
@@ -504,23 +457,25 @@ func (qb *sceneQueryBuilder) QueryCount(filter models.SceneQueryInput, userID uu
 	return qb.dbi.CountOnly(*query)
 }
 
-func setMultiCriterionClause(query *queryBuilder, joinTable tableJoin, joinTableField string, criterion models.MultiCriterionInput) error {
+func setMultiCriterionClause(query *queryBuilder, joinTable tableJoin, joinTableField string, criterion models.MultiCriterionInput, group bool) error {
 	args := criterion.GetValues()
 	inClause := fmt.Sprintf("%s.%s IN %s", joinTable.Name(), joinTableField, getInBinding(criterion.Count()))
+
+	groupBy := group || len(args) > 1
 
 	switch criterion.GetModifier() {
 	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
-		query.AddJoinTableFilter(joinTable, inClause, nil, false, args...)
+		query.AddJoinTableFilter(joinTable, inClause, groupBy, nil, false, args...)
 
 	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
 		having := fmt.Sprintf("COUNT(*) = %d", criterion.Count())
-		query.AddJoinTableFilter(joinTable, inClause, &having, false, args...)
+		query.AddJoinTableFilter(joinTable, inClause, true, &having, false, args...)
 
 	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids
-		query.AddJoinTableFilter(joinTable, inClause, nil, true, args...)
+		query.AddJoinTableFilter(joinTable, inClause, groupBy, nil, true, args...)
 
 	default:
 		return fmt.Errorf("unsupported modifier %s for %s.%s", criterion.GetModifier(), joinTable.Name(), joinTableField)

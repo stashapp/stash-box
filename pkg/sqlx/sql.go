@@ -49,9 +49,9 @@ func (qb *queryBuilder) AddJoin(jt table, on string) {
 	qb.Body += " JOIN " + jt.Name() + " ON " + on
 }
 
-func (qb *queryBuilder) AddJoinTableFilter(tj tableJoin, query string, having *string, not bool, args ...interface{}) {
-	clause := fmt.Sprintf("EXISTS (SELECT %[1]s.%[2]s FROM %[1]s WHERE %[3]s.id = %[1]s.%[2]s AND %[4]s", tj.Name(), tj.joinColumn, tj.primaryTable, query)
-	if len(args) > 1 {
+func (qb *queryBuilder) AddJoinTableFilter(tj tableJoin, query string, group bool, having *string, not bool, args ...interface{}) {
+	clause := fmt.Sprintf(" JOIN (SELECT %[1]s.%[2]s FROM %[1]s WHERE %[3]s", tj.Name(), tj.joinColumn, query)
+	if group {
 		clause += fmt.Sprintf(" GROUP BY %s.%s", tj.Name(), tj.joinColumn)
 
 		if having != nil {
@@ -59,13 +59,14 @@ func (qb *queryBuilder) AddJoinTableFilter(tj tableJoin, query string, having *s
 		}
 	}
 
-	clause += ")"
+	clause += fmt.Sprintf(") %[1]s ON %[3]s.id = %[1]s.%[2]s", tj.Name(), tj.joinColumn, tj.primaryTable)
 
 	if not {
-		clause = "NOT " + clause
+		clause = " LEFT" + clause
+		qb.AddWhere(fmt.Sprintf("%s.%s IS NULL", tj.Name(), tj.joinColumn))
 	}
 
-	qb.AddWhere(clause)
+	qb.Body += clause
 	qb.AddArg(args...)
 }
 

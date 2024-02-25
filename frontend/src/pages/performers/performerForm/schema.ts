@@ -115,6 +115,8 @@ export const PerformerSchema = yup.object({
       yup.object({
         id: yup.string().required(),
         url: yup.string().required(),
+        width: yup.number().default(0),
+        height: yup.number().default(0),
       })
     )
     .required(),
