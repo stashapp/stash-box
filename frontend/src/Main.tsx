@@ -7,6 +7,8 @@ import { useConfig } from "src/graphql";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
 import { useAuth } from "src/hooks";
+import { Icon} from "src/components/fragments";
+import { faBook, faUser } from "@fortawesome/free-solid-svg-icons";
 import {
   ROUTE_SCENES,
   ROUTE_PERFORMERS,
@@ -77,11 +79,11 @@ const Main: FC<Props> = ({ children }) => {
     contextValue.authenticated &&
     contextValue.user && (
       <>
-        <span>Logged in as</span>
         <NavLink
           to={userHref(contextValue.user)}
           className="nav-link ms-auto me-2"
         >
+          <Icon icon={faUser} className="me-2" />
           {contextValue.user.name}
         </NavLink>
         {isAdmin(user) && (
@@ -138,6 +140,7 @@ const Main: FC<Props> = ({ children }) => {
               rel="noopener noreferrer"
               className="nav-link"
             >
+              <Icon icon={faBook} className="mx-2" />
               Guidelines
             </a>
           )}

@@ -42314,11 +42314,9 @@ func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.Selecti
 				out.Invalids++
 			}
 		case "guidelines_url":
-
 			out.Values[i] = ec._StashBoxConfig_guidelines_url(ctx, field, obj)
-
 			if out.Values[i] == graphql.Null {
-				invalids++
+				out.Invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

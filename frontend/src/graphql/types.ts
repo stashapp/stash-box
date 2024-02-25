@@ -39209,6 +39209,10 @@ export const ConfigDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "vote_cron_interval" },
                 },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "guidelines_url" },
+                },
               ],
             },
           },
