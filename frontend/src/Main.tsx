@@ -7,7 +7,7 @@ import { useConfig } from "src/graphql";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
 import { useAuth } from "src/hooks";
-import { Icon} from "src/components/fragments";
+import { Icon } from "src/components/fragments";
 import { faBook, faUser } from "@fortawesome/free-solid-svg-icons";
 import {
   ROUTE_SCENES,
