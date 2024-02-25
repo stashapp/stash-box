@@ -28,6 +28,7 @@ require (
 	golang.org/x/image v0.15.0
 	golang.org/x/net v0.21.0
 	golang.org/x/sync v0.6.0
+	gopkg.in/guregu/null.v4 v4.0.0
 	gotest.tools/v3 v3.5.1
 )
 

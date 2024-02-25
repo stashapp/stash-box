@@ -138,6 +138,8 @@ input EditQueryInput {
   voted: UserVotedFilterEnum
   """Filter to bot edits only"""
   is_bot: Boolean
+  """Filter out user's own edits"""
+  include_user_submitted: Boolean
 
   page: Int! = 1
   per_page: Int! = 25

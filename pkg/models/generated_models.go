@@ -118,11 +118,13 @@ type EditQueryInput struct {
 	// Filter by user voted status
 	Voted *UserVotedFilterEnum `json:"voted,omitempty"`
 	// Filter to bot edits only
-	IsBot     *bool             `json:"is_bot,omitempty"`
-	Page      int               `json:"page"`
-	PerPage   int               `json:"per_page"`
-	Direction SortDirectionEnum `json:"direction"`
-	Sort      EditSortEnum      `json:"sort"`
+	IsBot *bool `json:"is_bot,omitempty"`
+	// Filter out user's own edits
+	IncludeUserSubmitted *bool             `json:"include_user_submitted,omitempty"`
+	Page                 int               `json:"page"`
+	PerPage              int               `json:"per_page"`
+	Direction            SortDirectionEnum `json:"direction"`
+	Sort                 EditSortEnum      `json:"sort"`
 }
 
 type EditVoteInput struct {
@@ -177,6 +179,12 @@ type FingerprintSubmission struct {
 type FuzzyDate struct {
 	Date     string           `json:"date"`
 	Accuracy DateAccuracyEnum `json:"accuracy"`
+}
+
+type GenerateInviteCodeInput struct {
+	Keys *int `json:"keys,omitempty"`
+	Uses *int `json:"uses,omitempty"`
+	TTL  *int `json:"ttl,omitempty"`
 }
 
 type GrantInviteInput struct {
@@ -281,6 +289,7 @@ type PerformerDestroyInput struct {
 
 type PerformerDraftInput struct {
 	ID              *uuid.UUID      `json:"id,omitempty"`
+	Disambiguation  *string         `json:"disambiguation,omitempty"`
 	Name            string          `json:"name"`
 	Aliases         *string         `json:"aliases,omitempty"`
 	Gender          *string         `json:"gender,omitempty"`

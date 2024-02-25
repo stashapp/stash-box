@@ -23,6 +23,8 @@ export const StudioSchema = yup.object({
       yup.object({
         id: yup.string().required(),
         url: yup.string().required(),
+        width: yup.number().required(),
+        height: yup.number().required(),
       })
     )
     .required(),
