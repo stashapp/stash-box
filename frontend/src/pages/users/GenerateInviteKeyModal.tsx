@@ -51,7 +51,7 @@ export const GenerateInviteKeyModal: FC<ModalProps> = ({ callback }) => {
               placeholder="Enter number of keys"
             />
           </Form.Group>
-          <Form.Group controlId="key-uses">
+          <Form.Group controlId="key-uses" className="mt-4">
             <Form.Label>Uses per key</Form.Label>
             <Form.Control
               value={keyUses}
@@ -65,7 +65,7 @@ export const GenerateInviteKeyModal: FC<ModalProps> = ({ callback }) => {
               Enter 0 for unlimited uses.
             </Form.Text>
           </Form.Group>
-          <Form.Group controlId="key-uses">
+          <Form.Group controlId="key-expiration" className="mt-4">
             <Form.Label>Expire time</Form.Label>
             <Form.Control
               type="number"
@@ -80,6 +80,7 @@ export const GenerateInviteKeyModal: FC<ModalProps> = ({ callback }) => {
               onChange={(e) => {
                 setKeyExpireUnit(parseInt(e.currentTarget.value));
               }}
+              className="mt-2"
             >
               <option value={minutesInSeconds}>Minutes</option>
               <option value={hoursInSeconds}>Hours</option>
@@ -93,7 +94,7 @@ export const GenerateInviteKeyModal: FC<ModalProps> = ({ callback }) => {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="success" onClick={handleAccept}>
+        <Button variant="primary" onClick={handleAccept}>
           Generate
         </Button>
         <Button variant="secondary" onClick={handleCancel}>

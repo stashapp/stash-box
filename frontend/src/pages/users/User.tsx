@@ -148,7 +148,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [revokeInvite] = useRevokeInvite();
 
   const showPrivate = isPrivateUser(user);
-  const isOwner = isPrivateUser(user) && user.id === Auth.user?.id;
+  const isOwner = showPrivate && user.id === Auth.user?.id;
 
   const endpointURL = configData && `${configData.getConfig.host_url}/graphql`;
 
@@ -412,7 +412,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               <Row className="my-2">
                 <Col>
                   <div>
-                    {showPrivate && user.id === Auth.user?.id && (
+                    {isOwner && (
                       <Button
                         variant="link"
                         onClick={() => setShowGenerateInviteKey(true)}
