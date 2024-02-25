@@ -18,7 +18,7 @@ type PendingActivationRepo interface {
 type PendingActivationFinder interface {
 	Find(id uuid.UUID) (*PendingActivation, error)
 	FindByEmail(email string, activationType string) (*PendingActivation, error)
-	FindByInviteKey(key string, activationType string) (*PendingActivation, error)
+	FindByInviteKey(key string, activationType string) ([]*PendingActivation, error)
 }
 
 type PendingActivationCreator interface {

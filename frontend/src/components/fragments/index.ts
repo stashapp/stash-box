@@ -9,3 +9,4 @@ export { default as Help } from "./Help";
 export { default as Tooltip } from "./Tooltip";
 export { FavoriteStar } from "./Favorite";
 export { Thumbnail } from "./Thumbnail";
+export { SearchHint } from "./SearchHint";

@@ -17,6 +17,7 @@ import {
   BreastTypeEnum,
   EthnicityEnum,
   PerformerEditDetailsInput,
+  PerformerEditOptionsInput,
   ValidSiteTypeEnum,
   PerformerFragment as Performer,
 } from "src/graphql";
@@ -121,6 +122,7 @@ interface PerformerProps {
     id?: string
   ) => void;
   initial?: InitialPerformer;
+  options?: PerformerEditOptionsInput | null;
   saving: boolean;
 }
 
@@ -129,6 +131,7 @@ const PerformerForm: FC<PerformerProps> = ({
   callback,
   initial,
   saving,
+  options,
 }) => {
   const initialAliases = initial?.aliases ?? performer?.aliases ?? [];
   const {
@@ -182,7 +185,9 @@ const PerformerForm: FC<PerformerProps> = ({
   });
 
   const [activeTab, setActiveTab] = useState("personal");
-  const [updateAliases, setUpdateAliases] = useState(false);
+  const [updateAliases, setUpdateAliases] = useState<boolean>(
+    options?.set_modify_aliases ?? true
+  );
   const [file, setFile] = useState<File | undefined>();
 
   const fieldData = watch();
@@ -201,10 +206,6 @@ const PerformerForm: FC<PerformerProps> = ({
     !!performer?.id &&
     newChanges.name !== null &&
     performer?.name?.trim() !== newChanges.name;
-
-  useEffect(() => {
-    setUpdateAliases(changedName);
-  }, [changedName, setUpdateAliases]);
 
   const showBreastType =
     fieldData.gender !== GenderEnum.MALE &&
@@ -341,7 +342,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Check
                   id="update-modify-aliases"
                   checked={updateAliases}
-                  onChange={() => setUpdateAliases(!updateAliases)}
+                  onChange={() => setUpdateAliases((prev) => !prev)}
                   label="Set unset performance aliases to old name"
                   className="d-inline-block"
                 />

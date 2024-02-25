@@ -12,6 +12,7 @@ query Draft($id: ID!) {
       ... on PerformerDraft {
         id
         name
+        disambiguation
         aliases
         gender
         birthdate

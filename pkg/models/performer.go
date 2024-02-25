@@ -42,4 +42,5 @@ type PerformerRepo interface {
 	GetEditAliases(id *uuid.UUID, data *PerformerEdit) ([]string, error)
 	GetEditTattoos(id *uuid.UUID, data *PerformerEdit) ([]*BodyModification, error)
 	GetEditPiercings(id *uuid.UUID, data *PerformerEdit) ([]*BodyModification, error)
+	IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error)
 }

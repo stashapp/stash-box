@@ -11,7 +11,11 @@ query User($name: String!) {
       name
     }
     invite_tokens
-    active_invite_codes
+    invite_codes {
+      id
+      uses
+      expires
+    }
     vote_count {
       accept
       reject

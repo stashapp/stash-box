@@ -48,6 +48,8 @@ linters-settings:
         enabled: true
       - name: increment-decrement
       - name: var-naming
+        arguments:
+          - ["IDS"] # AllowList
       - name: var-declaration
       - name: package-comments
       - name: range

@@ -189,6 +189,8 @@ export type EditQueryInput = {
   /** Filter by applied status */
   applied?: InputMaybe<Scalars["Boolean"]>;
   direction?: SortDirectionEnum;
+  /** Filter out user's own edits */
+  include_user_submitted?: InputMaybe<Scalars["Boolean"]>;
   /** Filter to bot edits only */
   is_bot?: InputMaybe<Scalars["Boolean"]>;
   /** Filter by favorite status */
@@ -348,6 +350,12 @@ export enum GenderFilterEnum {
   UNKNOWN = "UNKNOWN",
 }
 
+export type GenerateInviteCodeInput = {
+  keys?: InputMaybe<Scalars["Int"]>;
+  ttl?: InputMaybe<Scalars["Int"]>;
+  uses?: InputMaybe<Scalars["Int"]>;
+};
+
 export type GrantInviteInput = {
   amount: Scalars["Int"];
   user_id: Scalars["ID"];
@@ -402,6 +410,13 @@ export type IntCriterionInput = {
   value: Scalars["Int"];
 };
 
+export type InviteKey = {
+  __typename: "InviteKey";
+  expires?: Maybe<Scalars["Time"]>;
+  id: Scalars["ID"];
+  uses?: Maybe<Scalars["Int"]>;
+};
+
 export type Measurements = {
   __typename: "Measurements";
   band_size?: Maybe<Scalars["Int"]>;
@@ -438,8 +453,10 @@ export type Mutation = {
   favoritePerformer: Scalars["Boolean"];
   /** Favorite or unfavorite a studio */
   favoriteStudio: Scalars["Boolean"];
-  /** Generates an invite code using an invite token */
+  /** @deprecated Use generateInviteCodes */
   generateInviteCode?: Maybe<Scalars["ID"]>;
+  /** Generates an invite code using an invite token */
+  generateInviteCodes: Array<Scalars["ID"]>;
   /** Adds invite tokens for a user */
   grantInvite: Scalars["Int"];
   imageCreate?: Maybe<Image>;
@@ -534,6 +551,10 @@ export type MutationFavoritePerformerArgs = {
 export type MutationFavoriteStudioArgs = {
   favorite: Scalars["Boolean"];
   id: Scalars["ID"];
+};
+
+export type MutationGenerateInviteCodesArgs = {
+  input?: InputMaybe<GenerateInviteCodeInput>;
 };
 
 export type MutationGrantInviteArgs = {
@@ -807,6 +828,7 @@ export type PerformerDraft = {
   career_end_year?: Maybe<Scalars["Int"]>;
   career_start_year?: Maybe<Scalars["Int"]>;
   country?: Maybe<Scalars["String"]>;
+  disambiguation?: Maybe<Scalars["String"]>;
   ethnicity?: Maybe<Scalars["String"]>;
   eye_color?: Maybe<Scalars["String"]>;
   gender?: Maybe<Scalars["String"]>;
@@ -828,6 +850,7 @@ export type PerformerDraftInput = {
   career_end_year?: InputMaybe<Scalars["Int"]>;
   career_start_year?: InputMaybe<Scalars["Int"]>;
   country?: InputMaybe<Scalars["String"]>;
+  disambiguation?: InputMaybe<Scalars["String"]>;
   ethnicity?: InputMaybe<Scalars["String"]>;
   eye_color?: InputMaybe<Scalars["String"]>;
   gender?: InputMaybe<Scalars["String"]>;
@@ -1734,6 +1757,7 @@ export type UrlInput = {
 
 export type User = {
   __typename: "User";
+  /** @deprecated Use invite_codes instead */
   active_invite_codes?: Maybe<Array<Scalars["String"]>>;
   /** Calls to the API from this user over a configurable time period */
   api_calls: Scalars["Int"];
@@ -1744,6 +1768,7 @@ export type User = {
   /** Should not be visible to other users */
   email?: Maybe<Scalars["String"]>;
   id: Scalars["ID"];
+  invite_codes?: Maybe<Array<InviteKey>>;
   invite_tokens?: Maybe<Scalars["Int"]>;
   invited_by?: Maybe<User>;
   name: Scalars["String"];
@@ -4376,13 +4401,13 @@ export type FavoriteStudioMutation = {
   favoriteStudio: boolean;
 };
 
-export type GenerateInviteCodeMutationVariables = Exact<{
-  [key: string]: never;
+export type GenerateInviteCodesMutationVariables = Exact<{
+  input?: InputMaybe<GenerateInviteCodeInput>;
 }>;
 
-export type GenerateInviteCodeMutation = {
+export type GenerateInviteCodesMutation = {
   __typename: "Mutation";
-  generateInviteCode?: string | null;
+  generateInviteCodes: Array<string>;
 };
 
 export type GrantInviteMutationVariables = Exact<{
@@ -13894,6 +13919,7 @@ export type DraftQuery = {
           __typename: "PerformerDraft";
           id?: string | null;
           name: string;
+          disambiguation?: string | null;
           aliases?: string | null;
           gender?: string | null;
           birthdate?: string | null;
@@ -18355,6 +18381,7 @@ export type StudioPerformersQueryVariables = Exact<{
   studioId: Scalars["ID"];
   gender?: InputMaybe<GenderFilterEnum>;
   favorite?: InputMaybe<Scalars["Boolean"]>;
+  names?: InputMaybe<Scalars["String"]>;
   page?: Scalars["Int"];
   per_page?: Scalars["Int"];
   direction: SortDirectionEnum;
@@ -18493,8 +18520,13 @@ export type UserQuery = {
     api_key?: string | null;
     api_calls: number;
     invite_tokens?: number | null;
-    active_invite_codes?: Array<string> | null;
     invited_by?: { __typename: "User"; id: string; name: string } | null;
+    invite_codes?: Array<{
+      __typename: "InviteKey";
+      id: string;
+      uses?: number | null;
+      expires?: string | null;
+    }> | null;
     vote_count: {
       __typename: "UserVoteCount";
       accept: number;
@@ -23734,27 +23766,50 @@ export const FavoriteStudioDocument = {
   FavoriteStudioMutation,
   FavoriteStudioMutationVariables
 >;
-export const GenerateInviteCodeDocument = {
+export const GenerateInviteCodesDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "mutation",
-      name: { kind: "Name", value: "GenerateInviteCode" },
+      name: { kind: "Name", value: "GenerateInviteCodes" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "input" },
+          },
+          type: {
+            kind: "NamedType",
+            name: { kind: "Name", value: "GenerateInviteCodeInput" },
+          },
+        },
+      ],
       selectionSet: {
         kind: "SelectionSet",
         selections: [
           {
             kind: "Field",
-            name: { kind: "Name", value: "generateInviteCode" },
+            name: { kind: "Name", value: "generateInviteCodes" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "input" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "input" },
+                },
+              },
+            ],
           },
         ],
       },
     },
   ],
 } as unknown as DocumentNode<
-  GenerateInviteCodeMutation,
-  GenerateInviteCodeMutationVariables
+  GenerateInviteCodesMutation,
+  GenerateInviteCodesMutationVariables
 >;
 export const GrantInviteDocument = {
   kind: "Document",
@@ -39224,6 +39279,10 @@ export const DraftDocument = {
                             },
                             {
                               kind: "Field",
+                              name: { kind: "Name", value: "disambiguation" },
+                            },
+                            {
+                              kind: "Field",
                               name: { kind: "Name", value: "aliases" },
                             },
                             {
@@ -48363,6 +48422,14 @@ export const StudioPerformersDocument = {
         },
         {
           kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "names" },
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "String" } },
+        },
+        {
+          kind: "VariableDefinition",
           variable: { kind: "Variable", name: { kind: "Name", value: "page" } },
           type: {
             kind: "NonNullType",
@@ -48443,6 +48510,14 @@ export const StudioPerformersDocument = {
                       value: {
                         kind: "Variable",
                         name: { kind: "Name", value: "favorite" },
+                      },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "names" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "names" },
                       },
                     },
                     {
@@ -49005,7 +49080,18 @@ export const UserDocument = {
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "active_invite_codes" },
+                  name: { kind: "Name", value: "invite_codes" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "uses" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "expires" },
+                      },
+                    ],
+                  },
                 },
                 {
                   kind: "Field",

@@ -2,6 +2,7 @@ package sqlx
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -125,8 +126,10 @@ func (qb *tagQueryBuilder) FindByNameOrAlias(name string) (*models.Tag, error) {
 	query := `
 		SELECT T.* FROM tags T
 		LEFT JOIN tag_aliases TA ON T.id = TA.tag_id
-		WHERE LOWER(TA.alias) = LOWER($1) OR LOWER(T.name) = LOWER($1)
-		ORDER BY T.deleted ASC
+		WHERE (
+		  LOWER(TA.alias) = LOWER($1)
+			OR LOWER(T.name) = LOWER($1)
+		) AND T.deleted = 'F'
 	`
 
 	args := []interface{}{name}
@@ -190,27 +193,6 @@ func (qb *tagQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Tag, []error) {
 	return result, nil
 }
 
-func (qb *tagQueryBuilder) FindByNames(names []string) ([]*models.Tag, error) {
-	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryTags(query, args)
-}
-
-func (qb *tagQueryBuilder) FindByAliases(names []string) ([]*models.Tag, error) {
-	query := `SELECT tags.* FROM tags
-		left join tag_aliases on tags.id = tag_aliases.tag_id
-		WHERE tag_aliases.alias IN ` + getInBinding(len(names))
-
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryTags(query, args)
-}
-
 func (qb *tagQueryBuilder) FindByName(name string) (*models.Tag, error) {
 	query := "SELECT * FROM tags WHERE upper(name) = upper(?)"
 
@@ -220,16 +202,6 @@ func (qb *tagQueryBuilder) FindByName(name string) (*models.Tag, error) {
 		return nil, err
 	}
 	return results[0], nil
-}
-
-func (qb *tagQueryBuilder) FindByAlias(name string) ([]*models.Tag, error) {
-	query := `SELECT tags.* FROM tags
-		left join tag_aliases on tag.id = tag_aliases.tag_id
-		WHERE upper(tag_aliases.alias) = UPPER(?)`
-
-	var args []interface{}
-	args = append(args, name)
-	return qb.queryTags(query, args)
 }
 
 func (qb *tagQueryBuilder) FindWithRedirect(id uuid.UUID) (*models.Tag, error) {
@@ -265,9 +237,11 @@ func (qb *tagQueryBuilder) Query(filter models.TagQueryInput) ([]*models.Tag, in
 	}
 
 	if q := filter.Names; q != nil && *q != "" {
-		searchColumns := []string{"tags.name", "tag_aliases.alias"}
-		query.AddLeftJoin(tagAliasTable.table, "tag_aliases.tag_id = tags.id", true)
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		searchColumns := []string{"T.name", "TA.alias"}
+
+		searchClause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		clause := fmt.Sprintf("EXISTS (SELECT T.id FROM tags T LEFT JOIN %[1]s TA ON T.id = TA.tag_id WHERE tags.id = T.id AND %[2]s GROUP BY T.id)", tagAliasTable.Name(), searchClause)
+
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}

@@ -163,12 +163,12 @@ func (r *sceneEditResolver) Tags(ctx context.Context, obj *models.SceneEdit) ([]
 		return nil, err
 	}
 
-	tagIds, err := fac.Scene().GetEditTags(id, obj)
+	tagIDs, err := fac.Scene().GetEditTags(id, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	tags, errs := fac.Tag().FindByIds(tagIds)
+	tags, errs := fac.Tag().FindByIds(tagIDs)
 	if len(errs) > 0 {
 		return nil, errs[0]
 	}

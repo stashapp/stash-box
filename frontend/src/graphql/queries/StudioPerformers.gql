@@ -3,6 +3,7 @@ query StudioPerformers(
   $studioId: ID!
   $gender: GenderFilterEnum
   $favorite: Boolean
+  $names: String
   $page: Int! = 1
   $per_page: Int! = 25
   $direction: SortDirectionEnum!
@@ -13,6 +14,7 @@ query StudioPerformers(
       studio_id: $studioId
       gender: $gender
       is_favorite: $favorite
+      names: $names
       page: $page
       per_page: $per_page
       direction: $direction

@@ -14,6 +14,12 @@ enum RoleEnum {
   BOT
 }
 
+type InviteKey {
+  id: ID!
+  uses: Int
+  expires: Time
+}
+
 type User {
   id: ID!
   name: String!
@@ -33,7 +39,8 @@ type User {
   api_calls: Int! @isUserOwner
   invited_by: User @isUserOwner
   invite_tokens: Int @isUserOwner
-  active_invite_codes: [String!] @isUserOwner
+  active_invite_codes: [String!] @isUserOwner @deprecated(reason: "Use invite_codes instead")
+  invite_codes: [InviteKey!] @isUserOwner
 }
 
 input UserCreateInput {
@@ -144,4 +151,13 @@ type UserVoteCount {
   reject: Int!
   immediate_accept: Int!
   immediate_reject: Int!
+}
+
+input GenerateInviteCodeInput {
+  # the number of invite keys to generate. If not set, a single invite key will be generated
+  keys: Int
+  # the number of uses for each invite key. If not set, the invite key will have one use
+  uses: Int
+  # the number of seconds until the invite code expires. If not set, the invite code will never expire
+  ttl: Int
 }

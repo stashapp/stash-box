@@ -177,39 +177,8 @@ func (qb *performerQueryBuilder) FindBySceneID(sceneID uuid.UUID) (models.Perfor
 	return qb.queryPerformers(query, args)
 }
 
-func (qb *performerQueryBuilder) FindByNames(names []string) (models.Performers, error) {
-	query := "SELECT * FROM performers WHERE name IN " + getInBinding(len(names))
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryPerformers(query, args)
-}
-
-func (qb *performerQueryBuilder) FindByAliases(names []string) (models.Performers, error) {
-	query := `SELECT performers.* FROM performers
-		left join performer_aliases on performers.id = performer_aliases.performer_id
-		WHERE performer_aliases.alias IN ` + getInBinding(len(names))
-
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryPerformers(query, args)
-}
-
 func (qb *performerQueryBuilder) FindByName(name string) (models.Performers, error) {
 	query := "SELECT * FROM performers WHERE upper(name) = upper(?)"
-	var args []interface{}
-	args = append(args, name)
-	return qb.queryPerformers(query, args)
-}
-
-func (qb *performerQueryBuilder) FindByAlias(name string) (models.Performers, error) {
-	query := `SELECT performers.* FROM performers
-		left join performer_aliases on performers.id = performer_aliases.performer_id
-		WHERE upper(performer_aliases.alias) = UPPER(?)`
-
 	var args []interface{}
 	args = append(args, name)
 	return qb.queryPerformers(query, args)
@@ -234,6 +203,11 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 			ON performers.id = D.performer_id
 		`
 		query.AddArg(filter.StudioID)
+	}
+
+	if q := filter.URL; q != nil && *q != "" {
+		where := fmt.Sprintf("%s.url = ?", performerURLTable.Name())
+		query.AddJoinTableFilter(performerURLTable, where, false, nil, false, *q)
 	}
 
 	if q := filter.Name; q != nil && *q != "" {
@@ -276,14 +250,6 @@ func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, u
 		} else {
 			query.Eq("performers.ethnicity", q.String())
 		}
-	}
-
-	if q := filter.URL; q != nil && *q != "" {
-		query.AddJoin(performerURLTable.table, performerURLTable.Name()+"."+performerJoinKey+" = performers.id", true)
-		searchColumns := []string{performerURLTable.Name() + ".url"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
-		query.AddWhere(clause)
-		query.AddArg(thisArgs...)
 	}
 
 	if filter.IsFavorite != nil {
@@ -936,6 +902,44 @@ func (qb *performerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([]
 	}
 
 	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
+func (qb *performerQueryBuilder) IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
+	query := "SELECT performer_id FROM performer_favorites WHERE user_id = :userid AND performer_id IN (:performer_ids)"
+
+	arg := map[string]interface{}{
+		"userid":        userID,
+		"performer_ids": ids,
+	}
+	m := make(map[uuid.UUID]bool)
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return err
+		}
+		m[id] = true
+
+		return nil
+	}); err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	result := make([]bool, len(ids))
 	for i, id := range ids {
 		result[i] = m[id]
 	}
