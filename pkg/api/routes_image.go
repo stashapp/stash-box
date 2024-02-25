@@ -60,14 +60,16 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			w.Write(data)
+			if _, err := w.Write(data); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 			return
 		}
 	}
 
-	io.Copy(w, reader)
-
-	return
+	if _, err := io.Copy(w, reader); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
