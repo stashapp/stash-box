@@ -242,7 +242,7 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 		return false, err
 	}
 
-	if scene.Deleted {
+	if scene == nil || scene.Deleted {
 		// FIXME: this should error out, but due to the use-case in Stash,
 		//       it will stop submitting fingerprints if a single one fails
 		//       see https://github.com/stashapp/stash/blob/v0.16.1/pkg/scraper/stashbox/stash_box.go#L254-L257

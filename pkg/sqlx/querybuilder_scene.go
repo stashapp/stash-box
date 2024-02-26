@@ -1,6 +1,7 @@
 package sqlx
 
 import (
+	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"github.com/stashapp/stash-box/pkg/edit"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
@@ -25,7 +27,7 @@ var (
 	})
 
 	sceneFingerprintTable = newTableJoin(sceneTable, "scene_fingerprints", sceneJoinKey, func() interface{} {
-		return &models.SceneFingerprint{}
+		return &models.DBSceneFingerprint{}
 	})
 
 	sceneURLTable = newTableJoin(sceneTable, "scene_urls", sceneJoinKey, func() interface{} {
@@ -77,23 +79,47 @@ func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.Sce
 	return qb.dbi.ReplaceJoins(sceneURLTable, scene, &updatedJoins)
 }
 
-func (qb *sceneQueryBuilder) CreateFingerprints(newJoins models.SceneFingerprints) error {
-	conflictHandling := `
-		ON CONFLICT ON CONSTRAINT scene_hash_unique
-		DO NOTHING
-	`
+func (qb *sceneQueryBuilder) CreateFingerprints(sceneFingerprints models.SceneFingerprints) error {
+	conflictHandling := `ON CONFLICT DO NOTHING`
 
-	return qb.dbi.InsertJoinsWithConflictHandling(sceneFingerprintTable, &newJoins, conflictHandling)
+	var fingerprints models.DBSceneFingerprints
+	for _, fp := range sceneFingerprints {
+		id, err := qb.getOrCreateFingerprintID(fp.Hash, fp.Algorithm)
+		if err != nil {
+			return err
+		}
+
+		fingerprints = append(fingerprints, &models.DBSceneFingerprint{
+			FingerprintID: id,
+			SceneID:       fp.SceneID,
+			UserID:        fp.UserID,
+			Duration:      fp.Duration,
+		})
+	}
+
+	return qb.dbi.InsertJoinsWithConflictHandling(sceneFingerprintTable, &fingerprints, conflictHandling)
 }
 
 func (qb *sceneQueryBuilder) UpdateFingerprints(sceneID uuid.UUID, updatedJoins models.SceneFingerprints) error {
-	return qb.dbi.ReplaceJoins(sceneFingerprintTable, sceneID, &updatedJoins)
+	if err := qb.dbi.DeleteJoins(sceneFingerprintTable, sceneID); err != nil {
+		return err
+	}
+
+	return qb.CreateFingerprints(updatedJoins)
 }
 
 func (qb *sceneQueryBuilder) DestroyFingerprints(sceneID uuid.UUID, toDestroy models.SceneFingerprints) error {
 	for _, fp := range toDestroy {
-		query := qb.dbi.db().Rebind(`DELETE FROM ` + sceneFingerprintTable.name + ` WHERE algorithm = ? AND HASH = ? AND user_id = ? AND scene_id = ?`)
-		res, err := qb.dbi.db().Exec(query, fp.Algorithm, fp.Hash, fp.UserID, fp.SceneID)
+		fmt.Println(fp)
+		res, err := qb.dbi.db().Exec(`
+		DELETE FROM scene_fingerprints SFP
+		USING fingerprints FP
+		WHERE SFP.fingerprint_id = FP.id
+		AND FP.hash = $1
+		AND FP.algorithm = $2
+		AND user_id = $3
+		AND scene_id = $4
+		`, fp.Hash, fp.Algorithm, fp.UserID, fp.SceneID)
 		if err != nil {
 			return err
 		}
@@ -113,8 +139,9 @@ func (qb *sceneQueryBuilder) Find(id uuid.UUID) (*models.Scene, error) {
 func (qb *sceneQueryBuilder) FindByFingerprint(algorithm models.FingerprintAlgorithm, hash string) ([]*models.Scene, error) {
 	query := `
 		SELECT scenes.* FROM scenes
-		LEFT JOIN scene_fingerprints as scenes_join on scenes_join.scene_id = scenes.id
-		WHERE scenes_join.algorithm = ? AND scenes_join.hash = ?`
+		JOIN scene_fingerprints as SFP on SFP.scene_id = scenes.id
+		JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+		WHERE FP.algorithm = ? AND FP.hash = ?`
 	var args []interface{}
 	args = append(args, algorithm.String())
 	args = append(args, hash)
@@ -125,9 +152,11 @@ func (qb *sceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*model
 	query := `
 		SELECT scenes.* FROM scenes
 		WHERE id IN (
-			SELECT scene_id id FROM scene_fingerprints
-			WHERE hash IN (?)
-			GROUP BY id
+			SELECT scene_id AS id
+			FROM scene_fingerprints SFP
+			JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+			WHERE FP.hash IN (?)
+			GROUP BY scene_id
 		)`
 	query, args, err := sqlx.In(query, fingerprints)
 	if err != nil {
@@ -138,15 +167,18 @@ func (qb *sceneQueryBuilder) FindByFingerprints(fingerprints []string) ([]*model
 
 func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.FingerprintQueryInput) ([]*models.Scene, error) {
 	hashClause := `
-		SELECT scene_id id FROM scene_fingerprints
-		WHERE hash IN (:hashes)
-		GROUP BY id
+		SELECT SFP.scene_id AS id
+		FROM scene_fingerprints SFP
+		JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+		WHERE FP.hash IN (:hashes)
+		GROUP BY SFP.scene_id
 	`
 	phashClause := `
-		SELECT scene_id as id
+		SELECT SFP.scene_id AS id
 		FROM UNNEST(ARRAY[:phashes]) phash
-		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
+		JOIN fingerprints FP ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
 		AND algorithm = 'PHASH'
+		JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
 	`
 
 	var phashes []int64
@@ -221,7 +253,8 @@ func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, error)
 func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.FingerprintQueryInput) (map[string][]uuid.UUID, error) {
 	hashClause := `
 		SELECT scene_id, hash
-		FROM scene_fingerprints
+		FROM fingerprints FP
+		JOIN scene_fingerprints SFP ON FP.id = SFP.fingerprint_id
 		JOIN scenes ON scene_id = scenes.id
 		WHERE hash IN (:hashes) AND deleted = FALSE
 		GROUP BY scene_id, hash
@@ -229,8 +262,9 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	phashClause := `
 		SELECT scene_id, to_hex(phash::::bigint) as hash
 		FROM UNNEST(ARRAY[:phashes]) phash
-		JOIN scene_fingerprints ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
+		JOIN fingerprints FP ON ('x' || hash)::::bit(64)::::bigint <@ (phash::::BIGINT, :distance)
 		AND algorithm = 'PHASH'
+		JOIN scene_fingerprints SFP ON FP.id = SFP.fingerprint_id
 		JOIN scenes ON scene_id = scenes.id
 		WHERE deleted = FALSE
 		GROUP BY scene_id, phash
@@ -278,8 +312,10 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 		return nil, err
 	}
 
+	query = qb.dbi.db().Rebind(query)
+
 	output := models.SceneFingerprints{}
-	if err := qb.dbi.RawQuery(sceneFingerprintTable.table, query, args, &output); err != nil {
+	if err := qb.dbi.db().Select(&output, query, args...); err != nil {
 		return nil, err
 	}
 
@@ -290,52 +326,6 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	})
 
 	return res, nil
-}
-
-// func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*models.Scene, error) {
-// 	query := `
-// 		SELECT scenes.* FROM scenes
-// 		LEFT JOIN scenes_scenes as scenes_join on scenes_join.scene_id = scenes.id
-// 		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-// 		WHERE scenes.id = ?
-// 		GROUP BY scenes.id
-// 	`
-// 	args := []interface{}{sceneID}
-// 	return qb.queryScenes(query, args)
-// }
-
-// func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*models.Scene, error) {
-// 	query := `SELECT scenes.* FROM scenes
-// 		left join scene_checksums on scenes.id = scene_checksums.scene_id
-// 		WHERE scene_checksums.checksum = ?`
-
-// 	var args []interface{}
-// 	args = append(args, checksum)
-
-// 	results, err := qb.queryScenes(query, args)
-// 	if err != nil || len(results) < 1 {
-// 		return nil, err
-// 	}
-// 	return results[0], nil
-// }
-
-// func (qb *SceneQueryBuilder) FindByChecksums(checksums []string) ([]*models.Scene, error) {
-// 	query := `SELECT scenes.* FROM scenes
-// 		left join scene_checksums on scenes.id = scene_checksums.scene_id
-// 		WHERE scene_checksums.checksum IN ` + getInBinding(len(checksums))
-
-// 	var args []interface{}
-// 	for _, name := range checksums {
-// 		args = append(args, name)
-// 	}
-// 	return qb.queryScenes(query, args)
-// }
-
-func (qb *sceneQueryBuilder) FindByTitle(name string) ([]*models.Scene, error) {
-	query := "SELECT * FROM scenes WHERE upper(title) = upper(?)"
-	var args []interface{}
-	args = append(args, name)
-	return qb.queryScenes(query, args)
 }
 
 func (qb *sceneQueryBuilder) Count() (int, error) {
@@ -368,8 +358,19 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 	}
 
 	if q := filter.Fingerprints; q != nil && len(q.Value) > 0 {
-		if err := setMultiCriterionClause(query, sceneFingerprintTable, "hash", q, true); err != nil {
-			return nil, err
+		inClause := getInBinding(len(q.Value))
+		query.Body += `
+			JOIN (
+				SELECT scene_id
+				FROM scene_fingerprints SFP
+				JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+				WHERE FP.hash IN ` + inClause + `
+				GROUP BY scene_id
+			) T ON scenes.id = T.scene_id
+		`
+
+		for _, hash := range q.Value {
+			query.AddArg(hash)
 		}
 	}
 
@@ -568,32 +569,38 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 }
 
 func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) (models.SceneFingerprints, error) {
-	joins := models.SceneFingerprints{}
-	err := qb.dbi.FindJoins(sceneFingerprintTable, id, &joins)
-	return joins, err
+	fingerprints := models.SceneFingerprints{}
+	err := qb.dbi.db().Select(&fingerprints, `
+    SELECT SFP.scene_id, SFP.user_id, SFP.duration, SFP.created_at, FP.hash, FP.algorithm
+		FROM scene_fingerprints SFP
+		JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+		WHERE SFP.scene_id = $1
+	`, id)
+	return fingerprints, err
 }
 
 func (qb *sceneQueryBuilder) GetAllFingerprints(currentUserID uuid.UUID, ids []uuid.UUID, onlySubmitted bool) ([][]*models.Fingerprint, []error) {
 	query := `
 		SELECT
-			f.scene_id,
-			f.hash,
-			f.algorithm,
-			mode() WITHIN GROUP (ORDER BY f.duration) as duration,
-			COUNT(f.hash) as submissions,
+			SFP.scene_id,
+			FP.hash,
+			FP.algorithm,
+			mode() WITHIN GROUP (ORDER BY SFP.duration) as duration,
+			COUNT(SFP.fingerprint_id) as submissions,
 			MIN(created_at) as created_at,
 			MAX(created_at) as updated_at,
-			bool_or(f.user_id = :userid) as user_submitted
-		FROM scene_fingerprints f
-		WHERE f.scene_id IN (:sceneids)
+			bool_or(SFP.user_id = :userid) as user_submitted
+		FROM scene_fingerprints SFP
+		JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
+		WHERE SFP.scene_id IN (:sceneids)
 	`
 
 	if onlySubmitted {
-		query += "AND f.user_id = :userid"
+		query += "AND SFP.user_id = :userid"
 	}
 
 	query += `
-		GROUP BY f.scene_id, f.algorithm, f.hash
+		GROUP BY SFP.scene_id, FP.algorithm, FP.hash
 		ORDER BY submissions DESC`
 
 	arg := map[string]interface{}{
@@ -968,17 +975,40 @@ func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *
 	for _, fingerprint := range data.New.AddedFingerprints {
 		if fingerprint.Duration > 0 {
 			newFingerprints = append(newFingerprints, &models.SceneFingerprint{
-				SceneID:   scene.ID,
-				UserID:    userID,
 				Hash:      fingerprint.Hash,
 				Algorithm: fingerprint.Algorithm.String(),
+				SceneID:   scene.ID,
+				UserID:    userID,
 				Duration:  fingerprint.Duration,
 				CreatedAt: time.Now(),
 			})
 		}
 	}
 
-	return qb.UpdateFingerprints(scene.ID, newFingerprints)
+	return qb.CreateFingerprints(newFingerprints)
+}
+
+func (qb *sceneQueryBuilder) getOrCreateFingerprintID(hash string, algorithm string) (int, error) {
+	id, err := qb.getFingerprintID(hash, algorithm)
+	if errors.Is(err, sql.ErrNoRows) {
+		id, err = qb.createFingerprint(hash, algorithm)
+	}
+
+	return id, err
+}
+
+func (qb *sceneQueryBuilder) getFingerprintID(hash string, algorithm string) (int, error) {
+	var id int
+	err := qb.dbi.db().Get(&id, "SELECT id FROM fingerprints WHERE hash = $1 AND algorithm = $2", hash, algorithm)
+
+	return id, err
+}
+
+func (qb *sceneQueryBuilder) createFingerprint(hash string, algorithm string) (int, error) {
+	var id int
+	err := qb.dbi.db().Get(&id, "INSERT INTO fingerprints (hash, algorithm) VALUES ($1, $2) RETURNING id", hash, algorithm)
+
+	return id, err
 }
 
 func (qb *sceneQueryBuilder) MergeInto(source *models.Scene, target *models.Scene) error {
@@ -1025,7 +1055,8 @@ func (qb *sceneQueryBuilder) FindExistingScenes(input models.QueryExistingSceneI
 		clauses = append(clauses, `
 			id IN (
 				SELECT scene_id
-				FROM scene_fingerprints
+				FROM scene_fingerprints SFP
+				JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
 				WHERE hash IN (:hashes)
 				GROUP BY scene_id
 			)

@@ -167,7 +167,7 @@ export const parsePerformerDraft = (
 
   const performer: InitialPerformer = {
     name: draft.name,
-    disambiguation: null,
+    disambiguation: draft.disambiguation ?? null,
     images: joinImages(draft.image, existingPerformer?.images),
     gender: parseEnum(draft.gender, GenderEnum) as GenderEnum | null,
     ethnicity: parseEnum(

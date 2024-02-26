@@ -12,6 +12,7 @@ const EditsComponent: FC = () => (
       defaultVoteStatus={VoteStatusEnum.PENDING}
       defaultVoted={UserVotedFilterEnum.NOT_VOTED}
       defaultBot="exclude"
+      defaultUserSubmitted={true}
     />
   </>
 );
