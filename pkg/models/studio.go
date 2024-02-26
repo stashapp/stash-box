@@ -21,4 +21,5 @@ type StudioRepo interface {
 	ApplyEdit(edit Edit, operation OperationEnum, studio *Studio) (*Studio, error)
 	GetEditImages(id *uuid.UUID, data *StudioEdit) ([]uuid.UUID, error)
 	GetEditURLs(id *uuid.UUID, data *StudioEdit) ([]*URL, error)
+	IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error)
 }

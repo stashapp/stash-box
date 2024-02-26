@@ -58,9 +58,7 @@ func (r *studioResolver) Images(ctx context.Context, obj *models.Studio) ([]*mod
 }
 
 func (r *studioResolver) IsFavorite(ctx context.Context, obj *models.Studio) (bool, error) {
-	jqb := r.getRepoFactory(ctx).Joins()
-	user := getCurrentUser(ctx)
-	return jqb.IsStudioFavorite(models.StudioFavorite{StudioID: obj.ID, UserID: user.ID})
+	return dataloader.For(ctx).StudioIsFavoriteByID.Load(obj.ID)
 }
 
 func (r *studioResolver) Created(ctx context.Context, obj *models.Studio) (*time.Time, error) {

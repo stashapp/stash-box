@@ -10,6 +10,7 @@ type InviteKeyRepo interface {
 	InviteKeyFinder
 	InviteKeyCreator
 	InviteKeyDestroyer
+	InviteKeyUser
 }
 
 type InviteKeyCreator interface {
@@ -24,4 +25,9 @@ type InviteKeyFinder interface {
 type InviteKeyDestroyer interface {
 	InviteKeyFinder
 	Destroy(id uuid.UUID) error
+	DestroyExpired() error
+}
+
+type InviteKeyUser interface {
+	KeyUsed(id uuid.UUID) (*int, error)
 }

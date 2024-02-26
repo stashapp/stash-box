@@ -84,6 +84,7 @@ func (r *mutationResolver) SubmitPerformerDraft(ctx context.Context, input model
 	data := models.PerformerDraft{
 		ID:              input.ID,
 		Name:            input.Name,
+		Disambiguation:  input.Disambiguation,
 		Aliases:         input.Aliases,
 		Gender:          input.Gender,
 		Birthdate:       input.Birthdate,
@@ -187,18 +188,31 @@ func resolveTags(tags []*models.DraftEntityInput, fac models.Repo) ([]models.Dra
 	var results []models.DraftEntity
 	resultMap := make(map[string]bool)
 	for _, tag := range tags {
-		foundTag, err := tqb.FindByNameOrAlias(tag.Name)
-		if err != nil {
-			return nil, err
+		res := models.DraftEntity{}
+
+		if tag.ID != nil {
+			dbTag, _ := tqb.Find(*tag.ID)
+			if dbTag.ID == *tag.ID {
+				res = *translateDraftEntity(tag)
+			}
+		} else {
+			foundTag, err := tqb.FindByNameOrAlias(tag.Name)
+			if err != nil {
+				return nil, err
+			}
+
+			if foundTag != nil {
+				res.Name = foundTag.Name
+				res.ID = &foundTag.ID
+			}
 		}
 
-		res := models.DraftEntity{
-			Name: tag.Name,
+		if res.Name == "" {
+			res = models.DraftEntity{
+				Name: tag.Name,
+			}
 		}
-		if foundTag != nil {
-			res.Name = foundTag.Name
-			res.ID = &foundTag.ID
-		}
+
 		if _, exists := resultMap[res.Name]; !exists {
 			resultMap[res.Name] = true
 			results = append(results, res)

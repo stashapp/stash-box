@@ -73,3 +73,17 @@ func (r *userResolver) ActiveInviteCodes(ctx context.Context, user *models.User)
 	}
 	return ret, nil
 }
+
+func (r *userResolver) InviteCodes(ctx context.Context, user *models.User) ([]*models.InviteKey, error) {
+	// only show if current user or invite manager
+	currentUser := getCurrentUser(ctx)
+
+	if currentUser.ID != user.ID {
+		if err := validateManageInvites(ctx); err != nil {
+			return nil, nil
+		}
+	}
+
+	qb := r.getRepoFactory(ctx).Invite()
+	return qb.FindActiveKeysForUser(user.ID, config.GetActivationExpireTime())
+}

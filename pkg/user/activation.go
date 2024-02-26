@@ -20,6 +20,9 @@ func NewUser(fac models.Repo, em *email.Manager, email, inviteKey string) (*stri
 	if err := ClearExpiredActivations(fac); err != nil {
 		return nil, err
 	}
+	if err := ClearExpiredInviteKeys(fac); err != nil {
+		return nil, err
+	}
 
 	// ensure user or pending activation with email does not already exist
 	uqb := fac.User()
@@ -102,13 +105,18 @@ func validateInviteKey(iqb models.InviteKeyFinder, aqb models.PendingActivationF
 			return ret, errors.New("invalid invite key")
 		}
 
+		// ensure invite key is not expired
+		if key.Expires != nil && key.Expires.Before(time.Now()) {
+			return ret, errors.New("invite key expired")
+		}
+
 		// ensure key isn't already used
 		a, err := aqb.FindByInviteKey(inviteKey, models.PendingActivationTypeNewUser)
 		if err != nil {
 			return ret, err
 		}
 
-		if a != nil {
+		if key.Uses != nil && len(a) >= *key.Uses {
 			return ret, errors.New("key already used")
 		}
 	}
@@ -143,6 +151,11 @@ func ClearExpiredActivations(fac models.Repo) error {
 
 	aqb := fac.PendingActivation()
 	return aqb.DestroyExpired(expireTime)
+}
+
+func ClearExpiredInviteKeys(fac models.Repo) error {
+	iqb := fac.Invite()
+	return iqb.DestroyExpired()
 }
 
 func sendNewUserEmail(em *email.Manager, email, activationKey string) error {
@@ -220,10 +233,19 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 		return nil, err
 	}
 
-	// delete the invite key
-	if !a.InviteKey.UUID.IsNil() {
-		if err := iqb.Destroy(a.InviteKey.UUID); err != nil {
+	if config.GetRequireInvite() {
+		// decrement the invite key uses
+		usesLeft, err := iqb.KeyUsed(a.InviteKey.UUID)
+		if err != nil {
 			return nil, err
+		}
+
+		// if all used up, then delete the invite key
+		if usesLeft != nil && *usesLeft <= 0 {
+			// delete the invite key
+			if err := iqb.Destroy(a.InviteKey.UUID); err != nil {
+				return nil, err
+			}
 		}
 	}
 
