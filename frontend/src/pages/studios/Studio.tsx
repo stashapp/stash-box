@@ -76,8 +76,11 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           </h3>
           {homeURL && (
             <h6>
-              <a href={homeURL} target="_blank" rel="noreferrer noopener">
-                {homeURL}
+              {homeURL.site.name !== "Home" && (
+                <b className="me-2">{homeURL.site.name}:</b>
+              )}
+              <a href={homeURL.url} target="_blank" rel="noreferrer noopener">
+                {homeURL.url}
               </a>
             </h6>
           )}
