@@ -80,7 +80,9 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
 	session, err := sessionStore.Get(r, cookieName)
 	if err != nil {
-		return "", err
+		session.Options.MaxAge = -1
+		session.Save(r, w)
+		return "", nil
 	}
 
 	if !session.IsNew {
