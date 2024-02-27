@@ -35,7 +35,7 @@ const TagFilter: FC<TagFilterProps> = ({
   allowDeleted = false,
 }) => {
   const client = useApolloClient();
-  const { data: tagData } = useTag({ id: tagId });
+  const { data: tagData } = useTag({ id: tagId }, !tagId);
   const selectedTag = tagData?.findTag;
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {
