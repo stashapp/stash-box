@@ -136,7 +136,7 @@ func GenerateInviteKeys(uf FinderUpdater, ic models.InviteKeyCreator, userID uui
 		}
 
 		if input != nil {
-			if input.Uses != nil {
+			if input.Uses != nil && *input.Uses > 0 {
 				uses := *input.Uses
 				newKey.Uses = &uses
 			}
