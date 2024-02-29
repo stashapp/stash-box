@@ -16,7 +16,11 @@ const passwordFormKey = "password"
 const userIDKey = "userID"
 const maxCookieAge = 60 * 60 * 1 // 1 hours
 
-var sessionStore = sessions.NewCookieStore(config.GetSessionStoreKey())
+var sessionStore *sessions.CookieStore
+
+func InitializeSession() {
+	sessionStore = sessions.NewCookieStore(config.GetSessionStoreKey())
+}
 
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	newSession, err := sessionStore.Get(r, cookieName)
@@ -76,7 +80,11 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
 	session, err := sessionStore.Get(r, cookieName)
 	if err != nil {
-		return "", err
+		session.Options.MaxAge = -1
+		if err = session.Save(r, w); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return "", nil
 	}
 
 	if !session.IsNew {

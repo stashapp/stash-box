@@ -15,16 +15,25 @@ export const diffValue = <T extends unknown>(
 ): T | null => (a && a !== b ? a : null);
 
 export const diffImages = (
-  newImages: { id: string | undefined; url: string | undefined }[] | undefined,
-  oldImages: { id: string; url: string }[]
+  newImages:
+    | {
+        id: string | undefined;
+        url: string | undefined;
+        width: number | undefined;
+        height: number | undefined;
+      }[]
+    | undefined,
+  oldImages: { id: string; url: string; width: number; height: number }[]
 ) =>
   diffArray(
     (newImages ?? []).flatMap((i) =>
-      i.id && i.url
+      i.id && i.url && i.height && i.width
         ? [
             {
               id: i.id,
               url: i.url,
+              width: i.width,
+              height: i.height,
             },
           ]
         : []

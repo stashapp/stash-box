@@ -1,7 +1,7 @@
 import { FC, useEffect } from "react";
 import { Navbar, Nav, Button, Badge } from "react-bootstrap";
 import { NavLink, useLocation, useNavigate, Link } from "react-router-dom";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
 import { faBell as faBellOutlined} from "@fortawesome/free-regular-svg-icons";
 
 import SearchField, { SearchType } from "src/components/searchField";
@@ -9,7 +9,7 @@ import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
 import { useAuth } from "src/hooks";
 import { Icon } from "src/components/fragments";
-import { useUnreadNotificationsCount } from "src/graphql";
+import { useConfig, useUnreadNotificationsCount } from "src/graphql";
 import {
   ROUTE_SCENES,
   ROUTE_PERFORMERS,
@@ -40,6 +40,9 @@ const Main: FC<Props> = ({ children }) => {
   const { loading, user } = useAuth();
   const { data: unreadNotifications } = useUnreadNotificationsCount();
   const notificationCount = unreadNotifications?.getUnreadNotificationCount || null;
+  const { data: configData } = useConfig();
+
+  const guidelinesURL = configData?.getConfig.guidelines_url;
 
   useEffect(() => {
     if (loading || user) return;
@@ -86,11 +89,11 @@ const Main: FC<Props> = ({ children }) => {
             { notificationCount && <Badge bg="danger" className="ms-1">{ notificationCount }</Badge> }
           </Button>
         </Link>
-        <span>Logged in as</span>
         <NavLink
           to={userHref(contextValue.user)}
           className="nav-link ms-auto me-2"
         >
+          <Icon icon={faUser} className="me-2" />
           {contextValue.user.name}
         </NavLink>
         {isAdmin(user) && (
@@ -139,6 +142,17 @@ const Main: FC<Props> = ({ children }) => {
             <NavLink to={ROUTE_SITES} className="nav-link">
               Sites
             </NavLink>
+          )}
+          {guidelinesURL && (
+            <a
+              href={guidelinesURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-link"
+            >
+              <Icon icon={faBook} className="mx-2" />
+              Guidelines
+            </a>
           )}
         </Nav>
         <Nav className="align-items-center">

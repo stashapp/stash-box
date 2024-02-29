@@ -73,7 +73,7 @@ func (qb *pendingActivationQueryBuilder) FindByEmail(email string, activationTyp
 	return nil, nil
 }
 
-func (qb *pendingActivationQueryBuilder) FindByInviteKey(key string, activationType string) (*models.PendingActivation, error) {
+func (qb *pendingActivationQueryBuilder) FindByInviteKey(key string, activationType string) ([]*models.PendingActivation, error) {
 	query := `SELECT * FROM ` + pendingActivationTable + ` WHERE invite_key = ? AND type = ?`
 	var args []interface{}
 	args = append(args, key)
@@ -84,10 +84,7 @@ func (qb *pendingActivationQueryBuilder) FindByInviteKey(key string, activationT
 		return nil, err
 	}
 
-	if len(output) > 0 {
-		return output[0], nil
-	}
-	return nil, nil
+	return output, nil
 }
 
 func (qb *pendingActivationQueryBuilder) Count() (int, error) {

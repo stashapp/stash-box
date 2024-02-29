@@ -7,4 +7,5 @@ type StashBoxConfig {
   voting_period: Int!
   min_destructive_voting_period: Int!
   vote_cron_interval: String!
+  guidelines_url: String!
 }

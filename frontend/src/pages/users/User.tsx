@@ -16,11 +16,12 @@ import {
   useDeleteUser,
   useRegenerateAPIKey,
   useRescindInviteCode,
-  useGenerateInviteCode,
   useGrantInvite,
   useRevokeInvite,
   UserQuery,
   PublicUserQuery,
+  useGenerateInviteCodes,
+  GenerateInviteCodeInput,
 } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
@@ -31,8 +32,69 @@ import {
 } from "src/constants/route";
 import Modal from "src/components/modal";
 import { Icon, Tooltip } from "src/components/fragments";
-import { isAdmin, isPrivateUser, createHref } from "src/utils";
+import { isAdmin, isPrivateUser, createHref, formatDateTime } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
+import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
+
+interface IInviteKeys {
+  id: string;
+  uses?: number | null | undefined;
+  expires?: string | null | undefined;
+}
+
+interface UserInviteKeysProps {
+  inviteCodes: IInviteKeys[];
+  rescindInvite: (id: string) => void;
+}
+
+const UserInviteKeys: FC<UserInviteKeysProps> = ({
+  inviteCodes,
+  rescindInvite,
+}) => {
+  if (inviteCodes.length === 0) return <></>;
+
+  return (
+    <Table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Uses</th>
+          <th>Expires</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {inviteCodes.map((ic) => (
+          <tr key={ic.id}>
+            <td>
+              <InputGroup className="mb-2">
+                <InputGroup.Text>
+                  <code>{ic.id}</code>
+                </InputGroup.Text>
+                <Button onClick={() => navigator.clipboard?.writeText(ic.id)}>
+                  Copy
+                </Button>
+              </InputGroup>
+            </td>
+            <td>{(ic.uses ?? 0) == 0 ? "unlimited" : ic.uses}</td>
+            <td>
+              {ic.expires ? (
+                <span>{formatDateTime(ic.expires, true)}</span>
+              ) : (
+                "never"
+              )}
+            </td>
+            <td>
+              <Button variant="danger" onClick={() => rescindInvite(ic.id)}>
+                <Icon icon={faTrash} />
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  );
+};
 
 type User = NonNullable<UserQuery["findUser"]>;
 type EditCounts = User["edit_count"];
@@ -76,16 +138,17 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [showDelete, setShowDelete] = useState(false);
   const [showRegenerateAPIKey, setShowRegenerateAPIKey] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
+  const [showGenerateInviteKey, setShowGenerateInviteKey] = useState(false);
 
   const [deleteUser, { loading: deleting }] = useDeleteUser();
   const [regenerateAPIKey] = useRegenerateAPIKey();
   const [rescindInviteCode] = useRescindInviteCode();
-  const [generateInviteCode] = useGenerateInviteCode();
+  const [generateInviteCode] = useGenerateInviteCodes();
   const [grantInvite] = useGrantInvite();
   const [revokeInvite] = useRevokeInvite();
 
   const showPrivate = isPrivateUser(user);
-  const isOwner = isPrivateUser(user) && user.id === Auth.user?.id;
+  const isOwner = showPrivate && user.id === Auth.user?.id;
 
   const endpointURL = configData && `${configData.getConfig.host_url}/graphql`;
 
@@ -145,11 +208,26 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
     />
   );
 
-  const handleGenerateCode = () => {
-    generateInviteCode().then(() => {
+  const handleGenerateCode = (input: GenerateInviteCodeInput) => {
+    generateInviteCode({
+      variables: {
+        input,
+      },
+    }).then(() => {
       refetch();
     });
   };
+
+  const generateInviteCodeModal = showGenerateInviteKey && (
+    <GenerateInviteKeyModal
+      callback={(i) => {
+        if (i) {
+          handleGenerateCode(i);
+        }
+        setShowGenerateInviteKey(false);
+      }}
+    />
+  );
 
   const handleGrantInvite = () => {
     grantInvite({
@@ -187,6 +265,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
           <h3>{user.name}</h3>
           {deleteModal}
           {regenerateAPIKeyModal}
+          {generateInviteCodeModal}
           {rescindCodeModal}
           <div className="ms-auto">
             <Link to={createHref(ROUTE_USER_EDITS, user)} className="ms-2">
@@ -325,37 +404,32 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </InputGroup>
             </Row>
           )}
-          {isOwner && (
-            <Row className="my-2">
-              <Col xs={2}>Invite Keys</Col>
-              <Col>
-                {user.active_invite_codes?.map((c) => (
-                  <InputGroup className="mb-2" key={c}>
-                    <InputGroup.Text>
-                      <code>{c}</code>
-                    </InputGroup.Text>
-                    <Button onClick={() => navigator.clipboard?.writeText(c)}>
-                      Copy
-                    </Button>
-                    <Button
-                      variant="danger"
-                      onClick={() => setShowRescindCode(c)}
-                    >
-                      <Icon icon={faTrash} />
-                    </Button>
-                  </InputGroup>
-                ))}
-                <Button
-                  variant="link"
-                  onClick={() => handleGenerateCode()}
-                  disabled={user.invite_tokens === 0}
-                  className="d-block"
-                >
-                  <Icon icon={faPlus} className="me-2" />
-                  Generate Key
-                </Button>
-              </Col>
-            </Row>
+          {showPrivate && (
+            <div>
+              <Row>
+                <Col xs={2}>Invite Keys</Col>
+              </Row>
+              <Row className="my-2">
+                <Col>
+                  <div>
+                    {isOwner && (
+                      <Button
+                        variant="link"
+                        onClick={() => setShowGenerateInviteKey(true)}
+                        disabled={user.invite_tokens === 0}
+                      >
+                        <Icon icon={faPlus} className="me-2" />
+                        Generate Key
+                      </Button>
+                    )}
+                  </div>
+                  <UserInviteKeys
+                    inviteCodes={user.invite_codes ?? []}
+                    rescindInvite={(c) => setShowRescindCode(c)}
+                  />
+                </Col>
+              </Row>
+            </div>
           )}
         </>
       </Col>

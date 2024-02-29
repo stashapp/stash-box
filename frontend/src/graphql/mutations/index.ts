@@ -49,7 +49,7 @@ import {
   ResetPasswordMutationVariables,
   RegenerateApiKeyMutation,
   RegenerateApiKeyMutationVariables,
-  GenerateInviteCodeMutation,
+  GenerateInviteCodesMutation,
   GrantInviteMutation,
   GrantInviteMutationVariables,
   RescindInviteCodeMutation,
@@ -112,7 +112,7 @@ import CancelEditGQL from "./CancelEdit.gql";
 import ChangePasswordGQL from "./ChangePassword.gql";
 import ResetPasswordGQL from "./ResetPassword.gql";
 import RegenerateAPIKeyGQL from "./RegenerateAPIKey.gql";
-import GenerateInviteCodeGQL from "./GenerateInviteCode.gql";
+import GenerateInviteCodesGQL from "./GenerateInviteCode.gql";
 import GrantInviteGQL from "./GrantInvite.gql";
 import RescindInviteCodeGQL from "./RescindInviteCode.gql";
 import RevokeInviteGQL from "./RevokeInvite.gql";
@@ -286,9 +286,9 @@ export const useRegenerateAPIKey = (
   >
 ) => useMutation(RegenerateAPIKeyGQL, options);
 
-export const useGenerateInviteCode = (
-  options?: MutationHookOptions<GenerateInviteCodeMutation>
-) => useMutation(GenerateInviteCodeGQL, options);
+export const useGenerateInviteCodes = (
+  options?: MutationHookOptions<GenerateInviteCodesMutation>
+) => useMutation(GenerateInviteCodesGQL, options);
 
 export const useGrantInvite = (
   options?: MutationHookOptions<
