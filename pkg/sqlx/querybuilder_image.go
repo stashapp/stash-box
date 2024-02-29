@@ -94,11 +94,16 @@ func (qb *imageQueryBuilder) FindUnused() ([]*models.Image, error) {
 			FROM edits
 			WHERE status = 'PENDING'
 		) edit_images ON edit_images.image_id = images.id
-		WHERE 
-		scene_images.scene_id IS NULL AND 
-		performer_images.performer_id IS NULL AND
-		studio_images IS NULL AND
-		edit_images IS NULL LIMIT 1000
+		LEFT JOIN (
+			SELECT id, (data->>'image')::uuid AS image_id
+			FROM drafts
+		) drafts ON images.id = drafts.image_id
+		WHERE scene_images.scene_id IS NULL
+		AND performer_images.performer_id IS NULL
+		AND studio_images IS NULL
+		AND edit_images IS NULL
+		AND drafts.id IS NULL
+		LIMIT 1000
 	`
 	args := []interface{}{}
 
@@ -116,15 +121,19 @@ func (qb *imageQueryBuilder) IsUnused(imageID uuid.UUID) (bool, error) {
 			SELECT (jsonb_array_elements(data#>'{new_data,added_images}')->>0)::uuid AS image_id
 			FROM edits
 			WHERE status = 'PENDING'
-		) edit_images ON edit_images.image_id = images.id`
-
-	query.AddWhere("images.id = ?")
+		) edit_images ON edit_images.image_id = images.id
+		LEFT JOIN (
+			SELECT id, (data->>'image')::uuid AS image_id
+			FROM drafts
+		) drafts ON images.id = drafts.image_id
+		WHERE images.id = ?
+		AND scene_images.scene_id IS NULL
+		AND performer_images.performer_id IS NULL
+		AND studio_images.studio_id IS NULL
+		AND edit_images.image_id IS NULL
+		AND drafts.id IS NULL
+	`
 	query.AddArg(imageID)
-
-	query.AddWhere("scene_images.scene_id IS NULL")
-	query.AddWhere("performer_images.performer_id IS NULL")
-	query.AddWhere("studio_images.studio_id IS NULL")
-	query.AddWhere("edit_images.image_id IS NULL")
 
 	count, err := qb.dbi.Count(*query)
 	if err != nil {
