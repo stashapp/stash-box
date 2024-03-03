@@ -25,23 +25,24 @@ func (r *notificationResolver) Data(ctx context.Context, obj *models.Notificatio
 	case models.NotificationEnumCommentOwnEdit:
 		fallthrough
 	case models.NotificationEnumCommentVotedEdit:
-		comment, err := dataloader.For(ctx).EditCommentById.Load(obj.TargetID)
+		comment, err := dataloader.For(ctx).EditCommentByID.Load(obj.TargetID)
 		if err != nil {
 			return nil, err
 		}
 
-		if obj.Type == models.NotificationEnumCommentCommentedEdit {
+		switch obj.Type {
+		case models.NotificationEnumCommentCommentedEdit:
 			return &models.CommentCommentedEdit{Comment: comment}, nil
-		} else if obj.Type == models.NotificationEnumCommentOwnEdit {
+		case models.NotificationEnumCommentOwnEdit:
 			return &models.CommentOwnEdit{Comment: comment}, nil
-		} else {
+		default:
 			return &models.CommentVotedEdit{Comment: comment}, nil
 		}
 
 	case models.NotificationEnumFavoritePerformerScene:
 		fallthrough
 	case models.NotificationEnumFavoriteStudioScene:
-		scene, err := dataloader.For(ctx).SceneById.Load(obj.TargetID)
+		scene, err := dataloader.For(ctx).SceneByID.Load(obj.TargetID)
 		if err != nil {
 			return nil, err
 		}
@@ -61,20 +62,22 @@ func (r *notificationResolver) Data(ctx context.Context, obj *models.Notificatio
 	case models.NotificationEnumFailedOwnEdit:
 		fallthrough
 	case models.NotificationEnumUpdatedEdit:
-		edit, err := dataloader.For(ctx).EditById.Load(obj.TargetID)
+		edit, err := dataloader.For(ctx).EditByID.Load(obj.TargetID)
 		if err != nil {
 			return nil, err
 		}
 
-		if obj.Type == models.NotificationEnumFavoritePerformerEdit {
+		// nolint:exhaustive
+		switch obj.Type {
+		case models.NotificationEnumFavoritePerformerEdit:
 			return &models.FavoritePerformerEdit{Edit: edit}, nil
-		} else if obj.Type == models.NotificationEnumFavoriteStudioEdit {
+		case models.NotificationEnumFavoriteStudioEdit:
 			return &models.FavoriteStudioEdit{Edit: edit}, nil
-		} else if obj.Type == models.NotificationEnumDownvoteOwnEdit {
+		case models.NotificationEnumDownvoteOwnEdit:
 			return &models.DownvoteOwnEdit{Edit: edit}, nil
-		} else if obj.Type == models.NotificationEnumFailedOwnEdit {
+		case models.NotificationEnumFailedOwnEdit:
 			return &models.FailedOwnEdit{Edit: edit}, nil
-		} else if obj.Type == models.NotificationEnumUpdatedEdit {
+		case models.NotificationEnumUpdatedEdit:
 			return &models.UpdatedEdit{Edit: edit}, nil
 		}
 	}

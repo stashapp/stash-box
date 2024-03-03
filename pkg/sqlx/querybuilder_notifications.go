@@ -25,14 +25,6 @@ func newNotificationQueryBuilder(txn *txnState) models.NotificationRepo {
 	}
 }
 
-func (qb *notificationsQueryBuilder) toModel(ro interface{}) *models.Notification {
-	if ro != nil {
-		return ro.(*models.Notification)
-	}
-
-	return nil
-}
-
 func (qb *notificationsQueryBuilder) TriggerSceneCreationNotifications(sceneID uuid.UUID) error {
 	var args []interface{}
 	args = append(args, sceneID)

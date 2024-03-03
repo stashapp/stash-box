@@ -1,3 +1,4 @@
+//nolint:errcheck
 package notifications
 
 import (
@@ -31,11 +32,12 @@ func OnCancelEdit(fac models.Repo, edit *models.Edit) {
 
 func OnCreateEdit(fac models.Repo, edit *models.Edit) {
 	fmt.Println("onCreateEdit")
-	if edit.TargetType == models.TargetTypeEnumPerformer.String() {
+	switch edit.TargetType {
+	case models.TargetTypeEnumPerformer.String():
 		fac.Notification().TriggerPerformerEditNotifications(edit.ID)
-	} else if edit.TargetType == models.TargetTypeEnumScene.String() {
+	case models.TargetTypeEnumScene.String():
 		fac.Notification().TriggerSceneEditNotifications(edit.ID)
-	} else if edit.TargetType == models.TargetTypeEnumStudio.String() {
+	case models.TargetTypeEnumStudio.String():
 		fac.Notification().TriggerStudioEditNotifications(edit.ID)
 	}
 }

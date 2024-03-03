@@ -28,7 +28,7 @@ type Loaders struct {
 	PerformerTattoosByID           BodyModificationsLoader
 	PerformerUrlsByID              URLLoader
 	PerformerIsFavoriteByID        BoolsLoader
-	SceneById                      SceneLoader
+	SceneByID                      SceneLoader
 	SceneImageIDsByID              UUIDsLoader
 	SceneAppearancesByID           SceneAppearancesLoader
 	SceneUrlsByID                  URLLoader
@@ -40,8 +40,8 @@ type Loaders struct {
 	StudioByID                     StudioLoader
 	TagByID                        TagLoader
 	TagCategoryByID                TagCategoryLoader
-	EditById                       EditLoader
-	EditCommentById                EditCommentLoader
+	EditByID                       EditLoader
+	EditCommentByID                EditCommentLoader
 }
 
 func Middleware(fac models.Repo) func(next http.Handler) http.Handler {
@@ -225,7 +225,7 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 				return qb.FindByIds(ids)
 			},
 		},
-		EditById: EditLoader{
+		EditByID: EditLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Edit, []error) {
@@ -233,7 +233,7 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 				return qb.FindByIds(ids)
 			},
 		},
-		EditCommentById: EditCommentLoader{
+		EditCommentByID: EditCommentLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.EditComment, []error) {
@@ -241,7 +241,7 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 				return qb.FindCommentsByIds(ids)
 			},
 		},
-		SceneById: SceneLoader{
+		SceneByID: SceneLoader{
 			maxBatch: 1000,
 			wait:     1 * time.Millisecond,
 			fetch: func(ids []uuid.UUID) ([]*models.Scene, []error) {
