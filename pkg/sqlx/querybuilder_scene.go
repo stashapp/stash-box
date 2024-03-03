@@ -314,7 +314,7 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	query = qb.dbi.db().Rebind(query)
 
 	output := models.SceneFingerprints{}
-	if err := qb.dbi.db().Select(&output, query, args...); err != nil {
+	if err := qb.dbi.db().SelectContext(qb.dbi.txn.ctx, &output, query, args...); err != nil {
 		return nil, err
 	}
 
@@ -569,7 +569,7 @@ func fingerprintGroupToFingerprint(fpg sceneFingerprintGroup) *models.Fingerprin
 
 func (qb *sceneQueryBuilder) GetFingerprints(id uuid.UUID) (models.SceneFingerprints, error) {
 	fingerprints := models.SceneFingerprints{}
-	err := qb.dbi.db().Select(&fingerprints, `
+	err := qb.dbi.db().SelectContext(qb.dbi.txn.ctx, &fingerprints, `
     SELECT SFP.scene_id, SFP.user_id, SFP.duration, SFP.created_at, FP.hash, FP.algorithm
 		FROM scene_fingerprints SFP
 		JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
@@ -998,14 +998,14 @@ func (qb *sceneQueryBuilder) getOrCreateFingerprintID(hash string, algorithm str
 
 func (qb *sceneQueryBuilder) getFingerprintID(hash string, algorithm string) (int, error) {
 	var id int
-	err := qb.dbi.db().Get(&id, "SELECT id FROM fingerprints WHERE hash = $1 AND algorithm = $2", hash, algorithm)
+	err := qb.dbi.db().GetContext(qb.dbi.txn.ctx, &id, "SELECT id FROM fingerprints WHERE hash = $1 AND algorithm = $2", hash, algorithm)
 
 	return id, err
 }
 
 func (qb *sceneQueryBuilder) createFingerprint(hash string, algorithm string) (int, error) {
 	var id int
-	err := qb.dbi.db().Get(&id, "INSERT INTO fingerprints (hash, algorithm) VALUES ($1, $2) RETURNING id", hash, algorithm)
+	err := qb.dbi.db().GetContext(qb.dbi.txn.ctx, &id, "INSERT INTO fingerprints (hash, algorithm) VALUES ($1, $2) RETURNING id", hash, algorithm)
 
 	return id, err
 }

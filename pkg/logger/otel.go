@@ -33,7 +33,7 @@ func InitTracer() func(context.Context) error {
 		),
 	)
 	if err != nil {
-		log.Printf("Could not set resources: ", err)
+		log.Print("Could not set resources: ", err)
 	}
 
 	otel.SetTracerProvider(

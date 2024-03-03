@@ -22,6 +22,7 @@ var ui embed.FS
 
 func main() {
 	cleanup := logger.InitTracer()
+	//nolint:errcheck
 	defer cleanup(context.Background())
 
 	manager.Initialize()
