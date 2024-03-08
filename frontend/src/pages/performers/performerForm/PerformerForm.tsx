@@ -256,6 +256,9 @@ const PerformerForm: FC<PerformerProps> = ({
       const [cupSize, bandSize] = parseBraSize(data.braSize);
       performerData.cup_size = cupSize;
       performerData.band_size = bandSize ?? 0;
+    } else if (performer?.band_size || performer?.cup_size) {
+      performerData.cup_size = null;
+      performerData.band_size = null;
     }
 
     if (
