@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -13,11 +14,16 @@ import (
 )
 
 func InitTracer() func(context.Context) error {
+	otelConfig := config.GetOTelConfig()
+	if otelConfig == nil {
+		return nil
+	}
+
 	exporter, err := otlptrace.New(
 		context.Background(),
 		otlptracegrpc.NewClient(
 			otlptracegrpc.WithInsecure(),
-			otlptracegrpc.WithEndpoint("localhost:4317"),
+			otlptracegrpc.WithEndpoint(otelConfig.Endpoint),
 		),
 	)
 
@@ -38,11 +44,13 @@ func InitTracer() func(context.Context) error {
 
 	otel.SetTracerProvider(
 		sdktrace.NewTracerProvider(
-			sdktrace.WithSampler(sdktrace.AlwaysSample()),
+			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(otelConfig.TraceRatio)),
 			sdktrace.WithBatcher(exporter),
 			sdktrace.WithResource(resources),
 		),
 	)
+
+	logger.Infof("otel initialized with collector: %s, ratio: %f", otelConfig.Endpoint, otelConfig.TraceRatio)
 
 	return exporter.Shutdown
 }

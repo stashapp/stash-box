@@ -21,11 +21,12 @@ import (
 var ui embed.FS
 
 func main() {
+	manager.Initialize()
+
 	cleanup := logger.InitTracer()
 	//nolint:errcheck
 	defer cleanup(context.Background())
 
-	manager.Initialize()
 	api.InitializeSession()
 
 	const databaseProvider = "postgres"
