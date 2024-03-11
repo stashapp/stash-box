@@ -23,4 +23,6 @@ type Repo interface {
 	User() UserRepo
 	Site() SiteRepo
 	Draft() DraftRepo
+
+	Notification() NotificationRepo
 }

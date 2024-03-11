@@ -59,3 +59,7 @@ func (f *repo) Site() models.SiteRepo {
 func (f *repo) Draft() models.DraftRepo {
 	return newDraftQueryBuilder(f.txnState)
 }
+
+func (f *repo) Notification() models.NotificationRepo {
+	return newNotificationQueryBuilder(f.txnState)
+}

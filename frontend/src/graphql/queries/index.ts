@@ -71,6 +71,9 @@ import {
   StudioPerformersQueryVariables,
   VersionDocument,
   MeQueryVariables,
+  NotificationsDocument,
+  NotificationsQueryVariables,
+  UnreadNotificationCountDocument,
 } from "../types";
 
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
@@ -280,3 +283,11 @@ export const useStudioPerformers = (
   useQuery(StudioPerformersDocument, {
     variables,
   });
+
+export const useNotifications = (variables: NotificationsQueryVariables) =>
+  useQuery(NotificationsDocument, {
+    variables,
+  });
+
+export const useUnreadNotificationsCount = () =>
+  useQuery(UnreadNotificationCountDocument);

@@ -37,3 +37,10 @@ func (r *editCommentResolver) User(ctx context.Context, obj *models.EditComment)
 
 	return user, nil
 }
+
+func (r *editCommentResolver) Edit(ctx context.Context, obj *models.EditComment) (*models.Edit, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Edit()
+
+	return qb.Find(obj.EditID)
+}

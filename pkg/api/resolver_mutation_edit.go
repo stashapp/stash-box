@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/manager/edit"
+	"github.com/stashapp/stash-box/pkg/manager/notifications"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 	"github.com/stashapp/stash-box/pkg/utils"
@@ -57,11 +58,11 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
-	if err != nil {
-		return nil, err
+	if err == nil {
+		go notifications.OnCreateEdit(fac, newEdit)
 	}
 
-	return newEdit, nil
+	return newEdit, err
 }
 
 func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, input models.SceneEditInput) (*models.Edit, error) {
@@ -96,6 +97,10 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
+
+	if err == nil {
+		go notifications.OnUpdateEdit(fac, existingEdit)
+	}
 
 	return existingEdit, err
 }
@@ -134,11 +139,11 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
-	if err != nil {
-		return nil, err
+	if err == nil {
+		go notifications.OnCreateEdit(fac, newEdit)
 	}
 
-	return newEdit, nil
+	return newEdit, err
 }
 
 func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, input models.StudioEditInput) (*models.Edit, error) {
@@ -173,6 +178,10 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
+
+	if err == nil {
+		go notifications.OnUpdateEdit(fac, existingEdit)
+	}
 
 	return existingEdit, err
 }
@@ -211,11 +220,11 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
-	if err != nil {
-		return nil, err
+	if err == nil {
+		go notifications.OnCreateEdit(fac, newEdit)
 	}
 
-	return newEdit, nil
+	return newEdit, err
 }
 
 func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, input models.TagEditInput) (*models.Edit, error) {
@@ -250,6 +259,10 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
+
+	if err == nil {
+		go notifications.OnUpdateEdit(fac, existingEdit)
+	}
 
 	return existingEdit, err
 }
@@ -294,11 +307,11 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
 
-	if err != nil {
-		return nil, err
+	if err == nil {
+		go notifications.OnCreateEdit(fac, newEdit)
 	}
 
-	return newEdit, nil
+	return newEdit, err
 }
 
 func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID, input models.PerformerEditInput) (*models.Edit, error) {
@@ -333,6 +346,10 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 
 		return p.CreateComment(currentUser, input.Edit.Comment)
 	})
+
+	if err == nil {
+		go notifications.OnUpdateEdit(fac, existingEdit)
+	}
 
 	return existingEdit, err
 }
@@ -380,17 +397,18 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 		return err
 	})
 
-	if err != nil {
-		return nil, err
+	if err == nil && input.Vote == models.VoteTypeEnumReject {
+		go notifications.OnEditDownvote(fac, voteEdit)
 	}
 
-	return voteEdit, nil
+	return voteEdit, err
 }
 
 func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCommentInput) (*models.Edit, error) {
 	fac := r.getRepoFactory(ctx)
 	currentUser := getCurrentUser(ctx)
 	var edit *models.Edit
+	var comment *models.EditComment
 	err := fac.WithTxn(func() error {
 		eqb := fac.Edit()
 
@@ -401,15 +419,15 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 		}
 
 		commentID, _ := uuid.NewV4()
-		comment := models.NewEditComment(commentID, currentUser, edit, input.Comment)
+		comment = models.NewEditComment(commentID, currentUser, edit, input.Comment)
 		return eqb.CreateComment(*comment)
 	})
 
-	if err != nil {
-		return nil, err
+	if err == nil {
+		go notifications.OnEditComment(fac, comment)
 	}
 
-	return edit, nil
+	return edit, err
 }
 
 func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEditInput) (*models.Edit, error) {
@@ -426,7 +444,7 @@ func (r *mutationResolver) CancelEdit(ctx context.Context, input models.CancelEd
 	} else if err = validateAdmin(ctx); err == nil {
 		currentUser := getCurrentUser(ctx)
 
-		err = fac.WithTxn(func() error {
+		err := fac.WithTxn(func() error {
 			vote := models.NewEditVote(currentUser, e, models.VoteTypeEnumImmediateReject)
 			return eqb.CreateVote(*vote)
 		})
