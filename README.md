@@ -12,7 +12,7 @@ Stash-box is an open-source video indexing and metadata API server for porn deve
 
 # Canonical community-database
 
-If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt) or [#stashdb-invites:unredacted.org](https://matrix.to/#/#stashdb-invites:unredacted.org) room on our [Matrix space](https://matrix.to/#/#stashapp:unredacted.org).
+If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from our guide to [Accessing StashDB](https://guidelines.stashdb.org/docs/faq_getting-started/stashdb/accessing-stashdb/).
 
 # Docker install
 
