@@ -81,7 +81,7 @@ const EditComponent: FC = () => {
   const buttons = (isAdmin(auth.user) || auth.user?.id === edit.user?.id) &&
     edit.status === VoteStatusEnum.PENDING && (
       <div className="d-flex justify-content-end">
-        {auth.user?.id === edit.user?.id &&
+        {(auth.user?.id === edit.user?.id || isAdmin(auth.user)) &&
           edit.operation !== OperationEnum.DESTROY &&
           !edit.updated && (
             <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">

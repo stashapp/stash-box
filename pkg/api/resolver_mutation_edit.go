@@ -74,7 +74,7 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 		return nil, err
 	}
 
-	if existingEdit.UserID.UUID != currentUser.ID {
+	if validateUserOrAdmin(ctx, existingEdit.UserID.UUID) != nil {
 		return nil, ErrUnauthorizedUpdate
 	}
 
@@ -151,7 +151,7 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 		return nil, err
 	}
 
-	if existingEdit.UserID.UUID != currentUser.ID {
+	if validateUserOrAdmin(ctx, existingEdit.UserID.UUID) != nil {
 		return nil, ErrUnauthorizedUpdate
 	}
 
@@ -228,7 +228,7 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 		return nil, err
 	}
 
-	if existingEdit.UserID.UUID != currentUser.ID {
+	if validateUserOrAdmin(ctx, existingEdit.UserID.UUID) != nil {
 		return nil, ErrUnauthorizedUpdate
 	}
 
@@ -311,7 +311,7 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 		return nil, err
 	}
 
-	if existingEdit.UserID.UUID != currentUser.ID {
+	if validateUserOrAdmin(ctx, existingEdit.UserID.UUID) != nil {
 		return nil, ErrUnauthorizedUpdate
 	}
 

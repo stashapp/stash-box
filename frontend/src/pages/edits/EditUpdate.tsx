@@ -8,6 +8,7 @@ import { SceneEditUpdate } from "src/pages/scenes/SceneEditUpdate";
 import { PerformerEditUpdate } from "src/pages/performers/PerformerEditUpdate";
 import { TagEditUpdate } from "src/pages/tags/TagEditUpdate";
 import { StudioEditUpdate } from "src/pages/studios/StudioEditUpdate";
+import { isAdmin } from "src/utils";
 
 const EditUpdateComponent: FC = () => {
   const auth = useContext(AuthContext);
@@ -18,7 +19,7 @@ const EditUpdateComponent: FC = () => {
 
   const edit = data?.findEdit;
   if (!edit) return <ErrorMessage error="Failed to load edit." />;
-  if (edit.user?.id != auth.user?.id)
+  if (edit.user?.id != auth.user?.id && !isAdmin(auth.user))
     return <ErrorMessage error="Only the creator can update edits." />;
   if (edit.updated)
     return <ErrorMessage error="Edits can only be updated once." />;
