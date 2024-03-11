@@ -1,0 +1,16 @@
+.FingerprintInput {
+  width: 100%;
+
+  ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+
+  .input-group {
+    flex-wrap: nowrap;
+  }
+}

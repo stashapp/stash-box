@@ -34,6 +34,7 @@ import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
 import ExistingSceneAlert from "./ExistingSceneAlert";
+import FingerprintInput from "src/components/fingerprintInput";
 
 const CLASS_NAME = "SceneForm";
 const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
@@ -135,6 +136,11 @@ const SceneForm: FC<SceneProps> = ({
       urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
+      })),
+      fingerprints: data.fingerprints?.map((f) => ({
+        algorithm: f.algorithm as FingerprintAlgorithm,
+        hash: f.hash,
+        duration: f.duration,
       })),
     };
 
@@ -477,6 +483,11 @@ const SceneForm: FC<SceneProps> = ({
             errors={errors.urls}
           />
 
+          <NavButtons onNext={() => setActiveTab("hashes")} />
+        </Tab>
+
+        <Tab eventKey="hashes" title="Hashes" className="col-xl-9">
+          <FingerprintInput control={control} errors={errors.urls} />
           <NavButtons onNext={() => setActiveTab("images")} />
         </Tab>
 
