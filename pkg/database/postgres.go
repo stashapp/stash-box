@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"embed"
 	"fmt"
 	"time"
@@ -9,11 +10,13 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager/config"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 
 	// Driver used here only
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/lib/pq"
+	"go.nhat.io/otelsql"
 )
 
 const postgresDriver = "postgres"
@@ -30,7 +33,25 @@ type PostgresProvider struct{}
 func (p *PostgresProvider) Open(databasePath string) *sqlx.DB {
 	p.runMigrations(databasePath)
 
-	conn, err := sqlx.Open(postgresDriver, "postgres://"+databasePath)
+	driverName, err := otelsql.Register("postgres",
+		otelsql.TraceQueryWithoutArgs(),
+		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+	)
+
+	if err != nil {
+		logger.Fatalf("db.Open(): %q\n", err)
+	}
+
+	db, err := sql.Open(driverName, "postgres://"+databasePath)
+	if err != nil {
+		logger.Fatalf("db.Open(): %q\n", err)
+	}
+
+	if err := otelsql.RecordStats(db); err != nil {
+		logger.Fatalf("db.Open(): %q\n", err)
+	}
+
+	conn := sqlx.NewDb(db, "postgres")
 	conn.SetMaxOpenConns(config.GetMaxOpenConns())
 	conn.SetMaxIdleConns(config.GetMaxIdleConns())
 	conn.SetConnMaxLifetime(time.Duration(config.GetConnMaxLifetime()) * time.Minute)

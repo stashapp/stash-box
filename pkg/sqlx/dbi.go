@@ -106,7 +106,7 @@ func selectStatement(t table) string {
 
 func (q dbi) queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 	query = q.db().Rebind(query)
-	return q.db().Queryx(query, args...)
+	return q.db().QueryxContext(q.txn.ctx, query, args...)
 }
 
 func (q dbi) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
@@ -271,7 +271,7 @@ func (q dbi) Count(query queryBuilder) (int, error) {
 	rawQuery := query.buildCountQuery()
 
 	rawQuery = q.db().Rebind(rawQuery)
-	err = q.db().Get(&result, rawQuery, query.args...)
+	err = q.db().GetContext(q.txn.ctx, &result, rawQuery, query.args...)
 
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		// TODO - log error instead of returning SQL
@@ -309,6 +309,6 @@ func (q dbi) QueryOnly(query queryBuilder, output Models) error {
 func (q dbi) DeleteQuery(query queryBuilder) error {
 	ensureTx(q.txn)
 	queryStr := q.db().Rebind(query.buildQuery())
-	_, err := q.db().Exec(queryStr, query.args...)
+	_, err := q.db().ExecContext(q.txn.ctx, queryStr, query.args...)
 	return err
 }

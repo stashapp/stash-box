@@ -2,10 +2,12 @@
 package main
 
 import (
+	"context"
 	"embed"
 
 	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/cron"
@@ -20,12 +22,17 @@ var ui embed.FS
 
 func main() {
 	manager.Initialize()
+
+	cleanup := logger.InitTracer()
+	//nolint:errcheck
+	defer cleanup(context.Background())
+
 	api.InitializeSession()
 
 	const databaseProvider = "postgres"
 	db := database.Initialize(databaseProvider, config.GetDatabasePath())
 	txnMgr := sqlx.NewTxnMgr(db)
-	user.CreateSystemUsers(txnMgr.Repo())
+	user.CreateSystemUsers(txnMgr.Repo(context.Background()))
 	api.Start(txnMgr, ui)
 	cron.Init(txnMgr)
 	blockForever()

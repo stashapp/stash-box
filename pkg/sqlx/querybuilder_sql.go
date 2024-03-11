@@ -128,14 +128,14 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func runCountQuery(db db, query string, args []interface{}) (int, error) {
+func runCountQuery(dbi *dbi, query string, args []interface{}) (int, error) {
 	// Perform query and fetch result
 	result := struct {
 		Count int `db:"count"`
 	}{0}
 
-	query = db.Rebind(query)
-	if err := db.Get(&result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	query = dbi.db().Rebind(query)
+	if err := dbi.db().GetContext(dbi.txn.ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return 0, err
 	}
 

@@ -1,6 +1,7 @@
 package sqlx
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -12,17 +13,23 @@ import (
 // db is intended as an interface to both sqlx.db and sqlx.Tx, dependent
 // on transaction state. Add sqlx.* methods as needed.
 type db interface {
-	NamedExec(query string, arg interface{}) (sql.Result, error)
-	Exec(query string, args ...interface{}) (sql.Result, error)
+	// NamedExec(query string, arg interface{}) (sql.Result, error)
+	NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
+	// Exec(query string, args ...interface{}) (sql.Result, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	Rebind(query string) string
-	Get(dest interface{}, query string, args ...interface{}) error
-	Select(dest interface{}, query string, args ...interface{}) error
-	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
+	// Get(dest interface{}, query string, args ...interface{}) error
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	// Select(dest interface{}, query string, args ...interface{}) error
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	// Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
+	QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error)
 }
 
 type txnState struct {
 	rootDB *sqlx.DB
 	tx     *sqlx.Tx
+	ctx    context.Context
 }
 
 func (m *txnState) WithTxn(fn func() error) (err error) {
@@ -31,7 +38,7 @@ func (m *txnState) WithTxn(fn func() error) (err error) {
 		return
 	}
 
-	tx, err := m.rootDB.Beginx()
+	tx, err := m.rootDB.BeginTxx(m.ctx, nil)
 	if err != nil {
 		return
 	}
@@ -67,7 +74,7 @@ func (m *txnState) ResetTxn() error {
 		return err
 	}
 
-	tx, err := m.rootDB.Beginx()
+	tx, err := m.rootDB.BeginTxx(m.ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -92,17 +99,19 @@ type TxnMgr struct {
 	db *sqlx.DB
 }
 
-func (m *TxnMgr) New() txn.State {
+func (m *TxnMgr) New(ctx context.Context) txn.State {
 	return &txnState{
-		rootDB: m.db,
+		m.db,
+		nil,
+		ctx,
 	}
 }
 
 // Repo creates a new TxnState object and initialises the Repo
 // with it.
-func (m *TxnMgr) Repo() models.Repo {
+func (m *TxnMgr) Repo(ctx context.Context) models.Repo {
 	return &repo{
-		txnState: m.New().(*txnState),
+		txnState: m.New(ctx).(*txnState),
 	}
 }
 

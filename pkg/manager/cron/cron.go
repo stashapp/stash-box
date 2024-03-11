@@ -1,6 +1,8 @@
 package cron
 
 import (
+	"context"
+
 	"github.com/robfig/cron/v3"
 	"golang.org/x/sync/semaphore"
 
@@ -26,7 +28,10 @@ func (c Cron) processEdits() {
 	}
 	defer sem.Release(1)
 
-	edits, err := c.rfp.Repo().Edit().FindCompletedEdits(config.GetVotingPeriod(), config.GetMinDestructiveVotingPeriod(), config.GetVoteApplicationThreshold())
+	ctx := context.Background()
+	repo := c.rfp.Repo(ctx)
+
+	edits, err := repo.Edit().FindCompletedEdits(config.GetVotingPeriod(), config.GetMinDestructiveVotingPeriod(), config.GetVoteApplicationThreshold())
 	if err != nil {
 		logger.Errorf("Edit cronjob failed to fetch completed edits: %s", err.Error())
 		return
@@ -34,7 +39,7 @@ func (c Cron) processEdits() {
 
 	logger.Debugf("Edit cronjob running for %d edits", len(edits))
 	for _, e := range edits {
-		if err := c.rfp.Repo().WithTxn(func() error {
+		if err := repo.WithTxn(func() error {
 			voteThreshold := 0
 			if e.IsDestructive() {
 				// Require at least +1 votes to pass destructive edits
@@ -43,9 +48,9 @@ func (c Cron) processEdits() {
 
 			var err error
 			if e.VoteCount >= voteThreshold {
-				_, err = edit.ApplyEdit(c.rfp.Repo(), e.ID, false)
+				_, err = edit.ApplyEdit(repo, e.ID, false)
 			} else {
-				_, err = edit.CloseEdit(c.rfp.Repo(), e.ID, models.VoteStatusEnumRejected)
+				_, err = edit.CloseEdit(repo, e.ID, models.VoteStatusEnumRejected)
 			}
 			return err
 		}); err != nil {
@@ -55,7 +60,8 @@ func (c Cron) processEdits() {
 }
 
 func (c Cron) cleanDrafts() {
-	fac := c.rfp.Repo()
+	ctx := context.Background()
+	fac := c.rfp.Repo(ctx)
 	err := fac.WithTxn(func() error {
 		drafts, err := fac.Draft().FindExpired(config.GetDraftTimeLimit())
 		if err != nil {

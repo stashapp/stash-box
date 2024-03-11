@@ -128,7 +128,7 @@ func (qb *inviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireT
 }
 
 func (qb *inviteKeyQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT invite_keys.id FROM invite_keys"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT invite_keys.id FROM invite_keys"), nil)
 }
 
 func (qb *inviteKeyQueryBuilder) KeyUsed(id uuid.UUID) (*int, error) {

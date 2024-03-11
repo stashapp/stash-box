@@ -93,7 +93,7 @@ func (qb *userQueryBuilder) FindByEmail(email string) (*models.User, error) {
 }
 
 func (qb *userQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT users.id FROM users"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT users.id FROM users"), nil)
 }
 
 func (qb *userQueryBuilder) Query(filter models.UserQueryInput) (models.Users, int, error) {

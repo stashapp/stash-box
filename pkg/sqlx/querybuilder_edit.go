@@ -196,7 +196,7 @@ func (qb *editQueryBuilder) FindSceneID(id uuid.UUID) (*uuid.UUID, error) {
 // }
 
 func (qb *editQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT edits.id FROM edits"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT edits.id FROM edits"), nil)
 }
 
 func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid.UUID) (*queryBuilder, error) {

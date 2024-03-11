@@ -185,7 +185,7 @@ func (qb *performerQueryBuilder) FindByName(name string) (models.Performers, err
 }
 
 func (qb *performerQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT performers.id FROM performers"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
 func (qb *performerQueryBuilder) buildQuery(filter models.PerformerQueryInput, userID uuid.UUID) *queryBuilder {
