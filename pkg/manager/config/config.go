@@ -87,7 +87,8 @@ type config struct {
 		PostgresConfig `mapstructure:",squash"`
 	}
 
-	PHashDistance int `mapstructure:"phash_distance"`
+	PHashDistance       int `mapstructure:"phash_distance"`
+	PHashDurationCutoff int `mapstructure:"phash_duration_cutoff"`
 
 	Title string `mapstructure:"title"`
 
@@ -114,6 +115,7 @@ var C = &config{
 	EmailPort:                  25,
 	ImageBackend:               string(FileBackend),
 	PHashDistance:              0,
+	PHashDurationCutoff:        0,
 	VoteApplicationThreshold:   3,
 	VotePromotionThreshold:     10,
 	VoteCronInterval:           "5m",
@@ -284,6 +286,10 @@ func GetLogLevel() string {
 
 func GetPHashDistance() int {
 	return C.PHashDistance
+}
+
+func GetPhashDurationCutoff() int {
+	return C.PHashDurationCutoff
 }
 
 func InitializeDefaults() error {
