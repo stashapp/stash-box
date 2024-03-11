@@ -2,6 +2,7 @@ package image
 
 import (
 	"bytes"
+	"io"
 	"os"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
@@ -42,4 +43,10 @@ func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
 
 func (s *FileBackend) DestroyFile(image *models.Image) error {
 	return os.Remove(GetImagePath(config.GetImageLocation(), image.Checksum))
+}
+
+func (s *FileBackend) ReadFile(image models.Image) (io.Reader, error) {
+	fileDir := config.GetImageLocation()
+	path := GetImagePath(fileDir, image.Checksum)
+	return os.Open(path)
 }

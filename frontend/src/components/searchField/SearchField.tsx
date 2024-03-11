@@ -16,7 +16,7 @@ import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 import { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { createHref, filterData, getImage } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-import { GenderIcon, SearchHint } from "src/components/fragments";
+import { GenderIcon, SearchHint, Thumbnail } from "src/components/fragments";
 
 type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
 type PerformerAllResult = NonNullable<
@@ -63,10 +63,11 @@ const valueIsPerformer = (
 const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
   <div className="d-flex">
     {valueIsPerformer(value) && (
-      <img
-        src={getImage(value.images, "portrait")}
+      <Thumbnail
+        image={getImage(value.images, "portrait")}
         className="SearchField-thumb"
-        alt=""
+        alt={value.name}
+        size={100}
       />
     )}
     <div>

@@ -52,6 +52,7 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 	return nil
 }
 
+//nolint:unused
 func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 	var resizedImage image.Image
 	srcImage, format, err := image.Decode(srcReader)

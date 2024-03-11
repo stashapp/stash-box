@@ -46,6 +46,7 @@ const ImageCarousel: FC<ImageCarouselProps> = ({ images, orientation }) => {
           <Image
             images={sortedImages[imageIndex]}
             key={sortedImages[imageIndex].url}
+            size={600}
           />
         </div>
         <Button

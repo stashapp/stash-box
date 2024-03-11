@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/99designs/gqlgen v0.17.44
+	github.com/davidbyttow/govips/v2 v2.13.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/gofrs/uuid v4.3.1+incompatible
