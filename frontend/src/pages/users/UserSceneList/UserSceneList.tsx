@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  useScenes,
+  useScenesWithFingerprints,
   SceneQueryInput,
   SortDirectionEnum,
   SceneSortEnum,
@@ -36,9 +36,7 @@ const sortOptions = [
 ];
 
 export const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
-  const [dataForDeletion, setDataForDeletion] = useState<
-    FingerprintSubmission[]
-  >([]);
+  const [deletionCandidate, setDeletionCandidate] = useState<FingerprintSubmission>();
   const [showDelete, setShowDelete] = useState(false);
   const [deleteFingerprint] = useUnmatchFingerprint();
   const [params, setParams] = useQueryParams({
@@ -49,7 +47,7 @@ export const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
   const direction = ensureEnum(SortDirectionEnum, params.dir);
 
   const { page, setPage } = usePagination();
-  const { loading, data } = useScenes({
+  const { loading, data } = useScenesWithFingerprints({
     input: {
       page,
       per_page: perPage,
@@ -139,20 +137,6 @@ export const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
     />
   );
 
-  // Temporary fix while the API endpoint returns dupes
-  const scenesDupe = data?.queryScenes.scenes ?? [];
-  const dedupScenes = scenesDupe.filter(
-    (value, index) => scenesDupe.indexOf(value) === index
-  );
-
-  const scenes = dedupScenes.map((scene) => (
-    <UserSceneLine
-      key={scene.id}
-      sceneId={scene.id}
-      deleteFingerprint={deleteOne}
-    ></UserSceneLine>
-  ));
-
   return (
     <>
       {deleteModal}
@@ -178,7 +162,14 @@ export const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
                 <th>MD5</th>
               </tr>
             </thead>
-            <tbody>{scenes}</tbody>
+            <tbody>{ data?.queryScenes.scenes.map(scene => (
+                <UserSceneLine
+                  key={scene.id}
+                  scene={scene}
+                  deleteFingerprint={deleteOne}
+                />
+              ))}
+            </tbody>
           </Table>
         </Row>
       </List>

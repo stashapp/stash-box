@@ -54,12 +54,6 @@ const UserLoader: FC = () => {
           </>
         }
       />
-      <Route path="/fingerprints">
-        <>
-          <Title page={"My Fingerprints"} />
-          <UserScenes user={user} />
-        </>
-      </Route>
     </Routes>
   );
 };
@@ -93,6 +87,14 @@ const UserRoutes: FC = () => (
         </>
       }
     />
+    <Route
+      path="/fingerprints"
+      element={
+      <>
+        <Title page={"My Fingerprints"} />
+        <UserScenes />
+      </>
+      } />
     <Route path="/:name/*" element={<UserLoader />} />
   </Routes>
 );

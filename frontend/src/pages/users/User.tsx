@@ -29,7 +29,7 @@ import {
   ROUTE_USER_PASSWORD,
   ROUTE_USERS,
   ROUTE_USER_EDITS,
-  ROUTE_USER_MY_SCENES,
+  ROUTE_USER_MY_FINGERPRINTS,
 } from "src/constants/route";
 import Modal from "src/components/modal";
 import { Icon, Tooltip } from "src/components/fragments";
@@ -274,7 +274,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
             </Link>
             {isOwner && (
               <>
-                <Link to={ROUTE_USER_MY_SCENES} className="ms-2">
+                <Link to={ROUTE_USER_MY_FINGERPRINTS} className="ms-2">
                   <Button variant="secondary">My Fingerprints</Button>
                 </Link>
                 <Link to={ROUTE_USER_PASSWORD} className="ms-2">

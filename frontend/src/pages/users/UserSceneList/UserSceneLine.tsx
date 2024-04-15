@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { FingerprintAlgorithm, useScene } from "src/graphql";
+import { FingerprintAlgorithm, ScenesWithFingerprintsQuery} from "src/graphql";
 import { Icon } from "src/components/fragments";
 import { Link } from "react-router-dom";
 import { sceneHref, studioHref, formatDuration } from "src/utils";
@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
-  sceneId: string;
+  scene: ScenesWithFingerprintsQuery['queryScenes']['scenes'][number];
   deleteFingerprint: (
     sceneId: string,
     hash: string,
@@ -20,35 +20,19 @@ interface Props {
   ) => void;
 }
 
-const UserSceneLine: FC<Props> = ({ sceneId, deleteFingerprint }) => {
-  const { data } = useScene({ id: sceneId });
-  const scene = data?.findScene;
-
-  if (!scene) {
-    return (
-      <tr key={sceneId}>
-        <td colSpan={0}></td>
-      </tr>
-    );
-  }
-
-  const getFingerprintLines = (alg: FingerprintAlgorithm) => {
-    const filteredFingerprints = scene.fingerprints.filter(
-      (fing) => fing.user_submitted && fing.algorithm == alg
-    );
-
-    const ret = filteredFingerprints.map((fing, index) => (
-      <div key={`${fing.hash} "_" ${index}`}>
-        {fing.hash} ({formatDuration(fing.duration)})
+const UserSceneLine: FC<Props> = ({ scene, deleteFingerprint }) => {
+  const fingerprints = scene.fingerprints.map(fp => (
+      <div key={fp.hash}>
+        {fp.hash} ({formatDuration(fp.duration)})
         <span
-          className="user-submitted "
+          className="user-submitted"
           title="Submitted by you - click to remove submission"
           onClick={() =>
             deleteFingerprint(
               scene.id,
-              fing.hash,
-              fing.algorithm,
-              fing.duration
+              fp.hash,
+              fp.algorithm,
+              fp.duration
             )
           }
         >
@@ -58,8 +42,6 @@ const UserSceneLine: FC<Props> = ({ sceneId, deleteFingerprint }) => {
       </div>
     ));
 
-    return ret;
-  };
 
   return (
     <tr key={scene.id}>

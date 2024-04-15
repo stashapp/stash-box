@@ -1,7 +1,6 @@
-import { FC } from "react";
-import UserSceneList from "./UserScenes/UserSceneList";
+import { UserSceneList } from "./UserSceneList";
 
-const UserScenesComponent: FC = () => {
+const UserScenesComponent = () => {
   const filter = {
     has_fingerprint_submissions: true,
   };
