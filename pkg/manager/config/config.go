@@ -59,6 +59,8 @@ type config struct {
 	MinDestructiveVotingPeriod int `mapstructure:"min_destructive_voting_period"`
 	// Interval between checks for completed voting periods
 	VoteCronInterval string `mapstructure:"vote_cron_interval"`
+	// Allow scene creation in web UI
+	AllowWebuiSceneCreate bool `mapstructure:"allow_webui_scene_create"`
 
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
@@ -120,6 +122,7 @@ var C = &config{
 	VotingPeriod:               345600,
 	MinDestructiveVotingPeriod: 172800,
 	DraftTimeLimit:             86400,
+	AllowWebuiSceneCreate:      true,
 }
 
 func GetDatabasePath() string {
@@ -358,6 +361,10 @@ func GetMinDestructiveVotingPeriod() int {
 
 func GetVoteCronInterval() string {
 	return C.VoteCronInterval
+}
+
+func GetAllowWebuiSceneCreate() bool {
+	return C.AllowWebuiSceneCreate
 }
 
 func GetTitle() string {

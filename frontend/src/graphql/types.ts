@@ -1526,6 +1526,7 @@ export enum SortDirectionEnum {
 
 export type StashBoxConfig = {
   __typename: "StashBoxConfig";
+  allow_webui_scene_create: Scalars["Boolean"];
   guidelines_url: Scalars["String"];
   host_url: Scalars["String"];
   min_destructive_voting_period: Scalars["Int"];
@@ -13902,6 +13903,7 @@ export type ConfigQuery = {
     min_destructive_voting_period: number;
     vote_cron_interval: string;
     guidelines_url: string;
+    allow_webui_scene_create: boolean;
   };
 };
 
@@ -39212,6 +39214,10 @@ export const ConfigDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "guidelines_url" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "allow_webui_scene_create" },
                 },
               ],
             },

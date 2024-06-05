@@ -9,5 +9,6 @@ query Config {
     min_destructive_voting_period
     vote_cron_interval
     guidelines_url
+    allow_webui_scene_create
   }
 }

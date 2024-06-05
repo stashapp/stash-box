@@ -485,6 +485,7 @@ type ComplexityRoot struct {
 	}
 
 	StashBoxConfig struct {
+		AllowWebuiSceneCreate      func(childComplexity int) int
 		GuidelinesURL              func(childComplexity int) int
 		HostURL                    func(childComplexity int) int
 		MinDestructiveVotingPeriod func(childComplexity int) int
@@ -3461,6 +3462,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Site.ValidTypes(childComplexity), true
 
+	case "StashBoxConfig.allow_webui_scene_create":
+		if e.complexity.StashBoxConfig.AllowWebuiSceneCreate == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.AllowWebuiSceneCreate(childComplexity), true
+
 	case "StashBoxConfig.guidelines_url":
 		if e.complexity.StashBoxConfig.GuidelinesURL == nil {
 			break
@@ -4201,6 +4209,7 @@ var sources = []*ast.Source{
   min_destructive_voting_period: Int!
   vote_cron_interval: String!
   guidelines_url: String!
+  allow_webui_scene_create: Boolean!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/draft.graphql", Input: `type DraftSubmissionStatus {
@@ -21358,6 +21367,8 @@ func (ec *executionContext) fieldContext_Query_getConfig(ctx context.Context, fi
 				return ec.fieldContext_StashBoxConfig_vote_cron_interval(ctx, field)
 			case "guidelines_url":
 				return ec.fieldContext_StashBoxConfig_guidelines_url(ctx, field)
+			case "allow_webui_scene_create":
+				return ec.fieldContext_StashBoxConfig_allow_webui_scene_create(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type StashBoxConfig", field.Name)
 		},
@@ -25982,6 +25993,50 @@ func (ec *executionContext) fieldContext_StashBoxConfig_guidelines_url(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StashBoxConfig_allow_webui_scene_create(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StashBoxConfig_allow_webui_scene_create(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AllowWebuiSceneCreate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StashBoxConfig_allow_webui_scene_create(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StashBoxConfig",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -42315,6 +42370,11 @@ func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.Selecti
 			}
 		case "guidelines_url":
 			out.Values[i] = ec._StashBoxConfig_guidelines_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "allow_webui_scene_create":
+			out.Values[i] = ec._StashBoxConfig_allow_webui_scene_create(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
