@@ -125,6 +125,7 @@ const EditImages: FC<EditImagesProps> = ({
                     ".jpg",
                     ".jpeg",
                     ".webp",
+                    ".jfif",
                     ...(allowLossless ? [".svg", ".png"] : []),
                   ].join(",")}
                 />
