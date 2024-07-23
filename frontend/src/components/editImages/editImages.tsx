@@ -123,6 +123,7 @@ const EditImages: FC<EditImagesProps> = ({
                   onChange={onFileChange}
                   accept={[
                     ".jpg",
+                    ".jpeg",
                     ".webp",
                     ...(allowLossless ? [".svg", ".png"] : []),
                   ].join(",")}
