@@ -1065,7 +1065,7 @@ export type Query = {
   findSite?: Maybe<Site>;
   /** Find a studio by ID or name */
   findStudio?: Maybe<Studio>;
-  /** Find a tag by ID or name, or aliases */
+  /** Find a tag by ID or name */
   findTag?: Maybe<Tag>;
   /** Find a tag category by ID */
   findTagCategory?: Maybe<TagCategory>;
