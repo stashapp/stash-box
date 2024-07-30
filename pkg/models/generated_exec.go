@@ -5598,7 +5598,7 @@ type Query {
   #### Tags ####
 
   # tag names will be unique
-  """Find a tag by ID or name, or aliases"""
+  """Find a tag by ID or name"""
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
   queryTags(input: TagQueryInput!): QueryTagsResultType! @hasRole(role: READ)
 
