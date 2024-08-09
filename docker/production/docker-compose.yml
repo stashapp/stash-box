@@ -45,8 +45,8 @@ services:
       - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
       - "--providers.docker=true"
       - "--certificatesResolvers.stash-box.acme.email=<EMAIL>"
-      - "--certificatesResolvers.stash-box.acme.storage=/acme.json"
+      - "--certificatesResolvers.stash-box.acme.storage=/traefik/acme.json"
       - "--certificatesresolvers.stash-box.acme.tlschallenge=true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /traefik/acme.json:/acme.json
+      - /traefik/acme.json:/traefik
