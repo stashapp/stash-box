@@ -1,16 +1,16 @@
-import { UserSceneList } from "./UserSceneList";
+import { UserFingerprintsList } from "./UserFingerprintsList";
 
-const UserScenesComponent = () => {
+const UserFingerprintsComponent = () => {
   const filter = {
     has_fingerprint_submissions: true,
   };
 
   return (
     <>
-      <h3>My scenes</h3>
-      <UserSceneList filter={filter} />
+      <h3>My fingerprints</h3>
+      <UserFingerprintsList filter={filter} />
     </>
   );
 };
 
-export default UserScenesComponent;
+export default UserFingerprintsComponent;

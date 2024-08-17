@@ -12,7 +12,6 @@ import {
   SceneSortEnum,
   useUnmatchFingerprint,
   FingerprintAlgorithm,
-  FingerprintSubmission,
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum } from "src/utils";
@@ -35,8 +34,14 @@ const sortOptions = [
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
 ];
 
-export const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
-  const [deletionCandidate, setDeletionCandidate] = useState<FingerprintSubmission>();
+export const UserFingerprintsList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
+  const [deletionCandidates, setDeletionCandidates] = useState<{
+    hash: string;
+    scene_id: string;
+    algorithm: FingerprintAlgorithm;
+    duration: number;
+  }[]>([]);
+
   const [showDelete, setShowDelete] = useState(false);
   const [deleteFingerprint] = useUnmatchFingerprint();
   const [params, setParams] = useQueryParams({
@@ -55,6 +60,7 @@ export const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
       direction,
       ...filter,
     },
+    submitted: true,
   });
 
   if (!loading && !data) return <ErrorMessage error="Failed to load scenes." />;
@@ -94,45 +100,31 @@ export const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
     </InputGroup>
   );
 
-  const deleteOne = (
-    sceneId: string,
+  const deleteFingerprints = (fingerprints: {
+    scene_id: string,
     hash: string,
-    algo: FingerprintAlgorithm,
+    algorithm: FingerprintAlgorithm,
     duration: number
-  ) => {
-    dataForDeletion.push({
-      fingerprint: {
-        hash: hash,
-        algorithm: algo,
-        duration: duration,
-      },
-      scene_id: sceneId,
-    });
+  }[]) => {
+    setDeletionCandidates(fingerprints);
     setShowDelete(true);
   };
 
-  const handleDelete = (status: boolean): void => {
-    if (status) {
-      dataForDeletion.forEach((deletion) => {
-        deleteFingerprint({
-          variables: {
-            hash: deletion.fingerprint.hash,
-            scene_id: deletion.scene_id,
-            algorithm: deletion.fingerprint.algorithm,
-            duration: deletion.fingerprint.duration,
-          },
-        });
-      });
-      setDataForDeletion([]);
-    } else {
-      setDataForDeletion([]);
+  const handleDelete = async (status: boolean) => {
+    if (status && deletionCandidates.length) {
+        for (const candidate of deletionCandidates) {
+          await deleteFingerprint({
+            variables: candidate,
+          });
+        }
     }
+    setDeletionCandidates([]);
     setShowDelete(false);
   };
 
   const deleteModal = showDelete && (
     <Modal
-      message={`Are you sure you want to delete ${dataForDeletion.length} fingerprints? This operation cannot be undone.`}
+      message={`Are you sure you want to delete ${deletionCandidates.length} fingerprints? This operation cannot be undone.`}
       callback={handleDelete}
     />
   );
@@ -153,20 +145,18 @@ export const UserSceneList: FC<Props> = ({ perPage = PER_PAGE, filter }) => {
           <Table striped variant="dark">
             <thead>
               <tr>
+                <th></th>
                 <th>Title</th>
                 <th>Studio</th>
                 <th>Duration</th>
                 <th>Release Date</th>
-                <th>PHASH</th>
-                <th>OSHASH</th>
-                <th>MD5</th>
               </tr>
             </thead>
             <tbody>{ data?.queryScenes.scenes.map(scene => (
                 <UserSceneLine
                   key={scene.id}
                   scene={scene}
-                  deleteFingerprint={deleteOne}
+                  deleteFingerprints={deleteFingerprints}
                 />
               ))}
             </tbody>
