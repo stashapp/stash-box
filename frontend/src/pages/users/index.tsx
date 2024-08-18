@@ -92,7 +92,7 @@ const UserRoutes: FC = () => (
       element={
         <>
           <Title page={"My Fingerprints"} />
-          <UserFingerprints/>
+          <UserFingerprints />
         </>
       }
     />
