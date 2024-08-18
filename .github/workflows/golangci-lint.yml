@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      # Silence embed linting error
+      - run: mkdir frontend/build && touch frontend/build/dummy
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
