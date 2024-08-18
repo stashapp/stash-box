@@ -10,12 +10,11 @@ jobs:
 
     steps:
       # Silence embed linting error
-      - run: mkdir -p frontend/build && touch frontend/build/dummy
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: 1.22.x
-
+      - run: mkdir frontend/build && touch frontend/build/dummy
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
