@@ -12,7 +12,7 @@ import UserAdd from "./UserAdd";
 import UserEdit from "./UserEdit";
 import UserPassword from "./UserPassword";
 import UserEdits from "./UserEdits";
-import UserScenes from "./UserScenes";
+import UserFingerprints from "./UserFingerprints";
 
 const UserLoader: FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -90,11 +90,12 @@ const UserRoutes: FC = () => (
     <Route
       path="/fingerprints"
       element={
-      <>
-        <Title page={"My Fingerprints"} />
-        <UserScenes />
-      </>
-      } />
+        <>
+          <Title page={"My Fingerprints"} />
+          <UserFingerprints/>
+        </>
+      }
+    />
     <Route path="/:name/*" element={<UserLoader />} />
   </Routes>
 );

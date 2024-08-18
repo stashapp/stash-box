@@ -138,7 +138,10 @@ export const useScenes = (variables: ScenesQueryVariables, skip = false) =>
     skip,
   });
 
-export const useScenesWithFingerprints = (variables: ScenesWithFingerprintsQueryVariables, skip = false) =>
+export const useScenesWithFingerprints = (
+  variables: ScenesWithFingerprintsQueryVariables,
+  skip = false
+) =>
   useQuery(ScenesWithFingerprintsDocument, {
     variables,
     skip,
