@@ -247,9 +247,13 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             <>
               <hr />
               <div>
-                <b className="me-2">Studio URL:</b>
-                <a href={studioURL} target="_blank" rel="noopener noreferrer">
-                  {studioURL}
+                <b className="me-2">{studioURL.site.name}:</b>
+                <a
+                  href={studioURL.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {studioURL.url}
                 </a>
               </div>
             </>

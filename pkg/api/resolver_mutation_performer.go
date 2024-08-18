@@ -215,16 +215,19 @@ func (r *mutationResolver) FavoritePerformer(ctx context.Context, id uuid.UUID, 
 		if err != nil {
 			return err
 		}
+		if performer == nil {
+			return fmt.Errorf("performer not found")
+		}
+
 		if performer.Deleted {
 			return fmt.Errorf("performer is deleted, unable to make favorite")
 		}
 
+		performerFavorite := models.PerformerFavorite{PerformerID: id, UserID: user.ID}
 		if favorite {
-			pf := models.PerformerFavorite{PerformerID: id, UserID: user.ID}
-			err := jqb.AddPerformerFavorite(pf)
-			return err
+			return jqb.AddPerformerFavorite(performerFavorite)
 		}
-		return jqb.DestroyPerformerFavorite(models.PerformerFavorite{PerformerID: id, UserID: user.ID})
+		return jqb.DestroyPerformerFavorite(performerFavorite)
 	})
 	return err == nil, err
 }

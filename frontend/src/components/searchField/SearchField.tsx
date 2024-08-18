@@ -154,13 +154,18 @@ function handleResult(
       }));
   }
 
-  return [
-    ...(showAllLink ? [{ type: "ALL", label: "Show all results" }] : []),
-    ...(performers.length
-      ? [{ label: "Performers", options: performers }]
-      : []),
-    ...(scenes.length ? [{ label: "Scenes", options: scenes }] : []),
-  ];
+  const performerResults = performers.length
+    ? [{ label: "Performers", options: performers }]
+    : [];
+  const sceneResults = scenes.length
+    ? [{ label: "Scenes", options: scenes }]
+    : [];
+  const showAll =
+    showAllLink && performerResults.length > 0 && sceneResults.length > 0
+      ? [{ type: "ALL", label: "Show all results" }]
+      : [];
+
+  return [...showAll, ...performerResults, ...sceneResults];
 }
 
 const SearchField: FC<SearchFieldProps> = ({

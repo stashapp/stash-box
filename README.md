@@ -12,7 +12,7 @@ Stash-box is an open-source video indexing and metadata API server for porn deve
 
 # Canonical community-database
 
-If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt) or [#stashdb-invites:unredacted.org](https://matrix.to/#/#stashdb-invites:unredacted.org) room on our [Matrix space](https://matrix.to/#/#stashapp:unredacted.org).
+If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from our guide to [Accessing StashDB](https://guidelines.stashdb.org/docs/faq_getting-started/stashdb/accessing-stashdb/).
 
 # Docker install
 
@@ -73,6 +73,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `activation_expiry` | `7200` (2 hours) | The time - in seconds - after which an activation key (emailed to the user for email verification or password reset purposes) expires. |
 | `email_cooldown` | `300` (5 minutes) | The time - in seconds - that a user must wait before submitting an activation or reset password request for a specific email address. |
 | `default_user_roles` | `READ`, `VOTE`, `EDIT` | The roles assigned to new users when registering. This field must be expressed as a yaml array. |
+| `guidelines_url` | (none) | URL to link to a set of guidelines for users contributing edits. Should be in the form of `https://hostname.com`. |
 | `vote_promotion_threshold` | (none) | Number of approved edits before a user automatically has the `VOTE` role assigned. Leave empty to disable. |
 | `vote_application_threshold` | `3` | Number of same votes required for immediate application of an edit. Set to zero to disable automatic application. |
 | `voting_period` | `345600` | Time, in seconds, before a voting period is closed. |

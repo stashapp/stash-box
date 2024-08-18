@@ -1065,7 +1065,7 @@ export type Query = {
   findSite?: Maybe<Site>;
   /** Find a studio by ID or name */
   findStudio?: Maybe<Studio>;
-  /** Find a tag by ID or name, or aliases */
+  /** Find a tag by ID or name */
   findTag?: Maybe<Tag>;
   /** Find a tag category by ID */
   findTagCategory?: Maybe<TagCategory>;
@@ -1526,6 +1526,7 @@ export enum SortDirectionEnum {
 
 export type StashBoxConfig = {
   __typename: "StashBoxConfig";
+  guidelines_url: Scalars["String"];
   host_url: Scalars["String"];
   min_destructive_voting_period: Scalars["Int"];
   require_activation: Scalars["Boolean"];
@@ -13900,6 +13901,7 @@ export type ConfigQuery = {
     voting_period: number;
     min_destructive_voting_period: number;
     vote_cron_interval: string;
+    guidelines_url: string;
   };
 };
 
@@ -39206,6 +39208,10 @@ export const ConfigDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "vote_cron_interval" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "guidelines_url" },
                 },
               ],
             },
