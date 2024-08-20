@@ -111,6 +111,9 @@ ui-validate:
 # cross-compile- targets should be run within the compiler docker container
 cross-compile-windows: export GOOS := windows
 cross-compile-windows: export GOARCH := amd64
+cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
+cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
+cross-compile-windows: export CGO_ENABLED = 0
 cross-compile-windows: OUTPUT := -o dist/stash-box-windows.exe
 cross-compile-windows: build-release-static
 

@@ -71,6 +71,7 @@ type config struct {
 	ImageLocation string `mapstructure:"image_location"`
 	ImageBackend  string `mapstructure:"image_backend"`
 	FaviconPath   string `mapstructure:"favicon_path"`
+	ImageMaxSize  int    `mapstructure:"image_max_size"`
 
 	// Logging options
 	LogFile     string `mapstructure:"logFile"`
@@ -246,6 +247,14 @@ func ValidateImageLocation() error {
 	}
 
 	return nil
+}
+
+func GetImageMaxSize() *int {
+	size := C.ImageMaxSize
+	if size == 0 {
+		return nil
+	}
+	return &size
 }
 
 // GetLogFile returns the filename of the file to output logs to.

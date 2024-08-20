@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { Col, Row } from "react-bootstrap";
+import ImageComponent from "src/components/image";
 
 type Image = {
   height: number;
@@ -26,9 +27,9 @@ const Images: FC<{
         image === null ? (
           <img className={CLASSNAME_IMAGE} alt="Deleted" key={`deleted-${i}`} />
         ) : (
-          <div key={image.id}>
-            <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
-            <div className={"text-center"}>
+          <div key={image.id} className={CLASSNAME_IMAGE}>
+            <ImageComponent images={image} alt="" size="full" />
+            <div className="text-center">
               {image.width} x {image.height}
             </div>
           </div>

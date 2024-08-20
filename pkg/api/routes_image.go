@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/logger"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
 type imageRoutes struct{}
@@ -46,15 +47,23 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
-	if sizeQuery := r.FormValue("size"); sizeQuery != "" {
-		size, err := strconv.Atoi(sizeQuery)
+	maxSize := 0
+	querySize := r.FormValue("size")
+	if querySize == "full" {
+		// Skip resize
+	} else if querySize != "" {
+		maxSize, err = strconv.Atoi(querySize)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+	} else if config.GetImageMaxSize() != nil {
+		maxSize = *config.GetImageMaxSize()
+	}
 
-		if databaseImage.Width > int64(size) || databaseImage.Height > int64(size) {
-			data, err := image.Resize(reader, size)
+	if maxSize != 0 {
+		if databaseImage.Width > int64(maxSize) || databaseImage.Height > int64(maxSize) {
+			data, err := image.Resize(reader, maxSize)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

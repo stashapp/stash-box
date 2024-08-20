@@ -12,5 +12,6 @@ export const Thumbnail: FC<Props> = ({ image, size, alt, className }) => (
     alt={alt ?? ""}
     className={className}
     src={image + (size ? `?size=${size}` : "")}
+    srcSet={size ? `${image}?size=${size * 2} ${size * 2}w` : ""}
   />
 );

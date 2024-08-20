@@ -87,6 +87,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `host_url` | (none) | Base URL for the server. Used when sending emails. Should be in the form of `https://hostname.com`. |
 | `image_location` | (none) | Path to store images, for local image storage. An error will be displayed if this is not set when creating non-URL images. |
 | `image_backend` | (`file`) | Storage solution for images. Can be set to either `file` or `s3`. |
+| `image_max_size` | (none) | Max size of image, if no size is specified. Omit to return full size. |
 | `userLogFile` | (none) | Path to the user log file, which logs user operations. If not set, then these will be output to stderr. |
 | `s3.endpoint` | (none) | Hostname to s3 endpoint used for image storage. |
 | `s3.bucket` | (none) | Name of S3 bucket used to store images. |
