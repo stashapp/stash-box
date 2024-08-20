@@ -49,15 +49,16 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 	maxSize := 0
 	querySize := r.FormValue("size")
-	if querySize == "full" {
-		// Skip resize
-	} else if querySize != "" {
+	switch {
+	case querySize == "full":
+	// Skip resize
+	case querySize != "":
 		maxSize, err = strconv.Atoi(querySize)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-	} else if config.GetImageMaxSize() != nil {
+	case config.GetImageMaxSize() != nil:
 		maxSize = *config.GetImageMaxSize()
 	}
 
