@@ -4935,6 +4935,15 @@ enum FavoriteFilter {
   ALL
 }
 
+enum FingerprintSubmissionType {
+  "Positive vote"
+  VALID
+  "Report as invalid"
+  INVALID
+  "Remove vote"
+  REMOVE
+}
+
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
@@ -4983,9 +4992,8 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
-  unmatch: Boolean @deprecated(reason: "Use ` + "`" + `vote` + "`" + ` with 0 instead")
-  "positive for default behaviour, negative to report as invalid, zero to remove vote"
-  vote: Int
+  unmatch: Boolean @deprecated(reason: "Use ` + "`" + `vote` + "`" + ` with REMOVE instead")
+  vote: FingerprintSubmissionType = VALID
 }
 
 type Scene {
@@ -32055,6 +32063,10 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 		asMap[k] = v
 	}
 
+	if _, present := asMap["vote"]; !present {
+		asMap["vote"] = "VALID"
+	}
+
 	fieldsInOrder := [...]string{"scene_id", "fingerprint", "unmatch", "vote"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
@@ -32085,7 +32097,7 @@ func (ec *executionContext) unmarshalInputFingerprintSubmission(ctx context.Cont
 			it.Unmatch = data
 		case "vote":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("vote"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOFingerprintSubmissionType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintSubmissionType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -47198,6 +47210,22 @@ func (ec *executionContext) unmarshalOFingerprintInput2ᚕᚖgithubᚗcomᚋstas
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalOFingerprintSubmissionType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintSubmissionType(ctx context.Context, v interface{}) (*FingerprintSubmissionType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(FingerprintSubmissionType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFingerprintSubmissionType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintSubmissionType(ctx context.Context, sel ast.SelectionSet, v *FingerprintSubmissionType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalOFuzzyDate2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFuzzyDate(ctx context.Context, sel ast.SelectionSet, v *FuzzyDate) graphql.Marshaler {

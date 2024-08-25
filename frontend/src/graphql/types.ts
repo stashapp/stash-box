@@ -328,11 +328,19 @@ export type FingerprintQueryInput = {
 export type FingerprintSubmission = {
   fingerprint: FingerprintInput;
   scene_id: Scalars["ID"];
-  /** @deprecated Use `vote` with 0 instead */
+  /** @deprecated Use `vote` with REMOVE instead */
   unmatch?: InputMaybe<Scalars["Boolean"]>;
-  /** positive for default behaviour, negative to report as invalid, zero to remove vote */
-  vote?: InputMaybe<Scalars["Int"]>;
+  vote?: InputMaybe<FingerprintSubmissionType>;
 };
+
+export enum FingerprintSubmissionType {
+  /** Report as invalid */
+  INVALID = "INVALID",
+  /** Remove vote */
+  REMOVE = "REMOVE",
+  /** Positive vote */
+  VALID = "VALID",
+}
 
 export type FuzzyDate = {
   __typename: "FuzzyDate";
@@ -37075,7 +37083,7 @@ export const UnmatchFingerprintDocument = {
                     {
                       kind: "ObjectField",
                       name: { kind: "Name", value: "vote" },
-                      value: { kind: "IntValue", value: "0" },
+                      value: { kind: "EnumValue", value: "REMOVE" },
                     },
                     {
                       kind: "ObjectField",

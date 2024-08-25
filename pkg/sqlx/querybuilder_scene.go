@@ -81,13 +81,13 @@ func (qb *sceneQueryBuilder) UpdateURLs(scene uuid.UUID, updatedJoins models.Sce
 
 func (qb *sceneQueryBuilder) CreateOrReplaceFingerprints(sceneFingerprints models.SceneFingerprints) error {
 	conflictHandling := `
-		ON CONFLICT ON CONSTRAINT scene_hash_unique
+		ON CONFLICT ON CONSTRAINT scene_fingerprints_scene_id_fingerprint_id_user_id_key
 		DO UPDATE SET 
 		duration = EXCLUDED.duration,
 		vote = EXCLUDED.vote
 	`
 
-	var fingerprints DBSceneFingerprints
+	var fingerprints dbSceneFingerprints
 	for _, fp := range sceneFingerprints {
 		id, err := qb.getOrCreateFingerprintID(fp.Hash, fp.Algorithm)
 		if err != nil {
@@ -99,7 +99,7 @@ func (qb *sceneQueryBuilder) CreateOrReplaceFingerprints(sceneFingerprints model
 			SceneID:       fp.SceneID,
 			UserID:        fp.UserID,
 			Duration:      fp.Duration,
-			// TODO: vote
+			Vote:          fp.Vote,
 		})
 	}
 
@@ -661,7 +661,8 @@ func (qb *sceneQueryBuilder) SubmittedHashExists(sceneID uuid.UUID, hash string,
 		SELECT
 			1
 		FROM scene_fingerprints f
-		WHERE f.scene_id = :sceneid AND f.hash = :hash AND f.algorithm = :algorithm AND vote = 1
+		JOIN fingerprints fp ON f.fingerprint_id = fp.id
+		WHERE f.scene_id = :sceneid AND fp.hash = :hash AND fp.algorithm = :algorithm AND f.vote = 1
 	`
 
 	arg := map[string]interface{}{
@@ -1024,6 +1025,7 @@ func (qb *sceneQueryBuilder) addFingerprintsFromEdit(scene *models.Scene, data *
 				Algorithm: fingerprint.Algorithm.String(),
 				SceneID:   scene.ID,
 				UserID:    userID,
+				Vote:      1,
 				Duration:  fingerprint.Duration,
 				CreatedAt: time.Now(),
 			})

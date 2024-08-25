@@ -6,7 +6,7 @@ mutation UnmatchFingerprint(
 ) {
   unmatchFingerprint: submitFingerprint(
     input: {
-      vote: 0
+      vote: REMOVE
       scene_id: $scene_id
       fingerprint: { hash: $hash, algorithm: $algorithm, duration: $duration }
     }

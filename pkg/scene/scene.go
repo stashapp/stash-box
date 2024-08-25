@@ -232,17 +232,15 @@ func Destroy(fac models.Repo, input models.SceneDestroyInput) (bool, error) {
 	return true, nil
 }
 
-// clampVote ensures that vote is between -1 and 1
-func clampVote(vote int) int {
-	if vote > 1 {
+func submissionTypeToInt(t models.FingerprintSubmissionType) int {
+	switch t {
+	case models.FingerprintSubmissionTypeValid:
 		return 1
-	}
-
-	if vote < -1 {
+	case models.FingerprintSubmissionTypeInvalid:
 		return -1
+	default:
+		return 0
 	}
-
-	return vote
 }
 
 func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.FingerprintSubmission) (bool, error) {
@@ -270,13 +268,14 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 		input.Fingerprint.UserIds = []uuid.UUID{currentUserID}
 	}
 
-	vote := 1
+	// set the default vote
+	vote := models.FingerprintSubmissionTypeValid
 	if input.Vote != nil {
-		vote = clampVote(*input.Vote)
+		vote = *input.Vote
 	}
 
 	// if the user is reporting a fingerprint, ensure that the fingerprint has at least one submission
-	if vote == -1 {
+	if vote == models.FingerprintSubmissionTypeInvalid {
 		submissionExists, err := qb.SubmittedHashExists(input.SceneID, input.Fingerprint.Hash, input.Fingerprint.Algorithm)
 		if err != nil {
 			return false, err
@@ -287,11 +286,12 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 		}
 	}
 
-	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint}, vote)
+	voteInt := submissionTypeToInt(vote)
+	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint}, voteInt)
 
 	// vote == 0 means the user is unmatching the fingerprint
 	// Unmatch is the deprecated field, but we still need to support it
-	unmatch := vote == 0 || (input.Unmatch != nil && *input.Unmatch)
+	unmatch := vote == models.FingerprintSubmissionTypeRemove || (input.Unmatch != nil && *input.Unmatch)
 
 	if !unmatch {
 		// set the new fingerprints

@@ -15,20 +15,20 @@ type dbSceneFingerprint struct {
 	Vote          int       `db:"vote" json:"vote"`
 }
 
-type DBSceneFingerprints []*dbSceneFingerprint
+type dbSceneFingerprints []*dbSceneFingerprint
 
-func (f DBSceneFingerprints) Each(fn func(interface{})) {
+func (f dbSceneFingerprints) Each(fn func(interface{})) {
 	for _, v := range f {
 		fn(*v)
 	}
 }
 
-func (f DBSceneFingerprints) EachPtr(fn func(interface{})) {
+func (f dbSceneFingerprints) EachPtr(fn func(interface{})) {
 	for _, v := range f {
 		fn(v)
 	}
 }
 
-func (f *DBSceneFingerprints) Add(o interface{}) {
+func (f *dbSceneFingerprints) Add(o interface{}) {
 	*f = append(*f, o.(*dbSceneFingerprint))
 }

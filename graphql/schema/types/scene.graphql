@@ -22,6 +22,15 @@ enum FavoriteFilter {
   ALL
 }
 
+enum FingerprintSubmissionType {
+  "Positive vote"
+  VALID
+  "Report as invalid"
+  INVALID
+  "Remove vote"
+  REMOVE
+}
+
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
@@ -70,9 +79,8 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
-  unmatch: Boolean @deprecated(reason: "Use `vote` with 0 instead")
-  "positive for default behaviour, negative to report as invalid, zero to remove vote"
-  vote: Int
+  unmatch: Boolean @deprecated(reason: "Use `vote` with REMOVE instead")
+  vote: FingerprintSubmissionType = VALID
 }
 
 type Scene {
