@@ -8,18 +8,17 @@ import (
 )
 
 type Scene struct {
-	ID           uuid.UUID      `db:"id" json:"id"`
-	Title        sql.NullString `db:"title" json:"title"`
-	Details      sql.NullString `db:"details" json:"details"`
-	Date         SQLDate        `db:"date" json:"date"`
-	DateAccuracy sql.NullString `db:"date_accuracy" json:"date_accuracy"`
-	StudioID     uuid.NullUUID  `db:"studio_id,omitempty" json:"studio_id"`
-	CreatedAt    time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt    time.Time      `db:"updated_at" json:"updated_at"`
-	Duration     sql.NullInt64  `db:"duration" json:"duration"`
-	Director     sql.NullString `db:"director" json:"director"`
-	Code         sql.NullString `db:"code" json:"code"`
-	Deleted      bool           `db:"deleted" json:"deleted"`
+	ID        uuid.UUID      `db:"id" json:"id"`
+	Title     sql.NullString `db:"title" json:"title"`
+	Details   sql.NullString `db:"details" json:"details"`
+	Date      sql.NullString `db:"date" json:"date"`
+	StudioID  uuid.NullUUID  `db:"studio_id,omitempty" json:"studio_id"`
+	CreatedAt time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time      `db:"updated_at" json:"updated_at"`
+	Duration  sql.NullInt64  `db:"duration" json:"duration"`
+	Director  sql.NullString `db:"director" json:"director"`
+	Code      sql.NullString `db:"code" json:"code"`
+	Deleted   bool           `db:"deleted" json:"deleted"`
 }
 
 func (p Scene) GetID() uuid.UUID {
@@ -239,45 +238,14 @@ func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearance
 func (p *Scene) IsEditTarget() {
 }
 
-func (p Scene) ResolveDate() *FuzzyDate {
-	if !p.Date.Valid {
-		return nil
-	}
-
-	ret := FuzzyDate{Date: p.Date.String}
-
-	if p.DateAccuracy.Valid {
-		ret.Accuracy = DateAccuracyEnum(p.DateAccuracy.String)
-		if !ret.Accuracy.IsValid() {
-			ret.Accuracy = ""
-		}
-	}
-
-	return &ret
-}
-
 func (p *Scene) CopyFromCreateInput(input SceneCreateInput) error {
 	CopyFull(p, input)
-
-	date, accuracy, err := ParseFuzzyString(&input.Date)
-	if err != nil {
-		return err
-	}
-	p.Date = date
-	p.DateAccuracy = accuracy
 
 	return nil
 }
 
 func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) error {
 	CopyFull(p, input)
-
-	date, accuracy, err := ParseFuzzyString(input.Date)
-	if err != nil {
-		return err
-	}
-	p.Date = date
-	p.DateAccuracy = accuracy
 
 	return nil
 }
@@ -290,11 +258,7 @@ func (p *Scene) CopyFromSceneEdit(input SceneEdit, old *SceneEdit) {
 	fe.nullInt64(&p.Duration, input.Duration, old.Duration)
 	fe.nullString(&p.Director, input.Director, old.Director)
 	fe.nullString(&p.Code, input.Code, old.Code)
-	fe.sqlDate(&p.Date, input.Date, old.Date)
-	fe.nullString(&p.DateAccuracy, input.DateAccuracy, old.DateAccuracy)
-	if input.DateAccuracy == nil && input.Date != nil {
-		p.DateAccuracy = sql.NullString{String: DateAccuracyEnumDay.String(), Valid: true}
-	}
+	fe.nullString(&p.Date, input.Date, old.Date)
 }
 
 func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
@@ -303,7 +267,6 @@ func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
 	v.string("Title", edit.Old.Title, p.Title.String)
 	v.string("Details", edit.Old.Details, p.Details.String)
 	v.string("Date", edit.Old.Date, p.Date.String)
-	v.string("Date Accuracy", edit.Old.DateAccuracy, p.DateAccuracy.String)
 	v.uuid("StudioID", edit.Old.StudioID, p.StudioID)
 	v.int64("Duration", edit.Old.Duration, p.Duration.Int64)
 	v.string("Director", edit.Old.Director, p.Director.String)

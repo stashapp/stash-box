@@ -153,30 +153,6 @@ func (d *editDiff) nullStringEnum(old sql.NullString, new stringEnum) (oldOut *s
 	return
 }
 
-func (d *editDiff) fuzzyDate(oldDate SQLDate, oldAcc sql.NullString, new *string) (outOldDate, outOldAcc, outNewDate, outNewAcc *string) {
-	if new == nil && oldDate.Valid {
-		outOldDate = &oldDate.String
-		if oldAcc.Valid {
-			outOldAcc = &oldAcc.String
-		}
-	} else if new != nil {
-		newDate, newAccuracy, _ := ParseFuzzyString(new)
-		if !oldDate.Valid || newDate.String != oldDate.String || newAccuracy.String != oldAcc.String {
-			outNewDate = &newDate.String
-			newAccuracy := newAccuracy.String
-			outNewAcc = &newAccuracy
-			if oldDate.Valid {
-				outOldDate = &oldDate.String
-			}
-			if oldAcc.Valid {
-				outOldAcc = &oldAcc.String
-			}
-		}
-	}
-
-	return
-}
-
 //nolint:unused
 func (d *editDiff) sqlDate(old SQLDate, new *string) (oldOut *string, newOut *string) {
 	if old.Valid && (new == nil || *new != old.String) {
