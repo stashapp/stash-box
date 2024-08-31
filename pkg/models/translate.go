@@ -56,15 +56,6 @@ func (c *fromEdit) nullInt64(out *sql.NullInt64, in *int64, old *int64) {
 	}
 }
 
-func (c *fromEdit) sqlDate(out *SQLDate, in *string, old *string) {
-	if in != nil {
-		out.String = *in
-		out.Valid = true
-	} else if old != nil {
-		*out = SQLDate{}
-	}
-}
-
 func (c *fromEdit) nullUUID(out *uuid.NullUUID, in *uuid.UUID, old *uuid.UUID) {
 	if in != nil {
 		out.UUID = *in
@@ -147,21 +138,6 @@ func (d *editDiff) nullStringEnum(old sql.NullString, new stringEnum) (oldOut *s
 
 	if !newNil && new.IsValid() && (!old.Valid || new.String() != old.String) {
 		newVal := new.String()
-		newOut = &newVal
-	}
-
-	return
-}
-
-//nolint:unused
-func (d *editDiff) sqlDate(old SQLDate, new *string) (oldOut *string, newOut *string) {
-	if old.Valid && (new == nil || *new != old.String) {
-		oldVal := old.String
-		oldOut = &oldVal
-	}
-
-	if new != nil && (!old.Valid || *new != old.String) {
-		newVal := *new
 		newOut = &newVal
 	}
 
