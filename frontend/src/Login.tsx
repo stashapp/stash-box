@@ -43,14 +43,16 @@ const Login: FC = () => {
 
   const onSubmit = async (formData: LoginFormData) => {
     setLoading(true);
+
     const body = new FormData();
     body.append("username", formData.username);
     body.append("password", formData.password);
+
     const res = await fetch(`${getPlatformURL()}login`, {
       method: "POST",
       body,
       credentials: getCredentialsSetting(),
-    });
+    }).finally(() => setLoading(false));
 
     const returnURL = decodeURIComponent(redirect ?? "") || "/";
     if (res.ok) window.location.replace(returnURL);
