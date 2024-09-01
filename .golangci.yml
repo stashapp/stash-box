@@ -22,7 +22,8 @@ linters:
     - dogsled
     - errorlint
     - exhaustive
-    - exportloopref
+    #- exportloopref
+    - copyloopvar
     - gocritic
     #- goerr113
     - misspell
