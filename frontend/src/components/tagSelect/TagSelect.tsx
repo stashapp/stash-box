@@ -11,7 +11,7 @@ import { TagLink } from "src/components/fragments";
 import { tagHref } from "src/utils/route";
 import { compareByName } from "src/utils";
 
-type Tag = NonNullable<SearchTagsQuery["searchTag"][number]>;
+type Tag = NonNullable<SearchTagsQuery["query"][number]>;
 
 type TagSlim = {
   id: string;
@@ -91,15 +91,43 @@ const TagSelect: FC<TagSelectProps> = ({
       },
     });
 
-    return data.searchTag
+    const { exact, query } = data;
+
+    const exactResult = exact
+      ? {
+          label: exact.name,
+          value: exact,
+          sublabel: exact.description ?? "",
+        }
+      : undefined;
+
+    const queryResult = query
       .filter(
-        (tag) => !excluded.includes(tag.id) && (allowDeleted || !tag.deleted)
+        (tag) =>
+          !excluded.includes(tag.id) &&
+          (allowDeleted || !tag.deleted) &&
+          tag.id !== exact?.id
       )
       .map((tag) => ({
         label: tag.name,
         value: tag,
         sublabel: tag.description ?? "",
       }));
+
+    return [
+      ...(exactResult
+        ? [
+            {
+              label:
+                exactResult.label.toLowerCase() === term.toLowerCase()
+                  ? "Exact Match"
+                  : "Alias Match",
+              options: [exactResult],
+            },
+          ]
+        : []),
+      ...(queryResult ? [{ label: "Tags", options: queryResult }] : []),
+    ];
   };
 
   const debouncedLoadOptions = debounce(handleSearch, 400);

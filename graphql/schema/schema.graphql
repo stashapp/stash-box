@@ -19,6 +19,8 @@ type Query {
   # tag names will be unique
   """Find a tag by ID or name"""
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
+  """Find a tag with a matching name or alias"""
+  findTagOrAlias(name: String!): Tag @hasRole(role: READ)
   queryTags(input: TagQueryInput!): QueryTagsResultType! @hasRole(role: READ)
 
   """Find a tag category by ID"""
