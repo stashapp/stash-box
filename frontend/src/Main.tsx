@@ -50,7 +50,9 @@ const Main: FC<Props> = ({ children }) => {
       location.pathname !== ROUTE_FORGOT_PASSWORD &&
       location.pathname !== ROUTE_RESET_PASSWORD
     ) {
-      navigate(ROUTE_LOGIN);
+      navigate(
+        `${ROUTE_LOGIN}?redirect=${encodeURIComponent(location.pathname)}`
+      );
     }
   }, [loading, user, location, navigate]);
 

@@ -29,6 +29,7 @@ const Login: FC = () => {
   const navigate = useNavigate();
   const [loginError, setLoginError] = useState("");
   const msg = new URLSearchParams(location.search).get("msg");
+  const redirect = new URLSearchParams(location.search).get("redirect");
   const Auth = useContext<ContextType>(AuthContext);
   const {
     register,
@@ -49,8 +50,10 @@ const Login: FC = () => {
       method: "POST",
       body,
       credentials: getCredentialsSetting(),
-    }).finally(() => setLoading(false));
-    if (res.ok) window.location.replace("/");
+    });
+
+    const returnURL = decodeURIComponent(redirect ?? "") || "/";
+    if (res.ok) window.location.replace(returnURL);
     else setLoginError("Access denied");
   };
 
