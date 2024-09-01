@@ -245,6 +245,7 @@ func makeTLSConfig() *tls.Config {
 	}
 	tlsConfig := &tls.Config{
 		Certificates: certs,
+		MinVersion:   tls.VersionTLS13,
 	}
 
 	return tlsConfig
