@@ -126,14 +126,14 @@ jobs:
     - name: Upload Windows binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-box-win.exe
         path: dist/stash-box-windows.exe
     - name: Upload Linux binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-box-linux
         path: dist/stash-box-linux
