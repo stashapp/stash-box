@@ -23,7 +23,7 @@ type ScenePerformer = NonNullable<
   SceneQuery["findScene"]
 >["performers"][number];
 
-type URL = { url: string; site: { id: string, name: string } };
+type URL = { url: string; site: { id: string; name: string } };
 const joinURLs = <T extends URL>(
   newURL: T | undefined | null,
   existingURLs: T[] | undefined
@@ -160,34 +160,37 @@ const parseAliases = (value: string | null | undefined) => {
   return null;
 };
 
-const parseUrls = (value: string[] | null | undefined, type: ValidSiteTypeEnum) : [URL[], string[]] => {
-  if (!value || value.length == 0) return [[], []]
+const parseUrls = (
+  value: string[] | null | undefined,
+  type: ValidSiteTypeEnum
+): [URL[], string[]] => {
+  if (!value || value.length == 0) return [[], []];
 
-  const { loading, data } = useSites();
-  const sites = data?.querySites.sites ?? []
+  const { data } = useSites();
+  const sites = data?.querySites.sites ?? [];
 
-  var matches = []
-  var remainder = []
+  const matches = [];
+  const remainder = [];
 
-  for (var url of value){
-    if (url == "") continue
+  for (const url of value) {
+    if (url == "") continue;
 
     // Check all available sites and stop at the first match
-    let matched = false
-    for (var site of sites){
-      if (site.regex && site.valid_types.includes(type)){
-        if (url.match(site.regex)){
-          matches.push({ url: url, site: { id: site.id, name: site.name } })
-          matched = true
-          break
+    let matched = false;
+    for (const site of sites) {
+      if (site.regex && site.valid_types.includes(type)) {
+        if (url.match(site.regex)) {
+          matches.push({ url: url, site: { id: site.id, name: site.name } });
+          matched = true;
+          break;
         }
       }
     }
     // If no site matched
-    if (!matched) remainder.push(url)
+    if (!matched) remainder.push(url);
   }
-  return [matches, remainder]
-}
+  return [matches, remainder];
+};
 
 export const parsePerformerDraft = (
   draft: PerformerDraft,
@@ -229,11 +232,13 @@ export const parsePerformerDraft = (
     urls: existingPerformer?.urls,
   };
 
-  const [mappedUrls, remainingUrls] = parseUrls(draft?.urls, ValidSiteTypeEnum.PERFORMER)
-  for (var mappedUrl of mappedUrls){
-    performer.urls = joinURLs(mappedUrl, performer.urls)
+  const [mappedUrls, remainingUrls] = parseUrls(
+    draft?.urls,
+    ValidSiteTypeEnum.PERFORMER
+  );
+  for (const mappedUrl of mappedUrls) {
+    performer.urls = joinURLs(mappedUrl, performer.urls);
   }
-
 
   const remainder = {
     Aliases: draftAliases ? null : draft?.aliases ?? null,
@@ -249,7 +254,7 @@ export const parsePerformerDraft = (
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,
   };
-  console.log(remainingUrls)
+  console.log(remainingUrls);
 
   return [performer, remainder];
 };
