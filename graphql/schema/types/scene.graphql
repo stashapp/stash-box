@@ -243,6 +243,7 @@ input SceneDraftInput {
   code: String
   details: String
   director: String
+  url: String @deprecated(reason: "Use urls field instead.")
   urls: [String!]
   date: String
   studio: DraftEntityInput

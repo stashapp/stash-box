@@ -5138,6 +5138,7 @@ input SceneDraftInput {
   code: String
   details: String
   director: String
+  url: String @deprecated(reason: "Use urls field instead.")
   urls: [String!]
   date: String
   studio: DraftEntityInput
@@ -33701,7 +33702,7 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "urls", "date", "studio", "performers", "tags", "image", "fingerprints"}
+	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "url", "urls", "date", "studio", "performers", "tags", "image", "fingerprints"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33743,6 +33744,13 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 				return it, err
 			}
 			it.Director = data
+		case "url":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URL = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)

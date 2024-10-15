@@ -504,6 +504,7 @@ type SceneDraftInput struct {
 	Code         *string             `json:"code,omitempty"`
 	Details      *string             `json:"details,omitempty"`
 	Director     *string             `json:"director,omitempty"`
+	URL          *string             `json:"url,omitempty"`
 	Urls         []string            `json:"urls,omitempty"`
 	Date         *string             `json:"date,omitempty"`
 	Studio       *DraftEntityInput   `json:"studio,omitempty"`

@@ -1371,6 +1371,8 @@ export type SceneDraftInput = {
   studio?: InputMaybe<DraftEntityInput>;
   tags?: InputMaybe<Array<DraftEntityInput>>;
   title?: InputMaybe<Scalars["String"]>;
+  /** @deprecated Use urls field instead. */
+  url?: InputMaybe<Scalars["String"]>;
   urls?: InputMaybe<Array<Scalars["String"]>>;
 };
 
