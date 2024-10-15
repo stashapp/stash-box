@@ -30,6 +30,10 @@ var (
 	studioRedirectTable = newTableJoin(studioTable, "studio_redirects", "source_id", func() interface{} {
 		return &models.Redirect{}
 	})
+
+	studioAliasTable = newTableJoin(studioTable, "studio_aliases", studioJoinKey, func() interface{} {
+		return &models.StudioAlias{}
+	})
 )
 
 type studioQueryBuilder struct {
@@ -330,6 +334,13 @@ func (qb *studioQueryBuilder) ApplyEdit(edit models.Edit, operation models.Opera
 			}
 		}
 
+		if len(data.New.AddedAliases) > 0 {
+			aliases := models.CreateStudioAliases(UUID, data.New.AddedAliases)
+			if err := qb.CreateAliases(aliases); err != nil {
+				return nil, err
+			}
+		}
+
 		return studio, nil
 	case models.OperationEnumDestroy:
 		updatedStudio, err := qb.SoftDelete(*studio)
@@ -381,6 +392,10 @@ func (qb *studioQueryBuilder) applyModifyEdit(studio *models.Studio, data *model
 	}
 
 	if err := qb.updateImagesFromEdit(updatedStudio, data); err != nil {
+		return nil, err
+	}
+
+	if err := qb.updateAliasesFromEdit(updatedStudio, data); err != nil {
 		return nil, err
 	}
 
@@ -552,4 +567,63 @@ func (qb *studioQueryBuilder) IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID)
 		result[i] = m[id]
 	}
 	return result, nil
+}
+
+func (qb *studioQueryBuilder) CreateAliases(newJoins models.StudioAliases) error {
+	return qb.dbi.InsertJoins(studioAliasTable, &newJoins)
+}
+
+func (qb *studioQueryBuilder) UpdateAliases(studioID uuid.UUID, updatedJoins models.StudioAliases) error {
+	return qb.dbi.ReplaceJoins(studioAliasTable, studioID, &updatedJoins)
+}
+
+func (qb *studioQueryBuilder) GetAliases(id uuid.UUID) (models.StudioAliases, error) {
+	joins := models.StudioAliases{}
+	err := qb.dbi.FindJoins(studioAliasTable, id, &joins)
+
+	return joins, err
+}
+
+func (qb *studioQueryBuilder) GetAllAliases(ids []uuid.UUID) ([][]string, []error) {
+	joins := models.StudioAliases{}
+	err := qb.dbi.FindAllJoins(studioAliasTable, ids, &joins)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	m := make(map[uuid.UUID][]string)
+	for _, join := range joins {
+		m[join.StudioID] = append(m[join.StudioID], join.Alias)
+	}
+
+	result := make([][]string, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
+func (qb *studioQueryBuilder) GetEditAliases(id *uuid.UUID, data *models.StudioEdit) ([]string, error) {
+	var aliases []string
+	if id != nil {
+		currentAliases, err := qb.GetAliases(*id)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range currentAliases {
+			aliases = append(aliases, v.Alias)
+		}
+	}
+
+	return utils.ProcessSlice(aliases, data.AddedAliases, data.RemovedAliases), nil
+}
+
+func (qb *studioQueryBuilder) updateAliasesFromEdit(studio *models.Studio, data *models.StudioEditData) error {
+	aliases, err := qb.GetEditAliases(&studio.ID, data.New)
+	if err != nil {
+		return err
+	}
+
+	newAliases := models.CreateStudioAliases(studio.ID, aliases)
+	return qb.UpdateAliases(studio.ID, newAliases)
 }

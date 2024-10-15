@@ -345,11 +345,13 @@ type StudioEdit struct {
 	EditID uuid.UUID `json:"-"`
 	Name   *string   `json:"name"`
 	// Added and modified URLs
-	AddedUrls     []*URL      `json:"added_urls,omitempty"`
-	RemovedUrls   []*URL      `json:"removed_urls,omitempty"`
-	ParentID      *uuid.UUID  `json:"parent_id,omitempty"`
-	AddedImages   []uuid.UUID `json:"added_images,omitempty"`
-	RemovedImages []uuid.UUID `json:"removed_images,omitempty"`
+	AddedUrls      []*URL      `json:"added_urls,omitempty"`
+	RemovedUrls    []*URL      `json:"removed_urls,omitempty"`
+	ParentID       *uuid.UUID  `json:"parent_id,omitempty"`
+	AddedImages    []uuid.UUID `json:"added_images,omitempty"`
+	RemovedImages  []uuid.UUID `json:"removed_images,omitempty"`
+	AddedAliases   []string    `json:"added_aliases,omitempty"`
+	RemovedAliases []string    `json:"removed_aliases,omitempty"`
 }
 
 func (StudioEdit) IsEditDetails() {}

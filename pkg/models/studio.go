@@ -22,4 +22,9 @@ type StudioRepo interface {
 	GetEditImages(id *uuid.UUID, data *StudioEdit) ([]uuid.UUID, error)
 	GetEditURLs(id *uuid.UUID, data *StudioEdit) ([]*URL, error)
 	IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error)
+	CreateAliases(newJoins StudioAliases) error
+	UpdateAliases(studioID uuid.UUID, updatedJoins StudioAliases) error
+	GetAliases(id uuid.UUID) (StudioAliases, error)
+	GetAllAliases(ids []uuid.UUID) ([][]string, []error)
+	GetEditAliases(id *uuid.UUID, data *StudioEdit) ([]string, error)
 }

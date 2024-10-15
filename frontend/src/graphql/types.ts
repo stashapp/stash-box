@@ -1544,6 +1544,7 @@ export type StringCriterionInput = {
 
 export type Studio = {
   __typename: "Studio";
+  aliases: Array<Scalars["String"]>;
   child_studios: Array<Studio>;
   created: Scalars["Time"];
   deleted: Scalars["Boolean"];
@@ -1562,6 +1563,7 @@ export type StudioPerformersArgs = {
 };
 
 export type StudioCreateInput = {
+  aliases?: InputMaybe<Array<Scalars["String"]>>;
   image_ids?: InputMaybe<Array<Scalars["ID"]>>;
   name: Scalars["String"];
   parent_id?: InputMaybe<Scalars["ID"]>;
@@ -1574,18 +1576,21 @@ export type StudioDestroyInput = {
 
 export type StudioEdit = {
   __typename: "StudioEdit";
+  added_aliases?: Maybe<Array<Scalars["String"]>>;
   added_images?: Maybe<Array<Maybe<Image>>>;
   /** Added and modified URLs */
   added_urls?: Maybe<Array<Url>>;
   images: Array<Image>;
   name?: Maybe<Scalars["String"]>;
   parent?: Maybe<Studio>;
+  removed_aliases?: Maybe<Array<Scalars["String"]>>;
   removed_images?: Maybe<Array<Maybe<Image>>>;
   removed_urls?: Maybe<Array<Url>>;
   urls: Array<Url>;
 };
 
 export type StudioEditDetailsInput = {
+  aliases?: InputMaybe<Array<Scalars["String"]>>;
   image_ids?: InputMaybe<Array<Scalars["ID"]>>;
   name?: InputMaybe<Scalars["String"]>;
   parent_id?: InputMaybe<Scalars["ID"]>;
@@ -1622,6 +1627,7 @@ export enum StudioSortEnum {
 }
 
 export type StudioUpdateInput = {
+  aliases?: InputMaybe<Array<Scalars["String"]>>;
   id: Scalars["ID"];
   image_ids?: InputMaybe<Array<Scalars["ID"]>>;
   name?: InputMaybe<Scalars["String"]>;

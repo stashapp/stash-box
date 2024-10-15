@@ -497,6 +497,7 @@ type ComplexityRoot struct {
 	}
 
 	Studio struct {
+		Aliases      func(childComplexity int) int
 		ChildStudios func(childComplexity int) int
 		Created      func(childComplexity int) int
 		Deleted      func(childComplexity int) int
@@ -511,14 +512,16 @@ type ComplexityRoot struct {
 	}
 
 	StudioEdit struct {
-		AddedImages   func(childComplexity int) int
-		AddedUrls     func(childComplexity int) int
-		Images        func(childComplexity int) int
-		Name          func(childComplexity int) int
-		Parent        func(childComplexity int) int
-		RemovedImages func(childComplexity int) int
-		RemovedUrls   func(childComplexity int) int
-		Urls          func(childComplexity int) int
+		AddedAliases   func(childComplexity int) int
+		AddedImages    func(childComplexity int) int
+		AddedUrls      func(childComplexity int) int
+		Images         func(childComplexity int) int
+		Name           func(childComplexity int) int
+		Parent         func(childComplexity int) int
+		RemovedAliases func(childComplexity int) int
+		RemovedImages  func(childComplexity int) int
+		RemovedUrls    func(childComplexity int) int
+		Urls           func(childComplexity int) int
 	}
 
 	Tag struct {
@@ -847,6 +850,7 @@ type SiteResolver interface {
 	Updated(ctx context.Context, obj *Site) (*time.Time, error)
 }
 type StudioResolver interface {
+	Aliases(ctx context.Context, obj *Studio) ([]string, error)
 	Urls(ctx context.Context, obj *Studio) ([]*URL, error)
 	Parent(ctx context.Context, obj *Studio) (*Studio, error)
 	ChildStudios(ctx context.Context, obj *Studio) ([]*Studio, error)
@@ -861,6 +865,7 @@ type StudioEditResolver interface {
 	Parent(ctx context.Context, obj *StudioEdit) (*Studio, error)
 	AddedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
 	RemovedImages(ctx context.Context, obj *StudioEdit) ([]*Image, error)
+
 	Images(ctx context.Context, obj *StudioEdit) ([]*Image, error)
 	Urls(ctx context.Context, obj *StudioEdit) ([]*URL, error)
 }
@@ -3524,6 +3529,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StashBoxConfig.VotingPeriod(childComplexity), true
 
+	case "Studio.aliases":
+		if e.complexity.Studio.Aliases == nil {
+			break
+		}
+
+		return e.complexity.Studio.Aliases(childComplexity), true
+
 	case "Studio.child_studios":
 		if e.complexity.Studio.ChildStudios == nil {
 			break
@@ -3606,6 +3618,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Studio.Urls(childComplexity), true
 
+	case "StudioEdit.added_aliases":
+		if e.complexity.StudioEdit.AddedAliases == nil {
+			break
+		}
+
+		return e.complexity.StudioEdit.AddedAliases(childComplexity), true
+
 	case "StudioEdit.added_images":
 		if e.complexity.StudioEdit.AddedImages == nil {
 			break
@@ -3640,6 +3659,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StudioEdit.Parent(childComplexity), true
+
+	case "StudioEdit.removed_aliases":
+		if e.complexity.StudioEdit.RemovedAliases == nil {
+			break
+		}
+
+		return e.complexity.StudioEdit.RemovedAliases(childComplexity), true
 
 	case "StudioEdit.removed_images":
 		if e.complexity.StudioEdit.RemovedImages == nil {
@@ -5207,6 +5233,7 @@ enum ValidSiteTypeEnum {
 	{Name: "../../graphql/schema/types/studio.graphql", Input: `type Studio {
   id: ID!
   name: String!
+  aliases: [String!]!
   urls: [URL!]!
   parent: Studio
   child_studios: [Studio!]!
@@ -5221,6 +5248,7 @@ enum ValidSiteTypeEnum {
 
 input StudioCreateInput {
   name: String!
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -5229,6 +5257,7 @@ input StudioCreateInput {
 input StudioUpdateInput {
   id: ID!
   name: String
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -5240,6 +5269,7 @@ input StudioDestroyInput {
 
 input StudioEditDetailsInput {
   name: String
+  aliases: [String!]
   urls: [URLInput!]
   parent_id: ID
   image_ids: [ID!]
@@ -5259,6 +5289,8 @@ type StudioEdit {
   parent: Studio
   added_images: [Image]
   removed_images: [Image]
+  added_aliases: [String!]
+  removed_aliases: [String!]
 
   images: [Image!]!
   urls: [URL!]!
@@ -10466,6 +10498,8 @@ func (ec *executionContext) fieldContext_Mutation_studioCreate(ctx context.Conte
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -10566,6 +10600,8 @@ func (ec *executionContext) fieldContext_Mutation_studioUpdate(ctx context.Conte
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -18489,6 +18525,8 @@ func (ec *executionContext) fieldContext_PerformerStudio_studio(ctx context.Cont
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -18853,6 +18891,8 @@ func (ec *executionContext) fieldContext_Query_findStudio(ctx context.Context, f
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -22271,6 +22311,8 @@ func (ec *executionContext) fieldContext_QueryStudiosResultType_studios(ctx cont
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -22916,6 +22958,8 @@ func (ec *executionContext) fieldContext_Scene_studio(ctx context.Context, field
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -24306,6 +24350,8 @@ func (ec *executionContext) fieldContext_SceneEdit_studio(ctx context.Context, f
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -26075,6 +26121,50 @@ func (ec *executionContext) fieldContext_Studio_name(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Studio_aliases(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studio_aliases(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studio().Aliases(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Studio_aliases(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Studio",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Studio_urls(ctx context.Context, field graphql.CollectedField, obj *Studio) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Studio_urls(ctx, field)
 	if err != nil {
@@ -26167,6 +26257,8 @@ func (ec *executionContext) fieldContext_Studio_parent(ctx context.Context, fiel
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -26235,6 +26327,8 @@ func (ec *executionContext) fieldContext_Studio_child_studios(ctx context.Contex
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -26730,6 +26824,8 @@ func (ec *executionContext) fieldContext_StudioEdit_parent(ctx context.Context, 
 				return ec.fieldContext_Studio_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Studio_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Studio_aliases(ctx, field)
 			case "urls":
 				return ec.fieldContext_Studio_urls(ctx, field)
 			case "parent":
@@ -26852,6 +26948,88 @@ func (ec *executionContext) fieldContext_StudioEdit_removed_images(ctx context.C
 				return ec.fieldContext_Image_height(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StudioEdit_added_aliases(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StudioEdit_added_aliases(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AddedAliases, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StudioEdit_added_aliases(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StudioEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _StudioEdit_removed_aliases(ctx context.Context, field graphql.CollectedField, obj *StudioEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StudioEdit_removed_aliases(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RemovedAliases, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_StudioEdit_removed_aliases(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "StudioEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -34397,7 +34575,7 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "urls", "parent_id", "image_ids"}
+	fieldsInOrder := [...]string{"name", "aliases", "urls", "parent_id", "image_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34411,6 +34589,13 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 				return it, err
 			}
 			it.Name = data
+		case "aliases":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliases"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
@@ -34472,7 +34657,7 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "urls", "parent_id", "image_ids"}
+	fieldsInOrder := [...]string{"name", "aliases", "urls", "parent_id", "image_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34486,6 +34671,13 @@ func (ec *executionContext) unmarshalInputStudioEditDetailsInput(ctx context.Con
 				return it, err
 			}
 			it.Name = data
+		case "aliases":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliases"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
@@ -34657,7 +34849,7 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "urls", "parent_id", "image_ids"}
+	fieldsInOrder := [...]string{"id", "name", "aliases", "urls", "parent_id", "image_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34678,6 +34870,13 @@ func (ec *executionContext) unmarshalInputStudioUpdateInput(ctx context.Context,
 				return it, err
 			}
 			it.Name = data
+		case "aliases":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliases"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Aliases = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx, v)
@@ -42362,6 +42561,42 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "aliases":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studio_aliases(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "urls":
 			field := field
 
@@ -42791,6 +43026,10 @@ func (ec *executionContext) _StudioEdit(ctx context.Context, sel ast.SelectionSe
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "added_aliases":
+			out.Values[i] = ec._StudioEdit_added_aliases(ctx, field, obj)
+		case "removed_aliases":
+			out.Values[i] = ec._StudioEdit_removed_aliases(ctx, field, obj)
 		case "images":
 			field := field
 

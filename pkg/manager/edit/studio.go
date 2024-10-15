@@ -83,6 +83,17 @@ func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studio
 	return nil
 }
 
+func (m *StudioEditProcessor) diffAliases(studioEdit *models.StudioEditData, studioID uuid.UUID, newAliases []string) error {
+	pqb := m.fac.Studio()
+
+	aliases, err := pqb.GetAliases(studioID)
+	if err != nil {
+		return err
+	}
+	studioEdit.New.AddedAliases, studioEdit.New.RemovedAliases = utils.SliceCompare(newAliases, aliases.ToAliases())
+	return nil
+}
+
 func (m *StudioEditProcessor) diffImages(studioEdit *models.StudioEditData, studioID uuid.UUID, newImageIds []uuid.UUID) error {
 	iqb := m.fac.Image()
 	images, err := iqb.FindByStudioID(studioID)
@@ -155,6 +166,7 @@ func (m *StudioEditProcessor) createEdit(input models.StudioEditInput) error {
 
 	studioEdit.New.AddedUrls = models.ParseURLInput(input.Details.Urls)
 	studioEdit.New.AddedImages = input.Details.ImageIds
+	studioEdit.New.AddedAliases = input.Details.Aliases
 
 	return m.edit.SetData(studioEdit)
 }
@@ -235,6 +247,12 @@ func (m *StudioEditProcessor) diffRelationships(studioEdit *models.StudioEditDat
 
 	if input.Details.ImageIds != nil || inputArgs.Field("image_ids").IsNull() {
 		if err := m.diffImages(studioEdit, studioID, input.Details.ImageIds); err != nil {
+			return err
+		}
+	}
+
+	if input.Details.Aliases != nil || inputArgs.Field("aliases").IsNull() {
+		if err := m.diffAliases(studioEdit, studioID, input.Details.Aliases); err != nil {
 			return err
 		}
 	}

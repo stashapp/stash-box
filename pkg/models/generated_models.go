@@ -622,6 +622,7 @@ type StringCriterionInput struct {
 
 type StudioCreateInput struct {
 	Name     string      `json:"name"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`
@@ -633,6 +634,7 @@ type StudioDestroyInput struct {
 
 type StudioEditDetailsInput struct {
 	Name     *string     `json:"name,omitempty"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`
@@ -664,6 +666,7 @@ type StudioQueryInput struct {
 type StudioUpdateInput struct {
 	ID       uuid.UUID   `json:"id"`
 	Name     *string     `json:"name,omitempty"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`
