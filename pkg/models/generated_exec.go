@@ -443,7 +443,7 @@ type ComplexityRoot struct {
 		Studio       func(childComplexity int) int
 		Tags         func(childComplexity int) int
 		Title        func(childComplexity int) int
-		URL          func(childComplexity int) int
+		URLs         func(childComplexity int) int
 	}
 
 	SceneEdit struct {
@@ -812,8 +812,6 @@ type SceneResolver interface {
 	Updated(ctx context.Context, obj *Scene) (*time.Time, error)
 }
 type SceneDraftResolver interface {
-	URL(ctx context.Context, obj *SceneDraft) (*URL, error)
-
 	Studio(ctx context.Context, obj *SceneDraft) (SceneDraftStudio, error)
 	Performers(ctx context.Context, obj *SceneDraft) ([]SceneDraftPerformer, error)
 	Tags(ctx context.Context, obj *SceneDraft) ([]SceneDraftTag, error)
@@ -3230,12 +3228,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SceneDraft.Title(childComplexity), true
 
-	case "SceneDraft.url":
-		if e.complexity.SceneDraft.URL == nil {
+	case "SceneDraft.urls":
+		if e.complexity.SceneDraft.URLs == nil {
 			break
 		}
 
-		return e.complexity.SceneDraft.URL(childComplexity), true
+		return e.complexity.SceneDraft.URLs(childComplexity), true
 
 	case "SceneEdit.added_fingerprints":
 		if e.complexity.SceneEdit.AddedFingerprints == nil {
@@ -5125,7 +5123,7 @@ type SceneDraft {
   code: String
   details: String
   director: String
-  url: URL
+  urls: [String!]
   date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
@@ -5140,7 +5138,7 @@ input SceneDraftInput {
   code: String
   details: String
   director: String
-  url: String
+  urls: [String!]
   date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!
@@ -23726,8 +23724,8 @@ func (ec *executionContext) fieldContext_SceneDraft_director(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _SceneDraft_url(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SceneDraft_url(ctx, field)
+func (ec *executionContext) _SceneDraft_urls(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneDraft_urls(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -23740,7 +23738,7 @@ func (ec *executionContext) _SceneDraft_url(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.SceneDraft().URL(rctx, obj)
+		return obj.URLs, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -23749,27 +23747,19 @@ func (ec *executionContext) _SceneDraft_url(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*URL)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalOURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SceneDraft_url(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SceneDraft_urls(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneDraft",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "url":
-				return ec.fieldContext_URL_url(ctx, field)
-			case "type":
-				return ec.fieldContext_URL_type(ctx, field)
-			case "site":
-				return ec.fieldContext_URL_site(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type URL", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -33711,7 +33701,7 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "url", "date", "studio", "performers", "tags", "image", "fingerprints"}
+	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "urls", "date", "studio", "performers", "tags", "image", "fingerprints"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33753,13 +33743,13 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 				return it, err
 			}
 			it.Director = data
-		case "url":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+		case "urls":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.URL = data
+			it.Urls = data
 		case "date":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -41220,39 +41210,8 @@ func (ec *executionContext) _SceneDraft(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._SceneDraft_details(ctx, field, obj)
 		case "director":
 			out.Values[i] = ec._SceneDraft_director(ctx, field, obj)
-		case "url":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SceneDraft_url(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "urls":
+			out.Values[i] = ec._SceneDraft_urls(ctx, field, obj)
 		case "date":
 			out.Values[i] = ec._SceneDraft_date(ctx, field, obj)
 		case "studio":
@@ -47870,13 +47829,6 @@ func (ec *executionContext) marshalOURL2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑ
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalOURL2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURL(ctx context.Context, sel ast.SelectionSet, v *URL) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._URL(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOURLInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐURLInputᚄ(ctx context.Context, v interface{}) ([]*URLInput, error) {

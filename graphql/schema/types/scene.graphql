@@ -228,7 +228,7 @@ type SceneDraft {
   code: String
   details: String
   director: String
-  url: URL
+  urls: [String!]
   date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
@@ -243,7 +243,7 @@ input SceneDraftInput {
   code: String
   details: String
   director: String
-  url: String
+  urls: [String!]
   date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!

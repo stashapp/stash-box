@@ -68,7 +68,7 @@ export const parseSceneDraft = (
     date: draft.date,
     title: draft.title,
     details: draft.details,
-    urls: joinURLs(draft.url, existingScene?.urls),
+    urls: existingScene?.urls,
     studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
     director: draft.director,
     code: draft.code,
@@ -105,6 +105,7 @@ export const parseSceneDraft = (
         []
       )
       .join(", "),
+    Urls: (draft?.urls ?? []).join(", "),
     Tags: (draft.tags ?? [])
       .reduce<string[]>(
         (res, t) => (t.__typename === "DraftEntity" ? [...res, t.name] : res),

@@ -1356,7 +1356,7 @@ export type SceneDraft = {
   studio?: Maybe<SceneDraftStudio>;
   tags?: Maybe<Array<SceneDraftTag>>;
   title?: Maybe<Scalars["String"]>;
-  url?: Maybe<Url>;
+  urls?: Maybe<Array<Scalars["String"]>>;
 };
 
 export type SceneDraftInput = {
@@ -1371,7 +1371,7 @@ export type SceneDraftInput = {
   studio?: InputMaybe<DraftEntityInput>;
   tags?: InputMaybe<Array<DraftEntityInput>>;
   title?: InputMaybe<Scalars["String"]>;
-  url?: InputMaybe<Scalars["String"]>;
+  urls?: InputMaybe<Array<Scalars["String"]>>;
 };
 
 export type SceneDraftPerformer = DraftEntity | Performer;
@@ -13953,16 +13953,7 @@ export type DraftQuery = {
           details?: string | null;
           director?: string | null;
           date?: string | null;
-          url?: {
-            __typename: "URL";
-            url: string;
-            site: {
-              __typename: "Site";
-              id: string;
-              name: string;
-              icon: string;
-            };
-          } | null;
+          urls?: Array<string> | null;
           studio?:
             | {
                 __typename: "DraftEntity";
@@ -39404,19 +39395,7 @@ export const DraftDocument = {
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "url" },
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "FragmentSpread",
-                                    name: {
-                                      kind: "Name",
-                                      value: "URLFragment",
-                                    },
-                                  },
-                                ],
-                              },
+                              name: { kind: "Name", value: "urls" },
                             },
                             {
                               kind: "Field",
