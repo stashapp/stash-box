@@ -10,8 +10,8 @@ import {
   DraftQuery,
   SceneQuery,
   BreastTypeEnum,
-  useSites,
   ValidSiteTypeEnum,
+  Site,
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
 
@@ -162,12 +162,10 @@ const parseAliases = (value: string | null | undefined) => {
 
 const parseUrls = (
   value: string[] | null | undefined,
-  type: ValidSiteTypeEnum
+  type: ValidSiteTypeEnum,
+  sites: Site[]
 ): [URL[], string[]] => {
   if (!value || value.length == 0) return [[], []];
-
-  const { data } = useSites();
-  const sites = data?.querySites.sites ?? [];
 
   const matches = [];
   const remainder = [];
@@ -189,12 +187,14 @@ const parseUrls = (
     // If no site matched
     if (!matched) remainder.push(url);
   }
+  console.log("Matches ", matches);
   return [matches, remainder];
 };
 
 export const parsePerformerDraft = (
   draft: PerformerDraft,
-  existingPerformer: PerformerFragment | undefined
+  existingPerformer: PerformerFragment | undefined,
+  sites: Site[]
 ): [InitialPerformer, Record<string, string | null>] => {
   const measurements = parseMeasurements(draft?.measurements);
   const draftAliases = parseAliases(draft?.aliases);
@@ -234,7 +234,8 @@ export const parsePerformerDraft = (
 
   const [mappedUrls, remainingUrls] = parseUrls(
     draft?.urls,
-    ValidSiteTypeEnum.PERFORMER
+    ValidSiteTypeEnum.PERFORMER,
+    sites
   );
   for (const mappedUrl of mappedUrls) {
     performer.urls = joinURLs(mappedUrl, performer.urls);
@@ -254,7 +255,6 @@ export const parsePerformerDraft = (
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,
   };
-  console.log(remainingUrls);
 
   return [performer, remainder];
 };

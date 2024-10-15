@@ -7,6 +7,7 @@ import {
   OperationEnum,
   PerformerEditDetailsInput,
   DraftQuery,
+  useSites,
 } from "src/graphql";
 import { LoadingIndicator } from "src/components/fragments";
 import { editHref, performerHref } from "src/utils";
@@ -33,8 +34,9 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
     { id: draft.data.id ?? "" },
     !isUpdate
   );
+  const { data: sitesData, loading: loadingSites } = useSites();
 
-  if (loadingPerformer) return <LoadingIndicator />;
+  if (loadingPerformer || loadingSites) return <LoadingIndicator />;
 
   const doInsert = (
     updateData: PerformerEditDetailsInput,
@@ -65,7 +67,8 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
 
   const [initialPerformer, unparsed] = parsePerformerDraft(
     draft.data,
-    performer?.findPerformer ?? undefined
+    performer?.findPerformer ?? undefined,
+    sitesData?.querySites.sites ?? []
   );
   const remainder = Object.entries(unparsed)
     .filter(([, val]) => !!val)
