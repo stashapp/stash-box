@@ -10,6 +10,8 @@ import {
   DraftQuery,
   SceneQuery,
   BreastTypeEnum,
+  useSites,
+  ValidSiteTypeEnum,
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
 
@@ -21,7 +23,7 @@ type ScenePerformer = NonNullable<
   SceneQuery["findScene"]
 >["performers"][number];
 
-type URL = { url: string; site: { id: string } };
+type URL = { url: string; site: { id: string, name: string } };
 const joinURLs = <T extends URL>(
   newURL: T | undefined | null,
   existingURLs: T[] | undefined
@@ -158,6 +160,35 @@ const parseAliases = (value: string | null | undefined) => {
   return null;
 };
 
+const parseUrls = (value: string[] | null | undefined, type: ValidSiteTypeEnum) : [URL[], string[]] => {
+  if (!value || value.length == 0) return [[], []]
+
+  const { loading, data } = useSites();
+  const sites = data?.querySites.sites ?? []
+
+  var matches = []
+  var remainder = []
+
+  for (var url of value){
+    if (url == "") continue
+
+    // Check all available sites and stop at the first match
+    let matched = false
+    for (var site of sites){
+      if (site.regex && site.valid_types.includes(type)){
+        if (url.match(site.regex)){
+          matches.push({ url: url, site: { id: site.id, name: site.name } })
+          matched = true
+          break
+        }
+      }
+    }
+    // If no site matched
+    if (!matched) remainder.push(url)
+  }
+  return [matches, remainder]
+}
+
 export const parsePerformerDraft = (
   draft: PerformerDraft,
   existingPerformer: PerformerFragment | undefined
@@ -198,11 +229,17 @@ export const parsePerformerDraft = (
     urls: existingPerformer?.urls,
   };
 
+  const [mappedUrls, remainingUrls] = parseUrls(draft?.urls, ValidSiteTypeEnum.PERFORMER)
+  for (var mappedUrl of mappedUrls){
+    performer.urls = joinURLs(mappedUrl, performer.urls)
+  }
+
+
   const remainder = {
     Aliases: draftAliases ? null : draft?.aliases ?? null,
     Height: draft.height && !performer.height ? draft.height : null,
     Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
-    URLs: (draft?.urls ?? []).join(", "),
+    URLs: (remainingUrls ?? []).join(", "),
     Measurements:
       draft?.measurements && !measurements ? draft.measurements : null,
     "Breast Type":
@@ -212,6 +249,7 @@ export const parsePerformerDraft = (
     Piercings: draft?.piercings ?? null,
     Tattoos: draft?.tattoos ?? null,
   };
+  console.log(remainingUrls)
 
   return [performer, remainder];
 };
