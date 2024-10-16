@@ -179,8 +179,10 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 	}
 
 	if q := filter.Names; q != nil && *q != "" {
-		searchColumns := []string{"studios.name", "parent_studio.name"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		searchColumns := []string{"studios.name", "parent_studio.name", "SA.alias"}
+		searchClause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
+		clause := fmt.Sprintf("EXISTS (SELECT S.id FROM studios S LEFT JOIN %[1]s SA ON S.id = SA.studio_id WHERE studios.id = S.id AND %[2]s GROUP BY S.id)", studioAliasTable.Name(), searchClause)
+
 		query.AddWhere(clause)
 		query.AddArg(thisArgs...)
 	}
