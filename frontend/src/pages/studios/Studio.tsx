@@ -92,6 +92,12 @@ const StudioComponent: FC<Props> = ({ studio }) => {
               </b>
             </span>
           )}
+          {studio.aliases.length > 0 && (
+            <div className="d-flex">
+              <b className="me-2">Aliases:</b>
+              <span>{studio.aliases.join(", ")}</span>
+            </div>
+          )}
         </div>
         {studioImage && (
           <div className="studio-photo">

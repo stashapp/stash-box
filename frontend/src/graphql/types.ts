@@ -2053,6 +2053,7 @@ export type EditFragment = {
         __typename: "Studio";
         id: string;
         name: string;
+        aliases: Array<string>;
         deleted: boolean;
         is_favorite: boolean;
         child_studios: Array<{
@@ -2178,6 +2179,7 @@ export type EditFragment = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -2370,6 +2372,8 @@ export type EditFragment = {
     | {
         __typename: "StudioEdit";
         name?: string | null;
+        added_aliases?: Array<string> | null;
+        removed_aliases?: Array<string> | null;
         added_urls?: Array<{
           __typename: "URL";
           url: string;
@@ -2384,6 +2388,7 @@ export type EditFragment = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -2480,6 +2485,7 @@ export type EditFragment = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -2676,6 +2682,7 @@ export type EditFragment = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -2824,6 +2831,7 @@ export type EditFragment = {
         __typename: "Studio";
         id: string;
         name: string;
+        aliases: Array<string>;
         deleted: boolean;
         is_favorite: boolean;
         child_studios: Array<{
@@ -3064,6 +3072,7 @@ export type StudioFragment = {
   __typename: "Studio";
   id: string;
   name: string;
+  aliases: Array<string>;
   deleted: boolean;
   is_favorite: boolean;
   child_studios: Array<{ __typename: "Studio"; id: string; name: string }>;
@@ -3194,6 +3203,7 @@ export type AddStudioMutation = {
     __typename: "Studio";
     id: string;
     name: string;
+    aliases: Array<string>;
     urls: Array<{
       __typename: "URL";
       url: string;
@@ -3386,6 +3396,7 @@ export type ApplyEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -3536,6 +3547,7 @@ export type ApplyEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -3728,6 +3740,8 @@ export type ApplyEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -3752,6 +3766,7 @@ export type ApplyEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -3858,6 +3873,7 @@ export type ApplyEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -4054,6 +4070,7 @@ export type ApplyEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -4212,6 +4229,7 @@ export type ApplyEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -4596,6 +4614,7 @@ export type PerformerEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -4746,6 +4765,7 @@ export type PerformerEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -4938,6 +4958,8 @@ export type PerformerEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -4962,6 +4984,7 @@ export type PerformerEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -5068,6 +5091,7 @@ export type PerformerEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -5264,6 +5288,7 @@ export type PerformerEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -5422,6 +5447,7 @@ export type PerformerEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -5625,6 +5651,7 @@ export type PerformerEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -5775,6 +5802,7 @@ export type PerformerEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -5967,6 +5995,8 @@ export type PerformerEditUpdateMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -5991,6 +6021,7 @@ export type PerformerEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -6097,6 +6128,7 @@ export type PerformerEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -6293,6 +6325,7 @@ export type PerformerEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -6451,6 +6484,7 @@ export type PerformerEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -6689,6 +6723,7 @@ export type SceneEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -6839,6 +6874,7 @@ export type SceneEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -7031,6 +7067,8 @@ export type SceneEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -7055,6 +7093,7 @@ export type SceneEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -7161,6 +7200,7 @@ export type SceneEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -7357,6 +7397,7 @@ export type SceneEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -7515,6 +7556,7 @@ export type SceneEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -7718,6 +7760,7 @@ export type SceneEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -7868,6 +7911,7 @@ export type SceneEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -8060,6 +8104,8 @@ export type SceneEditUpdateMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -8084,6 +8130,7 @@ export type SceneEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -8190,6 +8237,7 @@ export type SceneEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -8386,6 +8434,7 @@ export type SceneEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -8544,6 +8593,7 @@ export type SceneEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -8746,6 +8796,7 @@ export type StudioEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -8896,6 +8947,7 @@ export type StudioEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -9088,6 +9140,8 @@ export type StudioEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -9112,6 +9166,7 @@ export type StudioEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -9218,6 +9273,7 @@ export type StudioEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -9414,6 +9470,7 @@ export type StudioEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -9572,6 +9629,7 @@ export type StudioEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -9775,6 +9833,7 @@ export type StudioEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -9925,6 +9984,7 @@ export type StudioEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -10117,6 +10177,8 @@ export type StudioEditUpdateMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -10141,6 +10203,7 @@ export type StudioEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -10247,6 +10310,7 @@ export type StudioEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -10443,6 +10507,7 @@ export type StudioEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -10601,6 +10666,7 @@ export type StudioEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -10803,6 +10869,7 @@ export type TagEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -10953,6 +11020,7 @@ export type TagEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -11145,6 +11213,8 @@ export type TagEditMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -11169,6 +11239,7 @@ export type TagEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -11275,6 +11346,7 @@ export type TagEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -11471,6 +11543,7 @@ export type TagEditMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -11629,6 +11702,7 @@ export type TagEditMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -11832,6 +11906,7 @@ export type TagEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -11982,6 +12057,7 @@ export type TagEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -12174,6 +12250,8 @@ export type TagEditUpdateMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -12198,6 +12276,7 @@ export type TagEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -12304,6 +12383,7 @@ export type TagEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -12500,6 +12580,7 @@ export type TagEditUpdateMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -12658,6 +12739,7 @@ export type TagEditUpdateMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -12791,6 +12873,7 @@ export type UpdateStudioMutation = {
     __typename: "Studio";
     id: string;
     name: string;
+    aliases: Array<string>;
     deleted: boolean;
     is_favorite: boolean;
     child_studios: Array<{ __typename: "Studio"; id: string; name: string }>;
@@ -12994,6 +13077,7 @@ export type VoteMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -13144,6 +13228,7 @@ export type VoteMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -13336,6 +13421,8 @@ export type VoteMutation = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -13360,6 +13447,7 @@ export type VoteMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -13466,6 +13554,7 @@ export type VoteMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -13662,6 +13751,7 @@ export type VoteMutation = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -13820,6 +13910,7 @@ export type VoteMutation = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -13986,6 +14077,7 @@ export type DraftQuery = {
                 __typename: "Studio";
                 id: string;
                 name: string;
+                aliases: Array<string>;
                 deleted: boolean;
                 is_favorite: boolean;
                 child_studios: Array<{
@@ -14281,6 +14373,7 @@ export type EditQuery = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -14431,6 +14524,7 @@ export type EditQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -14623,6 +14717,8 @@ export type EditQuery = {
       | {
           __typename: "StudioEdit";
           name?: string | null;
+          added_aliases?: Array<string> | null;
+          removed_aliases?: Array<string> | null;
           added_urls?: Array<{
             __typename: "URL";
             url: string;
@@ -14647,6 +14743,7 @@ export type EditQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -14753,6 +14850,7 @@ export type EditQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -14949,6 +15047,7 @@ export type EditQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -15107,6 +15206,7 @@ export type EditQuery = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -15303,6 +15403,7 @@ export type EditUpdateQuery = {
           __typename: "Studio";
           id: string;
           name: string;
+          aliases: Array<string>;
           deleted: boolean;
           is_favorite: boolean;
           child_studios: Array<{
@@ -15405,6 +15506,7 @@ export type EditUpdateQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -15540,6 +15642,7 @@ export type EditUpdateQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -15750,6 +15853,7 @@ export type EditsQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -15900,6 +16004,7 @@ export type EditsQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -16096,6 +16201,8 @@ export type EditsQuery = {
         | {
             __typename: "StudioEdit";
             name?: string | null;
+            added_aliases?: Array<string> | null;
+            removed_aliases?: Array<string> | null;
             added_urls?: Array<{
               __typename: "URL";
               url: string;
@@ -16120,6 +16227,7 @@ export type EditsQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -16230,6 +16338,7 @@ export type EditsQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -16430,6 +16539,7 @@ export type EditsQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -16596,6 +16706,7 @@ export type EditsQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -17093,6 +17204,7 @@ export type QueryExistingSceneQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -17243,6 +17355,7 @@ export type QueryExistingSceneQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -17439,6 +17552,8 @@ export type QueryExistingSceneQuery = {
         | {
             __typename: "StudioEdit";
             name?: string | null;
+            added_aliases?: Array<string> | null;
+            removed_aliases?: Array<string> | null;
             added_urls?: Array<{
               __typename: "URL";
               url: string;
@@ -17463,6 +17578,7 @@ export type QueryExistingSceneQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -17573,6 +17689,7 @@ export type QueryExistingSceneQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -17773,6 +17890,7 @@ export type QueryExistingSceneQuery = {
               __typename: "Studio";
               id: string;
               name: string;
+              aliases: Array<string>;
               deleted: boolean;
               is_favorite: boolean;
               child_studios: Array<{
@@ -17939,6 +18057,7 @@ export type QueryExistingSceneQuery = {
             __typename: "Studio";
             id: string;
             name: string;
+            aliases: Array<string>;
             deleted: boolean;
             is_favorite: boolean;
             child_studios: Array<{
@@ -18373,6 +18492,7 @@ export type StudioQuery = {
     __typename: "Studio";
     id: string;
     name: string;
+    aliases: Array<string>;
     deleted: boolean;
     is_favorite: boolean;
     child_studios: Array<{ __typename: "Studio"; id: string; name: string }>;
@@ -18458,6 +18578,7 @@ export type StudiosQuery = {
       __typename: "Studio";
       id: string;
       name: string;
+      aliases: Array<string>;
       deleted: boolean;
       is_favorite: boolean;
       parent?: { __typename: "Studio"; id: string; name: string } | null;
@@ -18863,6 +18984,7 @@ export const StudioFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -19587,6 +19709,14 @@ export const EditFragmentDoc = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -20525,6 +20655,7 @@ export const EditFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -21335,6 +21466,7 @@ export const AddStudioDocument = {
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "aliases" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "urls" },
@@ -21726,6 +21858,7 @@ export const ApplyEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -22342,6 +22475,14 @@ export const ApplyEditDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -24161,6 +24302,7 @@ export const PerformerEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -24777,6 +24919,14 @@ export const PerformerEditDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -25769,6 +25919,7 @@ export const PerformerEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -26385,6 +26536,14 @@ export const PerformerEditUpdateDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -27541,6 +27700,7 @@ export const SceneEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -28157,6 +28317,14 @@ export const SceneEditDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -29146,6 +29314,7 @@ export const SceneEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -29762,6 +29931,14 @@ export const SceneEditUpdateDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -30738,6 +30915,7 @@ export const StudioEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -31354,6 +31532,14 @@ export const StudioEditDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -32343,6 +32529,7 @@ export const StudioEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -32959,6 +33146,14 @@ export const StudioEditUpdateDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -33935,6 +34130,7 @@ export const TagEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -34551,6 +34747,14 @@ export const TagEditDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -35540,6 +35744,7 @@ export const TagEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -36156,6 +36361,14 @@ export const TagEditUpdateDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -37327,6 +37540,7 @@ export const UpdateStudioDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -37741,6 +37955,7 @@ export const VoteDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -38357,6 +38572,14 @@ export const VoteDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -39703,6 +39926,7 @@ export const DraftDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -40184,6 +40408,7 @@ export const EditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -40800,6 +41025,14 @@ export const EditDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -42366,6 +42599,7 @@ export const EditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -42816,6 +43050,7 @@ export const EditsDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -43432,6 +43667,14 @@ export const EditsDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -45305,6 +45548,7 @@ export const QueryExistingSceneDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -45902,6 +46146,14 @@ export const QueryExistingSceneDocument = {
                     kind: "SelectionSet",
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "added_aliases" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "removed_aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "added_urls" },
@@ -48346,6 +48598,7 @@ export const StudioDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "child_studios" },
@@ -48787,6 +49040,10 @@ export const StudiosDocument = {
                     selections: [
                       { kind: "Field", name: { kind: "Name", value: "id" } },
                       { kind: "Field", name: { kind: "Name", value: "name" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "aliases" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "deleted" },

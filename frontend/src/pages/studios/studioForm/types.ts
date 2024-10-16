@@ -1,5 +1,6 @@
 export type InitialStudio = {
   name?: string | null;
+  aliases?: string[];
   parent?: {
     id: string;
     name: string;

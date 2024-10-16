@@ -2,6 +2,7 @@ mutation AddStudio($studioData: StudioCreateInput!) {
   studioCreate(input: $studioData) {
     id
     name
+    aliases
     urls {
       url
       site {
