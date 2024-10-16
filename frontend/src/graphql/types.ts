@@ -1085,6 +1085,7 @@ export type Query = {
   queryUsers: QueryUsersResultType;
   searchPerformer: Array<Performer>;
   searchScene: Array<Scene>;
+  searchStudio: Array<Studio>;
   searchTag: Array<Tag>;
   version: Version;
 };
@@ -1200,6 +1201,12 @@ export type QuerySearchPerformerArgs = {
 
 /** The query root for this schema */
 export type QuerySearchSceneArgs = {
+  limit?: InputMaybe<Scalars["Int"]>;
+  term: Scalars["String"];
+};
+
+/** The query root for this schema */
+export type QuerySearchStudioArgs = {
   limit?: InputMaybe<Scalars["Int"]>;
   term: Scalars["String"];
 };
@@ -1610,7 +1617,7 @@ export type StudioQueryInput = {
   is_favorite?: InputMaybe<Scalars["Boolean"]>;
   /** Filter to search name - assumes like query unless quoted */
   name?: InputMaybe<Scalars["String"]>;
-  /** Filter to search studio and parent studio name - assumes like query unless quoted */
+  /** Filter to search studio name, aliases and parent studio name - assumes like query unless quoted */
   names?: InputMaybe<Scalars["String"]>;
   page?: Scalars["Int"];
   parent?: InputMaybe<IdCriterionInput>;

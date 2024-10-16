@@ -27,4 +27,5 @@ type StudioRepo interface {
 	GetAliases(id uuid.UUID) (StudioAliases, error)
 	GetAllAliases(ids []uuid.UUID) ([][]string, []error)
 	GetEditAliases(id *uuid.UUID, data *StudioEdit) ([]string, error)
+	SearchStudios(term string, limit int) (Studios, error)
 }

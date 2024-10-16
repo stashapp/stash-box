@@ -649,7 +649,7 @@ type StudioEditInput struct {
 type StudioQueryInput struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name,omitempty"`
-	// Filter to search studio and parent studio name - assumes like query unless quoted
+	// Filter to search studio name, aliases and parent studio name - assumes like query unless quoted
 	Names *string `json:"names,omitempty"`
 	// Filter to search url - assumes like query unless quoted
 	URL       *string           `json:"url,omitempty"`

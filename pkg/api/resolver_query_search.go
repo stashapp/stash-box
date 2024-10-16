@@ -76,3 +76,26 @@ func (r *queryResolver) SearchTag(ctx context.Context, term string, limit *int) 
 
 	return qb.SearchTags(trimmedQuery, searchLimit)
 }
+
+func (r *queryResolver) SearchStudio(ctx context.Context, term string, limit *int) ([]*models.Studio, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Studio()
+
+	trimmedQuery := strings.TrimSpace(term)
+	studioID, err := uuid.FromString(trimmedQuery)
+	if err == nil {
+		var studios []*models.Studio
+		studio, err := qb.Find(studioID)
+		if studio != nil {
+			studios = append(studios, studio)
+		}
+		return studios, err
+	}
+
+	searchLimit := 10
+	if limit != nil {
+		searchLimit = *limit
+	}
+
+	return qb.SearchStudios(trimmedQuery, searchLimit)
+}

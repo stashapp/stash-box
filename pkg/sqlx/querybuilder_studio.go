@@ -235,6 +235,30 @@ func (qb *studioQueryBuilder) GetImages(id uuid.UUID) (models.StudiosImages, err
 	return joins, err
 }
 
+func (qb *studioQueryBuilder) SearchStudios(term string, limit int) (models.Studios, error) {
+	query := `
+		SELECT S.* FROM (
+			SELECT id, SUM(similarity) AS score FROM (
+				SELECT S.id, similarity(S.name, $1) AS similarity
+				FROM studios S
+				WHERE S.deleted = FALSE AND S.name % $1 AND similarity(S.name, $1) > 0.5
+			UNION
+				SELECT S.id, (similarity(COALESCE(SA.alias, ''), $1) * 0.5) AS similarity
+				FROM studios S
+				LEFT JOIN studio_aliases SA on SA.studio_id = S.id
+				WHERE S.deleted = FALSE AND SA.alias % $1 AND similarity(COALESCE(SA.alias, ''), $1) > 0.5
+			) A
+			GROUP BY id
+			ORDER BY score DESC
+			LIMIT $2
+		) T
+		JOIN studios S ON S.id = T.id
+		ORDER BY score DESC;
+	`
+	args := []interface{}{term, limit}
+	return qb.queryStudios(query, args)
+}
+
 func (qb *studioQueryBuilder) GetURLs(id uuid.UUID) ([]*models.URL, error) {
 	joins := models.StudioURLs{}
 	err := qb.dbi.FindJoins(studioURLTable, id, &joins)
