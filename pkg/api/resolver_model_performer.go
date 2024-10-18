@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -223,6 +224,16 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
 	return dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
+}
+
+func (r *performerResolver) MergedIntoID(ctx context.Context, obj *models.Performer) (*uuid.UUID, error) {
+	res, err := dataloader.For(ctx).PerformerMergeIDsBySourceID.Load(obj.ID)
+	if err == nil && len(res) == 1 {
+		return &res[0], nil
+	} else if err == nil {
+		return nil, fmt.Errorf("invalid number of results returned, expecting exactly 1, found %d", len(res))
+	}
+	return nil, err
 }
 
 func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {
