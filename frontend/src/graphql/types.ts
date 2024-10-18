@@ -762,7 +762,10 @@ export type Performer = {
   is_favorite: Scalars["Boolean"];
   /** @deprecated Use individual fields, cup/band/waist/hip_size */
   measurements: Measurements;
+  /** IDs of performers that were merged into this one */
   merged_ids: Array<Scalars["ID"]>;
+  /** ID of performer that replaces this one */
+  merged_into_id?: Maybe<Scalars["ID"]>;
   name: Scalars["String"];
   piercings?: Maybe<Array<BodyModification>>;
   scene_count: Scalars["Int"];
