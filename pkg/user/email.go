@@ -50,7 +50,7 @@ func generateConfirmOldEmailKey(aqb models.UserTokenCreator, userID uuid.UUID) (
 func sendConfirmOldEmail(em *email.Manager, email string, activationKey uuid.UUID) error {
 	subject := "Subject: Email change requested"
 
-	link := fmt.Sprintf("%s/change-email?key=%s", config.GetHostURL(), activationKey)
+	link := fmt.Sprintf("%s/confirm-email?key=%s", config.GetHostURL(), activationKey)
 	body := "Please click the following link to set your account password: " + link
 
 	return em.Send(email, subject, body)
@@ -97,7 +97,7 @@ func generateConfirmNewEmailKey(aqb models.UserTokenCreator, userID uuid.UUID, e
 func sendConfirmNewEmail(em *email.Manager, email string, activationKey uuid.UUID) error {
 	subject := "Subject: Email change requested"
 
-	link := fmt.Sprintf("%s/change-email2?key=%s", config.GetHostURL(), activationKey)
+	link := fmt.Sprintf("%s/change-email?key=%s", config.GetHostURL(), activationKey)
 	body := "Please click the following link to set your account password: " + link
 
 	return em.Send(email, subject, body)

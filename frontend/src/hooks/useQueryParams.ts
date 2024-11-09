@@ -22,11 +22,16 @@ interface NumberArrayParamConfig extends ParamBase {
   type: "number[]";
   default?: number[];
 }
+interface BooleanParamConfig extends ParamBase {
+  type: "boolean";
+  default?: boolean;
+}
 type ParamConfig =
   | StringParamConfig
   | StringArrayParamConfig
   | NumberParamConfig
-  | NumberArrayParamConfig;
+  | NumberArrayParamConfig
+  | BooleanParamConfig;
 type QueryParamConfig = Record<string, ParamConfig>;
 
 export type QueryParams<T extends QueryParamConfig> = {
@@ -38,6 +43,8 @@ export type QueryParams<T extends QueryParamConfig> = {
     ? number
     : T[Property] extends NumberArrayParamConfig
     ? number[]
+    : T[Property] extends BooleanParamConfig
+    ? boolean
     : never;
 };
 
@@ -71,6 +78,7 @@ const getParamValue = (
   if (config.type === "number[]") return ensureNumberArray(value);
   if (config.type === "string[]") return ensureArray(value);
   if (config.type === "number") return parseInt(value.toString(), 10);
+  if (config.type === "boolean") return value.toString() === "true";
   return value;
 };
 

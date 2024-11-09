@@ -1,0 +1,3 @@
+mutation ValidateChangeEmail($token: ID!, $email: String!) {
+  validateChangeEmail(token: $token, email: $email)
+}

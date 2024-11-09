@@ -2,58 +2,54 @@ import { FC, useContext, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { isApolloError } from "@apollo/client";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form, Row, Col } from "react-bootstrap";
 
+import { useQueryParams } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
-import { useChangePassword } from "src/graphql";
-import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
+import { useValidateChangeEmail } from "src/graphql";
+import { ROUTE_HOME } from "src/constants/route";
 
 const schema = yup.object({
-  resetKey: yup.string().required("Reset Key is required"),
-  password: yup.string().required("Password is required"),
+  token: yup.string().required(),
+  email: yup.string().required("Email is required"),
 });
-type ResetPasswordFormData = yup.Asserts<typeof schema>;
+type ValidateChangeEmailFormData = yup.Asserts<typeof schema>;
 
-function useQuery() {
-  return new URLSearchParams(useLocation().search);
-}
-
-const ResetPassword: FC = () => {
+const ValidateChangeEmail: FC = () => {
   const navigate = useNavigate();
-  const query = useQuery();
   const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
+  const [{ token, submitted }, setQueryParam] = useQueryParams({
+    token: { name: "token", type: "string" },
+    submitted: { name: "submitted", type: "boolean" },
+  });
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ResetPasswordFormData>({
+  } = useForm<ValidateChangeEmailFormData>({
     resolver: yupResolver(schema),
   });
 
-  const [changePassword, { loading }] = useChangePassword();
+  const [validateChangeEmail, { loading }] = useValidateChangeEmail();
+
+  if (submitted) return <div>Submitted!</div>;
+
+  if (!token) return <ErrorMessage error="Missing token" />;
 
   if (Auth.authenticated) navigate(ROUTE_HOME);
 
-  const key = query.get("key");
-
-  if (!key) return <ErrorMessage error="Invalid request" />;
-
-  const onSubmit = (formData: ResetPasswordFormData) => {
-    const userData = {
-      reset_key: formData.resetKey,
-      new_password: formData.password,
-    };
+  const onSubmit = (formData: ValidateChangeEmailFormData) => {
     setSubmitError(undefined);
-    changePassword({ variables: { userData } })
+    validateChangeEmail({ variables: { ...formData } })
       .then(() => {
-        navigate(`${ROUTE_LOGIN}?msg=password-reset`);
+        setQueryParam("submitted", true);
       })
       .catch(
         (error: unknown) =>
@@ -64,31 +60,31 @@ const ResetPassword: FC = () => {
   };
 
   const errorList = [
-    errors.resetKey?.message,
-    errors.password?.message,
+    errors.token?.message,
+    errors.email?.message,
     submitError,
   ].filter((err): err is string => err !== undefined);
 
   return (
     <div className="LoginPrompt">
-      <Title page="Reset Password" />
+      <Title page="Confirm Email" />
       <Form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Form.Control type="hidden" value={key} {...register("resetKey")} />
+        <Form.Control type="hidden" value={token} {...register("token")} />
 
-        <Form.Group controlId="password" className="mt-2">
+        <Form.Group controlId="email" className="mt-2">
           <Row>
             <Col xs={4}>
-              <Form.Label>New Password:</Form.Label>
+              <Form.Label>New Email:</Form.Label>
             </Col>
             <Col xs={8}>
               <Form.Control
-                className={cx({ "is-invalid": errors?.password })}
-                type="password"
-                placeholder="Password"
-                {...register("password")}
+                className={cx({ "is-invalid": errors?.email })}
+                type="email"
+                placeholder="Email"
+                {...register("email")}
               />
             </Col>
           </Row>
@@ -106,7 +102,7 @@ const ResetPassword: FC = () => {
             className="justify-content-end mt-2 d-flex"
           >
             <Button type="submit" disabled={loading}>
-              Set Password
+              Change Email
             </Button>
           </Col>
         </Row>
@@ -115,4 +111,4 @@ const ResetPassword: FC = () => {
   );
 };
 
-export default ResetPassword;
+export default ValidateChangeEmail;

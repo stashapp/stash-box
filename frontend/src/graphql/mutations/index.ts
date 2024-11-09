@@ -82,6 +82,11 @@ import {
   DeleteDraftMutationVariables,
   UnmatchFingerprintMutation,
   UnmatchFingerprintMutationVariables,
+  ValidateChangeEmailMutation,
+  ValidateChangeEmailMutationVariables,
+  ConfirmChangeEmailMutation,
+  ConfirmChangeEmailMutationVariables,
+  RequestChangeEmailMutation,
 } from "../types";
 
 import ActivateUserGQL from "./ActivateNewUser.gql";
@@ -125,6 +130,9 @@ import FavoriteStudioGQL from "./FavoriteStudio.gql";
 import FavoritePerformerGQL from "./FavoritePerformer.gql";
 import DeleteDraftGQL from "./DeleteDraft.gql";
 import UnmatchFingerprintGQL from "./UnmatchFingerprint.gql";
+import ValidateChangeEmailGQL from "./ValidateChangeEmail.gql";
+import ConfirmChangeEmailGQL from "./ConfirmChangeEmail.gql";
+import RequestChangeEmailGQL from "./RequestChangeEmail.gql";
 
 export const useActivateUser = (
   options?: MutationHookOptions<
@@ -383,3 +391,21 @@ export const useUnmatchFingerprint = (
     },
     ...options,
   });
+
+export const useValidateChangeEmail = (
+  options?: MutationHookOptions<
+    ValidateChangeEmailMutation,
+    ValidateChangeEmailMutationVariables
+  >
+) => useMutation(ValidateChangeEmailGQL, options);
+
+export const useConfirmChangeEmail = (
+  options?: MutationHookOptions<
+    ConfirmChangeEmailMutation,
+    ConfirmChangeEmailMutationVariables
+  >
+) => useMutation(ConfirmChangeEmailGQL, options);
+
+export const useRequestChangeEmail = (
+  options?: MutationHookOptions<RequestChangeEmailMutation>
+) => useMutation(RequestChangeEmailGQL, options);

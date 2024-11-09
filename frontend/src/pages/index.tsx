@@ -20,6 +20,8 @@ import {
   ROUTE_VERSION,
   ROUTE_SITES,
   ROUTE_DRAFTS,
+  ROUTE_CONFIRM_EMAIL,
+  ROUTE_CHANGE_EMAIL,
 } from "src/constants/route";
 
 import Home from "src/pages/home";
@@ -35,6 +37,8 @@ import RegisterUser from "src/pages/registerUser";
 import ActivateUser from "src/pages/activateUser";
 import ForgotPassword from "src/pages/forgotPassword";
 import ResetPassword from "src/pages/resetPassword";
+import ValidateChangeEmail from "src/pages/validateChangeEmail";
+import ConfirmChangeEmail from "src/pages/confirmchangeEmail";
 import Search from "src/pages/search";
 import Version from "src/pages/version";
 import Sites from "src/pages/sites";
@@ -60,6 +64,14 @@ const Pages: FC = () => (
             <Route path={ROUTE_ACTIVATE} element={<ActivateUser />} />
             <Route path={ROUTE_FORGOT_PASSWORD} element={<ForgotPassword />} />
             <Route path={ROUTE_RESET_PASSWORD} element={<ResetPassword />} />
+            <Route
+              path={ROUTE_CONFIRM_EMAIL}
+              element={<ConfirmChangeEmail />}
+            />
+            <Route
+              path={ROUTE_CHANGE_EMAIL}
+              element={<ValidateChangeEmail />}
+            />
             <Route path={ROUTE_SEARCH} element={<Search />} />
             <Route path={ROUTE_SEARCH_INDEX} element={<Search />} />
             <Route path={ROUTE_VERSION} element={<Version />} />
