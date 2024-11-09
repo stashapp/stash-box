@@ -8,12 +8,12 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form, Row, Col } from "react-bootstrap";
 
+import { ErrorMessage } from 'src/components/fragments';
 import Title from "src/components/title";
 import { useChangePassword } from "src/graphql";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
 const schema = yup.object({
-  email: yup.string().email().required("Email is required"),
   resetKey: yup.string().required("Reset Key is required"),
   password: yup.string().required("Password is required"),
 });
@@ -41,6 +41,12 @@ const ResetPassword: FC = () => {
 
   if (Auth.authenticated) navigate(ROUTE_HOME);
 
+  const key = query.get('key');
+
+  if (!key)
+    return <ErrorMessage error="Invalid request" />;
+        
+
   const onSubmit = (formData: ResetPasswordFormData) => {
     const userData = {
       reset_key: formData.resetKey,
@@ -61,7 +67,6 @@ const ResetPassword: FC = () => {
 
   const errorList = [
     errors.resetKey?.message,
-    errors.email?.message,
     errors.password?.message,
     submitError,
   ].filter((err): err is string => err !== undefined);
@@ -75,13 +80,7 @@ const ResetPassword: FC = () => {
       >
         <Form.Control
           type="hidden"
-          value={query.get("email") ?? ""}
-          {...register("email")}
-        />
-
-        <Form.Control
-          type="hidden"
-          value={query.get("key") ?? ""}
+          value={key}
           {...register("resetKey")}
         />
 

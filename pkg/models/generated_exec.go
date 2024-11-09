@@ -175,6 +175,7 @@ type ComplexityRoot struct {
 		ApplyEdit            func(childComplexity int, input ApplyEditInput) int
 		CancelEdit           func(childComplexity int, input CancelEditInput) int
 		ChangePassword       func(childComplexity int, input UserChangePasswordInput) int
+		ConfirmChangeEmail   func(childComplexity int, token uuid.UUID) int
 		DestroyDraft         func(childComplexity int, id uuid.UUID) int
 		EditComment          func(childComplexity int, input EditCommentInput) int
 		EditVote             func(childComplexity int, input EditVoteInput) int
@@ -192,6 +193,7 @@ type ComplexityRoot struct {
 		PerformerEditUpdate  func(childComplexity int, id uuid.UUID, input PerformerEditInput) int
 		PerformerUpdate      func(childComplexity int, input PerformerUpdateInput) int
 		RegenerateAPIKey     func(childComplexity int, userID *uuid.UUID) int
+		RequestChangeEmail   func(childComplexity int) int
 		RescindInviteCode    func(childComplexity int, code uuid.UUID) int
 		ResetPassword        func(childComplexity int, input ResetPasswordInput) int
 		RevokeInvite         func(childComplexity int, input RevokeInviteInput) int
@@ -222,6 +224,7 @@ type ComplexityRoot struct {
 		UserCreate           func(childComplexity int, input UserCreateInput) int
 		UserDestroy          func(childComplexity int, input UserDestroyInput) int
 		UserUpdate           func(childComplexity int, input UserUpdateInput) int
+		ValidateChangeEmail  func(childComplexity int, token uuid.UUID, email string) int
 	}
 
 	Performer struct {
@@ -653,7 +656,7 @@ type MutationResolver interface {
 	UserDestroy(ctx context.Context, input UserDestroyInput) (bool, error)
 	ImageCreate(ctx context.Context, input ImageCreateInput) (*Image, error)
 	ImageDestroy(ctx context.Context, input ImageDestroyInput) (bool, error)
-	NewUser(ctx context.Context, input NewUserInput) (*string, error)
+	NewUser(ctx context.Context, input NewUserInput) (*uuid.UUID, error)
 	ActivateNewUser(ctx context.Context, input ActivateNewUserInput) (*User, error)
 	GenerateInviteCode(ctx context.Context) (*uuid.UUID, error)
 	GenerateInviteCodes(ctx context.Context, input *GenerateInviteCodeInput) ([]uuid.UUID, error)
@@ -669,6 +672,9 @@ type MutationResolver interface {
 	RegenerateAPIKey(ctx context.Context, userID *uuid.UUID) (string, error)
 	ResetPassword(ctx context.Context, input ResetPasswordInput) (bool, error)
 	ChangePassword(ctx context.Context, input UserChangePasswordInput) (bool, error)
+	RequestChangeEmail(ctx context.Context) (UserChangeEmailStatus, error)
+	ValidateChangeEmail(ctx context.Context, token uuid.UUID, email string) (UserChangeEmailStatus, error)
+	ConfirmChangeEmail(ctx context.Context, token uuid.UUID) (UserChangeEmailStatus, error)
 	SceneEdit(ctx context.Context, input SceneEditInput) (*Edit, error)
 	PerformerEdit(ctx context.Context, input PerformerEditInput) (*Edit, error)
 	StudioEdit(ctx context.Context, input StudioEditInput) (*Edit, error)
@@ -1377,6 +1383,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.ChangePassword(childComplexity, args["input"].(UserChangePasswordInput)), true
 
+	case "Mutation.confirmChangeEmail":
+		if e.complexity.Mutation.ConfirmChangeEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_confirmChangeEmail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ConfirmChangeEmail(childComplexity, args["token"].(uuid.UUID)), true
+
 	case "Mutation.destroyDraft":
 		if e.complexity.Mutation.DestroyDraft == nil {
 			break
@@ -1575,6 +1593,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RegenerateAPIKey(childComplexity, args["userID"].(*uuid.UUID)), true
+
+	case "Mutation.requestChangeEmail":
+		if e.complexity.Mutation.RequestChangeEmail == nil {
+			break
+		}
+
+		return e.complexity.Mutation.RequestChangeEmail(childComplexity), true
 
 	case "Mutation.rescindInviteCode":
 		if e.complexity.Mutation.RescindInviteCode == nil {
@@ -1935,6 +1960,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UserUpdate(childComplexity, args["input"].(UserUpdateInput)), true
+
+	case "Mutation.validateChangeEmail":
+		if e.complexity.Mutation.ValidateChangeEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_validateChangeEmail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ValidateChangeEmail(childComplexity, args["token"].(uuid.UUID), args["email"].(string)), true
 
 	case "Performer.age":
 		if e.complexity.Performer.Age == nil {
@@ -4089,6 +4126,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputTagQueryInput,
 		ec.unmarshalInputTagUpdateInput,
 		ec.unmarshalInputURLInput,
+		ec.unmarshalInputUserChangeEmailInput,
 		ec.unmarshalInputUserChangePasswordInput,
 		ec.unmarshalInputUserCreateInput,
 		ec.unmarshalInputUserDestroyInput,
@@ -5474,13 +5512,13 @@ input UserUpdateInput {
 
 input NewUserInput {
   email: String!
-  invite_key: String
+  invite_key: ID 
 }
 
 input ActivateNewUserInput {
   name: String!
   email: String!
-  activation_key: String!
+  activation_key: ID!
   password: String!
 }
 
@@ -5492,7 +5530,7 @@ input UserChangePasswordInput {
   """Password in plain text"""
   existing_password: String
   new_password: String!
-  reset_key: String
+  reset_key: ID
 }
 
 input UserDestroyInput {
@@ -5571,7 +5609,23 @@ input GenerateInviteCodeInput {
   uses: Int
   # the number of seconds until the invite code expires. If not set, the invite code will never expire
   ttl: Int
-}`, BuiltIn: false},
+}
+
+input UserChangeEmailInput {
+  existing_email_token: ID
+  new_email_token: ID
+  new_email: String
+}
+
+enum UserChangeEmailStatus {
+  CONFIRM_OLD
+  CONFIRM_NEW
+  EXPIRED
+  INVALID_TOKEN
+  SUCCESS
+  ERROR
+}
+`, BuiltIn: false},
 	{Name: "../../graphql/schema/types/version.graphql", Input: `type Version {
   hash: String!
   build_time: String!
@@ -5683,7 +5737,7 @@ type Mutation {
   imageDestroy(input: ImageDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   """User interface for registering"""
-  newUser(input: NewUserInput!): String
+  newUser(input: NewUserInput!): ID
   activateNewUser(input: ActivateNewUserInput!): User
 
   generateInviteCode: ID @deprecated(reason: "Use generateInviteCodes")
@@ -5712,6 +5766,11 @@ type Mutation {
 
   """Changes the password for the current user"""
   changePassword(input: UserChangePasswordInput!): Boolean!
+
+  """Request an email change for the current user"""
+  requestChangeEmail: UserChangeEmailStatus! @hasRole(role: READ)
+  validateChangeEmail(token: ID!, email: String!): UserChangeEmailStatus! @hasRole(role: READ)
+  confirmChangeEmail(token: ID!): UserChangeEmailStatus! @hasRole(role: READ)
 
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
@@ -5839,6 +5898,21 @@ func (ec *executionContext) field_Mutation_changePassword_args(ctx context.Conte
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_confirmChangeEmail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["token"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["token"] = arg0
 	return args, nil
 }
 
@@ -6583,6 +6657,30 @@ func (ec *executionContext) field_Mutation_userUpdate_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_validateChangeEmail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["token"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["token"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["email"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["email"] = arg1
 	return args, nil
 }
 
@@ -11423,9 +11521,9 @@ func (ec *executionContext) _Mutation_newUser(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*uuid.UUID)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_newUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11435,7 +11533,7 @@ func (ec *executionContext) fieldContext_Mutation_newUser(ctx context.Context, f
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	defer func() {
@@ -12472,6 +12570,232 @@ func (ec *executionContext) fieldContext_Mutation_changePassword(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_changePassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_requestChangeEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_requestChangeEmail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RequestChangeEmail(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(UserChangeEmailStatus); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/stashapp/stash-box/pkg/models.UserChangeEmailStatus`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(UserChangeEmailStatus)
+	fc.Result = res
+	return ec.marshalNUserChangeEmailStatus2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserChangeEmailStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_requestChangeEmail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UserChangeEmailStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_validateChangeEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_validateChangeEmail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ValidateChangeEmail(rctx, fc.Args["token"].(uuid.UUID), fc.Args["email"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(UserChangeEmailStatus); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/stashapp/stash-box/pkg/models.UserChangeEmailStatus`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(UserChangeEmailStatus)
+	fc.Result = res
+	return ec.marshalNUserChangeEmailStatus2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserChangeEmailStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_validateChangeEmail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UserChangeEmailStatus does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_validateChangeEmail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_confirmChangeEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_confirmChangeEmail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ConfirmChangeEmail(rctx, fc.Args["token"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(UserChangeEmailStatus); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/stashapp/stash-box/pkg/models.UserChangeEmailStatus`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(UserChangeEmailStatus)
+	fc.Result = res
+	return ec.marshalNUserChangeEmailStatus2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserChangeEmailStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_confirmChangeEmail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UserChangeEmailStatus does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_confirmChangeEmail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -31225,7 +31549,7 @@ func (ec *executionContext) unmarshalInputActivateNewUserInput(ctx context.Conte
 			it.Email = data
 		case "activation_key":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("activation_key"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -32324,7 +32648,7 @@ func (ec *executionContext) unmarshalInputNewUserInput(ctx context.Context, obj 
 			it.Email = data
 		case "invite_key":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("invite_key"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -35156,6 +35480,47 @@ func (ec *executionContext) unmarshalInputURLInput(ctx context.Context, obj inte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUserChangeEmailInput(ctx context.Context, obj interface{}) (UserChangeEmailInput, error) {
+	var it UserChangeEmailInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"existing_email_token", "new_email_token", "new_email"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "existing_email_token":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("existing_email_token"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExistingEmailToken = data
+		case "new_email_token":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("new_email_token"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NewEmailToken = data
+		case "new_email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("new_email"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NewEmail = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserChangePasswordInput(ctx context.Context, obj interface{}) (UserChangePasswordInput, error) {
 	var it UserChangePasswordInput
 	asMap := map[string]interface{}{}
@@ -35186,7 +35551,7 @@ func (ec *executionContext) unmarshalInputUserChangePasswordInput(ctx context.Co
 			it.NewPassword = data
 		case "reset_key":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reset_key"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -37289,6 +37654,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "changePassword":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_changePassword(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "requestChangeEmail":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_requestChangeEmail(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "validateChangeEmail":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_validateChangeEmail(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "confirmChangeEmail":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_confirmChangeEmail(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -46294,6 +46680,16 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋstashappᚋstashᚑbo
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUserChangeEmailStatus2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserChangeEmailStatus(ctx context.Context, v interface{}) (UserChangeEmailStatus, error) {
+	var res UserChangeEmailStatus
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUserChangeEmailStatus2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserChangeEmailStatus(ctx context.Context, sel ast.SelectionSet, v UserChangeEmailStatus) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNUserChangePasswordInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐUserChangePasswordInput(ctx context.Context, v interface{}) (UserChangePasswordInput, error) {

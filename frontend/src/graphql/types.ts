@@ -24,7 +24,7 @@ export type Scalars = {
 };
 
 export type ActivateNewUserInput = {
-  activation_key: Scalars["String"];
+  activation_key: Scalars["ID"];
   email: Scalars["String"];
   name: Scalars["String"];
   password: Scalars["String"];
@@ -444,6 +444,7 @@ export type Mutation = {
   cancelEdit: Edit;
   /** Changes the password for the current user */
   changePassword: Scalars["Boolean"];
+  confirmChangeEmail: UserChangeEmailStatus;
   destroyDraft: Scalars["Boolean"];
   /** Comment on an edit */
   editComment: Edit;
@@ -462,7 +463,7 @@ export type Mutation = {
   imageCreate?: Maybe<Image>;
   imageDestroy: Scalars["Boolean"];
   /** User interface for registering */
-  newUser?: Maybe<Scalars["String"]>;
+  newUser?: Maybe<Scalars["ID"]>;
   performerCreate?: Maybe<Performer>;
   performerDestroy: Scalars["Boolean"];
   /** Propose a new performer or modification to a performer */
@@ -472,6 +473,8 @@ export type Mutation = {
   performerUpdate?: Maybe<Performer>;
   /** Regenerates the api key for the given user, or the current user if id not provided */
   regenerateAPIKey: Scalars["String"];
+  /** Request an email change for the current user */
+  requestChangeEmail: UserChangeEmailStatus;
   /** Removes a pending invite code - refunding the token */
   rescindInviteCode: Scalars["Boolean"];
   /** Generates an email to reset a user password */
@@ -513,6 +516,7 @@ export type Mutation = {
   userCreate?: Maybe<User>;
   userDestroy: Scalars["Boolean"];
   userUpdate?: Maybe<User>;
+  validateChangeEmail: UserChangeEmailStatus;
 };
 
 export type MutationActivateNewUserArgs = {
@@ -529,6 +533,10 @@ export type MutationCancelEditArgs = {
 
 export type MutationChangePasswordArgs = {
   input: UserChangePasswordInput;
+};
+
+export type MutationConfirmChangeEmailArgs = {
+  token: Scalars["ID"];
 };
 
 export type MutationDestroyDraftArgs = {
@@ -721,9 +729,14 @@ export type MutationUserUpdateArgs = {
   input: UserUpdateInput;
 };
 
+export type MutationValidateChangeEmailArgs = {
+  email: Scalars["String"];
+  token: Scalars["ID"];
+};
+
 export type NewUserInput = {
   email: Scalars["String"];
-  invite_key?: InputMaybe<Scalars["String"]>;
+  invite_key?: InputMaybe<Scalars["ID"]>;
 };
 
 export enum OperationEnum {
@@ -1779,11 +1792,25 @@ export type User = {
   vote_count: UserVoteCount;
 };
 
+export type UserChangeEmailInput = {
+  existing_email_token?: InputMaybe<Scalars["ID"]>;
+  new_email?: InputMaybe<Scalars["String"]>;
+  new_email_token?: InputMaybe<Scalars["ID"]>;
+};
+
+export enum UserChangeEmailStatus {
+  CONFIRM_NEW = "CONFIRM_NEW",
+  CONFIRM_OLD = "CONFIRM_OLD",
+  EXPIRED = "EXPIRED",
+  INVALID_TOKEN = "INVALID_TOKEN",
+  SUCCESS = "SUCCESS",
+}
+
 export type UserChangePasswordInput = {
   /** Password in plain text */
   existing_password?: InputMaybe<Scalars["String"]>;
   new_password: Scalars["String"];
-  reset_key?: InputMaybe<Scalars["String"]>;
+  reset_key?: InputMaybe<Scalars["ID"]>;
 };
 
 export type UserCreateInput = {

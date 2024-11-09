@@ -1,26 +1,23 @@
 package models
 
 import (
-	"time"
-
 	"github.com/gofrs/uuid"
 )
 
-type PendingActivationRepo interface {
-	PendingActivationFinder
-	PendingActivationCreator
+type UserTokenRepo interface {
+	UserTokenFinder
+	UserTokenCreator
 
 	Destroy(id uuid.UUID) error
-	DestroyExpired(expireTime time.Time) error
+	DestroyExpired() error
 	Count() (int, error)
 }
 
-type PendingActivationFinder interface {
-	Find(id uuid.UUID) (*PendingActivation, error)
-	FindByEmail(email string, activationType string) (*PendingActivation, error)
-	FindByInviteKey(key string, activationType string) ([]*PendingActivation, error)
+type UserTokenFinder interface {
+	Find(id uuid.UUID) (*UserToken, error)
+	FindByInviteKey(key uuid.UUID) ([]*UserToken, error)
 }
 
-type PendingActivationCreator interface {
-	Create(newActivation PendingActivation) (*PendingActivation, error)
+type UserTokenCreator interface {
+	Create(newActivation UserToken) (*UserToken, error)
 }

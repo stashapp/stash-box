@@ -102,7 +102,7 @@ type Mutation {
   imageDestroy(input: ImageDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   """User interface for registering"""
-  newUser(input: NewUserInput!): String
+  newUser(input: NewUserInput!): ID
   activateNewUser(input: ActivateNewUserInput!): User
 
   generateInviteCode: ID @deprecated(reason: "Use generateInviteCodes")
@@ -131,6 +131,11 @@ type Mutation {
 
   """Changes the password for the current user"""
   changePassword(input: UserChangePasswordInput!): Boolean!
+
+  """Request an email change for the current user"""
+  requestChangeEmail: UserChangeEmailStatus! @hasRole(role: READ)
+  validateChangeEmail(token: ID!, email: String!): UserChangeEmailStatus! @hasRole(role: READ)
+  confirmChangeEmail(token: ID!): UserChangeEmailStatus! @hasRole(role: READ)
 
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
