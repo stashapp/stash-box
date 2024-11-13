@@ -2,9 +2,10 @@ package email
 
 import (
 	"errors"
-	"net/smtp"
-	"strconv"
+	"fmt"
 	"time"
+
+	"github.com/wneessen/go-mail"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
 )
@@ -23,7 +24,7 @@ func (m *Manager) validateEmailCooldown(email string) error {
 	m.clearExpired()
 
 	if _, found := m.lastEmailed[email]; found {
-		return errors.New("try again later")
+		return errors.New("pending-email-change")
 	}
 
 	return nil
@@ -41,15 +42,7 @@ func (m *Manager) clearExpired() {
 	}
 }
 
-func (m *Manager) makeAuth() smtp.Auth {
-	if config.GetEmailUser() != "" {
-		return smtp.PlainAuth("", config.GetEmailUser(), config.GetEmailPassword(), config.GetEmailHost())
-	}
-
-	return nil
-}
-
-func (m *Manager) Send(email, subject, body string) error {
+func (m *Manager) Send(email, subject, text, html string) error {
 	err := m.validateEmailCooldown(email)
 	if err != nil {
 		return err
@@ -59,17 +52,27 @@ func (m *Manager) Send(email, subject, body string) error {
 		return errors.New("email settings not configured")
 	}
 
-	const endLine = "\r\n"
-	from := "From: " + config.GetEmailFrom()
-	to := "To: " + email
-	port := strconv.Itoa(config.GetEmailPort())
+	message := mail.NewMsg()
+	if err := message.FromFormat(config.GetTitle(), config.GetEmailFrom()); err != nil {
+		return errors.New(fmt.Sprintf("failed to set From address: %s", err))
+	}
 
-	msg := []byte(from + endLine + to + endLine + subject + endLine + endLine + body + endLine)
+	if err := message.To(email); err != nil {
+		return errors.New(fmt.Sprintf("failed to set To address: %s", err))
+	}
 
-	err = smtp.SendMail(config.GetEmailHost()+":"+port, m.makeAuth(), config.GetEmailFrom(), []string{email}, msg)
+	message.Subject(subject)
+	message.SetBodyString(mail.TypeTextPlain, text)
+	message.AddAlternativeString(mail.TypeTextHTML, html)
 
+	client, err := mail.NewClient(config.GetEmailHost(), mail.WithPort(config.GetEmailPort()), mail.WithSMTPAuth(mail.SMTPAuthPlain),
+		mail.WithUsername(config.GetEmailUser()), mail.WithPassword(config.GetEmailPassword()))
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("failed to create mail client: %s", err))
+	}
+
+	if err := client.DialAndSend(message); err != nil {
+		return errors.New(fmt.Sprintf("failed to send mail: %s", err))
 	}
 
 	// add to email map

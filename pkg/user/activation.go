@@ -2,9 +2,7 @@ package user
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
-	"net/url"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -128,16 +126,7 @@ func generateActivationKey(tqb models.UserTokenCreator, email string, inviteKey 
 	return &token.ID, nil
 }
 
-func sendNewUserEmail(em *email.Manager, email string, activationKey uuid.UUID) error {
-	subject := "Subject: Activate stash-box account"
-
-	link := config.GetHostURL() + "/activate?email=" + url.QueryEscape(email) + "&key=" + activationKey.String()
-	body := "Please click the following link to activate your account: " + link
-
-	return em.Send(email, subject, body)
-}
-
-func ActivateNewUser(fac models.Repo, name string, email string, id uuid.UUID, password string) (*models.User, error) {
+func ActivateNewUser(fac models.Repo, name string, id uuid.UUID, password string) (*models.User, error) {
 	uqb := fac.User()
 	tqb := fac.UserToken()
 	iqb := fac.Invite()
@@ -149,7 +138,7 @@ func ActivateNewUser(fac models.Repo, name string, email string, id uuid.UUID, p
 
 	data, err := t.GetNewUserTokenData()
 
-	if t == nil || data.Email != email || t.Type != models.UserTokenTypeNewUser {
+	if t == nil || t.Type != models.UserTokenTypeNewUser {
 		return nil, ErrInvalidActivationKey
 	}
 
@@ -173,7 +162,7 @@ func ActivateNewUser(fac models.Repo, name string, email string, id uuid.UUID, p
 
 	createInput := models.UserCreateInput{
 		Name:        name,
-		Email:       email,
+		Email:       data.Email,
 		Password:    password,
 		InvitedByID: invitedBy,
 		Roles:       getDefaultUserRoles(),
@@ -248,7 +237,7 @@ func ResetPassword(fac models.Repo, em *email.Manager, email string) error {
 		return err
 	}
 
-	return sendResetPasswordEmail(em, email, *key)
+	return sendResetPasswordEmail(em, u, *key)
 }
 
 func generateResetPasswordActivationKey(aqb models.UserTokenCreator, userID uuid.UUID) (*uuid.UUID, error) {
@@ -274,15 +263,6 @@ func generateResetPasswordActivationKey(aqb models.UserTokenCreator, userID uuid
 	}
 
 	return &obj.ID, nil
-}
-
-func sendResetPasswordEmail(em *email.Manager, email string, activationKey uuid.UUID) error {
-	subject := "Subject: Reset stash-box password"
-
-	link := fmt.Sprintf("%s/reset-password?key=%s", config.GetHostURL(), activationKey)
-	body := "Please click the following link to set your account password: " + link
-
-	return em.Send(email, subject, body)
 }
 
 func ActivateResetPassword(fac models.Repo, id uuid.UUID, newPassword string) error {

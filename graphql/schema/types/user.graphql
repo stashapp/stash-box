@@ -68,7 +68,6 @@ input NewUserInput {
 
 input ActivateNewUserInput {
   name: String!
-  email: String!
   activation_key: ID!
   password: String!
 }

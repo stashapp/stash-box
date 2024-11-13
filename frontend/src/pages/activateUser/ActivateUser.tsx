@@ -15,14 +15,7 @@ import Title from "src/components/title";
 const schema = yup.object({
   name: yup
     .string()
-    .required("Username is required")
-    .test(
-      "excludeEmail",
-      "The username is public and should not be the same as your email",
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      (value, { parent }) => value?.trim() !== parent?.email
-    ),
-  email: yup.string().email().required("Email is required"),
+    .required("Username is required"),
   activationKey: yup.string().required("Activation Key is required"),
   password: yup.string().required("Password is required"),
 });
@@ -53,7 +46,6 @@ const ActivateNewUserPage: FC = () => {
   const onSubmit = (formData: ActivateNewUserFormData) => {
     const userData = {
       name: formData.name,
-      email: formData.email,
       activation_key: formData.activationKey,
       password: formData.password,
     };
@@ -71,7 +63,6 @@ const ActivateNewUserPage: FC = () => {
 
   const errorList = [
     errors.activationKey?.message,
-    errors.email?.message,
     errors.name?.message,
     errors.password?.message,
     submitError,
@@ -86,16 +77,13 @@ const ActivateNewUserPage: FC = () => {
       >
         <Form.Control
           type="hidden"
-          value={query.get("email") ?? ""}
-          {...register("email")}
-        />
-        <Form.Control
-          type="hidden"
           value={query.get("key") ?? ""}
           {...register("activationKey")}
         />
 
         <Form.Group controlId="name">
+          <h3>Register account</h3>
+          <hr className="my-4" />
           <Row>
             <Col xs={4}>
               <Form.Label>Username:</Form.Label>

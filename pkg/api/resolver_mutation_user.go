@@ -227,7 +227,7 @@ func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.Act
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		var txnErr error
-		ret, txnErr = user.ActivateNewUser(fac, input.Name, input.Email, input.ActivationKey, input.Password)
+		ret, txnErr = user.ActivateNewUser(fac, input.Name, input.ActivationKey, input.Password)
 		return txnErr
 	})
 

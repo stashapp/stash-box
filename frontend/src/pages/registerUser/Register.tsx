@@ -94,6 +94,8 @@ const Register: FC<Props> = ({ config }) => {
         onSubmit={handleSubmit(onSubmit)}
       >
         <Form.Group controlId="email">
+          <h3>Register account</h3>
+          <hr className="my-4" />
           <Row>
             <Col xs={4}>
               <Form.Label>Email:</Form.Label>

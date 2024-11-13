@@ -265,12 +265,24 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
       .then(() => {
         toast({
           variant: "success",
-          content: "Please check your existing email to continue.",
+          content: (
+            <>
+              <h5>Change email</h5>
+              <div>Please check your existing email to continue.</div>
+            </>
+          ),
         });
       })
       .catch((error: unknown) => {
-        if (error instanceof Error && isApolloError(error))
-          toast({ variant: "danger", content: error.message });
+        let message: React.ReactNode | string | undefined = error instanceof Error && isApolloError(error) && error.message;
+        if (message === 'pending-email-change')
+          message = (
+            <>
+              <h5>Pending email change</h5>
+              <div>Email change already requested. Please try again later.</div>
+            </>
+          );
+          toast({ variant: "danger", content: message });
       });
   };
 
@@ -296,7 +308,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               </Link>
             )}
             {isOwner && (
-              <Button onClick={() => handleChangeEmail}>Change Email</Button>
+              <Button onClick={() => handleChangeEmail()} className="ms-2">Change Email</Button>
             )}
             {isAdmin(Auth.user) && (
               <>
