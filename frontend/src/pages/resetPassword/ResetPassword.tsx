@@ -111,7 +111,9 @@ const ResetPassword: FC = () => {
                   placeholder="New Password"
                   {...register("newPassword")}
                 />
-                <div className="invalid-feedback">{errors?.newPassword?.message}</div>
+                <div className="invalid-feedback">
+                  {errors?.newPassword?.message}
+                </div>
               </Form.Group>
               <Form.Group controlId="confirmNewPassword" className="mb-3">
                 <Form.Control

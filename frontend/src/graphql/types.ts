@@ -25,7 +25,6 @@ export type Scalars = {
 
 export type ActivateNewUserInput = {
   activation_key: Scalars["ID"];
-  email: Scalars["String"];
   name: Scalars["String"];
   password: Scalars["String"];
 };

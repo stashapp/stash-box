@@ -13,9 +13,7 @@ import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import Title from "src/components/title";
 
 const schema = yup.object({
-  name: yup
-    .string()
-    .required("Username is required"),
+  name: yup.string().required("Username is required"),
   activationKey: yup.string().required("Activation Key is required"),
   password: yup.string().required("Password is required"),
 });

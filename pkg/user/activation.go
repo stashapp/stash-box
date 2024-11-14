@@ -113,10 +113,13 @@ func generateActivationKey(tqb models.UserTokenCreator, email string, inviteKey 
 		Type:      models.UserTokenTypeNewUser,
 	}
 
-	activation.SetData(models.NewUserTokenData{
+	err = activation.SetData(models.NewUserTokenData{
 		Email:     email,
 		InviteKey: inviteKey,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	token, err := tqb.Create(activation)
 	if err != nil {
@@ -137,6 +140,9 @@ func ActivateNewUser(fac models.Repo, name string, id uuid.UUID, password string
 	}
 
 	data, err := t.GetNewUserTokenData()
+	if err != nil {
+		return nil, err
+	}
 
 	if t == nil || t.Type != models.UserTokenTypeNewUser {
 		return nil, ErrInvalidActivationKey
@@ -253,9 +259,12 @@ func generateResetPasswordActivationKey(aqb models.UserTokenCreator, userID uuid
 		Type:      models.UserTokenTypeResetPassword,
 	}
 
-	activation.SetData(models.UserTokenData{
+	err = activation.SetData(models.UserTokenData{
 		UserID: userID,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	obj, err := aqb.Create(activation)
 	if err != nil {

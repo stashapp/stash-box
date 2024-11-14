@@ -15,8 +15,7 @@ func ToJSON(data interface{}) (*types.JSONText, error) {
 	if err := encoder.Encode(data); err != nil {
 		return nil, err
 	}
-	var ret types.JSONText
-	ret = buffer.Bytes()
+	var ret types.JSONText = buffer.Bytes()
 	return &ret, nil
 }
 

@@ -7,7 +7,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/dustin/go-humanize"
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/email"
 	"github.com/stashapp/stash-box/pkg/manager/config"
@@ -45,9 +44,11 @@ func generateConfirmOldEmailKey(aqb models.UserTokenCreator, userID uuid.UUID) (
 		Type:      models.UserTokenTypeConfirmOldEmail,
 	}
 
-	activation.SetData(models.UserTokenData{
+	if err := activation.SetData(models.UserTokenData{
 		UserID: userID,
-	})
+	}); err != nil {
+		return nil, err
+	}
 
 	obj, err := aqb.Create(activation)
 	if err != nil {
@@ -66,7 +67,7 @@ func ConfirmNewEmail(fac models.Repo, em *email.Manager, user models.User, email
 		return err
 	}
 
-	return sendConfirmOldEmail(em, user, *key)
+	return sendConfirmNewEmail(em, &user, email, *key)
 }
 
 func generateConfirmNewEmailKey(aqb models.UserTokenCreator, userID uuid.UUID, email string) (*uuid.UUID, error) {
@@ -82,10 +83,13 @@ func generateConfirmNewEmailKey(aqb models.UserTokenCreator, userID uuid.UUID, e
 		Type:      models.UserTokenTypeConfirmNewEmail,
 	}
 
-	activation.SetData(models.ChangeEmailTokenData{
+	err = activation.SetData(models.ChangeEmailTokenData{
 		UserID: userID,
 		Email:  email,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	obj, err := aqb.Create(activation)
 	if err != nil {
@@ -110,17 +114,7 @@ func ChangeEmail(fac models.Repo, token models.ChangeEmailTokenData) error {
 	return err
 }
 
-type templateData struct {
-	Email     string
-	Subject   string
-	Greeting  string
-	Content   string
-	Link      string
-	CTA       string
-	PreHeader string
-}
-
-func sendHtmlEmail(em *email.Manager, email, subject, preHeader, greeting, content, link, cta string) error {
+func sendTemplatedEmail(em *email.Manager, email, subject, preHeader, greeting, content, link, cta string) error {
 	htmlTemplates, err := template.ParseFS(templateFS,
 		"templates/email.html",
 	)
@@ -147,7 +141,9 @@ func sendHtmlEmail(em *email.Manager, email, subject, preHeader, greeting, conte
 	}
 
 	var html bytes.Buffer
-	htmlTemplates.Execute(&html, data)
+	if err := htmlTemplates.Execute(&html, data); err != nil {
+		return err
+	}
 
 	textTemplate, err := template.ParseFS(templateFS,
 		"templates/email.txt",
@@ -157,32 +153,33 @@ func sendHtmlEmail(em *email.Manager, email, subject, preHeader, greeting, conte
 	}
 
 	var text bytes.Buffer
-	textTemplate.Execute(&text, data)
+	if err := textTemplate.Execute(&text, data); err != nil {
+		return err
+	}
 
 	return em.Send(email, subject, text.String(), html.String())
 }
 
 func sendConfirmOldEmail(em *email.Manager, user models.User, activationKey uuid.UUID) error {
 	subject := "Email change requested"
-	link := fmt.Sprintf("%s/confirm-email?key=%s", config.GetHostURL(), activationKey)
+	link := fmt.Sprintf("%s/users/%s/change-email?key=%s", config.GetHostURL(), user.Name, activationKey)
 	preHeader := "Confirm you want to change your email."
 	greeting := fmt.Sprintf("Hi %s,", user.Name)
 	content := "An email change was requested for your account. Click the button below to confirm you want to continue. <strong>The link is only valid for 15 minutes.</strong>"
 	cta := "Confirm email change"
 
-	return sendHtmlEmail(em, user.Email, subject, preHeader, greeting, content, link, cta)
+	return sendTemplatedEmail(em, user.Email, subject, preHeader, greeting, content, link, cta)
 }
 
 func sendNewUserEmail(em *email.Manager, email string, activationKey uuid.UUID) error {
 	subject := "Activate your account"
-	link := fmt.Sprintf("%s/activate?email=%s&key=%s", config.GetHostURL(), email, activationKey)
+	link := fmt.Sprintf("%s/activate?key=%s", config.GetHostURL(), activationKey)
 	preHeader := fmt.Sprintf("Welcome, to activate your %s account, click the button below.", config.GetTitle())
 	greeting := "Welcome!"
-	expiration := humanize.Time(config.GetActivationExpireTime())
-	content := fmt.Sprintf("To activate your %s account, click the button below. <strong>The activation link is valid for %s.</strong>", config.GetTitle(), expiration)
+	content := fmt.Sprintf("To activate your %s account, click the button below. <strong>The activation link is valid for %s.</strong>", config.GetTitle(), config.GetActivationExpiry())
 	cta := "Activate account"
 
-	return sendHtmlEmail(em, email, subject, preHeader, greeting, content, link, cta)
+	return sendTemplatedEmail(em, email, subject, preHeader, greeting, content, link, cta)
 }
 
 func sendResetPasswordEmail(em *email.Manager, user *models.User, activationKey uuid.UUID) error {
@@ -193,16 +190,16 @@ func sendResetPasswordEmail(em *email.Manager, user *models.User, activationKey 
 	content := fmt.Sprintf("A password reset was requested for your %s account. Click the button below to continue. <strong>The link is only valid for 15 minutes.</strong>", config.GetTitle())
 	cta := "Reset password"
 
-	return sendHtmlEmail(em, user.Email, subject, preHeader, greeting, content, link, cta)
+	return sendTemplatedEmail(em, user.Email, subject, preHeader, greeting, content, link, cta)
 }
 
-func sendConfirmNewEmail(em *email.Manager, user *models.User, activationKey uuid.UUID) error {
+func sendConfirmNewEmail(em *email.Manager, user *models.User, email string, activationKey uuid.UUID) error {
 	subject := fmt.Sprintf("Confirm %s email change", config.GetTitle())
-	link := fmt.Sprintf("%s/change-email?key=%s", config.GetHostURL(), activationKey)
+	link := fmt.Sprintf("%s/users/%s/confirm-email?key=%s", config.GetHostURL(), user.Name, activationKey)
 	preHeader := fmt.Sprintf("To confirm you want to change your %s account email, click the button to continue.", config.GetTitle())
 	greeting := fmt.Sprintf("Hi %s,", user.Name)
 	content := fmt.Sprintf("To confirm you want to change your %s account email, click the button to continue. <strong>The link is only valid for 15 minutes.</strong>", config.GetTitle())
 	cta := "Confirm email change"
 
-	return sendHtmlEmail(em, user.Email, subject, preHeader, greeting, content, link, cta)
+	return sendTemplatedEmail(em, email, subject, preHeader, greeting, content, link, cta)
 }

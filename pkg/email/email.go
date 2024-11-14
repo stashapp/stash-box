@@ -54,11 +54,11 @@ func (m *Manager) Send(email, subject, text, html string) error {
 
 	message := mail.NewMsg()
 	if err := message.FromFormat(config.GetTitle(), config.GetEmailFrom()); err != nil {
-		return errors.New(fmt.Sprintf("failed to set From address: %s", err))
+		return fmt.Errorf("failed to set From address: %w", err)
 	}
 
 	if err := message.To(email); err != nil {
-		return errors.New(fmt.Sprintf("failed to set To address: %s", err))
+		return fmt.Errorf("failed to set To address: %w", err)
 	}
 
 	message.Subject(subject)
@@ -68,11 +68,11 @@ func (m *Manager) Send(email, subject, text, html string) error {
 	client, err := mail.NewClient(config.GetEmailHost(), mail.WithPort(config.GetEmailPort()), mail.WithSMTPAuth(mail.SMTPAuthPlain),
 		mail.WithUsername(config.GetEmailUser()), mail.WithPassword(config.GetEmailPassword()))
 	if err != nil {
-		return errors.New(fmt.Sprintf("failed to create mail client: %s", err))
+		return fmt.Errorf("failed to create mail client: %w", err)
 	}
 
 	if err := client.DialAndSend(message); err != nil {
-		return errors.New(fmt.Sprintf("failed to send mail: %s", err))
+		return fmt.Errorf("failed to send mail: %w", err)
 	}
 
 	// add to email map

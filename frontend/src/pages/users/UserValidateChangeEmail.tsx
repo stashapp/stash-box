@@ -35,15 +35,33 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
 
   const [validateChangeEmail, { loading }] = useValidateChangeEmail();
 
-  if (submitted) return <div>Submitted!</div>;
+  if (submitted)
+    return (
+      <div className="LoginPrompt">
+        <div className="align-self-center col-8 mx-auto">
+          <h5>Confirmation email sent</h5>
+          <p>Please check your email to complete the email change.</p>
+        </div>
+      </div>
+    );
 
   if (!token) return <ErrorMessage error="Missing token" />;
 
   const onSubmit = (formData: ValidateChangeEmailFormData) => {
     setSubmitError(undefined);
     validateChangeEmail({ variables: { ...formData } })
-      .then(() => {
-        setQueryParam("submitted", true);
+      .then((res) => {
+        const status = res.data?.validateChangeEmail;
+        if (status === "CONFIRM_NEW") setQueryParam("submitted", true);
+        else if (status === "INVALID_TOKEN")
+          setSubmitError(
+            "Invalid or expired token, please restart the process."
+          );
+        else if (status === "EXPIRED")
+          setSubmitError(
+            "Email change token expired, please restart the process."
+          );
+        else setSubmitError("An unknown error occurred");
       })
       .catch(
         (error: unknown) =>
@@ -66,22 +84,17 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
       >
+        <h5>Change email</h5>
+        <p>Enter a new email address to complete email change.</p>
         <Form.Control type="hidden" value={token} {...register("token")} />
 
         <Form.Group controlId="email" className="mt-2">
-          <Row>
-            <Col xs={4}>
-              <Form.Label>New Email:</Form.Label>
-            </Col>
-            <Col xs={8}>
-              <Form.Control
-                className={cx({ "is-invalid": errors?.email })}
-                type="email"
-                placeholder="Email"
-                {...register("email")}
-              />
-            </Col>
-          </Row>
+          <Form.Control
+            className={cx({ "is-invalid": errors?.email })}
+            type="email"
+            placeholder="New email"
+            {...register("email")}
+          />
         </Form.Group>
 
         {errorList.map((error) => (

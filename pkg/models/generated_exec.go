@@ -5517,7 +5517,6 @@ input NewUserInput {
 
 input ActivateNewUserInput {
   name: String!
-  email: String!
   activation_key: ID!
   password: String!
 }
@@ -31526,7 +31525,7 @@ func (ec *executionContext) unmarshalInputActivateNewUserInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "email", "activation_key", "password"}
+	fieldsInOrder := [...]string{"name", "activation_key", "password"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31540,13 +31539,6 @@ func (ec *executionContext) unmarshalInputActivateNewUserInput(ctx context.Conte
 				return it, err
 			}
 			it.Name = data
-		case "email":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Email = data
 		case "activation_key":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("activation_key"))
 			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)

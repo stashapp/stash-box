@@ -38,7 +38,6 @@ type SceneDraftTag interface {
 
 type ActivateNewUserInput struct {
 	Name          string    `json:"name"`
-	Email         string    `json:"email"`
 	ActivationKey uuid.UUID `json:"activation_key"`
 	Password      string    `json:"password"`
 }
