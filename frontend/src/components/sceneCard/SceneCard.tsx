@@ -41,11 +41,11 @@ const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
           <h6 className="text-truncate">{scene.title}</h6>
         </Link>
       </div>
-      <div className="d-flex">
+      <div className="text-muted">
         <Link className="text-truncate w-100" to={sceneHref(scene)}>
-          <h6 className="text-truncate">{scene.code}</h6>
+          <strong>{scene.code}</strong>
         </Link>
-        <span className="text-muted">
+        <span className="text-muted float-end">
           {scene.duration ? formatDuration(scene.duration) : ""}
         </span>
       </div>
