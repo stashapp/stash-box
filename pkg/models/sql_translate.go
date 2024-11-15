@@ -49,7 +49,7 @@ func CopyFull(target interface{}, source interface{}) {
 		case field.Type == sourceField.Type:
 			// direct copy
 			targetFieldValue.Set(sourceFieldValue)
-		case reflect.PtrTo(field.Type) == sourceField.Type:
+		case reflect.PointerTo(field.Type) == sourceField.Type:
 			// source field is pointer, target field is value
 			// if nil, then set to zero value, otherwise copy
 			if sourceFieldValue.IsNil() {

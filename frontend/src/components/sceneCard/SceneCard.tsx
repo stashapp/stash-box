@@ -15,7 +15,7 @@ import { Icon } from "src/components/fragments";
 
 type Performance = Pick<
   Scene,
-  "id" | "title" | "images" | "duration" | "release_date"
+  "id" | "title" | "images" | "duration" | "code" | "release_date"
 > & {
   studio?: Pick<Studio, "id" | "name"> | null;
 };
@@ -39,6 +39,11 @@ const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
       <div className="d-flex">
         <Link className="text-truncate w-100" to={sceneHref(scene)}>
           <h6 className="text-truncate">{scene.title}</h6>
+        </Link>
+      </div>
+      <div className="d-flex">
+        <Link className="text-truncate w-100" to={sceneHref(scene)}>
+          <h6 className="text-truncate">{scene.code}</h6>
         </Link>
         <span className="text-muted">
           {scene.duration ? formatDuration(scene.duration) : ""}
