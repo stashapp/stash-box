@@ -39,6 +39,7 @@ query StudioPerformers(
         title
         date
         duration
+        code
         release_date
         studio {
           id
