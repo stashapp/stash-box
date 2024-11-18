@@ -350,6 +350,7 @@ type ComplexityRoot struct {
 		FindStudio                    func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTag                       func(childComplexity int, id *uuid.UUID, name *string) int
 		FindTagCategory               func(childComplexity int, id uuid.UUID) int
+		FindTagOrAlias                func(childComplexity int, name string) int
 		FindUser                      func(childComplexity int, id *uuid.UUID, username *string) int
 		GetConfig                     func(childComplexity int) int
 		Me                            func(childComplexity int) int
@@ -757,6 +758,7 @@ type QueryResolver interface {
 	FindStudio(ctx context.Context, id *uuid.UUID, name *string) (*Studio, error)
 	QueryStudios(ctx context.Context, input StudioQueryInput) (*QueryStudiosResultType, error)
 	FindTag(ctx context.Context, id *uuid.UUID, name *string) (*Tag, error)
+	FindTagOrAlias(ctx context.Context, name string) (*Tag, error)
 	QueryTags(ctx context.Context, input TagQueryInput) (*QueryTagsResultType, error)
 	FindTagCategory(ctx context.Context, id uuid.UUID) (*TagCategory, error)
 	QueryTagCategories(ctx context.Context) (*QueryTagCategoriesResultType, error)
@@ -2765,6 +2767,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.FindTagCategory(childComplexity, args["id"].(uuid.UUID)), true
+
+	case "Query.findTagOrAlias":
+		if e.complexity.Query.FindTagOrAlias == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findTagOrAlias_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindTagOrAlias(childComplexity, args["name"].(string)), true
 
 	case "Query.findUser":
 		if e.complexity.Query.FindUser == nil {
@@ -5653,6 +5667,8 @@ type Query {
   # tag names will be unique
   """Find a tag by ID or name"""
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
+  """Find a tag with a matching name or alias"""
+  findTagOrAlias(name: String!): Tag @hasRole(role: READ)
   queryTags(input: TagQueryInput!): QueryTagsResultType! @hasRole(role: READ)
 
   """Find a tag category by ID"""
@@ -6884,6 +6900,21 @@ func (ec *executionContext) field_Query_findTagCategory_args(ctx context.Context
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findTagOrAlias_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
 	return args, nil
 }
 
@@ -19387,6 +19418,102 @@ func (ec *executionContext) fieldContext_Query_findTag(ctx context.Context, fiel
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_findTag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findTagOrAlias(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_findTagOrAlias(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().FindTagOrAlias(rctx, fc.Args["name"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Tag); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.Tag`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Tag)
+	fc.Result = res
+	return ec.marshalOTag2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_findTagOrAlias(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tag_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Tag_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Tag_description(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Tag_aliases(ctx, field)
+			case "deleted":
+				return ec.fieldContext_Tag_deleted(ctx, field)
+			case "edits":
+				return ec.fieldContext_Tag_edits(ctx, field)
+			case "category":
+				return ec.fieldContext_Tag_category(ctx, field)
+			case "created":
+				return ec.fieldContext_Tag_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Tag_updated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findTagOrAlias_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -39790,6 +39917,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_findTag(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findTagOrAlias":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findTagOrAlias(ctx, field)
 				return res
 			}
 

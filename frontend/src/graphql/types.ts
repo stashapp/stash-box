@@ -1081,6 +1081,8 @@ export type Query = {
   findTag?: Maybe<Tag>;
   /** Find a tag category by ID */
   findTagCategory?: Maybe<TagCategory>;
+  /** Find a tag with a matching name or alias */
+  findTagOrAlias?: Maybe<Tag>;
   /** Find user by ID or username */
   findUser?: Maybe<User>;
   getConfig: StashBoxConfig;
@@ -1161,6 +1163,11 @@ export type QueryFindTagArgs = {
 /** The query root for this schema */
 export type QueryFindTagCategoryArgs = {
   id: Scalars["ID"];
+};
+
+/** The query root for this schema */
+export type QueryFindTagOrAliasArgs = {
+  name: Scalars["String"];
 };
 
 /** The query root for this schema */
@@ -18347,6 +18354,15 @@ export type SearchPerformersQuery = {
   }>;
 };
 
+export type SearchTagFragment = {
+  __typename: "Tag";
+  deleted: boolean;
+  id: string;
+  name: string;
+  description?: string | null;
+  aliases: Array<string>;
+};
+
 export type SearchTagsQueryVariables = Exact<{
   term: Scalars["String"];
   limit?: InputMaybe<Scalars["Int"]>;
@@ -18354,7 +18370,15 @@ export type SearchTagsQueryVariables = Exact<{
 
 export type SearchTagsQuery = {
   __typename: "Query";
-  searchTag: Array<{
+  exact?: {
+    __typename: "Tag";
+    deleted: boolean;
+    id: string;
+    name: string;
+    description?: string | null;
+    aliases: Array<string>;
+  } | null;
+  query: Array<{
     __typename: "Tag";
     deleted: boolean;
     id: string;
@@ -21005,6 +21029,29 @@ export const SearchPerformerFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<SearchPerformerFragment, unknown>;
+export const SearchTagFragmentDoc = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "SearchTagFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Tag" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "description" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SearchTagFragment, unknown>;
 export const ActivateNewUserDocument = {
   kind: "Document",
   definitions: [
@@ -48296,6 +48343,31 @@ export const SearchTagsDocument = {
         selections: [
           {
             kind: "Field",
+            alias: { kind: "Name", value: "exact" },
+            name: { kind: "Name", value: "findTagOrAlias" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "name" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "term" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "SearchTagFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            alias: { kind: "Name", value: "query" },
             name: { kind: "Name", value: "searchTag" },
             arguments: [
               {
@@ -48318,14 +48390,31 @@ export const SearchTagsDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "deleted" } },
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "name" } },
-                { kind: "Field", name: { kind: "Name", value: "description" } },
-                { kind: "Field", name: { kind: "Name", value: "aliases" } },
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "SearchTagFragment" },
+                },
               ],
             },
           },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "SearchTagFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Tag" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "description" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
         ],
       },
     },
