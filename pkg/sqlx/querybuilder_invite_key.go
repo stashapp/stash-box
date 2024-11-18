@@ -110,14 +110,13 @@ func (qb *inviteKeyQueryBuilder) Find(id uuid.UUID) (*models.InviteKey, error) {
 func (qb *inviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireTime time.Time) (models.InviteKeys, error) {
 	query := `SELECT i.* FROM ` + inviteKeyTable + ` i 
 	 LEFT JOIN (
-	   SELECT invite_key, COUNT(*) as count
-		 FROM pending_activations
-		 WHERE time > ?
+	   SELECT uuid(data->>'invite_key') as invite_key, COUNT(*) as count
+		 FROM user_tokens
+		 WHERE expires_at > now()
 		 GROUP BY invite_key
 	 ) a ON a.invite_key = i.id
 	 WHERE i.generated_by = ? AND (a.invite_key IS NULL OR i.uses IS NULL OR a.count < i.uses)`
 	var args []interface{}
-	args = append(args, expireTime)
 	args = append(args, userID)
 	output := inviteKeyRows{}
 	err := qb.dbi.RawQuery(inviteKeyDBTable, query, args, &output)

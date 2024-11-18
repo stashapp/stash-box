@@ -24,8 +24,7 @@ export type Scalars = {
 };
 
 export type ActivateNewUserInput = {
-  activation_key: Scalars["String"];
-  email: Scalars["String"];
+  activation_key: Scalars["ID"];
   name: Scalars["String"];
   password: Scalars["String"];
 };
@@ -444,6 +443,7 @@ export type Mutation = {
   cancelEdit: Edit;
   /** Changes the password for the current user */
   changePassword: Scalars["Boolean"];
+  confirmChangeEmail: UserChangeEmailStatus;
   destroyDraft: Scalars["Boolean"];
   /** Comment on an edit */
   editComment: Edit;
@@ -462,7 +462,7 @@ export type Mutation = {
   imageCreate?: Maybe<Image>;
   imageDestroy: Scalars["Boolean"];
   /** User interface for registering */
-  newUser?: Maybe<Scalars["String"]>;
+  newUser?: Maybe<Scalars["ID"]>;
   performerCreate?: Maybe<Performer>;
   performerDestroy: Scalars["Boolean"];
   /** Propose a new performer or modification to a performer */
@@ -472,6 +472,8 @@ export type Mutation = {
   performerUpdate?: Maybe<Performer>;
   /** Regenerates the api key for the given user, or the current user if id not provided */
   regenerateAPIKey: Scalars["String"];
+  /** Request an email change for the current user */
+  requestChangeEmail: UserChangeEmailStatus;
   /** Removes a pending invite code - refunding the token */
   rescindInviteCode: Scalars["Boolean"];
   /** Generates an email to reset a user password */
@@ -513,6 +515,7 @@ export type Mutation = {
   userCreate?: Maybe<User>;
   userDestroy: Scalars["Boolean"];
   userUpdate?: Maybe<User>;
+  validateChangeEmail: UserChangeEmailStatus;
 };
 
 export type MutationActivateNewUserArgs = {
@@ -529,6 +532,10 @@ export type MutationCancelEditArgs = {
 
 export type MutationChangePasswordArgs = {
   input: UserChangePasswordInput;
+};
+
+export type MutationConfirmChangeEmailArgs = {
+  token: Scalars["ID"];
 };
 
 export type MutationDestroyDraftArgs = {
@@ -721,9 +728,14 @@ export type MutationUserUpdateArgs = {
   input: UserUpdateInput;
 };
 
+export type MutationValidateChangeEmailArgs = {
+  email: Scalars["String"];
+  token: Scalars["ID"];
+};
+
 export type NewUserInput = {
   email: Scalars["String"];
-  invite_key?: InputMaybe<Scalars["String"]>;
+  invite_key?: InputMaybe<Scalars["ID"]>;
 };
 
 export enum OperationEnum {
@@ -1779,11 +1791,26 @@ export type User = {
   vote_count: UserVoteCount;
 };
 
+export type UserChangeEmailInput = {
+  existing_email_token?: InputMaybe<Scalars["ID"]>;
+  new_email?: InputMaybe<Scalars["String"]>;
+  new_email_token?: InputMaybe<Scalars["ID"]>;
+};
+
+export enum UserChangeEmailStatus {
+  CONFIRM_NEW = "CONFIRM_NEW",
+  CONFIRM_OLD = "CONFIRM_OLD",
+  ERROR = "ERROR",
+  EXPIRED = "EXPIRED",
+  INVALID_TOKEN = "INVALID_TOKEN",
+  SUCCESS = "SUCCESS",
+}
+
 export type UserChangePasswordInput = {
   /** Password in plain text */
   existing_password?: InputMaybe<Scalars["String"]>;
   new_password: Scalars["String"];
-  reset_key?: InputMaybe<Scalars["String"]>;
+  reset_key?: InputMaybe<Scalars["ID"]>;
 };
 
 export type UserCreateInput = {
@@ -4309,6 +4336,15 @@ export type ChangePasswordMutation = {
   changePassword: boolean;
 };
 
+export type ConfirmChangeEmailMutationVariables = Exact<{
+  token: Scalars["ID"];
+}>;
+
+export type ConfirmChangeEmailMutation = {
+  __typename: "Mutation";
+  confirmChangeEmail: UserChangeEmailStatus;
+};
+
 export type DeleteDraftMutationVariables = Exact<{
   id: Scalars["ID"];
 }>;
@@ -6493,6 +6529,15 @@ export type RegenerateApiKeyMutationVariables = Exact<{
 export type RegenerateApiKeyMutation = {
   __typename: "Mutation";
   regenerateAPIKey: string;
+};
+
+export type RequestChangeEmailMutationVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type RequestChangeEmailMutation = {
+  __typename: "Mutation";
+  requestChangeEmail: UserChangeEmailStatus;
 };
 
 export type RescindInviteCodeMutationVariables = Exact<{
@@ -12825,6 +12870,16 @@ export type UpdateUserMutation = {
     email?: string | null;
     roles?: Array<RoleEnum> | null;
   } | null;
+};
+
+export type ValidateChangeEmailMutationVariables = Exact<{
+  token: Scalars["ID"];
+  email: Scalars["String"];
+}>;
+
+export type ValidateChangeEmailMutation = {
+  __typename: "Mutation";
+  validateChangeEmail: UserChangeEmailStatus;
 };
 
 export type VoteMutationVariables = Exact<{
@@ -23279,6 +23334,51 @@ export const ChangePasswordDocument = {
   ChangePasswordMutation,
   ChangePasswordMutationVariables
 >;
+export const ConfirmChangeEmailDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "ConfirmChangeEmail" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "token" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "confirmChangeEmail" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "token" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "token" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ConfirmChangeEmailMutation,
+  ConfirmChangeEmailMutationVariables
+>;
 export const DeleteDraftDocument = {
   kind: "Document",
   definitions: [
@@ -27144,6 +27244,28 @@ export const RegenerateApiKeyDocument = {
 } as unknown as DocumentNode<
   RegenerateApiKeyMutation,
   RegenerateApiKeyMutationVariables
+>;
+export const RequestChangeEmailDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "RequestChangeEmail" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "requestChangeEmail" },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  RequestChangeEmailMutation,
+  RequestChangeEmailMutationVariables
 >;
 export const RescindInviteCodeDocument = {
   kind: "Document",
@@ -37483,6 +37605,73 @@ export const UpdateUserDocument = {
     },
   ],
 } as unknown as DocumentNode<UpdateUserMutation, UpdateUserMutationVariables>;
+export const ValidateChangeEmailDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "ValidateChangeEmail" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "token" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "email" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "String" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "validateChangeEmail" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "token" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "token" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "email" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "email" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ValidateChangeEmailMutation,
+  ValidateChangeEmailMutationVariables
+>;
 export const VoteDocument = {
   kind: "Document",
   definitions: [

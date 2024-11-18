@@ -22,7 +22,9 @@ import {
   PublicUserQuery,
   useGenerateInviteCodes,
   GenerateInviteCodeInput,
+  useRequestChangeEmail,
 } from "src/graphql";
+import { useToast } from "src/hooks";
 import AuthContext from "src/AuthContext";
 import {
   ROUTE_USER_EDIT,
@@ -35,6 +37,7 @@ import { Icon, Tooltip } from "src/components/fragments";
 import { isAdmin, isPrivateUser, createHref, formatDateTime } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
+import { isApolloError } from "@apollo/client";
 
 interface IInviteKeys {
   id: string;
@@ -139,6 +142,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [showRegenerateAPIKey, setShowRegenerateAPIKey] = useState(false);
   const [showRescindCode, setShowRescindCode] = useState<string | undefined>();
   const [showGenerateInviteKey, setShowGenerateInviteKey] = useState(false);
+  const toast = useToast();
 
   const [deleteUser, { loading: deleting }] = useDeleteUser();
   const [regenerateAPIKey] = useRegenerateAPIKey();
@@ -146,6 +150,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const [generateInviteCode] = useGenerateInviteCodes();
   const [grantInvite] = useGrantInvite();
   const [revokeInvite] = useRevokeInvite();
+  const [requestChangeEmail] = useRequestChangeEmail();
 
   const showPrivate = isPrivateUser(user);
   const isOwner = showPrivate && user.id === Auth.user?.id;
@@ -255,6 +260,33 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
     });
   };
 
+  const handleChangeEmail = () => {
+    requestChangeEmail()
+      .then(() => {
+        toast({
+          variant: "success",
+          content: (
+            <>
+              <h5>Change email</h5>
+              <div>Please check your existing email to continue.</div>
+            </>
+          ),
+        });
+      })
+      .catch((error: unknown) => {
+        let message: React.ReactNode | string | undefined =
+          error instanceof Error && isApolloError(error) && error.message;
+        if (message === "pending-email-change")
+          message = (
+            <>
+              <h5>Pending email change</h5>
+              <div>Email change already requested. Please try again later.</div>
+            </>
+          );
+        toast({ variant: "danger", content: message });
+      });
+  };
+
   const editCount = filterEdits(user.edit_count);
   const voteCount = filterVotes(user.vote_count);
 
@@ -275,6 +307,11 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               <Link to={ROUTE_USER_PASSWORD} className="ms-2">
                 <Button>Change Password</Button>
               </Link>
+            )}
+            {isOwner && (
+              <Button onClick={() => handleChangeEmail()} className="ms-2">
+                Change Email
+              </Button>
             )}
             {isAdmin(Auth.user) && (
               <>
