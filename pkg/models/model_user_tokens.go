@@ -1,8 +1,6 @@
 package models
 
 import (
-	"bytes"
-	"encoding/json"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -42,14 +40,11 @@ func (t *UserTokens) Add(o interface{}) {
 }
 
 func (t *UserToken) SetData(data interface{}) error {
-	buffer := &bytes.Buffer{}
-	encoder := json.NewEncoder(buffer)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(data); err != nil {
+	jsonData, err := utils.ToJSON(data)
+	if err != nil {
 		return err
 	}
-	t.Data = buffer.Bytes()
+	t.Data = jsonData
 	return nil
 }
 
