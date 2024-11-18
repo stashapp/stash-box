@@ -228,9 +228,9 @@ func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer
 
 func (r *performerResolver) MergedIntoID(ctx context.Context, obj *models.Performer) (*uuid.UUID, error) {
 	res, err := dataloader.For(ctx).PerformerMergeIDsBySourceID.Load(obj.ID)
-	if err == nil && len(res) == 1 {
-		return &res[0], nil
-	} else if err == nil {
+	if len(res) == 1 {
+		return &res[0], err
+	} else if err != nil && len(res) > 1 {
 		return nil, fmt.Errorf("invalid number of results returned, expecting exactly 1, found %d", len(res))
 	}
 	return nil, err
