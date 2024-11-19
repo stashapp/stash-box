@@ -253,6 +253,7 @@ type ComplexityRoot struct {
 		IsFavorite      func(childComplexity int) int
 		Measurements    func(childComplexity int) int
 		MergedIds       func(childComplexity int) int
+		MergedIntoID    func(childComplexity int) int
 		Name            func(childComplexity int) int
 		Piercings       func(childComplexity int) int
 		SceneCount      func(childComplexity int) int
@@ -724,6 +725,7 @@ type PerformerResolver interface {
 	SceneCount(ctx context.Context, obj *Performer) (int, error)
 	Scenes(ctx context.Context, obj *Performer, input *PerformerScenesInput) ([]*Scene, error)
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
+	MergedIntoID(ctx context.Context, obj *Performer) (*uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer) ([]*PerformerStudio, error)
 	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
 	Created(ctx context.Context, obj *Performer) (*time.Time, error)
@@ -2149,6 +2151,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Performer.MergedIds(childComplexity), true
+
+	case "Performer.merged_into_id":
+		if e.complexity.Performer.MergedIntoID == nil {
+			break
+		}
+
+		return e.complexity.Performer.MergedIntoID(childComplexity), true
 
 	case "Performer.name":
 		if e.complexity.Performer.Name == nil {
@@ -4652,7 +4661,10 @@ type Performer {
   edits: [Edit!]!
   scene_count: Int!
   scenes(input: PerformerScenesInput): [Scene!]!
+  """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
+  """ID of performer that replaces this one"""
+  merged_into_id: ID
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
@@ -10279,6 +10291,8 @@ func (ec *executionContext) fieldContext_Mutation_performerCreate(ctx context.Co
 				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
+			case "merged_into_id":
+				return ec.fieldContext_Performer_merged_into_id(ctx, field)
 			case "studios":
 				return ec.fieldContext_Performer_studios(ctx, field)
 			case "is_favorite":
@@ -10425,6 +10439,8 @@ func (ec *executionContext) fieldContext_Mutation_performerUpdate(ctx context.Co
 				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
+			case "merged_into_id":
+				return ec.fieldContext_Performer_merged_into_id(ctx, field)
 			case "studios":
 				return ec.fieldContext_Performer_studios(ctx, field)
 			case "is_favorite":
@@ -16166,6 +16182,47 @@ func (ec *executionContext) fieldContext_Performer_merged_ids(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Performer_merged_into_id(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_merged_into_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().MergedIntoID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_merged_into_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Performer_studios(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Performer_studios(ctx, field)
 	if err != nil {
@@ -16447,6 +16504,8 @@ func (ec *executionContext) fieldContext_PerformerAppearance_performer(ctx conte
 				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
+			case "merged_into_id":
+				return ec.fieldContext_Performer_merged_into_id(ctx, field)
 			case "studios":
 				return ec.fieldContext_Performer_studios(ctx, field)
 			case "is_favorite":
@@ -19032,6 +19091,8 @@ func (ec *executionContext) fieldContext_Query_findPerformer(ctx context.Context
 				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
+			case "merged_into_id":
+				return ec.fieldContext_Performer_merged_into_id(ctx, field)
 			case "studios":
 				return ec.fieldContext_Performer_studios(ctx, field)
 			case "is_favorite":
@@ -21182,6 +21243,8 @@ func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Conte
 				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
+			case "merged_into_id":
+				return ec.fieldContext_Performer_merged_into_id(ctx, field)
 			case "studios":
 				return ec.fieldContext_Performer_studios(ctx, field)
 			case "is_favorite":
@@ -22385,6 +22448,8 @@ func (ec *executionContext) fieldContext_QueryPerformersResultType_performers(ct
 				return ec.fieldContext_Performer_scenes(ctx, field)
 			case "merged_ids":
 				return ec.fieldContext_Performer_merged_ids(ctx, field)
+			case "merged_into_id":
+				return ec.fieldContext_Performer_merged_into_id(ctx, field)
 			case "studios":
 				return ec.fieldContext_Performer_studios(ctx, field)
 			case "is_favorite":
@@ -38865,6 +38930,39 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "merged_into_id":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_merged_into_id(ctx, field, obj)
 				return res
 			}
 

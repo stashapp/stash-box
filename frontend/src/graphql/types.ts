@@ -774,7 +774,10 @@ export type Performer = {
   is_favorite: Scalars["Boolean"];
   /** @deprecated Use individual fields, cup/band/waist/hip_size */
   measurements: Measurements;
+  /** IDs of performers that were merged into this one */
   merged_ids: Array<Scalars["ID"]>;
+  /** ID of performer that replaces this one */
+  merged_into_id?: Maybe<Scalars["ID"]>;
   name: Scalars["String"];
   piercings?: Maybe<Array<BodyModification>>;
   scene_count: Scalars["Int"];
@@ -1971,6 +1974,7 @@ export type EditFragment = {
         name: string;
         disambiguation?: string | null;
         deleted: boolean;
+        merged_into_id?: string | null;
         aliases: Array<string>;
         gender?: GenderEnum | null;
         birth_date?: string | null;
@@ -2234,6 +2238,7 @@ export type EditFragment = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -2289,6 +2294,7 @@ export type EditFragment = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -2536,6 +2542,7 @@ export type EditFragment = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -2591,6 +2598,7 @@ export type EditFragment = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -2742,6 +2750,7 @@ export type EditFragment = {
         name: string;
         disambiguation?: string | null;
         deleted: boolean;
+        merged_into_id?: string | null;
         aliases: Array<string>;
         gender?: GenderEnum | null;
         birth_date?: string | null;
@@ -2908,6 +2917,7 @@ export type PerformerFragment = {
   name: string;
   disambiguation?: string | null;
   deleted: boolean;
+  merged_into_id?: string | null;
   aliases: Array<string>;
   gender?: GenderEnum | null;
   birth_date?: string | null;
@@ -3294,6 +3304,7 @@ export type ApplyEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -3592,6 +3603,7 @@ export type ApplyEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -3647,6 +3659,7 @@ export type ApplyEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -3914,6 +3927,7 @@ export type ApplyEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -3969,6 +3983,7 @@ export type ApplyEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -4120,6 +4135,7 @@ export type ApplyEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -4513,6 +4529,7 @@ export type PerformerEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -4811,6 +4828,7 @@ export type PerformerEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -4866,6 +4884,7 @@ export type PerformerEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -5133,6 +5152,7 @@ export type PerformerEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -5188,6 +5208,7 @@ export type PerformerEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -5339,6 +5360,7 @@ export type PerformerEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -5542,6 +5564,7 @@ export type PerformerEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -5840,6 +5863,7 @@ export type PerformerEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -5895,6 +5919,7 @@ export type PerformerEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -6162,6 +6187,7 @@ export type PerformerEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -6217,6 +6243,7 @@ export type PerformerEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -6368,6 +6395,7 @@ export type PerformerEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -6615,6 +6643,7 @@ export type SceneEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -6913,6 +6942,7 @@ export type SceneEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -6968,6 +6998,7 @@ export type SceneEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -7235,6 +7266,7 @@ export type SceneEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -7290,6 +7322,7 @@ export type SceneEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -7441,6 +7474,7 @@ export type SceneEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -7644,6 +7678,7 @@ export type SceneEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -7942,6 +7977,7 @@ export type SceneEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -7997,6 +8033,7 @@ export type SceneEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -8264,6 +8301,7 @@ export type SceneEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -8319,6 +8357,7 @@ export type SceneEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -8470,6 +8509,7 @@ export type SceneEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -8672,6 +8712,7 @@ export type StudioEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -8970,6 +9011,7 @@ export type StudioEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -9025,6 +9067,7 @@ export type StudioEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -9292,6 +9335,7 @@ export type StudioEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -9347,6 +9391,7 @@ export type StudioEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -9498,6 +9543,7 @@ export type StudioEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -9701,6 +9747,7 @@ export type StudioEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -9999,6 +10046,7 @@ export type StudioEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -10054,6 +10102,7 @@ export type StudioEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -10321,6 +10370,7 @@ export type StudioEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -10376,6 +10426,7 @@ export type StudioEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -10527,6 +10578,7 @@ export type StudioEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -10729,6 +10781,7 @@ export type TagEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -11027,6 +11080,7 @@ export type TagEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -11082,6 +11136,7 @@ export type TagEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -11349,6 +11404,7 @@ export type TagEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -11404,6 +11460,7 @@ export type TagEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -11555,6 +11612,7 @@ export type TagEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -11758,6 +11816,7 @@ export type TagEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -12056,6 +12115,7 @@ export type TagEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -12111,6 +12171,7 @@ export type TagEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -12378,6 +12439,7 @@ export type TagEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -12433,6 +12495,7 @@ export type TagEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -12584,6 +12647,7 @@ export type TagEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -12930,6 +12994,7 @@ export type VoteMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -13228,6 +13293,7 @@ export type VoteMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -13283,6 +13349,7 @@ export type VoteMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -13550,6 +13617,7 @@ export type VoteMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -13605,6 +13673,7 @@ export type VoteMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -13756,6 +13825,7 @@ export type VoteMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -14078,6 +14148,7 @@ export type DraftQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -14217,6 +14288,7 @@ export type EditQuery = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -14515,6 +14587,7 @@ export type EditQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -14570,6 +14643,7 @@ export type EditQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -14837,6 +14911,7 @@ export type EditQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -14892,6 +14967,7 @@ export type EditQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -15043,6 +15119,7 @@ export type EditQuery = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -15239,6 +15316,7 @@ export type EditUpdateQuery = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -15499,6 +15577,7 @@ export type EditUpdateQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -15682,6 +15761,7 @@ export type EditsQuery = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -15988,6 +16068,7 @@ export type EditsQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -16043,6 +16124,7 @@ export type EditsQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -16318,6 +16400,7 @@ export type EditsQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -16373,6 +16456,7 @@ export type EditsQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -16528,6 +16612,7 @@ export type EditsQuery = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -16706,6 +16791,7 @@ export type FullPerformerQuery = {
     name: string;
     disambiguation?: string | null;
     deleted: boolean;
+    merged_into_id?: string | null;
     aliases: Array<string>;
     gender?: GenderEnum | null;
     birth_date?: string | null;
@@ -16792,6 +16878,7 @@ export type PerformerQuery = {
     name: string;
     disambiguation?: string | null;
     deleted: boolean;
+    merged_into_id?: string | null;
     aliases: Array<string>;
     gender?: GenderEnum | null;
     birth_date?: string | null;
@@ -17025,6 +17112,7 @@ export type QueryExistingSceneQuery = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -17331,6 +17419,7 @@ export type QueryExistingSceneQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -17386,6 +17475,7 @@ export type QueryExistingSceneQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -17661,6 +17751,7 @@ export type QueryExistingSceneQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -17716,6 +17807,7 @@ export type QueryExistingSceneQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -17871,6 +17963,7 @@ export type QueryExistingSceneQuery = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -18801,6 +18894,7 @@ export const PerformerFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -20511,6 +20605,7 @@ export const EditFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -21735,6 +21830,7 @@ export const ApplyEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -24215,6 +24311,7 @@ export const PerformerEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -25823,6 +25920,7 @@ export const PerformerEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -27617,6 +27715,7 @@ export const SceneEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -29222,6 +29321,7 @@ export const SceneEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -30814,6 +30914,7 @@ export const StudioEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -32419,6 +32520,7 @@ export const StudioEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -34011,6 +34113,7 @@ export const TagEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -35616,6 +35719,7 @@ export const TagEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -37884,6 +37988,7 @@ export const VoteDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -39993,6 +40098,7 @@ export const DraftDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -40327,6 +40433,7 @@ export const EditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -42509,6 +42616,7 @@ export const EditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -42959,6 +43067,7 @@ export const EditsDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -44533,6 +44642,7 @@ export const FullPerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -44819,6 +44929,7 @@ export const PerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -45448,6 +45559,7 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },

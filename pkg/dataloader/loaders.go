@@ -24,6 +24,7 @@ type Loaders struct {
 	PerformerAliasesByID           StringsLoader
 	PerformerImageIDsByID          UUIDsLoader
 	PerformerMergeIDsByID          UUIDsLoader
+	PerformerMergeIDsBySourceID    UUIDsLoader
 	PerformerPiercingsByID         BodyModificationsLoader
 	PerformerTattoosByID           BodyModificationsLoader
 	PerformerUrlsByID              URLLoader
@@ -108,6 +109,14 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 				qb := fac.Performer()
 				return qb.FindMergeIDsByPerformerIDs(ids)
+			},
+		},
+		PerformerMergeIDsBySourceID: UUIDsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+				qb := fac.Performer()
+				return qb.FindMergeIDsBySourcePerformerIDs(ids)
 			},
 		},
 		PerformerAliasesByID: StringsLoader{

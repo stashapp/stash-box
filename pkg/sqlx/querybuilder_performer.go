@@ -908,6 +908,27 @@ func (qb *performerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([]
 	return result, nil
 }
 
+func (qb *performerQueryBuilder) FindMergeIDsBySourcePerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	redirects := models.Redirects{}
+	err := qb.dbi.FindAllJoins(performerSourceRedirectTable, ids, &redirects)
+
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// each list should only really have one entry
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, redirect := range redirects {
+		m[redirect.SourceID] = append(m[redirect.SourceID], redirect.TargetID)
+	}
+
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
 func (qb *performerQueryBuilder) IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
 	query := "SELECT performer_id FROM performer_favorites WHERE user_id = :userid AND performer_id IN (:performer_ids)"
 
