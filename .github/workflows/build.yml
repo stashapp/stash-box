@@ -48,6 +48,11 @@ jobs:
       with:
         node-version: '22'
 
+    - name: Install PNPM
+      uses: pnpm/action-setup@4
+      with:
+        version: 9
+
     - name: Cache node modules
       uses: actions/cache@v2
       env:
