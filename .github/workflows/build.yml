@@ -49,7 +49,7 @@ jobs:
         node-version: '22'
 
     - name: Install PNPM
-      uses: pnpm/action-setup@4
+      uses: pnpm/action-setup@v4
       with:
         version: 9
 
