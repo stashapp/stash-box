@@ -16,7 +16,7 @@
     "analyze": "analyze=true vite build"
   },
   "engines": {
-    "node": ">=16",
+    "node": ">=22",
     "yarn": ">=1.15.2"
   },
   "devDependencies": {
