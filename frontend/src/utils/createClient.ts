@@ -6,7 +6,8 @@ import {
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
-import { createUploadLink } from "apollo-upload-client";
+import { removeTypenameFromVariables } from "@apollo/client/link/remove-typename";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
 const typePolicies: TypePolicies = {
   SceneDraft: {
@@ -69,6 +70,7 @@ const createClient = () =>
           );
         if (networkError) console.log(`[Network error]: ${networkError}`);
       }),
+      removeTypenameFromVariables(),
       httpLink as unknown as ApolloLink,
     ]),
     cache: new InMemoryCache({ typePolicies }),

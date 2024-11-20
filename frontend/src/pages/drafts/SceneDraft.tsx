@@ -43,9 +43,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
   const doInsert = (updateData: SceneEditDetailsInput, editNote: string) => {
     const details: SceneEditDetailsInput = {
       ...updateData,
-      fingerprints: !isUpdate
-        ? draft.data.fingerprints.map(({ __typename, ...rest }) => rest)
-        : undefined,
+      fingerprints: !isUpdate ? draft.data.fingerprints : undefined,
       draft_id: draft.id,
     };
 
