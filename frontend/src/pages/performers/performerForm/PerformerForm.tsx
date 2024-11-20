@@ -376,7 +376,6 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Label>Gender</Form.Label>
               <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
-                placeholder="Select gender..."
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
