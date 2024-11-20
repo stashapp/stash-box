@@ -15,7 +15,7 @@ For `node` installation instructions, please see the websites for [node.js](http
 Install dependencies
 
 ```shell
-pnpm
+pnpm i
 ```
 
 ## GraphQL development
