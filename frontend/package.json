@@ -20,10 +20,11 @@
     "yarn": ">=1.15.2"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^3.2.1",
-    "@graphql-codegen/typed-document-node": "^3.0.1",
-    "@graphql-codegen/typescript": "^3.0.1",
-    "@graphql-codegen/typescript-operations": "^3.0.1",
+    "@graphql-codegen/cli": "^5.0.3",
+    "@graphql-codegen/typed-document-node": "^5.0.11",
+    "@graphql-codegen/typescript": "^4.1.1",
+    "@graphql-codegen/typescript-operations": "^4.3.1",
+    "@graphql-typed-document-node/core": "^3.2.0",
     "@rollup/plugin-graphql": "^2.0.3",
     "@types/apollo-upload-client": "^17.0.2",
     "@types/lodash-es": "^4.17.6",
@@ -57,7 +58,6 @@
     "@fortawesome/free-regular-svg-icons": "^6.3.0",
     "@fortawesome/free-solid-svg-icons": "6.3.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@graphql-typed-document-node/core": "^3.1.2",
     "@hookform/resolvers": "2.9.11",
     "apollo-upload-client": "^17.0.0",
     "bootstrap": "^5.2.3",
