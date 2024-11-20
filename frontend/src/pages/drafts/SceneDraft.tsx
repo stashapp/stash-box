@@ -37,7 +37,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
   });
   const { data: scene, loading: loadingScene } = useScene(
     { id: draft.data.id ?? "" },
-    !isUpdate
+    !isUpdate,
   );
 
   const doInsert = (updateData: SceneEditDetailsInput, editNote: string) => {
@@ -65,7 +65,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
 
   const [initialScene, unparsed] = parseSceneDraft(
     draft.data,
-    scene?.findScene ?? undefined
+    scene?.findScene ?? undefined,
   );
   const remainder = Object.entries(unparsed)
     .filter(([, val]) => !!val)
@@ -79,7 +79,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
   const phashMissing =
     !isUpdate &&
     draft.data.fingerprints.filter(
-      (f) => f.algorithm === FingerprintAlgorithm.PHASH
+      (f) => f.algorithm === FingerprintAlgorithm.PHASH,
     ).length === 0;
 
   return (

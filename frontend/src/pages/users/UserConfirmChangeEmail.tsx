@@ -40,11 +40,11 @@ const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
           navigate(userHref(user));
         } else if (status === UserChangeEmailStatus.INVALID_TOKEN)
           setSubmitError(
-            "Invalid or expired token, please restart the process."
+            "Invalid or expired token, please restart the process.",
           );
         else if (status === UserChangeEmailStatus.EXPIRED)
           setSubmitError(
-            "Email change token expired, please restart the process."
+            "Email change token expired, please restart the process.",
           );
         else setSubmitError("An unknown error occurred");
       })
@@ -52,7 +52,7 @@ const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
         (error: unknown) =>
           error instanceof Error &&
           isApolloError(error) &&
-          setSubmitError(error.message)
+          setSubmitError(error.message),
       );
     return false;
   };

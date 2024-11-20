@@ -30,7 +30,7 @@ export const getPlatformURL = () => {
 
   if (isDevEnvironment()) {
     platformUrl = new URL(
-      import.meta.env.VITE_SERVER_URL ?? window.location.origin
+      import.meta.env.VITE_SERVER_URL ?? window.location.origin,
     );
     platformUrl.port = import.meta.env.VITE_SERVER_PORT ?? "9998";
   }
@@ -65,8 +65,8 @@ const createClient = () =>
         if (graphQLErrors)
           graphQLErrors.forEach(({ message, locations, path }) =>
             console.log(
-              `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-            )
+              `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+            ),
           );
         if (networkError) console.log(`[Network error]: ${networkError}`);
       }),

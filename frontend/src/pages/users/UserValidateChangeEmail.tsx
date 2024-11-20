@@ -56,11 +56,11 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
           setQueryParam("submitted", true);
         else if (status === UserChangeEmailStatus.INVALID_TOKEN)
           setSubmitError(
-            "Invalid or expired token, please restart the process."
+            "Invalid or expired token, please restart the process.",
           );
         else if (status === UserChangeEmailStatus.EXPIRED)
           setSubmitError(
-            "Email change token expired, please restart the process."
+            "Email change token expired, please restart the process.",
           );
         else setSubmitError("An unknown error occurred");
       })
@@ -68,7 +68,7 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
         (error: unknown) =>
           error instanceof Error &&
           isApolloError(error) &&
-          setSubmitError(error.message)
+          setSubmitError(error.message),
       );
   };
 

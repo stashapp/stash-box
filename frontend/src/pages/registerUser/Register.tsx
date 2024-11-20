@@ -55,8 +55,8 @@ const Register: FC<Props> = ({ config }) => {
         if (response.data?.newUser) {
           navigate(
             `${ROUTE_ACTIVATE}?email=${encodeURIComponent(
-              formData.email
-            )}&key=${response.data.newUser}`
+              formData.email,
+            )}&key=${response.data.newUser}`,
           );
         } else {
           setAwaitingActivation(true);

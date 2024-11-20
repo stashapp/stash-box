@@ -28,7 +28,7 @@ const CheckboxSelect: FC<MultiSelectProps> = ({
 
   const handleChange = (vals: OnChangeValue<IOptionType, true>) => {
     const selected = uniq(
-      vals.map((v) => [v.value, ...(v.subValues ?? [])]).flat()
+      vals.map((v) => [v.value, ...(v.subValues ?? [])]).flat(),
     );
 
     setUnselected(selected);
@@ -37,7 +37,7 @@ const CheckboxSelect: FC<MultiSelectProps> = ({
 
   const formatLabel = (
     option: IOptionType,
-    meta: { context: "menu" | "value" }
+    meta: { context: "menu" | "value" },
   ) => {
     if (meta.context === "menu")
       return option.subValues === null ? (
@@ -63,7 +63,7 @@ const CheckboxSelect: FC<MultiSelectProps> = ({
   };
 
   const defaultValue = values.filter((val) =>
-    initialSelected.includes(val.value)
+    initialSelected.includes(val.value),
   );
 
   return (

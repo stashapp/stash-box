@@ -72,7 +72,7 @@ const PerformersComponent: FC = () => {
       <Col xs="auto" key={performer.id}>
         <PerformerCard performer={performer} />
       </Col>
-    )
+    ),
   );
 
   const debouncedHandler = debounce(setParams, 200);
@@ -116,7 +116,7 @@ const PerformersComponent: FC = () => {
               "direction",
               direction === SortDirectionEnum.ASC
                 ? SortDirectionEnum.DESC
-                : undefined
+                : undefined,
             )
           }
         >

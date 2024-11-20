@@ -18,7 +18,7 @@ export const isValidDate = (date?: string) => !date || isValid(parseISO(date));
 export const dateWithinRange = (
   date: string | undefined,
   start?: string | Date,
-  end?: string | Date
+  end?: string | Date,
 ) => {
   if (!date || (!start && !end)) return true;
 

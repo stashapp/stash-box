@@ -11,7 +11,7 @@ const DISPLAY_TIME = 5000;
 const ANIMATION_TIME = 1000;
 
 const ToastContext = createContext<(item: Omit<Message, "id">) => void>(
-  () => {}
+  () => {},
 );
 
 const ToastMessage: React.FC<Message> = ({ id, content, variant }) => {
@@ -45,7 +45,7 @@ const Toasts: React.FC<ToastsProps> = ({ messages, setMessages }) => {
     if (messages.length)
       timer.current = setTimeout(
         () => setMessages?.([]),
-        DISPLAY_TIME + ANIMATION_TIME
+        DISPLAY_TIME + ANIMATION_TIME,
       );
   }, [messages, setMessages]);
 

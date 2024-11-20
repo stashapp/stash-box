@@ -15,5 +15,5 @@ export const setCachedUser = (user?: User | null) => {
 };
 
 export const isPrivateUser = (
-  user: PublicUser | PrivateUser
+  user: PublicUser | PrivateUser,
 ): user is PrivateUser => !!(user as PrivateUser).email;

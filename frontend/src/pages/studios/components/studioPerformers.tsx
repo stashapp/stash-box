@@ -111,7 +111,7 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
               "direction",
               direction === SortDirectionEnum.DESC
                 ? SortDirectionEnum.ASC
-                : undefined
+                : undefined,
             )
           }
         >

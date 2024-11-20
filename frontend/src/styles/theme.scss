@@ -270,7 +270,9 @@ hr {
   background-color: #30404d;
   border: none;
   border-radius: 3px;
-  box-shadow: 0 0 0 1px rgba(16 22 26 / 40%), 0 0 0 rgba(16 22 26 / 0%),
+  box-shadow:
+    0 0 0 1px rgba(16 22 26 / 40%),
+    0 0 0 rgba(16 22 26 / 0%),
     0 0 0 rgba(16 22 26 / 0%);
   overflow: hidden;
   padding: 0;
@@ -321,15 +323,21 @@ hr {
 .text-input,
 .input-control {
   border: 0;
-  box-shadow: 0 0 0 0 rgba(19 124 189 / 0%), 0 0 0 0 rgba(19 124 189 / 0%),
-    0 0 0 0 rgba(19 124 189 / 0%), inset 0 0 0 1px rgba(16 22 26 / 30%),
+  box-shadow:
+    0 0 0 0 rgba(19 124 189 / 0%),
+    0 0 0 0 rgba(19 124 189 / 0%),
+    0 0 0 0 rgba(19 124 189 / 0%),
+    inset 0 0 0 1px rgba(16 22 26 / 30%),
     inset 0 1px 1px rgba(16 22 26 / 40%);
   color: $text-color;
 
   &:focus {
     border: 0;
-    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary,
-      0 0 0 3px rgba(19 124 189 / 30%), inset 0 0 0 1px rgba(16 22 26 / 30%),
+    box-shadow:
+      0 0 0 1px $primary,
+      0 0 0 1px $primary,
+      0 0 0 3px rgba(19 124 189 / 30%),
+      inset 0 0 0 1px rgba(16 22 26 / 30%),
       inset 0 1px 1px rgba(16 22 26 / 40%);
     color: $text-color;
   }

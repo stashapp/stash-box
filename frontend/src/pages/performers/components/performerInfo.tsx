@@ -89,7 +89,7 @@ const Actions: FC<Props> = ({ performer }) => {
 export const PerformerInfo: FC<Props> = ({ performer }) => {
   const { data: mergedInto } = usePerformer(
     { id: performer.merged_into_id ?? "" },
-    !performer.merged_into_id
+    !performer.merged_into_id,
   );
   return (
     <div className={CLASSNAME}>
@@ -128,7 +128,7 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                     <td>
                       {formatCareer(
                         performer.career_start_year,
-                        performer.career_end_year
+                        performer.career_end_year,
                       )}
                     </td>
                   </tr>

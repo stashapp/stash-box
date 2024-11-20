@@ -138,213 +138,231 @@ export const useActivateUser = (
   options?: MutationHookOptions<
     ActivateNewUserMutation,
     ActivateNewUserMutationVariables
-  >
+  >,
 ) => useMutation(ActivateNewUserDocument, options);
 
 export const useAddUser = (
-  options?: MutationHookOptions<AddUserMutation, AddUserMutationVariables>
+  options?: MutationHookOptions<AddUserMutation, AddUserMutationVariables>,
 ) => useMutation(AddUserDocument, options);
 
 export const useNewUser = (
-  options?: MutationHookOptions<NewUserMutation, NewUserMutationVariables>
+  options?: MutationHookOptions<NewUserMutation, NewUserMutationVariables>,
 ) => useMutation(NewUserDocument, options);
 
 export const useUpdateUser = (
-  options?: MutationHookOptions<UpdateUserMutation, UpdateUserMutationVariables>
+  options?: MutationHookOptions<
+    UpdateUserMutation,
+    UpdateUserMutationVariables
+  >,
 ) => useMutation(UpdateUserDocument, options);
 
 export const useDeleteUser = (
-  options?: MutationHookOptions<DeleteUserMutation, DeleteUserMutationVariables>
+  options?: MutationHookOptions<
+    DeleteUserMutation,
+    DeleteUserMutationVariables
+  >,
 ) => useMutation(DeleteUserDocument, options);
 
 export const useAddCategory = (
   options?: MutationHookOptions<
     AddTagCategoryMutation,
     AddTagCategoryMutationVariables
-  >
+  >,
 ) => useMutation(AddTagCategoryDocument, options);
 
 export const useDeleteCategory = (
   options?: MutationHookOptions<
     DeleteTagCategoryMutation,
     DeleteTagCategoryMutationVariables
-  >
+  >,
 ) => useMutation(DeleteTagCategoryDocument, options);
 
 export const useUpdateCategory = (
   options?: MutationHookOptions<
     UpdateTagCategoryMutation,
     UpdateTagCategoryMutationVariables
-  >
+  >,
 ) => useMutation(UpdateTagCategoryDocument, options);
 
 export const useAddImage = (
-  options?: MutationHookOptions<AddImageMutation, AddImageMutationVariables>
+  options?: MutationHookOptions<AddImageMutation, AddImageMutationVariables>,
 ) => useMutation(AddImageDocument, options);
 
 export const usePerformerEdit = (
   options?: MutationHookOptions<
     PerformerEditMutation,
     PerformerEditMutationVariables
-  >
+  >,
 ) => useMutation(PerformerEditDocument, options);
 
 export const usePerformerEditUpdate = (
   options?: MutationHookOptions<
     PerformerEditUpdateMutation,
     PerformerEditUpdateMutationVariables
-  >
+  >,
 ) => useMutation(PerformerEditUpdateDocument, options);
 
 export const useAddScene = (
-  options?: MutationHookOptions<AddSceneMutation, AddSceneMutationVariables>
+  options?: MutationHookOptions<AddSceneMutation, AddSceneMutationVariables>,
 ) => useMutation(AddSceneDocument, options);
 
 export const useDeleteScene = (
   options?: MutationHookOptions<
     DeleteSceneMutation,
     DeleteSceneMutationVariables
-  >
+  >,
 ) => useMutation(DeleteSceneDocument, options);
 
 export const useUpdateScene = (
   options?: MutationHookOptions<
     UpdateSceneMutation,
     UpdateSceneMutationVariables
-  >
+  >,
 ) => useMutation(UpdateSceneDocument, options);
 
 export const useAddStudio = (
-  options?: MutationHookOptions<AddStudioMutation, AddStudioMutationVariables>
+  options?: MutationHookOptions<AddStudioMutation, AddStudioMutationVariables>,
 ) => useMutation(AddStudioDocument, options);
 
 export const useDeleteStudio = (
   options?: MutationHookOptions<
     DeleteStudioMutation,
     DeleteStudioMutationVariables
-  >
+  >,
 ) => useMutation(DeleteStudioDocument, options);
 
 export const useUpdateStudio = (
   options?: MutationHookOptions<
     UpdateStudioMutation,
     UpdateStudioMutationVariables
-  >
+  >,
 ) => useMutation(UpdateStudioDocument, options);
 
 export const useTagEdit = (
-  options?: MutationHookOptions<TagEditMutation, TagEditMutationVariables>
+  options?: MutationHookOptions<TagEditMutation, TagEditMutationVariables>,
 ) => useMutation(TagEditDocument, options);
 
 export const useTagEditUpdate = (
   options?: MutationHookOptions<
     TagEditUpdateMutation,
     TagEditUpdateMutationVariables
-  >
+  >,
 ) => useMutation(TagEditUpdateDocument, options);
 
 export const useStudioEdit = (
-  options?: MutationHookOptions<StudioEditMutation, StudioEditMutationVariables>
+  options?: MutationHookOptions<
+    StudioEditMutation,
+    StudioEditMutationVariables
+  >,
 ) => useMutation(StudioEditDocument, options);
 
 export const useStudioEditUpdate = (
   options?: MutationHookOptions<
     StudioEditUpdateMutation,
     StudioEditUpdateMutationVariables
-  >
+  >,
 ) => useMutation(StudioEditUpdateDocument, options);
 
 export const useSceneEdit = (
-  options?: MutationHookOptions<SceneEditMutation, SceneEditMutationVariables>
+  options?: MutationHookOptions<SceneEditMutation, SceneEditMutationVariables>,
 ) => useMutation(SceneEditDocument, options);
 
 export const useSceneEditUpdate = (
   options?: MutationHookOptions<
     SceneEditUpdateMutation,
     SceneEditUpdateMutationVariables
-  >
+  >,
 ) => useMutation(SceneEditUpdateDocument, options);
 
 export const useApplyEdit = (
-  options?: MutationHookOptions<ApplyEditMutation, ApplyEditMutationVariables>
+  options?: MutationHookOptions<ApplyEditMutation, ApplyEditMutationVariables>,
 ) => useMutation(ApplyEditDocument, options);
 
 export const useCancelEdit = (
-  options?: MutationHookOptions<CancelEditMutation, CancelEditMutationVariables>
+  options?: MutationHookOptions<
+    CancelEditMutation,
+    CancelEditMutationVariables
+  >,
 ) => useMutation(CancelEditDocument, options);
 
 export const useChangePassword = (
   options?: MutationHookOptions<
     ChangePasswordMutation,
     ChangePasswordMutationVariables
-  >
+  >,
 ) => useMutation(ChangePasswordDocument, options);
 
 export const useResetPassword = (
   options?: MutationHookOptions<
     ResetPasswordMutation,
     ResetPasswordMutationVariables
-  >
+  >,
 ) => useMutation(ResetPasswordDocument, options);
 
 export const useRegenerateAPIKey = (
   options?: MutationHookOptions<
     RegenerateApiKeyMutation,
     RegenerateApiKeyMutationVariables
-  >
+  >,
 ) => useMutation(RegenerateApiKeyDocument, options);
 
 export const useGenerateInviteCodes = (
-  options?: MutationHookOptions<GenerateInviteCodesMutation>
+  options?: MutationHookOptions<GenerateInviteCodesMutation>,
 ) => useMutation(GenerateInviteCodesDocument, options);
 
 export const useGrantInvite = (
   options?: MutationHookOptions<
     GrantInviteMutation,
     GrantInviteMutationVariables
-  >
+  >,
 ) => useMutation(GrantInviteDocument, options);
 
 export const useRescindInviteCode = (
   options?: MutationHookOptions<
     RescindInviteCodeMutation,
     RescindInviteCodeMutationVariables
-  >
+  >,
 ) => useMutation(RescindInviteCodeDocument, options);
 
 export const useRevokeInvite = (
   options?: MutationHookOptions<
     RevokeInviteMutation,
     RevokeInviteMutationVariables
-  >
+  >,
 ) => useMutation(RevokeInviteDocument, options);
 
 export const useEditComment = (
   options?: MutationHookOptions<
     EditCommentMutation,
     EditCommentMutationVariables
-  >
+  >,
 ) => useMutation(EditCommentDocument, options);
 
 export const useVote = (
-  options?: MutationHookOptions<VoteMutation, VoteMutationVariables>
+  options?: MutationHookOptions<VoteMutation, VoteMutationVariables>,
 ) => useMutation(VoteDocument, options);
 
 export const useAddSite = (
-  options?: MutationHookOptions<AddSiteMutation, AddSiteMutationVariables>
+  options?: MutationHookOptions<AddSiteMutation, AddSiteMutationVariables>,
 ) => useMutation(AddSiteDocument, options);
 
 export const useDeleteSite = (
-  options?: MutationHookOptions<DeleteSiteMutation, DeleteSiteMutationVariables>
+  options?: MutationHookOptions<
+    DeleteSiteMutation,
+    DeleteSiteMutationVariables
+  >,
 ) => useMutation(DeleteSiteDocument, options);
 
 export const useUpdateSite = (
-  options?: MutationHookOptions<UpdateSiteMutation, UpdateSiteMutationVariables>
+  options?: MutationHookOptions<
+    UpdateSiteMutation,
+    UpdateSiteMutationVariables
+  >,
 ) => useMutation(UpdateSiteDocument, options);
 
 export const useSetFavorite = <T extends "performer" | "studio">(
   type: T,
-  id: string
+  id: string,
 ) =>
   useMutation<
     T extends "performer" ? FavoritePerformerMutation : FavoriteStudioMutation,
@@ -372,14 +390,14 @@ export const useDeleteDraft = (
   options?: MutationHookOptions<
     DeleteDraftMutation,
     DeleteDraftMutationVariables
-  >
+  >,
 ) => useMutation(DeleteDraftDocument, options);
 
 export const useUnmatchFingerprint = (
   options?: MutationHookOptions<
     UnmatchFingerprintMutation,
     UnmatchFingerprintMutationVariables
-  >
+  >,
 ) =>
   useMutation(UnmatchFingerprintDocument, {
     update(cache, { data }, { variables }) {
@@ -396,19 +414,19 @@ export const useValidateChangeEmail = (
   options?: MutationHookOptions<
     ValidateChangeEmailMutation,
     ValidateChangeEmailMutationVariables
-  >
+  >,
 ) => useMutation(ValidateChangeEmailDocument, options);
 
 export const useConfirmChangeEmail = (
   options?: MutationHookOptions<
     ConfirmChangeEmailMutation,
     ConfirmChangeEmailMutationVariables
-  >
+  >,
 ) => useMutation(ConfirmChangeEmailDocument, options);
 
 export const useRequestChangeEmail = (
   options?: MutationHookOptions<
     RequestChangeEmailMutation,
     RequestChangeEmailMutationVariables
-  >
+  >,
 ) => useMutation(RequestChangeEmailDocument, options);

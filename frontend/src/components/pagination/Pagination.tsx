@@ -23,7 +23,7 @@ const PaginationComponent: FC<PaginationProps> = ({
 
   const maxVal = Math.max(
     Math.min(active + 2, totalPages),
-    Math.min(totalPages, 5)
+    Math.min(totalPages, 5),
   );
   const minVal = Math.max(maxVal - 4, 1);
   const totalItems = maxVal - minVal + 1;

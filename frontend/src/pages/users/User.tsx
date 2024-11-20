@@ -200,7 +200,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
       rescindInviteCode({ variables: { code: showRescindCode ?? "" } }).then(
         () => {
           refetch();
-        }
+        },
       );
     }
 

@@ -57,7 +57,7 @@ interface SearchResult {
 }
 
 const valueIsPerformer = (
-  arg?: SceneResult | PerformerResult
+  arg?: SceneResult | PerformerResult,
 ): arg is PerformerResult => arg?.__typename === "Performer";
 
 const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
@@ -80,7 +80,7 @@ const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
 );
 
 const resultIsSearchAll = (
-  arg: SearchAllQuery | SearchPerformersQuery
+  arg: SearchAllQuery | SearchPerformersQuery,
 ): arg is SearchAllQuery =>
   (arg as SearchAllQuery).searchPerformer !== undefined &&
   (arg as SearchAllQuery).searchScene !== undefined;
@@ -88,7 +88,7 @@ const resultIsSearchAll = (
 function handleResult(
   result: SearchAllQuery | SearchPerformersQuery,
   excludeIDs: string[],
-  showAllLink: boolean
+  showAllLink: boolean,
 ): (SearchGroup | SearchResult)[] {
   let performers: SearchResult[] = [];
   let scenes: SearchResult[] = [];

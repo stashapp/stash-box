@@ -108,9 +108,9 @@ const SceneForm: FC<SceneProps> = ({
         SceneSchema.cast(fieldData, {
           assert: "ignore-optionality",
         }) as SceneFormData,
-        scene
+        scene,
       ),
-    [fieldData, scene]
+    [fieldData, scene],
   );
 
   const [isChanging, setChange] = useState<number | undefined>();
@@ -215,7 +215,7 @@ const SceneForm: FC<SceneProps> = ({
                   res.__typename === "Performer" && handleChange(res, index)
                 }
                 excludeIDs={currentPerformerIds.filter(
-                  (id) => id !== p.performerId
+                  (id) => id !== p.performerId,
                 )}
                 searchType={SearchType.Performer}
               />

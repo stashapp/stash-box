@@ -111,7 +111,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
               "direction",
               direction === SortDirectionEnum.ASC
                 ? SortDirectionEnum.DESC
-                : undefined
+                : undefined,
             )
           }
         >
