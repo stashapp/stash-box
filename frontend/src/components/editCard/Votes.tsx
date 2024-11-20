@@ -36,7 +36,7 @@ const Votes: FC<VotesProps> = ({ edit }) => (
                 <span className="mx-2">&bull;</span>
                 {VoteTypes[v.vote]}
               </div>
-            )
+            ),
         )}
     </div>
   </>

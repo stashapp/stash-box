@@ -24,9 +24,9 @@ import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
 
 const PER_PAGE = 25;
 
-const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
-  value: g,
-  label: GenderFilterTypes[g as GenderFilterEnum],
+const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
+  value,
+  label: GenderFilterTypes[value],
 }));
 const sortOptions = [
   { value: PerformerSortEnum.NAME, label: "Name" },
@@ -72,7 +72,7 @@ const PerformersComponent: FC = () => {
       <Col xs="auto" key={performer.id}>
         <PerformerCard performer={performer} />
       </Col>
-    )
+    ),
   );
 
   const debouncedHandler = debounce(setParams, 200);
@@ -116,7 +116,7 @@ const PerformersComponent: FC = () => {
               "direction",
               direction === SortDirectionEnum.ASC
                 ? SortDirectionEnum.DESC
-                : undefined
+                : undefined,
             )
           }
         >

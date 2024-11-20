@@ -106,7 +106,7 @@ const TagSelect: FC<TagSelectProps> = ({
         (tag) =>
           !excluded.includes(tag.id) &&
           (allowDeleted || !tag.deleted) &&
-          tag.id !== exact?.id
+          tag.id !== exact?.id,
       )
       .map((tag) => ({
         label: tag.name,

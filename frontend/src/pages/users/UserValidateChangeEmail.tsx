@@ -10,7 +10,7 @@ import type { User } from "src/AuthContext";
 import { useQueryParams } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
-import { useValidateChangeEmail } from "src/graphql";
+import { useValidateChangeEmail, UserChangeEmailStatus } from "src/graphql";
 
 const schema = yup.object({
   token: yup.string().required(),
@@ -52,14 +52,15 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
     validateChangeEmail({ variables: { ...formData } })
       .then((res) => {
         const status = res.data?.validateChangeEmail;
-        if (status === "CONFIRM_NEW") setQueryParam("submitted", true);
-        else if (status === "INVALID_TOKEN")
+        if (status === UserChangeEmailStatus.CONFIRM_NEW)
+          setQueryParam("submitted", true);
+        else if (status === UserChangeEmailStatus.INVALID_TOKEN)
           setSubmitError(
-            "Invalid or expired token, please restart the process."
+            "Invalid or expired token, please restart the process.",
           );
-        else if (status === "EXPIRED")
+        else if (status === UserChangeEmailStatus.EXPIRED)
           setSubmitError(
-            "Email change token expired, please restart the process."
+            "Email change token expired, please restart the process.",
           );
         else setSubmitError("An unknown error occurred");
       })
@@ -67,7 +68,7 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
         (error: unknown) =>
           error instanceof Error &&
           isApolloError(error) &&
-          setSubmitError(error.message)
+          setSubmitError(error.message),
       );
   };
 

@@ -8,7 +8,7 @@ import { useQueryParams, useToast } from "src/hooks";
 import { userHref } from "src/utils";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
-import { useConfirmChangeEmail } from "src/graphql";
+import { useConfirmChangeEmail, UserChangeEmailStatus } from "src/graphql";
 
 const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
     confirmChangeEmail({ variables: { token } })
       .then((res) => {
         const status = res.data?.confirmChangeEmail;
-        if (status === "SUCCESS") {
+        if (status === UserChangeEmailStatus.SUCCESS) {
           toast({
             variant: "success",
             content: (
@@ -38,13 +38,13 @@ const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
             ),
           });
           navigate(userHref(user));
-        } else if (status === "INVALID_TOKEN")
+        } else if (status === UserChangeEmailStatus.INVALID_TOKEN)
           setSubmitError(
-            "Invalid or expired token, please restart the process."
+            "Invalid or expired token, please restart the process.",
           );
-        else if (status === "EXPIRED")
+        else if (status === UserChangeEmailStatus.EXPIRED)
           setSubmitError(
-            "Email change token expired, please restart the process."
+            "Email change token expired, please restart the process.",
           );
         else setSubmitError("An unknown error occurred");
       })
@@ -52,7 +52,7 @@ const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
         (error: unknown) =>
           error instanceof Error &&
           isApolloError(error) &&
-          setSubmitError(error.message)
+          setSubmitError(error.message),
       );
     return false;
   };
