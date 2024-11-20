@@ -5,20 +5,23 @@ This project builds the frontend for the stash-box server. It can be used to bui
 ## Setup / Installing
 Make sure your environment is up to date:
 - node >= `22`
-- yarn >= `1.15.2`
+- pnpm >= `9`
 
-For installation instructions, please see the websites for [yarn](https://yarnpkg.com/lang/en/docs/install/) and [node.js](https://nodejs.org/en/download/).
+For `node` installation instructions, please see the websites for [node.js](https://nodejs.org/en/download/).
+
+`PNPM` can usually be installed by running `corepack enable pnpm`. For other options, see the [PNPM website](https://pnpm.io/installation).
+
 
 Install dependencies
 
 ```shell
-yarn
+pnpm
 ```
 
 ## GraphQL development
 If any queries/mutations or the schema on the server is updated, the Typescript types can be updated with:
 ```shell
-yarn generate
+pnpm generate
 ```
 
 ## Running
@@ -36,7 +39,7 @@ Fill in the `VITE_APIKEY` variable in `.env.development.local` with the API key 
 Run the local development server:
 
 ```shell
-yarn start
+pnpm start
 ```
 
 The server will by default start on [http://localhost:3001](http://localhost:3001) and will automatically be updated whenever any changes are made. The port can be changed by uncommenting the `PORT` entry and setting the value in the `.env.development.local` file.
@@ -44,23 +47,23 @@ The server will by default start on [http://localhost:3001](http://localhost:300
 Run the linter:
 
 ```shell
-yarn lint
+pnpm lint
 ```
 
 Run the code formatter:
 
 ```shell
-yarn format
+pnpm format
 ```
 
 Build the release bundle:
 
 ```shell
-yarn build
+pnpm build
 ```
 
 Run the validation (before submitting a Pull Request)
 
 ```shell
-yarn validate
+pnpm validate
 ```
