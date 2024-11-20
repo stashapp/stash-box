@@ -94,7 +94,7 @@ lint:
 	golangci-lint run
 
 pre-ui:
-	cd frontend && pnpm install --frozen-lockfile
+	cd frontend && pnpm install
 
 ui:
 	cd frontend && pnpm build
