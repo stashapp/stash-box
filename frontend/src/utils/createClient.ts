@@ -61,7 +61,6 @@ const createClient = () =>
     link: ApolloLink.from([
       authLink,
       onError(({ graphQLErrors, networkError }) => {
-        /* eslint-disable no-console */
         if (graphQLErrors)
           graphQLErrors.forEach(({ message, locations, path }) =>
             console.log(
@@ -69,7 +68,6 @@ const createClient = () =>
             )
           );
         if (networkError) console.log(`[Network error]: ${networkError}`);
-        /* eslint-enable no-console */
       }),
       httpLink as unknown as ApolloLink,
     ]),

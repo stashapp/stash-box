@@ -23,9 +23,9 @@ import { List } from "src/components/list";
 
 const PER_PAGE = 25;
 
-const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
-  value: g,
-  label: GenderFilterTypes[g as GenderFilterEnum],
+const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
+  value,
+  label: GenderFilterTypes[value],
 }));
 const sortOptions = [
   { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },

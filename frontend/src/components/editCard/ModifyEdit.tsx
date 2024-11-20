@@ -301,7 +301,7 @@ type ScenePerformance = {
   as?: string | null;
   performer: Pick<
     PerformerFragment,
-    "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
+    "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
 };
 

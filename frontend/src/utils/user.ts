@@ -9,7 +9,7 @@ const cache = localStorage.getItem(USER_STORAGE);
 const cachedUser = cache ? (JSON.parse(cache) as User) : undefined;
 
 export const getCachedUser = () => cachedUser;
-export const setCachedUser = (user?: User | undefined | null) => {
+export const setCachedUser = (user?: User | null) => {
   if (user) localStorage.setItem(USER_STORAGE, JSON.stringify(user));
   else localStorage.removeItem(USER_STORAGE);
 };

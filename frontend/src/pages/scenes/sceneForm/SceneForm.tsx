@@ -264,10 +264,11 @@ const SceneForm: FC<SceneProps> = ({
                 options={p.aliases ?? []}
                 defaultInputValue={p.alias ?? ""}
                 emptyLabel={""}
-                renderMenu={(results, { id }) => {
-                  if (!results.length) {
+                renderMenu={(options, { id }) => {
+                  if (!options.length) {
                     return <></>;
                   }
+                  const results = options as string[];
                   return (
                     <Menu id={id}>
                       <MenuItem
@@ -282,9 +283,9 @@ const SceneForm: FC<SceneProps> = ({
                         <MenuItem
                           option={result}
                           position={idx + 1}
-                          key={`${result}-idx`}
+                          key={result}
                         >
-                          {result as string}
+                          {result}
                         </MenuItem>
                       ))}
                     </Menu>
