@@ -1,11 +1,11 @@
 package sqlx
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
-	"gopkg.in/guregu/null.v4"
 )
 
 const (
@@ -13,11 +13,11 @@ const (
 )
 
 type inviteKeyRow struct {
-	ID          uuid.UUID `db:"id" json:"id"`
-	Uses        null.Int  `db:"uses" json:"uses"`
-	GeneratedBy uuid.UUID `db:"generated_by" json:"generated_by"`
-	GeneratedAt time.Time `db:"generated_at" json:"generated_at"`
-	ExpireTime  null.Time `db:"expire_time" json:"expire_time"`
+	ID          uuid.UUID     `db:"id" json:"id"`
+	Uses        sql.NullInt64 `db:"uses" json:"uses"`
+	GeneratedBy uuid.UUID     `db:"generated_by" json:"generated_by"`
+	GeneratedAt time.Time     `db:"generated_at" json:"generated_at"`
+	ExpireTime  sql.NullTime  `db:"expire_time" json:"expire_time"`
 }
 
 func (p inviteKeyRow) GetID() uuid.UUID {
@@ -27,11 +27,13 @@ func (p inviteKeyRow) GetID() uuid.UUID {
 func (p *inviteKeyRow) fromInviteKey(i models.InviteKey) {
 	p.ID = i.ID
 	if i.Uses != nil {
-		p.Uses = null.IntFrom(int64(*i.Uses))
+		p.Uses = sql.NullInt64{Int64: int64(*i.Uses), Valid: true}
 	}
 	p.GeneratedBy = i.GeneratedBy
 	p.GeneratedAt = i.GeneratedAt
-	p.ExpireTime = null.TimeFromPtr(i.Expires)
+	if i.Expires != nil {
+		p.ExpireTime = sql.NullTime{Time: *i.Expires, Valid: true}
+	}
 }
 
 func (p inviteKeyRow) resolve() models.InviteKey {
@@ -40,7 +42,7 @@ func (p inviteKeyRow) resolve() models.InviteKey {
 		Uses:        intPtrFromNullInt(p.Uses),
 		GeneratedBy: p.GeneratedBy,
 		GeneratedAt: p.GeneratedAt,
-		Expires:     p.ExpireTime.Ptr(),
+		Expires:     &p.ExpireTime.Time,
 	}
 }
 
