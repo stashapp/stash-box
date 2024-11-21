@@ -40,7 +40,7 @@ const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
         <Link
           className="text-truncate w-100"
           to={sceneHref(scene)}
-          title={scene.title}
+          title={scene.title ?? ""}
         >
           <h6 className="text-truncate">{scene.title}</h6>
         </Link>
