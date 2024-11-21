@@ -6,8 +6,8 @@
   "scripts": {
     "start": "vite --host",
     "build": "vite build",
-    "validate": "yarn lint && yarn format-check && tsc --noEmit",
-    "lint": "yarn lint:css && yarn lint:js",
+    "validate": "pnpm lint && pnpm format-check && tsc --noEmit",
+    "lint": "pnpm lint:css && pnpm lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
     "generate": "graphql-codegen --config codegen.yml",
@@ -17,8 +17,10 @@
   },
   "engines": {
     "node": ">=22",
-    "yarn": ">=1.15.2"
+    "yarn": "Please use pnpm",
+    "npm": "Please use pnpm"
   },
+  "packageManager": "pnpm@9.0.5",
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.3",
     "@graphql-codegen/typed-document-node": "^5.0.11",
