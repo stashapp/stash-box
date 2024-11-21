@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-const cookieName = "session"
+const cookieName = "stashbox"
 const usernameFormKey = "username"
 const passwordFormKey = "password"
 const userIDKey = "userID"
