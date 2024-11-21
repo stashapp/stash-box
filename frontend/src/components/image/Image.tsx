@@ -21,7 +21,7 @@ const Image: FC<Props> = ({
     ? getImage(images, orientation)
     : images.url;
   const [imageState, setImageState] = useState<"loading" | "error" | "done">(
-    "loading"
+    "loading",
   );
 
   if (!url) return <div className={`${CLASSNAME}-missing`}>{emptyMessage}</div>;

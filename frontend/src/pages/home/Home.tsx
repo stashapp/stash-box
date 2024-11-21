@@ -47,7 +47,7 @@ const ScenesComponent: FC = () => {
       <Col key={scene.id}>
         <SceneCard scene={scene} />
       </Col>
-    )
+    ),
   );
 
   return (

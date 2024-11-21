@@ -33,6 +33,7 @@ type PerformerRepo interface {
 	SearchPerformers(term string, limit int) (Performers, error)
 	ApplyEdit(performer *Performer, create bool, data *PerformerEditData) (*Performer, error)
 	FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error)
+	FindMergeIDsBySourcePerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error)
 	SoftDelete(performer Performer) (*Performer, error)
 	MergeInto(source *Performer, target *Performer, setAlias bool) error
 	DeleteScenePerformers(id uuid.UUID) error

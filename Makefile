@@ -58,7 +58,7 @@ generate-backend:
 	@ go generate
 
 generate-ui:
-	cd frontend && yarn generate
+	cd frontend && pnpm generate
 
 generate-dataloaders:
 	cd pkg/dataloader; \
@@ -94,20 +94,20 @@ lint:
 	golangci-lint run
 
 pre-ui:
-	cd frontend && yarn install --frozen-lockfile
+	cd frontend && pnpm install
 
 ui:
-	cd frontend && yarn build
+	cd frontend && pnpm build
 
 ui-start:
-	cd frontend && yarn start
+	cd frontend && pnpm start
 
 ui-fmt:
-	cd frontend && yarn format
+	cd frontend && pnpm format
 
 # runs tests and checks on the UI and builds it
 ui-validate:
-	cd frontend && yarn run validate
+	cd frontend && pnpm run validate
 
 # cross-compile- targets should be run within the compiler docker container
 cross-compile-windows: export GOOS := windows

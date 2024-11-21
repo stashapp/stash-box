@@ -8,7 +8,7 @@ import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
 
 import { SearchTagsQuery, SearchTagsQueryVariables, useTag } from "src/graphql";
 
-type Tag = NonNullable<SearchTagsQuery["searchTag"][number]>;
+type Tag = NonNullable<SearchTagsQuery["query"][number]>;
 
 interface TagFilterProps {
   tag: string;
@@ -54,15 +54,43 @@ const TagFilter: FC<TagFilterProps> = ({
       },
     });
 
-    return data.searchTag
+    const { exact, query } = data;
+
+    const exactResult = exact
+      ? {
+          label: exact.name,
+          value: exact,
+          sublabel: exact.description ?? "",
+        }
+      : undefined;
+
+    const queryResult = query
       .filter(
-        (tag) => !excludeTags.includes(tag.id) && (allowDeleted || !tag.deleted)
+        (tag) =>
+          !excludeTags.includes(tag.id) &&
+          (allowDeleted || !tag.deleted) &&
+          tag.id !== exact?.id,
       )
       .map((tag) => ({
         label: tag.name,
         value: tag,
         sublabel: tag.description ?? "",
       }));
+
+    return [
+      ...(exactResult
+        ? [
+            {
+              label:
+                exactResult.label.toLowerCase() === term.toLowerCase()
+                  ? "Exact Match"
+                  : "Alias Match",
+              options: [exactResult],
+            },
+          ]
+        : []),
+      ...(queryResult ? [{ label: "Tags", options: queryResult }] : []),
+    ];
   };
 
   const debouncedLoadOptions = debounce(handleSearch, 400);

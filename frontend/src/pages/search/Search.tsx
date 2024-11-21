@@ -132,7 +132,7 @@ const Search: FC = () => {
       term: term ?? "",
       limit: 10,
     },
-    !term
+    !term,
   );
 
   const debouncedSearch = useMemo(
@@ -143,11 +143,11 @@ const Search: FC = () => {
             searchTerm
               ? createHref(ROUTE_SEARCH, { term: searchTerm })
               : ROUTE_SEARCH_INDEX,
-            { replace: true }
+            { replace: true },
           ),
-        200
+        200,
       ),
-    [navigate]
+    [navigate],
   );
 
   return (
