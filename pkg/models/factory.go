@@ -18,7 +18,7 @@ type Repo interface {
 
 	Joins() JoinsRepo
 
-	PendingActivation() PendingActivationRepo
+	UserToken() UserTokenRepo
 	Invite() InviteKeyRepo
 	User() UserRepo
 	Site() SiteRepo

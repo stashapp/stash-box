@@ -148,7 +148,7 @@ const useEditFilter = ({
                 "direction",
                 selectedDirection === SortDirectionEnum.DESC
                   ? SortDirectionEnum.ASC
-                  : SortDirectionEnum.DESC
+                  : SortDirectionEnum.DESC,
               )
             }
           >

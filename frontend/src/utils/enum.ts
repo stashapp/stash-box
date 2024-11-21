@@ -6,24 +6,24 @@ import {
 } from "src/graphql";
 
 export const genderEnum = (
-  gender: string | undefined | null
+  gender: string | undefined | null,
 ): GenderEnum | null =>
   gender === "MALE"
     ? GenderEnum.MALE
     : gender === "FEMALE"
-    ? GenderEnum.FEMALE
-    : gender === "NON_BINARY"
-    ? GenderEnum.NON_BINARY
-    : gender === "TRANSGENDER_MALE"
-    ? GenderEnum.TRANSGENDER_MALE
-    : gender === "TRANSGENDER_FEMALE"
-    ? GenderEnum.TRANSGENDER_FEMALE
-    : gender === "INTERSEX"
-    ? GenderEnum.INTERSEX
-    : null;
+      ? GenderEnum.FEMALE
+      : gender === "NON_BINARY"
+        ? GenderEnum.NON_BINARY
+        : gender === "TRANSGENDER_MALE"
+          ? GenderEnum.TRANSGENDER_MALE
+          : gender === "TRANSGENDER_FEMALE"
+            ? GenderEnum.TRANSGENDER_FEMALE
+            : gender === "INTERSEX"
+              ? GenderEnum.INTERSEX
+              : null;
 
 export const ethnicityEnum = (
-  ethnicity: string | undefined | null
+  ethnicity: string | undefined | null,
 ): EthnicityEnum | null => {
   switch (ethnicity) {
     case "ASIAN":
@@ -48,18 +48,18 @@ export const ethnicityEnum = (
 };
 
 export const fingerprintAlgorithm = (
-  algorithm: string | undefined | null
+  algorithm: string | undefined | null,
 ): FingerprintAlgorithm | null =>
   algorithm === "MD5"
     ? FingerprintAlgorithm.MD5
     : algorithm === "OSHASH"
-    ? FingerprintAlgorithm.OSHASH
-    : algorithm === "PHASH"
-    ? FingerprintAlgorithm.PHASH
-    : null;
+      ? FingerprintAlgorithm.OSHASH
+      : algorithm === "PHASH"
+        ? FingerprintAlgorithm.PHASH
+        : null;
 
 export const breastType = (
-  type: string | undefined | null
+  type: string | undefined | null,
 ): BreastTypeEnum | null => {
   switch (type) {
     case "FAKE":
@@ -81,7 +81,7 @@ export const ensureEnum = <T>(enm: { [s: string]: T }, value: string): T =>
 export const resolveEnum = <T>(
   enm: { [s: string]: T },
   value: string | null,
-  defaultValue?: T
+  defaultValue?: T,
 ): T | undefined =>
   value &&
   (Object.values(enm) as unknown as string[]).includes(value.toUpperCase())

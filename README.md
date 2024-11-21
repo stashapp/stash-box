@@ -125,11 +125,11 @@ Suppose you install the extension after you've run the migrations. In that case,
 
 ## Install
 
-* [Go](https://golang.org/dl/), minimum version 1.17.
+* [Go](https://golang.org/dl/), minimum version 1.22.
 * [golangci-lint](https://golangci-lint.run/) - Linter aggregator
     * Follow instructions for your platform from [https://golangci-lint.run/usage/install/](https://golangci-lint.run/usage/install/).
     * Run the linters with `make lint`.
-* [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
+* [PNPM](https://pnpm.io/installation) - PNPM package manager
 
 ## Commands
 
@@ -146,7 +146,7 @@ Suppose you install the extension after you've run the migrations. In that case,
 
 ## Frontend development
 
-To run the frontend in development mode, run `yarn start` from the frontend directory.
+To run the frontend in development mode, run `pnpm start` from the frontend directory.
 
 When developing, the API key can be set in `frontend/.env.development.local` to avoid having to log in.  
 When `is_production` is enabled on the server, this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  

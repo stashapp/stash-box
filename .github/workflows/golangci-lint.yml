@@ -6,14 +6,14 @@ on:
 jobs:
   golangci:
     name: lint
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       # Silence embed linting error
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.22.x
+          go-version: 1.23.x
       - run: mkdir frontend/build && touch frontend/build/dummy
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
