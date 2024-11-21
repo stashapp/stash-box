@@ -12,7 +12,7 @@ Stash-box is an open-source video indexing and metadata API server for porn deve
 
 # Canonical community-database
 
-If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from the [#stashdb-invites](https://discord.com/channels/559159668438728723/935614155107471442) channel on our [Discord server](https://discord.gg/2TsNFKt) or [#stashdb-invites:unredacted.org](https://matrix.to/#/#stashdb-invites:unredacted.org) room on our [Matrix space](https://matrix.to/#/#stashapp:unredacted.org).
+If you're a Stash user, you don't need to install stash-box. The Stash community has a server with many titles from which you can pull data. You can get the login information from our guide to [Accessing StashDB](https://guidelines.stashdb.org/docs/faq_getting-started/stashdb/accessing-stashdb/).
 
 # Docker install
 
@@ -125,11 +125,11 @@ Suppose you install the extension after you've run the migrations. In that case,
 
 ## Install
 
-* [Go](https://golang.org/dl/), minimum version 1.17.
+* [Go](https://golang.org/dl/), minimum version 1.22.
 * [golangci-lint](https://golangci-lint.run/) - Linter aggregator
     * Follow instructions for your platform from [https://golangci-lint.run/usage/install/](https://golangci-lint.run/usage/install/).
     * Run the linters with `make lint`.
-* [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
+* [PNPM](https://pnpm.io/installation) - PNPM package manager
 
 ## Commands
 
@@ -146,7 +146,7 @@ Suppose you install the extension after you've run the migrations. In that case,
 
 ## Frontend development
 
-To run the frontend in development mode, run `yarn start` from the frontend directory.
+To run the frontend in development mode, run `pnpm start` from the frontend directory.
 
 When developing, the API key can be set in `frontend/.env.development.local` to avoid having to log in.  
 When `is_production` is enabled on the server, this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  

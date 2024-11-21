@@ -2,7 +2,7 @@
 export const diffArray = <T extends unknown>(
   a: T[],
   b: T[],
-  getKey: (t: T) => string
+  getKey: (t: T) => string,
 ) => [
   a.filter((x) => !b.some((val) => getKey(val) === getKey(x))),
   b.filter((x) => !a.some((val) => getKey(val) === getKey(x))),
@@ -11,7 +11,7 @@ export const diffArray = <T extends unknown>(
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 export const diffValue = <T extends unknown>(
   a: T | undefined | null,
-  b: T | undefined | null
+  b: T | undefined | null,
 ): T | null => (a && a !== b ? a : null);
 
 export const diffImages = (
@@ -23,7 +23,7 @@ export const diffImages = (
         height: number | undefined;
       }[]
     | undefined,
-  oldImages: { id: string; url: string; width: number; height: number }[]
+  oldImages: { id: string; url: string; width: number; height: number }[],
 ) =>
   diffArray(
     (newImages ?? []).flatMap((i) =>
@@ -36,10 +36,10 @@ export const diffImages = (
               height: i.height,
             },
           ]
-        : []
+        : [],
     ),
     oldImages,
-    (i) => i.id
+    (i) => i.id,
   );
 
 export const diffURLs = (
@@ -62,7 +62,7 @@ export const diffURLs = (
       name: string;
       icon: string;
     };
-  }[]
+  }[],
 ) =>
   diffArray(
     (newURLs ?? []).map((u) => ({
@@ -81,5 +81,5 @@ export const diffURLs = (
         icon: u.site.icon,
       },
     })),
-    (u) => `${u.site.name ?? "Unknown"}: ${u.url}`
+    (u) => `${u.site.name ?? "Unknown"}: ${u.url}`,
   );

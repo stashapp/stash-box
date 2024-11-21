@@ -29,7 +29,7 @@ const EditUserComponent: FC<Props> = ({ user }) => {
         (error: unknown) =>
           error instanceof Error &&
           isApolloError(error) &&
-          setQueryError(error.message)
+          setQueryError(error.message),
       );
   };
 

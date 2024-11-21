@@ -61,7 +61,7 @@ export type OldTagDetails = TargetOldDetails<TagDetails>;
 export const renderTagDetails = (
   tagDetails: TagDetails,
   oldTagDetails: OldTagDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     <ChangeRow
@@ -138,7 +138,7 @@ export const renderPerformerDetails = (
   performerDetails: PerformerDetails,
   oldPerformerDetails: OldPerformerDetails | undefined,
   showDiff: boolean,
-  setModifyAliases = false
+  setModifyAliases = false,
 ) => (
   <>
     {performerDetails.name && (
@@ -301,7 +301,7 @@ type ScenePerformance = {
   as?: string | null;
   performer: Pick<
     PerformerFragment,
-    "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
+    "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
 };
 
@@ -358,7 +358,7 @@ export type OldSceneDetails = TargetOldDetails<SceneDetails>;
 export const renderSceneDetails = (
   sceneDetails: SceneDetails,
   oldSceneDetails: OldSceneDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     {sceneDetails.title && (
@@ -475,7 +475,7 @@ export type OldStudioDetails = TargetOldDetails<StudioDetails>;
 export const renderStudioDetails = (
   studioDetails: StudioDetails,
   oldStudioDetails: OldStudioDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     <ChangeRow
@@ -535,7 +535,7 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
       details,
       oldDetails,
       showDiff,
-      options?.set_modify_aliases
+      options?.set_modify_aliases,
     );
   }
 

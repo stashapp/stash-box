@@ -63,13 +63,12 @@ input UserUpdateInput {
 
 input NewUserInput {
   email: String!
-  invite_key: String
+  invite_key: ID 
 }
 
 input ActivateNewUserInput {
   name: String!
-  email: String!
-  activation_key: String!
+  activation_key: ID!
   password: String!
 }
 
@@ -81,7 +80,7 @@ input UserChangePasswordInput {
   """Password in plain text"""
   existing_password: String
   new_password: String!
-  reset_key: String
+  reset_key: ID
 }
 
 input UserDestroyInput {
@@ -160,4 +159,19 @@ input GenerateInviteCodeInput {
   uses: Int
   # the number of seconds until the invite code expires. If not set, the invite code will never expire
   ttl: Int
+}
+
+input UserChangeEmailInput {
+  existing_email_token: ID
+  new_email_token: ID
+  new_email: String
+}
+
+enum UserChangeEmailStatus {
+  CONFIRM_OLD
+  CONFIRM_NEW
+  EXPIRED
+  INVALID_TOKEN
+  SUCCESS
+  ERROR
 }

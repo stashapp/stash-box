@@ -114,7 +114,10 @@ type Performer {
   edits: [Edit!]!
   scene_count: Int!
   scenes(input: PerformerScenesInput): [Scene!]!
+  """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
+  """ID of performer that replaces this one"""
+  merged_into_id: ID
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
