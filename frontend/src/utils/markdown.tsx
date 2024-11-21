@@ -13,12 +13,19 @@ export const Markdown: FC<Props> = ({ text, unique }) =>
   text ? (
     <ReactMarkdown
       remarkPlugins={[RemarkGFM, RemarkBreaks]}
-      rehypePlugins={[[RehypeExternalLinks, { rel: ['nofollow', 'noopener', 'noreferrer']}]]}
+      rehypePlugins={[
+        [RehypeExternalLinks, { rel: ["nofollow", "noopener", "noreferrer"] }],
+      ]}
       remarkRehypeOptions={{
         clobberPrefix: unique ? `${unique}-` : undefined,
       }}
       components={{
-        input: props => <input className={props.type === "checkbox" ? "form-check-input" : ""} {...props} />
+        input: (props) => (
+          <input
+            className={props.type === "checkbox" ? "form-check-input" : ""}
+            {...props}
+          />
+        ),
       }}
     >
       {text}
