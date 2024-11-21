@@ -39,7 +39,7 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm < SiteFormData > ({
+  } = useForm<SiteFormData>({
     resolver: yupResolver(schema),
   });
 
@@ -102,7 +102,8 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
           <br />
           Example:
           <br />
-          This regexp <code>(https?:\/\/(?:www\.)?(?:(.*)\.)?example\.com\/?[^?#]+)</code>
+          This regexp{" "}
+          <code>(https?:\/\/(?:www\.)?(?:(.*)\.)?example\.org\/?[^?#]+)</code>
           <br />
           will match this string{" "}
           <code>http://example.org/foo/bar?id=69#top</code>
