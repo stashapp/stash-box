@@ -436,11 +436,7 @@ func (qb *editQueryBuilder) FindPendingPerformerCreation(input models.QueryExist
 		`)
 	}
 	if len(input.Urls) > 0 {
-		var urls []string
-		for _, url := range input.Urls {
-			urls = append(urls, url)
-		}
-		arg["urls"] = pq.Array(urls)
+		arg["urls"] = pq.Array(input.Urls)
 
 		// jsonb_exists_any is the backing function for the ?: operator, but since sqlx foolishly has no way of escaping
 		// question marks in operators we have to use this undocumented function

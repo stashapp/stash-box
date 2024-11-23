@@ -1004,11 +1004,7 @@ func (qb *performerQueryBuilder) FindExistingPerformers(input models.QueryExisti
 	}
 
 	if len(input.Urls) > 0 {
-		var urls []string
-		for _, url := range input.Urls {
-			urls = append(urls, url)
-		}
-		arg["urls"] = urls
+		arg["urls"] = input.Urls
 		clauses = append(clauses, `
 			id IN (
 				SELECT performer_id
