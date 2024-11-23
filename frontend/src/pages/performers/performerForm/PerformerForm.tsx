@@ -311,7 +311,7 @@ const PerformerForm: FC<PerformerProps> = ({
         <Row>
           <Col xs={9}>
             <ExistingPerformerAlert
-              name={fieldData.name || ''}
+              name={fieldData.name || ""}
               disambiguation={fieldData.disambiguation}
               urls={fieldData.urls || []}
             />

@@ -3,7 +3,10 @@ import { Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { debounce } from "lodash-es";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { useQueryExistingPerformer, QueryExistingPerformerInput } from "src/graphql";
+import {
+  useQueryExistingPerformer,
+  QueryExistingPerformerInput,
+} from "src/graphql";
 import { Icon, PerformerName } from "src/components/fragments";
 import { performerHref, editHref } from "src/utils";
 
@@ -18,18 +21,28 @@ const ExistingPerformerAlert: FC<Props> = ({
   disambiguation,
   urls = [],
 }) => {
-  const [input, setInput] = useState<QueryExistingPerformerInput>({ name: '', urls: []});
-  const { data: existingData } = useQueryExistingPerformer({ input }, input.urls.length === 0 && input.name?.length === 0);
+  const [input, setInput] = useState<QueryExistingPerformerInput>({
+    name: "",
+    urls: [],
+  });
+  const { data: existingData } = useQueryExistingPerformer(
+    { input },
+    input.urls.length === 0 && input.name?.length === 0,
+  );
 
-  const setInputData = useCallback(debounce((input: QueryExistingPerformerInput) => setInput(input), 1000), []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const setInputData = useCallback(
+    debounce((input: QueryExistingPerformerInput) => setInput(input), 1000),
+    [],
+  );
 
   useEffect(() => {
     setInputData({
       name,
       disambiguation,
-      urls: urls.map(u => u.url),
+      urls: urls.map((u) => u.url),
     });
-  }, [name, disambiguation, urls]);
+  }, [name, disambiguation, urls, setInputData]);
 
   const existingPerformer =
     existingData?.queryExistingPerformer.performers ?? [];
@@ -64,18 +77,25 @@ const ExistingPerformerAlert: FC<Props> = ({
           <span>
             Pending edits that submit performers with the same name or links:
           </span>
-          {existingEdits.map((e) => e.details?.__typename === "PerformerEdit" && (
-            <div key={e.id}>
-              <Icon icon={faExclamationTriangle} color="red" />
-              <Link to={editHref(e)} className="ms-2">
-                <b><PerformerName performer={{
-                  name: e.details.name ?? '',
-                  disambiguation: e.details.disambiguation,
-                  deleted: false,
-                }} /></b>
-              </Link>
-            </div>
-          ))}
+          {existingEdits.map(
+            (e) =>
+              e.details?.__typename === "PerformerEdit" && (
+                <div key={e.id}>
+                  <Icon icon={faExclamationTriangle} color="red" />
+                  <Link to={editHref(e)} className="ms-2">
+                    <b>
+                      <PerformerName
+                        performer={{
+                          name: e.details.name ?? "",
+                          disambiguation: e.details.disambiguation,
+                          deleted: false,
+                        }}
+                      />
+                    </b>
+                  </Link>
+                </div>
+              ),
+          )}
         </div>
       )}
 
