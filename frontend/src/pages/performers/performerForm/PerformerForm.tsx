@@ -62,8 +62,8 @@ const GENDER: OptionEnum[] = [
 
 const HAIR: OptionEnum[] = [
   { value: "null", label: "Unknown" },
-  { value: "BLOND", label: "Blond" },
-  { value: "BROWN", label: "Brown" },
+  { value: "BLONDE", label: "Blond" },
+  { value: "BRUNETTE", label: "Brown" },
   { value: "BLACK", label: "Black" },
   { value: "RED", label: "Red" },
   { value: "AUBURN", label: "Auburn" },
