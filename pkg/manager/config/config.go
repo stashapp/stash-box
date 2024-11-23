@@ -59,6 +59,8 @@ type config struct {
 	MinDestructiveVotingPeriod int `mapstructure:"min_destructive_voting_period"`
 	// Interval between checks for completed voting periods
 	VoteCronInterval string `mapstructure:"vote_cron_interval"`
+	// Number of times an edit can be updated by the creator
+	EditUpdateLimit int `mapstructure:"edit_update_limit"`
 
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
@@ -120,6 +122,7 @@ var C = &config{
 	VotingPeriod:               345600,
 	MinDestructiveVotingPeriod: 172800,
 	DraftTimeLimit:             86400,
+	EditUpdateLimit:            1,
 }
 
 func GetDatabasePath() string {
@@ -358,6 +361,10 @@ func GetMinDestructiveVotingPeriod() int {
 
 func GetVoteCronInterval() string {
 	return C.VoteCronInterval
+}
+
+func GetEditUpdateLimit() int {
+	return C.EditUpdateLimit
 }
 
 func GetTitle() string {
