@@ -65,6 +65,8 @@ import {
   DraftsDocument,
   QueryExistingSceneDocument,
   QueryExistingSceneQueryVariables,
+  QueryExistingPerformerDocument,
+  QueryExistingPerformerQueryVariables,
   ScenePairingsDocument,
   ScenePairingsQueryVariables,
   StudioPerformersDocument,
@@ -265,6 +267,15 @@ export const useQueryExistingScene = (
   skip = false,
 ) =>
   useQuery(QueryExistingSceneDocument, {
+    variables,
+    skip,
+  });
+
+export const useQueryExistingPerformer = (
+  variables: QueryExistingPerformerQueryVariables,
+  skip = false,
+) =>
+  useQuery(QueryExistingPerformerDocument, {
     variables,
     skip,
   });

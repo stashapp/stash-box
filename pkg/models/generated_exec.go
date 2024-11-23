@@ -50,6 +50,7 @@ type ResolverRoot interface {
 	PerformerEdit() PerformerEditResolver
 	Query() QueryResolver
 	QueryEditsResultType() QueryEditsResultTypeResolver
+	QueryExistingPerformerResult() QueryExistingPerformerResultResolver
 	QueryExistingSceneResult() QueryExistingSceneResultResolver
 	QueryPerformersResultType() QueryPerformersResultTypeResolver
 	QueryScenesResultType() QueryScenesResultTypeResolver
@@ -356,6 +357,7 @@ type ComplexityRoot struct {
 		GetConfig                     func(childComplexity int) int
 		Me                            func(childComplexity int) int
 		QueryEdits                    func(childComplexity int, input EditQueryInput) int
+		QueryExistingPerformer        func(childComplexity int, input QueryExistingPerformerInput) int
 		QueryExistingScene            func(childComplexity int, input QueryExistingSceneInput) int
 		QueryPerformers               func(childComplexity int, input PerformerQueryInput) int
 		QueryScenes                   func(childComplexity int, input SceneQueryInput) int
@@ -373,6 +375,11 @@ type ComplexityRoot struct {
 	QueryEditsResultType struct {
 		Count func(childComplexity int) int
 		Edits func(childComplexity int) int
+	}
+
+	QueryExistingPerformerResult struct {
+		Edits      func(childComplexity int) int
+		Performers func(childComplexity int) int
 	}
 
 	QueryExistingSceneResult struct {
@@ -783,12 +790,17 @@ type QueryResolver interface {
 	FindDraft(ctx context.Context, id uuid.UUID) (*Draft, error)
 	FindDrafts(ctx context.Context) ([]*Draft, error)
 	QueryExistingScene(ctx context.Context, input QueryExistingSceneInput) (*QueryExistingSceneResult, error)
+	QueryExistingPerformer(ctx context.Context, input QueryExistingPerformerInput) (*QueryExistingPerformerResult, error)
 	Version(ctx context.Context) (*Version, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 }
 type QueryEditsResultTypeResolver interface {
 	Count(ctx context.Context, obj *EditQuery) (int, error)
 	Edits(ctx context.Context, obj *EditQuery) ([]*Edit, error)
+}
+type QueryExistingPerformerResultResolver interface {
+	Edits(ctx context.Context, obj *QueryExistingPerformerResult) ([]*Edit, error)
+	Performers(ctx context.Context, obj *QueryExistingPerformerResult) ([]*Performer, error)
 }
 type QueryExistingSceneResultResolver interface {
 	Edits(ctx context.Context, obj *QueryExistingSceneResult) ([]*Edit, error)
@@ -2827,6 +2839,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.QueryEdits(childComplexity, args["input"].(EditQueryInput)), true
 
+	case "Query.queryExistingPerformer":
+		if e.complexity.Query.QueryExistingPerformer == nil {
+			break
+		}
+
+		args, err := ec.field_Query_queryExistingPerformer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.QueryExistingPerformer(childComplexity, args["input"].(QueryExistingPerformerInput)), true
+
 	case "Query.queryExistingScene":
 		if e.complexity.Query.QueryExistingScene == nil {
 			break
@@ -2969,6 +2993,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.QueryEditsResultType.Edits(childComplexity), true
+
+	case "QueryExistingPerformerResult.edits":
+		if e.complexity.QueryExistingPerformerResult.Edits == nil {
+			break
+		}
+
+		return e.complexity.QueryExistingPerformerResult.Edits(childComplexity), true
+
+	case "QueryExistingPerformerResult.performers":
+		if e.complexity.QueryExistingPerformerResult.Performers == nil {
+			break
+		}
+
+		return e.complexity.QueryExistingPerformerResult.Performers(childComplexity), true
 
 	case "QueryExistingSceneResult.edits":
 		if e.complexity.QueryExistingSceneResult.Edits == nil {
@@ -4118,6 +4156,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPerformerQueryInput,
 		ec.unmarshalInputPerformerScenesInput,
 		ec.unmarshalInputPerformerUpdateInput,
+		ec.unmarshalInputQueryExistingPerformerInput,
 		ec.unmarshalInputQueryExistingSceneInput,
 		ec.unmarshalInputResetPasswordInput,
 		ec.unmarshalInputRevokeInviteInput,
@@ -4958,6 +4997,17 @@ input PerformerDraftInput {
   career_end_year: Int
   image: Upload
 }
+
+input QueryExistingPerformerInput {
+  name: String
+  disambiguation: String
+  urls: [String!]!
+}
+
+type QueryExistingPerformerResult {
+  edits: [Edit!]!
+  performers: [Performer!]!
+}
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/scene.graphql", Input: `type PerformerAppearance {
   performer: Performer!
@@ -5730,6 +5780,9 @@ type Query {
 
   ###Find scenes or pending scenes which match scene input###
   queryExistingScene(input: QueryExistingSceneInput!): QueryExistingSceneResult! @hasRole(role: READ)
+
+  ###Find performers or pending performers which match performer input###
+  queryExistingPerformer(input: QueryExistingPerformerInput!): QueryExistingPerformerResult! @hasRole(role: READ)
 
   #### Version ####
   version: Version! @hasRole(role: READ)
@@ -8360,6 +8413,38 @@ func (ec *executionContext) field_Query_queryEdits_argsInput(
 	}
 
 	var zeroVal EditQueryInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_queryExistingPerformer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_queryExistingPerformer_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_queryExistingPerformer_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (QueryExistingPerformerInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal QueryExistingPerformerInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNQueryExistingPerformerInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerInput(ctx, tmp)
+	}
+
+	var zeroVal QueryExistingPerformerInput
 	return zeroVal, nil
 }
 
@@ -23594,6 +23679,94 @@ func (ec *executionContext) fieldContext_Query_queryExistingScene(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_queryExistingPerformer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_queryExistingPerformer(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().QueryExistingPerformer(rctx, fc.Args["input"].(QueryExistingPerformerInput))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
+			if err != nil {
+				var zeroVal *QueryExistingPerformerResult
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal *QueryExistingPerformerResult
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*QueryExistingPerformerResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/stashapp/stash-box/pkg/models.QueryExistingPerformerResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*QueryExistingPerformerResult)
+	fc.Result = res
+	return ec.marshalNQueryExistingPerformerResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_queryExistingPerformer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edits":
+				return ec.fieldContext_QueryExistingPerformerResult_edits(ctx, field)
+			case "performers":
+				return ec.fieldContext_QueryExistingPerformerResult_performers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueryExistingPerformerResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_queryExistingPerformer_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_version(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_version(ctx, field)
 	if err != nil {
@@ -23993,6 +24166,208 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(_ context.Co
 				return ec.fieldContext_Edit_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryExistingPerformerResult_edits(ctx context.Context, field graphql.CollectedField, obj *QueryExistingPerformerResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryExistingPerformerResult_edits(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryExistingPerformerResult().Edits(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEditᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryExistingPerformerResult_edits(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryExistingPerformerResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryExistingPerformerResult_performers(ctx context.Context, field graphql.CollectedField, obj *QueryExistingPerformerResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryExistingPerformerResult_performers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.QueryExistingPerformerResult().Performers(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Performer)
+	fc.Result = res
+	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryExistingPerformerResult_performers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryExistingPerformerResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Performer_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Performer_name(ctx, field)
+			case "disambiguation":
+				return ec.fieldContext_Performer_disambiguation(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Performer_aliases(ctx, field)
+			case "gender":
+				return ec.fieldContext_Performer_gender(ctx, field)
+			case "urls":
+				return ec.fieldContext_Performer_urls(ctx, field)
+			case "birthdate":
+				return ec.fieldContext_Performer_birthdate(ctx, field)
+			case "birth_date":
+				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "age":
+				return ec.fieldContext_Performer_age(ctx, field)
+			case "ethnicity":
+				return ec.fieldContext_Performer_ethnicity(ctx, field)
+			case "country":
+				return ec.fieldContext_Performer_country(ctx, field)
+			case "eye_color":
+				return ec.fieldContext_Performer_eye_color(ctx, field)
+			case "hair_color":
+				return ec.fieldContext_Performer_hair_color(ctx, field)
+			case "height":
+				return ec.fieldContext_Performer_height(ctx, field)
+			case "measurements":
+				return ec.fieldContext_Performer_measurements(ctx, field)
+			case "cup_size":
+				return ec.fieldContext_Performer_cup_size(ctx, field)
+			case "band_size":
+				return ec.fieldContext_Performer_band_size(ctx, field)
+			case "waist_size":
+				return ec.fieldContext_Performer_waist_size(ctx, field)
+			case "hip_size":
+				return ec.fieldContext_Performer_hip_size(ctx, field)
+			case "breast_type":
+				return ec.fieldContext_Performer_breast_type(ctx, field)
+			case "career_start_year":
+				return ec.fieldContext_Performer_career_start_year(ctx, field)
+			case "career_end_year":
+				return ec.fieldContext_Performer_career_end_year(ctx, field)
+			case "tattoos":
+				return ec.fieldContext_Performer_tattoos(ctx, field)
+			case "piercings":
+				return ec.fieldContext_Performer_piercings(ctx, field)
+			case "images":
+				return ec.fieldContext_Performer_images(ctx, field)
+			case "deleted":
+				return ec.fieldContext_Performer_deleted(ctx, field)
+			case "edits":
+				return ec.fieldContext_Performer_edits(ctx, field)
+			case "scene_count":
+				return ec.fieldContext_Performer_scene_count(ctx, field)
+			case "scenes":
+				return ec.fieldContext_Performer_scenes(ctx, field)
+			case "merged_ids":
+				return ec.fieldContext_Performer_merged_ids(ctx, field)
+			case "merged_into_id":
+				return ec.fieldContext_Performer_merged_into_id(ctx, field)
+			case "studios":
+				return ec.fieldContext_Performer_studios(ctx, field)
+			case "is_favorite":
+				return ec.fieldContext_Performer_is_favorite(ctx, field)
+			case "created":
+				return ec.fieldContext_Performer_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Performer_updated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Performer", field.Name)
 		},
 	}
 	return fc, nil
@@ -35822,6 +36197,47 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputQueryExistingPerformerInput(ctx context.Context, obj interface{}) (QueryExistingPerformerInput, error) {
+	var it QueryExistingPerformerInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "disambiguation", "urls"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "disambiguation":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("disambiguation"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Disambiguation = data
+		case "urls":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Urls = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputQueryExistingSceneInput(ctx context.Context, obj interface{}) (QueryExistingSceneInput, error) {
 	var it QueryExistingSceneInput
 	asMap := map[string]interface{}{}
@@ -42383,6 +42799,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "queryExistingPerformer":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_queryExistingPerformer(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "version":
 			field := field
 
@@ -42515,6 +42953,112 @@ func (ec *executionContext) _QueryEditsResultType(ctx context.Context, sel ast.S
 					}
 				}()
 				res = ec._QueryEditsResultType_edits(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queryExistingPerformerResultImplementors = []string{"QueryExistingPerformerResult"}
+
+func (ec *executionContext) _QueryExistingPerformerResult(ctx context.Context, sel ast.SelectionSet, obj *QueryExistingPerformerResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryExistingPerformerResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryExistingPerformerResult")
+		case "edits":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryExistingPerformerResult_edits(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "performers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueryExistingPerformerResult_performers(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -47829,6 +48373,25 @@ func (ec *executionContext) marshalNQueryEditsResultType2ᚖgithubᚗcomᚋstash
 		return graphql.Null
 	}
 	return ec._QueryEditsResultType(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNQueryExistingPerformerInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerInput(ctx context.Context, v interface{}) (QueryExistingPerformerInput, error) {
+	res, err := ec.unmarshalInputQueryExistingPerformerInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNQueryExistingPerformerResult2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerResult(ctx context.Context, sel ast.SelectionSet, v QueryExistingPerformerResult) graphql.Marshaler {
+	return ec._QueryExistingPerformerResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQueryExistingPerformerResult2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingPerformerResult(ctx context.Context, sel ast.SelectionSet, v *QueryExistingPerformerResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QueryExistingPerformerResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNQueryExistingSceneInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐQueryExistingSceneInput(ctx context.Context, v interface{}) (QueryExistingSceneInput, error) {

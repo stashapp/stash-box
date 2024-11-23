@@ -433,6 +433,12 @@ type PerformerUpdateInput struct {
 type Query struct {
 }
 
+type QueryExistingPerformerInput struct {
+	Name           *string  `json:"name,omitempty"`
+	Disambiguation *string  `json:"disambiguation,omitempty"`
+	Urls           []string `json:"urls"`
+}
+
 type QueryExistingSceneInput struct {
 	Title        *string             `json:"title,omitempty"`
 	StudioID     *uuid.UUID          `json:"studio_id,omitempty"`

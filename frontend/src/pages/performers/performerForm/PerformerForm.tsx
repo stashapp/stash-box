@@ -34,6 +34,7 @@ import {
 import MultiSelect from "src/components/multiSelect";
 import EditImages from "src/components/editImages";
 import URLInput from "src/components/urlInput";
+import ExistingPerformerAlert from "./ExistingPerformerAlert";
 
 import DiffPerformer from "./diff";
 import { PerformerSchema, PerformerFormData } from "./schema";
@@ -124,6 +125,7 @@ interface PerformerProps {
   initial?: InitialPerformer;
   options?: PerformerEditOptionsInput | null;
   saving: boolean;
+  isCreate?: boolean;
 }
 
 const PerformerForm: FC<PerformerProps> = ({
@@ -132,6 +134,7 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
   options,
+  isCreate = false,
 }) => {
   const initialAliases = initial?.aliases ?? performer?.aliases ?? [];
   const {
@@ -304,6 +307,17 @@ const PerformerForm: FC<PerformerProps> = ({
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" value={performer?.id} {...register("id")} />
+      {isCreate && (
+        <Row>
+          <Col xs={9}>
+            <ExistingPerformerAlert
+              name={fieldData.name || ''}
+              disambiguation={fieldData.disambiguation}
+              urls={fieldData.urls || []}
+            />
+          </Col>
+        </Row>
+      )}
       <Tabs
         activeKey={activeTab}
         onSelect={(key) => key && setActiveTab(key)}

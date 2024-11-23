@@ -411,3 +411,14 @@ input PerformerDraftInput {
   career_end_year: Int
   image: Upload
 }
+
+input QueryExistingPerformerInput {
+  name: String
+  disambiguation: String
+  urls: [String!]!
+}
+
+type QueryExistingPerformerResult {
+  edits: [Edit!]!
+  performers: [Performer!]!
+}
