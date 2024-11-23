@@ -37,7 +37,11 @@ const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
     </Card.Body>
     <Card.Footer>
       <div className="d-flex">
-        <Link className="text-truncate w-100" to={sceneHref(scene)}>
+        <Link
+          className="text-truncate w-100"
+          to={sceneHref(scene)}
+          title={scene.title ?? ""}
+        >
           <h6 className="text-truncate">{scene.title}</h6>
         </Link>
         <span className="text-muted">

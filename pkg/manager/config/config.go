@@ -11,12 +11,13 @@ import (
 )
 
 type S3Config struct {
-	BaseURL      string `mapstructure:"base_url"`
-	Endpoint     string `mapstructure:"endpoint"`
-	Bucket       string `mapstructure:"bucket"`
-	AccessKey    string `mapstructure:"access_key"`
-	Secret       string `mapstructure:"secret"`
-	MaxDimension int64  `mapstructure:"max_dimension"`
+	BaseURL       string            `mapstructure:"base_url"`
+	Endpoint      string            `mapstructure:"endpoint"`
+	Bucket        string            `mapstructure:"bucket"`
+	AccessKey     string            `mapstructure:"access_key"`
+	Secret        string            `mapstructure:"secret"`
+	MaxDimension  int64             `mapstructure:"max_dimension"`
+	UploadHeaders map[string]string `mapstructure:"upload_headers"`
 }
 
 type PostgresConfig struct {
@@ -46,6 +47,8 @@ type config struct {
 	EmailCooldown     int      `mapstructure:"email_cooldown"`
 	DefaultUserRoles  []string `mapstructure:"default_user_roles"`
 
+	// URL link for contributor guidelines for submitting edits
+	GuidelinesURL string `mapstructure:"guidelines_url"`
 	// Number of approved edits before user automatically gets VOTE role
 	VotePromotionThreshold int `mapstructure:"vote_promotion_threshold"`
 	// Number of positive votes required for immediate approval
@@ -219,6 +222,10 @@ func GetHostURL() string {
 	return C.HostURL
 }
 
+func GetGuidelinesURL() string {
+	return C.GuidelinesURL
+}
+
 // GetImageLocation returns the path of where to locally store images.
 func GetImageLocation() string {
 	return C.ImageLocation
@@ -360,11 +367,11 @@ func GetTitle() string {
 	return C.Title
 }
 
-func GetFaviconPath() *string {
+func GetFaviconPath() (*string, error) {
 	if len(C.FaviconPath) == 0 {
-		return nil
+		return nil, errors.New("favicon_path not set")
 	}
-	return &C.FaviconPath
+	return &C.FaviconPath, nil
 }
 
 func GetDraftTimeLimit() int {

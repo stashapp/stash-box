@@ -13,7 +13,7 @@ import (
 
 type Edit struct {
 	ID         uuid.UUID      `db:"id" json:"id"`
-	UserID     uuid.UUID      `db:"user_id" json:"user_id"`
+	UserID     uuid.NullUUID  `db:"user_id" json:"user_id"`
 	TargetType string         `db:"target_type" json:"target_type"`
 	Operation  string         `db:"operation" json:"operation"`
 	VoteCount  int            `db:"votes" json:"votes"`
@@ -27,24 +27,25 @@ type Edit struct {
 }
 
 type EditComment struct {
-	ID        uuid.UUID `db:"id" json:"id"`
-	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	Text      string    `db:"text" json:"text"`
+	ID        uuid.UUID     `db:"id" json:"id"`
+	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
+	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time     `db:"created_at" json:"created_at"`
+	Text      string        `db:"text" json:"text"`
 }
 
 type EditVote struct {
-	EditID    uuid.UUID `db:"edit_id" json:"edit_id"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	Vote      string    `db:"vote" json:"vote"`
+	EditID    uuid.UUID     `db:"edit_id" json:"edit_id"`
+	UserID    uuid.NullUUID `db:"user_id" json:"user_id"`
+	CreatedAt time.Time     `db:"created_at" json:"created_at"`
+	Vote      string        `db:"vote" json:"vote"`
 }
 
-func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
+func NewEdit(id uuid.UUID, user *User, targetType TargetTypeEnum, input *EditInput) *Edit {
+	userID := uuid.NullUUID{UUID: user.ID, Valid: true}
 	ret := &Edit{
-		ID:         uuid,
-		UserID:     user.ID,
+		ID:         id,
+		UserID:     userID,
 		TargetType: targetType.String(),
 		Status:     VoteStatusEnumPending.String(),
 		Operation:  input.Operation.String(),
@@ -60,11 +61,12 @@ func NewEdit(uuid uuid.UUID, user *User, targetType TargetTypeEnum, input *EditI
 	return ret
 }
 
-func NewEditComment(uuid uuid.UUID, user *User, edit *Edit, text string) *EditComment {
+func NewEditComment(id uuid.UUID, user *User, edit *Edit, text string) *EditComment {
+	userID := uuid.NullUUID{UUID: user.ID, Valid: true}
 	ret := &EditComment{
-		ID:        uuid,
+		ID:        id,
 		EditID:    edit.ID,
-		UserID:    user.ID,
+		UserID:    userID,
 		CreatedAt: time.Now(),
 		Text:      text,
 	}
@@ -77,9 +79,10 @@ func (e Edit) GetID() uuid.UUID {
 }
 
 func NewEditVote(user *User, edit *Edit, vote VoteTypeEnum) *EditVote {
+	userID := uuid.NullUUID{UUID: user.ID, Valid: true}
 	ret := &EditVote{
 		EditID:    edit.ID,
-		UserID:    user.ID,
+		UserID:    userID,
 		CreatedAt: time.Now(),
 		Vote:      vote.String(),
 	}

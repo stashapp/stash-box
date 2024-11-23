@@ -15,7 +15,7 @@ const schema = yup.object({
   name: yup.string().optional(),
   id: yup.string().required(),
   email: yup.string().email().required("Email is required"),
-  roles: yup.array().of(yup.string().required()).ensure(),
+  roles: yup.array().of(yup.string().required()).required(),
 });
 type UserFormData = yup.Asserts<typeof schema>;
 

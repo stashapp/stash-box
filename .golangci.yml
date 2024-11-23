@@ -1,5 +1,8 @@
 run:
   timeout: 3m
+  go: 1.23
+
+issues:
   skip-files:
     - "pkg/models/generated_.*.go$"
 
@@ -11,21 +14,21 @@ linters:
     - govet
     - ineffassign
     - staticcheck
-    - typecheck
     - unused
+    - typecheck
     # additional
     - gofmt
     - revive
     - dogsled
     - errorlint
     - exhaustive
-    - exportloopref
+    - copyloopvar
     - gocritic
-    #- goerr113
     - misspell
     - noctx
     - rowserrcheck
     - sqlclosecheck
+    #- err113
 
 linters-settings:
   revive:
@@ -48,6 +51,8 @@ linters-settings:
         enabled: true
       - name: increment-decrement
       - name: var-naming
+        arguments:
+          - ["IDS"] # AllowList
       - name: var-declaration
       - name: package-comments
       - name: range
@@ -63,7 +68,5 @@ linters-settings:
         disabled: true
       - name: unreachable-code
       - name: redefines-builtin-id
-  staticcheck:
-    go: "1.19"
   exhaustive:
     default-signifies-exhaustive: true

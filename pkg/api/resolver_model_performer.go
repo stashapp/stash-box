@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -199,13 +200,18 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 		}
 	}
 
+	var tags *models.MultiIDCriterionInput
+	if input != nil {
+		tags = input.Tags
+	}
+
 	filter := models.SceneQueryInput{
 		Performers: &models.MultiIDCriterionInput{
 			Modifier: models.CriterionModifierIncludesAll,
 			Value:    performers,
 		},
 		Studios:   studios,
-		Tags:      input.Tags,
+		Tags:      tags,
 		Sort:      "DATE",
 		Direction: "DESC",
 		Page:      1,
@@ -220,15 +226,23 @@ func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer
 	return dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
 }
 
+func (r *performerResolver) MergedIntoID(ctx context.Context, obj *models.Performer) (*uuid.UUID, error) {
+	res, err := dataloader.For(ctx).PerformerMergeIDsBySourceID.Load(obj.ID)
+	if len(res) == 1 {
+		return &res[0], err
+	} else if err != nil && len(res) > 1 {
+		return nil, fmt.Errorf("invalid number of results returned, expecting exactly 1, found %d", len(res))
+	}
+	return nil, err
+}
+
 func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {
 	sqb := r.getRepoFactory(ctx).Studio()
 	return sqb.CountByPerformer(obj.ID)
 }
 
 func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performer) (bool, error) {
-	jqb := r.getRepoFactory(ctx).Joins()
-	user := getCurrentUser(ctx)
-	return jqb.IsPerformerFavorite(models.PerformerFavorite{PerformerID: obj.ID, UserID: user.ID})
+	return dataloader.For(ctx).PerformerIsFavoriteByID.Load(obj.ID)
 }
 
 func (r *performerResolver) Created(ctx context.Context, obj *models.Performer) (*time.Time, error) {

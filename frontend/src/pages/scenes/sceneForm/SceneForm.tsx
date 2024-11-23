@@ -103,8 +103,14 @@ const SceneForm: FC<SceneProps> = ({
 
   const fieldData = watch();
   const [oldSceneChanges, newSceneChanges] = useMemo(
-    () => DiffScene(SceneSchema.cast(fieldData), scene),
-    [fieldData, scene]
+    () =>
+      DiffScene(
+        SceneSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as SceneFormData,
+        scene,
+      ),
+    [fieldData, scene],
   );
 
   const [isChanging, setChange] = useState<number | undefined>();
@@ -125,8 +131,8 @@ const SceneForm: FC<SceneProps> = ({
         as: performance.alias,
       })),
       image_ids: data.images.map((i) => i.id),
-      tag_ids: data.tags.map((t) => t.id),
-      urls: data.urls.map((u) => ({
+      tag_ids: data.tags?.map((t) => t.id),
+      urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
       })),
@@ -209,7 +215,7 @@ const SceneForm: FC<SceneProps> = ({
                   res.__typename === "Performer" && handleChange(res, index)
                 }
                 excludeIDs={currentPerformerIds.filter(
-                  (id) => id !== p.performerId
+                  (id) => id !== p.performerId,
                 )}
                 searchType={SearchType.Performer}
               />
@@ -258,10 +264,11 @@ const SceneForm: FC<SceneProps> = ({
                 options={p.aliases ?? []}
                 defaultInputValue={p.alias ?? ""}
                 emptyLabel={""}
-                renderMenu={(results, { id }) => {
-                  if (!results.length) {
+                renderMenu={(options, { id }) => {
+                  if (!options.length) {
                     return <></>;
                   }
+                  const results = options as string[];
                   return (
                     <Menu id={id}>
                       <MenuItem
@@ -276,9 +283,9 @@ const SceneForm: FC<SceneProps> = ({
                         <MenuItem
                           option={result}
                           position={idx + 1}
-                          key={`${result}-idx`}
+                          key={result}
                         >
-                          {result as string}
+                          {result}
                         </MenuItem>
                       ))}
                     </Menu>
@@ -302,7 +309,7 @@ const SceneForm: FC<SceneProps> = ({
       tab: "details",
     },
     {
-      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
   ].filter((e) => e.error) as { error: string; tab: string }[];

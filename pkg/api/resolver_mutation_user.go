@@ -97,13 +97,13 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input models.UserDes
 			return err
 		}
 
-		ret, err = user.Destroy(fac, input)
-
-		if err != nil {
+		if err := fac.Edit().CancelUserEdits(input.ID); err != nil {
 			return err
 		}
 
-		return nil
+		ret, err = user.Destroy(fac, input)
+
+		return err
 	})
 
 	if err != nil {
@@ -210,17 +210,12 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input models.User
 	return err == nil, err
 }
 
-func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInput) (*string, error) {
-	inviteKey := ""
-	if input.InviteKey != nil {
-		inviteKey = *input.InviteKey
-	}
-
+func (r *mutationResolver) NewUser(ctx context.Context, input models.NewUserInput) (*uuid.UUID, error) {
 	fac := r.getRepoFactory(ctx)
-	var ret *string
+	var ret *uuid.UUID
 	err := fac.WithTxn(func() error {
 		var txnErr error
-		ret, txnErr = user.NewUser(fac, manager.GetInstance().EmailManager, input.Email, inviteKey)
+		ret, txnErr = user.NewUser(fac, manager.GetInstance().EmailManager, input.Email, input.InviteKey)
 		return txnErr
 	})
 
@@ -232,8 +227,40 @@ func (r *mutationResolver) ActivateNewUser(ctx context.Context, input models.Act
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		var txnErr error
-		ret, txnErr = user.ActivateNewUser(fac, input.Name, input.Email, input.ActivationKey, input.Password)
+		ret, txnErr = user.ActivateNewUser(fac, input.Name, input.ActivationKey, input.Password)
 		return txnErr
+	})
+
+	return ret, err
+}
+
+func (r *mutationResolver) GenerateInviteCodes(ctx context.Context, input *models.GenerateInviteCodeInput) ([]uuid.UUID, error) {
+	// INVITE role allows generating invite keys without tokens
+	requireToken := true
+	if err := validateInvite(ctx); err == nil {
+		requireToken = false
+	}
+
+	currentUser := getCurrentUser(ctx)
+	var ret []uuid.UUID
+	fac := r.getRepoFactory(ctx)
+	err := fac.WithTxn(func() error {
+		uqb := fac.User()
+		ikqb := fac.Invite()
+
+		keys, txnErr := user.GenerateInviteKeys(uqb, ikqb, currentUser.ID, input, requireToken)
+		if txnErr != nil {
+			return txnErr
+		}
+
+		for _, k := range keys {
+			ret = append(ret, k.ID)
+		}
+
+		// Log the operation
+		logger.Userf(currentUser.Name, "GenerateInviteCode", "%s", keys)
+
+		return nil
 	})
 
 	return ret, err
@@ -253,17 +280,33 @@ func (r *mutationResolver) GenerateInviteCode(ctx context.Context) (*uuid.UUID, 
 		uqb := fac.User()
 		ikqb := fac.Invite()
 
-		var txnErr error
-		ret, txnErr = user.GenerateInviteKey(uqb, ikqb, currentUser.ID, requireToken)
+		keys := 1
+		uses := 1
+		input := &models.GenerateInviteCodeInput{
+			Keys: &keys,
+			Uses: &uses,
+		}
+
+		key, txnErr := user.GenerateInviteKeys(uqb, ikqb, currentUser.ID, input, requireToken)
 		if txnErr != nil {
 			return txnErr
 		}
+
+		if len(key) == 0 {
+			return errors.New("no invite code generated")
+		}
+
+		ret = &key[0].ID
 
 		// Log the operation
 		logger.Userf(currentUser.Name, "GenerateInviteCode", "%s", ret)
 
 		return nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	return ret, err
 }
@@ -363,4 +406,82 @@ func (r *mutationResolver) RevokeInvite(ctx context.Context, input models.Revoke
 	})
 
 	return ret, err
+}
+
+func (r *mutationResolver) RequestChangeEmail(ctx context.Context) (models.UserChangeEmailStatus, error) {
+	currentUser := getCurrentUser(ctx)
+	fac := r.getRepoFactory(ctx)
+
+	err := fac.WithTxn(func() error {
+		return user.ConfirmOldEmail(fac, manager.GetInstance().EmailManager, *currentUser)
+	})
+
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+	return models.UserChangeEmailStatusConfirmOld, nil
+}
+
+func (r *mutationResolver) ValidateChangeEmail(ctx context.Context, tokenID uuid.UUID, email string) (models.UserChangeEmailStatus, error) {
+	fac := r.getRepoFactory(ctx)
+	tqb := fac.UserToken()
+
+	token, err := tqb.Find(tokenID)
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+	if token == nil {
+		return models.UserChangeEmailStatusInvalidToken, err
+	}
+
+	data, err := token.GetUserTokenData()
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+
+	currentUser := getCurrentUser(ctx)
+	if data.UserID != currentUser.ID {
+		return models.UserChangeEmailStatusInvalidToken, nil
+	}
+
+	err = fac.WithTxn(func() error {
+		return user.ConfirmNewEmail(fac, manager.GetInstance().EmailManager, *currentUser, email)
+	})
+
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+	return models.UserChangeEmailStatusConfirmNew, nil
+}
+
+func (r *mutationResolver) ConfirmChangeEmail(ctx context.Context, tokenID uuid.UUID) (models.UserChangeEmailStatus, error) {
+	fac := r.getRepoFactory(ctx)
+	tqb := fac.UserToken()
+
+	token, err := tqb.Find(tokenID)
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+	if token == nil {
+		return models.UserChangeEmailStatusInvalidToken, err
+	}
+
+	data, err := token.GetChangeEmailTokenData()
+	if err != nil || data == nil {
+		return models.UserChangeEmailStatusError, err
+	}
+
+	currentUser := getCurrentUser(ctx)
+	if data.UserID != currentUser.ID {
+		return models.UserChangeEmailStatusInvalidToken, nil
+	}
+
+	err = fac.WithTxn(func() error {
+		return user.ChangeEmail(fac, *data)
+	})
+
+	if err != nil {
+		return models.UserChangeEmailStatusError, err
+	}
+	return models.UserChangeEmailStatusSuccess, nil
 }

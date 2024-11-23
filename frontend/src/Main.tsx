@@ -3,9 +3,12 @@ import { Navbar, Nav } from "react-bootstrap";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import SearchField, { SearchType } from "src/components/searchField";
+import { useConfig } from "src/graphql";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
 import { useAuth } from "src/hooks";
+import { Icon } from "src/components/fragments";
+import { faBook, faUser } from "@fortawesome/free-solid-svg-icons";
 import {
   ROUTE_SCENES,
   ROUTE_PERFORMERS,
@@ -33,6 +36,9 @@ const Main: FC<Props> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { loading, user } = useAuth();
+  const { data: configData } = useConfig();
+
+  const guidelinesURL = configData?.getConfig.guidelines_url;
 
   useEffect(() => {
     if (loading || user) return;
@@ -44,7 +50,11 @@ const Main: FC<Props> = ({ children }) => {
       location.pathname !== ROUTE_FORGOT_PASSWORD &&
       location.pathname !== ROUTE_RESET_PASSWORD
     ) {
-      navigate(ROUTE_LOGIN);
+      const redirect =
+        location.pathname === "/"
+          ? ""
+          : `?redirect=${encodeURIComponent(location.pathname)}`;
+      navigate(`${ROUTE_LOGIN}${redirect}`);
     }
   }, [loading, user, location, navigate]);
 
@@ -73,11 +83,11 @@ const Main: FC<Props> = ({ children }) => {
     contextValue.authenticated &&
     contextValue.user && (
       <>
-        <span>Logged in as</span>
         <NavLink
           to={userHref(contextValue.user)}
           className="nav-link ms-auto me-2"
         >
+          <Icon icon={faUser} className="me-2" />
           {contextValue.user.name}
         </NavLink>
         {isAdmin(user) && (
@@ -126,6 +136,17 @@ const Main: FC<Props> = ({ children }) => {
             <NavLink to={ROUTE_SITES} className="nav-link">
               Sites
             </NavLink>
+          )}
+          {guidelinesURL && (
+            <a
+              href={guidelinesURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-link"
+            >
+              <Icon icon={faBook} className="mx-2" />
+              Guidelines
+            </a>
           )}
         </Nav>
         <Nav className="align-items-center">

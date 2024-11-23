@@ -136,17 +136,8 @@ func (qb *studioQueryBuilder) FindBySceneID(sceneID int) (models.Studios, error)
 	return qb.queryStudios(query, args)
 }
 
-func (qb *studioQueryBuilder) FindByNames(names []string) (models.Studios, error) {
-	query := "SELECT * FROM studios WHERE name IN " + getInBinding(len(names))
-	var args []interface{}
-	for _, name := range names {
-		args = append(args, name)
-	}
-	return qb.queryStudios(query, args)
-}
-
 func (qb *studioQueryBuilder) FindByName(name string) (*models.Studio, error) {
-	query := "SELECT * FROM studios WHERE upper(name) = upper(?)"
+	query := "SELECT * FROM studios WHERE upper(name) = upper(?) AND deleted = FALSE"
 	var args []interface{}
 	args = append(args, name)
 	results, err := qb.queryStudios(query, args)
@@ -171,7 +162,10 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 	query := newQueryBuilder(studioDBTable)
 	query.Body += "LEFT JOIN studios as parent_studio ON studios.parent_studio_id = parent_studio.id"
 
-	query.Eq("studios.deleted", false)
+	if q := filter.URL; q != nil && *q != "" {
+		where := fmt.Sprintf("%s.url = ?", studioURLTable.Name())
+		query.AddJoinTableFilter(studioURLTable, where, false, nil, false, *q)
+	}
 
 	if q := filter.Name; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
@@ -206,16 +200,10 @@ func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.
 		}
 	}
 
-	if q := filter.URL; q != nil && *q != "" {
-		query.AddJoin(studioURLTable.table, studioURLTable.Name()+"."+studioJoinKey+" = studios.id", true)
-		searchColumns := []string{studioURLTable.Name() + ".url"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false, true)
-		query.AddWhere(clause)
-		query.AddArg(thisArgs...)
-	}
-
 	query.Sort = qb.getStudioSort(filter)
 	query.Pagination = getPagination(filter.Page, filter.PerPage)
+
+	query.Eq("studios.deleted", false)
 
 	var studios models.Studios
 	countResult, err := qb.dbi.Query(*query, &studios)
@@ -526,4 +514,42 @@ func (qb *studioQueryBuilder) deleteSceneStudios(id uuid.UUID) error {
 
 func (qb *studioQueryBuilder) deleteStudioFavorites(id uuid.UUID) error {
 	return qb.dbi.DeleteJoins(studioFavoriteTable, id)
+}
+
+func (qb *studioQueryBuilder) IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
+	query := "SELECT studio_id FROM studio_favorites WHERE user_id = :userid AND studio_id IN (:studio_ids)"
+
+	arg := map[string]interface{}{
+		"userid":     userID,
+		"studio_ids": ids,
+	}
+	m := make(map[uuid.UUID]bool)
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	if err := qb.dbi.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return err
+		}
+		m[id] = true
+
+		return nil
+	}); err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	result := make([]bool, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }

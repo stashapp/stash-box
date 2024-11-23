@@ -118,5 +118,6 @@ func (r *queryResolver) GetConfig(ctx context.Context) (*models.StashBoxConfig, 
 		VotingPeriod:               config.GetVotingPeriod(),
 		MinDestructiveVotingPeriod: config.GetMinDestructiveVotingPeriod(),
 		VoteCronInterval:           config.GetVoteCronInterval(),
+		GuidelinesURL:              config.GetGuidelinesURL(),
 	}, nil
 }

@@ -20,7 +20,7 @@ export const SceneSchema = yup.object({
     })
     .test("valid-date", "Invalid date", isValidDate)
     .test("date-outside-range", "Outside of range", (date) =>
-      dateWithinRange(date, "1900-01-01", addYears(new Date(), 1))
+      dateWithinRange(date, "1900-01-01", addYears(new Date(), 1)),
     )
     .nullable()
     .required("Release date is required"),
@@ -53,15 +53,15 @@ export const SceneSchema = yup.object({
           aliases: yup.array().of(yup.string().required()).nullable(),
           gender: yup
             .string()
-            .oneOf([null, ...Object.keys(GenderEnum)])
-            .nullable(),
+            .nullable()
+            .oneOf([null, ...Object.keys(GenderEnum)]),
           deleted: yup.bool().required(),
         })
         .transform((s: { name?: string; alias?: string }) => ({
           ...s,
           alias: s.name === s?.alias?.trim() ? undefined : s?.alias?.trim(),
         }))
-        .required()
+        .required(),
     )
     .ensure(),
   tags: yup
@@ -72,7 +72,7 @@ export const SceneSchema = yup.object({
         name: yup.string().required(),
         description: yup.string().nullable().optional(),
         aliases: yup.array().of(yup.string().required()).defined(),
-      })
+      }),
     )
     .ensure(),
   images: yup
@@ -81,7 +81,9 @@ export const SceneSchema = yup.object({
       yup.object({
         id: yup.string().required(),
         url: yup.string().required(),
-      })
+        width: yup.number().required(),
+        height: yup.number().required(),
+      }),
     )
     .required(),
   urls: yup
@@ -96,11 +98,10 @@ export const SceneSchema = yup.object({
             icon: yup.string().required(),
           })
           .required(),
-      })
+      }),
     )
     .ensure(),
   note: yup.string().required("Edit note is required"),
 });
 
 export type SceneFormData = yup.Asserts<typeof SceneSchema>;
-export type CastedSceneFormData = yup.TypeOf<typeof SceneSchema>;

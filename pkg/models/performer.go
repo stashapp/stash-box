@@ -33,6 +33,7 @@ type PerformerRepo interface {
 	SearchPerformers(term string, limit int) (Performers, error)
 	ApplyEdit(performer *Performer, create bool, data *PerformerEditData) (*Performer, error)
 	FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error)
+	FindMergeIDsBySourcePerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error)
 	SoftDelete(performer Performer) (*Performer, error)
 	MergeInto(source *Performer, target *Performer, setAlias bool) error
 	DeleteScenePerformers(id uuid.UUID) error
@@ -42,4 +43,5 @@ type PerformerRepo interface {
 	GetEditAliases(id *uuid.UUID, data *PerformerEdit) ([]string, error)
 	GetEditTattoos(id *uuid.UUID, data *PerformerEdit) ([]*BodyModification, error)
 	GetEditPiercings(id *uuid.UUID, data *PerformerEdit) ([]*BodyModification, error)
+	IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error)
 }

@@ -20,13 +20,14 @@ const schema = yup.object({
         value
           .split("")
           .filter(
-            (item: string, i: number, ar: string[]) => ar.indexOf(item) === i
+            (item: string, i: number, ar: string[]) => ar.indexOf(item) === i,
           )
-          .join("").length >= 5
+          .join("").length >= 5,
     )
     .required("Password is required"),
   confirmNewPassword: yup
     .string()
+    .nullable()
     .oneOf([yup.ref("newPassword"), null], "Passwords don't match")
     .required("Password is required"),
 });

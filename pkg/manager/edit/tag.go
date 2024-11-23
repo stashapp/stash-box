@@ -56,7 +56,8 @@ func (m *TagEditProcessor) modifyEdit(input models.TagEditInput, inputArgs utils
 	}
 
 	// perform a diff against the input and the current object
-	tagEdit := input.Details.TagEditFromDiff(*tag, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	tagEdit := input.Details.TagEditFromDiff(*tag, detailArgs)
 
 	aliases, err := tqb.GetAliases(tagID)
 	if err != nil {

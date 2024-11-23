@@ -35,7 +35,7 @@ export const PerformerEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
   const doUpdate = (
     updateData: PerformerEditDetailsInput,
     editNote: string,
-    setModifyAliases: boolean
+    setModifyAliases: boolean,
   ) => {
     if (!isPerformerEdit(edit.details)) return;
 
@@ -78,6 +78,7 @@ export const PerformerEditUpdate: FC<{ edit: EditUpdate }> = ({ edit }) => {
       <PerformerForm
         performer={edit.target}
         initial={edit.details}
+        options={edit.options}
         callback={doUpdate}
         saving={saving}
       />

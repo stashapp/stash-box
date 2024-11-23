@@ -28,7 +28,8 @@ const Login: FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [loginError, setLoginError] = useState("");
-  const msg = new URLSearchParams(location.search.substr(1)).get("msg");
+  const msg = new URLSearchParams(location.search).get("msg");
+  const redirect = new URLSearchParams(location.search).get("redirect");
   const Auth = useContext<ContextType>(AuthContext);
   const {
     register,
@@ -42,20 +43,24 @@ const Login: FC = () => {
 
   const onSubmit = async (formData: LoginFormData) => {
     setLoading(true);
+
     const body = new FormData();
     body.append("username", formData.username);
     body.append("password", formData.password);
+
     const res = await fetch(`${getPlatformURL()}login`, {
       method: "POST",
       body,
       credentials: getCredentialsSetting(),
     }).finally(() => setLoading(false));
-    if (res.ok) window.location.replace("/");
+
+    const returnURL = decodeURIComponent(redirect ?? "") || "/";
+    if (res.ok) window.location.replace(returnURL);
     else setLoginError("Access denied");
   };
 
   return (
-    <div className="LoginPrompt mx-auto d-flex">
+    <div className="LoginPrompt">
       <Form
         className="align-self-center col-4 mx-auto"
         onSubmit={handleSubmit(onSubmit)}

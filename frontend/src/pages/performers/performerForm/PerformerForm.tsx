@@ -17,6 +17,7 @@ import {
   BreastTypeEnum,
   EthnicityEnum,
   PerformerEditDetailsInput,
+  PerformerEditOptionsInput,
   ValidSiteTypeEnum,
   PerformerFragment as Performer,
 } from "src/graphql";
@@ -119,9 +120,10 @@ interface PerformerProps {
     data: PerformerEditDetailsInput,
     note: string,
     updateAliases: boolean,
-    id?: string
+    id?: string,
   ) => void;
   initial?: InitialPerformer;
+  options?: PerformerEditOptionsInput | null;
   saving: boolean;
 }
 
@@ -130,6 +132,7 @@ const PerformerForm: FC<PerformerProps> = ({
   callback,
   initial,
   saving,
+  options,
 }) => {
   const initialAliases = initial?.aliases ?? performer?.aliases ?? [];
   const {
@@ -150,27 +153,27 @@ const PerformerForm: FC<PerformerProps> = ({
       birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
       eye_color: getEnumValue(
         EYE,
-        initial?.eye_color ?? performer?.eye_color ?? null
+        initial?.eye_color ?? performer?.eye_color ?? null,
       ),
       hair_color: getEnumValue(
         HAIR,
-        initial?.hair_color ?? performer?.hair_color ?? null
+        initial?.hair_color ?? performer?.hair_color ?? null,
       ),
       height: initial?.height || performer?.height,
       breastType: getEnumValue(
         BREAST,
-        initial?.breast_type ?? performer?.breast_type ?? null
+        initial?.breast_type ?? performer?.breast_type ?? null,
       ),
       braSize: getBraSize(
         initial?.cup_size ?? performer?.cup_size,
-        initial?.band_size ?? performer?.band_size
+        initial?.band_size ?? performer?.band_size,
       ),
       waistSize: initial?.waist_size ?? performer?.waist_size,
       hipSize: initial?.hip_size ?? performer?.hip_size,
       country: initial?.country ?? performer?.country ?? "",
       ethnicity: getEnumValue(
         ETHNICITY,
-        initial?.ethnicity ?? performer?.ethnicity ?? null
+        initial?.ethnicity ?? performer?.ethnicity ?? null,
       ),
       career_start_year:
         initial?.career_start_year ?? performer?.career_start_year,
@@ -183,23 +186,27 @@ const PerformerForm: FC<PerformerProps> = ({
   });
 
   const [activeTab, setActiveTab] = useState("personal");
-  const [updateAliases, setUpdateAliases] = useState(false);
+  const [updateAliases, setUpdateAliases] = useState<boolean>(
+    options?.set_modify_aliases ?? true,
+  );
   const [file, setFile] = useState<File | undefined>();
 
   const fieldData = watch();
   const [oldChanges, newChanges] = useMemo(
-    () => DiffPerformer(PerformerSchema.cast(fieldData), performer),
-    [fieldData, performer]
+    () =>
+      DiffPerformer(
+        PerformerSchema.cast(fieldData, {
+          assert: "ignore-optionality",
+        }) as PerformerFormData,
+        performer,
+      ),
+    [fieldData, performer],
   );
 
   const changedName =
     !!performer?.id &&
     newChanges.name !== null &&
     performer?.name?.trim() !== newChanges.name;
-
-  useEffect(() => {
-    setUpdateAliases(changedName);
-  }, [changedName, setUpdateAliases]);
 
   const showBreastType =
     fieldData.gender !== GenderEnum.MALE &&
@@ -240,7 +247,7 @@ const PerformerForm: FC<PerformerProps> = ({
       breast_type:
         BreastTypeEnum[data.breastType as keyof typeof BreastTypeEnum] || null,
       image_ids: data.images.map((i) => i.id),
-      urls: data.urls.map((u) => ({
+      urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
       })),
@@ -250,6 +257,9 @@ const PerformerForm: FC<PerformerProps> = ({
       const [cupSize, bandSize] = parseBraSize(data.braSize);
       performerData.cup_size = cupSize;
       performerData.band_size = bandSize ?? 0;
+    } else if (performer?.band_size || performer?.cup_size) {
+      performerData.cup_size = null;
+      performerData.band_size = null;
     }
 
     if (
@@ -264,16 +274,13 @@ const PerformerForm: FC<PerformerProps> = ({
   const countryObj = [
     { label: "Unknown", value: "" },
     ...sortBy(
-      Object.keys(CountryList).map((name: string) => {
-        const countryName: string = Array.isArray(CountryList[name])
-          ? CountryList[name][0]
-          : CountryList[name];
+      Object.entries(CountryList).map(([, countryName]) => {
         return {
           label: countryName,
           value: Countries.getAlpha2Code(countryName, "en"),
         };
       }),
-      "label"
+      "label",
     ),
   ];
 
@@ -290,7 +297,7 @@ const PerformerForm: FC<PerformerProps> = ({
     { error: errors.braSize?.message, tab: "personal" },
     { error: errors.waistSize?.message, tab: "personal" },
     {
-      error: errors.urls?.find((u) => u?.url?.message)?.url?.message,
+      error: errors.urls?.find?.((u) => u?.url?.message)?.url?.message,
       tab: "links",
     },
   ].filter((e) => e.error) as { error: string; tab: string }[];
@@ -336,7 +343,7 @@ const PerformerForm: FC<PerformerProps> = ({
                 <Form.Check
                   id="update-modify-aliases"
                   checked={updateAliases}
-                  onChange={() => setUpdateAliases(!updateAliases)}
+                  onChange={() => setUpdateAliases((prev) => !prev)}
                   label="Set unset performance aliases to old name"
                   className="d-inline-block"
                 />
@@ -370,7 +377,6 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Label>Gender</Form.Label>
               <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
-                placeholder="Select gender..."
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
@@ -513,7 +519,7 @@ const PerformerForm: FC<PerformerProps> = ({
                     onChange={(option) => onChange(option?.value)}
                     options={countryObj}
                     defaultValue={countryObj.find(
-                      (country) => country.value === value
+                      (country) => country.value === value,
                     )}
                   />
                 )}
@@ -584,7 +590,7 @@ const PerformerForm: FC<PerformerProps> = ({
             className={cx({ "d-block": errors.tattoos })}
             type="invalid"
           >
-            {errors?.tattoos?.map((mod, idx) => (
+            {errors?.tattoos?.map?.((mod, idx) => (
               <div key={idx}>
                 Tattoo {idx + 1}: {mod?.location?.message}
               </div>
@@ -602,7 +608,7 @@ const PerformerForm: FC<PerformerProps> = ({
             className={cx({ "d-block": errors.piercings })}
             type="invalid"
           >
-            {errors?.piercings?.map((mod, idx) => (
+            {errors?.piercings?.map?.((mod, idx) => (
               <div key={idx}>
                 Piercing {idx + 1}: {mod?.location?.message}
               </div>
@@ -651,7 +657,7 @@ const PerformerForm: FC<PerformerProps> = ({
             newChanges,
             oldChanges,
             !!performer,
-            updateAliases
+            updateAliases,
           )}
           <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>

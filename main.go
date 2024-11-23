@@ -13,13 +13,12 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-// nolint
-//
 //go:embed frontend/build
 var ui embed.FS
 
 func main() {
 	manager.Initialize()
+	api.InitializeSession()
 
 	const databaseProvider = "postgres"
 	db := database.Initialize(databaseProvider, config.GetDatabasePath())

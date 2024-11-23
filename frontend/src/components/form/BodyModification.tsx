@@ -2,7 +2,8 @@ import { FC, ChangeEvent } from "react";
 import Creatable from "react-select/creatable";
 import { components } from "react-select";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import { Control, useFieldArray } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
+import type { Control } from "react-hook-form";
 
 interface BodyModificationProps {
   name: string;

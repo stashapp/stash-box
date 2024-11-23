@@ -106,10 +106,12 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   function maybeRenderSubmitted(fingerprint: Fingerprint) {
     if (fingerprint.user_submitted) {
       return (
-        <span
+        <Button
           className="user-submitted"
           title="Submitted by you - click to remove submission"
+          onKeyDown={() => handleFingerprintUnmatch(fingerprint)}
           onClick={() => handleFingerprintUnmatch(fingerprint)}
+          variant="link"
         >
           {!unmatching ? (
             <>
@@ -119,7 +121,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           ) : (
             <Icon icon={faSpinner} className="fa-spin" />
           )}
-        </span>
+        </Button>
       );
     }
   }
@@ -243,9 +245,13 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             <>
               <hr />
               <div>
-                <b className="me-2">Studio URL:</b>
-                <a href={studioURL} target="_blank" rel="noopener noreferrer">
-                  {studioURL}
+                <b className="me-2">{studioURL.site.name}:</b>
+                <a
+                  href={studioURL.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {studioURL.url}
                 </a>
               </div>
             </>

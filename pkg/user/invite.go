@@ -86,48 +86,75 @@ func RepealInviteTokens(uf FinderUpdater, userID uuid.UUID, tokens int) (int, er
 	return u.InviteTokens, nil
 }
 
-// GenerateInviteKey creates and returns an invite key, using a token if
+// GenerateInviteKeys creates and returns an invite key, using a token if
 // required. If useToken is true and the user has no invite tokens, then
 // an error is returned.
-func GenerateInviteKey(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, useToken bool) (*uuid.UUID, error) {
-	if useToken {
-		u, err := uf.Find(userID)
+func GenerateInviteKeys(uf FinderUpdater, ic models.InviteKeyCreator, userID uuid.UUID, input *models.GenerateInviteCodeInput, useToken bool) ([]*models.InviteKey, error) {
+	keys := 1
+	if input.Keys != nil {
+		keys = *input.Keys
+	}
+
+	// don't allow more than 50 keys to be generated at a time
+	if keys > 50 {
+		keys = 50
+	}
+
+	var ret []*models.InviteKey
+
+	for i := 0; i < keys; i++ {
+		if useToken {
+			u, err := uf.Find(userID)
+			if err != nil {
+				return nil, err
+			}
+
+			if u == nil {
+				return nil, fmt.Errorf("user not found for id %s", userID.String())
+			}
+
+			if u.InviteTokens <= 0 {
+				return nil, ErrNoInviteTokens
+			}
+
+			_, err = RepealInviteTokens(uf, userID, 1)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		// create the invite key
+		UUID, err := uuid.NewV4()
 		if err != nil {
 			return nil, err
 		}
 
-		if u == nil {
-			return nil, fmt.Errorf("user not found for id %s", userID.String())
+		newKey := models.InviteKey{
+			ID:          UUID,
+			GeneratedAt: time.Now(),
+			GeneratedBy: userID,
 		}
 
-		if u.InviteTokens <= 0 {
-			return nil, ErrNoInviteTokens
+		if input != nil {
+			if input.Uses != nil && *input.Uses > 0 {
+				uses := *input.Uses
+				newKey.Uses = &uses
+			}
+			if input.TTL != nil {
+				expires := time.Now().Add(time.Duration(*input.TTL) * time.Second)
+				newKey.Expires = &expires
+			}
 		}
 
-		_, err = RepealInviteTokens(uf, userID, 1)
+		k, err := ic.Create(newKey)
 		if err != nil {
 			return nil, err
 		}
+
+		ret = append(ret, k)
 	}
 
-	// create the invite key
-	UUID, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
-	}
-
-	newKey := models.InviteKey{
-		ID:          UUID,
-		GeneratedAt: time.Now(),
-		GeneratedBy: userID,
-	}
-
-	_, err = ic.Create(newKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return &UUID, nil
+	return ret, nil
 }
 
 // RescindInviteKey makes an invite key invalid, refunding the invite token if

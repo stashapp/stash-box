@@ -24,12 +24,12 @@ const schema = yup.object({
         value
           .split("")
           .filter(
-            (item: string, i: number, ar: string[]) => ar.indexOf(item) === i
+            (item: string, i: number, ar: string[]) => ar.indexOf(item) === i,
           )
-          .join("").length >= 5
+          .join("").length >= 5,
     )
     .required("Password is required"),
-  roles: yup.array().of(yup.string().required()).ensure(),
+  roles: yup.array().of(yup.string().required()).required(),
 });
 
 type UserFormData = yup.Asserts<typeof schema>;

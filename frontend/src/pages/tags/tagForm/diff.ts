@@ -1,16 +1,16 @@
 import { OldTagDetails, TagDetails } from "src/components/editCard/ModifyEdit";
 import { TagFragment as Tag } from "src/graphql";
-import { CastedTagFormData } from "./schema";
+import { TagFormData } from "./schema";
 import { diffValue, diffArray } from "src/utils";
 
 const selectTagDetails = (
-  data: CastedTagFormData,
-  original: Tag
+  data: TagFormData,
+  original: Tag,
 ): [Required<OldTagDetails>, Required<TagDetails>] => {
   const [addedAliases, removedAliases] = diffArray(
     data?.aliases,
     original.aliases,
-    (a) => a
+    (a) => a,
   );
 
   return [

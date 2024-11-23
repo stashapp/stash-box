@@ -25,7 +25,7 @@ interface Props {
 const VoteBar: FC<Props> = ({ edit }) => {
   const auth = useContext(AuthContext);
   const userVote = (edit.votes ?? []).find(
-    (v) => v.user?.id && v.user.id === auth.user?.id
+    (v) => v.user?.id && v.user.id === auth.user?.id,
   );
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
   const [submitVote, { loading: savingVote }] = useVote();
@@ -62,18 +62,16 @@ const VoteBar: FC<Props> = ({ edit }) => {
     <div className={CLASSNAME}>
       <div className={CLASSNAME_SAVE}>
         {currentVote}
-        {vote &&
-          vote !== userVote?.vote &&
-          (userVote || vote !== VoteTypeEnum.ABSTAIN) && (
-            <Button
-              variant="secondary"
-              onClick={handleSave}
-              disabled={savingVote}
-            >
-              <span className="me-2">Save</span>
-              <Icon icon={faCheck} color="green" />
-            </Button>
-          )}
+        {vote && vote !== userVote?.vote && (
+          <Button
+            variant="secondary"
+            onClick={handleSave}
+            disabled={savingVote}
+          >
+            <span className="me-2">Save</span>
+            <Icon icon={faCheck} color="green" />
+          </Button>
+        )}
       </div>
       <Form.Group
         controlId={`${edit.id}-vote-yes`}

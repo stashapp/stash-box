@@ -3,7 +3,7 @@ import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Form } from "react-bootstrap";
+import { Button, Form, Row, Col } from "react-bootstrap";
 import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
@@ -13,16 +13,7 @@ import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import Title from "src/components/title";
 
 const schema = yup.object({
-  name: yup
-    .string()
-    .required("Username is required")
-    .test(
-      "excludeEmail",
-      "The username is public and should not be the same as your email",
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      (value, { parent }) => value?.trim() !== parent?.email
-    ),
-  email: yup.string().email().required("Email is required"),
+  name: yup.string().required("Username is required"),
   activationKey: yup.string().required("Activation Key is required"),
   password: yup.string().required("Password is required"),
 });
@@ -53,7 +44,6 @@ const ActivateNewUserPage: FC = () => {
   const onSubmit = (formData: ActivateNewUserFormData) => {
     const userData = {
       name: formData.name,
-      email: formData.email,
       activation_key: formData.activationKey,
       password: formData.password,
     };
@@ -69,60 +59,75 @@ const ActivateNewUserPage: FC = () => {
       });
   };
 
+  const errorList = [
+    errors.activationKey?.message,
+    errors.name?.message,
+    errors.password?.message,
+    submitError,
+  ].filter((err): err is string => err !== undefined);
+
   return (
-    <div className="LoginPrompt mx-auto d-flex">
+    <div className="LoginPrompt">
       <Title page="Active User" />
-      <form
+      <Form
         className="align-self-center col-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Form.Control
-          type="hidden"
-          value={query.get("email") ?? ""}
-          {...register("email")}
-        />
         <Form.Control
           type="hidden"
           value={query.get("key") ?? ""}
           {...register("activationKey")}
         />
 
-        <label className="row" htmlFor="name">
-          <span className="col-4">Username: </span>
-          <input
-            className={cx("col-8", { "is-invalid": errors?.name })}
-            type="text"
-            placeholder="Username"
-            {...register("name")}
-          />
-          <div className="col invalid-feedback">{errors?.name?.message}</div>
-        </label>
+        <Form.Group controlId="name">
+          <h3>Register account</h3>
+          <hr className="my-4" />
+          <Row>
+            <Col xs={4}>
+              <Form.Label>Username:</Form.Label>
+            </Col>
+            <Col xs={8}>
+              <Form.Control
+                className={cx({ "is-invalid": errors?.name })}
+                type="text"
+                placeholder="Username"
+                {...register("name")}
+              />
+            </Col>
+          </Row>
+        </Form.Group>
 
-        <label className="row" htmlFor="password">
-          <span className="col-4">Password: </span>
-          <input
-            className={cx("col-8", { "is-invalid": errors?.password })}
-            type="password"
-            placeholder="Password"
-            {...register("password")}
-          />
-          <div className="col invalid-feedback">
-            {errors?.password?.message}
-          </div>
-        </label>
-        <div className="row">
-          <div className="col-3 offset-9 d-flex justify-content-end">
-            <div>
-              <button type="submit" className="register-button btn btn-primary">
-                Create Account
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="text-danger">{submitError}</div>
-        </div>
-      </form>
+        <Form.Group controlId="password" className="mt-2">
+          <Row>
+            <Col xs={4}>
+              <Form.Label>Password:</Form.Label>
+            </Col>
+            <Col xs={8}>
+              <Form.Control
+                className={cx({ "is-invalid": errors?.password })}
+                type="password"
+                placeholder="Password"
+                {...register("password")}
+              />
+            </Col>
+          </Row>
+        </Form.Group>
+
+        {errorList.map((error) => (
+          <Row key={error} className="text-end text-danger">
+            <div>{error}</div>
+          </Row>
+        ))}
+
+        <Row>
+          <Col
+            xs={{ span: 3, offset: 9 }}
+            className="justify-content-end mt-2 d-flex"
+          >
+            <Button type="submit">Create Account</Button>
+          </Col>
+        </Row>
+      </Form>
     </div>
   );
 };

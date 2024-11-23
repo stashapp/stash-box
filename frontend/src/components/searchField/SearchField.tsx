@@ -1,6 +1,11 @@
 import { FC, KeyboardEvent, useRef, useState } from "react";
 import { useApolloClient } from "@apollo/client";
-import { OnChangeValue } from "react-select";
+import {
+  OnChangeValue,
+  components,
+  SelectInstance,
+  GroupBase,
+} from "react-select";
 import Async from "react-select/async";
 import debounce from "p-debounce";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +16,7 @@ import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 import { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import { createHref, filterData, getImage } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
-import { GenderIcon } from "src/components/fragments";
+import { GenderIcon, SearchHint } from "src/components/fragments";
 
 type SceneAllResult = NonNullable<SearchAllQuery["searchScene"][number]>;
 type PerformerAllResult = NonNullable<
@@ -52,7 +57,7 @@ interface SearchResult {
 }
 
 const valueIsPerformer = (
-  arg?: SceneResult | PerformerResult
+  arg?: SceneResult | PerformerResult,
 ): arg is PerformerResult => arg?.__typename === "Performer";
 
 const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
@@ -75,7 +80,7 @@ const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
 );
 
 const resultIsSearchAll = (
-  arg: SearchAllQuery | SearchPerformersQuery
+  arg: SearchAllQuery | SearchPerformersQuery,
 ): arg is SearchAllQuery =>
   (arg as SearchAllQuery).searchPerformer !== undefined &&
   (arg as SearchAllQuery).searchScene !== undefined;
@@ -83,7 +88,7 @@ const resultIsSearchAll = (
 function handleResult(
   result: SearchAllQuery | SearchPerformersQuery,
   excludeIDs: string[],
-  showAllLink: boolean
+  showAllLink: boolean,
 ): (SearchGroup | SearchResult)[] {
   let performers: SearchResult[] = [];
   let scenes: SearchResult[] = [];
@@ -148,13 +153,18 @@ function handleResult(
       }));
   }
 
-  return [
-    ...(showAllLink ? [{ type: "ALL", label: "Show all results" }] : []),
-    ...(performers.length
-      ? [{ label: "Performers", options: performers }]
-      : []),
-    ...(scenes.length ? [{ label: "Scenes", options: scenes }] : []),
-  ];
+  const performerResults = performers.length
+    ? [{ label: "Performers", options: performers }]
+    : [];
+  const sceneResults = scenes.length
+    ? [{ label: "Scenes", options: scenes }]
+    : [];
+  const showAll =
+    showAllLink && performerResults.length > 0 && sceneResults.length > 0
+      ? [{ type: "ALL", label: "Show all results" }]
+      : [];
+
+  return [...showAll, ...performerResults, ...sceneResults];
 }
 
 const SearchField: FC<SearchFieldProps> = ({
@@ -171,6 +181,8 @@ const SearchField: FC<SearchFieldProps> = ({
   const navigate = useNavigate();
   const [selectedValue, setSelected] = useState(null);
   const searchTerm = useRef("");
+  const selectRef =
+    useRef<SelectInstance<SearchResult, false, GroupBase<SearchResult>>>(null);
 
   const handleSearch = async (term: string) => {
     if (term) {
@@ -212,6 +224,7 @@ const SearchField: FC<SearchFieldProps> = ({
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
       navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+      selectRef?.current?.blur();
     }
   };
 
@@ -224,6 +237,7 @@ const SearchField: FC<SearchFieldProps> = ({
         loadOptions={handleLoad}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        ref={selectRef}
         placeholder={
           placeholder ??
           (searchType === SearchType.Performer
@@ -234,6 +248,12 @@ const SearchField: FC<SearchFieldProps> = ({
         components={{
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null,
+          ValueContainer: (props) => (
+            <>
+              <SearchHint />
+              <components.ValueContainer {...props} />
+            </>
+          ),
         }}
         noOptionsMessage={({ inputValue }) =>
           inputValue === "" ? null : `No result found for "${inputValue}"`

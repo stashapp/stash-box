@@ -45,7 +45,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const studioImage = getImage(studio.images, "landscape");
 
   const subStudios = sortBy(studio.child_studios, (s) =>
-    s.name.toLowerCase()
+    s.name.toLowerCase(),
   ).map((s) => (
     <li key={s.id}>
       <Link to={studioHref(s)}>{s.name}</Link>
@@ -76,8 +76,11 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           </h3>
           {homeURL && (
             <h6>
-              <a href={homeURL} target="_blank" rel="noreferrer noopener">
-                {homeURL}
+              {homeURL.site.name !== "Home" && (
+                <b className="me-2">{homeURL.site.name}:</b>
+              )}
+              <a href={homeURL.url} target="_blank" rel="noreferrer noopener">
+                {homeURL.url}
               </a>
             </h6>
           )}

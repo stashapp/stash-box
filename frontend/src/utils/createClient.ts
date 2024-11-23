@@ -5,8 +5,9 @@ import {
   TypePolicies,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
-import { setContext, ContextSetter } from "@apollo/client/link/context";
-import { createUploadLink } from "apollo-upload-client";
+import { setContext } from "@apollo/client/link/context";
+import { removeTypenameFromVariables } from "@apollo/client/link/remove-typename";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
 const typePolicies: TypePolicies = {
   SceneDraft: {
@@ -29,7 +30,7 @@ export const getPlatformURL = () => {
 
   if (isDevEnvironment()) {
     platformUrl = new URL(
-      import.meta.env.VITE_SERVER_URL ?? window.location.origin
+      import.meta.env.VITE_SERVER_URL ?? window.location.origin,
     );
     platformUrl.port = import.meta.env.VITE_SERVER_PORT ?? "9998";
   }
@@ -45,34 +46,31 @@ const httpLink = createUploadLink({
   },
 });
 
-const authLink = setContext(
-  (_, { headers, ...context }): ContextSetter => ({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    headers: {
-      ...headers,
-      ...(import.meta.env.VITE_APIKEY && {
-        ApiKey: import.meta.env.VITE_APIKEY,
-      }),
-    },
-    ...context,
-  })
-);
+const authLink = setContext((_, { headers, ...context }) => ({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  headers: {
+    ...headers,
+    ...(import.meta.env.VITE_APIKEY && {
+      ApiKey: import.meta.env.VITE_APIKEY,
+    }),
+  },
+  ...context,
+}));
 
 const createClient = () =>
   new ApolloClient({
     link: ApolloLink.from([
       authLink,
       onError(({ graphQLErrors, networkError }) => {
-        /* eslint-disable no-console */
         if (graphQLErrors)
           graphQLErrors.forEach(({ message, locations, path }) =>
             console.log(
-              `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-            )
+              `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+            ),
           );
         if (networkError) console.log(`[Network error]: ${networkError}`);
-        /* eslint-enable no-console */
       }),
+      removeTypenameFromVariables(),
       httpLink as unknown as ApolloLink,
     ]),
     cache: new InMemoryCache({ typePolicies }),

@@ -115,7 +115,10 @@ type Performer {
   edits: [Edit!]!
   scene_count: Int!
   scenes(input: PerformerScenesInput): [Scene!]!
+  """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
+  """ID of performer that replaces this one"""
+  merged_into_id: ID
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
@@ -369,6 +372,7 @@ input PerformerQueryInput {
 type PerformerDraft {
   id: ID
   name: String!
+  disambiguation: String
   aliases: String
   gender: String
   birthdate: String
@@ -389,6 +393,7 @@ type PerformerDraft {
 
 input PerformerDraftInput {
   id: ID
+  disambiguation: String
   name: String!
   aliases: String
   gender: String

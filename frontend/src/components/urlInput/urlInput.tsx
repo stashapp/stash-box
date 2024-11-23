@@ -1,7 +1,13 @@
 import { FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
-import { Control, useFieldArray, FieldError } from "react-hook-form";
+import type {
+  Control,
+  FieldError,
+  Merge,
+  FieldErrorsImpl,
+} from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { useSites, ValidSiteTypeEnum, SiteQuery } from "src/graphql";
@@ -10,11 +16,26 @@ type Site = NonNullable<SiteQuery["findSite"]>;
 
 const CLASSNAME = "URLInput";
 
+type URL = {
+  url: string;
+  site: {
+    id: string;
+    name: string;
+    icon: string;
+  };
+};
+
+type ControlType = Control<{ urls?: URL[] | undefined }, "urls"> | undefined;
+type ErrorsType = Merge<
+  FieldError,
+  (Merge<FieldError, FieldErrorsImpl<URL>> | undefined)[]
+>;
+
 interface URLInputProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>;
+  control: any;
   type: ValidSiteTypeEnum;
-  errors?: { url?: FieldError | undefined }[];
+  errors?: ErrorsType;
 }
 
 const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
@@ -22,12 +43,8 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
     fields: urls,
     append,
     remove,
-  } = useFieldArray<
-    { urls: Array<{ url: string; site: { id: string; name: string } }> },
-    "urls",
-    "key"
-  >({
-    control,
+  } = useFieldArray({
+    control: control as ControlType,
     name: "urls",
     keyName: "key",
   });
@@ -39,12 +56,12 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
 
   if (loading) return <></>;
   const sites = (data?.querySites.sites ?? []).filter((s) =>
-    s.valid_types.includes(type)
+    s.valid_types.includes(type),
   );
 
   const cleanURL = (
     regexStr: string | undefined | null,
-    url: string
+    url: string,
   ): string | undefined => {
     if (!regexStr) return;
 

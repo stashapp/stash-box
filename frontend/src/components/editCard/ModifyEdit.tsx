@@ -43,6 +43,13 @@ type Details = EditFragment["details"];
 type OldDetails = EditFragment["old_details"];
 type Options = EditFragment["options"];
 
+type Image = {
+  height: number;
+  id: string;
+  url: string;
+  width: number;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StartingWith<T, K extends string> = T extends `${K}${infer _}` ? T : never;
 type TargetOldDetails<T> = Omit<
@@ -63,7 +70,7 @@ export type OldTagDetails = TargetOldDetails<TagDetails>;
 export const renderTagDetails = (
   tagDetails: TagDetails,
   oldTagDetails: OldTagDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     <ChangeRow
@@ -104,11 +111,6 @@ type BodyMod = {
   description?: string | null;
 };
 
-type Image = {
-  id: string;
-  url: string;
-};
-
 export interface PerformerDetails {
   name?: string | null;
   gender?: GenderEnum | null;
@@ -132,8 +134,8 @@ export interface PerformerDetails {
   removed_piercings?: BodyMod[] | null;
   added_aliases?: string[] | null;
   removed_aliases?: string[] | null;
-  added_images?: NullableImage[] | null;
-  removed_images?: NullableImage[] | null;
+  added_images?: (Image | null)[] | null;
+  removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
   draft_id?: string | null;
@@ -145,7 +147,7 @@ export const renderPerformerDetails = (
   performerDetails: PerformerDetails,
   oldPerformerDetails: OldPerformerDetails | undefined,
   showDiff: boolean,
-  setModifyAliases = false
+  setModifyAliases = false,
 ) => (
   <>
     {performerDetails.name && (
@@ -348,11 +350,9 @@ type ScenePerformance = {
   as?: string | null;
   performer: Pick<
     PerformerFragment,
-    "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
+    "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
 };
-
-type NullableImage = Image | null;
 
 export interface SceneDetails {
   title?: string | null;
@@ -367,8 +367,8 @@ export interface SceneDetails {
   } | null;
   added_performers?: ScenePerformance[] | null;
   removed_performers?: ScenePerformance[] | null;
-  added_images?: NullableImage[] | null;
-  removed_images?: NullableImage[] | null;
+  added_images?: (Image | null)[] | null;
+  removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
   added_tags?:
@@ -407,7 +407,7 @@ export type OldSceneDetails = TargetOldDetails<SceneDetails>;
 export const renderSceneDetails = (
   sceneDetails: SceneDetails,
   oldSceneDetails: OldSceneDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     {sceneDetails.title && (
@@ -513,8 +513,8 @@ export interface StudioDetails {
     id: string;
     name: string;
   } | null;
-  added_images?: NullableImage[] | null;
-  removed_images?: NullableImage[] | null;
+  added_images?: (Image | null)[] | null;
+  removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
 }
@@ -524,7 +524,7 @@ export type OldStudioDetails = TargetOldDetails<StudioDetails>;
 export const renderStudioDetails = (
   studioDetails: StudioDetails,
   oldStudioDetails: OldStudioDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     <ChangeRow
@@ -584,7 +584,7 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
       details,
       oldDetails,
       showDiff,
-      options?.set_modify_aliases
+      options?.set_modify_aliases,
     );
   }
 

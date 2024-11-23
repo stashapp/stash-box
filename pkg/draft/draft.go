@@ -36,12 +36,15 @@ func Destroy(fac models.Repo, id uuid.UUID) error {
 		return fmt.Errorf("Unsupported type: %s", draft.Type)
 	}
 
+	if err = dqb.Destroy(id); err != nil {
+		return err
+	}
+
 	if imageID != nil {
 		imageService := image.GetService(fac.Image())
 		if err := imageService.DestroyUnusedImage(*imageID); err != nil {
 			return err
 		}
 	}
-
-	return dqb.Destroy(id)
+	return nil
 }
