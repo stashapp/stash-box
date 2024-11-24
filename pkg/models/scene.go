@@ -9,7 +9,7 @@ type SceneRepo interface {
 	SoftDelete(scene Scene) (*Scene, error)
 	CreateURLs(newJoins SceneURLs) error
 	UpdateURLs(scene uuid.UUID, updatedJoins SceneURLs) error
-	CreateFingerprints(newJoins SceneFingerprints) error
+	CreateOrReplaceFingerprints(newJoins SceneFingerprints) error
 	UpdateFingerprints(sceneID uuid.UUID, updatedJoins SceneFingerprints) error
 	DestroyFingerprints(sceneID uuid.UUID, toDelete SceneFingerprints) error
 	Find(id uuid.UUID) (*Scene, error)
@@ -27,6 +27,7 @@ type SceneRepo interface {
 	// GetAllFingerprints returns fingerprints for each of the scene ids provided.
 	// currentUserID is used to populate the UserSubmitted field.
 	GetAllFingerprints(currentUserID uuid.UUID, ids []uuid.UUID, onlySubmitted bool) ([][]*Fingerprint, []error)
+	SubmittedHashExists(sceneID uuid.UUID, hash string, algorithm FingerprintAlgorithm) (bool, error)
 	GetPerformers(id uuid.UUID) (PerformersScenes, error)
 	GetAllAppearances(ids []uuid.UUID) ([]PerformersScenes, []error)
 	GetURLs(id uuid.UUID) ([]*URL, error)

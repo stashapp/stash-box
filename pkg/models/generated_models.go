@@ -137,13 +137,19 @@ type EyeColorCriterionInput struct {
 }
 
 type Fingerprint struct {
-	Hash          string               `json:"hash"`
-	Algorithm     FingerprintAlgorithm `json:"algorithm"`
-	Duration      int                  `json:"duration"`
-	Submissions   int                  `json:"submissions"`
-	Created       time.Time            `json:"created"`
-	Updated       time.Time            `json:"updated"`
-	UserSubmitted bool                 `json:"user_submitted"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+	// number of times this fingerprint has been submitted (excluding reports)
+	Submissions int `json:"submissions"`
+	// number of times this fingerprint has been reported
+	Reports int       `json:"reports"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"updated"`
+	// true if the current user submitted this fingerprint
+	UserSubmitted bool `json:"user_submitted"`
+	// true if the current user reported this fingerprint
+	UserReported bool `json:"user_reported"`
 }
 
 type FingerprintEditInput struct {
@@ -170,9 +176,10 @@ type FingerprintQueryInput struct {
 }
 
 type FingerprintSubmission struct {
-	SceneID     uuid.UUID         `json:"scene_id"`
-	Fingerprint *FingerprintInput `json:"fingerprint"`
-	Unmatch     *bool             `json:"unmatch,omitempty"`
+	SceneID     uuid.UUID                  `json:"scene_id"`
+	Fingerprint *FingerprintInput          `json:"fingerprint"`
+	Unmatch     *bool                      `json:"unmatch,omitempty"`
+	Vote        *FingerprintSubmissionType `json:"vote,omitempty"`
 }
 
 type FuzzyDate struct {
@@ -1248,6 +1255,52 @@ func (e *FingerprintAlgorithm) UnmarshalGQL(v interface{}) error {
 }
 
 func (e FingerprintAlgorithm) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type FingerprintSubmissionType string
+
+const (
+	// Positive vote
+	FingerprintSubmissionTypeValid FingerprintSubmissionType = "VALID"
+	// Report as invalid
+	FingerprintSubmissionTypeInvalid FingerprintSubmissionType = "INVALID"
+	// Remove vote
+	FingerprintSubmissionTypeRemove FingerprintSubmissionType = "REMOVE"
+)
+
+var AllFingerprintSubmissionType = []FingerprintSubmissionType{
+	FingerprintSubmissionTypeValid,
+	FingerprintSubmissionTypeInvalid,
+	FingerprintSubmissionTypeRemove,
+}
+
+func (e FingerprintSubmissionType) IsValid() bool {
+	switch e {
+	case FingerprintSubmissionTypeValid, FingerprintSubmissionTypeInvalid, FingerprintSubmissionTypeRemove:
+		return true
+	}
+	return false
+}
+
+func (e FingerprintSubmissionType) String() string {
+	return string(e)
+}
+
+func (e *FingerprintSubmissionType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FingerprintSubmissionType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FingerprintSubmissionType", str)
+	}
+	return nil
+}
+
+func (e FingerprintSubmissionType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
