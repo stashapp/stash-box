@@ -9,7 +9,7 @@ import (
 	"github.com/davidbyttow/govips/v2/vips"
 )
 
-func Resize(reader io.Reader, max int) ([]byte, error) {
+func Resize(reader io.Reader, maxSize int) ([]byte, error) {
 	image, err := vips.NewImageFromReader(reader)
 	if err != nil {
 		return nil, err
@@ -17,7 +17,7 @@ func Resize(reader io.Reader, max int) ([]byte, error) {
 
 	h := image.Height()
 	w := image.Width()
-	scale := float64(max) / math.Max(float64(h), float64(w))
+	scale := float64(maxSize) / math.Max(float64(h), float64(w))
 	if scale < 1 {
 		if err := image.Resize(scale, vips.KernelCubic); err != nil {
 			return nil, err
