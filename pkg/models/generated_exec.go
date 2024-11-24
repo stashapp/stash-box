@@ -4617,6 +4617,7 @@ enum HairColorEnum {
   GREY
   BALD
   VARIOUS
+  WHITE
   OTHER
 }
 

@@ -1362,6 +1362,7 @@ const (
 	HairColorEnumGrey     HairColorEnum = "GREY"
 	HairColorEnumBald     HairColorEnum = "BALD"
 	HairColorEnumVarious  HairColorEnum = "VARIOUS"
+	HairColorEnumWhite    HairColorEnum = "WHITE"
 	HairColorEnumOther    HairColorEnum = "OTHER"
 )
 
@@ -1374,12 +1375,13 @@ var AllHairColorEnum = []HairColorEnum{
 	HairColorEnumGrey,
 	HairColorEnumBald,
 	HairColorEnumVarious,
+	HairColorEnumWhite,
 	HairColorEnumOther,
 }
 
 func (e HairColorEnum) IsValid() bool {
 	switch e {
-	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumOther:
+	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumWhite, HairColorEnumOther:
 		return true
 	}
 	return false

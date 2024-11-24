@@ -384,6 +384,7 @@ export enum HairColorEnum {
   OTHER = "OTHER",
   RED = "RED",
   VARIOUS = "VARIOUS",
+  WHITE = "WHITE",
 }
 
 export type IdCriterionInput = {
