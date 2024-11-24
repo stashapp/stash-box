@@ -13,6 +13,22 @@ export const formatDateTime = (dateTime: Date | string, utc = false) => {
   })}`;
 };
 
+export const formatDate = (dateTime: Date | string, utc = false) => {
+  const timeZone = utc ? "UTC" : undefined;
+  const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
+  return date.toLocaleString("en-us", {
+    month: "short",
+    year: "numeric",
+    day: "numeric",
+    timeZone,
+  });
+};
+
+export const formatISODate = (dateTime: Date | string) => {
+  const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
+  return date.toISOString().slice(0, 10);
+};
+
 export const isValidDate = (date?: string) => !date || isValid(parseISO(date));
 
 export const dateWithinRange = (
