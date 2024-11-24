@@ -72,6 +72,8 @@ type Edit {
     destructive: Boolean!
     status: VoteStatusEnum!
     applied: Boolean!
+    update_count: Int!
+    updatable: Boolean!
     created: Time!
     updated: Time
     closed: Time

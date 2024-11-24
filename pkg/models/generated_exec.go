@@ -116,6 +116,8 @@ type ComplexityRoot struct {
 		Status       func(childComplexity int) int
 		Target       func(childComplexity int) int
 		TargetType   func(childComplexity int) int
+		Updatable    func(childComplexity int) int
+		UpdateCount  func(childComplexity int) int
 		Updated      func(childComplexity int) int
 		User         func(childComplexity int) int
 		VoteCount    func(childComplexity int) int
@@ -622,6 +624,7 @@ type EditResolver interface {
 	Destructive(ctx context.Context, obj *Edit) (bool, error)
 	Status(ctx context.Context, obj *Edit) (VoteStatusEnum, error)
 
+	Updatable(ctx context.Context, obj *Edit) (bool, error)
 	Created(ctx context.Context, obj *Edit) (*time.Time, error)
 	Updated(ctx context.Context, obj *Edit) (*time.Time, error)
 	Closed(ctx context.Context, obj *Edit) (*time.Time, error)
@@ -1121,6 +1124,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Edit.TargetType(childComplexity), true
+
+	case "Edit.updatable":
+		if e.complexity.Edit.Updatable == nil {
+			break
+		}
+
+		return e.complexity.Edit.Updatable(childComplexity), true
+
+	case "Edit.update_count":
+		if e.complexity.Edit.UpdateCount == nil {
+			break
+		}
+
+		return e.complexity.Edit.UpdateCount(childComplexity), true
 
 	case "Edit.updated":
 		if e.complexity.Edit.Updated == nil {
@@ -4361,6 +4378,8 @@ type Edit {
     destructive: Boolean!
     status: VoteStatusEnum!
     applied: Boolean!
+    update_count: Int!
+    updatable: Boolean!
     created: Time!
     updated: Time
     closed: Time
@@ -10127,6 +10146,94 @@ func (ec *executionContext) fieldContext_Edit_applied(_ context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _Edit_update_count(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Edit_update_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Edit_update_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Edit_updatable(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Edit_updatable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Edit().Updatable(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Edit_updatable(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Edit",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Edit_created(ctx context.Context, field graphql.CollectedField, obj *Edit) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Edit_created(ctx, field)
 	if err != nil {
@@ -14670,6 +14777,10 @@ func (ec *executionContext) fieldContext_Mutation_sceneEdit(ctx context.Context,
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -14794,6 +14905,10 @@ func (ec *executionContext) fieldContext_Mutation_performerEdit(ctx context.Cont
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -14918,6 +15033,10 @@ func (ec *executionContext) fieldContext_Mutation_studioEdit(ctx context.Context
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15042,6 +15161,10 @@ func (ec *executionContext) fieldContext_Mutation_tagEdit(ctx context.Context, f
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15166,6 +15289,10 @@ func (ec *executionContext) fieldContext_Mutation_sceneEditUpdate(ctx context.Co
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15290,6 +15417,10 @@ func (ec *executionContext) fieldContext_Mutation_performerEditUpdate(ctx contex
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15414,6 +15545,10 @@ func (ec *executionContext) fieldContext_Mutation_studioEditUpdate(ctx context.C
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15538,6 +15673,10 @@ func (ec *executionContext) fieldContext_Mutation_tagEditUpdate(ctx context.Cont
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15662,6 +15801,10 @@ func (ec *executionContext) fieldContext_Mutation_editVote(ctx context.Context, 
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15786,6 +15929,10 @@ func (ec *executionContext) fieldContext_Mutation_editComment(ctx context.Contex
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -15910,6 +16057,10 @@ func (ec *executionContext) fieldContext_Mutation_applyEdit(ctx context.Context,
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -16034,6 +16185,10 @@ func (ec *executionContext) fieldContext_Mutation_cancelEdit(ctx context.Context
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -17764,6 +17919,10 @@ func (ec *executionContext) fieldContext_Performer_edits(_ context.Context, fiel
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -22587,6 +22746,10 @@ func (ec *executionContext) fieldContext_Query_findEdit(ctx context.Context, fie
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -23984,6 +24147,10 @@ func (ec *executionContext) fieldContext_QueryEditsResultType_edits(_ context.Co
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -24070,6 +24237,10 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_edits(_ contex
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -25795,6 +25966,10 @@ func (ec *executionContext) fieldContext_Scene_edits(_ context.Context, field gr
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -29628,6 +29803,10 @@ func (ec *executionContext) fieldContext_Tag_edits(_ context.Context, field grap
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":
@@ -38800,6 +38979,47 @@ func (ec *executionContext) _Edit(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "update_count":
+			out.Values[i] = ec._Edit_update_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updatable":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Edit_updatable(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "created":
 			field := field
 
