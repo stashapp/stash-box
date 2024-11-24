@@ -3,10 +3,11 @@ import { Button } from "react-bootstrap";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 import { Icon } from "src/components/fragments";
+import Image from "src/components/image";
 import { ImageFragment } from "src/graphql";
 
 interface ImageProps {
-  image: Pick<ImageFragment, "id" | "url">;
+  image: Pick<ImageFragment, "id" | "url" | "width" | "height">;
   onRemove: () => void;
 }
 
@@ -23,7 +24,7 @@ const ImageInput: FC<ImageProps> = ({ image, onRemove }) => (
     >
       <Icon icon={faXmark} />
     </Button>
-    <img src={image.url} className={CLASSNAME_IMAGE} alt="" />
+    <Image images={image} className={CLASSNAME_IMAGE} size="full" />
   </div>
 );
 

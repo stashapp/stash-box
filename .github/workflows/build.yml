@@ -33,6 +33,12 @@ jobs:
           --health-retries 5
 
     steps:
+
+    - uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: libvips-dev
+        version: 1.0
+
     - name: Checkout
       uses: actions/checkout@v4
       with:

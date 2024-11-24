@@ -9,7 +9,10 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      # Silence embed linting error
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libvips-dev
+          version: 1.0
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:

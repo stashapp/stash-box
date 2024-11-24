@@ -6,6 +6,7 @@ toolchain go1.23.3
 
 require (
 	github.com/99designs/gqlgen v0.17.56
+	github.com/davidbyttow/govips/v2 v2.15.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/gofrs/uuid v4.3.1+incompatible

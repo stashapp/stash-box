@@ -1,4 +1,4 @@
-import { ImageFragment, UrlFragment } from "src/graphql";
+import { UrlFragment } from "src/graphql";
 
 export const formatCareer = (
   start?: number | null,
@@ -30,8 +30,14 @@ export const getBraSize = (
 ): string | undefined =>
   band_size && cup_size ? `${band_size}${cup_size}` : undefined;
 
+type Image = {
+  url: string;
+  width: number;
+  height: number;
+};
+
 export const sortImageURLs = (
-  urls: ImageFragment[],
+  urls: Image[],
   orientation: "portrait" | "landscape",
 ) =>
   urls
@@ -53,14 +59,14 @@ export const sortImageURLs = (
     });
 
 export const getImage = (
-  urls: ImageFragment[],
+  urls: Image[],
   orientation: "portrait" | "landscape",
 ) => {
   const images = sortImageURLs(urls, orientation);
   return images?.[0]?.url ?? "";
 };
 
-export const imageType = (image?: ImageFragment) => {
+export const imageType = (image?: Image) => {
   if (image && image.height > image.width) {
     return `vertical-img`;
   } else {

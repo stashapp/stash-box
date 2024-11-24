@@ -1,14 +1,9 @@
 .ImageChangeRow {
   display: flex;
   flex-wrap: wrap;
-  overflow: hidden;
 
-  &-image {
-    border-radius: 3px;
-    max-height: 150px;
+  .Image {
+    height: 150px;
     margin: 5px;
-    object-fit: cover;
-    object-position: top;
-    max-width: 100%;
   }
 }
