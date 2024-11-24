@@ -1,6 +1,6 @@
 run:
   timeout: 3m
-  go: 1.22
+  go: 1.23
 
 issues:
   skip-files:
@@ -14,21 +14,21 @@ linters:
     - govet
     - ineffassign
     - staticcheck
-    - typecheck
     - unused
+    - typecheck
     # additional
     - gofmt
     - revive
     - dogsled
     - errorlint
     - exhaustive
-    - exportloopref
+    - copyloopvar
     - gocritic
-    #- goerr113
     - misspell
     - noctx
     - rowserrcheck
     - sqlclosecheck
+    #- err113
 
 linters-settings:
   revive:

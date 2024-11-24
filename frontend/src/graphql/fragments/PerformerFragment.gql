@@ -5,6 +5,7 @@ fragment PerformerFragment on Performer {
   name
   disambiguation
   deleted
+  merged_into_id
   aliases
   gender
   birth_date

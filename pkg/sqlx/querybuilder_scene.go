@@ -437,6 +437,32 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 		}
 	}
 
+	if q := filter.Date; q != nil {
+		column := "scenes.date"
+		switch q.Modifier {
+		case models.CriterionModifierEquals:
+			query.AddWhere(fmt.Sprintf("%s = ?", column))
+			query.AddArg(q.Value)
+		case models.CriterionModifierNotEquals:
+			query.AddWhere(fmt.Sprintf("%s != ?", column))
+			query.AddArg(q.Value)
+		case models.CriterionModifierGreaterThan:
+			query.AddWhere(fmt.Sprintf("%s > ?", column))
+			query.AddArg(q.Value)
+		case models.CriterionModifierLessThan:
+			query.AddWhere(fmt.Sprintf("%s < ?", column))
+			query.AddArg(q.Value)
+		case models.CriterionModifierIsNull:
+			query.AddWhere(fmt.Sprintf("%s IS NULL", column))
+		case models.CriterionModifierNotNull:
+			query.AddWhere(fmt.Sprintf("%s IS NOT NULL", column))
+		case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes:
+			return nil, fmt.Errorf("unsupported modifier %s for scenes.date", q.Modifier)
+		default:
+			return nil, fmt.Errorf("unsupported modifier %s for scenes.date", q.Modifier)
+		}
+	}
+
 	if q := filter.Favorites; q != nil {
 		var clauses []string
 		if *q == models.FavoriteFilterPerformer || *q == models.FavoriteFilterAll {

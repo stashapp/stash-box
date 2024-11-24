@@ -21,6 +21,13 @@ func (r *queryResolver) FindTag(ctx context.Context, id *uuid.UUID, name *string
 	return nil, nil
 }
 
+func (r *queryResolver) FindTagOrAlias(ctx context.Context, name string) (*models.Tag, error) {
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Tag()
+
+	return qb.FindByNameOrAlias(name)
+}
+
 func (r *queryResolver) QueryTags(ctx context.Context, input models.TagQueryInput) (*models.QueryTagsResultType, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Tag()

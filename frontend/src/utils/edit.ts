@@ -17,47 +17,47 @@ interface TypeName {
 }
 
 export const isTag = (
-  entity: TypeName | null | undefined
+  entity: TypeName | null | undefined,
 ): entity is Tag | undefined =>
   entity?.__typename === "Tag" || entity === undefined;
 
 export const isPerformer = (
-  entity: TypeName | null | undefined
+  entity: TypeName | null | undefined,
 ): entity is Performer | undefined =>
   entity?.__typename === "Performer" || entity === undefined;
 
 export const isStudio = (
-  entity: TypeName | null | undefined
+  entity: TypeName | null | undefined,
 ): entity is Studio | undefined =>
   entity?.__typename === "Studio" || entity === undefined;
 
 export const isScene = (
-  entity: TypeName | null | undefined
+  entity: TypeName | null | undefined,
 ): entity is Scene | undefined =>
   entity?.__typename === "Scene" || entity === undefined;
 
 export const isTagEdit = <T extends TypeName>(
-  details?: T | null
+  details?: T | null,
 ): details is T & { __typename: "TagEdit" } =>
   details?.__typename === "TagEdit";
 
 export const isPerformerEdit = <T extends TypeName>(
-  details?: T | null
+  details?: T | null,
 ): details is T & { __typename: "PerformerEdit" } =>
   details?.__typename === "PerformerEdit";
 
 export const isStudioEdit = <T extends TypeName>(
-  details?: T | null
+  details?: T | null,
 ): details is T & { __typename: "StudioEdit" } =>
   details?.__typename === "StudioEdit";
 
 export const isSceneEdit = <T extends TypeName>(
-  details?: T | null
+  details?: T | null,
 ): details is T & { __typename: "SceneEdit" } =>
   details?.__typename === "SceneEdit";
 
 export const isValidEditTarget = (
-  target: Target | null | undefined
+  target: Target | null | undefined,
 ): target is Performer | Tag | Studio | Scene =>
   (isPerformer(target) ||
     isTag(target) ||

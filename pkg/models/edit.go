@@ -29,4 +29,5 @@ type EditRepo interface {
 	FindCompletedEdits(int, int, int) ([]*Edit, error)
 	FindPendingSceneCreation(input QueryExistingSceneInput) ([]*Edit, error)
 	CancelUserEdits(userID uuid.UUID) error
+	ResetVotes(id uuid.UUID) error
 }

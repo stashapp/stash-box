@@ -37,10 +37,9 @@ type SceneDraftTag interface {
 }
 
 type ActivateNewUserInput struct {
-	Name          string `json:"name"`
-	Email         string `json:"email"`
-	ActivationKey string `json:"activation_key"`
-	Password      string `json:"password"`
+	Name          string    `json:"name"`
+	ActivationKey uuid.UUID `json:"activation_key"`
+	Password      string    `json:"password"`
 }
 
 type ApplyEditInput struct {
@@ -249,8 +248,8 @@ type Mutation struct {
 }
 
 type NewUserInput struct {
-	Email     string  `json:"email"`
-	InviteKey *string `json:"invite_key,omitempty"`
+	Email     string     `json:"email"`
+	InviteKey *uuid.UUID `json:"invite_key,omitempty"`
 }
 
 type PerformerAppearance struct {
@@ -740,11 +739,17 @@ type TagUpdateInput struct {
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
 }
 
+type UserChangeEmailInput struct {
+	ExistingEmailToken *uuid.UUID `json:"existing_email_token,omitempty"`
+	NewEmailToken      *uuid.UUID `json:"new_email_token,omitempty"`
+	NewEmail           *string    `json:"new_email,omitempty"`
+}
+
 type UserChangePasswordInput struct {
 	// Password in plain text
-	ExistingPassword *string `json:"existing_password,omitempty"`
-	NewPassword      string  `json:"new_password"`
-	ResetKey         *string `json:"reset_key,omitempty"`
+	ExistingPassword *string    `json:"existing_password,omitempty"`
+	NewPassword      string     `json:"new_password"`
+	ResetKey         *uuid.UUID `json:"reset_key,omitempty"`
 }
 
 type UserCreateInput struct {
@@ -1410,6 +1415,7 @@ const (
 	HairColorEnumGrey     HairColorEnum = "GREY"
 	HairColorEnumBald     HairColorEnum = "BALD"
 	HairColorEnumVarious  HairColorEnum = "VARIOUS"
+	HairColorEnumWhite    HairColorEnum = "WHITE"
 	HairColorEnumOther    HairColorEnum = "OTHER"
 )
 
@@ -1422,12 +1428,13 @@ var AllHairColorEnum = []HairColorEnum{
 	HairColorEnumGrey,
 	HairColorEnumBald,
 	HairColorEnumVarious,
+	HairColorEnumWhite,
 	HairColorEnumOther,
 }
 
 func (e HairColorEnum) IsValid() bool {
 	switch e {
-	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumOther:
+	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumWhite, HairColorEnumOther:
 		return true
 	}
 	return false
@@ -1866,6 +1873,55 @@ func (e *TargetTypeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e TargetTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type UserChangeEmailStatus string
+
+const (
+	UserChangeEmailStatusConfirmOld   UserChangeEmailStatus = "CONFIRM_OLD"
+	UserChangeEmailStatusConfirmNew   UserChangeEmailStatus = "CONFIRM_NEW"
+	UserChangeEmailStatusExpired      UserChangeEmailStatus = "EXPIRED"
+	UserChangeEmailStatusInvalidToken UserChangeEmailStatus = "INVALID_TOKEN"
+	UserChangeEmailStatusSuccess      UserChangeEmailStatus = "SUCCESS"
+	UserChangeEmailStatusError        UserChangeEmailStatus = "ERROR"
+)
+
+var AllUserChangeEmailStatus = []UserChangeEmailStatus{
+	UserChangeEmailStatusConfirmOld,
+	UserChangeEmailStatusConfirmNew,
+	UserChangeEmailStatusExpired,
+	UserChangeEmailStatusInvalidToken,
+	UserChangeEmailStatusSuccess,
+	UserChangeEmailStatusError,
+}
+
+func (e UserChangeEmailStatus) IsValid() bool {
+	switch e {
+	case UserChangeEmailStatusConfirmOld, UserChangeEmailStatusConfirmNew, UserChangeEmailStatusExpired, UserChangeEmailStatusInvalidToken, UserChangeEmailStatusSuccess, UserChangeEmailStatusError:
+		return true
+	}
+	return false
+}
+
+func (e UserChangeEmailStatus) String() string {
+	return string(e)
+}
+
+func (e *UserChangeEmailStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserChangeEmailStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserChangeEmailStatus", str)
+	}
+	return nil
+}
+
+func (e UserChangeEmailStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

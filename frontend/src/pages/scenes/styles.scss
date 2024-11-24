@@ -50,6 +50,8 @@
 .user-submitted {
   color: $success;
   margin-left: 0.5rem;
+  padding: 0;
+  vertical-align: baseline;
 
   .fa-circle-xmark {
     display: none;

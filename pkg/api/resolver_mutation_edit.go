@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/edit"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
@@ -13,9 +14,9 @@ import (
 )
 
 var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
-var ErrAlreadyUpdated = fmt.Errorf("Edits can only be updated once")
 var ErrClosedEdit = fmt.Errorf("Votes can only be cast on pending edits")
 var ErrUnauthorizedBot = fmt.Errorf("You do not have permission to submit bot edits")
+var ErrUpdateLimit = fmt.Errorf("Edit update limit reached")
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
@@ -74,12 +75,8 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 		return nil, err
 	}
 
-	if existingEdit.UserID.UUID != currentUser.ID {
-		return nil, ErrUnauthorizedUpdate
-	}
-
-	if existingEdit.UpdatedAt.Valid {
-		return nil, ErrAlreadyUpdated
+	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
+		return nil, err
 	}
 
 	err = fac.WithTxn(func() error {
@@ -151,12 +148,8 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 		return nil, err
 	}
 
-	if existingEdit.UserID.UUID != currentUser.ID {
-		return nil, ErrUnauthorizedUpdate
-	}
-
-	if existingEdit.UpdatedAt.Valid {
-		return nil, ErrAlreadyUpdated
+	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
+		return nil, err
 	}
 
 	err = fac.WithTxn(func() error {
@@ -228,12 +221,8 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 		return nil, err
 	}
 
-	if existingEdit.UserID.UUID != currentUser.ID {
-		return nil, ErrUnauthorizedUpdate
-	}
-
-	if existingEdit.UpdatedAt.Valid {
-		return nil, ErrAlreadyUpdated
+	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
+		return nil, err
 	}
 
 	err = fac.WithTxn(func() error {
@@ -311,12 +300,8 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 		return nil, err
 	}
 
-	if existingEdit.UserID.UUID != currentUser.ID {
-		return nil, ErrUnauthorizedUpdate
-	}
-
-	if existingEdit.UpdatedAt.Valid {
-		return nil, ErrAlreadyUpdated
+	if err = validateEditUpdate(*existingEdit, currentUser); err != nil {
+		return nil, err
 	}
 
 	err = fac.WithTxn(func() error {
@@ -467,6 +452,18 @@ func validateBotEdit(ctx context.Context, input *models.EditInput) error {
 		if err := validateBot(ctx); err != nil {
 			return ErrUnauthorizedBot
 		}
+	}
+
+	return nil
+}
+
+func validateEditUpdate(edit models.Edit, user *models.User) error {
+	if edit.UserID.UUID != user.ID {
+		return ErrUnauthorizedUpdate
+	}
+
+	if edit.UpdateCount >= config.GetEditUpdateLimit() {
+		return ErrUpdateLimit
 	}
 
 	return nil

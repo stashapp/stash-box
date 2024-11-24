@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/cron"
@@ -26,6 +27,9 @@ func main() {
 	user.CreateSystemUsers(txnMgr.Repo())
 	api.Start(txnMgr, ui)
 	cron.Init(txnMgr)
+
+	image.InitResizer()
+
 	blockForever()
 }
 

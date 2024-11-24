@@ -24,6 +24,9 @@ If you already have PostgreSQL installed, you can install stash-box on its own f
 
 Stash-box supports macOS, Windows, and Linux. Releases for Windows and Linux can be found [here](https://github.com/stashapp/stash-box/releases).
 
+## Prerequisites
+To build stash-box on linux [libvips](https://www.libvips.org/) must be installed, as well as gcc.
+
 ## Initial setup
 
 1. Run `make` to build the application.
@@ -76,6 +79,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `voting_period` | `345600` | Time, in seconds, before a voting period is closed. |
 | `min_destructive_voting_period` | `172800` | Minimum time, in seconds, that needs to pass before a destructive edit can be immediately applied with sufficient positive votes. |
 | `vote_cron_interval` | `5m` | Time between runs to close edits whose voting periods have ended. |
+| `edit_update_limit` | `1` | Number of times an edit can be updated by the creator. |
 | `email_host` | (none) | Address of the SMTP server. Required to send emails for activation and recovery purposes. |
 | `email_port` | `25` | Port of the SMTP server. Only STARTTLS is supported. Direct TLS connections are not supported. |
 | `email_user` | (none) | Username for the SMTP server. Optional. |
@@ -84,9 +88,9 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `host_url` | (none) | Base URL for the server. Used when sending emails. Should be in the form of `https://hostname.com`. |
 | `image_location` | (none) | Path to store images, for local image storage. An error will be displayed if this is not set when creating non-URL images. |
 | `image_backend` | (`file`) | Storage solution for images. Can be set to either `file` or `s3`. |
+| `image_max_size` | (none) | Max size of image, if no size is specified. Omit to return full size. |
 | `userLogFile` | (none) | Path to the user log file, which logs user operations. If not set, then these will be output to stderr. |
 | `s3.endpoint` | (none) | Hostname to s3 endpoint used for image storage. |
-| `s3.base_url` | (none) | Base URL to access images in S3. Should be in the form of `https://hostname.com`. |
 | `s3.bucket` | (none) | Name of S3 bucket used to store images. |
 | `s3.access_key` | (none) | Access key used for authentication. |
 | `s3.secret ` | (none) | Secret Access key used for authentication. |
@@ -125,11 +129,11 @@ Suppose you install the extension after you've run the migrations. In that case,
 
 ## Install
 
-* [Go](https://golang.org/dl/), minimum version 1.17.
+* [Go](https://golang.org/dl/), minimum version 1.22.
 * [golangci-lint](https://golangci-lint.run/) - Linter aggregator
     * Follow instructions for your platform from [https://golangci-lint.run/usage/install/](https://golangci-lint.run/usage/install/).
     * Run the linters with `make lint`.
-* [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
+* [PNPM](https://pnpm.io/installation) - PNPM package manager
 
 ## Commands
 
@@ -146,7 +150,7 @@ Suppose you install the extension after you've run the migrations. In that case,
 
 ## Frontend development
 
-To run the frontend in development mode, run `yarn start` from the frontend directory.
+To run the frontend in development mode, run `pnpm start` from the frontend directory.
 
 When developing, the API key can be set in `frontend/.env.development.local` to avoid having to log in.  
 When `is_production` is enabled on the server, this is the only way to authorize in the frontend development environment. If the server uses https or runs on a custom port, this also needs to be configured in `.env.development.local`.  

@@ -61,9 +61,9 @@ const StudioForm: FC<StudioProps> = ({
         StudioSchema.cast(fieldData, {
           assert: "ignore-optionality",
         }) as StudioFormData,
-        studio
+        studio,
       ),
-    [fieldData, studio]
+    [fieldData, studio],
   );
 
   const [activeTab, setActiveTab] = useState("details");

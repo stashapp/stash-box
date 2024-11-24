@@ -56,12 +56,12 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
 
   if (loading) return <></>;
   const sites = (data?.querySites.sites ?? []).filter((s) =>
-    s.valid_types.includes(type)
+    s.valid_types.includes(type),
   );
 
   const cleanURL = (
     regexStr: string | undefined | null,
-    url: string
+    url: string,
   ): string | undefined => {
     if (!regexStr) return;
 

@@ -111,10 +111,12 @@ const SceneComponent: FC<Props> = ({ scene }) => {
         (reported && fingerprint.user_reported)
       ) {
         return (
-          <span
+          <Button
             className="user-submitted"
             title="Submitted by you - click to remove submission"
+            onKeyDown={() => handleFingerprintUnmatch(fingerprint)}
             onClick={() => handleFingerprintUnmatch(fingerprint)}
+            variant="link"
           >
             {!unmatching ? (
               <>
@@ -124,7 +126,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             ) : (
               <Icon icon={faSpinner} className="fa-spin" />
             )}
-          </span>
+          </Button>
         );
       }
     }
@@ -217,7 +219,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           </h6>
         </Card.Header>
         <Card.Body className="ScenePhoto">
-          <Image images={scene.images} emptyMessage="Scene has no image" />
+          <Image
+            images={scene.images}
+            emptyMessage="Scene has no image"
+            size={1280}
+          />
         </Card.Body>
         <Card.Footer className="d-flex mx-1">
           <div className="scene-performers me-auto">{performers}</div>
