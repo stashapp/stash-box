@@ -33,7 +33,7 @@ const Images: FC<{
               {image.width} x {image.height}
             </div>
           </div>
-        )
+        ),
       )}
     </>
   );

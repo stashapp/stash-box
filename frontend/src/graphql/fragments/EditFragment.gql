@@ -17,6 +17,8 @@ fragment EditFragment on Edit {
   updated
   closed
   expires
+  update_count
+  updatable
   vote_count
   destructive
   comments {

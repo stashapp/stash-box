@@ -12,6 +12,8 @@ import UserAdd from "./UserAdd";
 import UserEdit from "./UserEdit";
 import UserPassword from "./UserPassword";
 import UserEdits from "./UserEdits";
+import UserConfirmChangeEmail from "./UserConfirmChangeEmail";
+import UserValidateChangeEmail from "./UserValidateChangeEmail";
 
 const UserLoader: FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -52,6 +54,14 @@ const UserLoader: FC = () => {
             <UserEdits user={user} isPrivateUser={isPrivateUser(user)} />
           </>
         }
+      />
+      <Route
+        path="/confirm-email"
+        element={<UserConfirmChangeEmail user={user} />}
+      />
+      <Route
+        path="/change-email"
+        element={<UserValidateChangeEmail user={user} />}
       />
     </Routes>
   );

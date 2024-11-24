@@ -63,12 +63,13 @@ const GENDER: OptionEnum[] = [
 
 const HAIR: OptionEnum[] = [
   { value: "null", label: "Unknown" },
-  { value: "BLONDE", label: "Blonde" },
-  { value: "BRUNETTE", label: "Brunette" },
+  { value: "BLONDE", label: "Blond" },
+  { value: "BRUNETTE", label: "Brown" },
   { value: "BLACK", label: "Black" },
   { value: "RED", label: "Red" },
   { value: "AUBURN", label: "Auburn" },
   { value: "GREY", label: "Grey" },
+  { value: "WHITE", label: "White" },
   { value: "BALD", label: "Bald" },
   { value: "VARIOUS", label: "Various" },
   { value: "OTHER", label: "Other" },
@@ -119,7 +120,7 @@ interface PerformerProps {
     data: PerformerEditDetailsInput,
     note: string,
     updateAliases: boolean,
-    id?: string
+    id?: string,
   ) => void;
   initial?: InitialPerformer;
   options?: PerformerEditOptionsInput | null;
@@ -152,27 +153,27 @@ const PerformerForm: FC<PerformerProps> = ({
       birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
       eye_color: getEnumValue(
         EYE,
-        initial?.eye_color ?? performer?.eye_color ?? null
+        initial?.eye_color ?? performer?.eye_color ?? null,
       ),
       hair_color: getEnumValue(
         HAIR,
-        initial?.hair_color ?? performer?.hair_color ?? null
+        initial?.hair_color ?? performer?.hair_color ?? null,
       ),
       height: initial?.height || performer?.height,
       breastType: getEnumValue(
         BREAST,
-        initial?.breast_type ?? performer?.breast_type ?? null
+        initial?.breast_type ?? performer?.breast_type ?? null,
       ),
       braSize: getBraSize(
         initial?.cup_size ?? performer?.cup_size,
-        initial?.band_size ?? performer?.band_size
+        initial?.band_size ?? performer?.band_size,
       ),
       waistSize: initial?.waist_size ?? performer?.waist_size,
       hipSize: initial?.hip_size ?? performer?.hip_size,
       country: initial?.country ?? performer?.country ?? "",
       ethnicity: getEnumValue(
         ETHNICITY,
-        initial?.ethnicity ?? performer?.ethnicity ?? null
+        initial?.ethnicity ?? performer?.ethnicity ?? null,
       ),
       career_start_year:
         initial?.career_start_year ?? performer?.career_start_year,
@@ -186,7 +187,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState<boolean>(
-    options?.set_modify_aliases ?? true
+    options?.set_modify_aliases ?? true,
   );
   const [file, setFile] = useState<File | undefined>();
 
@@ -197,9 +198,9 @@ const PerformerForm: FC<PerformerProps> = ({
         PerformerSchema.cast(fieldData, {
           assert: "ignore-optionality",
         }) as PerformerFormData,
-        performer
+        performer,
       ),
-    [fieldData, performer]
+    [fieldData, performer],
   );
 
   const changedName =
@@ -256,6 +257,9 @@ const PerformerForm: FC<PerformerProps> = ({
       const [cupSize, bandSize] = parseBraSize(data.braSize);
       performerData.cup_size = cupSize;
       performerData.band_size = bandSize ?? 0;
+    } else if (performer?.band_size || performer?.cup_size) {
+      performerData.cup_size = null;
+      performerData.band_size = null;
     }
 
     if (
@@ -270,16 +274,13 @@ const PerformerForm: FC<PerformerProps> = ({
   const countryObj = [
     { label: "Unknown", value: "" },
     ...sortBy(
-      Object.keys(CountryList).map((name: string) => {
-        const countryName: string = Array.isArray(CountryList[name])
-          ? CountryList[name][0]
-          : CountryList[name];
+      Object.entries(CountryList).map(([, countryName]) => {
         return {
           label: countryName,
           value: Countries.getAlpha2Code(countryName, "en"),
         };
       }),
-      "label"
+      "label",
     ),
   ];
 
@@ -376,7 +377,6 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Label>Gender</Form.Label>
               <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
-                placeholder="Select gender..."
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
@@ -519,7 +519,7 @@ const PerformerForm: FC<PerformerProps> = ({
                     onChange={(option) => onChange(option?.value)}
                     options={countryObj}
                     defaultValue={countryObj.find(
-                      (country) => country.value === value
+                      (country) => country.value === value,
                     )}
                   />
                 )}
@@ -657,7 +657,7 @@ const PerformerForm: FC<PerformerProps> = ({
             newChanges,
             oldChanges,
             !!performer,
-            updateAliases
+            updateAliases,
           )}
           <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>

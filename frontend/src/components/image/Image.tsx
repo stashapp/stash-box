@@ -26,7 +26,7 @@ const ImageComponent: FC<ImageProps> = ({
   alt,
 }) => {
   const [imageState, setImageState] = useState<"loading" | "error" | "done">(
-    "loading"
+    "loading",
   );
 
   if (!image.url)

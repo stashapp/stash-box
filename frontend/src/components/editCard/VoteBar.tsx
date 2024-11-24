@@ -25,7 +25,7 @@ interface Props {
 const VoteBar: FC<Props> = ({ edit }) => {
   const auth = useContext(AuthContext);
   const userVote = (edit.votes ?? []).find(
-    (v) => v.user?.id && v.user.id === auth.user?.id
+    (v) => v.user?.id && v.user.id === auth.user?.id,
   );
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
   const [submitVote, { loading: savingVote }] = useVote();

@@ -50,9 +50,14 @@ func (m *mutator) CreateEdit() (*models.Edit, error) {
 }
 
 func (m *mutator) UpdateEdit() (*models.Edit, error) {
+	m.edit.UpdateCount++
 	m.edit.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	updated, err := m.fac.Edit().Update(*m.edit)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = m.fac.Edit().ResetVotes(m.edit.ID); err != nil {
 		return nil, err
 	}
 

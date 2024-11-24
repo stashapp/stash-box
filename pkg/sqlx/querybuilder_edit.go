@@ -472,3 +472,12 @@ func (qb *editQueryBuilder) CancelUserEdits(userID uuid.UUID) error {
 	err := qb.dbi.RawQuery(editDBTable, query, args, nil)
 	return err
 }
+
+func (qb *editQueryBuilder) ResetVotes(id uuid.UUID) error {
+	args := []any{id}
+	query := `
+	  UPDATE edit_votes
+		SET vote = 'ABSTAIN'
+		WHERE edit_id = ?`
+	return qb.dbi.RawQuery(editDBTable, query, args, nil)
+}

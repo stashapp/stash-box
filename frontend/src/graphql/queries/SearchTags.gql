@@ -1,9 +1,16 @@
+fragment SearchTagFragment on Tag {
+  deleted
+  id
+  name
+  description
+  aliases
+}
+
 query SearchTags($term: String!, $limit: Int = 5) {
-  searchTag(term: $term, limit: $limit) {
-    deleted
-    id
-    name
-    description
-    aliases
+  exact: findTagOrAlias(name: $term) {
+    ...SearchTagFragment
+  }
+  query: searchTag(term: $term, limit: $limit) {
+    ...SearchTagFragment
   }
 }

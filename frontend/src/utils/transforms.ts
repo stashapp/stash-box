@@ -2,7 +2,7 @@ import { UrlFragment } from "src/graphql";
 
 export const formatCareer = (
   start?: number | null,
-  end?: number | null
+  end?: number | null,
 ): string | undefined =>
   start || end ? `Active ${start ?? "????"}\u2013${end ?? ""}` : undefined;
 
@@ -26,7 +26,7 @@ export const formatMeasurements = ({
 
 export const getBraSize = (
   cup_size: string | null | undefined,
-  band_size: number | null | undefined
+  band_size: number | null | undefined,
 ): string | undefined =>
   band_size && cup_size ? `${band_size}${cup_size}` : undefined;
 
@@ -38,7 +38,7 @@ type Image = {
 
 export const sortImageURLs = (
   urls: Image[],
-  orientation: "portrait" | "landscape"
+  orientation: "portrait" | "landscape",
 ) =>
   urls
     .map((u) => ({
@@ -60,7 +60,7 @@ export const sortImageURLs = (
 
 export const getImage = (
   urls: Image[],
-  orientation: "portrait" | "landscape"
+  orientation: "portrait" | "landscape",
 ) => {
   const images = sortImageURLs(urls, orientation);
   return images?.[0]?.url ?? "";
@@ -78,7 +78,7 @@ export const getUrlBySite = (urls: UrlFragment[], name: string) =>
   urls.find((url) => url.site.name === name) ?? urls[0];
 
 export const formatBodyModification = (
-  bodyMod?: { location: string; description?: string | null } | null
+  bodyMod?: { location: string; description?: string | null } | null,
 ) =>
   bodyMod
     ? bodyMod.location +
@@ -86,7 +86,7 @@ export const formatBodyModification = (
     : null;
 
 export const formatBodyModifications = (
-  bodyMod?: { location: string; description?: string | null }[] | null
+  bodyMod?: { location: string; description?: string | null }[] | null,
 ) => (bodyMod ?? []).map(formatBodyModification).join(", ");
 
 export const formatPendingEdits = (count?: number) =>
@@ -115,7 +115,7 @@ export const formatDuration = (dur?: number | null) => {
 };
 
 export const parseDuration = (
-  dur: string | null | undefined
+  dur: string | null | undefined,
 ): number | null => {
   if (!dur) return null;
 
@@ -137,7 +137,7 @@ export const parseBraSize = (braSize = ""): [string | null, number | null] => {
   const bandSize = band ? Number.parseInt(band, 10) : null;
   const cup = bandSize ? braSize.replace(bandSize.toString(), "") : null;
   const cupSize = cup
-    ? /^[a-zA-Z]+/.exec(cup)?.[0]?.toUpperCase() ?? null
+    ? (/^[a-zA-Z]+/.exec(cup)?.[0]?.toUpperCase() ?? null)
     : null;
 
   return [cupSize, bandSize];
