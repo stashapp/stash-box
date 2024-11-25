@@ -33,6 +33,7 @@ import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import ExistingSceneAlert from "./ExistingSceneAlert";
 
 const CLASS_NAME = "SceneForm";
@@ -59,6 +60,7 @@ const SceneForm: FC<SceneProps> = ({
   isCreate = false,
   draftFingerprints,
 }) => {
+  useBeforeUnload();
   const {
     register,
     control,
