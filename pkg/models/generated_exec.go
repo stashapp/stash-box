@@ -28717,7 +28717,7 @@ func (ec *executionContext) _StashBoxConfig_require_scene_draft(ctx context.Cont
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_StashBoxConfig_require_scene_draft(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_StashBoxConfig_require_scene_draft(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "StashBoxConfig",
 		Field:      field,

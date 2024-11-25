@@ -1582,6 +1582,7 @@ export type StashBoxConfig = {
   min_destructive_voting_period: Scalars["Int"]["output"];
   require_activation: Scalars["Boolean"]["output"];
   require_invite: Scalars["Boolean"]["output"];
+  require_scene_draft: Scalars["Boolean"]["output"];
   vote_application_threshold: Scalars["Int"]["output"];
   vote_cron_interval: Scalars["String"]["output"];
   vote_promotion_threshold?: Maybe<Scalars["Int"]["output"]>;
@@ -14131,6 +14132,7 @@ export type ConfigQuery = {
     min_destructive_voting_period: number;
     vote_cron_interval: string;
     guidelines_url: string;
+    require_scene_draft: boolean;
   };
 };
 
@@ -39758,6 +39760,10 @@ export const ConfigDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "guidelines_url" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "require_scene_draft" },
                 },
               ],
             },
