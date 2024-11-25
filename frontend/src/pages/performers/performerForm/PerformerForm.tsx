@@ -38,7 +38,7 @@ import URLInput from "src/components/urlInput";
 import DiffPerformer from "./diff";
 import { PerformerSchema, PerformerFormData } from "./schema";
 import { InitialPerformer } from "./types";
-import { NativeBeforeUnload } from "src/utils/beforeUnload";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 
 import { GenderTypes } from "src/constants";
 
@@ -135,7 +135,7 @@ const PerformerForm: FC<PerformerProps> = ({
   saving,
   options,
 }) => {
-  NativeBeforeUnload();
+  useBeforeUnload();
   const initialAliases = initial?.aliases ?? performer?.aliases ?? [];
   const {
     register,

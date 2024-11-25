@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export const NativeBeforeUnload = () => {
+export const useBeforeUnload = () => {
   const unloadListener = (event: BeforeUnloadEvent) => {
     event.preventDefault();
     event.returnValue = true

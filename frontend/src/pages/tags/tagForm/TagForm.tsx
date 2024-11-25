@@ -1,5 +1,4 @@
 import { FC } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm, Controller, FieldError } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
@@ -19,7 +18,7 @@ import MultiSelect from "src/components/multiSelect";
 
 import { TagSchema, TagFormData } from "./schema";
 import { InitialTag } from "./types";
-import { NativeBeforeUnload } from "src/utils/beforeUnload";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 
 interface TagProps {
   tag?: Tag | null;
@@ -29,8 +28,7 @@ interface TagProps {
 }
 
 const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
-  NativeBeforeUnload();
-  const navigate = useNavigate();
+  useBeforeUnload();
   const initialAliases = initial?.aliases ?? tag?.aliases ?? [];
   const {
     register,
@@ -144,7 +142,7 @@ const TagForm: FC<TagProps> = ({ tag, callback, initial, saving }) => {
         <Button type="reset" className="ms-auto me-2">
           Reset
         </Button>
-        <Button variant="danger" onClick={() => navigate(-1)}>
+        <Button variant="danger" onClick={() => history.back()}>
           Cancel
         </Button>
       </Form.Group>

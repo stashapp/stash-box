@@ -21,7 +21,7 @@ import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 import { StudioSchema, StudioFormData } from "./schema";
 import { InitialStudio } from "./types";
 import DiffStudio from "./diff";
-import { NativeBeforeUnload } from "src/utils/beforeUnload";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 
 interface StudioProps {
   studio?: Studio | null;
@@ -38,7 +38,7 @@ const StudioForm: FC<StudioProps> = ({
   initial,
   saving,
 }) => {
-  NativeBeforeUnload();
+  useBeforeUnload();
   const {
     register,
     control,
