@@ -33,7 +33,7 @@ type Tag = {
 
 const selectSceneDetails = (
   data: SceneFormData,
-  original: SceneFragment | null | undefined
+  original: SceneFragment | null | undefined,
 ): [Required<OldSceneDetails>, Required<Omit<SceneDetails, OmittedKeys>>] => {
   const [addedPerformers, removedPerformers] = diffArray<Performer>(
     (data.performers ?? []).flatMap((p) =>
@@ -50,10 +50,10 @@ const selectSceneDetails = (
               as: p.alias ?? null,
             },
           ]
-        : []
+        : [],
     ),
     original?.performers ?? [],
-    (s) => `${s.performer.id}${s.as}`
+    (s) => `${s.performer.id}${s.as}`,
   );
 
   const [addedTags, removedTags] = diffArray<Tag>(
@@ -66,15 +66,15 @@ const selectSceneDetails = (
               description: t.description ?? null,
             },
           ]
-        : []
+        : [],
     ),
     original?.tags ?? [],
-    (t) => t.id
+    (t) => t.id,
   );
 
   const [addedImages, removedImages] = diffImages(
     data.images,
-    original?.images ?? []
+    original?.images ?? [],
   );
   const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);
 

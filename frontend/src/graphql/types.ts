@@ -33,8 +33,7 @@ export type Scalars = {
 };
 
 export type ActivateNewUserInput = {
-  activation_key: Scalars["String"]["input"];
-  email: Scalars["String"]["input"];
+  activation_key: Scalars["ID"]["input"];
   name: Scalars["String"]["input"];
   password: Scalars["String"]["input"];
 };
@@ -161,6 +160,8 @@ export type Edit = {
   /** Object being edited - null if creating a new object */
   target?: Maybe<EditTarget>;
   target_type: TargetTypeEnum;
+  updatable: Scalars["Boolean"]["output"];
+  update_count: Scalars["Int"]["output"];
   updated?: Maybe<Scalars["Time"]["output"]>;
   user?: Maybe<User>;
   /**  = Accepted - Rejected */
@@ -292,8 +293,14 @@ export type Fingerprint = {
   created: Scalars["Time"]["output"];
   duration: Scalars["Int"]["output"];
   hash: Scalars["String"]["output"];
+  /** number of times this fingerprint has been reported */
+  reports: Scalars["Int"]["output"];
+  /** number of times this fingerprint has been submitted (excluding reports) */
   submissions: Scalars["Int"]["output"];
   updated: Scalars["Time"]["output"];
+  /** true if the current user reported this fingerprint */
+  user_reported: Scalars["Boolean"]["output"];
+  /** true if the current user submitted this fingerprint */
   user_submitted: Scalars["Boolean"]["output"];
 };
 
@@ -331,8 +338,19 @@ export type FingerprintQueryInput = {
 export type FingerprintSubmission = {
   fingerprint: FingerprintInput;
   scene_id: Scalars["ID"]["input"];
+  /** @deprecated Use `vote` with REMOVE instead */
   unmatch?: InputMaybe<Scalars["Boolean"]["input"]>;
+  vote?: InputMaybe<FingerprintSubmissionType>;
 };
+
+export enum FingerprintSubmissionType {
+  /** Report as invalid */
+  INVALID = "INVALID",
+  /** Remove vote */
+  REMOVE = "REMOVE",
+  /** Positive vote */
+  VALID = "VALID",
+}
 
 export type FuzzyDate = {
   __typename: "FuzzyDate";
@@ -385,6 +403,7 @@ export enum HairColorEnum {
   OTHER = "OTHER",
   RED = "RED",
   VARIOUS = "VARIOUS",
+  WHITE = "WHITE",
 }
 
 export type IdCriterionInput = {
@@ -453,6 +472,7 @@ export type Mutation = {
   cancelEdit: Edit;
   /** Changes the password for the current user */
   changePassword: Scalars["Boolean"]["output"];
+  confirmChangeEmail: UserChangeEmailStatus;
   destroyDraft: Scalars["Boolean"]["output"];
   /** Comment on an edit */
   editComment: Edit;
@@ -471,7 +491,7 @@ export type Mutation = {
   imageCreate?: Maybe<Image>;
   imageDestroy: Scalars["Boolean"]["output"];
   /** User interface for registering */
-  newUser?: Maybe<Scalars["String"]["output"]>;
+  newUser?: Maybe<Scalars["ID"]["output"]>;
   performerCreate?: Maybe<Performer>;
   performerDestroy: Scalars["Boolean"]["output"];
   /** Propose a new performer or modification to a performer */
@@ -481,6 +501,8 @@ export type Mutation = {
   performerUpdate?: Maybe<Performer>;
   /** Regenerates the api key for the given user, or the current user if id not provided */
   regenerateAPIKey: Scalars["String"]["output"];
+  /** Request an email change for the current user */
+  requestChangeEmail: UserChangeEmailStatus;
   /** Removes a pending invite code - refunding the token */
   rescindInviteCode: Scalars["Boolean"]["output"];
   /** Generates an email to reset a user password */
@@ -522,6 +544,7 @@ export type Mutation = {
   userCreate?: Maybe<User>;
   userDestroy: Scalars["Boolean"]["output"];
   userUpdate?: Maybe<User>;
+  validateChangeEmail: UserChangeEmailStatus;
 };
 
 export type MutationActivateNewUserArgs = {
@@ -538,6 +561,10 @@ export type MutationCancelEditArgs = {
 
 export type MutationChangePasswordArgs = {
   input: UserChangePasswordInput;
+};
+
+export type MutationConfirmChangeEmailArgs = {
+  token: Scalars["ID"]["input"];
 };
 
 export type MutationDestroyDraftArgs = {
@@ -730,9 +757,14 @@ export type MutationUserUpdateArgs = {
   input: UserUpdateInput;
 };
 
+export type MutationValidateChangeEmailArgs = {
+  email: Scalars["String"]["input"];
+  token: Scalars["ID"]["input"];
+};
+
 export type NewUserInput = {
   email: Scalars["String"]["input"];
-  invite_key?: InputMaybe<Scalars["String"]["input"]>;
+  invite_key?: InputMaybe<Scalars["ID"]["input"]>;
 };
 
 export enum OperationEnum {
@@ -771,7 +803,10 @@ export type Performer = {
   is_favorite: Scalars["Boolean"]["output"];
   /** @deprecated Use individual fields, cup/band/waist/hip_size */
   measurements: Measurements;
+  /** IDs of performers that were merged into this one */
   merged_ids: Array<Scalars["ID"]["output"]>;
+  /** ID of performer that replaces this one */
+  merged_into_id?: Maybe<Scalars["ID"]["output"]>;
   name: Scalars["String"]["output"];
   piercings?: Maybe<Array<BodyModification>>;
   scene_count: Scalars["Int"]["output"];
@@ -1074,10 +1109,12 @@ export type Query = {
   findSite?: Maybe<Site>;
   /** Find a studio by ID or name */
   findStudio?: Maybe<Studio>;
-  /** Find a tag by ID or name, or aliases */
+  /** Find a tag by ID or name */
   findTag?: Maybe<Tag>;
   /** Find a tag category by ID */
   findTagCategory?: Maybe<TagCategory>;
+  /** Find a tag with a matching name or alias */
+  findTagOrAlias?: Maybe<Tag>;
   /** Find user by ID or username */
   findUser?: Maybe<User>;
   getConfig: StashBoxConfig;
@@ -1158,6 +1195,11 @@ export type QueryFindTagArgs = {
 /** The query root for this schema */
 export type QueryFindTagCategoryArgs = {
   id: Scalars["ID"]["input"];
+};
+
+/** The query root for this schema */
+export type QueryFindTagOrAliasArgs = {
+  name: Scalars["String"]["input"];
 };
 
 /** The query root for this schema */
@@ -1540,7 +1582,6 @@ export type StashBoxConfig = {
   min_destructive_voting_period: Scalars["Int"]["output"];
   require_activation: Scalars["Boolean"]["output"];
   require_invite: Scalars["Boolean"]["output"];
-  require_scene_draft: Scalars["Boolean"]["output"];
   vote_application_threshold: Scalars["Int"]["output"];
   vote_cron_interval: Scalars["String"]["output"];
   vote_promotion_threshold?: Maybe<Scalars["Int"]["output"]>;
@@ -1789,11 +1830,26 @@ export type User = {
   vote_count: UserVoteCount;
 };
 
+export type UserChangeEmailInput = {
+  existing_email_token?: InputMaybe<Scalars["ID"]["input"]>;
+  new_email?: InputMaybe<Scalars["String"]["input"]>;
+  new_email_token?: InputMaybe<Scalars["ID"]["input"]>;
+};
+
+export enum UserChangeEmailStatus {
+  CONFIRM_NEW = "CONFIRM_NEW",
+  CONFIRM_OLD = "CONFIRM_OLD",
+  ERROR = "ERROR",
+  EXPIRED = "EXPIRED",
+  INVALID_TOKEN = "INVALID_TOKEN",
+  SUCCESS = "SUCCESS",
+}
+
 export type UserChangePasswordInput = {
   /** Password in plain text */
   existing_password?: InputMaybe<Scalars["String"]["input"]>;
   new_password: Scalars["String"]["input"];
-  reset_key?: InputMaybe<Scalars["String"]["input"]>;
+  reset_key?: InputMaybe<Scalars["ID"]["input"]>;
 };
 
 export type UserCreateInput = {
@@ -1924,6 +1980,8 @@ export type EditFragment = {
   updated?: string | null;
   closed?: string | null;
   expires?: string | null;
+  update_count: number;
+  updatable: boolean;
   vote_count: number;
   destructive: boolean;
   comments: Array<{
@@ -1947,6 +2005,7 @@ export type EditFragment = {
         name: string;
         disambiguation?: string | null;
         deleted: boolean;
+        merged_into_id?: string | null;
         aliases: Array<string>;
         gender?: GenderEnum | null;
         birth_date?: string | null;
@@ -2034,7 +2093,9 @@ export type EditFragment = {
           algorithm: FingerprintAlgorithm;
           duration: number;
           submissions: number;
+          reports: number;
           user_submitted: boolean;
+          user_reported: boolean;
           created: string;
           updated: string;
         }>;
@@ -2210,6 +2271,7 @@ export type EditFragment = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -2265,6 +2327,7 @@ export type EditFragment = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -2512,6 +2575,7 @@ export type EditFragment = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -2567,6 +2631,7 @@ export type EditFragment = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -2718,6 +2783,7 @@ export type EditFragment = {
         name: string;
         disambiguation?: string | null;
         deleted: boolean;
+        merged_into_id?: string | null;
         aliases: Array<string>;
         gender?: GenderEnum | null;
         birth_date?: string | null;
@@ -2805,7 +2871,9 @@ export type EditFragment = {
           algorithm: FingerprintAlgorithm;
           duration: number;
           submissions: number;
+          reports: number;
           user_submitted: boolean;
+          user_reported: boolean;
           created: string;
           updated: string;
         }>;
@@ -2884,6 +2952,7 @@ export type PerformerFragment = {
   name: string;
   disambiguation?: string | null;
   deleted: boolean;
+  merged_into_id?: string | null;
   aliases: Array<string>;
   gender?: GenderEnum | null;
   birth_date?: string | null;
@@ -3006,7 +3075,9 @@ export type SceneFragment = {
     algorithm: FingerprintAlgorithm;
     duration: number;
     submissions: number;
+    reports: number;
     user_submitted: boolean;
+    user_reported: boolean;
     created: string;
     updated: string;
   }>;
@@ -3247,6 +3318,8 @@ export type ApplyEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -3270,6 +3343,7 @@ export type ApplyEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -3367,7 +3441,9 @@ export type ApplyEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -3568,6 +3644,7 @@ export type ApplyEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -3623,6 +3700,7 @@ export type ApplyEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -3890,6 +3968,7 @@ export type ApplyEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -3945,6 +4024,7 @@ export type ApplyEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -4096,6 +4176,7 @@ export type ApplyEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -4193,7 +4274,9 @@ export type ApplyEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -4317,6 +4400,15 @@ export type ChangePasswordMutationVariables = Exact<{
 export type ChangePasswordMutation = {
   __typename: "Mutation";
   changePassword: boolean;
+};
+
+export type ConfirmChangeEmailMutationVariables = Exact<{
+  token: Scalars["ID"]["input"];
+}>;
+
+export type ConfirmChangeEmailMutation = {
+  __typename: "Mutation";
+  confirmChangeEmail: UserChangeEmailStatus;
 };
 
 export type DeleteDraftMutationVariables = Exact<{
@@ -4457,6 +4549,8 @@ export type PerformerEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -4480,6 +4574,7 @@ export type PerformerEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -4577,7 +4672,9 @@ export type PerformerEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -4778,6 +4875,7 @@ export type PerformerEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -4833,6 +4931,7 @@ export type PerformerEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -5100,6 +5199,7 @@ export type PerformerEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -5155,6 +5255,7 @@ export type PerformerEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -5306,6 +5407,7 @@ export type PerformerEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -5403,7 +5505,9 @@ export type PerformerEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -5486,6 +5590,8 @@ export type PerformerEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -5509,6 +5615,7 @@ export type PerformerEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -5606,7 +5713,9 @@ export type PerformerEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -5807,6 +5916,7 @@ export type PerformerEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -5862,6 +5972,7 @@ export type PerformerEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -6129,6 +6240,7 @@ export type PerformerEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -6184,6 +6296,7 @@ export type PerformerEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -6335,6 +6448,7 @@ export type PerformerEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -6432,7 +6546,9 @@ export type PerformerEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -6505,6 +6621,15 @@ export type RegenerateApiKeyMutation = {
   regenerateAPIKey: string;
 };
 
+export type RequestChangeEmailMutationVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type RequestChangeEmailMutation = {
+  __typename: "Mutation";
+  requestChangeEmail: UserChangeEmailStatus;
+};
+
 export type RescindInviteCodeMutationVariables = Exact<{
   code: Scalars["ID"]["input"];
 }>;
@@ -6550,6 +6675,8 @@ export type SceneEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -6573,6 +6700,7 @@ export type SceneEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -6670,7 +6798,9 @@ export type SceneEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -6871,6 +7001,7 @@ export type SceneEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -6926,6 +7057,7 @@ export type SceneEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -7193,6 +7325,7 @@ export type SceneEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -7248,6 +7381,7 @@ export type SceneEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -7399,6 +7533,7 @@ export type SceneEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -7496,7 +7631,9 @@ export type SceneEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -7579,6 +7716,8 @@ export type SceneEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -7602,6 +7741,7 @@ export type SceneEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -7699,7 +7839,9 @@ export type SceneEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -7900,6 +8042,7 @@ export type SceneEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -7955,6 +8098,7 @@ export type SceneEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -8222,6 +8366,7 @@ export type SceneEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -8277,6 +8422,7 @@ export type SceneEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -8428,6 +8574,7 @@ export type SceneEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -8525,7 +8672,9 @@ export type SceneEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -8607,6 +8756,8 @@ export type StudioEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -8630,6 +8781,7 @@ export type StudioEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -8727,7 +8879,9 @@ export type StudioEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -8928,6 +9082,7 @@ export type StudioEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -8983,6 +9138,7 @@ export type StudioEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -9250,6 +9406,7 @@ export type StudioEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -9305,6 +9462,7 @@ export type StudioEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -9456,6 +9614,7 @@ export type StudioEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -9553,7 +9712,9 @@ export type StudioEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -9636,6 +9797,8 @@ export type StudioEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -9659,6 +9822,7 @@ export type StudioEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -9756,7 +9920,9 @@ export type StudioEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -9957,6 +10123,7 @@ export type StudioEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -10012,6 +10179,7 @@ export type StudioEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -10279,6 +10447,7 @@ export type StudioEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -10334,6 +10503,7 @@ export type StudioEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -10485,6 +10655,7 @@ export type StudioEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -10582,7 +10753,9 @@ export type StudioEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -10664,6 +10837,8 @@ export type TagEditMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -10687,6 +10862,7 @@ export type TagEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -10784,7 +10960,9 @@ export type TagEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -10985,6 +11163,7 @@ export type TagEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -11040,6 +11219,7 @@ export type TagEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -11307,6 +11487,7 @@ export type TagEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -11362,6 +11543,7 @@ export type TagEditMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -11513,6 +11695,7 @@ export type TagEditMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -11610,7 +11793,9 @@ export type TagEditMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -11693,6 +11878,8 @@ export type TagEditUpdateMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -11716,6 +11903,7 @@ export type TagEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -11813,7 +12001,9 @@ export type TagEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -12014,6 +12204,7 @@ export type TagEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -12069,6 +12260,7 @@ export type TagEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -12336,6 +12528,7 @@ export type TagEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -12391,6 +12584,7 @@ export type TagEditUpdateMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -12542,6 +12736,7 @@ export type TagEditUpdateMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -12639,7 +12834,9 @@ export type TagEditUpdateMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -12837,6 +13034,16 @@ export type UpdateUserMutation = {
   } | null;
 };
 
+export type ValidateChangeEmailMutationVariables = Exact<{
+  token: Scalars["ID"]["input"];
+  email: Scalars["String"]["input"];
+}>;
+
+export type ValidateChangeEmailMutation = {
+  __typename: "Mutation";
+  validateChangeEmail: UserChangeEmailStatus;
+};
+
 export type VoteMutationVariables = Exact<{
   input: EditVoteInput;
 }>;
@@ -12855,6 +13062,8 @@ export type VoteMutation = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -12878,6 +13087,7 @@ export type VoteMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -12975,7 +13185,9 @@ export type VoteMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -13176,6 +13388,7 @@ export type VoteMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -13231,6 +13444,7 @@ export type VoteMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -13498,6 +13712,7 @@ export type VoteMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -13553,6 +13768,7 @@ export type VoteMutation = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -13704,6 +13920,7 @@ export type VoteMutation = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -13801,7 +14018,9 @@ export type VoteMutation = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -13912,7 +14131,6 @@ export type ConfigQuery = {
     min_destructive_voting_period: number;
     vote_cron_interval: string;
     guidelines_url: string;
-    require_scene_draft: boolean;
   };
 };
 
@@ -14027,6 +14245,7 @@ export type DraftQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -14143,6 +14362,8 @@ export type EditQuery = {
     updated?: string | null;
     closed?: string | null;
     expires?: string | null;
+    update_count: number;
+    updatable: boolean;
     vote_count: number;
     destructive: boolean;
     comments: Array<{
@@ -14166,6 +14387,7 @@ export type EditQuery = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -14263,7 +14485,9 @@ export type EditQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -14464,6 +14688,7 @@ export type EditQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -14519,6 +14744,7 @@ export type EditQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -14786,6 +15012,7 @@ export type EditQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -14841,6 +15068,7 @@ export type EditQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -14992,6 +15220,7 @@ export type EditQuery = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -15089,7 +15318,9 @@ export type EditQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -15168,6 +15399,8 @@ export type EditUpdateQuery = {
     applied: boolean;
     created: string;
     updated?: string | null;
+    updatable: boolean;
+    update_count: number;
     vote_count: number;
     merge_sources: Array<
       | { __typename: "Performer"; id: string }
@@ -15188,6 +15421,7 @@ export type EditUpdateQuery = {
           name: string;
           disambiguation?: string | null;
           deleted: boolean;
+          merged_into_id?: string | null;
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
@@ -15285,7 +15519,9 @@ export type EditUpdateQuery = {
             algorithm: FingerprintAlgorithm;
             duration: number;
             submissions: number;
+            reports: number;
             user_submitted: boolean;
+            user_reported: boolean;
             created: string;
             updated: string;
           }>;
@@ -15448,6 +15684,7 @@ export type EditUpdateQuery = {
               name: string;
               disambiguation?: string | null;
               deleted: boolean;
+              merged_into_id?: string | null;
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
@@ -15608,6 +15845,8 @@ export type EditsQuery = {
       updated?: string | null;
       closed?: string | null;
       expires?: string | null;
+      update_count: number;
+      updatable: boolean;
       vote_count: number;
       destructive: boolean;
       comments: Array<{
@@ -15631,6 +15870,7 @@ export type EditsQuery = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -15732,7 +15972,9 @@ export type EditsQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -15937,6 +16179,7 @@ export type EditsQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -15992,6 +16235,7 @@ export type EditsQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -16267,6 +16511,7 @@ export type EditsQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -16322,6 +16567,7 @@ export type EditsQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -16477,6 +16723,7 @@ export type EditsQuery = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -16578,7 +16825,9 @@ export type EditsQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -16655,6 +16904,7 @@ export type FullPerformerQuery = {
     name: string;
     disambiguation?: string | null;
     deleted: boolean;
+    merged_into_id?: string | null;
     aliases: Array<string>;
     gender?: GenderEnum | null;
     birth_date?: string | null;
@@ -16741,6 +16991,7 @@ export type PerformerQuery = {
     name: string;
     disambiguation?: string | null;
     deleted: boolean;
+    merged_into_id?: string | null;
     aliases: Array<string>;
     gender?: GenderEnum | null;
     birth_date?: string | null;
@@ -16927,7 +17178,9 @@ export type QueryExistingSceneQuery = {
         algorithm: FingerprintAlgorithm;
         duration: number;
         submissions: number;
+        reports: number;
         user_submitted: boolean;
+        user_reported: boolean;
         created: string;
         updated: string;
       }>;
@@ -16951,6 +17204,8 @@ export type QueryExistingSceneQuery = {
       updated?: string | null;
       closed?: string | null;
       expires?: string | null;
+      update_count: number;
+      updatable: boolean;
       vote_count: number;
       destructive: boolean;
       comments: Array<{
@@ -16974,6 +17229,7 @@ export type QueryExistingSceneQuery = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -17075,7 +17331,9 @@ export type QueryExistingSceneQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -17280,6 +17538,7 @@ export type QueryExistingSceneQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -17335,6 +17594,7 @@ export type QueryExistingSceneQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -17610,6 +17870,7 @@ export type QueryExistingSceneQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -17665,6 +17926,7 @@ export type QueryExistingSceneQuery = {
                 name: string;
                 disambiguation?: string | null;
                 deleted: boolean;
+                merged_into_id?: string | null;
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
@@ -17820,6 +18082,7 @@ export type QueryExistingSceneQuery = {
             name: string;
             disambiguation?: string | null;
             deleted: boolean;
+            merged_into_id?: string | null;
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
@@ -17921,7 +18184,9 @@ export type QueryExistingSceneQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -18039,7 +18304,9 @@ export type SceneQuery = {
       algorithm: FingerprintAlgorithm;
       duration: number;
       submissions: number;
+      reports: number;
       user_submitted: boolean;
+      user_reported: boolean;
       created: string;
       updated: string;
     }>;
@@ -18303,6 +18570,15 @@ export type SearchPerformersQuery = {
   }>;
 };
 
+export type SearchTagFragment = {
+  __typename: "Tag";
+  deleted: boolean;
+  id: string;
+  name: string;
+  description?: string | null;
+  aliases: Array<string>;
+};
+
 export type SearchTagsQueryVariables = Exact<{
   term: Scalars["String"]["input"];
   limit?: InputMaybe<Scalars["Int"]["input"]>;
@@ -18310,7 +18586,15 @@ export type SearchTagsQueryVariables = Exact<{
 
 export type SearchTagsQuery = {
   __typename: "Query";
-  searchTag: Array<{
+  exact?: {
+    __typename: "Tag";
+    deleted: boolean;
+    id: string;
+    name: string;
+    description?: string | null;
+    aliases: Array<string>;
+  } | null;
+  query: Array<{
     __typename: "Tag";
     deleted: boolean;
     id: string;
@@ -18733,6 +19017,7 @@ export const PerformerFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -19068,9 +19353,14 @@ export const SceneFragmentDoc = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -19201,6 +19491,8 @@ export const EditFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -20443,6 +20735,7 @@ export const EditFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -20675,9 +20968,14 @@ export const EditFragmentDoc = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -20961,6 +21259,29 @@ export const SearchPerformerFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<SearchPerformerFragment, unknown>;
+export const SearchTagFragmentDoc = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "SearchTagFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Tag" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "description" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SearchTagFragment, unknown>;
 export const ActivateNewUserDocument = {
   kind: "Document",
   definitions: [
@@ -21644,6 +21965,7 @@ export const ApplyEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -21895,9 +22217,14 @@ export const ApplyEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -21956,6 +22283,8 @@ export const ApplyEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -23290,6 +23619,51 @@ export const ChangePasswordDocument = {
   ChangePasswordMutation,
   ChangePasswordMutationVariables
 >;
+export const ConfirmChangeEmailDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "ConfirmChangeEmail" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "token" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "confirmChangeEmail" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "token" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "token" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ConfirmChangeEmailMutation,
+  ConfirmChangeEmailMutationVariables
+>;
 export const DeleteDraftDocument = {
   kind: "Document",
   definitions: [
@@ -24079,6 +24453,7 @@ export const PerformerEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -24330,9 +24705,14 @@ export const PerformerEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -24391,6 +24771,8 @@ export const PerformerEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -25687,6 +26069,7 @@ export const PerformerEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -25938,9 +26321,14 @@ export const PerformerEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -25999,6 +26387,8 @@ export const PerformerEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -27156,6 +27546,28 @@ export const RegenerateApiKeyDocument = {
   RegenerateApiKeyMutation,
   RegenerateApiKeyMutationVariables
 >;
+export const RequestChangeEmailDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "RequestChangeEmail" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "requestChangeEmail" },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  RequestChangeEmailMutation,
+  RequestChangeEmailMutationVariables
+>;
 export const RescindInviteCodeDocument = {
   kind: "Document",
   definitions: [
@@ -27459,6 +27871,7 @@ export const SceneEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -27710,9 +28123,14 @@ export const SceneEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -27771,6 +28189,8 @@ export const SceneEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -29064,6 +29484,7 @@ export const SceneEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -29315,9 +29736,14 @@ export const SceneEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -29376,6 +29802,8 @@ export const SceneEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -30656,6 +31084,7 @@ export const StudioEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -30907,9 +31336,14 @@ export const StudioEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -30968,6 +31402,8 @@ export const StudioEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -32261,6 +32697,7 @@ export const StudioEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -32512,9 +32949,14 @@ export const StudioEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -32573,6 +33015,8 @@ export const StudioEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -33853,6 +34297,7 @@ export const TagEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -34104,9 +34549,14 @@ export const TagEditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -34165,6 +34615,8 @@ export const TagEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -35458,6 +35910,7 @@ export const TagEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -35709,9 +36162,14 @@ export const TagEditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -35770,6 +36228,8 @@ export const TagEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -36957,8 +37417,8 @@ export const UnmatchFingerprintDocument = {
                   fields: [
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "unmatch" },
-                      value: { kind: "BooleanValue", value: true },
+                      name: { kind: "Name", value: "vote" },
+                      value: { kind: "EnumValue", value: "REMOVE" },
                     },
                     {
                       kind: "ObjectField",
@@ -37494,6 +37954,73 @@ export const UpdateUserDocument = {
     },
   ],
 } as unknown as DocumentNode<UpdateUserMutation, UpdateUserMutationVariables>;
+export const ValidateChangeEmailDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "ValidateChangeEmail" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "token" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "email" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "String" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "validateChangeEmail" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "token" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "token" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "email" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "email" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ValidateChangeEmailMutation,
+  ValidateChangeEmailMutationVariables
+>;
 export const VoteDocument = {
   kind: "Document",
   definitions: [
@@ -37659,6 +38186,7 @@ export const VoteDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -37910,9 +38438,14 @@ export const VoteDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -37971,6 +38504,8 @@ export const VoteDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -39224,10 +39759,6 @@ export const ConfigDocument = {
                   kind: "Field",
                   name: { kind: "Name", value: "guidelines_url" },
                 },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "require_scene_draft" },
-                },
               ],
             },
           },
@@ -39772,6 +40303,7 @@ export const DraftDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -40106,6 +40638,7 @@ export const EditDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -40357,9 +40890,14 @@ export const EditDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -40418,6 +40956,8 @@ export const EditDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -41573,6 +42113,11 @@ export const EditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "applied" } },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
+                { kind: "Field", name: { kind: "Name", value: "updatable" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "update_count" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "vote_count" } },
                 {
                   kind: "Field",
@@ -42288,6 +42833,7 @@ export const EditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -42520,9 +43066,14 @@ export const EditUpdateDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -42738,6 +43289,7 @@ export const EditsDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -42989,9 +43541,14 @@ export const EditsDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -43050,6 +43607,8 @@ export const EditsDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -44312,6 +44871,7 @@ export const FullPerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -44598,6 +45158,7 @@ export const PerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -45227,6 +45788,7 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "name" } },
           { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "merged_into_id" } },
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
@@ -45459,9 +46021,14 @@ export const QueryExistingSceneDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -45520,6 +46087,8 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
@@ -46842,9 +47411,14 @@ export const SceneDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -48122,6 +48696,31 @@ export const SearchTagsDocument = {
         selections: [
           {
             kind: "Field",
+            alias: { kind: "Name", value: "exact" },
+            name: { kind: "Name", value: "findTagOrAlias" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "name" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "term" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "SearchTagFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            alias: { kind: "Name", value: "query" },
             name: { kind: "Name", value: "searchTag" },
             arguments: [
               {
@@ -48144,14 +48743,31 @@ export const SearchTagsDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "deleted" } },
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "name" } },
-                { kind: "Field", name: { kind: "Name", value: "description" } },
-                { kind: "Field", name: { kind: "Name", value: "aliases" } },
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "SearchTagFragment" },
+                },
               ],
             },
           },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "SearchTagFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Tag" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "description" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
         ],
       },
     },

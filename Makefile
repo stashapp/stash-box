@@ -1,5 +1,4 @@
 LDFLAGS := $(LDFLAGS)
-export CGO_ENABLED = 0
 
 .PHONY: \
 	stash-box \
@@ -58,7 +57,7 @@ generate-backend:
 	@ go generate
 
 generate-ui:
-	cd frontend && yarn generate
+	cd frontend && pnpm generate
 
 generate-dataloaders:
 	cd pkg/dataloader; \
@@ -94,33 +93,35 @@ lint:
 	golangci-lint run
 
 pre-ui:
-	cd frontend && yarn install --frozen-lockfile
+	cd frontend && pnpm install
 
 ui:
-	cd frontend && yarn build
+	cd frontend && pnpm build
 
 ui-start:
-	cd frontend && yarn start
+	cd frontend && pnpm start
 
 ui-fmt:
-	cd frontend && yarn format
+	cd frontend && pnpm format
 
 # runs tests and checks on the UI and builds it
 ui-validate:
-	cd frontend && yarn run validate
+	cd frontend && pnpm run validate
 
 # cross-compile- targets should be run within the compiler docker container
 cross-compile-windows: export GOOS := windows
 cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
 cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
+cross-compile-windows: export CGO_ENABLED = 0
 cross-compile-windows: OUTPUT := -o dist/stash-box-windows.exe
 cross-compile-windows: build-release-static
 
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
 cross-compile-linux: OUTPUT := -o dist/stash-box-linux
-cross-compile-linux: build-release-static
+cross-compile-linux: export CGO_ENABLED = 1
+cross-compile-linux: build
 
 cross-compile:
 	make cross-compile-windows

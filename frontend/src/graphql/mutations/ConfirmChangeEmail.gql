@@ -1,0 +1,3 @@
+mutation ConfirmChangeEmail($token: ID!) {
+  confirmChangeEmail(token: $token)
+}

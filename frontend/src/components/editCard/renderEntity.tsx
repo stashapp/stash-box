@@ -15,7 +15,7 @@ export const renderPerformer = (appearance: {
   as?: string | null;
   performer: Pick<
     Appearance["performer"],
-    "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
+    "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
 }) => (
   <Link key={appearance.performer.id} to={performerHref(appearance.performer)}>

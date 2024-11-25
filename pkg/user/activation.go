@@ -3,7 +3,6 @@ package user
 import (
 	"errors"
 	"math/rand"
-	"net/url"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -14,19 +13,14 @@ import (
 
 var ErrInvalidActivationKey = errors.New("invalid activation key")
 
+var tokenLifetime = time.Minute * 15
+
 // NewUser registers a new user. It returns the activation key only if
 // email verification is not required, otherwise it returns nil.
-func NewUser(fac models.Repo, em *email.Manager, email, inviteKey string) (*string, error) {
-	if err := ClearExpiredActivations(fac); err != nil {
-		return nil, err
-	}
-	if err := ClearExpiredInviteKeys(fac); err != nil {
-		return nil, err
-	}
-
+func NewUser(fac models.Repo, em *email.Manager, email string, inviteKey *uuid.UUID) (*uuid.UUID, error) {
 	// ensure user or pending activation with email does not already exist
 	uqb := fac.User()
-	aqb := fac.PendingActivation()
+	tqb := fac.UserToken()
 	iqb := fac.Invite()
 
 	if err := validateUserEmail(email); err != nil {
@@ -37,35 +31,22 @@ func NewUser(fac models.Repo, em *email.Manager, email, inviteKey string) (*stri
 		return nil, err
 	}
 
-	// if existing activation exists with the same email, then re-create it
-	a, err := aqb.FindByEmail(email, models.PendingActivationTypeNewUser)
-	if err != nil {
-		return nil, err
-	}
-
-	if a != nil {
-		if err := aqb.Destroy(a.ID); err != nil {
-			return nil, err
-		}
-	}
-
-	inviteID, err := validateInviteKey(iqb, aqb, inviteKey)
-	if err != nil {
+	if err := validateInviteKey(iqb, tqb, inviteKey); err != nil {
 		return nil, err
 	}
 
 	// generate an activation key and email
-	key, err := generateActivationKey(aqb, email, inviteID)
+	key, err := generateActivationKey(tqb, email, inviteKey)
 	if err != nil {
 		return nil, err
 	}
 
 	// if activation is not required, then return the activation key
 	if !config.GetRequireActivation() {
-		return &key, nil
+		return key, nil
 	}
 
-	if err := sendNewUserEmail(em, email, key); err != nil {
+	if err := sendNewUserEmail(em, email, *key); err != nil {
 		return nil, err
 	}
 
@@ -85,111 +66,95 @@ func validateExistingEmail(f models.UserFinder, email string) error {
 	return nil
 }
 
-func validateInviteKey(iqb models.InviteKeyFinder, aqb models.PendingActivationFinder, inviteKey string) (uuid.NullUUID, error) {
-	var ret uuid.NullUUID
+func validateInviteKey(iqb models.InviteKeyFinder, tqb models.UserTokenFinder, inviteKey *uuid.UUID) error {
 	if config.GetRequireInvite() {
-		if inviteKey == "" {
-			return ret, errors.New("invite key required")
+		if inviteKey == nil {
+			return errors.New("invite key required")
 		}
 
-		var err error
-		ret.UUID, _ = uuid.FromString(inviteKey)
-		ret.Valid = true
-
-		key, err := iqb.Find(ret.UUID)
+		key, err := iqb.Find(*inviteKey)
 		if err != nil {
-			return ret, err
+			return err
 		}
 
 		if key == nil {
-			return ret, errors.New("invalid invite key")
+			return errors.New("invalid invite key")
 		}
 
 		// ensure invite key is not expired
 		if key.Expires != nil && key.Expires.Before(time.Now()) {
-			return ret, errors.New("invite key expired")
+			return errors.New("invite key expired")
 		}
 
 		// ensure key isn't already used
-		a, err := aqb.FindByInviteKey(inviteKey, models.PendingActivationTypeNewUser)
+		t, err := tqb.FindByInviteKey(*inviteKey)
 		if err != nil {
-			return ret, err
+			return err
 		}
 
-		if key.Uses != nil && len(a) >= *key.Uses {
-			return ret, errors.New("key already used")
+		if key.Uses != nil && len(t) >= *key.Uses {
+			return errors.New("key already used")
 		}
 	}
 
-	return ret, nil
+	return nil
 }
 
-func generateActivationKey(aqb models.PendingActivationCreator, email string, inviteKey uuid.NullUUID) (string, error) {
+func generateActivationKey(tqb models.UserTokenCreator, email string, inviteKey *uuid.UUID) (*uuid.UUID, error) {
 	UUID, err := uuid.NewV4()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	activation := models.PendingActivation{
+	activation := models.UserToken{
 		ID:        UUID,
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(config.GetActivationExpiry()),
+		Type:      models.UserTokenTypeNewUser,
+	}
+
+	err = activation.SetData(models.NewUserTokenData{
 		Email:     email,
 		InviteKey: inviteKey,
-		Time:      time.Now(),
-		Type:      models.PendingActivationTypeNewUser,
-	}
-
-	obj, err := aqb.Create(activation)
+	})
 	if err != nil {
-		return "", err
-	}
-
-	return obj.ID.String(), nil
-}
-
-func ClearExpiredActivations(fac models.Repo) error {
-	expireTime := config.GetActivationExpireTime()
-
-	aqb := fac.PendingActivation()
-	return aqb.DestroyExpired(expireTime)
-}
-
-func ClearExpiredInviteKeys(fac models.Repo) error {
-	iqb := fac.Invite()
-	return iqb.DestroyExpired()
-}
-
-func sendNewUserEmail(em *email.Manager, email, activationKey string) error {
-	subject := "Subject: Activate stash-box account"
-
-	link := config.GetHostURL() + "/activate?email=" + url.QueryEscape(email) + "&key=" + activationKey
-	body := "Please click the following link to activate your account: " + link
-
-	return em.Send(email, subject, body)
-}
-
-func ActivateNewUser(fac models.Repo, name, email, activationKey, password string) (*models.User, error) {
-	if err := ClearExpiredActivations(fac); err != nil {
 		return nil, err
 	}
 
-	id, _ := uuid.FromString(activationKey)
+	token, err := tqb.Create(activation)
+	if err != nil {
+		return nil, err
+	}
 
+	return &token.ID, nil
+}
+
+func ActivateNewUser(fac models.Repo, name string, id uuid.UUID, password string) (*models.User, error) {
 	uqb := fac.User()
-	aqb := fac.PendingActivation()
+	tqb := fac.UserToken()
 	iqb := fac.Invite()
 
-	a, err := aqb.Find(id)
+	t, err := tqb.Find(id)
 	if err != nil {
 		return nil, err
 	}
 
-	if a == nil || a.Email != email || a.Type != models.PendingActivationTypeNewUser {
+	data, err := t.GetNewUserTokenData()
+	if err != nil {
+		return nil, err
+	}
+
+	if t == nil || t.Type != models.UserTokenTypeNewUser {
 		return nil, ErrInvalidActivationKey
 	}
 
 	var invitedBy *uuid.UUID
 	if config.GetRequireInvite() {
-		i, err := iqb.Find(a.InviteKey.UUID)
+		if data.InviteKey == nil {
+			return nil, errors.New("cannot find invite key")
+		}
+
+		i, err := iqb.Find(*data.InviteKey)
 		if err != nil {
 			return nil, err
 		}
@@ -203,7 +168,7 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 
 	createInput := models.UserCreateInput{
 		Name:        name,
-		Email:       email,
+		Email:       data.Email,
 		Password:    password,
 		InvitedByID: invitedBy,
 		Roles:       getDefaultUserRoles(),
@@ -229,13 +194,13 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 	}
 
 	// delete the activation
-	if err := aqb.Destroy(id); err != nil {
+	if err := tqb.Destroy(id); err != nil {
 		return nil, err
 	}
 
 	if config.GetRequireInvite() {
 		// decrement the invite key uses
-		usesLeft, err := iqb.KeyUsed(a.InviteKey.UUID)
+		usesLeft, err := iqb.KeyUsed(*data.InviteKey)
 		if err != nil {
 			return nil, err
 		}
@@ -243,7 +208,7 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 		// if all used up, then delete the invite key
 		if usesLeft != nil && *usesLeft <= 0 {
 			// delete the invite key
-			if err := iqb.Destroy(a.InviteKey.UUID); err != nil {
+			if err := iqb.Destroy(*data.InviteKey); err != nil {
 				return nil, err
 			}
 		}
@@ -255,7 +220,7 @@ func ActivateNewUser(fac models.Repo, name, email, activationKey, password strin
 // ResetPassword generates an email to reset a users password.
 func ResetPassword(fac models.Repo, em *email.Manager, email string) error {
 	uqb := fac.User()
-	aqb := fac.PendingActivation()
+	tqb := fac.UserToken()
 
 	// ensure user exists
 	u, err := uqb.FindByEmail(email)
@@ -272,77 +237,62 @@ func ResetPassword(fac models.Repo, em *email.Manager, email string) error {
 		return nil
 	}
 
-	// if existing activation exists with the same email, then re-create it
-	a, err := aqb.FindByEmail(email, models.PendingActivationTypeResetPassword)
-	if err != nil {
-		return err
-	}
-
-	if a != nil {
-		if err := aqb.Destroy(a.ID); err != nil {
-			return err
-		}
-	}
-
 	// generate an activation key and email
-	key, err := generateResetPasswordActivationKey(aqb, email)
+	key, err := generateResetPasswordActivationKey(tqb, u.ID)
 	if err != nil {
 		return err
 	}
 
-	return sendResetPasswordEmail(em, email, key)
+	return sendResetPasswordEmail(em, u, *key)
 }
 
-func generateResetPasswordActivationKey(aqb models.PendingActivationCreator, email string) (string, error) {
+func generateResetPasswordActivationKey(aqb models.UserTokenCreator, userID uuid.UUID) (*uuid.UUID, error) {
 	UUID, err := uuid.NewV4()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	activation := models.PendingActivation{
-		ID:    UUID,
-		Email: email,
-		Time:  time.Now(),
-		Type:  models.PendingActivationTypeResetPassword,
+	activation := models.UserToken{
+		ID:        UUID,
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(tokenLifetime),
+		Type:      models.UserTokenTypeResetPassword,
+	}
+
+	err = activation.SetData(models.UserTokenData{
+		UserID: userID,
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	obj, err := aqb.Create(activation)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return obj.ID.String(), nil
+	return &obj.ID, nil
 }
 
-func sendResetPasswordEmail(em *email.Manager, email, activationKey string) error {
-	subject := "Subject: Reset stash-box password"
-
-	link := config.GetHostURL() + "/resetPassword?email=" + email + "&key=" + activationKey
-	body := "Please click the following link to set your account password: " + link
-
-	return em.Send(email, subject, body)
-}
-
-func ActivateResetPassword(fac models.Repo, activationKey string, newPassword string) error {
-	if err := ClearExpiredActivations(fac); err != nil {
-		return err
-	}
-
-	id, _ := uuid.FromString(activationKey)
-
+func ActivateResetPassword(fac models.Repo, id uuid.UUID, newPassword string) error {
 	uqb := fac.User()
-	aqb := fac.PendingActivation()
+	tqb := fac.UserToken()
 
-	a, err := aqb.Find(id)
+	t, err := tqb.Find(id)
 	if err != nil {
 		return err
 	}
 
-	if a == nil || a.Type != models.PendingActivationTypeResetPassword {
+	if t == nil || t.Type != models.UserTokenTypeResetPassword {
 		return ErrInvalidActivationKey
 	}
 
-	user, err := uqb.FindByEmail(a.Email)
+	data, err := t.GetUserTokenData()
+	if err != nil {
+		return err
+	}
+
+	user, err := uqb.Find(data.UserID)
 	if err != nil {
 		return err
 	}
@@ -368,5 +318,5 @@ func ActivateResetPassword(fac models.Repo, activationKey string, newPassword st
 	}
 
 	// delete the activation
-	return aqb.Destroy(id)
+	return tqb.Destroy(id)
 }

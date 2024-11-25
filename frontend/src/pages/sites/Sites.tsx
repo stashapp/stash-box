@@ -14,7 +14,7 @@ const SiteList: FC = () => {
   const { loading, data } = useSites();
 
   const sites = sortBy(data?.querySites.sites ?? [], (s) =>
-    s.name.toLowerCase()
+    s.name.toLowerCase(),
   );
 
   return (

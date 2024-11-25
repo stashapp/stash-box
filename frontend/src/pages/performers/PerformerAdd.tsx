@@ -23,7 +23,7 @@ const PerformerAdd: FC = () => {
 
   const doInsert = (
     updateData: PerformerEditDetailsInput,
-    editNote: string
+    editNote: string,
   ) => {
     submitPerformerEdit({
       variables: {
