@@ -103,7 +103,7 @@ There are two ways to authenticate a user in Stash-box: a session or an API key.
 | `postgres.max_open_conns` | (0) | Maximum number of concurrent open connections to the database. |
 | `postgres.max_idle_conns` | (0) | Maximum number of concurrent idle database connections. |
 | `postgres.conn_max_lifetime` | (0) | Maximum lifetime in minutes before a connection is released. |
-| `allow_webui_scene_create` | true | Whether to allow scene creation via web UI. |
+| `require_scene_draft` | true | Whether to allow scene creation outside of draft submissions. |
 
 ## SSL (HTTPS)
 
