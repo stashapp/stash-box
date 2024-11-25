@@ -485,12 +485,12 @@ type ComplexityRoot struct {
 	}
 
 	StashBoxConfig struct {
-		AllowWebuiSceneCreate      func(childComplexity int) int
 		GuidelinesURL              func(childComplexity int) int
 		HostURL                    func(childComplexity int) int
 		MinDestructiveVotingPeriod func(childComplexity int) int
 		RequireActivation          func(childComplexity int) int
 		RequireInvite              func(childComplexity int) int
+		RequireSceneDraft          func(childComplexity int) int
 		VoteApplicationThreshold   func(childComplexity int) int
 		VoteCronInterval           func(childComplexity int) int
 		VotePromotionThreshold     func(childComplexity int) int
@@ -3462,13 +3462,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Site.ValidTypes(childComplexity), true
 
-	case "StashBoxConfig.allow_webui_scene_create":
-		if e.complexity.StashBoxConfig.AllowWebuiSceneCreate == nil {
-			break
-		}
-
-		return e.complexity.StashBoxConfig.AllowWebuiSceneCreate(childComplexity), true
-
 	case "StashBoxConfig.guidelines_url":
 		if e.complexity.StashBoxConfig.GuidelinesURL == nil {
 			break
@@ -3503,6 +3496,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StashBoxConfig.RequireInvite(childComplexity), true
+
+	case "StashBoxConfig.require_scene_draft":
+		if e.complexity.StashBoxConfig.RequireSceneDraft == nil {
+			break
+		}
+
+		return e.complexity.StashBoxConfig.RequireSceneDraft(childComplexity), true
 
 	case "StashBoxConfig.vote_application_threshold":
 		if e.complexity.StashBoxConfig.VoteApplicationThreshold == nil {
@@ -4209,7 +4209,7 @@ var sources = []*ast.Source{
   min_destructive_voting_period: Int!
   vote_cron_interval: String!
   guidelines_url: String!
-  allow_webui_scene_create: Boolean!
+  require_scene_draft: Boolean!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/draft.graphql", Input: `type DraftSubmissionStatus {
@@ -21367,8 +21367,8 @@ func (ec *executionContext) fieldContext_Query_getConfig(ctx context.Context, fi
 				return ec.fieldContext_StashBoxConfig_vote_cron_interval(ctx, field)
 			case "guidelines_url":
 				return ec.fieldContext_StashBoxConfig_guidelines_url(ctx, field)
-			case "allow_webui_scene_create":
-				return ec.fieldContext_StashBoxConfig_allow_webui_scene_create(ctx, field)
+			case "require_scene_draft":
+				return ec.fieldContext_StashBoxConfig_require_scene_draft(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type StashBoxConfig", field.Name)
 		},
@@ -25998,8 +25998,8 @@ func (ec *executionContext) fieldContext_StashBoxConfig_guidelines_url(ctx conte
 	return fc, nil
 }
 
-func (ec *executionContext) _StashBoxConfig_allow_webui_scene_create(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StashBoxConfig_allow_webui_scene_create(ctx, field)
+func (ec *executionContext) _StashBoxConfig_require_scene_draft(ctx context.Context, field graphql.CollectedField, obj *StashBoxConfig) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_StashBoxConfig_require_scene_draft(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -26012,7 +26012,7 @@ func (ec *executionContext) _StashBoxConfig_allow_webui_scene_create(ctx context
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AllowWebuiSceneCreate, nil
+		return obj.RequireSceneDraft, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -26029,7 +26029,7 @@ func (ec *executionContext) _StashBoxConfig_allow_webui_scene_create(ctx context
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_StashBoxConfig_allow_webui_scene_create(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_StashBoxConfig_require_scene_draft(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "StashBoxConfig",
 		Field:      field,
@@ -42373,8 +42373,8 @@ func (ec *executionContext) _StashBoxConfig(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "allow_webui_scene_create":
-			out.Values[i] = ec._StashBoxConfig_allow_webui_scene_create(ctx, field, obj)
+		case "require_scene_draft":
+			out.Values[i] = ec._StashBoxConfig_require_scene_draft(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

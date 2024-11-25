@@ -10,45 +10,54 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
   [SubKey in K]: Maybe<T[SubKey]>;
 };
+export type MakeEmpty<
+  T extends { [key: string]: unknown },
+  K extends keyof T,
+> = { [_ in K]?: never };
+export type Incremental<T> =
+  | T
+  | {
+      [P in keyof T]?: P extends " $fragmentName" | "__typename" ? T[P] : never;
+    };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
-  Date: string;
-  DateTime: string;
-  Time: string;
-  Upload: File;
+  ID: { input: string; output: string };
+  String: { input: string; output: string };
+  Boolean: { input: boolean; output: boolean };
+  Int: { input: number; output: number };
+  Float: { input: number; output: number };
+  Date: { input: string; output: string };
+  DateTime: { input: string; output: string };
+  Time: { input: string; output: string };
+  Upload: { input: File; output: File };
 };
 
 export type ActivateNewUserInput = {
-  activation_key: Scalars["String"];
-  email: Scalars["String"];
-  name: Scalars["String"];
-  password: Scalars["String"];
+  activation_key: Scalars["String"]["input"];
+  email: Scalars["String"]["input"];
+  name: Scalars["String"]["input"];
+  password: Scalars["String"]["input"];
 };
 
 export type ApplyEditInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type BodyModification = {
   __typename: "BodyModification";
-  description?: Maybe<Scalars["String"]>;
-  location: Scalars["String"];
+  description?: Maybe<Scalars["String"]["output"]>;
+  location: Scalars["String"]["output"];
 };
 
 export type BodyModificationCriterionInput = {
-  description?: InputMaybe<Scalars["String"]>;
-  location?: InputMaybe<Scalars["String"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  location?: InputMaybe<Scalars["String"]["input"]>;
   modifier: CriterionModifier;
 };
 
 export type BodyModificationInput = {
-  description?: InputMaybe<Scalars["String"]>;
-  location: Scalars["String"];
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  location: Scalars["String"]["input"];
 };
 
 export type BreastTypeCriterionInput = {
@@ -63,7 +72,7 @@ export enum BreastTypeEnum {
 }
 
 export type CancelEditInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export enum CriterionModifier {
@@ -93,54 +102,54 @@ export enum DateAccuracyEnum {
 
 export type DateCriterionInput = {
   modifier: CriterionModifier;
-  value: Scalars["Date"];
+  value: Scalars["Date"]["input"];
 };
 
 export type Draft = {
   __typename: "Draft";
-  created: Scalars["Time"];
+  created: Scalars["Time"]["output"];
   data: DraftData;
-  expires: Scalars["Time"];
-  id: Scalars["ID"];
+  expires: Scalars["Time"]["output"];
+  id: Scalars["ID"]["output"];
 };
 
 export type DraftData = PerformerDraft | SceneDraft;
 
 export type DraftEntity = {
   __typename: "DraftEntity";
-  id?: Maybe<Scalars["ID"]>;
-  name: Scalars["String"];
+  id?: Maybe<Scalars["ID"]["output"]>;
+  name: Scalars["String"]["output"];
 };
 
 export type DraftEntityInput = {
-  id?: InputMaybe<Scalars["ID"]>;
-  name: Scalars["String"];
+  id?: InputMaybe<Scalars["ID"]["input"]>;
+  name: Scalars["String"]["input"];
 };
 
 export type DraftFingerprint = {
   __typename: "DraftFingerprint";
   algorithm: FingerprintAlgorithm;
-  duration: Scalars["Int"];
-  hash: Scalars["String"];
+  duration: Scalars["Int"]["output"];
+  hash: Scalars["String"]["output"];
 };
 
 export type DraftSubmissionStatus = {
   __typename: "DraftSubmissionStatus";
-  id?: Maybe<Scalars["ID"]>;
+  id?: Maybe<Scalars["ID"]["output"]>;
 };
 
 export type Edit = {
   __typename: "Edit";
-  applied: Scalars["Boolean"];
-  bot: Scalars["Boolean"];
-  closed?: Maybe<Scalars["Time"]>;
+  applied: Scalars["Boolean"]["output"];
+  bot: Scalars["Boolean"]["output"];
+  closed?: Maybe<Scalars["Time"]["output"]>;
   comments: Array<EditComment>;
-  created: Scalars["Time"];
+  created: Scalars["Time"]["output"];
   /** Is the edit considered destructive. */
-  destructive: Scalars["Boolean"];
+  destructive: Scalars["Boolean"]["output"];
   details?: Maybe<EditDetails>;
-  expires?: Maybe<Scalars["Time"]>;
-  id: Scalars["ID"];
+  expires?: Maybe<Scalars["Time"]["output"]>;
+  id: Scalars["ID"]["output"];
   /** Objects to merge with the target. Only applicable to merges */
   merge_sources: Array<EditTarget>;
   /** Previous state of fields being modified - null if operation is create or delete. */
@@ -152,62 +161,62 @@ export type Edit = {
   /** Object being edited - null if creating a new object */
   target?: Maybe<EditTarget>;
   target_type: TargetTypeEnum;
-  updated?: Maybe<Scalars["Time"]>;
+  updated?: Maybe<Scalars["Time"]["output"]>;
   user?: Maybe<User>;
   /**  = Accepted - Rejected */
-  vote_count: Scalars["Int"];
+  vote_count: Scalars["Int"]["output"];
   votes: Array<EditVote>;
 };
 
 export type EditComment = {
   __typename: "EditComment";
-  comment: Scalars["String"];
-  date: Scalars["Time"];
-  id: Scalars["ID"];
+  comment: Scalars["String"]["output"];
+  date: Scalars["Time"]["output"];
+  id: Scalars["ID"]["output"];
   user?: Maybe<User>;
 };
 
 export type EditCommentInput = {
-  comment: Scalars["String"];
-  id: Scalars["ID"];
+  comment: Scalars["String"]["input"];
+  id: Scalars["ID"]["input"];
 };
 
 export type EditDetails = PerformerEdit | SceneEdit | StudioEdit | TagEdit;
 
 export type EditInput = {
   /** Edit submitted by an automated script. Requires bot permission */
-  bot?: InputMaybe<Scalars["Boolean"]>;
-  comment?: InputMaybe<Scalars["String"]>;
+  bot?: InputMaybe<Scalars["Boolean"]["input"]>;
+  comment?: InputMaybe<Scalars["String"]["input"]>;
   /** Not required for create type */
-  id?: InputMaybe<Scalars["ID"]>;
+  id?: InputMaybe<Scalars["ID"]["input"]>;
   /** Only required for merge type */
-  merge_source_ids?: InputMaybe<Array<Scalars["ID"]>>;
+  merge_source_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   operation: OperationEnum;
 };
 
 export type EditQueryInput = {
   /** Filter by applied status */
-  applied?: InputMaybe<Scalars["Boolean"]>;
+  applied?: InputMaybe<Scalars["Boolean"]["input"]>;
   direction?: SortDirectionEnum;
   /** Filter out user's own edits */
-  include_user_submitted?: InputMaybe<Scalars["Boolean"]>;
+  include_user_submitted?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Filter to bot edits only */
-  is_bot?: InputMaybe<Scalars["Boolean"]>;
+  is_bot?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Filter by favorite status */
-  is_favorite?: InputMaybe<Scalars["Boolean"]>;
+  is_favorite?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Filter by operation */
   operation?: InputMaybe<OperationEnum>;
-  page?: Scalars["Int"];
-  per_page?: Scalars["Int"];
+  page?: Scalars["Int"]["input"];
+  per_page?: Scalars["Int"]["input"];
   sort?: EditSortEnum;
   /** Filter by status */
   status?: InputMaybe<VoteStatusEnum>;
   /** Filter by target id */
-  target_id?: InputMaybe<Scalars["ID"]>;
+  target_id?: InputMaybe<Scalars["ID"]["input"]>;
   /** Filter by target type */
   target_type?: InputMaybe<TargetTypeEnum>;
   /** Filter by user id */
-  user_id?: InputMaybe<Scalars["ID"]>;
+  user_id?: InputMaybe<Scalars["ID"]["input"]>;
   /** Filter by vote count */
   vote_count?: InputMaybe<IntCriterionInput>;
   /** Filter by user voted status */
@@ -224,13 +233,13 @@ export type EditTarget = Performer | Scene | Studio | Tag;
 
 export type EditVote = {
   __typename: "EditVote";
-  date: Scalars["Time"];
+  date: Scalars["Time"]["output"];
   user?: Maybe<User>;
   vote: VoteTypeEnum;
 };
 
 export type EditVoteInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   vote: VoteTypeEnum;
 };
 
@@ -280,12 +289,12 @@ export enum FavoriteFilter {
 export type Fingerprint = {
   __typename: "Fingerprint";
   algorithm: FingerprintAlgorithm;
-  created: Scalars["Time"];
-  duration: Scalars["Int"];
-  hash: Scalars["String"];
-  submissions: Scalars["Int"];
-  updated: Scalars["Time"];
-  user_submitted: Scalars["Boolean"];
+  created: Scalars["Time"]["output"];
+  duration: Scalars["Int"]["output"];
+  hash: Scalars["String"]["output"];
+  submissions: Scalars["Int"]["output"];
+  updated: Scalars["Time"]["output"];
+  user_submitted: Scalars["Boolean"]["output"];
 };
 
 export enum FingerprintAlgorithm {
@@ -296,39 +305,39 @@ export enum FingerprintAlgorithm {
 
 export type FingerprintEditInput = {
   algorithm: FingerprintAlgorithm;
-  created: Scalars["Time"];
-  duration: Scalars["Int"];
-  hash: Scalars["String"];
+  created: Scalars["Time"]["input"];
+  duration: Scalars["Int"]["input"];
+  hash: Scalars["String"]["input"];
   /** @deprecated Unused */
-  submissions?: InputMaybe<Scalars["Int"]>;
+  submissions?: InputMaybe<Scalars["Int"]["input"]>;
   /** @deprecated Unused */
-  updated?: InputMaybe<Scalars["Time"]>;
-  user_ids?: InputMaybe<Array<Scalars["ID"]>>;
+  updated?: InputMaybe<Scalars["Time"]["input"]>;
+  user_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
 };
 
 export type FingerprintInput = {
   algorithm: FingerprintAlgorithm;
-  duration: Scalars["Int"];
-  hash: Scalars["String"];
+  duration: Scalars["Int"]["input"];
+  hash: Scalars["String"]["input"];
   /** assumes current user if omitted. Ignored for non-modify Users */
-  user_ids?: InputMaybe<Array<Scalars["ID"]>>;
+  user_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
 };
 
 export type FingerprintQueryInput = {
   algorithm: FingerprintAlgorithm;
-  hash: Scalars["String"];
+  hash: Scalars["String"]["input"];
 };
 
 export type FingerprintSubmission = {
   fingerprint: FingerprintInput;
-  scene_id: Scalars["ID"];
-  unmatch?: InputMaybe<Scalars["Boolean"]>;
+  scene_id: Scalars["ID"]["input"];
+  unmatch?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
 export type FuzzyDate = {
   __typename: "FuzzyDate";
   accuracy: DateAccuracyEnum;
-  date: Scalars["Date"];
+  date: Scalars["Date"]["output"];
 };
 
 export enum GenderEnum {
@@ -351,14 +360,14 @@ export enum GenderFilterEnum {
 }
 
 export type GenerateInviteCodeInput = {
-  keys?: InputMaybe<Scalars["Int"]>;
-  ttl?: InputMaybe<Scalars["Int"]>;
-  uses?: InputMaybe<Scalars["Int"]>;
+  keys?: InputMaybe<Scalars["Int"]["input"]>;
+  ttl?: InputMaybe<Scalars["Int"]["input"]>;
+  uses?: InputMaybe<Scalars["Int"]["input"]>;
 };
 
 export type GrantInviteInput = {
-  amount: Scalars["Int"];
-  user_id: Scalars["ID"];
+  amount: Scalars["Int"]["input"];
+  user_id: Scalars["ID"]["input"];
 };
 
 export type HairColorCriterionInput = {
@@ -380,59 +389,59 @@ export enum HairColorEnum {
 
 export type IdCriterionInput = {
   modifier: CriterionModifier;
-  value: Array<Scalars["ID"]>;
+  value: Array<Scalars["ID"]["input"]>;
 };
 
 export type Image = {
   __typename: "Image";
-  height: Scalars["Int"];
-  id: Scalars["ID"];
-  url: Scalars["String"];
-  width: Scalars["Int"];
+  height: Scalars["Int"]["output"];
+  id: Scalars["ID"]["output"];
+  url: Scalars["String"]["output"];
+  width: Scalars["Int"]["output"];
 };
 
 export type ImageCreateInput = {
-  file?: InputMaybe<Scalars["Upload"]>;
-  url?: InputMaybe<Scalars["String"]>;
+  file?: InputMaybe<Scalars["Upload"]["input"]>;
+  url?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type ImageDestroyInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type ImageUpdateInput = {
-  id: Scalars["ID"];
-  url?: InputMaybe<Scalars["String"]>;
+  id: Scalars["ID"]["input"];
+  url?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type IntCriterionInput = {
   modifier: CriterionModifier;
-  value: Scalars["Int"];
+  value: Scalars["Int"]["input"];
 };
 
 export type InviteKey = {
   __typename: "InviteKey";
-  expires?: Maybe<Scalars["Time"]>;
-  id: Scalars["ID"];
-  uses?: Maybe<Scalars["Int"]>;
+  expires?: Maybe<Scalars["Time"]["output"]>;
+  id: Scalars["ID"]["output"];
+  uses?: Maybe<Scalars["Int"]["output"]>;
 };
 
 export type Measurements = {
   __typename: "Measurements";
-  band_size?: Maybe<Scalars["Int"]>;
-  cup_size?: Maybe<Scalars["String"]>;
-  hip?: Maybe<Scalars["Int"]>;
-  waist?: Maybe<Scalars["Int"]>;
+  band_size?: Maybe<Scalars["Int"]["output"]>;
+  cup_size?: Maybe<Scalars["String"]["output"]>;
+  hip?: Maybe<Scalars["Int"]["output"]>;
+  waist?: Maybe<Scalars["Int"]["output"]>;
 };
 
 export type MultiIdCriterionInput = {
   modifier: CriterionModifier;
-  value?: InputMaybe<Array<Scalars["ID"]>>;
+  value?: InputMaybe<Array<Scalars["ID"]["input"]>>;
 };
 
 export type MultiStringCriterionInput = {
   modifier: CriterionModifier;
-  value: Array<Scalars["String"]>;
+  value: Array<Scalars["String"]["input"]>;
 };
 
 export type Mutation = {
@@ -443,75 +452,75 @@ export type Mutation = {
   /** Cancel edit without voting */
   cancelEdit: Edit;
   /** Changes the password for the current user */
-  changePassword: Scalars["Boolean"];
-  destroyDraft: Scalars["Boolean"];
+  changePassword: Scalars["Boolean"]["output"];
+  destroyDraft: Scalars["Boolean"]["output"];
   /** Comment on an edit */
   editComment: Edit;
   /** Vote to accept/reject an edit */
   editVote: Edit;
   /** Favorite or unfavorite a performer */
-  favoritePerformer: Scalars["Boolean"];
+  favoritePerformer: Scalars["Boolean"]["output"];
   /** Favorite or unfavorite a studio */
-  favoriteStudio: Scalars["Boolean"];
+  favoriteStudio: Scalars["Boolean"]["output"];
   /** @deprecated Use generateInviteCodes */
-  generateInviteCode?: Maybe<Scalars["ID"]>;
+  generateInviteCode?: Maybe<Scalars["ID"]["output"]>;
   /** Generates an invite code using an invite token */
-  generateInviteCodes: Array<Scalars["ID"]>;
+  generateInviteCodes: Array<Scalars["ID"]["output"]>;
   /** Adds invite tokens for a user */
-  grantInvite: Scalars["Int"];
+  grantInvite: Scalars["Int"]["output"];
   imageCreate?: Maybe<Image>;
-  imageDestroy: Scalars["Boolean"];
+  imageDestroy: Scalars["Boolean"]["output"];
   /** User interface for registering */
-  newUser?: Maybe<Scalars["String"]>;
+  newUser?: Maybe<Scalars["String"]["output"]>;
   performerCreate?: Maybe<Performer>;
-  performerDestroy: Scalars["Boolean"];
+  performerDestroy: Scalars["Boolean"]["output"];
   /** Propose a new performer or modification to a performer */
   performerEdit: Edit;
   /** Update a pending performer edit */
   performerEditUpdate: Edit;
   performerUpdate?: Maybe<Performer>;
   /** Regenerates the api key for the given user, or the current user if id not provided */
-  regenerateAPIKey: Scalars["String"];
+  regenerateAPIKey: Scalars["String"]["output"];
   /** Removes a pending invite code - refunding the token */
-  rescindInviteCode: Scalars["Boolean"];
+  rescindInviteCode: Scalars["Boolean"]["output"];
   /** Generates an email to reset a user password */
-  resetPassword: Scalars["Boolean"];
+  resetPassword: Scalars["Boolean"]["output"];
   /** Removes invite tokens from a user */
-  revokeInvite: Scalars["Int"];
+  revokeInvite: Scalars["Int"]["output"];
   sceneCreate?: Maybe<Scene>;
-  sceneDestroy: Scalars["Boolean"];
+  sceneDestroy: Scalars["Boolean"]["output"];
   /** Propose a new scene or modification to a scene */
   sceneEdit: Edit;
   /** Update a pending scene edit */
   sceneEditUpdate: Edit;
   sceneUpdate?: Maybe<Scene>;
   siteCreate?: Maybe<Site>;
-  siteDestroy: Scalars["Boolean"];
+  siteDestroy: Scalars["Boolean"]["output"];
   siteUpdate?: Maybe<Site>;
   studioCreate?: Maybe<Studio>;
-  studioDestroy: Scalars["Boolean"];
+  studioDestroy: Scalars["Boolean"]["output"];
   /** Propose a new studio or modification to a studio */
   studioEdit: Edit;
   /** Update a pending studio edit */
   studioEditUpdate: Edit;
   studioUpdate?: Maybe<Studio>;
   /** Matches/unmatches a scene to fingerprint */
-  submitFingerprint: Scalars["Boolean"];
+  submitFingerprint: Scalars["Boolean"]["output"];
   submitPerformerDraft: DraftSubmissionStatus;
   /** Draft submissions */
   submitSceneDraft: DraftSubmissionStatus;
   tagCategoryCreate?: Maybe<TagCategory>;
-  tagCategoryDestroy: Scalars["Boolean"];
+  tagCategoryDestroy: Scalars["Boolean"]["output"];
   tagCategoryUpdate?: Maybe<TagCategory>;
   tagCreate?: Maybe<Tag>;
-  tagDestroy: Scalars["Boolean"];
+  tagDestroy: Scalars["Boolean"]["output"];
   /** Propose a new tag or modification to a tag */
   tagEdit: Edit;
   /** Update a pending tag edit */
   tagEditUpdate: Edit;
   tagUpdate?: Maybe<Tag>;
   userCreate?: Maybe<User>;
-  userDestroy: Scalars["Boolean"];
+  userDestroy: Scalars["Boolean"]["output"];
   userUpdate?: Maybe<User>;
 };
 
@@ -532,7 +541,7 @@ export type MutationChangePasswordArgs = {
 };
 
 export type MutationDestroyDraftArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type MutationEditCommentArgs = {
@@ -544,13 +553,13 @@ export type MutationEditVoteArgs = {
 };
 
 export type MutationFavoritePerformerArgs = {
-  favorite: Scalars["Boolean"];
-  id: Scalars["ID"];
+  favorite: Scalars["Boolean"]["input"];
+  id: Scalars["ID"]["input"];
 };
 
 export type MutationFavoriteStudioArgs = {
-  favorite: Scalars["Boolean"];
-  id: Scalars["ID"];
+  favorite: Scalars["Boolean"]["input"];
+  id: Scalars["ID"]["input"];
 };
 
 export type MutationGenerateInviteCodesArgs = {
@@ -586,7 +595,7 @@ export type MutationPerformerEditArgs = {
 };
 
 export type MutationPerformerEditUpdateArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   input: PerformerEditInput;
 };
 
@@ -595,11 +604,11 @@ export type MutationPerformerUpdateArgs = {
 };
 
 export type MutationRegenerateApiKeyArgs = {
-  userID?: InputMaybe<Scalars["ID"]>;
+  userID?: InputMaybe<Scalars["ID"]["input"]>;
 };
 
 export type MutationRescindInviteCodeArgs = {
-  code: Scalars["ID"];
+  code: Scalars["ID"]["input"];
 };
 
 export type MutationResetPasswordArgs = {
@@ -623,7 +632,7 @@ export type MutationSceneEditArgs = {
 };
 
 export type MutationSceneEditUpdateArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   input: SceneEditInput;
 };
 
@@ -656,7 +665,7 @@ export type MutationStudioEditArgs = {
 };
 
 export type MutationStudioEditUpdateArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   input: StudioEditInput;
 };
 
@@ -701,7 +710,7 @@ export type MutationTagEditArgs = {
 };
 
 export type MutationTagEditUpdateArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   input: TagEditInput;
 };
 
@@ -722,8 +731,8 @@ export type MutationUserUpdateArgs = {
 };
 
 export type NewUserInput = {
-  email: Scalars["String"];
-  invite_key?: InputMaybe<Scalars["String"]>;
+  email: Scalars["String"]["input"];
+  invite_key?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export enum OperationEnum {
@@ -735,43 +744,43 @@ export enum OperationEnum {
 
 export type Performer = {
   __typename: "Performer";
-  age?: Maybe<Scalars["Int"]>;
-  aliases: Array<Scalars["String"]>;
-  band_size?: Maybe<Scalars["Int"]>;
-  birth_date?: Maybe<Scalars["String"]>;
+  age?: Maybe<Scalars["Int"]["output"]>;
+  aliases: Array<Scalars["String"]["output"]>;
+  band_size?: Maybe<Scalars["Int"]["output"]>;
+  birth_date?: Maybe<Scalars["String"]["output"]>;
   /** @deprecated Please use `birth_date` */
   birthdate?: Maybe<FuzzyDate>;
   breast_type?: Maybe<BreastTypeEnum>;
-  career_end_year?: Maybe<Scalars["Int"]>;
-  career_start_year?: Maybe<Scalars["Int"]>;
-  country?: Maybe<Scalars["String"]>;
-  created: Scalars["Time"];
-  cup_size?: Maybe<Scalars["String"]>;
-  deleted: Scalars["Boolean"];
-  disambiguation?: Maybe<Scalars["String"]>;
+  career_end_year?: Maybe<Scalars["Int"]["output"]>;
+  career_start_year?: Maybe<Scalars["Int"]["output"]>;
+  country?: Maybe<Scalars["String"]["output"]>;
+  created: Scalars["Time"]["output"];
+  cup_size?: Maybe<Scalars["String"]["output"]>;
+  deleted: Scalars["Boolean"]["output"];
+  disambiguation?: Maybe<Scalars["String"]["output"]>;
   edits: Array<Edit>;
   ethnicity?: Maybe<EthnicityEnum>;
   eye_color?: Maybe<EyeColorEnum>;
   gender?: Maybe<GenderEnum>;
   hair_color?: Maybe<HairColorEnum>;
   /** Height in cm */
-  height?: Maybe<Scalars["Int"]>;
-  hip_size?: Maybe<Scalars["Int"]>;
-  id: Scalars["ID"];
+  height?: Maybe<Scalars["Int"]["output"]>;
+  hip_size?: Maybe<Scalars["Int"]["output"]>;
+  id: Scalars["ID"]["output"];
   images: Array<Image>;
-  is_favorite: Scalars["Boolean"];
+  is_favorite: Scalars["Boolean"]["output"];
   /** @deprecated Use individual fields, cup/band/waist/hip_size */
   measurements: Measurements;
-  merged_ids: Array<Scalars["ID"]>;
-  name: Scalars["String"];
+  merged_ids: Array<Scalars["ID"]["output"]>;
+  name: Scalars["String"]["output"];
   piercings?: Maybe<Array<BodyModification>>;
-  scene_count: Scalars["Int"];
+  scene_count: Scalars["Int"]["output"];
   scenes: Array<Scene>;
   studios: Array<PerformerStudio>;
   tattoos?: Maybe<Array<BodyModification>>;
-  updated: Scalars["Time"];
+  updated: Scalars["Time"]["output"];
   urls: Array<Url>;
-  waist_size?: Maybe<Scalars["Int"]>;
+  waist_size?: Maybe<Scalars["Int"]["output"]>;
 };
 
 export type PerformerScenesArgs = {
@@ -781,150 +790,150 @@ export type PerformerScenesArgs = {
 export type PerformerAppearance = {
   __typename: "PerformerAppearance";
   /** Performing as alias */
-  as?: Maybe<Scalars["String"]>;
+  as?: Maybe<Scalars["String"]["output"]>;
   performer: Performer;
 };
 
 export type PerformerAppearanceInput = {
   /** Performing as alias */
-  as?: InputMaybe<Scalars["String"]>;
-  performer_id: Scalars["ID"];
+  as?: InputMaybe<Scalars["String"]["input"]>;
+  performer_id: Scalars["ID"]["input"];
 };
 
 export type PerformerCreateInput = {
-  aliases?: InputMaybe<Array<Scalars["String"]>>;
-  band_size?: InputMaybe<Scalars["Int"]>;
-  birthdate?: InputMaybe<Scalars["String"]>;
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  band_size?: InputMaybe<Scalars["Int"]["input"]>;
+  birthdate?: InputMaybe<Scalars["String"]["input"]>;
   breast_type?: InputMaybe<BreastTypeEnum>;
-  career_end_year?: InputMaybe<Scalars["Int"]>;
-  career_start_year?: InputMaybe<Scalars["Int"]>;
-  country?: InputMaybe<Scalars["String"]>;
-  cup_size?: InputMaybe<Scalars["String"]>;
-  disambiguation?: InputMaybe<Scalars["String"]>;
-  draft_id?: InputMaybe<Scalars["ID"]>;
+  career_end_year?: InputMaybe<Scalars["Int"]["input"]>;
+  career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
+  country?: InputMaybe<Scalars["String"]["input"]>;
+  cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  disambiguation?: InputMaybe<Scalars["String"]["input"]>;
+  draft_id?: InputMaybe<Scalars["ID"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
   eye_color?: InputMaybe<EyeColorEnum>;
   gender?: InputMaybe<GenderEnum>;
   hair_color?: InputMaybe<HairColorEnum>;
-  height?: InputMaybe<Scalars["Int"]>;
-  hip_size?: InputMaybe<Scalars["Int"]>;
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  name: Scalars["String"];
+  height?: InputMaybe<Scalars["Int"]["input"]>;
+  hip_size?: InputMaybe<Scalars["Int"]["input"]>;
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  name: Scalars["String"]["input"];
   piercings?: InputMaybe<Array<BodyModificationInput>>;
   tattoos?: InputMaybe<Array<BodyModificationInput>>;
   urls?: InputMaybe<Array<UrlInput>>;
-  waist_size?: InputMaybe<Scalars["Int"]>;
+  waist_size?: InputMaybe<Scalars["Int"]["input"]>;
 };
 
 export type PerformerDestroyInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type PerformerDraft = {
   __typename: "PerformerDraft";
-  aliases?: Maybe<Scalars["String"]>;
-  birthdate?: Maybe<Scalars["String"]>;
-  breast_type?: Maybe<Scalars["String"]>;
-  career_end_year?: Maybe<Scalars["Int"]>;
-  career_start_year?: Maybe<Scalars["Int"]>;
-  country?: Maybe<Scalars["String"]>;
-  disambiguation?: Maybe<Scalars["String"]>;
-  ethnicity?: Maybe<Scalars["String"]>;
-  eye_color?: Maybe<Scalars["String"]>;
-  gender?: Maybe<Scalars["String"]>;
-  hair_color?: Maybe<Scalars["String"]>;
-  height?: Maybe<Scalars["String"]>;
-  id?: Maybe<Scalars["ID"]>;
+  aliases?: Maybe<Scalars["String"]["output"]>;
+  birthdate?: Maybe<Scalars["String"]["output"]>;
+  breast_type?: Maybe<Scalars["String"]["output"]>;
+  career_end_year?: Maybe<Scalars["Int"]["output"]>;
+  career_start_year?: Maybe<Scalars["Int"]["output"]>;
+  country?: Maybe<Scalars["String"]["output"]>;
+  disambiguation?: Maybe<Scalars["String"]["output"]>;
+  ethnicity?: Maybe<Scalars["String"]["output"]>;
+  eye_color?: Maybe<Scalars["String"]["output"]>;
+  gender?: Maybe<Scalars["String"]["output"]>;
+  hair_color?: Maybe<Scalars["String"]["output"]>;
+  height?: Maybe<Scalars["String"]["output"]>;
+  id?: Maybe<Scalars["ID"]["output"]>;
   image?: Maybe<Image>;
-  measurements?: Maybe<Scalars["String"]>;
-  name: Scalars["String"];
-  piercings?: Maybe<Scalars["String"]>;
-  tattoos?: Maybe<Scalars["String"]>;
-  urls?: Maybe<Array<Scalars["String"]>>;
+  measurements?: Maybe<Scalars["String"]["output"]>;
+  name: Scalars["String"]["output"];
+  piercings?: Maybe<Scalars["String"]["output"]>;
+  tattoos?: Maybe<Scalars["String"]["output"]>;
+  urls?: Maybe<Array<Scalars["String"]["output"]>>;
 };
 
 export type PerformerDraftInput = {
-  aliases?: InputMaybe<Scalars["String"]>;
-  birthdate?: InputMaybe<Scalars["String"]>;
-  breast_type?: InputMaybe<Scalars["String"]>;
-  career_end_year?: InputMaybe<Scalars["Int"]>;
-  career_start_year?: InputMaybe<Scalars["Int"]>;
-  country?: InputMaybe<Scalars["String"]>;
-  disambiguation?: InputMaybe<Scalars["String"]>;
-  ethnicity?: InputMaybe<Scalars["String"]>;
-  eye_color?: InputMaybe<Scalars["String"]>;
-  gender?: InputMaybe<Scalars["String"]>;
-  hair_color?: InputMaybe<Scalars["String"]>;
-  height?: InputMaybe<Scalars["String"]>;
-  id?: InputMaybe<Scalars["ID"]>;
-  image?: InputMaybe<Scalars["Upload"]>;
-  measurements?: InputMaybe<Scalars["String"]>;
-  name: Scalars["String"];
-  piercings?: InputMaybe<Scalars["String"]>;
-  tattoos?: InputMaybe<Scalars["String"]>;
-  urls?: InputMaybe<Array<Scalars["String"]>>;
+  aliases?: InputMaybe<Scalars["String"]["input"]>;
+  birthdate?: InputMaybe<Scalars["String"]["input"]>;
+  breast_type?: InputMaybe<Scalars["String"]["input"]>;
+  career_end_year?: InputMaybe<Scalars["Int"]["input"]>;
+  career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
+  country?: InputMaybe<Scalars["String"]["input"]>;
+  disambiguation?: InputMaybe<Scalars["String"]["input"]>;
+  ethnicity?: InputMaybe<Scalars["String"]["input"]>;
+  eye_color?: InputMaybe<Scalars["String"]["input"]>;
+  gender?: InputMaybe<Scalars["String"]["input"]>;
+  hair_color?: InputMaybe<Scalars["String"]["input"]>;
+  height?: InputMaybe<Scalars["String"]["input"]>;
+  id?: InputMaybe<Scalars["ID"]["input"]>;
+  image?: InputMaybe<Scalars["Upload"]["input"]>;
+  measurements?: InputMaybe<Scalars["String"]["input"]>;
+  name: Scalars["String"]["input"];
+  piercings?: InputMaybe<Scalars["String"]["input"]>;
+  tattoos?: InputMaybe<Scalars["String"]["input"]>;
+  urls?: InputMaybe<Array<Scalars["String"]["input"]>>;
 };
 
 export type PerformerEdit = {
   __typename: "PerformerEdit";
-  added_aliases?: Maybe<Array<Scalars["String"]>>;
+  added_aliases?: Maybe<Array<Scalars["String"]["output"]>>;
   added_images?: Maybe<Array<Maybe<Image>>>;
   added_piercings?: Maybe<Array<BodyModification>>;
   added_tattoos?: Maybe<Array<BodyModification>>;
   added_urls?: Maybe<Array<Url>>;
-  aliases: Array<Scalars["String"]>;
-  band_size?: Maybe<Scalars["Int"]>;
-  birthdate?: Maybe<Scalars["String"]>;
+  aliases: Array<Scalars["String"]["output"]>;
+  band_size?: Maybe<Scalars["Int"]["output"]>;
+  birthdate?: Maybe<Scalars["String"]["output"]>;
   breast_type?: Maybe<BreastTypeEnum>;
-  career_end_year?: Maybe<Scalars["Int"]>;
-  career_start_year?: Maybe<Scalars["Int"]>;
-  country?: Maybe<Scalars["String"]>;
-  cup_size?: Maybe<Scalars["String"]>;
-  disambiguation?: Maybe<Scalars["String"]>;
-  draft_id?: Maybe<Scalars["ID"]>;
+  career_end_year?: Maybe<Scalars["Int"]["output"]>;
+  career_start_year?: Maybe<Scalars["Int"]["output"]>;
+  country?: Maybe<Scalars["String"]["output"]>;
+  cup_size?: Maybe<Scalars["String"]["output"]>;
+  disambiguation?: Maybe<Scalars["String"]["output"]>;
+  draft_id?: Maybe<Scalars["ID"]["output"]>;
   ethnicity?: Maybe<EthnicityEnum>;
   eye_color?: Maybe<EyeColorEnum>;
   gender?: Maybe<GenderEnum>;
   hair_color?: Maybe<HairColorEnum>;
   /** Height in cm */
-  height?: Maybe<Scalars["Int"]>;
-  hip_size?: Maybe<Scalars["Int"]>;
+  height?: Maybe<Scalars["Int"]["output"]>;
+  hip_size?: Maybe<Scalars["Int"]["output"]>;
   images: Array<Image>;
-  name?: Maybe<Scalars["String"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
   piercings: Array<BodyModification>;
-  removed_aliases?: Maybe<Array<Scalars["String"]>>;
+  removed_aliases?: Maybe<Array<Scalars["String"]["output"]>>;
   removed_images?: Maybe<Array<Maybe<Image>>>;
   removed_piercings?: Maybe<Array<BodyModification>>;
   removed_tattoos?: Maybe<Array<BodyModification>>;
   removed_urls?: Maybe<Array<Url>>;
   tattoos: Array<BodyModification>;
   urls: Array<Url>;
-  waist_size?: Maybe<Scalars["Int"]>;
+  waist_size?: Maybe<Scalars["Int"]["output"]>;
 };
 
 export type PerformerEditDetailsInput = {
-  aliases?: InputMaybe<Array<Scalars["String"]>>;
-  band_size?: InputMaybe<Scalars["Int"]>;
-  birthdate?: InputMaybe<Scalars["String"]>;
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  band_size?: InputMaybe<Scalars["Int"]["input"]>;
+  birthdate?: InputMaybe<Scalars["String"]["input"]>;
   breast_type?: InputMaybe<BreastTypeEnum>;
-  career_end_year?: InputMaybe<Scalars["Int"]>;
-  career_start_year?: InputMaybe<Scalars["Int"]>;
-  country?: InputMaybe<Scalars["String"]>;
-  cup_size?: InputMaybe<Scalars["String"]>;
-  disambiguation?: InputMaybe<Scalars["String"]>;
-  draft_id?: InputMaybe<Scalars["ID"]>;
+  career_end_year?: InputMaybe<Scalars["Int"]["input"]>;
+  career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
+  country?: InputMaybe<Scalars["String"]["input"]>;
+  cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  disambiguation?: InputMaybe<Scalars["String"]["input"]>;
+  draft_id?: InputMaybe<Scalars["ID"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
   eye_color?: InputMaybe<EyeColorEnum>;
   gender?: InputMaybe<GenderEnum>;
   hair_color?: InputMaybe<HairColorEnum>;
-  height?: InputMaybe<Scalars["Int"]>;
-  hip_size?: InputMaybe<Scalars["Int"]>;
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  name?: InputMaybe<Scalars["String"]>;
+  height?: InputMaybe<Scalars["Int"]["input"]>;
+  hip_size?: InputMaybe<Scalars["Int"]["input"]>;
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
   piercings?: InputMaybe<Array<BodyModificationInput>>;
   tattoos?: InputMaybe<Array<BodyModificationInput>>;
   urls?: InputMaybe<Array<UrlInput>>;
-  waist_size?: InputMaybe<Scalars["Int"]>;
+  waist_size?: InputMaybe<Scalars["Int"]["input"]>;
 };
 
 export type PerformerEditInput = {
@@ -938,22 +947,22 @@ export type PerformerEditInput = {
 export type PerformerEditOptions = {
   __typename: "PerformerEditOptions";
   /** Set performer alias on scenes attached to merge sources to old name */
-  set_merge_aliases: Scalars["Boolean"];
+  set_merge_aliases: Scalars["Boolean"]["output"];
   /** Set performer alias on scenes without alias to old name if name is changed */
-  set_modify_aliases: Scalars["Boolean"];
+  set_modify_aliases: Scalars["Boolean"]["output"];
 };
 
 export type PerformerEditOptionsInput = {
   /** Set performer alias on scenes attached to merge sources to old name */
-  set_merge_aliases?: InputMaybe<Scalars["Boolean"]>;
+  set_merge_aliases?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Set performer alias on scenes without alias to old name if name is changed */
-  set_modify_aliases?: InputMaybe<Scalars["Boolean"]>;
+  set_modify_aliases?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
 export type PerformerQueryInput = {
   age?: InputMaybe<IntCriterionInput>;
   /** Search aliases only - assumes like query unless quoted */
-  alias?: InputMaybe<Scalars["String"]>;
+  alias?: InputMaybe<Scalars["String"]["input"]>;
   band_size?: InputMaybe<IntCriterionInput>;
   birth_year?: InputMaybe<IntCriterionInput>;
   birthdate?: InputMaybe<DateCriterionInput>;
@@ -971,30 +980,30 @@ export type PerformerQueryInput = {
   height?: InputMaybe<IntCriterionInput>;
   hip_size?: InputMaybe<IntCriterionInput>;
   /** Filter by performerfavorite status for the current user */
-  is_favorite?: InputMaybe<Scalars["Boolean"]>;
+  is_favorite?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Searches name only - assumes like query unless quoted */
-  name?: InputMaybe<Scalars["String"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
   /** Searches name and disambiguation - assumes like query unless quoted */
-  names?: InputMaybe<Scalars["String"]>;
-  page?: Scalars["Int"];
-  per_page?: Scalars["Int"];
+  names?: InputMaybe<Scalars["String"]["input"]>;
+  page?: Scalars["Int"]["input"];
+  per_page?: Scalars["Int"]["input"];
   /** Filter by a performer they have performed in scenes with */
-  performed_with?: InputMaybe<Scalars["ID"]>;
+  performed_with?: InputMaybe<Scalars["ID"]["input"]>;
   piercings?: InputMaybe<BodyModificationCriterionInput>;
   sort?: PerformerSortEnum;
   /** Filter by a studio */
-  studio_id?: InputMaybe<Scalars["ID"]>;
+  studio_id?: InputMaybe<Scalars["ID"]["input"]>;
   tattoos?: InputMaybe<BodyModificationCriterionInput>;
   /** Filter to search urls - assumes like query unless quoted */
-  url?: InputMaybe<Scalars["String"]>;
+  url?: InputMaybe<Scalars["String"]["input"]>;
   waist_size?: InputMaybe<IntCriterionInput>;
 };
 
 export type PerformerScenesInput = {
   /** Filter by another performer that also performs in the scenes */
-  performed_with?: InputMaybe<Scalars["ID"]>;
+  performed_with?: InputMaybe<Scalars["ID"]["input"]>;
   /** Filter by a studio */
-  studio_id?: InputMaybe<Scalars["ID"]>;
+  studio_id?: InputMaybe<Scalars["ID"]["input"]>;
   /** Filter by tags */
   tags?: InputMaybe<MultiIdCriterionInput>;
 };
@@ -1012,33 +1021,33 @@ export enum PerformerSortEnum {
 
 export type PerformerStudio = {
   __typename: "PerformerStudio";
-  scene_count: Scalars["Int"];
+  scene_count: Scalars["Int"]["output"];
   studio: Studio;
 };
 
 export type PerformerUpdateInput = {
-  aliases?: InputMaybe<Array<Scalars["String"]>>;
-  band_size?: InputMaybe<Scalars["Int"]>;
-  birthdate?: InputMaybe<Scalars["String"]>;
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  band_size?: InputMaybe<Scalars["Int"]["input"]>;
+  birthdate?: InputMaybe<Scalars["String"]["input"]>;
   breast_type?: InputMaybe<BreastTypeEnum>;
-  career_end_year?: InputMaybe<Scalars["Int"]>;
-  career_start_year?: InputMaybe<Scalars["Int"]>;
-  country?: InputMaybe<Scalars["String"]>;
-  cup_size?: InputMaybe<Scalars["String"]>;
-  disambiguation?: InputMaybe<Scalars["String"]>;
+  career_end_year?: InputMaybe<Scalars["Int"]["input"]>;
+  career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
+  country?: InputMaybe<Scalars["String"]["input"]>;
+  cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
   eye_color?: InputMaybe<EyeColorEnum>;
   gender?: InputMaybe<GenderEnum>;
   hair_color?: InputMaybe<HairColorEnum>;
-  height?: InputMaybe<Scalars["Int"]>;
-  hip_size?: InputMaybe<Scalars["Int"]>;
-  id: Scalars["ID"];
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  name?: InputMaybe<Scalars["String"]>;
+  height?: InputMaybe<Scalars["Int"]["input"]>;
+  hip_size?: InputMaybe<Scalars["Int"]["input"]>;
+  id: Scalars["ID"]["input"];
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
   piercings?: InputMaybe<Array<BodyModificationInput>>;
   tattoos?: InputMaybe<Array<BodyModificationInput>>;
   urls?: InputMaybe<Array<UrlInput>>;
-  waist_size?: InputMaybe<Scalars["Int"]>;
+  waist_size?: InputMaybe<Scalars["Int"]["input"]>;
 };
 
 /** The query root for this schema */
@@ -1091,22 +1100,22 @@ export type Query = {
 
 /** The query root for this schema */
 export type QueryFindDraftArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 /** The query root for this schema */
 export type QueryFindEditArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 /** The query root for this schema */
 export type QueryFindPerformerArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 /** The query root for this schema */
 export type QueryFindSceneArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 /** The query root for this schema */
@@ -1116,7 +1125,7 @@ export type QueryFindSceneByFingerprintArgs = {
 
 /** The query root for this schema */
 export type QueryFindScenesByFingerprintsArgs = {
-  fingerprints: Array<Scalars["String"]>;
+  fingerprints: Array<Scalars["String"]["input"]>;
 };
 
 /** The query root for this schema */
@@ -1131,30 +1140,30 @@ export type QueryFindScenesBySceneFingerprintsArgs = {
 
 /** The query root for this schema */
 export type QueryFindSiteArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 /** The query root for this schema */
 export type QueryFindStudioArgs = {
-  id?: InputMaybe<Scalars["ID"]>;
-  name?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 /** The query root for this schema */
 export type QueryFindTagArgs = {
-  id?: InputMaybe<Scalars["ID"]>;
-  name?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 /** The query root for this schema */
 export type QueryFindTagCategoryArgs = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 /** The query root for this schema */
 export type QueryFindUserArgs = {
-  id?: InputMaybe<Scalars["ID"]>;
-  username?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]["input"]>;
+  username?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 /** The query root for this schema */
@@ -1194,32 +1203,32 @@ export type QueryQueryUsersArgs = {
 
 /** The query root for this schema */
 export type QuerySearchPerformerArgs = {
-  limit?: InputMaybe<Scalars["Int"]>;
-  term: Scalars["String"];
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  term: Scalars["String"]["input"];
 };
 
 /** The query root for this schema */
 export type QuerySearchSceneArgs = {
-  limit?: InputMaybe<Scalars["Int"]>;
-  term: Scalars["String"];
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  term: Scalars["String"]["input"];
 };
 
 /** The query root for this schema */
 export type QuerySearchTagArgs = {
-  limit?: InputMaybe<Scalars["Int"]>;
-  term: Scalars["String"];
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  term: Scalars["String"]["input"];
 };
 
 export type QueryEditsResultType = {
   __typename: "QueryEditsResultType";
-  count: Scalars["Int"];
+  count: Scalars["Int"]["output"];
   edits: Array<Edit>;
 };
 
 export type QueryExistingSceneInput = {
   fingerprints: Array<FingerprintInput>;
-  studio_id?: InputMaybe<Scalars["ID"]>;
-  title?: InputMaybe<Scalars["String"]>;
+  studio_id?: InputMaybe<Scalars["ID"]["input"]>;
+  title?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryExistingSceneResult = {
@@ -1230,53 +1239,53 @@ export type QueryExistingSceneResult = {
 
 export type QueryPerformersResultType = {
   __typename: "QueryPerformersResultType";
-  count: Scalars["Int"];
+  count: Scalars["Int"]["output"];
   performers: Array<Performer>;
 };
 
 export type QueryScenesResultType = {
   __typename: "QueryScenesResultType";
-  count: Scalars["Int"];
+  count: Scalars["Int"]["output"];
   scenes: Array<Scene>;
 };
 
 export type QuerySitesResultType = {
   __typename: "QuerySitesResultType";
-  count: Scalars["Int"];
+  count: Scalars["Int"]["output"];
   sites: Array<Site>;
 };
 
 export type QueryStudiosResultType = {
   __typename: "QueryStudiosResultType";
-  count: Scalars["Int"];
+  count: Scalars["Int"]["output"];
   studios: Array<Studio>;
 };
 
 export type QueryTagCategoriesResultType = {
   __typename: "QueryTagCategoriesResultType";
-  count: Scalars["Int"];
+  count: Scalars["Int"]["output"];
   tag_categories: Array<TagCategory>;
 };
 
 export type QueryTagsResultType = {
   __typename: "QueryTagsResultType";
-  count: Scalars["Int"];
+  count: Scalars["Int"]["output"];
   tags: Array<Tag>;
 };
 
 export type QueryUsersResultType = {
   __typename: "QueryUsersResultType";
-  count: Scalars["Int"];
+  count: Scalars["Int"]["output"];
   users: Array<User>;
 };
 
 export type ResetPasswordInput = {
-  email: Scalars["String"];
+  email: Scalars["String"]["input"];
 };
 
 export type RevokeInviteInput = {
-  amount: Scalars["Int"];
-  user_id: Scalars["ID"];
+  amount: Scalars["Int"]["input"];
+  user_id: Scalars["ID"]["input"];
 };
 
 export type RoleCriterionInput = {
@@ -1299,79 +1308,79 @@ export enum RoleEnum {
 
 export type Scene = {
   __typename: "Scene";
-  code?: Maybe<Scalars["String"]>;
-  created: Scalars["Time"];
+  code?: Maybe<Scalars["String"]["output"]>;
+  created: Scalars["Time"]["output"];
   /** @deprecated Please use `release_date` instead */
-  date?: Maybe<Scalars["String"]>;
-  deleted: Scalars["Boolean"];
-  details?: Maybe<Scalars["String"]>;
-  director?: Maybe<Scalars["String"]>;
-  duration?: Maybe<Scalars["Int"]>;
+  date?: Maybe<Scalars["String"]["output"]>;
+  deleted: Scalars["Boolean"]["output"];
+  details?: Maybe<Scalars["String"]["output"]>;
+  director?: Maybe<Scalars["String"]["output"]>;
+  duration?: Maybe<Scalars["Int"]["output"]>;
   edits: Array<Edit>;
   fingerprints: Array<Fingerprint>;
-  id: Scalars["ID"];
+  id: Scalars["ID"]["output"];
   images: Array<Image>;
   performers: Array<PerformerAppearance>;
-  release_date?: Maybe<Scalars["String"]>;
+  release_date?: Maybe<Scalars["String"]["output"]>;
   studio?: Maybe<Studio>;
   tags: Array<Tag>;
-  title?: Maybe<Scalars["String"]>;
-  updated: Scalars["Time"];
+  title?: Maybe<Scalars["String"]["output"]>;
+  updated: Scalars["Time"]["output"];
   urls: Array<Url>;
 };
 
 export type SceneFingerprintsArgs = {
-  is_submitted?: InputMaybe<Scalars["Boolean"]>;
+  is_submitted?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
 export type SceneCreateInput = {
-  code?: InputMaybe<Scalars["String"]>;
-  date: Scalars["String"];
-  details?: InputMaybe<Scalars["String"]>;
-  director?: InputMaybe<Scalars["String"]>;
-  duration?: InputMaybe<Scalars["Int"]>;
+  code?: InputMaybe<Scalars["String"]["input"]>;
+  date: Scalars["String"]["input"];
+  details?: InputMaybe<Scalars["String"]["input"]>;
+  director?: InputMaybe<Scalars["String"]["input"]>;
+  duration?: InputMaybe<Scalars["Int"]["input"]>;
   fingerprints: Array<FingerprintEditInput>;
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
-  studio_id?: InputMaybe<Scalars["ID"]>;
-  tag_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  title?: InputMaybe<Scalars["String"]>;
+  studio_id?: InputMaybe<Scalars["ID"]["input"]>;
+  tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  title?: InputMaybe<Scalars["String"]["input"]>;
   urls?: InputMaybe<Array<UrlInput>>;
 };
 
 export type SceneDestroyInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type SceneDraft = {
   __typename: "SceneDraft";
-  code?: Maybe<Scalars["String"]>;
-  date?: Maybe<Scalars["String"]>;
-  details?: Maybe<Scalars["String"]>;
-  director?: Maybe<Scalars["String"]>;
+  code?: Maybe<Scalars["String"]["output"]>;
+  date?: Maybe<Scalars["String"]["output"]>;
+  details?: Maybe<Scalars["String"]["output"]>;
+  director?: Maybe<Scalars["String"]["output"]>;
   fingerprints: Array<DraftFingerprint>;
-  id?: Maybe<Scalars["ID"]>;
+  id?: Maybe<Scalars["ID"]["output"]>;
   image?: Maybe<Image>;
   performers: Array<SceneDraftPerformer>;
   studio?: Maybe<SceneDraftStudio>;
   tags?: Maybe<Array<SceneDraftTag>>;
-  title?: Maybe<Scalars["String"]>;
+  title?: Maybe<Scalars["String"]["output"]>;
   url?: Maybe<Url>;
 };
 
 export type SceneDraftInput = {
-  code?: InputMaybe<Scalars["String"]>;
-  date?: InputMaybe<Scalars["String"]>;
-  details?: InputMaybe<Scalars["String"]>;
-  director?: InputMaybe<Scalars["String"]>;
+  code?: InputMaybe<Scalars["String"]["input"]>;
+  date?: InputMaybe<Scalars["String"]["input"]>;
+  details?: InputMaybe<Scalars["String"]["input"]>;
+  director?: InputMaybe<Scalars["String"]["input"]>;
   fingerprints: Array<FingerprintInput>;
-  id?: InputMaybe<Scalars["ID"]>;
-  image?: InputMaybe<Scalars["Upload"]>;
+  id?: InputMaybe<Scalars["ID"]["input"]>;
+  image?: InputMaybe<Scalars["Upload"]["input"]>;
   performers: Array<DraftEntityInput>;
   studio?: InputMaybe<DraftEntityInput>;
   tags?: InputMaybe<Array<DraftEntityInput>>;
-  title?: InputMaybe<Scalars["String"]>;
-  url?: InputMaybe<Scalars["String"]>;
+  title?: InputMaybe<Scalars["String"]["input"]>;
+  url?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type SceneDraftPerformer = DraftEntity | Performer;
@@ -1388,12 +1397,12 @@ export type SceneEdit = {
   added_performers?: Maybe<Array<PerformerAppearance>>;
   added_tags?: Maybe<Array<Tag>>;
   added_urls?: Maybe<Array<Url>>;
-  code?: Maybe<Scalars["String"]>;
-  date?: Maybe<Scalars["String"]>;
-  details?: Maybe<Scalars["String"]>;
-  director?: Maybe<Scalars["String"]>;
-  draft_id?: Maybe<Scalars["ID"]>;
-  duration?: Maybe<Scalars["Int"]>;
+  code?: Maybe<Scalars["String"]["output"]>;
+  date?: Maybe<Scalars["String"]["output"]>;
+  details?: Maybe<Scalars["String"]["output"]>;
+  director?: Maybe<Scalars["String"]["output"]>;
+  draft_id?: Maybe<Scalars["ID"]["output"]>;
+  duration?: Maybe<Scalars["Int"]["output"]>;
   fingerprints: Array<Fingerprint>;
   images: Array<Image>;
   performers: Array<PerformerAppearance>;
@@ -1404,23 +1413,23 @@ export type SceneEdit = {
   removed_urls?: Maybe<Array<Url>>;
   studio?: Maybe<Studio>;
   tags: Array<Tag>;
-  title?: Maybe<Scalars["String"]>;
+  title?: Maybe<Scalars["String"]["output"]>;
   urls: Array<Url>;
 };
 
 export type SceneEditDetailsInput = {
-  code?: InputMaybe<Scalars["String"]>;
-  date?: InputMaybe<Scalars["String"]>;
-  details?: InputMaybe<Scalars["String"]>;
-  director?: InputMaybe<Scalars["String"]>;
-  draft_id?: InputMaybe<Scalars["ID"]>;
-  duration?: InputMaybe<Scalars["Int"]>;
+  code?: InputMaybe<Scalars["String"]["input"]>;
+  date?: InputMaybe<Scalars["String"]["input"]>;
+  details?: InputMaybe<Scalars["String"]["input"]>;
+  director?: InputMaybe<Scalars["String"]["input"]>;
+  draft_id?: InputMaybe<Scalars["ID"]["input"]>;
+  duration?: InputMaybe<Scalars["Int"]["input"]>;
   fingerprints?: InputMaybe<Array<FingerprintInput>>;
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
-  studio_id?: InputMaybe<Scalars["ID"]>;
-  tag_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  title?: InputMaybe<Scalars["String"]>;
+  studio_id?: InputMaybe<Scalars["ID"]["input"]>;
+  tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  title?: InputMaybe<Scalars["String"]["input"]>;
   urls?: InputMaybe<Array<UrlInput>>;
 };
 
@@ -1441,11 +1450,11 @@ export type SceneQueryInput = {
   /** Filter to only include scenes with these fingerprints */
   fingerprints?: InputMaybe<MultiStringCriterionInput>;
   /** Filter to scenes with fingerprints submitted by the user */
-  has_fingerprint_submissions?: InputMaybe<Scalars["Boolean"]>;
-  page?: Scalars["Int"];
+  has_fingerprint_submissions?: InputMaybe<Scalars["Boolean"]["input"]>;
+  page?: Scalars["Int"]["input"];
   /** Filter to only include scenes with this studio as primary or parent */
-  parentStudio?: InputMaybe<Scalars["String"]>;
-  per_page?: Scalars["Int"];
+  parentStudio?: InputMaybe<Scalars["String"]["input"]>;
+  per_page?: Scalars["Int"]["input"];
   /** Filter to only include scenes with these performers */
   performers?: InputMaybe<MultiIdCriterionInput>;
   sort?: SceneSortEnum;
@@ -1454,11 +1463,11 @@ export type SceneQueryInput = {
   /** Filter to only include scenes with these tags */
   tags?: InputMaybe<MultiIdCriterionInput>;
   /** Filter to search title and details - assumes like query unless quoted */
-  text?: InputMaybe<Scalars["String"]>;
+  text?: InputMaybe<Scalars["String"]["input"]>;
   /** Filter to search title - assumes like query unless quoted */
-  title?: InputMaybe<Scalars["String"]>;
+  title?: InputMaybe<Scalars["String"]["input"]>;
   /** Filter to search urls - assumes like query unless quoted */
-  url?: InputMaybe<Scalars["String"]>;
+  url?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export enum SceneSortEnum {
@@ -1470,52 +1479,52 @@ export enum SceneSortEnum {
 }
 
 export type SceneUpdateInput = {
-  code?: InputMaybe<Scalars["String"]>;
-  date?: InputMaybe<Scalars["String"]>;
-  details?: InputMaybe<Scalars["String"]>;
-  director?: InputMaybe<Scalars["String"]>;
-  duration?: InputMaybe<Scalars["Int"]>;
+  code?: InputMaybe<Scalars["String"]["input"]>;
+  date?: InputMaybe<Scalars["String"]["input"]>;
+  details?: InputMaybe<Scalars["String"]["input"]>;
+  director?: InputMaybe<Scalars["String"]["input"]>;
+  duration?: InputMaybe<Scalars["Int"]["input"]>;
   fingerprints?: InputMaybe<Array<FingerprintEditInput>>;
-  id: Scalars["ID"];
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
+  id: Scalars["ID"]["input"];
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
-  studio_id?: InputMaybe<Scalars["ID"]>;
-  tag_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  title?: InputMaybe<Scalars["String"]>;
+  studio_id?: InputMaybe<Scalars["ID"]["input"]>;
+  tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  title?: InputMaybe<Scalars["String"]["input"]>;
   urls?: InputMaybe<Array<UrlInput>>;
 };
 
 export type Site = {
   __typename: "Site";
-  created: Scalars["Time"];
-  description?: Maybe<Scalars["String"]>;
-  icon: Scalars["String"];
-  id: Scalars["ID"];
-  name: Scalars["String"];
-  regex?: Maybe<Scalars["String"]>;
-  updated: Scalars["Time"];
-  url?: Maybe<Scalars["String"]>;
+  created: Scalars["Time"]["output"];
+  description?: Maybe<Scalars["String"]["output"]>;
+  icon: Scalars["String"]["output"];
+  id: Scalars["ID"]["output"];
+  name: Scalars["String"]["output"];
+  regex?: Maybe<Scalars["String"]["output"]>;
+  updated: Scalars["Time"]["output"];
+  url?: Maybe<Scalars["String"]["output"]>;
   valid_types: Array<ValidSiteTypeEnum>;
 };
 
 export type SiteCreateInput = {
-  description?: InputMaybe<Scalars["String"]>;
-  name: Scalars["String"];
-  regex?: InputMaybe<Scalars["String"]>;
-  url?: InputMaybe<Scalars["String"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  name: Scalars["String"]["input"];
+  regex?: InputMaybe<Scalars["String"]["input"]>;
+  url?: InputMaybe<Scalars["String"]["input"]>;
   valid_types: Array<ValidSiteTypeEnum>;
 };
 
 export type SiteDestroyInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type SiteUpdateInput = {
-  description?: InputMaybe<Scalars["String"]>;
-  id: Scalars["ID"];
-  name: Scalars["String"];
-  regex?: InputMaybe<Scalars["String"]>;
-  url?: InputMaybe<Scalars["String"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  id: Scalars["ID"]["input"];
+  name: Scalars["String"]["input"];
+  regex?: InputMaybe<Scalars["String"]["input"]>;
+  url?: InputMaybe<Scalars["String"]["input"]>;
   valid_types: Array<ValidSiteTypeEnum>;
 };
 
@@ -1526,35 +1535,35 @@ export enum SortDirectionEnum {
 
 export type StashBoxConfig = {
   __typename: "StashBoxConfig";
-  allow_webui_scene_create: Scalars["Boolean"];
-  guidelines_url: Scalars["String"];
-  host_url: Scalars["String"];
-  min_destructive_voting_period: Scalars["Int"];
-  require_activation: Scalars["Boolean"];
-  require_invite: Scalars["Boolean"];
-  vote_application_threshold: Scalars["Int"];
-  vote_cron_interval: Scalars["String"];
-  vote_promotion_threshold?: Maybe<Scalars["Int"]>;
-  voting_period: Scalars["Int"];
+  guidelines_url: Scalars["String"]["output"];
+  host_url: Scalars["String"]["output"];
+  min_destructive_voting_period: Scalars["Int"]["output"];
+  require_activation: Scalars["Boolean"]["output"];
+  require_invite: Scalars["Boolean"]["output"];
+  require_scene_draft: Scalars["Boolean"]["output"];
+  vote_application_threshold: Scalars["Int"]["output"];
+  vote_cron_interval: Scalars["String"]["output"];
+  vote_promotion_threshold?: Maybe<Scalars["Int"]["output"]>;
+  voting_period: Scalars["Int"]["output"];
 };
 
 export type StringCriterionInput = {
   modifier: CriterionModifier;
-  value: Scalars["String"];
+  value: Scalars["String"]["input"];
 };
 
 export type Studio = {
   __typename: "Studio";
   child_studios: Array<Studio>;
-  created: Scalars["Time"];
-  deleted: Scalars["Boolean"];
-  id: Scalars["ID"];
+  created: Scalars["Time"]["output"];
+  deleted: Scalars["Boolean"]["output"];
+  id: Scalars["ID"]["output"];
   images: Array<Image>;
-  is_favorite: Scalars["Boolean"];
-  name: Scalars["String"];
+  is_favorite: Scalars["Boolean"]["output"];
+  name: Scalars["String"]["output"];
   parent?: Maybe<Studio>;
   performers: QueryPerformersResultType;
-  updated: Scalars["Time"];
+  updated: Scalars["Time"]["output"];
   urls: Array<Url>;
 };
 
@@ -1563,14 +1572,14 @@ export type StudioPerformersArgs = {
 };
 
 export type StudioCreateInput = {
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  name: Scalars["String"];
-  parent_id?: InputMaybe<Scalars["ID"]>;
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  name: Scalars["String"]["input"];
+  parent_id?: InputMaybe<Scalars["ID"]["input"]>;
   urls?: InputMaybe<Array<UrlInput>>;
 };
 
 export type StudioDestroyInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type StudioEdit = {
@@ -1579,7 +1588,7 @@ export type StudioEdit = {
   /** Added and modified URLs */
   added_urls?: Maybe<Array<Url>>;
   images: Array<Image>;
-  name?: Maybe<Scalars["String"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
   parent?: Maybe<Studio>;
   removed_images?: Maybe<Array<Maybe<Image>>>;
   removed_urls?: Maybe<Array<Url>>;
@@ -1587,9 +1596,9 @@ export type StudioEdit = {
 };
 
 export type StudioEditDetailsInput = {
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  name?: InputMaybe<Scalars["String"]>;
-  parent_id?: InputMaybe<Scalars["ID"]>;
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  parent_id?: InputMaybe<Scalars["ID"]["input"]>;
   urls?: InputMaybe<Array<UrlInput>>;
 };
 
@@ -1601,19 +1610,19 @@ export type StudioEditInput = {
 
 export type StudioQueryInput = {
   direction?: SortDirectionEnum;
-  has_parent?: InputMaybe<Scalars["Boolean"]>;
+  has_parent?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Filter by studio favorite status for the current user */
-  is_favorite?: InputMaybe<Scalars["Boolean"]>;
+  is_favorite?: InputMaybe<Scalars["Boolean"]["input"]>;
   /** Filter to search name - assumes like query unless quoted */
-  name?: InputMaybe<Scalars["String"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
   /** Filter to search studio and parent studio name - assumes like query unless quoted */
-  names?: InputMaybe<Scalars["String"]>;
-  page?: Scalars["Int"];
+  names?: InputMaybe<Scalars["String"]["input"]>;
+  page?: Scalars["Int"]["input"];
   parent?: InputMaybe<IdCriterionInput>;
-  per_page?: Scalars["Int"];
+  per_page?: Scalars["Int"]["input"];
   sort?: StudioSortEnum;
   /** Filter to search url - assumes like query unless quoted */
-  url?: InputMaybe<Scalars["String"]>;
+  url?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export enum StudioSortEnum {
@@ -1623,77 +1632,77 @@ export enum StudioSortEnum {
 }
 
 export type StudioUpdateInput = {
-  id: Scalars["ID"];
-  image_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  name?: InputMaybe<Scalars["String"]>;
-  parent_id?: InputMaybe<Scalars["ID"]>;
+  id: Scalars["ID"]["input"];
+  image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  parent_id?: InputMaybe<Scalars["ID"]["input"]>;
   urls?: InputMaybe<Array<UrlInput>>;
 };
 
 export type Tag = {
   __typename: "Tag";
-  aliases: Array<Scalars["String"]>;
+  aliases: Array<Scalars["String"]["output"]>;
   category?: Maybe<TagCategory>;
-  created: Scalars["Time"];
-  deleted: Scalars["Boolean"];
-  description?: Maybe<Scalars["String"]>;
+  created: Scalars["Time"]["output"];
+  deleted: Scalars["Boolean"]["output"];
+  description?: Maybe<Scalars["String"]["output"]>;
   edits: Array<Edit>;
-  id: Scalars["ID"];
-  name: Scalars["String"];
-  updated: Scalars["Time"];
+  id: Scalars["ID"]["output"];
+  name: Scalars["String"]["output"];
+  updated: Scalars["Time"]["output"];
 };
 
 export type TagCategory = {
   __typename: "TagCategory";
-  description?: Maybe<Scalars["String"]>;
+  description?: Maybe<Scalars["String"]["output"]>;
   group: TagGroupEnum;
-  id: Scalars["ID"];
-  name: Scalars["String"];
+  id: Scalars["ID"]["output"];
+  name: Scalars["String"]["output"];
 };
 
 export type TagCategoryCreateInput = {
-  description?: InputMaybe<Scalars["String"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
   group: TagGroupEnum;
-  name: Scalars["String"];
+  name: Scalars["String"]["input"];
 };
 
 export type TagCategoryDestroyInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type TagCategoryUpdateInput = {
-  description?: InputMaybe<Scalars["String"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
   group?: InputMaybe<TagGroupEnum>;
-  id: Scalars["ID"];
-  name?: InputMaybe<Scalars["String"]>;
+  id: Scalars["ID"]["input"];
+  name?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type TagCreateInput = {
-  aliases?: InputMaybe<Array<Scalars["String"]>>;
-  category_id?: InputMaybe<Scalars["ID"]>;
-  description?: InputMaybe<Scalars["String"]>;
-  name: Scalars["String"];
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  category_id?: InputMaybe<Scalars["ID"]["input"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  name: Scalars["String"]["input"];
 };
 
 export type TagDestroyInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type TagEdit = {
   __typename: "TagEdit";
-  added_aliases?: Maybe<Array<Scalars["String"]>>;
-  aliases: Array<Scalars["String"]>;
+  added_aliases?: Maybe<Array<Scalars["String"]["output"]>>;
+  aliases: Array<Scalars["String"]["output"]>;
   category?: Maybe<TagCategory>;
-  description?: Maybe<Scalars["String"]>;
-  name?: Maybe<Scalars["String"]>;
-  removed_aliases?: Maybe<Array<Scalars["String"]>>;
+  description?: Maybe<Scalars["String"]["output"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
+  removed_aliases?: Maybe<Array<Scalars["String"]["output"]>>;
 };
 
 export type TagEditDetailsInput = {
-  aliases?: InputMaybe<Array<Scalars["String"]>>;
-  category_id?: InputMaybe<Scalars["ID"]>;
-  description?: InputMaybe<Scalars["String"]>;
-  name?: InputMaybe<Scalars["String"]>;
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  category_id?: InputMaybe<Scalars["ID"]["input"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type TagEditInput = {
@@ -1710,17 +1719,17 @@ export enum TagGroupEnum {
 
 export type TagQueryInput = {
   /** Filter to category ID */
-  category_id?: InputMaybe<Scalars["ID"]>;
+  category_id?: InputMaybe<Scalars["ID"]["input"]>;
   direction?: SortDirectionEnum;
   /** Filter to search name - assumes like query unless quoted */
-  name?: InputMaybe<Scalars["String"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
   /** Searches name and aliases - assumes like query unless quoted */
-  names?: InputMaybe<Scalars["String"]>;
-  page?: Scalars["Int"];
-  per_page?: Scalars["Int"];
+  names?: InputMaybe<Scalars["String"]["input"]>;
+  page?: Scalars["Int"]["input"];
+  per_page?: Scalars["Int"]["input"];
   sort?: TagSortEnum;
   /** Filter to search name, aliases and description - assumes like query unless quoted */
-  text?: InputMaybe<Scalars["String"]>;
+  text?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export enum TagSortEnum {
@@ -1730,11 +1739,11 @@ export enum TagSortEnum {
 }
 
 export type TagUpdateInput = {
-  aliases?: InputMaybe<Array<Scalars["String"]>>;
-  category_id?: InputMaybe<Scalars["ID"]>;
-  description?: InputMaybe<Scalars["String"]>;
-  id: Scalars["ID"];
-  name?: InputMaybe<Scalars["String"]>;
+  aliases?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  category_id?: InputMaybe<Scalars["ID"]["input"]>;
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  id: Scalars["ID"]["input"];
+  name?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export enum TargetTypeEnum {
@@ -1748,32 +1757,32 @@ export type Url = {
   __typename: "URL";
   site: Site;
   /** @deprecated Use the site field instead */
-  type: Scalars["String"];
-  url: Scalars["String"];
+  type: Scalars["String"]["output"];
+  url: Scalars["String"]["output"];
 };
 
 export type UrlInput = {
-  site_id: Scalars["ID"];
-  url: Scalars["String"];
+  site_id: Scalars["ID"]["input"];
+  url: Scalars["String"]["input"];
 };
 
 export type User = {
   __typename: "User";
   /** @deprecated Use invite_codes instead */
-  active_invite_codes?: Maybe<Array<Scalars["String"]>>;
+  active_invite_codes?: Maybe<Array<Scalars["String"]["output"]>>;
   /** Calls to the API from this user over a configurable time period */
-  api_calls: Scalars["Int"];
+  api_calls: Scalars["Int"]["output"];
   /** Should not be visible to other users */
-  api_key?: Maybe<Scalars["String"]>;
+  api_key?: Maybe<Scalars["String"]["output"]>;
   /**  Edit counts by status  */
   edit_count: UserEditCount;
   /** Should not be visible to other users */
-  email?: Maybe<Scalars["String"]>;
-  id: Scalars["ID"];
+  email?: Maybe<Scalars["String"]["output"]>;
+  id: Scalars["ID"]["output"];
   invite_codes?: Maybe<Array<InviteKey>>;
-  invite_tokens?: Maybe<Scalars["Int"]>;
+  invite_tokens?: Maybe<Scalars["Int"]["output"]>;
   invited_by?: Maybe<User>;
-  name: Scalars["String"];
+  name: Scalars["String"]["output"];
   /** Should not be visible to other users */
   roles?: Maybe<Array<RoleEnum>>;
   /**  Vote counts by type  */
@@ -1782,48 +1791,48 @@ export type User = {
 
 export type UserChangePasswordInput = {
   /** Password in plain text */
-  existing_password?: InputMaybe<Scalars["String"]>;
-  new_password: Scalars["String"];
-  reset_key?: InputMaybe<Scalars["String"]>;
+  existing_password?: InputMaybe<Scalars["String"]["input"]>;
+  new_password: Scalars["String"]["input"];
+  reset_key?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type UserCreateInput = {
-  email: Scalars["String"];
-  invited_by_id?: InputMaybe<Scalars["ID"]>;
-  name: Scalars["String"];
+  email: Scalars["String"]["input"];
+  invited_by_id?: InputMaybe<Scalars["ID"]["input"]>;
+  name: Scalars["String"]["input"];
   /** Password in plain text */
-  password: Scalars["String"];
+  password: Scalars["String"]["input"];
   roles: Array<RoleEnum>;
 };
 
 export type UserDestroyInput = {
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 };
 
 export type UserEditCount = {
   __typename: "UserEditCount";
-  accepted: Scalars["Int"];
-  canceled: Scalars["Int"];
-  failed: Scalars["Int"];
-  immediate_accepted: Scalars["Int"];
-  immediate_rejected: Scalars["Int"];
-  pending: Scalars["Int"];
-  rejected: Scalars["Int"];
+  accepted: Scalars["Int"]["output"];
+  canceled: Scalars["Int"]["output"];
+  failed: Scalars["Int"]["output"];
+  immediate_accepted: Scalars["Int"]["output"];
+  immediate_rejected: Scalars["Int"]["output"];
+  pending: Scalars["Int"]["output"];
+  rejected: Scalars["Int"]["output"];
 };
 
 export type UserQueryInput = {
   /** Filter by api key */
-  apiKey?: InputMaybe<Scalars["String"]>;
+  apiKey?: InputMaybe<Scalars["String"]["input"]>;
   /** Filter by number of API calls */
   api_calls?: InputMaybe<IntCriterionInput>;
   /** Filter to search email - assumes like query unless quoted */
-  email?: InputMaybe<Scalars["String"]>;
+  email?: InputMaybe<Scalars["String"]["input"]>;
   /** Filter by user that invited */
-  invited_by?: InputMaybe<Scalars["ID"]>;
+  invited_by?: InputMaybe<Scalars["ID"]["input"]>;
   /** Filter to search user name - assumes like query unless quoted */
-  name?: InputMaybe<Scalars["String"]>;
-  page?: Scalars["Int"];
-  per_page?: Scalars["Int"];
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  page?: Scalars["Int"]["input"];
+  per_page?: Scalars["Int"]["input"];
   /** Filter by roles */
   roles?: InputMaybe<RoleCriterionInput>;
   /** Filter by successful edits */
@@ -1837,21 +1846,21 @@ export type UserQueryInput = {
 };
 
 export type UserUpdateInput = {
-  email?: InputMaybe<Scalars["String"]>;
-  id: Scalars["ID"];
-  name?: InputMaybe<Scalars["String"]>;
+  email?: InputMaybe<Scalars["String"]["input"]>;
+  id: Scalars["ID"]["input"];
+  name?: InputMaybe<Scalars["String"]["input"]>;
   /** Password in plain text */
-  password?: InputMaybe<Scalars["String"]>;
+  password?: InputMaybe<Scalars["String"]["input"]>;
   roles?: InputMaybe<Array<RoleEnum>>;
 };
 
 export type UserVoteCount = {
   __typename: "UserVoteCount";
-  abstain: Scalars["Int"];
-  accept: Scalars["Int"];
-  immediate_accept: Scalars["Int"];
-  immediate_reject: Scalars["Int"];
-  reject: Scalars["Int"];
+  abstain: Scalars["Int"]["output"];
+  accept: Scalars["Int"]["output"];
+  immediate_accept: Scalars["Int"]["output"];
+  immediate_reject: Scalars["Int"]["output"];
+  reject: Scalars["Int"]["output"];
 };
 
 export enum UserVotedFilterEnum {
@@ -1869,10 +1878,10 @@ export enum ValidSiteTypeEnum {
 
 export type Version = {
   __typename: "Version";
-  build_time: Scalars["String"];
-  build_type: Scalars["String"];
-  hash: Scalars["String"];
-  version: Scalars["String"];
+  build_time: Scalars["String"]["output"];
+  build_type: Scalars["String"]["output"];
+  hash: Scalars["String"]["output"];
+  version: Scalars["String"]["output"];
 };
 
 export enum VoteStatusEnum {
@@ -4311,7 +4320,7 @@ export type ChangePasswordMutation = {
 };
 
 export type DeleteDraftMutationVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type DeleteDraftMutation = {
@@ -4384,8 +4393,8 @@ export type EditCommentMutation = {
 };
 
 export type FavoritePerformerMutationVariables = Exact<{
-  id: Scalars["ID"];
-  favorite: Scalars["Boolean"];
+  id: Scalars["ID"]["input"];
+  favorite: Scalars["Boolean"]["input"];
 }>;
 
 export type FavoritePerformerMutation = {
@@ -4394,8 +4403,8 @@ export type FavoritePerformerMutation = {
 };
 
 export type FavoriteStudioMutationVariables = Exact<{
-  id: Scalars["ID"];
-  favorite: Scalars["Boolean"];
+  id: Scalars["ID"]["input"];
+  favorite: Scalars["Boolean"]["input"];
 }>;
 
 export type FavoriteStudioMutation = {
@@ -5459,7 +5468,7 @@ export type PerformerEditMutation = {
 };
 
 export type PerformerEditUpdateMutationVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   performerData: PerformerEditInput;
 }>;
 
@@ -6488,7 +6497,7 @@ export type PerformerEditUpdateMutation = {
 };
 
 export type RegenerateApiKeyMutationVariables = Exact<{
-  user_id?: InputMaybe<Scalars["ID"]>;
+  user_id?: InputMaybe<Scalars["ID"]["input"]>;
 }>;
 
 export type RegenerateApiKeyMutation = {
@@ -6497,7 +6506,7 @@ export type RegenerateApiKeyMutation = {
 };
 
 export type RescindInviteCodeMutationVariables = Exact<{
-  code: Scalars["ID"];
+  code: Scalars["ID"]["input"];
 }>;
 
 export type RescindInviteCodeMutation = {
@@ -7552,7 +7561,7 @@ export type SceneEditMutation = {
 };
 
 export type SceneEditUpdateMutationVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   sceneData: SceneEditInput;
 }>;
 
@@ -9609,7 +9618,7 @@ export type StudioEditMutation = {
 };
 
 export type StudioEditUpdateMutationVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   studioData: StudioEditInput;
 }>;
 
@@ -11666,7 +11675,7 @@ export type TagEditMutation = {
 };
 
 export type TagEditUpdateMutationVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
   tagData: TagEditInput;
 }>;
 
@@ -12695,10 +12704,10 @@ export type TagEditUpdateMutation = {
 };
 
 export type UnmatchFingerprintMutationVariables = Exact<{
-  scene_id: Scalars["ID"];
+  scene_id: Scalars["ID"]["input"];
   algorithm: FingerprintAlgorithm;
-  hash: Scalars["String"];
-  duration: Scalars["Int"];
+  hash: Scalars["String"]["input"];
+  duration: Scalars["Int"]["input"];
 }>;
 
 export type UnmatchFingerprintMutation = {
@@ -13874,7 +13883,7 @@ export type CategoriesQuery = {
 };
 
 export type CategoryQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type CategoryQuery = {
@@ -13903,12 +13912,12 @@ export type ConfigQuery = {
     min_destructive_voting_period: number;
     vote_cron_interval: string;
     guidelines_url: string;
-    allow_webui_scene_create: boolean;
+    require_scene_draft: boolean;
   };
 };
 
 export type DraftQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type DraftQuery = {
@@ -14117,7 +14126,7 @@ export type DraftsQuery = {
 };
 
 export type EditQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type EditQuery = {
@@ -15145,7 +15154,7 @@ export type EditQuery = {
 };
 
 export type EditUpdateQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type EditUpdateQuery = {
@@ -16635,7 +16644,7 @@ export type EditsQuery = {
 };
 
 export type FullPerformerQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type FullPerformerQuery = {
@@ -16712,7 +16721,7 @@ export type MeQuery = {
 
 export type PendingEditsCountQueryVariables = Exact<{
   type: TargetTypeEnum;
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type PendingEditsCountQuery = {
@@ -16721,7 +16730,7 @@ export type PendingEditsCountQuery = {
 };
 
 export type PerformerQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type PerformerQuery = {
@@ -16833,7 +16842,7 @@ export type PerformersQuery = {
 };
 
 export type PublicUserQueryVariables = Exact<{
-  name: Scalars["String"];
+  name: Scalars["String"]["input"];
 }>;
 
 export type PublicUserQuery = {
@@ -17978,7 +17987,7 @@ export type QueryExistingSceneQuery = {
 };
 
 export type SceneQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type SceneQuery = {
@@ -18045,15 +18054,15 @@ export type SceneQuery = {
 };
 
 export type ScenePairingsQueryVariables = Exact<{
-  performerId: Scalars["ID"];
-  names?: InputMaybe<Scalars["String"]>;
+  performerId: Scalars["ID"]["input"];
+  names?: InputMaybe<Scalars["String"]["input"]>;
   gender?: InputMaybe<GenderFilterEnum>;
-  favorite?: InputMaybe<Scalars["Boolean"]>;
-  page?: Scalars["Int"];
-  per_page?: Scalars["Int"];
+  favorite?: InputMaybe<Scalars["Boolean"]["input"]>;
+  page?: Scalars["Int"]["input"];
+  per_page?: Scalars["Int"]["input"];
   direction: SortDirectionEnum;
   sort: PerformerSortEnum;
-  fetchScenes: Scalars["Boolean"];
+  fetchScenes: Scalars["Boolean"]["input"];
 }>;
 
 export type ScenePairingsQuery = {
@@ -18188,8 +18197,8 @@ export type ScenesWithoutCountQuery = {
 };
 
 export type SearchAllQueryVariables = Exact<{
-  term: Scalars["String"];
-  limit?: InputMaybe<Scalars["Int"]>;
+  term: Scalars["String"]["input"];
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
 }>;
 
 export type SearchAllQuery = {
@@ -18259,8 +18268,8 @@ export type SearchAllQuery = {
 };
 
 export type SearchPerformersQueryVariables = Exact<{
-  term: Scalars["String"];
-  limit?: InputMaybe<Scalars["Int"]>;
+  term: Scalars["String"]["input"];
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
 }>;
 
 export type SearchPerformersQuery = {
@@ -18295,8 +18304,8 @@ export type SearchPerformersQuery = {
 };
 
 export type SearchTagsQueryVariables = Exact<{
-  term: Scalars["String"];
-  limit?: InputMaybe<Scalars["Int"]>;
+  term: Scalars["String"]["input"];
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
 }>;
 
 export type SearchTagsQuery = {
@@ -18312,7 +18321,7 @@ export type SearchTagsQuery = {
 };
 
 export type SiteQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type SiteQuery = {
@@ -18353,7 +18362,7 @@ export type SitesQuery = {
 };
 
 export type StudioQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id: Scalars["ID"]["input"];
 }>;
 
 export type StudioQuery = {
@@ -18382,12 +18391,12 @@ export type StudioQuery = {
 };
 
 export type StudioPerformersQueryVariables = Exact<{
-  studioId: Scalars["ID"];
+  studioId: Scalars["ID"]["input"];
   gender?: InputMaybe<GenderFilterEnum>;
-  favorite?: InputMaybe<Scalars["Boolean"]>;
-  names?: InputMaybe<Scalars["String"]>;
-  page?: Scalars["Int"];
-  per_page?: Scalars["Int"];
+  favorite?: InputMaybe<Scalars["Boolean"]["input"]>;
+  names?: InputMaybe<Scalars["String"]["input"]>;
+  page?: Scalars["Int"]["input"];
+  per_page?: Scalars["Int"]["input"];
   direction: SortDirectionEnum;
   sort: PerformerSortEnum;
 }>;
@@ -18467,8 +18476,8 @@ export type StudiosQuery = {
 };
 
 export type TagQueryVariables = Exact<{
-  name?: InputMaybe<Scalars["String"]>;
-  id?: InputMaybe<Scalars["ID"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
+  id?: InputMaybe<Scalars["ID"]["input"]>;
 }>;
 
 export type TagQuery = {
@@ -18510,7 +18519,7 @@ export type TagsQuery = {
 };
 
 export type UserQueryVariables = Exact<{
-  name: Scalars["String"];
+  name: Scalars["String"]["input"];
 }>;
 
 export type UserQuery = {
@@ -39217,7 +39226,7 @@ export const ConfigDocument = {
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "allow_webui_scene_create" },
+                  name: { kind: "Name", value: "require_scene_draft" },
                 },
               ],
             },
