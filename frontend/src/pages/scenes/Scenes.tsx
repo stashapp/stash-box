@@ -28,12 +28,11 @@ const Scenes: FC = () => {
     <>
       <div className="d-flex">
         <h3 className="me-4">Scenes</h3>
-        {canEdit(auth.user) &&
-          !configData?.getConfig.require_scene_draft && (
-            <Link to={createHref(ROUTE_SCENE_ADD)} className="ms-auto">
-              <Button>Create</Button>
-            </Link>
-          )}
+        {canEdit(auth.user) && !configData?.getConfig.require_scene_draft && (
+          <Link to={createHref(ROUTE_SCENE_ADD)} className="ms-auto">
+            <Button>Create</Button>
+          </Link>
+        )}
       </div>
       <SceneList filter={filter} favoriteFilter="all" />
     </>
