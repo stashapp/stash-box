@@ -60,6 +60,8 @@ type config struct {
 	VoteCronInterval string `mapstructure:"vote_cron_interval"`
 	// Number of times an edit can be updated by the creator
 	EditUpdateLimit int `mapstructure:"edit_update_limit"`
+	// Require all scene create edits to be submitted via drafts
+	RequireSceneDraft bool `mapstructure:"require_scene_draft"`
 
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
@@ -123,6 +125,7 @@ var C = &config{
 	MinDestructiveVotingPeriod: 172800,
 	DraftTimeLimit:             86400,
 	EditUpdateLimit:            1,
+	RequireSceneDraft:          false,
 }
 
 func GetDatabasePath() string {
@@ -373,6 +376,10 @@ func GetVoteCronInterval() string {
 
 func GetEditUpdateLimit() int {
 	return C.EditUpdateLimit
+}
+
+func GetRequireSceneDraft() bool {
+	return C.RequireSceneDraft
 }
 
 func GetTitle() string {

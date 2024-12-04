@@ -17,6 +17,7 @@ var ErrUnauthorizedUpdate = fmt.Errorf("Only the creator can update edits")
 var ErrClosedEdit = fmt.Errorf("Votes can only be cast on pending edits")
 var ErrUnauthorizedBot = fmt.Errorf("You do not have permission to submit bot edits")
 var ErrUpdateLimit = fmt.Errorf("Edit update limit reached")
+var ErrSceneDraftRequired = fmt.Errorf("Scenes have to be submitted through drafts")
 
 func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEditInput) (*models.Edit, error) {
 	UUID, err := uuid.NewV4()
@@ -33,6 +34,17 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumScene, input.Edit)
 
 	fac := r.getRepoFactory(ctx)
+	if config.GetRequireSceneDraft() {
+		if input.Details != nil && input.Details.DraftID != nil {
+			draft, err := fac.Draft().Find(*input.Details.DraftID)
+			if err != nil || draft == nil {
+				return nil, ErrSceneDraftRequired
+			}
+		} else {
+			return nil, ErrSceneDraftRequired
+		}
+	}
+
 	err = fac.WithTxn(func() error {
 		p := edit.Scene(fac, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")

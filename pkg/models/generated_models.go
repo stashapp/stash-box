@@ -619,6 +619,7 @@ type StashBoxConfig struct {
 	MinDestructiveVotingPeriod int    `json:"min_destructive_voting_period"`
 	VoteCronInterval           string `json:"vote_cron_interval"`
 	GuidelinesURL              string `json:"guidelines_url"`
+	RequireSceneDraft          bool   `json:"require_scene_draft"`
 }
 
 type StringCriterionInput struct {
