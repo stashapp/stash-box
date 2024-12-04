@@ -125,7 +125,7 @@ var C = &config{
 	MinDestructiveVotingPeriod: 172800,
 	DraftTimeLimit:             86400,
 	EditUpdateLimit:            1,
-	RequireSceneDraft:          true,
+	RequireSceneDraft:          false,
 }
 
 func GetDatabasePath() string {
