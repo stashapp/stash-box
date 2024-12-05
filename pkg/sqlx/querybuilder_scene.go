@@ -1150,3 +1150,15 @@ func (qb *sceneQueryBuilder) FindExistingScenes(input models.QueryExistingSceneI
 	}
 	return qb.queryScenes(query, args)
 }
+
+func (qb *sceneQueryBuilder) FindByURL(url string, limit int) ([]*models.Scene, error) {
+	query := `
+    SELECT S.*
+		FROM scenes S
+		JOIN scene_urls SU
+		ON SU.scene_id = S.id
+		WHERE SU.url = ?
+		LIMIT ?
+	`
+	return qb.queryScenes(query, []any{url, limit})
+}

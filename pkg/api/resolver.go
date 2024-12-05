@@ -92,6 +92,9 @@ func (r *Resolver) SceneDraft() models.SceneDraftResolver {
 func (r *Resolver) QueryExistingSceneResult() models.QueryExistingSceneResultResolver {
 	return &queryExistingSceneResolver{r}
 }
+func (r *Resolver) QueryExistingPerformerResult() models.QueryExistingPerformerResultResolver {
+	return &queryExistingPerformerResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 

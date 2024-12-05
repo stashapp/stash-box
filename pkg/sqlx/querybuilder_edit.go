@@ -421,6 +421,45 @@ func (qb *editQueryBuilder) FindCompletedEdits(votingPeriod int, minimumVotingPe
 	return qb.queryEdits(query, args)
 }
 
+func (qb *editQueryBuilder) FindPendingPerformerCreation(input models.QueryExistingPerformerInput) ([]*models.Edit, error) {
+	if (input.Name == nil || len(*input.Name) == 0) && len(input.Urls) == 0 {
+		return nil, nil
+	}
+
+	var clauses []string
+	arg := make(map[string]interface{})
+
+	if input.Name != nil {
+		arg["name"] = *input.Name
+		clauses = append(clauses, `
+			(data->'new_data'->>'name' = :name)
+		`)
+	}
+	if len(input.Urls) > 0 {
+		arg["urls"] = pq.Array(input.Urls)
+
+		// jsonb_exists_any is the backing function for the ?: operator, but since sqlx foolishly has no way of escaping
+		// question marks in operators we have to use this undocumented function
+		clauses = append(clauses, `
+			(jsonb_exists_any(jsonb_path_query_array(data, '$.new_data.added_urls[*].url'), :urls))
+		`)
+	}
+
+	query := `
+		SELECT edits.* FROM edits
+		WHERE status = 'PENDING'
+		AND target_type = 'PERFORMER'
+		AND
+	(` + strings.Join(clauses, " OR ") + `)`
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, err
+	}
+
+	return qb.queryEdits(query, args)
+}
+
 func (qb *editQueryBuilder) FindPendingSceneCreation(input models.QueryExistingSceneInput) ([]*models.Edit, error) {
 	if (input.StudioID == nil || input.Title == nil) && len(input.Fingerprints) == 0 {
 		return nil, nil

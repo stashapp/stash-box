@@ -42,7 +42,7 @@ const PerformerAdd: FC = () => {
     <div>
       <h3>Add new performer</h3>
       <hr />
-      <PerformerForm callback={doInsert} saving={saving} />
+      <PerformerForm callback={doInsert} saving={saving} isCreate />
       {submissionError && (
         <div className="text-danger text-end col-9">
           Error: {submissionError}

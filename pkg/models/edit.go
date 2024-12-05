@@ -27,6 +27,7 @@ type EditRepo interface {
 	FindByStudioID(id uuid.UUID) ([]*Edit, error)
 	FindBySceneID(id uuid.UUID) ([]*Edit, error)
 	FindCompletedEdits(int, int, int) ([]*Edit, error)
+	FindPendingPerformerCreation(input QueryExistingPerformerInput) ([]*Edit, error)
 	FindPendingSceneCreation(input QueryExistingSceneInput) ([]*Edit, error)
 	CancelUserEdits(userID uuid.UUID) error
 	ResetVotes(id uuid.UUID) error

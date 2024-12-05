@@ -71,6 +71,9 @@ type Query {
   ###Find scenes or pending scenes which match scene input###
   queryExistingScene(input: QueryExistingSceneInput!): QueryExistingSceneResult! @hasRole(role: READ)
 
+  ###Find performers or pending performers which match performer input###
+  queryExistingPerformer(input: QueryExistingPerformerInput!): QueryExistingPerformerResult! @hasRole(role: READ)
+
   #### Version ####
   version: Version! @hasRole(role: READ)
 
