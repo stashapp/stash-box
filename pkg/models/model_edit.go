@@ -12,18 +12,19 @@ import (
 )
 
 type Edit struct {
-	ID         uuid.UUID      `db:"id" json:"id"`
-	UserID     uuid.NullUUID  `db:"user_id" json:"user_id"`
-	TargetType string         `db:"target_type" json:"target_type"`
-	Operation  string         `db:"operation" json:"operation"`
-	VoteCount  int            `db:"votes" json:"votes"`
-	Status     string         `db:"status" json:"status"`
-	Applied    bool           `db:"applied" json:"applied"`
-	Data       types.JSONText `db:"data" json:"data"`
-	Bot        bool           `db:"bot" json:"bot"`
-	CreatedAt  time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt  sql.NullTime   `db:"updated_at" json:"updated_at"`
-	ClosedAt   sql.NullTime   `db:"closed_at" json:"closed_at"`
+	ID          uuid.UUID      `db:"id" json:"id"`
+	UserID      uuid.NullUUID  `db:"user_id" json:"user_id"`
+	TargetType  string         `db:"target_type" json:"target_type"`
+	Operation   string         `db:"operation" json:"operation"`
+	VoteCount   int            `db:"votes" json:"votes"`
+	Status      string         `db:"status" json:"status"`
+	Applied     bool           `db:"applied" json:"applied"`
+	Data        types.JSONText `db:"data" json:"data"`
+	Bot         bool           `db:"bot" json:"bot"`
+	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
+	UpdateCount int            `db:"update_count" json:"update_count"`
+	UpdatedAt   sql.NullTime   `db:"updated_at" json:"updated_at"`
+	ClosedAt    sql.NullTime   `db:"closed_at" json:"closed_at"`
 }
 
 type EditComment struct {

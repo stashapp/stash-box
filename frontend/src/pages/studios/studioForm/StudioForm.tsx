@@ -21,6 +21,7 @@ import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 import { StudioSchema, StudioFormData } from "./schema";
 import { InitialStudio } from "./types";
 import DiffStudio from "./diff";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 
 interface StudioProps {
   studio?: Studio | null;
@@ -37,6 +38,7 @@ const StudioForm: FC<StudioProps> = ({
   initial,
   saving,
 }) => {
+  useBeforeUnload();
   const {
     register,
     control,
@@ -61,9 +63,9 @@ const StudioForm: FC<StudioProps> = ({
         StudioSchema.cast(fieldData, {
           assert: "ignore-optionality",
         }) as StudioFormData,
-        studio
+        studio,
       ),
-    [fieldData, studio]
+    [fieldData, studio],
   );
 
   const [activeTab, setActiveTab] = useState("details");

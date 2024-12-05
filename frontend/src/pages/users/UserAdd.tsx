@@ -22,7 +22,7 @@ const AddUserComponent: FC = () => {
         (error: unknown) =>
           error instanceof Error &&
           isApolloError(error) &&
-          setQueryError(error.message)
+          setQueryError(error.message),
       );
   };
 

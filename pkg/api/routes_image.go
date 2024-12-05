@@ -1,7 +1,9 @@
 package api
 
 import (
+	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
@@ -15,21 +17,69 @@ type imageRoutes struct{}
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/{checksum}", rs.image)
+	r.Get("/{uuid}", rs.image)
 	r.Get("/site/{uuid}", rs.siteImage)
 
 	return r
 }
 
 func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
-	checksum := chi.URLParam(r, "checksum")
-
-	if err := config.ValidateImageLocation(); err != nil {
+	uuid, err := uuid.FromString(chi.URLParam(r, "uuid"))
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	http.ServeFile(w, r, image.GetImagePath(config.GetImageLocation(), checksum))
+	imageRepo := getRepo(r.Context()).Image()
+
+	databaseImage, err := imageRepo.Find(uuid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	service := image.GetService(imageRepo)
+	reader, err := service.Read(*databaseImage)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Add("Cache-Control", "max-age=604800000")
+
+	maxSize := 0
+	querySize := r.FormValue("size")
+	switch {
+	case querySize == "full":
+	// Skip resize
+	case querySize != "":
+		maxSize, err = strconv.Atoi(querySize)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	case config.GetImageMaxSize() != nil:
+		maxSize = *config.GetImageMaxSize()
+	}
+
+	if maxSize != 0 {
+		if databaseImage.Width > int64(maxSize) || databaseImage.Height > int64(maxSize) {
+			data, err := image.Resize(reader, maxSize)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			if _, err := w.Write(data); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			return
+		}
+	}
+
+	if _, err := io.Copy(w, reader); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {

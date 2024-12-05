@@ -92,10 +92,12 @@ func (r *Resolver) SceneDraft() models.SceneDraftResolver {
 func (r *Resolver) QueryExistingSceneResult() models.QueryExistingSceneResultResolver {
 	return &queryExistingSceneResolver{r}
 }
+func (r *Resolver) QueryExistingPerformerResult() models.QueryExistingPerformerResultResolver {
+	return &queryExistingPerformerResolver{r}
+}
 func (r *Resolver) QueryNotificationsResult() models.QueryNotificationsResultResolver {
 	return &queryNotificationsResolver{r}
 }
-
 func (r *Resolver) Notification() models.NotificationResolver {
 	return &notificationResolver{r}
 }
@@ -126,5 +128,6 @@ func (r *queryResolver) GetConfig(ctx context.Context) (*models.StashBoxConfig, 
 		MinDestructiveVotingPeriod: config.GetMinDestructiveVotingPeriod(),
 		VoteCronInterval:           config.GetVoteCronInterval(),
 		GuidelinesURL:              config.GetGuidelinesURL(),
+		RequireSceneDraft:          config.GetRequireSceneDraft(),
 	}, nil
 }

@@ -48,7 +48,7 @@ func Create(ctx context.Context, fac models.Repo, input models.SceneCreateInput)
 	}
 
 	sceneFingerprints := models.CreateSceneFingerprints(scene.ID, input.Fingerprints)
-	if err := qb.CreateFingerprints(sceneFingerprints); err != nil {
+	if err := qb.CreateOrReplaceFingerprints(sceneFingerprints); err != nil {
 		return nil, err
 	}
 
@@ -232,6 +232,17 @@ func Destroy(fac models.Repo, input models.SceneDestroyInput) (bool, error) {
 	return true, nil
 }
 
+func submissionTypeToInt(t models.FingerprintSubmissionType) int {
+	switch t {
+	case models.FingerprintSubmissionTypeValid:
+		return 1
+	case models.FingerprintSubmissionTypeInvalid:
+		return -1
+	default:
+		return 0
+	}
+}
+
 func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.FingerprintSubmission) (bool, error) {
 	qb := fac.Scene()
 
@@ -257,11 +268,34 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 		input.Fingerprint.UserIds = []uuid.UUID{currentUserID}
 	}
 
-	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint})
+	// set the default vote
+	vote := models.FingerprintSubmissionTypeValid
+	if input.Vote != nil {
+		vote = *input.Vote
+	}
 
-	if input.Unmatch == nil || !*input.Unmatch {
+	// if the user is reporting a fingerprint, ensure that the fingerprint has at least one submission
+	if vote == models.FingerprintSubmissionTypeInvalid {
+		submissionExists, err := qb.SubmittedHashExists(input.SceneID, input.Fingerprint.Hash, input.Fingerprint.Algorithm)
+		if err != nil {
+			return false, err
+		}
+
+		if !submissionExists {
+			return false, errors.New("fingerprint has no submissions")
+		}
+	}
+
+	voteInt := submissionTypeToInt(vote)
+	sceneFingerprint := models.CreateSubmittedSceneFingerprints(scene.ID, []*models.FingerprintInput{input.Fingerprint}, voteInt)
+
+	// vote == 0 means the user is unmatching the fingerprint
+	// Unmatch is the deprecated field, but we still need to support it
+	unmatch := vote == models.FingerprintSubmissionTypeRemove || (input.Unmatch != nil && *input.Unmatch)
+
+	if !unmatch {
 		// set the new fingerprints
-		if err := qb.CreateFingerprints(sceneFingerprint); err != nil {
+		if err := qb.CreateOrReplaceFingerprints(sceneFingerprint); err != nil {
 			return false, err
 		}
 	} else {

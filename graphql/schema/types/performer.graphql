@@ -70,6 +70,7 @@ enum HairColorEnum {
   GREY
   BALD
   VARIOUS
+  WHITE
   OTHER
 }
 
@@ -114,7 +115,10 @@ type Performer {
   edits: [Edit!]!
   scene_count: Int!
   scenes(input: PerformerScenesInput): [Scene!]!
+  """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
+  """ID of performer that replaces this one"""
+  merged_into_id: ID
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
@@ -407,4 +411,15 @@ input PerformerDraftInput {
   career_start_year: Int
   career_end_year: Int
   image: Upload
+}
+
+input QueryExistingPerformerInput {
+  name: String
+  disambiguation: String
+  urls: [String!]!
+}
+
+type QueryExistingPerformerResult {
+  edits: [Edit!]!
+  performers: [Performer!]!
 }

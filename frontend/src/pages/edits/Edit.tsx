@@ -81,15 +81,13 @@ const EditComponent: FC = () => {
   const buttons = (isAdmin(auth.user) || auth.user?.id === edit.user?.id) &&
     edit.status === VoteStatusEnum.PENDING && (
       <div className="d-flex justify-content-end">
-        {auth.user?.id === edit.user?.id &&
-          edit.operation !== OperationEnum.DESTROY &&
-          !edit.updated && (
-            <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
-              <Button variant="primary" disabled={mutating}>
-                Update Edit
-              </Button>
-            </Link>
-          )}
+        {edit.updatable && (
+          <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
+            <Button variant="primary" disabled={mutating}>
+              Update Edit
+            </Button>
+          </Link>
+        )}
         <Button
           variant="danger"
           className="me-2"

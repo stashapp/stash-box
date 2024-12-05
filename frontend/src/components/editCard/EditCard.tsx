@@ -7,7 +7,7 @@ import { Icon, Tooltip } from "src/components/fragments";
 
 import { OperationEnum, EditFragment } from "src/graphql";
 
-import { formatDateTime, editHref, userHref } from "src/utils";
+import { formatDateTime, editHref, userHref, formatOrdinals } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
 import EditComment from "./EditComment";
 import EditHeader from "./EditHeader";
@@ -78,6 +78,7 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
             <div>
               <b className="me-2">Updated:</b>
               <span>{formatDateTime(edit.updated)}</span>
+              <small className="text-muted align-text-top ms-2">{`${formatOrdinals(edit.update_count)} revision`}</small>
             </div>
           )}
         </div>
