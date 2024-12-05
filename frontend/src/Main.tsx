@@ -2,7 +2,7 @@ import { FC, useEffect } from "react";
 import { Navbar, Nav, Button, Badge } from "react-bootstrap";
 import { NavLink, useLocation, useNavigate, Link } from "react-router-dom";
 import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
-import { faBell as faBellOutlined} from "@fortawesome/free-regular-svg-icons";
+import { faBell as faBellOutlined } from "@fortawesome/free-regular-svg-icons";
 
 import SearchField, { SearchType } from "src/components/searchField";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
@@ -39,7 +39,8 @@ const Main: FC<Props> = ({ children }) => {
   const navigate = useNavigate();
   const { loading, user } = useAuth();
   const { data: unreadNotifications } = useUnreadNotificationsCount();
-  const notificationCount = unreadNotifications?.getUnreadNotificationCount || null;
+  const notificationCount =
+    unreadNotifications?.getUnreadNotificationCount || null;
   const { data: configData } = useConfig();
 
   const guidelinesURL = configData?.getConfig.guidelines_url;
@@ -90,7 +91,11 @@ const Main: FC<Props> = ({ children }) => {
         <Link to={ROUTE_NOTIFICATIONS}>
           <Button variant="link" className="NotificationBadge">
             <Icon icon={notificationCount ? faBell : faBellOutlined} />
-            { notificationCount && <Badge bg="danger" className="ms-1">{ notificationCount }</Badge> }
+            {notificationCount && (
+              <Badge bg="danger" className="ms-1">
+                {notificationCount}
+              </Badge>
+            )}
           </Button>
         </Link>
         <NavLink

@@ -17,52 +17,52 @@ query Notifications($input: QueryNotificationsInput!) {
       read
       data {
         __typename
-        ...on FavoritePerformerScene {
+        ... on FavoritePerformerScene {
           scene {
             ...SceneFragment
           }
         }
-        ...on FavoritePerformerEdit {
+        ... on FavoritePerformerEdit {
           edit {
             ...EditFragment
           }
         }
-        ...on FavoriteStudioScene {
+        ... on FavoriteStudioScene {
           scene {
             ...SceneFragment
           }
         }
-        ...on FavoriteStudioEdit {
+        ... on FavoriteStudioEdit {
           edit {
             ...EditFragment
           }
         }
-        ...on CommentOwnEdit {
+        ... on CommentOwnEdit {
           comment {
             ...NotificationCommentFragment
           }
         }
-        ...on CommentCommentedEdit{
+        ... on CommentCommentedEdit {
           comment {
             ...NotificationCommentFragment
           }
         }
-        ...on CommentVotedEdit {
+        ... on CommentVotedEdit {
           comment {
             ...NotificationCommentFragment
           }
         }
-        ...on DownvoteOwnEdit {
+        ... on DownvoteOwnEdit {
           edit {
             ...EditFragment
           }
         }
-        ...on FailedOwnEdit {
+        ... on FailedOwnEdit {
           edit {
             ...EditFragment
           }
         }
-        ...on UpdatedEdit {
+        ... on UpdatedEdit {
           edit {
             ...EditFragment
           }

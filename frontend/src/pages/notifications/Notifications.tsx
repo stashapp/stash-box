@@ -9,7 +9,9 @@ const PER_PAGE = 20;
 
 const Notifications: FC = () => {
   const { page, setPage } = usePagination();
-  const { loading, data } = useNotifications({ input: { page, per_page: PER_PAGE } });
+  const { loading, data } = useNotifications({
+    input: { page, per_page: PER_PAGE },
+  });
 
   if (loading) return null;
 
@@ -24,7 +26,12 @@ const Notifications: FC = () => {
       loading={loading}
       entityName="notifications"
     >
-      {data?.queryNotifications?.notifications?.map(n => <Notification key={`${n.created}-${n.data.__typename}`} notification={n} />)}
+      {data?.queryNotifications?.notifications?.map((n) => (
+        <Notification
+          key={`${n.created}-${n.data.__typename}`}
+          notification={n}
+        />
+      ))}
     </List>
   );
 };
