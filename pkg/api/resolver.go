@@ -95,6 +95,12 @@ func (r *Resolver) QueryExistingSceneResult() models.QueryExistingSceneResultRes
 func (r *Resolver) QueryExistingPerformerResult() models.QueryExistingPerformerResultResolver {
 	return &queryExistingPerformerResolver{r}
 }
+func (r *Resolver) QueryNotificationsResult() models.QueryNotificationsResultResolver {
+	return &queryNotificationsResolver{r}
+}
+func (r *Resolver) Notification() models.NotificationResolver {
+	return &notificationResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 

@@ -24,6 +24,10 @@ type EditTarget interface {
 	IsEditTarget()
 }
 
+type NotificationData interface {
+	IsNotificationData()
+}
+
 type SceneDraftPerformer interface {
 	IsSceneDraftPerformer()
 }
@@ -61,10 +65,34 @@ type CancelEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
+type CommentCommentedEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentCommentedEdit) IsNotificationData() {}
+
+type CommentOwnEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentOwnEdit) IsNotificationData() {}
+
+type CommentVotedEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentVotedEdit) IsNotificationData() {}
+
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+
+type DownvoteOwnEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (DownvoteOwnEdit) IsNotificationData() {}
 
 type DraftEntityInput struct {
 	Name string     `json:"name"`
@@ -135,6 +163,36 @@ type EyeColorCriterionInput struct {
 	Value    *EyeColorEnum     `json:"value,omitempty"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+
+type FailedOwnEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FailedOwnEdit) IsNotificationData() {}
+
+type FavoritePerformerEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FavoritePerformerEdit) IsNotificationData() {}
+
+type FavoritePerformerScene struct {
+	Scene *Scene `json:"scene"`
+}
+
+func (FavoritePerformerScene) IsNotificationData() {}
+
+type FavoriteStudioEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FavoriteStudioEdit) IsNotificationData() {}
+
+type FavoriteStudioScene struct {
+	Scene *Scene `json:"scene"`
+}
+
+func (FavoriteStudioScene) IsNotificationData() {}
 
 type Fingerprint struct {
 	Hash      string               `json:"hash"`
@@ -452,6 +510,11 @@ type QueryExistingSceneInput struct {
 	Fingerprints []*FingerprintInput `json:"fingerprints"`
 }
 
+type QueryNotificationsInput struct {
+	Page    int `json:"page"`
+	PerPage int `json:"per_page"`
+}
+
 type QuerySitesResultType struct {
 	Count int     `json:"count"`
 	Sites []*Site `json:"sites"`
@@ -745,6 +808,12 @@ type TagUpdateInput struct {
 	Aliases     []string   `json:"aliases,omitempty"`
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
 }
+
+type UpdatedEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (UpdatedEdit) IsNotificationData() {}
 
 type UserChangeEmailInput struct {
 	ExistingEmailToken *uuid.UUID `json:"existing_email_token,omitempty"`

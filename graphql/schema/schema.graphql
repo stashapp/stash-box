@@ -79,6 +79,9 @@ type Query {
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
+
+  queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
+  getUnreadNotificationCount: Int! @hasRole(role: READ)
 }
 
 type Mutation {
@@ -182,6 +185,9 @@ type Mutation {
   favoritePerformer(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
   """Favorite or unfavorite a studio"""
   favoriteStudio(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
+
+  """Mark all of the current users notifications as read."""
+  markNotificationsRead: Boolean! @hasRole(role: READ)
 }
 
 schema {

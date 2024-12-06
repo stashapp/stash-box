@@ -74,6 +74,9 @@ generate-dataloaders:
 		go run github.com/vektah/dataloaden TagCategoryLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.TagCategory"; \
 		go run github.com/vektah/dataloaden SiteLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Site"; \
 		go run github.com/vektah/dataloaden StudioLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Studio"; \
+		go run github.com/vektah/dataloaden EditLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Edit"; \
+		go run github.com/vektah/dataloaden EditCommentLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.EditComment"; \
+		go run github.com/vektah/dataloaden SceneLoader github.com/gofrs/uuid.UUID "*github.com/stashapp/stash-box/pkg/models.Scene"; \
 		go run github.com/vektah/dataloaden BoolsLoader github.com/gofrs/uuid.UUID "bool";
 
 test:
