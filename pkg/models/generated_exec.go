@@ -24541,6 +24541,10 @@ func (ec *executionContext) fieldContext_QueryExistingPerformerResult_edits(_ co
 				return ec.fieldContext_Edit_status(ctx, field)
 			case "applied":
 				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
 			case "created":
 				return ec.fieldContext_Edit_created(ctx, field)
 			case "updated":

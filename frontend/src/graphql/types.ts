@@ -17210,6 +17210,8 @@ export type QueryExistingPerformerQuery = {
       updated?: string | null;
       closed?: string | null;
       expires?: string | null;
+      update_count: number;
+      updatable: boolean;
       vote_count: number;
       destructive: boolean;
       comments: Array<{
@@ -17335,7 +17337,9 @@ export type QueryExistingPerformerQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -18186,7 +18190,9 @@ export type QueryExistingPerformerQuery = {
               algorithm: FingerprintAlgorithm;
               duration: number;
               submissions: number;
+              reports: number;
               user_submitted: boolean;
+              user_reported: boolean;
               created: string;
               updated: string;
             }>;
@@ -47153,9 +47159,14 @@ export const QueryExistingPerformerDocument = {
                 { kind: "Field", name: { kind: "Name", value: "algorithm" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "submissions" } },
+                { kind: "Field", name: { kind: "Name", value: "reports" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "user_submitted" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "user_reported" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "created" } },
                 { kind: "Field", name: { kind: "Name", value: "updated" } },
@@ -47214,6 +47225,8 @@ export const QueryExistingPerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "updated" } },
           { kind: "Field", name: { kind: "Name", value: "closed" } },
           { kind: "Field", name: { kind: "Name", value: "expires" } },
+          { kind: "Field", name: { kind: "Name", value: "update_count" } },
+          { kind: "Field", name: { kind: "Name", value: "updatable" } },
           { kind: "Field", name: { kind: "Name", value: "vote_count" } },
           { kind: "Field", name: { kind: "Name", value: "destructive" } },
           {
