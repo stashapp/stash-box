@@ -90,7 +90,7 @@ export const UserFingerprintsList: FC<Props> = ({
             "dir",
             direction === SortDirectionEnum.DESC
               ? SortDirectionEnum.ASC
-              : SortDirectionEnum.DESC
+              : SortDirectionEnum.DESC,
           )
         }
       >
@@ -111,7 +111,7 @@ export const UserFingerprintsList: FC<Props> = ({
       hash: string;
       algorithm: FingerprintAlgorithm;
       duration: number;
-    }[]
+    }[],
   ) => {
     setDeletionCandidates(fingerprints);
     setShowDelete(true);

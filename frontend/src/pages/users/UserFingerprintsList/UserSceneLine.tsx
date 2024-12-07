@@ -16,7 +16,7 @@ interface Props {
       hash: string;
       algorithm: FingerprintAlgorithm;
       duration: number;
-    }[]
+    }[],
   ) => void;
 }
 
@@ -29,7 +29,7 @@ const UserSceneLine: FC<Props> = ({ scene, deleteFingerprints }) => (
           className="text-danger"
           onClick={() =>
             deleteFingerprints(
-              scene.fingerprints.map((fp) => ({ ...fp, scene_id: scene.id }))
+              scene.fingerprints.map((fp) => ({ ...fp, scene_id: scene.id })),
             )
           }
         >

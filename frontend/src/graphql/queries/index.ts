@@ -145,7 +145,7 @@ export const useScenes = (variables: ScenesQueryVariables, skip = false) =>
 
 export const useScenesWithFingerprints = (
   variables: ScenesWithFingerprintsQueryVariables,
-  skip = false
+  skip = false,
 ) =>
   useQuery(ScenesWithFingerprintsDocument, {
     variables,

@@ -29430,7 +29430,7 @@ export type ScenesQuery = {
 
 export type ScenesWithFingerprintsQueryVariables = Exact<{
   input: SceneQueryInput;
-  submitted: Scalars["Boolean"];
+  submitted: Scalars["Boolean"]["input"];
 }>;
 
 export type ScenesWithFingerprintsQuery = {
