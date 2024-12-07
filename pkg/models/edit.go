@@ -7,6 +7,7 @@ type EditRepo interface {
 	Update(updatedEdit Edit) (*Edit, error)
 	Destroy(id uuid.UUID) error
 	Find(id uuid.UUID) (*Edit, error)
+	FindByIds(ids []uuid.UUID) ([]*Edit, []error)
 	CreateEditTag(newJoin EditTag) error
 	CreateEditPerformer(newJoin EditPerformer) error
 	CreateEditStudio(newJoin EditStudio) error
@@ -27,6 +28,9 @@ type EditRepo interface {
 	FindByStudioID(id uuid.UUID) ([]*Edit, error)
 	FindBySceneID(id uuid.UUID) ([]*Edit, error)
 	FindCompletedEdits(int, int, int) ([]*Edit, error)
+	FindPendingPerformerCreation(input QueryExistingPerformerInput) ([]*Edit, error)
 	FindPendingSceneCreation(input QueryExistingSceneInput) ([]*Edit, error)
 	CancelUserEdits(userID uuid.UUID) error
+	ResetVotes(id uuid.UUID) error
+	FindCommentsByIds(ids []uuid.UUID) ([]*EditComment, []error)
 }

@@ -66,7 +66,7 @@ const ForgotPassword: FC = () => {
     );
 
   const errorList = [errors.email?.message, submitError].filter(
-    (err): err is string => err !== undefined
+    (err): err is string => err !== undefined,
   );
 
   return (

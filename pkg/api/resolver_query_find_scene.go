@@ -86,8 +86,8 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 	}
 
 	// Fetch all scene ids
-	scenes, err := qb.FindByIds(ids)
-	if err != nil {
+	scenes, errs := qb.FindByIds(ids)
+	if errs[0] != nil {
 		return nil, err
 	}
 	sceneMap := make(map[uuid.UUID]*models.Scene)

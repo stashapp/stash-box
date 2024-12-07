@@ -1,6 +1,6 @@
 import { FC, useContext, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { GraphQLError } from "graphql";
+import { GraphQLFormattedError } from "graphql";
 import { useEditComment } from "src/graphql";
 import cx from "classnames";
 
@@ -15,7 +15,7 @@ interface IProps {
 const AddComment: FC<IProps> = ({ editID }) => {
   const auth = useContext(AuthContext);
   const [showInput, setShowInput] = useState(false);
-  const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
+  const [errors, setErrors] = useState<readonly GraphQLFormattedError[]>([]);
   const [comment, setComment] = useState("");
   const [saveComment, { loading: saving }] = useEditComment();
 

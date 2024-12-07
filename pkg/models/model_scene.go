@@ -104,6 +104,7 @@ type SceneFingerprint struct {
 	Algorithm string    `db:"algorithm" json:"algorithm"`
 	Duration  int       `db:"duration" json:"duration"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	Vote      int       `db:"vote" json:"vote"`
 }
 
 type SceneFingerprints []*SceneFingerprint
@@ -122,32 +123,6 @@ func (f SceneFingerprints) EachPtr(fn func(interface{})) {
 
 func (f *SceneFingerprints) Add(o interface{}) {
 	*f = append(*f, o.(*SceneFingerprint))
-}
-
-type DBSceneFingerprint struct {
-	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
-	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
-	Duration      int       `db:"duration" json:"duration"`
-	CreatedAt     time.Time `db:"created_at" json:"created_at"`
-}
-
-type DBSceneFingerprints []*DBSceneFingerprint
-
-func (f DBSceneFingerprints) Each(fn func(interface{})) {
-	for _, v := range f {
-		fn(*v)
-	}
-}
-
-func (f DBSceneFingerprints) EachPtr(fn func(interface{})) {
-	for _, v := range f {
-		fn(v)
-	}
-}
-
-func (f *DBSceneFingerprints) Add(o interface{}) {
-	*f = append(*f, o.(*DBSceneFingerprint))
 }
 
 func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditInput) SceneFingerprints {
@@ -171,7 +146,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditI
 	return ret
 }
 
-func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput) SceneFingerprints {
+func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput, vote int) SceneFingerprints {
 	var ret SceneFingerprints
 
 	for _, fingerprint := range fingerprints {
@@ -183,6 +158,7 @@ func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*Fingerp
 					Hash:      fingerprint.Hash,
 					Algorithm: fingerprint.Algorithm.String(),
 					Duration:  fingerprint.Duration,
+					Vote:      vote,
 				})
 			}
 		}

@@ -74,71 +74,71 @@ type stringEnum interface {
 	String() string
 }
 
-func (d *editDiff) string(old *string, new *string) (oldOut *string, newOut *string) {
-	if old != nil && (new == nil || *new != *old) {
-		oldVal := *old
-		oldOut = &oldVal
+func (d *editDiff) string(oldVal *string, newVal *string) (oldOut *string, newOut *string) {
+	if oldVal != nil && (newVal == nil || *newVal != *oldVal) {
+		value := *oldVal
+		oldOut = &value
 	}
 
-	if new != nil && (old == nil || *new != *old) {
-		newVal := *new
-		newOut = &newVal
-	}
-
-	return
-}
-
-func (d *editDiff) nullString(old sql.NullString, new *string) (oldOut *string, newOut *string) {
-	if old.Valid && (new == nil || *new != old.String) {
-		oldVal := old.String
-		oldOut = &oldVal
-	}
-
-	if new != nil && *new != "" && (!old.Valid || *new != old.String) {
-		newVal := *new
-		newOut = &newVal
+	if newVal != nil && (oldVal == nil || *newVal != *oldVal) {
+		value := *newVal
+		newOut = &value
 	}
 
 	return
 }
 
-func (d *editDiff) nullInt64(old sql.NullInt64, new *int) (oldOut *int64, newOut *int64) {
-	if old.Valid && (new == nil || int64(*new) != old.Int64) {
-		oldVal := old.Int64
-		oldOut = &oldVal
+func (d *editDiff) nullString(oldVal sql.NullString, newVal *string) (oldOut *string, newOut *string) {
+	if oldVal.Valid && (newVal == nil || *newVal != oldVal.String) {
+		value := oldVal.String
+		oldOut = &value
 	}
 
-	if new != nil && (!old.Valid || int64(*new) != old.Int64) {
-		newVal := int64(*new)
-		newOut = &newVal
-	}
-
-	return
-}
-
-func (d *editDiff) nullUUID(old uuid.NullUUID, new *uuid.UUID) (oldOut *uuid.UUID, newOut *uuid.UUID) {
-	if old.Valid && (new == nil || *new != old.UUID) {
-		oldOut = &old.UUID
-	}
-
-	if new != nil && (!old.Valid || *new != old.UUID) {
-		newOut = new
+	if newVal != nil && *newVal != "" && (!oldVal.Valid || *newVal != oldVal.String) {
+		value := *newVal
+		newOut = &value
 	}
 
 	return
 }
 
-func (d *editDiff) nullStringEnum(old sql.NullString, new stringEnum) (oldOut *string, newOut *string) {
-	newNil := reflect.ValueOf(new).IsNil()
-
-	if old.Valid && (newNil || !new.IsValid() || new.String() != old.String) {
-		oldVal := old.String
-		oldOut = &oldVal
+func (d *editDiff) nullInt64(oldVal sql.NullInt64, newVal *int) (oldOut *int64, newOut *int64) {
+	if oldVal.Valid && (newVal == nil || int64(*newVal) != oldVal.Int64) {
+		value := oldVal.Int64
+		oldOut = &value
 	}
 
-	if !newNil && new.IsValid() && (!old.Valid || new.String() != old.String) {
-		newVal := new.String()
-		newOut = &newVal
+	if newVal != nil && (!oldVal.Valid || int64(*newVal) != oldVal.Int64) {
+		value := int64(*newVal)
+		newOut = &value
+	}
+
+	return
+}
+
+func (d *editDiff) nullUUID(oldVal uuid.NullUUID, newVal *uuid.UUID) (oldOut *uuid.UUID, newOut *uuid.UUID) {
+	if oldVal.Valid && (newVal == nil || *newVal != oldVal.UUID) {
+		oldOut = &oldVal.UUID
+	}
+
+	if newVal != nil && (!oldVal.Valid || *newVal != oldVal.UUID) {
+		newOut = newVal
+	}
+
+	return
+}
+
+func (d *editDiff) nullStringEnum(oldVal sql.NullString, newVal stringEnum) (oldOut *string, newOut *string) {
+	newNil := reflect.ValueOf(newVal).IsNil()
+
+	if oldVal.Valid && (newNil || !newVal.IsValid() || newVal.String() != oldVal.String) {
+		value := oldVal.String
+		oldOut = &value
+	}
+
+	if !newNil && newVal.IsValid() && (!oldVal.Valid || newVal.String() != oldVal.String) {
+		value := newVal.String()
+		newOut = &value
 	}
 
 	return
