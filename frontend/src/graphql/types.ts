@@ -29428,6 +29428,62 @@ export type ScenesQuery = {
   };
 };
 
+export type ScenesWithFingerprintsQueryVariables = Exact<{
+  input: SceneQueryInput;
+  submitted: Scalars["Boolean"]["input"];
+}>;
+
+export type ScenesWithFingerprintsQuery = {
+  __typename: "Query";
+  queryScenes: {
+    __typename: "QueryScenesResultType";
+    count: number;
+    scenes: Array<{
+      __typename: "Scene";
+      id: string;
+      release_date?: string | null;
+      title?: string | null;
+      duration?: number | null;
+      fingerprints: Array<{
+        __typename: "Fingerprint";
+        hash: string;
+        algorithm: FingerprintAlgorithm;
+        duration: number;
+        submissions: number;
+        user_submitted: boolean;
+        created: string;
+        updated: string;
+      }>;
+      urls: Array<{
+        __typename: "URL";
+        url: string;
+        site: { __typename: "Site"; id: string; name: string; icon: string };
+      }>;
+      images: Array<{
+        __typename: "Image";
+        id: string;
+        url: string;
+        width: number;
+        height: number;
+      }>;
+      studio?: { __typename: "Studio"; id: string; name: string } | null;
+      performers: Array<{
+        __typename: "PerformerAppearance";
+        as?: string | null;
+        performer: {
+          __typename: "Performer";
+          id: string;
+          name: string;
+          disambiguation?: string | null;
+          deleted: boolean;
+          gender?: GenderEnum | null;
+          aliases: Array<string>;
+        };
+      }>;
+    }>;
+  };
+};
+
 export type ScenesWithoutCountQueryVariables = Exact<{
   input: SceneQueryInput;
 }>;
@@ -64191,6 +64247,273 @@ export const ScenesDocument = {
     },
   ],
 } as unknown as DocumentNode<ScenesQuery, ScenesQueryVariables>;
+export const ScenesWithFingerprintsDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "ScenesWithFingerprints" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "input" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "SceneQueryInput" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "submitted" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "queryScenes" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "input" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "input" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "count" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "scenes" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "QuerySceneFragment" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "fingerprints" },
+                        arguments: [
+                          {
+                            kind: "Argument",
+                            name: { kind: "Name", value: "is_submitted" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "submitted" },
+                            },
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "hash" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "algorithm" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "duration" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "submissions" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "user_submitted" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "created" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "updated" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "URLFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "URL" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "site" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+                { kind: "Field", name: { kind: "Name", value: "icon" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ImageFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Image" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "url" } },
+          { kind: "Field", name: { kind: "Name", value: "width" } },
+          { kind: "Field", name: { kind: "Name", value: "height" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ScenePerformerFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Performer" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "disambiguation" } },
+          { kind: "Field", name: { kind: "Name", value: "deleted" } },
+          { kind: "Field", name: { kind: "Name", value: "gender" } },
+          { kind: "Field", name: { kind: "Name", value: "aliases" } },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "QuerySceneFragment" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Scene" },
+      },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "title" } },
+          { kind: "Field", name: { kind: "Name", value: "duration" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "urls" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "URLFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "images" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "ImageFragment" },
+                },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "studio" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "performers" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "as" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "performer" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "ScenePerformerFragment" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ScenesWithFingerprintsQuery,
+  ScenesWithFingerprintsQueryVariables
+>;
 export const ScenesWithoutCountDocument = {
   kind: "Document",
   definitions: [

@@ -29,6 +29,8 @@ import {
   SceneQueryVariables,
   ScenesDocument,
   ScenesQueryVariables,
+  ScenesWithFingerprintsDocument,
+  ScenesWithFingerprintsQueryVariables,
   ScenesWithoutCountDocument,
   SearchAllDocument,
   SearchAllQuery,
@@ -137,6 +139,15 @@ export const useScene = (variables: SceneQueryVariables, skip = false) =>
 
 export const useScenes = (variables: ScenesQueryVariables, skip = false) =>
   useQuery(ScenesDocument, {
+    variables,
+    skip,
+  });
+
+export const useScenesWithFingerprints = (
+  variables: ScenesWithFingerprintsQueryVariables,
+  skip = false,
+) =>
+  useQuery(ScenesWithFingerprintsDocument, {
     variables,
     skip,
   });
