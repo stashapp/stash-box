@@ -59,7 +59,7 @@ const UserSceneLine: FC<Props> = ({ scene, deleteFingerprints }) => (
       <td>{scene.duration ? formatDuration(scene.duration) : ""}</td>
       <td>{scene.release_date}</td>
     </tr>
-    <tr key={`${scene}-fps`}>
+    <tr key={`${scene.id}-fps`}>
       <td colSpan={4}>
         <ul>
           {scene.fingerprints.map((fp) => (
