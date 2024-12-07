@@ -23,7 +23,7 @@ interface Props {
 const UserSceneLine: FC<Props> = ({ scene, deleteFingerprints }) => (
   <>
     <tr key={scene.id}>
-      <td width="10">
+      <td>
         <Button
           variant="link"
           className="text-danger"
@@ -41,9 +41,7 @@ const UserSceneLine: FC<Props> = ({ scene, deleteFingerprints }) => (
         </Button>
       </td>
       <td>
-        <Link className="text-truncate w-100" to={sceneHref(scene)}>
-          {scene.title}
-        </Link>
+        <Link to={sceneHref(scene)}>{scene.title}</Link>
       </td>
       <td>
         {scene.studio && (

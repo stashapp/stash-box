@@ -152,11 +152,11 @@ export const UserFingerprintsList: FC<Props> = ({
           <Table striped variant="dark">
             <thead>
               <tr>
-                <th></th>
+                <th style={{ width: "50px" }}></th>
                 <th>Title</th>
                 <th>Studio</th>
                 <th>Duration</th>
-                <th>Release Date</th>
+                <th style={{ width: "120px" }}>Release Date</th>
               </tr>
             </thead>
             <tbody>
