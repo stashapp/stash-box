@@ -12,6 +12,8 @@ query EditUpdate($id: ID!) {
     applied
     created
     updated
+    updatable
+    update_count
     vote_count
     merge_sources {
       ... on Tag {

@@ -89,8 +89,8 @@ const EditListComponent: FC<EditsProps> = ({
         selectedBot === "only"
           ? true
           : selectedBot === "exclude"
-          ? false
-          : undefined,
+            ? false
+            : undefined,
       page,
       per_page: PER_PAGE,
       sort: selectedSort,

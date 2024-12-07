@@ -417,3 +417,7 @@ func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
 type PerformerQuery struct {
 	Filter PerformerQueryInput
 }
+
+type QueryExistingPerformerResult struct {
+	Input QueryExistingPerformerInput
+}

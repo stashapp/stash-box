@@ -361,3 +361,21 @@ func (r *editResolver) Options(ctx context.Context, obj *models.Edit) (*models.P
 func (r *editResolver) Destructive(ctx context.Context, obj *models.Edit) (bool, error) {
 	return obj.IsDestructive(), nil
 }
+
+func (r *editResolver) Updatable(ctx context.Context, obj *models.Edit) (bool, error) {
+	user := getCurrentUser(ctx)
+
+	if user.ID != obj.UserID.UUID {
+		return false, nil
+	}
+
+	if obj.UpdateCount >= config.GetEditUpdateLimit() {
+		return false, nil
+	}
+
+	if obj.Operation == models.OperationEnumDestroy.String() {
+		return false, nil
+	}
+
+	return true, nil
+}

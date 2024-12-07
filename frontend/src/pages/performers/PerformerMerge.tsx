@@ -49,7 +49,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const toggleMerge = () => {
     setMergeActive(true);
     const sameName = mergeSources.every(
-      ({ name }) => name.trim() === performer.name.trim()
+      ({ name }) => name.trim() === performer.name.trim(),
     );
     // Don't update aliases by default if the names match
     setAliasUpdating(!sameName);
@@ -58,7 +58,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
   const doUpdate = (
     insertData: PerformerEditDetailsInput,
     editNote: string,
-    setModifyAliases: boolean
+    setModifyAliases: boolean,
   ) => {
     insertPerformerEdit({
       variables: {
@@ -84,11 +84,11 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
       ...performer.aliases,
       ...mergeSources.map((p) => p.name.trim()),
       ...flatMap(mergeSources, (p) => p.aliases),
-    ].filter((name) => name !== performer.name.trim())
+    ].filter((name) => name !== performer.name.trim()),
   );
   const images = uniqBy(
     [...performer.images, ...flatMap(mergeSources, (i) => i.images)],
-    (image) => image.id
+    (image) => image.id,
   );
 
   return (
