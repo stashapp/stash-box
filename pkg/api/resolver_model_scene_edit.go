@@ -133,10 +133,6 @@ func (r *sceneEditResolver) Fingerprints(ctx context.Context, obj *models.SceneE
 	return ret, nil
 }
 
-func (r *sceneEditResolver) Date(ctx context.Context, obj *models.SceneEdit) (*string, error) {
-	return resolveFuzzyDate(obj.Date, obj.DateAccuracy), nil
-}
-
 func (r *sceneEditResolver) Images(ctx context.Context, obj *models.SceneEdit) ([]*models.Image, error) {
 	fac := r.getRepoFactory(ctx)
 	id, err := fac.Edit().FindSceneID(obj.EditID)

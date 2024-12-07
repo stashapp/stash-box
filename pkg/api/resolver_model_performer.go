@@ -46,13 +46,13 @@ func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]
 	return dataloader.For(ctx).PerformerUrlsByID.Load(obj.ID)
 }
 
+// Deprecated: use `BirthDate`
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
-	ret := obj.ResolveBirthdate()
-	return &ret, nil
+	return resolveFuzzyDate(obj.Birthdate), nil
 }
 
 func (r *performerResolver) BirthDate(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveFuzzyDate(&obj.Birthdate.String, &obj.BirthdateAccuracy.String), nil
+	return resolveNullString(obj.Birthdate), nil
 }
 
 func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {

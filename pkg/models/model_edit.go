@@ -303,35 +303,34 @@ type TagEditData struct {
 func (PerformerEdit) IsEditDetails() {}
 
 type PerformerEdit struct {
-	EditID            uuid.UUID           `json:"-"`
-	Name              *string             `json:"name,omitempty"`
-	Disambiguation    *string             `json:"disambiguation,omitempty"`
-	AddedAliases      []string            `json:"added_aliases,omitempty"`
-	RemovedAliases    []string            `json:"removed_aliases,omitempty"`
-	Gender            *string             `json:"gender,omitempty"`
-	AddedUrls         []*URL              `json:"added_urls,omitempty"`
-	RemovedUrls       []*URL              `json:"removed_urls,omitempty"`
-	Birthdate         *string             `json:"birthdate,omitempty"`
-	BirthdateAccuracy *string             `json:"birthdate_accuracy,omitempty"`
-	Ethnicity         *string             `json:"ethnicity,omitempty"`
-	Country           *string             `json:"country,omitempty"`
-	EyeColor          *string             `json:"eye_color,omitempty"`
-	HairColor         *string             `json:"hair_color,omitempty"`
-	Height            *int64              `json:"height,omitempty"`
-	CupSize           *string             `json:"cup_size,omitempty"`
-	BandSize          *int64              `json:"band_size,omitempty"`
-	WaistSize         *int64              `json:"waist_size,omitempty"`
-	HipSize           *int64              `json:"hip_size,omitempty"`
-	BreastType        *string             `json:"breast_type,omitempty"`
-	CareerStartYear   *int64              `json:"career_start_year,omitempty"`
-	CareerEndYear     *int64              `json:"career_end_year,omitempty"`
-	AddedTattoos      []*BodyModification `json:"added_tattoos,omitempty"`
-	RemovedTattoos    []*BodyModification `json:"removed_tattoos,omitempty"`
-	AddedPiercings    []*BodyModification `json:"added_piercings,omitempty"`
-	RemovedPiercings  []*BodyModification `json:"removed_piercings,omitempty"`
-	AddedImages       []uuid.UUID         `json:"added_images,omitempty"`
-	RemovedImages     []uuid.UUID         `json:"removed_images,omitempty"`
-	DraftID           *uuid.UUID          `json:"draft_id,omitempty"`
+	EditID           uuid.UUID           `json:"-"`
+	Name             *string             `json:"name,omitempty"`
+	Disambiguation   *string             `json:"disambiguation,omitempty"`
+	AddedAliases     []string            `json:"added_aliases,omitempty"`
+	RemovedAliases   []string            `json:"removed_aliases,omitempty"`
+	Gender           *string             `json:"gender,omitempty"`
+	AddedUrls        []*URL              `json:"added_urls,omitempty"`
+	RemovedUrls      []*URL              `json:"removed_urls,omitempty"`
+	Birthdate        *string             `json:"birthdate,omitempty"`
+	Ethnicity        *string             `json:"ethnicity,omitempty"`
+	Country          *string             `json:"country,omitempty"`
+	EyeColor         *string             `json:"eye_color,omitempty"`
+	HairColor        *string             `json:"hair_color,omitempty"`
+	Height           *int64              `json:"height,omitempty"`
+	CupSize          *string             `json:"cup_size,omitempty"`
+	BandSize         *int64              `json:"band_size,omitempty"`
+	WaistSize        *int64              `json:"waist_size,omitempty"`
+	HipSize          *int64              `json:"hip_size,omitempty"`
+	BreastType       *string             `json:"breast_type,omitempty"`
+	CareerStartYear  *int64              `json:"career_start_year,omitempty"`
+	CareerEndYear    *int64              `json:"career_end_year,omitempty"`
+	AddedTattoos     []*BodyModification `json:"added_tattoos,omitempty"`
+	RemovedTattoos   []*BodyModification `json:"removed_tattoos,omitempty"`
+	AddedPiercings   []*BodyModification `json:"added_piercings,omitempty"`
+	RemovedPiercings []*BodyModification `json:"removed_piercings,omitempty"`
+	AddedImages      []uuid.UUID         `json:"added_images,omitempty"`
+	RemovedImages    []uuid.UUID         `json:"removed_images,omitempty"`
+	DraftID          *uuid.UUID          `json:"draft_id,omitempty"`
 }
 
 type PerformerEditData struct {
@@ -368,7 +367,6 @@ type SceneEdit struct {
 	AddedUrls           []*URL                      `json:"added_urls,omitempty"`
 	RemovedUrls         []*URL                      `json:"removed_urls,omitempty"`
 	Date                *string                     `json:"date,omitempty"`
-	DateAccuracy        *string                     `json:"date_accuracy,omitempty"`
 	StudioID            *uuid.UUID                  `json:"studio_id,omitempty"`
 	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
 	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`
