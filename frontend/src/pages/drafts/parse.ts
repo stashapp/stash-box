@@ -21,16 +21,6 @@ type ScenePerformer = NonNullable<
   SceneQuery["findScene"]
 >["performers"][number];
 
-type URL = { url: string; site: { id: string } };
-const joinURLs = <T extends URL>(
-  newURL: T | undefined | null,
-  existingURLs: T[] | undefined,
-) =>
-  uniqBy(
-    [...(newURL ? [newURL] : []), ...(existingURLs ?? [])],
-    (u) => `${u.url}-${u.site.id}`,
-  );
-
 type Entity = { id: string };
 const joinImages = <T extends Entity>(
   newImage: T | null | undefined,
