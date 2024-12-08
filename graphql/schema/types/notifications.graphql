@@ -1,0 +1,67 @@
+type Notification {
+  created: Time!
+  read: Boolean!
+  data: NotificationData!
+}
+
+union NotificationData =
+   | FavoritePerformerScene
+   | FavoritePerformerEdit
+   | FavoriteStudioScene 
+   | FavoriteStudioEdit
+   | CommentOwnEdit
+   | CommentCommentedEdit
+   | CommentVotedEdit
+   | DownvoteOwnEdit
+   | FailedOwnEdit
+   | UpdatedEdit
+
+type FavoritePerformerScene {
+  scene: Scene!
+}
+
+type FavoritePerformerEdit {
+  edit: Edit!
+}
+
+type FavoriteStudioScene {
+  scene: Scene!
+}
+
+type FavoriteStudioEdit {
+  edit: Edit!
+}
+
+type CommentOwnEdit {
+  comment: EditComment!
+}
+
+type DownvoteOwnEdit {
+  edit: Edit!
+}
+
+type FailedOwnEdit {
+  edit: Edit!
+}
+
+type CommentCommentedEdit {
+  comment: EditComment!
+}
+
+type CommentVotedEdit {
+  comment: EditComment!
+}
+
+type UpdatedEdit {
+  edit: Edit!
+}
+
+input QueryNotificationsInput {
+  page: Int! = 1
+  per_page: Int! = 25
+}
+
+type QueryNotificationsResult {
+  count: Int!
+  notifications: [Notification!]!
+}

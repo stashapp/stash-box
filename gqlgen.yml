@@ -7,9 +7,6 @@ exec:
   filename: pkg/models/generated_exec.go
 model:
   filename: pkg/models/generated_models.go
-resolver:
-  filename: pkg/api/resolver.go
-  type: Resolver
 
 struct_tag: gqlgen
 
@@ -24,14 +21,6 @@ models:
     model: github.com/stashapp/stash-box/pkg/models.Image
     fields:
       url:
-        resolver: true
-  PerformerEdit:
-    fields:
-      birthdate:
-        resolver: true
-  SceneEdit:
-    fields:
-      date:
         resolver: true
   QueryPerformersResultType:
     model: github.com/stashapp/stash-box/pkg/models.PerformerQuery

@@ -14,7 +14,7 @@ const useAuth = (): AuthResult => {
     onError: () => setCachedUser(),
   });
 
-  return { loading, user: loading ? getCachedUser() : data?.me ?? undefined };
+  return { loading, user: loading ? getCachedUser() : (data?.me ?? undefined) };
 };
 
 export default useAuth;

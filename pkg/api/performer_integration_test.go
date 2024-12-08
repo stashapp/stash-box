@@ -102,9 +102,8 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
 	assert.Assert(s.t, compareUrls(input.Urls, urls), "Urls")
 
-	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Birthdate)
-	birthdate, _ := r.Birthdate(s.ctx, performer)
-	assert.Assert(s.t, bothNil(birthdate, input.Birthdate) || (!oneNil(birthdate, input.Birthdate) && birthdate.Date == inputDate.String && birthdate.Accuracy.String() == inputAccuracy.String))
+	birthdate, _ := r.BirthDate(s.ctx, performer)
+	assert.DeepEqual(s.t, birthdate, input.Birthdate)
 
 	ethnicity, _ := r.Ethnicity(s.ctx, performer)
 	assert.DeepEqual(s.t, ethnicity, input.Ethnicity)
@@ -263,9 +262,8 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 	urls, _ := s.resolver.Performer().Urls(s.ctx, performer)
 	assert.Assert(s.t, compareUrls(input.Urls, urls))
 
-	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Birthdate)
-	birthdate, _ := r.Birthdate(s.ctx, performer)
-	assert.Assert(s.t, birthdate == nil || (birthdate.Date == inputDate.String && birthdate.Accuracy.String() == inputAccuracy.String))
+	birthdate, _ := s.resolver.Performer().BirthDate(s.ctx, performer)
+	assert.DeepEqual(s.t, birthdate, input.Birthdate)
 
 	tattoos, _ := s.resolver.Performer().Tattoos(s.ctx, performer)
 	assert.Assert(s.t, compareBodyMods(input.Tattoos, tattoos))

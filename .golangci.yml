@@ -1,6 +1,6 @@
 run:
   timeout: 3m
-  go: 1.22
+  go: 1.23
 
 issues:
   skip-files:

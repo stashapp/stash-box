@@ -31,7 +31,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
   });
   const { data: performer, loading: loadingPerformer } = usePerformer(
     { id: draft.data.id ?? "" },
-    !isUpdate
+    !isUpdate,
   );
 
   if (loadingPerformer) return <LoadingIndicator />;
@@ -39,7 +39,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
   const doInsert = (
     updateData: PerformerEditDetailsInput,
     editNote: string,
-    setModifyAliases: boolean
+    setModifyAliases: boolean,
   ) => {
     const details: PerformerEditDetailsInput = {
       ...updateData,
@@ -65,7 +65,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
 
   const [initialPerformer, unparsed] = parsePerformerDraft(
     draft.data,
-    performer?.findPerformer ?? undefined
+    performer?.findPerformer ?? undefined,
   );
   const remainder = Object.entries(unparsed)
     .filter(([, val]) => !!val)

@@ -34,7 +34,7 @@ export const PerformerSchema = yup.object({
     })
     .test("valid-date", "Invalid date", isValidDate)
     .test("date-outside-range", "Outside of range", (date) =>
-      dateWithinRange(date, "1900-01-01", addYears(new Date(), -18))
+      dateWithinRange(date, "1900-01-01", addYears(new Date(), -18)),
     )
     .nullable(),
   career_start_year: yup
@@ -61,7 +61,7 @@ export const PerformerSchema = yup.object({
     .transform(nullCheck)
     .matches(
       /\d{2,3}[a-zA-Z]{1,4}/,
-      "Invalid cup size. Only american sizes are accepted."
+      "Invalid cup size. Only american sizes are accepted.",
     )
     .nullable(),
   waistSize: yup
@@ -98,7 +98,7 @@ export const PerformerSchema = yup.object({
         location: yup.string().trim().required("Location is required"),
         description: yup.string().trim().transform(nullCheck).nullable(),
       })
-      .noUnknown()
+      .noUnknown(),
   ),
   piercings: yup.array().of(
     yup
@@ -106,7 +106,7 @@ export const PerformerSchema = yup.object({
         location: yup.string().trim().required("Location is required"),
         description: yup.string().trim().transform(nullCheck).nullable(),
       })
-      .noUnknown()
+      .noUnknown(),
   ),
   aliases: yup.array().of(yup.string().ensure().trim()).ensure().default([]),
   images: yup
@@ -117,7 +117,7 @@ export const PerformerSchema = yup.object({
         url: yup.string().required(),
         width: yup.number().default(0),
         height: yup.number().default(0),
-      })
+      }),
     )
     .required(),
   urls: yup
@@ -132,7 +132,7 @@ export const PerformerSchema = yup.object({
             icon: yup.string().required(),
           })
           .required(),
-      })
+      }),
     )
     .ensure(),
   note: yup.string().required("Edit note is required"),

@@ -1,14 +1,15 @@
 import { FC, useEffect } from "react";
-import { Navbar, Nav } from "react-bootstrap";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Navbar, Nav, Button, Badge } from "react-bootstrap";
+import { NavLink, useLocation, useNavigate, Link } from "react-router-dom";
+import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBell as faBellOutlined } from "@fortawesome/free-regular-svg-icons";
 
 import SearchField, { SearchType } from "src/components/searchField";
-import { useConfig } from "src/graphql";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
 import { useAuth } from "src/hooks";
 import { Icon } from "src/components/fragments";
-import { faBook, faUser } from "@fortawesome/free-solid-svg-icons";
+import { useConfig, useUnreadNotificationsCount } from "src/graphql";
 import {
   ROUTE_SCENES,
   ROUTE_PERFORMERS,
@@ -25,6 +26,7 @@ import {
   ROUTE_FORGOT_PASSWORD,
   ROUTE_SITES,
   ROUTE_DRAFTS,
+  ROUTE_NOTIFICATIONS,
 } from "src/constants/route";
 import AuthContext from "./AuthContext";
 
@@ -36,6 +38,9 @@ const Main: FC<Props> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { loading, user } = useAuth();
+  const { data: unreadNotifications } = useUnreadNotificationsCount();
+  const notificationCount =
+    unreadNotifications?.getUnreadNotificationCount || null;
   const { data: configData } = useConfig();
 
   const guidelinesURL = configData?.getConfig.guidelines_url;
@@ -83,6 +88,16 @@ const Main: FC<Props> = ({ children }) => {
     contextValue.authenticated &&
     contextValue.user && (
       <>
+        <Link to={ROUTE_NOTIFICATIONS}>
+          <Button variant="link" className="NotificationBadge">
+            <Icon icon={notificationCount ? faBell : faBellOutlined} />
+            {notificationCount && (
+              <Badge bg="danger" className="ms-1">
+                {notificationCount}
+              </Badge>
+            )}
+          </Button>
+        </Link>
         <NavLink
           to={userHref(contextValue.user)}
           className="nav-link ms-auto me-2"

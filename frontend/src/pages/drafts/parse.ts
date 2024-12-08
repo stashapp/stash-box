@@ -24,45 +24,45 @@ type ScenePerformer = NonNullable<
 type URL = { url: string; site: { id: string } };
 const joinURLs = <T extends URL>(
   newURL: T | undefined | null,
-  existingURLs: T[] | undefined
+  existingURLs: T[] | undefined,
 ) =>
   uniqBy(
     [...(newURL ? [newURL] : []), ...(existingURLs ?? [])],
-    (u) => `${u.url}-${u.site.id}`
+    (u) => `${u.url}-${u.site.id}`,
   );
 
 type Entity = { id: string };
 const joinImages = <T extends Entity>(
   newImage: T | null | undefined,
-  existingImages: T[] | undefined
+  existingImages: T[] | undefined,
 ) =>
   uniqBy(
     [...(newImage ? [newImage] : []), ...(existingImages ?? [])],
-    (i) => i.id
+    (i) => i.id,
   );
 
 const joinTags = <T extends Entity>(
   newTags: T[] | null,
-  existingTags: T[] | undefined
+  existingTags: T[] | undefined,
 ) => uniqBy([...(newTags ?? []), ...(existingTags ?? [])], (t) => t.id);
 
 type Performer = { performer: { id: string }; as?: string | null };
 const joinPerformers = <T extends Performer>(
   newPerformers: T[] | null,
-  existingPerformers: T[] | undefined
+  existingPerformers: T[] | undefined,
 ) => [
   ...(existingPerformers ?? []),
   ...(newPerformers ?? []).filter(
     (p) =>
       !(existingPerformers ?? []).some(
-        (ep) => ep.performer.id === p.performer.id
-      )
+        (ep) => ep.performer.id === p.performer.id,
+      ),
   ),
 ];
 
 export const parseSceneDraft = (
   draft: SceneDraft,
-  existingScene: SceneFragment | undefined
+  existingScene: SceneFragment | undefined,
 ): [InitialScene, Record<string, string | null>] => {
   const scene: InitialScene = {
     date: draft.date,
@@ -77,9 +77,9 @@ export const parseSceneDraft = (
     tags: joinTags(
       (draft.tags ?? []).reduce<Tag[]>(
         (res, t) => (t.__typename === "Tag" ? [...res, t] : res),
-        []
+        [],
       ),
-      existingScene?.tags
+      existingScene?.tags,
     ),
     performers: joinPerformers(
       (draft.performers ?? []).reduce<ScenePerformer[]>(
@@ -90,9 +90,9 @@ export const parseSceneDraft = (
                 { performer: p, as: "", __typename: "PerformerAppearance" },
               ]
             : res,
-        []
+        [],
       ),
-      existingScene?.performers
+      existingScene?.performers,
     ),
   };
 
@@ -100,17 +100,15 @@ export const parseSceneDraft = (
     Studio:
       draft.studio?.__typename === "DraftEntity" ? draft.studio.name : null,
     Performers: (draft.performers ?? [])
-      .reduce<string[]>(
-        (res, p) => (p.__typename === "DraftEntity" ? [...res, p.name] : res),
-        []
-      )
+      .reduce<
+        string[]
+      >((res, p) => (p.__typename === "DraftEntity" ? [...res, p.name] : res), [])
       .join(", "),
     Urls: (draft?.urls ?? []).join(", "),
     Tags: (draft.tags ?? [])
-      .reduce<string[]>(
-        (res, t) => (t.__typename === "DraftEntity" ? [...res, t.name] : res),
-        []
-      )
+      .reduce<
+        string[]
+      >((res, t) => (t.__typename === "DraftEntity" ? [...res, t.name] : res), [])
       .join(", "),
   };
 
@@ -119,10 +117,10 @@ export const parseSceneDraft = (
 
 const parseEnum = (
   value: string | null | undefined,
-  enumObj: Record<string, string>
+  enumObj: Record<string, string>,
 ) =>
   Object.entries(enumObj).find(
-    ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
+    ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase(),
   )?.[0] ?? null;
 
 const parseBreastType = (value: string | null | undefined) => {
@@ -139,7 +137,7 @@ const parseBreastType = (value: string | null | undefined) => {
 
 const parseMeasurements = (value: string | null | undefined) => {
   const parsedMeasurements = value?.match(
-    /^(\d\d)([a-zA-Z]+)(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/
+    /^(\d\d)([a-zA-Z]+)(?:-|\s)(\d\d)(?:-|\s)(\d\d)$/,
   );
   if (!parsedMeasurements || parsedMeasurements?.length != 5) return null;
 
@@ -161,7 +159,7 @@ const parseAliases = (value: string | null | undefined) => {
 
 export const parsePerformerDraft = (
   draft: PerformerDraft,
-  existingPerformer: PerformerFragment | undefined
+  existingPerformer: PerformerFragment | undefined,
 ): [InitialPerformer, Record<string, string | null>] => {
   const measurements = parseMeasurements(draft?.measurements);
   const draftAliases = parseAliases(draft?.aliases);
@@ -173,12 +171,12 @@ export const parsePerformerDraft = (
     gender: parseEnum(draft.gender, GenderEnum) as GenderEnum | null,
     ethnicity: parseEnum(
       draft.ethnicity,
-      EthnicityEnum
+      EthnicityEnum,
     ) as EthnicityEnum | null,
     eye_color: parseEnum(draft.eye_color, EyeColorEnum) as EyeColorEnum | null,
     hair_color: parseEnum(
       draft.hair_color,
-      HairColorEnum
+      HairColorEnum,
     ) as HairColorEnum | null,
     birthdate: draft.birthdate,
     height: Number.parseInt(draft.height ?? "") || null,
@@ -200,9 +198,9 @@ export const parsePerformerDraft = (
   };
 
   const remainder = {
-    Aliases: draftAliases ? null : draft?.aliases ?? null,
+    Aliases: draftAliases ? null : (draft?.aliases ?? null),
     Height: draft.height && !performer.height ? draft.height : null,
-    Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
+    Country: draft?.country?.length !== 2 ? (draft?.country ?? null) : null,
     URLs: (draft?.urls ?? []).join(", "),
     Measurements:
       draft?.measurements && !measurements ? draft.measurements : null,

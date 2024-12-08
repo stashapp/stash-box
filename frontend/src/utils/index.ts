@@ -10,3 +10,4 @@ export * from "./enum";
 export * from "./user";
 export * from "./diff";
 export * from "./data";
+export * from "./intl";

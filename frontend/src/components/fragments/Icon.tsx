@@ -1,4 +1,5 @@
 import { FC } from "react";
+import cx from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
@@ -7,13 +8,14 @@ interface Props {
   className?: string;
   color?: string;
   title?: string;
+  variant?: "danger" | "success" | "info" | "warning";
 }
 
-const Icon: FC<Props> = ({ icon, className, color, title }) => (
+const Icon: FC<Props> = ({ icon, className, color, title, variant }) => (
   <FontAwesomeIcon
     title={title}
     icon={icon}
-    className={`fa-icon ${className}`}
+    className={cx("fa-icon", className, { [`text-${variant}`]: variant })}
     color={color}
   />
 );

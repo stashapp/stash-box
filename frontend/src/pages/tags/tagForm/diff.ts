@@ -5,12 +5,12 @@ import { diffValue, diffArray } from "src/utils";
 
 const selectTagDetails = (
   data: TagFormData,
-  original: Tag
+  original: Tag,
 ): [Required<OldTagDetails>, Required<TagDetails>] => {
   const [addedAliases, removedAliases] = diffArray(
     data?.aliases,
     original.aliases,
-    (a) => a
+    (a) => a,
   );
 
   return [
