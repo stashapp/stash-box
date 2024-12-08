@@ -32,7 +32,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
   });
   const { data: performer, loading: loadingPerformer } = usePerformer(
     { id: draft.data.id ?? "" },
-    !isUpdate
+    !isUpdate,
   );
   const { data: sitesData, loading: loadingSites } = useSites();
 
@@ -41,7 +41,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
   const doInsert = (
     updateData: PerformerEditDetailsInput,
     editNote: string,
-    setModifyAliases: boolean
+    setModifyAliases: boolean,
   ) => {
     const details: PerformerEditDetailsInput = {
       ...updateData,

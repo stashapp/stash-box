@@ -94,10 +94,7 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c.strPtrStrPtr(input.Code, sceneDetails.Code, "Code")
 	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
 	c.intPtrInt64Ptr(input.Duration, sceneDetails.Duration, "Duration")
-
-	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Date)
-	assert.Assert(s.t, inputAccuracy.Valid && (inputAccuracy.String == *sceneDetails.DateAccuracy), "DateAccuracy mismatch")
-	assert.Equal(s.t, inputDate.String, *sceneDetails.Date)
+	c.strPtrStrPtr(input.Date, sceneDetails.Date, "Date")
 
 	s.compareURLs(input.Urls, sceneDetails.AddedUrls)
 
@@ -119,19 +116,7 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	c.strPtrNullStr(input.Code, scene.Code, "Code")
 	c.uuidPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
 	c.intPtrNullInt64(input.Duration, scene.Duration, "Duration")
-
-	inputDate, inputAccuracy, _ := models.ParseFuzzyString(input.Date)
-	if input.Date == nil {
-		assert.Assert(s.t, !scene.DateAccuracy.Valid)
-	} else {
-		assert.Equal(s.t, inputAccuracy.String, scene.DateAccuracy.String)
-	}
-
-	if input.Date == nil {
-		assert.Assert(s.t, !scene.Date.Valid)
-	} else {
-		assert.Equal(s.t, inputDate.String, scene.Date.String)
-	}
+	c.strPtrNullStr(input.Date, scene.Date, "Date")
 
 	urls, _ := resolver.Urls(s.ctx, scene)
 	s.compareURLs(input.Urls, urls)

@@ -11,7 +11,6 @@ import (
 )
 
 type S3Config struct {
-	BaseURL       string            `mapstructure:"base_url"`
 	Endpoint      string            `mapstructure:"endpoint"`
 	Bucket        string            `mapstructure:"bucket"`
 	AccessKey     string            `mapstructure:"access_key"`
@@ -59,6 +58,10 @@ type config struct {
 	MinDestructiveVotingPeriod int `mapstructure:"min_destructive_voting_period"`
 	// Interval between checks for completed voting periods
 	VoteCronInterval string `mapstructure:"vote_cron_interval"`
+	// Number of times an edit can be updated by the creator
+	EditUpdateLimit int `mapstructure:"edit_update_limit"`
+	// Require all scene create edits to be submitted via drafts
+	RequireSceneDraft bool `mapstructure:"require_scene_draft"`
 
 	// Email settings
 	EmailHost string `mapstructure:"email_host"`
@@ -72,6 +75,7 @@ type config struct {
 	ImageLocation string `mapstructure:"image_location"`
 	ImageBackend  string `mapstructure:"image_backend"`
 	FaviconPath   string `mapstructure:"favicon_path"`
+	ImageMaxSize  int    `mapstructure:"image_max_size"`
 
 	// Logging options
 	LogFile     string `mapstructure:"logFile"`
@@ -120,6 +124,8 @@ var C = &config{
 	VotingPeriod:               345600,
 	MinDestructiveVotingPeriod: 172800,
 	DraftTimeLimit:             86400,
+	EditUpdateLimit:            1,
+	RequireSceneDraft:          false,
 }
 
 func GetDatabasePath() string {
@@ -249,6 +255,14 @@ func ValidateImageLocation() error {
 	return nil
 }
 
+func GetImageMaxSize() *int {
+	size := C.ImageMaxSize
+	if size == 0 {
+		return nil
+	}
+	return &size
+}
+
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func GetLogFile() string {
@@ -358,6 +372,14 @@ func GetMinDestructiveVotingPeriod() int {
 
 func GetVoteCronInterval() string {
 	return C.VoteCronInterval
+}
+
+func GetEditUpdateLimit() int {
+	return C.EditUpdateLimit
+}
+
+func GetRequireSceneDraft() bool {
+	return C.RequireSceneDraft
 }
 
 func GetTitle() string {

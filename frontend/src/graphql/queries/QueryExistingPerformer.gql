@@ -1,0 +1,12 @@
+#import "../fragments/EditFragment.gql"
+#import "../fragments/PerformerFragment.gql"
+query QueryExistingPerformer($input: QueryExistingPerformerInput!) {
+  queryExistingPerformer(input: $input) {
+    performers {
+      ...PerformerFragment
+    }
+    edits {
+      ...EditFragment
+    }
+  }
+}

@@ -2,7 +2,6 @@
 #import "../fragments/PerformerFragment.gql"
 #import "../fragments/TagFragment.gql"
 #import "../fragments/StudioFragment.gql"
-#import "../fragments/URLFragment.gql"
 query Draft($id: ID!) {
   findDraft(id: $id) {
     id
@@ -39,9 +38,7 @@ query Draft($id: ID!) {
         details
         director
         date
-        url {
-          ...URLFragment
-        }
+        urls
         studio {
           ... on Studio {
             ...StudioFragment

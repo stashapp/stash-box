@@ -89,15 +89,13 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 	c := fieldComparator{r: &s.testRunner}
 	c.strPtrStrPtr(input.Name, performerDetails.Name, "Name")
 	c.strPtrStrPtr(input.Disambiguation, performerDetails.Disambiguation, "Disambiguation")
+	c.strPtrStrPtr(input.Birthdate, performerDetails.Birthdate, "Birthdate")
 
 	assert.DeepEqual(s.t, input.Aliases, performerDetails.AddedAliases)
 	assert.Assert(s.t, input.Gender.IsValid() && (input.Gender.String() == *performerDetails.Gender))
 
 	s.compareURLs(input.Urls, performerDetails.AddedUrls)
 
-	date, accuracy, _ := models.ParseFuzzyString(input.Birthdate)
-	assert.Assert(s.t, accuracy.Valid && (accuracy.String == *performerDetails.BirthdateAccuracy))
-	assert.Assert(s.t, date.Valid && (date.String == *performerDetails.Birthdate))
 	assert.Assert(s.t, input.Ethnicity.IsValid() && (input.Ethnicity.String() == *performerDetails.Ethnicity))
 	assert.Assert(s.t, input.Country != nil && (*input.Country == *performerDetails.Country))
 	assert.Assert(s.t, input.EyeColor.IsValid() && (input.EyeColor.String() == *performerDetails.EyeColor))
@@ -142,14 +140,10 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 	urls, _ := resolver.Urls(s.ctx, performer)
 	s.compareURLs(input.Urls, urls)
 
-	date, accuracy, _ := models.ParseFuzzyString(input.Birthdate)
-
 	if input.Birthdate == nil {
-		assert.Assert(s.t, !performer.BirthdateAccuracy.Valid)
 		assert.Assert(s.t, !performer.Birthdate.Valid)
 	} else {
-		assert.Equal(s.t, accuracy.String, performer.BirthdateAccuracy.String)
-		assert.Equal(s.t, date.String, performer.Birthdate.String)
+		assert.Equal(s.t, *input.Birthdate, performer.Birthdate.String)
 	}
 
 	if input.Ethnicity == nil {

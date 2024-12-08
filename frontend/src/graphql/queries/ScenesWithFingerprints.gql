@@ -1,0 +1,18 @@
+#import "../fragments/QuerySceneFragment.gql"
+query ScenesWithFingerprints($input: SceneQueryInput!, $submitted: Boolean!) {
+  queryScenes(input: $input) {
+    count
+    scenes {
+      ...QuerySceneFragment
+      fingerprints(is_submitted: $submitted) {
+        hash
+        algorithm
+        duration
+        submissions
+        user_submitted
+        created
+        updated
+      }
+    }
+  }
+}

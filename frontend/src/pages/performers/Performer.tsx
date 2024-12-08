@@ -44,7 +44,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
   const studios = keyBy(performer.studios, (s) => s.studio.id);
   const studioGroups = groupBy(
     performer.studios,
-    (s) => s.studio.parent?.id ?? "none"
+    (s) => s.studio.parent?.id ?? "none",
   );
   const obj = sortBy(
     [
@@ -73,12 +73,12 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
                 value: s.studio.id,
                 subValues: null,
               })),
-              (s) => s.label
+              (s) => s.label,
             ),
           };
         }),
     ],
-    (s) => s.label
+    (s) => s.label,
   )
     .map((s) => [
       { ...s, subValues: s.subValues.map((v) => v.value) },
