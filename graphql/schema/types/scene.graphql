@@ -244,7 +244,7 @@ type SceneDraft {
   code: String
   details: String
   director: String
-  url: URL
+  urls: [String!]
   date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
@@ -259,7 +259,8 @@ input SceneDraftInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls field instead.")
+  urls: [String!]
   date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!

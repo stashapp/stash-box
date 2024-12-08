@@ -21,16 +21,6 @@ type ScenePerformer = NonNullable<
   SceneQuery["findScene"]
 >["performers"][number];
 
-type URL = { url: string; site: { id: string } };
-const joinURLs = <T extends URL>(
-  newURL: T | undefined | null,
-  existingURLs: T[] | undefined,
-) =>
-  uniqBy(
-    [...(newURL ? [newURL] : []), ...(existingURLs ?? [])],
-    (u) => `${u.url}-${u.site.id}`,
-  );
-
 type Entity = { id: string };
 const joinImages = <T extends Entity>(
   newImage: T | null | undefined,
@@ -68,7 +58,7 @@ export const parseSceneDraft = (
     date: draft.date,
     title: draft.title,
     details: draft.details,
-    urls: joinURLs(draft.url, existingScene?.urls),
+    urls: existingScene?.urls,
     studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
     director: draft.director,
     code: draft.code,
@@ -104,6 +94,7 @@ export const parseSceneDraft = (
         string[]
       >((res, p) => (p.__typename === "DraftEntity" ? [...res, p.name] : res), [])
       .join(", "),
+    Urls: (draft?.urls ?? []).join(", "),
     Tags: (draft.tags ?? [])
       .reduce<
         string[]
