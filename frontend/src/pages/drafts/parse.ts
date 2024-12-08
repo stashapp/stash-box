@@ -26,11 +26,11 @@ type ScenePerformer = NonNullable<
 type URL = { url: string; site: { id: string; name: string } };
 const joinURLs = <T extends URL>(
   newURL: T | undefined | null,
-  existingURLs: T[] | undefined
+  existingURLs: T[] | undefined,
 ) =>
   uniqBy(
     [...(newURL ? [newURL] : []), ...(existingURLs ?? [])],
-    (u) => `${u.url}-${u.site.id}`
+    (u) => `${u.url}-${u.site.id}`,
   );
 
 type Entity = { id: string };
@@ -162,7 +162,7 @@ const parseAliases = (value: string | null | undefined) => {
 const parseUrls = (
   value: string[] | null | undefined,
   type: ValidSiteTypeEnum,
-  sites: Site[]
+  sites: Site[],
 ): [URL[], string[]] => {
   if (!value || value.length == 0) return [[], []];
 
@@ -193,7 +193,7 @@ const parseUrls = (
 export const parsePerformerDraft = (
   draft: PerformerDraft,
   existingPerformer: PerformerFragment | undefined,
-  sites: Site[]
+  sites: Site[],
 ): [InitialPerformer, Record<string, string | null>] => {
   const measurements = parseMeasurements(draft?.measurements);
   const draftAliases = parseAliases(draft?.aliases);
@@ -234,7 +234,7 @@ export const parsePerformerDraft = (
   const [mappedUrls, remainingUrls] = parseUrls(
     draft?.urls,
     ValidSiteTypeEnum.PERFORMER,
-    sites
+    sites,
   );
   for (const mappedUrl of mappedUrls) {
     performer.urls = joinURLs(mappedUrl, performer.urls);
@@ -243,7 +243,7 @@ export const parsePerformerDraft = (
   const remainder = {
     Aliases: draftAliases ? null : (draft?.aliases ?? null),
     Height: draft.height && !performer.height ? draft.height : null,
-    Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
+    Country: draft?.country?.length !== 2 ? (draft?.country ?? null) : null,
     URLs: (remainingUrls ?? []).join(", "),
     Measurements:
       draft?.measurements && !measurements ? draft.measurements : null,
