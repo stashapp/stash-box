@@ -91,7 +91,6 @@ const parseUrls = (
   return [matches, remainder];
 };
 
-
 const parseSceneUrls = (
   urls: string[],
   type: ValidSiteTypeEnum,
