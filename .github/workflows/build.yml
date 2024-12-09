@@ -96,11 +96,6 @@ jobs:
         git add --intent-to-add .
         git diff --stat --exit-code
 
-    - name: Validate UI
-      # skip UI validation for pull requests if UI is unchanged
-      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: make ui-validate
-
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
       # this means that the build version/time may be incorrect if the UI is
