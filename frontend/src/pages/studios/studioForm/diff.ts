@@ -18,7 +18,7 @@ const selectStudioDetails = (
   const [addedAliases, removedAliases] = diffArray(
     data?.aliases,
     original?.aliases ?? [],
-    (a) => a
+    (a) => a,
   );
 
   return [

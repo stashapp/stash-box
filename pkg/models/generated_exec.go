@@ -9182,25 +9182,60 @@ func (ec *executionContext) field_Query_searchScene_argsLimit(
 func (ec *executionContext) field_Query_searchStudio_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["term"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_Query_searchStudio_argsTerm(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["term"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["limit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg1, err := ec.field_Query_searchStudio_argsLimit(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["limit"] = arg1
 	return args, nil
+}
+func (ec *executionContext) field_Query_searchStudio_argsTerm(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["term"]
+	if !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+	if tmp, ok := rawArgs["term"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchStudio_argsLimit(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["limit"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Query_searchTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
@@ -25110,13 +25145,16 @@ func (ec *executionContext) _Query_searchStudio(ctx context.Context, field graph
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Query().SearchStudio(rctx, fc.Args["term"].(string), fc.Args["limit"].(*int))
 		}
+
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "READ")
 			if err != nil {
-				return nil, err
+				var zeroVal []*Studio
+				return zeroVal, err
 			}
 			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
+				var zeroVal []*Studio
+				return zeroVal, errors.New("directive hasRole is not implemented")
 			}
 			return ec.directives.HasRole(ctx, nil, directive0, role)
 		}
@@ -30965,7 +31003,7 @@ func (ec *executionContext) _Studio_aliases(ctx context.Context, field graphql.C
 	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Studio_aliases(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Studio_aliases(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Studio",
 		Field:      field,
@@ -31794,7 +31832,7 @@ func (ec *executionContext) _StudioEdit_added_aliases(ctx context.Context, field
 	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_StudioEdit_added_aliases(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_StudioEdit_added_aliases(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "StudioEdit",
 		Field:      field,
@@ -31835,7 +31873,7 @@ func (ec *executionContext) _StudioEdit_removed_aliases(ctx context.Context, fie
 	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_StudioEdit_removed_aliases(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_StudioEdit_removed_aliases(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "StudioEdit",
 		Field:      field,
