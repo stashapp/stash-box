@@ -11,3 +11,4 @@ export * from "./user";
 export * from "./diff";
 export * from "./data";
 export * from "./intl";
+export * from "./url";

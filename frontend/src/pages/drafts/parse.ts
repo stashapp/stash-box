@@ -15,6 +15,8 @@ import {
 } from "src/graphql";
 import { uniqBy } from "lodash-es";
 
+import { cleanURL } from "src/utils";
+
 type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
 type SceneDraft = DraftData & { __typename: "SceneDraft" };
 type PerformerDraft = DraftData & { __typename: "PerformerDraft" };
@@ -25,11 +27,11 @@ type ScenePerformer = NonNullable<
 
 type URL = { url: string; site: { id: string; name: string } };
 const joinURLs = <T extends URL>(
-  newURL: T | undefined | null,
+  newURLs: T[] | undefined | null,
   existingURLs: T[] | undefined,
 ) =>
   uniqBy(
-    [...(newURL ? [newURL] : []), ...(existingURLs ?? [])],
+    [...(newURLs ? newURLs : []), ...(existingURLs ?? [])],
     (u) => `${u.url}-${u.site.id}`,
   );
 
@@ -62,15 +64,42 @@ const joinPerformers = <T extends Performer>(
   ),
 ];
 
+const parseSceneUrls = (
+  urls: string[],
+  type: ValidSiteTypeEnum,
+  sites: Site[],
+): [URL[], string[]] => {
+  const [matches, remainder] = parseUrls(urls, type, sites);
+
+  // Fall back to studio URL if there's only one unmatched URL
+  if (matches.length === 0 && remainder.length === 1) {
+    const studio = sites.find((site) => site.name === "Studio");
+    if (studio)
+      return [
+        [{ url: remainder[0], site: { id: studio.id, name: studio.name } }],
+        [],
+      ];
+  }
+
+  return [matches, remainder];
+};
+
 export const parseSceneDraft = (
   draft: SceneDraft,
   existingScene: SceneFragment | undefined,
+  sites: Site[],
 ): [InitialScene, Record<string, string | null>] => {
+  const [mappedUrls, remainingUrls] = parseSceneUrls(
+    draft?.urls ?? [],
+    ValidSiteTypeEnum.SCENE,
+    sites,
+  );
+
   const scene: InitialScene = {
     date: draft.date,
     title: draft.title,
     details: draft.details,
-    urls: existingScene?.urls,
+    urls: joinURLs(mappedUrls, existingScene?.urls),
     studio: draft.studio?.__typename === "Studio" ? draft.studio : null,
     director: draft.director,
     code: draft.code,
@@ -106,7 +135,7 @@ export const parseSceneDraft = (
         string[]
       >((res, p) => (p.__typename === "DraftEntity" ? [...res, p.name] : res), [])
       .join(", "),
-    Urls: (draft?.urls ?? []).join(", "),
+    Urls: remainingUrls.join(", "),
     Tags: (draft.tags ?? [])
       .reduce<
         string[]
@@ -160,33 +189,29 @@ const parseAliases = (value: string | null | undefined) => {
 };
 
 const parseUrls = (
-  value: string[] | null | undefined,
+  urls: string[],
   type: ValidSiteTypeEnum,
   sites: Site[],
 ): [URL[], string[]] => {
-  if (!value || value.length == 0) return [[], []];
-
   const matches = [];
   const remainder = [];
 
-  for (const url of value) {
+  for (const url of urls) {
     if (url == "") continue;
 
-    // Check all available sites and stop at the first match
-    let matched = false;
-    for (const site of sites) {
-      if (site.regex && site.valid_types.includes(type)) {
-        if (url.match(site.regex)) {
-          matches.push({ url: url, site: { id: site.id, name: site.name } });
-          matched = true;
-          break;
-        }
-      }
-    }
-    // If no site matched
-    if (!matched) remainder.push(url);
+    const matchedSite = sites.find((site) => {
+      if (!site.valid_types.includes(type) || !site.regex) return false;
+
+      return Boolean(url.match(site.regex));
+    });
+
+    if (matchedSite)
+      matches.push({
+        url: cleanURL(matchedSite.regex, url) ?? url,
+        site: { id: matchedSite.id, name: matchedSite.name },
+      });
+    else remainder.push(url);
   }
-  console.log("Matches ", matches);
   return [matches, remainder];
 };
 
@@ -197,6 +222,11 @@ export const parsePerformerDraft = (
 ): [InitialPerformer, Record<string, string | null>] => {
   const measurements = parseMeasurements(draft?.measurements);
   const draftAliases = parseAliases(draft?.aliases);
+  const [mappedUrls, remainingUrls] = parseUrls(
+    draft?.urls ?? [],
+    ValidSiteTypeEnum.PERFORMER,
+    sites,
+  );
 
   const performer: InitialPerformer = {
     name: draft.name,
@@ -228,23 +258,14 @@ export const parsePerformerDraft = (
     cup_size: measurements?.cup ?? existingPerformer?.cup_size,
     tattoos: existingPerformer?.tattoos ?? undefined,
     piercings: existingPerformer?.piercings ?? undefined,
-    urls: existingPerformer?.urls,
+    urls: joinURLs(mappedUrls, existingPerformer?.urls),
   };
-
-  const [mappedUrls, remainingUrls] = parseUrls(
-    draft?.urls,
-    ValidSiteTypeEnum.PERFORMER,
-    sites,
-  );
-  for (const mappedUrl of mappedUrls) {
-    performer.urls = joinURLs(mappedUrl, performer.urls);
-  }
 
   const remainder = {
     Aliases: draftAliases ? null : (draft?.aliases ?? null),
     Height: draft.height && !performer.height ? draft.height : null,
     Country: draft?.country?.length !== 2 ? (draft?.country ?? null) : null,
-    URLs: (remainingUrls ?? []).join(", "),
+    URLs: remainingUrls.join(", "),
     Measurements:
       draft?.measurements && !measurements ? draft.measurements : null,
     "Breast Type":
