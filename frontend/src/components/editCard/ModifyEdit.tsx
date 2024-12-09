@@ -9,6 +9,8 @@ import {
   EthnicityEnum,
   BreastTypeEnum,
   EditFragment,
+  HairColorEnum,
+  EyeColorEnum,
 } from "src/graphql";
 import {
   formatDuration,
@@ -22,6 +24,13 @@ import {
   categoryHref,
   compareByName,
 } from "src/utils";
+import {
+  EthnicityTypes,
+  HairColorTypes,
+  EyeColorTypes,
+  BreastTypes,
+  GenderTypes,
+} from "src/constants";
 import { Icon } from "src/components/fragments";
 import ChangeRow from "src/components/changeRow";
 import ImageChangeRow from "src/components/imageChangeRow";
@@ -61,7 +70,7 @@ export type OldTagDetails = TargetOldDetails<TagDetails>;
 export const renderTagDetails = (
   tagDetails: TagDetails,
   oldTagDetails: OldTagDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     <ChangeRow
@@ -138,7 +147,7 @@ export const renderPerformerDetails = (
   performerDetails: PerformerDetails,
   oldPerformerDetails: OldPerformerDetails | undefined,
   showDiff: boolean,
-  setModifyAliases = false
+  setModifyAliases = false,
 ) => (
   <>
     {performerDetails.name && (
@@ -174,8 +183,14 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Gender"
-      newValue={performerDetails.gender}
-      oldValue={oldPerformerDetails?.gender}
+      newValue={
+        performerDetails.gender &&
+        GenderTypes[performerDetails.gender as keyof typeof GenderEnum]
+      }
+      oldValue={
+        oldPerformerDetails?.gender &&
+        GenderTypes[oldPerformerDetails.gender as keyof typeof GenderEnum]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
@@ -186,14 +201,32 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Eye Color"
-      newValue={performerDetails.eye_color}
-      oldValue={oldPerformerDetails?.eye_color}
+      newValue={
+        performerDetails.eye_color &&
+        EyeColorTypes[performerDetails.eye_color as keyof typeof EyeColorEnum]
+      }
+      oldValue={
+        oldPerformerDetails?.eye_color &&
+        EyeColorTypes[
+          oldPerformerDetails.eye_color as keyof typeof EyeColorEnum
+        ]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
       name="Hair Color"
-      newValue={performerDetails.hair_color}
-      oldValue={oldPerformerDetails?.hair_color}
+      newValue={
+        performerDetails.hair_color &&
+        HairColorTypes[
+          performerDetails.hair_color as keyof typeof HairColorEnum
+        ]
+      }
+      oldValue={
+        oldPerformerDetails?.hair_color &&
+        HairColorTypes[
+          oldPerformerDetails.hair_color as keyof typeof HairColorEnum
+        ]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
@@ -204,8 +237,16 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Breast Type"
-      newValue={performerDetails.breast_type}
-      oldValue={oldPerformerDetails?.breast_type}
+      newValue={
+        performerDetails.breast_type &&
+        BreastTypes[performerDetails.breast_type as keyof typeof BreastTypeEnum]
+      }
+      oldValue={
+        oldPerformerDetails?.breast_type &&
+        BreastTypes[
+          oldPerformerDetails.breast_type as keyof typeof BreastTypeEnum
+        ]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
@@ -238,8 +279,16 @@ export const renderPerformerDetails = (
     />
     <ChangeRow
       name="Ethnicity"
-      newValue={performerDetails.ethnicity}
-      oldValue={oldPerformerDetails?.ethnicity}
+      newValue={
+        performerDetails.ethnicity &&
+        EthnicityTypes[performerDetails.ethnicity as keyof typeof EthnicityEnum]
+      }
+      oldValue={
+        oldPerformerDetails?.ethnicity &&
+        EthnicityTypes[
+          oldPerformerDetails.ethnicity as keyof typeof EthnicityEnum
+        ]
+      }
       showDiff={showDiff}
     />
     <ChangeRow
@@ -301,7 +350,7 @@ type ScenePerformance = {
   as?: string | null;
   performer: Pick<
     PerformerFragment,
-    "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
+    "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
 };
 
@@ -358,7 +407,7 @@ export type OldSceneDetails = TargetOldDetails<SceneDetails>;
 export const renderSceneDetails = (
   sceneDetails: SceneDetails,
   oldSceneDetails: OldSceneDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     {sceneDetails.title && (
@@ -477,7 +526,7 @@ export type OldStudioDetails = TargetOldDetails<StudioDetails>;
 export const renderStudioDetails = (
   studioDetails: StudioDetails,
   oldStudioDetails: OldStudioDetails | undefined,
-  showDiff: boolean
+  showDiff: boolean,
 ) => (
   <>
     <ChangeRow
@@ -543,7 +592,7 @@ const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {
       details,
       oldDetails,
       showDiff,
-      options?.set_modify_aliases
+      options?.set_modify_aliases,
     );
   }
 

@@ -35,11 +35,11 @@ const MultiSelect: FC<MultiSelectProps> = ({
   /** Allow creating a new option with a different casing. */
   const isValidNewOption = (
     inputValue: string,
-    selectValue: OnChangeValue<IOptionType, true>
+    selectValue: OnChangeValue<IOptionType, true>,
   ): boolean =>
     !!inputValue &&
     !selectValue.some(
-      ({ value }) => value.toLowerCase() === inputValue.toLowerCase()
+      ({ value }) => value.toLowerCase() === inputValue.toLowerCase(),
     );
 
   return (

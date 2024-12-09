@@ -15,7 +15,7 @@ export const StudioSchema = yup.object({
             icon: yup.string().required(),
           })
           .required(),
-      })
+      }),
     )
     .ensure(),
   images: yup
@@ -26,7 +26,7 @@ export const StudioSchema = yup.object({
         url: yup.string().required(),
         width: yup.number().required(),
         height: yup.number().required(),
-      })
+      }),
     )
     .required(),
   parent: yup

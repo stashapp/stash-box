@@ -15,7 +15,7 @@ const CategoryList: FC = () => {
 
   const categoryGroups = groupBy(
     sortBy(data?.queryTagCategories?.tag_categories ?? [], (cat) => cat.name),
-    (cat) => cat.group
+    (cat) => cat.group,
   );
 
   const categories = Object.keys(categoryGroups).map((group) => (

@@ -24,6 +24,10 @@ type EditTarget interface {
 	IsEditTarget()
 }
 
+type NotificationData interface {
+	IsNotificationData()
+}
+
 type SceneDraftPerformer interface {
 	IsSceneDraftPerformer()
 }
@@ -37,10 +41,9 @@ type SceneDraftTag interface {
 }
 
 type ActivateNewUserInput struct {
-	Name          string `json:"name"`
-	Email         string `json:"email"`
-	ActivationKey string `json:"activation_key"`
-	Password      string `json:"password"`
+	Name          string    `json:"name"`
+	ActivationKey uuid.UUID `json:"activation_key"`
+	Password      string    `json:"password"`
 }
 
 type ApplyEditInput struct {
@@ -62,10 +65,34 @@ type CancelEditInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
+type CommentCommentedEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentCommentedEdit) IsNotificationData() {}
+
+type CommentOwnEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentOwnEdit) IsNotificationData() {}
+
+type CommentVotedEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentVotedEdit) IsNotificationData() {}
+
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+
+type DownvoteOwnEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (DownvoteOwnEdit) IsNotificationData() {}
 
 type DraftEntityInput struct {
 	Name string     `json:"name"`
@@ -137,14 +164,50 @@ type EyeColorCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type FailedOwnEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FailedOwnEdit) IsNotificationData() {}
+
+type FavoritePerformerEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FavoritePerformerEdit) IsNotificationData() {}
+
+type FavoritePerformerScene struct {
+	Scene *Scene `json:"scene"`
+}
+
+func (FavoritePerformerScene) IsNotificationData() {}
+
+type FavoriteStudioEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FavoriteStudioEdit) IsNotificationData() {}
+
+type FavoriteStudioScene struct {
+	Scene *Scene `json:"scene"`
+}
+
+func (FavoriteStudioScene) IsNotificationData() {}
+
 type Fingerprint struct {
-	Hash          string               `json:"hash"`
-	Algorithm     FingerprintAlgorithm `json:"algorithm"`
-	Duration      int                  `json:"duration"`
-	Submissions   int                  `json:"submissions"`
-	Created       time.Time            `json:"created"`
-	Updated       time.Time            `json:"updated"`
-	UserSubmitted bool                 `json:"user_submitted"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+	// number of times this fingerprint has been submitted (excluding reports)
+	Submissions int `json:"submissions"`
+	// number of times this fingerprint has been reported
+	Reports int       `json:"reports"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"updated"`
+	// true if the current user submitted this fingerprint
+	UserSubmitted bool `json:"user_submitted"`
+	// true if the current user reported this fingerprint
+	UserReported bool `json:"user_reported"`
 }
 
 type FingerprintEditInput struct {
@@ -171,9 +234,10 @@ type FingerprintQueryInput struct {
 }
 
 type FingerprintSubmission struct {
-	SceneID     uuid.UUID         `json:"scene_id"`
-	Fingerprint *FingerprintInput `json:"fingerprint"`
-	Unmatch     *bool             `json:"unmatch,omitempty"`
+	SceneID     uuid.UUID                  `json:"scene_id"`
+	Fingerprint *FingerprintInput          `json:"fingerprint"`
+	Unmatch     *bool                      `json:"unmatch,omitempty"`
+	Vote        *FingerprintSubmissionType `json:"vote,omitempty"`
 }
 
 type FuzzyDate struct {
@@ -242,8 +306,8 @@ type Mutation struct {
 }
 
 type NewUserInput struct {
-	Email     string  `json:"email"`
-	InviteKey *string `json:"invite_key,omitempty"`
+	Email     string     `json:"email"`
+	InviteKey *uuid.UUID `json:"invite_key,omitempty"`
 }
 
 type PerformerAppearance struct {
@@ -434,10 +498,21 @@ type PerformerUpdateInput struct {
 type Query struct {
 }
 
+type QueryExistingPerformerInput struct {
+	Name           *string  `json:"name,omitempty"`
+	Disambiguation *string  `json:"disambiguation,omitempty"`
+	Urls           []string `json:"urls"`
+}
+
 type QueryExistingSceneInput struct {
 	Title        *string             `json:"title,omitempty"`
 	StudioID     *uuid.UUID          `json:"studio_id,omitempty"`
 	Fingerprints []*FingerprintInput `json:"fingerprints"`
+}
+
+type QueryNotificationsInput struct {
+	Page    int `json:"page"`
+	PerPage int `json:"per_page"`
 }
 
 type QuerySitesResultType struct {
@@ -505,6 +580,7 @@ type SceneDraftInput struct {
 	Details      *string             `json:"details,omitempty"`
 	Director     *string             `json:"director,omitempty"`
 	URL          *string             `json:"url,omitempty"`
+	Urls         []string            `json:"urls,omitempty"`
 	Date         *string             `json:"date,omitempty"`
 	Studio       *DraftEntityInput   `json:"studio,omitempty"`
 	Performers   []*DraftEntityInput `json:"performers"`
@@ -613,6 +689,7 @@ type StashBoxConfig struct {
 	MinDestructiveVotingPeriod int    `json:"min_destructive_voting_period"`
 	VoteCronInterval           string `json:"vote_cron_interval"`
 	GuidelinesURL              string `json:"guidelines_url"`
+	RequireSceneDraft          bool   `json:"require_scene_draft"`
 }
 
 type StringCriterionInput struct {
@@ -736,11 +813,23 @@ type TagUpdateInput struct {
 	CategoryID  *uuid.UUID `json:"category_id,omitempty"`
 }
 
+type UpdatedEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (UpdatedEdit) IsNotificationData() {}
+
+type UserChangeEmailInput struct {
+	ExistingEmailToken *uuid.UUID `json:"existing_email_token,omitempty"`
+	NewEmailToken      *uuid.UUID `json:"new_email_token,omitempty"`
+	NewEmail           *string    `json:"new_email,omitempty"`
+}
+
 type UserChangePasswordInput struct {
 	// Password in plain text
-	ExistingPassword *string `json:"existing_password,omitempty"`
-	NewPassword      string  `json:"new_password"`
-	ResetKey         *string `json:"reset_key,omitempty"`
+	ExistingPassword *string    `json:"existing_password,omitempty"`
+	NewPassword      string     `json:"new_password"`
+	ResetKey         *uuid.UUID `json:"reset_key,omitempty"`
 }
 
 type UserCreateInput struct {
@@ -1249,6 +1338,52 @@ func (e FingerprintAlgorithm) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type FingerprintSubmissionType string
+
+const (
+	// Positive vote
+	FingerprintSubmissionTypeValid FingerprintSubmissionType = "VALID"
+	// Report as invalid
+	FingerprintSubmissionTypeInvalid FingerprintSubmissionType = "INVALID"
+	// Remove vote
+	FingerprintSubmissionTypeRemove FingerprintSubmissionType = "REMOVE"
+)
+
+var AllFingerprintSubmissionType = []FingerprintSubmissionType{
+	FingerprintSubmissionTypeValid,
+	FingerprintSubmissionTypeInvalid,
+	FingerprintSubmissionTypeRemove,
+}
+
+func (e FingerprintSubmissionType) IsValid() bool {
+	switch e {
+	case FingerprintSubmissionTypeValid, FingerprintSubmissionTypeInvalid, FingerprintSubmissionTypeRemove:
+		return true
+	}
+	return false
+}
+
+func (e FingerprintSubmissionType) String() string {
+	return string(e)
+}
+
+func (e *FingerprintSubmissionType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FingerprintSubmissionType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FingerprintSubmissionType", str)
+	}
+	return nil
+}
+
+func (e FingerprintSubmissionType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type GenderEnum string
 
 const (
@@ -1360,6 +1495,7 @@ const (
 	HairColorEnumGrey     HairColorEnum = "GREY"
 	HairColorEnumBald     HairColorEnum = "BALD"
 	HairColorEnumVarious  HairColorEnum = "VARIOUS"
+	HairColorEnumWhite    HairColorEnum = "WHITE"
 	HairColorEnumOther    HairColorEnum = "OTHER"
 )
 
@@ -1372,12 +1508,13 @@ var AllHairColorEnum = []HairColorEnum{
 	HairColorEnumGrey,
 	HairColorEnumBald,
 	HairColorEnumVarious,
+	HairColorEnumWhite,
 	HairColorEnumOther,
 }
 
 func (e HairColorEnum) IsValid() bool {
 	switch e {
-	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumOther:
+	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumWhite, HairColorEnumOther:
 		return true
 	}
 	return false
@@ -1816,6 +1953,55 @@ func (e *TargetTypeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e TargetTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type UserChangeEmailStatus string
+
+const (
+	UserChangeEmailStatusConfirmOld   UserChangeEmailStatus = "CONFIRM_OLD"
+	UserChangeEmailStatusConfirmNew   UserChangeEmailStatus = "CONFIRM_NEW"
+	UserChangeEmailStatusExpired      UserChangeEmailStatus = "EXPIRED"
+	UserChangeEmailStatusInvalidToken UserChangeEmailStatus = "INVALID_TOKEN"
+	UserChangeEmailStatusSuccess      UserChangeEmailStatus = "SUCCESS"
+	UserChangeEmailStatusError        UserChangeEmailStatus = "ERROR"
+)
+
+var AllUserChangeEmailStatus = []UserChangeEmailStatus{
+	UserChangeEmailStatusConfirmOld,
+	UserChangeEmailStatusConfirmNew,
+	UserChangeEmailStatusExpired,
+	UserChangeEmailStatusInvalidToken,
+	UserChangeEmailStatusSuccess,
+	UserChangeEmailStatusError,
+}
+
+func (e UserChangeEmailStatus) IsValid() bool {
+	switch e {
+	case UserChangeEmailStatusConfirmOld, UserChangeEmailStatusConfirmNew, UserChangeEmailStatusExpired, UserChangeEmailStatusInvalidToken, UserChangeEmailStatusSuccess, UserChangeEmailStatusError:
+		return true
+	}
+	return false
+}
+
+func (e UserChangeEmailStatus) String() string {
+	return string(e)
+}
+
+func (e *UserChangeEmailStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserChangeEmailStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserChangeEmailStatus", str)
+	}
+	return nil
+}
+
+func (e UserChangeEmailStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

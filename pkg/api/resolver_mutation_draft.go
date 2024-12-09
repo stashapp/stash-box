@@ -26,7 +26,7 @@ func (r *mutationResolver) SubmitSceneDraft(ctx context.Context, input models.Sc
 		Code:         input.Code,
 		Details:      input.Details,
 		Director:     input.Director,
-		URL:          input.URL,
+		URLs:         input.Urls,
 		Date:         input.Date,
 		Studio:       translateDraftEntity(input.Studio),
 		Performers:   translateDraftEntitySlice(input.Performers),
@@ -54,6 +54,11 @@ func (r *mutationResolver) SubmitSceneDraft(ctx context.Context, input models.Sc
 				return err
 			}
 			data.Tags = tags
+		}
+
+		// Temporary code, while we depreciate the URL parameter.
+		if input.URL != nil {
+			data.URLs = []string{*input.URL}
 		}
 
 		if err := newDraft.SetData(data); err != nil {

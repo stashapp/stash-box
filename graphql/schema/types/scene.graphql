@@ -22,14 +22,29 @@ enum FavoriteFilter {
   ALL
 }
 
+enum FingerprintSubmissionType {
+  "Positive vote"
+  VALID
+  "Report as invalid"
+  INVALID
+  "Remove vote"
+  REMOVE
+}
+
 type Fingerprint {
   hash: String!
   algorithm: FingerprintAlgorithm!
   duration: Int!
+  "number of times this fingerprint has been submitted (excluding reports)"
   submissions: Int!
+  "number of times this fingerprint has been reported"
+  reports: Int!
   created: Time!
   updated: Time!
+  "true if the current user submitted this fingerprint"
   user_submitted: Boolean!
+  "true if the current user reported this fingerprint"
+  user_reported: Boolean!
 }
 
 type DraftFingerprint {
@@ -64,7 +79,8 @@ input FingerprintQueryInput {
 input FingerprintSubmission {
   scene_id: ID!
   fingerprint: FingerprintInput!
-  unmatch: Boolean
+  unmatch: Boolean @deprecated(reason: "Use `vote` with REMOVE instead")
+  vote: FingerprintSubmissionType = VALID
 }
 
 type Scene {
@@ -228,7 +244,7 @@ type SceneDraft {
   code: String
   details: String
   director: String
-  url: URL
+  urls: [String!]
   date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
@@ -243,7 +259,8 @@ input SceneDraftInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls field instead.")
+  urls: [String!]
   date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!

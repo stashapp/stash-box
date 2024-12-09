@@ -29,6 +29,8 @@ import {
   SceneQueryVariables,
   ScenesDocument,
   ScenesQueryVariables,
+  ScenesWithFingerprintsDocument,
+  ScenesWithFingerprintsQueryVariables,
   ScenesWithoutCountDocument,
   SearchAllDocument,
   SearchAllQuery,
@@ -65,12 +67,17 @@ import {
   DraftsDocument,
   QueryExistingSceneDocument,
   QueryExistingSceneQueryVariables,
+  QueryExistingPerformerDocument,
+  QueryExistingPerformerQueryVariables,
   ScenePairingsDocument,
   ScenePairingsQueryVariables,
   StudioPerformersDocument,
   StudioPerformersQueryVariables,
   VersionDocument,
   MeQueryVariables,
+  NotificationsDocument,
+  NotificationsQueryVariables,
+  UnreadNotificationCountDocument,
 } from "../types";
 
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
@@ -103,7 +110,7 @@ export const useMe = (options?: QueryHookOptions<MeQuery, MeQueryVariables>) =>
 
 export const usePerformer = (
   variables: PerformerQueryVariables,
-  skip = false
+  skip = false,
 ) =>
   useQuery(PerformerDocument, {
     variables,
@@ -112,7 +119,7 @@ export const usePerformer = (
 
 export const useFullPerformer = (
   variables: PerformerQueryVariables,
-  skip = false
+  skip = false,
 ) =>
   useQuery(FullPerformerDocument, {
     variables,
@@ -136,9 +143,18 @@ export const useScenes = (variables: ScenesQueryVariables, skip = false) =>
     skip,
   });
 
+export const useScenesWithFingerprints = (
+  variables: ScenesWithFingerprintsQueryVariables,
+  skip = false,
+) =>
+  useQuery(ScenesWithFingerprintsDocument, {
+    variables,
+    skip,
+  });
+
 export const useScenesWithoutCount = (
   variables: ScenesQueryVariables,
-  skip = false
+  skip = false,
 ) =>
   useQuery(ScenesWithoutCountDocument, {
     variables,
@@ -147,7 +163,7 @@ export const useScenesWithoutCount = (
 
 export const useSearchAll = (
   variables: SearchAllQueryVariables,
-  skip = false
+  skip = false,
 ) =>
   useQuery(SearchAllDocument, {
     variables,
@@ -155,21 +171,21 @@ export const useSearchAll = (
   });
 
 export const useSearchPerformers = (
-  variables: SearchPerformersQueryVariables
+  variables: SearchPerformersQueryVariables,
 ) =>
   useQuery(SearchPerformersDocument, {
     variables,
   });
 
 export const useLazySearchAll = (
-  options?: LazyQueryHookOptions<SearchAllQuery, SearchAllQueryVariables>
+  options?: LazyQueryHookOptions<SearchAllQuery, SearchAllQueryVariables>,
 ) => useLazyQuery(SearchAllDocument, options);
 
 export const useLazySearchPerformers = (
   options?: LazyQueryHookOptions<
     SearchPerformersQuery,
     SearchPerformersQueryVariables
-  >
+  >,
 ) => useLazyQuery(SearchPerformersDocument, options);
 
 export const useSearchTags = (variables: SearchTagsQueryVariables) =>
@@ -189,7 +205,7 @@ export const useStudios = (variables: StudiosQueryVariables) =>
   });
 
 export const useLazyStudios = (
-  options?: LazyQueryHookOptions<StudiosQuery, StudiosQueryVariables>
+  options?: LazyQueryHookOptions<StudiosQuery, StudiosQueryVariables>,
 ) => useLazyQuery(StudiosDocument, options);
 
 export const useTag = (variables: TagQueryVariables, skip = false) =>
@@ -203,7 +219,7 @@ export const useTags = (variables: TagsQueryVariables) =>
     variables,
   });
 export const useLazyTags = (
-  options?: LazyQueryHookOptions<TagsQuery, TagsQueryVariables>
+  options?: LazyQueryHookOptions<TagsQuery, TagsQueryVariables>,
 ) => useLazyQuery(TagsDocument, options);
 
 export const usePrivateUser = (variables: UserQueryVariables, skip = false) =>
@@ -213,7 +229,7 @@ export const usePrivateUser = (variables: UserQueryVariables, skip = false) =>
   });
 export const usePublicUser = (
   variables: PublicUserQueryVariables,
-  skip = false
+  skip = false,
 ) =>
   useQuery(PublicUserDocument, {
     variables,
@@ -241,7 +257,7 @@ export const useConfig = () => useQuery(ConfigDocument);
 export const useVersion = () => useQuery(VersionDocument);
 
 export const usePendingEditsCount = (
-  variables: PendingEditsCountQueryVariables
+  variables: PendingEditsCountQueryVariables,
 ) => useQuery(PendingEditsCountDocument, { variables });
 
 export const useSite = (variables: SiteQueryVariables, skip = false) =>
@@ -262,9 +278,18 @@ export const useDrafts = () => useQuery(DraftsDocument);
 
 export const useQueryExistingScene = (
   variables: QueryExistingSceneQueryVariables,
-  skip = false
+  skip = false,
 ) =>
   useQuery(QueryExistingSceneDocument, {
+    variables,
+    skip,
+  });
+
+export const useQueryExistingPerformer = (
+  variables: QueryExistingPerformerQueryVariables,
+  skip = false,
+) =>
+  useQuery(QueryExistingPerformerDocument, {
     variables,
     skip,
   });
@@ -275,8 +300,16 @@ export const useScenePairings = (variables: ScenePairingsQueryVariables) =>
   });
 
 export const useStudioPerformers = (
-  variables: StudioPerformersQueryVariables
+  variables: StudioPerformersQueryVariables,
 ) =>
   useQuery(StudioPerformersDocument, {
     variables,
   });
+
+export const useNotifications = (variables: NotificationsQueryVariables) =>
+  useQuery(NotificationsDocument, {
+    variables,
+  });
+
+export const useUnreadNotificationsCount = () =>
+  useQuery(UnreadNotificationCountDocument);

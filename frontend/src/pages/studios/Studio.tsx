@@ -45,7 +45,7 @@ const StudioComponent: FC<Props> = ({ studio }) => {
   const studioImage = getImage(studio.images, "landscape");
 
   const subStudios = sortBy(studio.child_studios, (s) =>
-    s.name.toLowerCase()
+    s.name.toLowerCase(),
   ).map((s) => (
     <li key={s.id}>
       <Link to={studioHref(s)}>{s.name}</Link>

@@ -9,5 +9,6 @@ query Config {
     min_destructive_voting_period
     vote_cron_interval
     guidelines_url
+    require_scene_draft
   }
 }

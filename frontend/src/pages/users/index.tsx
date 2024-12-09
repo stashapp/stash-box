@@ -12,6 +12,9 @@ import UserAdd from "./UserAdd";
 import UserEdit from "./UserEdit";
 import UserPassword from "./UserPassword";
 import UserEdits from "./UserEdits";
+import UserConfirmChangeEmail from "./UserConfirmChangeEmail";
+import UserValidateChangeEmail from "./UserValidateChangeEmail";
+import UserFingerprints from "./UserFingerprints";
 
 const UserLoader: FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -53,6 +56,14 @@ const UserLoader: FC = () => {
           </>
         }
       />
+      <Route
+        path="/confirm-email"
+        element={<UserConfirmChangeEmail user={user} />}
+      />
+      <Route
+        path="/change-email"
+        element={<UserValidateChangeEmail user={user} />}
+      />
     </Routes>
   );
 };
@@ -83,6 +94,15 @@ const UserRoutes: FC = () => (
         <>
           <Title page="Change Password" />
           <UserPassword />
+        </>
+      }
+    />
+    <Route
+      path="/fingerprints"
+      element={
+        <>
+          <Title page={"My Fingerprints"} />
+          <UserFingerprints />
         </>
       }
     />

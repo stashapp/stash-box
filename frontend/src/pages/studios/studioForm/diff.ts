@@ -8,11 +8,11 @@ import { diffValue, diffImages, diffURLs, diffArray } from "src/utils";
 
 const selectStudioDetails = (
   data: StudioFormData,
-  original: StudioFragment | null | undefined
+  original: StudioFragment | null | undefined,
 ): [Required<OldStudioDetails>, Required<StudioDetails>] => {
   const [addedImages, removedImages] = diffImages(
     data.images,
-    original?.images ?? []
+    original?.images ?? [],
   );
   const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);
   const [addedAliases, removedAliases] = diffArray(

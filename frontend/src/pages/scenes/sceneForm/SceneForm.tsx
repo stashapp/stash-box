@@ -33,6 +33,7 @@ import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import ExistingSceneAlert from "./ExistingSceneAlert";
 
 const CLASS_NAME = "SceneForm";
@@ -59,6 +60,7 @@ const SceneForm: FC<SceneProps> = ({
   isCreate = false,
   draftFingerprints,
 }) => {
+  useBeforeUnload();
   const {
     register,
     control,
@@ -108,9 +110,9 @@ const SceneForm: FC<SceneProps> = ({
         SceneSchema.cast(fieldData, {
           assert: "ignore-optionality",
         }) as SceneFormData,
-        scene
+        scene,
       ),
-    [fieldData, scene]
+    [fieldData, scene],
   );
 
   const [isChanging, setChange] = useState<number | undefined>();
@@ -215,7 +217,7 @@ const SceneForm: FC<SceneProps> = ({
                   res.__typename === "Performer" && handleChange(res, index)
                 }
                 excludeIDs={currentPerformerIds.filter(
-                  (id) => id !== p.performerId
+                  (id) => id !== p.performerId,
                 )}
                 searchType={SearchType.Performer}
               />
@@ -264,10 +266,11 @@ const SceneForm: FC<SceneProps> = ({
                 options={p.aliases ?? []}
                 defaultInputValue={p.alias ?? ""}
                 emptyLabel={""}
-                renderMenu={(results, { id }) => {
-                  if (!results.length) {
+                renderMenu={(options, { id }) => {
+                  if (!options.length) {
                     return <></>;
                   }
+                  const results = options as string[];
                   return (
                     <Menu id={id}>
                       <MenuItem
@@ -282,9 +285,9 @@ const SceneForm: FC<SceneProps> = ({
                         <MenuItem
                           option={result}
                           position={idx + 1}
-                          key={`${result}-idx`}
+                          key={result}
                         >
-                          {result as string}
+                          {result}
                         </MenuItem>
                       ))}
                     </Menu>

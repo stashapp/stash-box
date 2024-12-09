@@ -34,13 +34,17 @@ func (r *sceneResolver) Code(ctx context.Context, obj *models.Scene) (*string, e
 	return resolveNullString(obj.Code), nil
 }
 
-// Deprecated: use `DateFuzzy`
+// Deprecated: use `ReleaseDate`
 func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
-	return &obj.ResolveDate().Date, nil
+	ret := resolveFuzzyDate(obj.Date)
+	if ret != nil {
+		return &ret.Date, nil
+	}
+	return nil, nil
 }
 
 func (r *sceneResolver) ReleaseDate(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveFuzzyDate(&obj.Date.String, &obj.DateAccuracy.String), nil
+	return resolveNullString(obj.Date), nil
 }
 
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {

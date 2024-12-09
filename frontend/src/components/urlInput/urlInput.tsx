@@ -11,6 +11,7 @@ import { useFieldArray } from "react-hook-form";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { useSites, ValidSiteTypeEnum, SiteQuery } from "src/graphql";
+import { cleanURL } from "src/utils";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 
@@ -56,25 +57,8 @@ const URLInput: FC<URLInputProps> = ({ control, type, errors }) => {
 
   if (loading) return <></>;
   const sites = (data?.querySites.sites ?? []).filter((s) =>
-    s.valid_types.includes(type)
+    s.valid_types.includes(type),
   );
-
-  const cleanURL = (
-    regexStr: string | undefined | null,
-    url: string
-  ): string | undefined => {
-    if (!regexStr) return;
-
-    const regex = new RegExp(regexStr);
-    const match = regex.exec(url);
-
-    if (match == null || match.length < 2) {
-      return match?.[1];
-    } else {
-      match.shift();
-      return match.join("");
-    }
-  };
 
   const handleAdd = () => {
     if (!newURL || !selectedSite) return;
