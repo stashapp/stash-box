@@ -64,6 +64,34 @@ const joinPerformers = <T extends Performer>(
   ),
 ];
 
+const parseUrls = (
+  urls: string[],
+  type: ValidSiteTypeEnum,
+  sites: Site[],
+): [URL[], string[]] => {
+  const matches = [];
+  const remainder = [];
+
+  for (const url of urls) {
+    if (url == "") continue;
+
+    const matchedSite = sites.find((site) => {
+      if (!site.valid_types.includes(type) || !site.regex) return false;
+
+      return Boolean(url.match(site.regex));
+    });
+
+    if (matchedSite)
+      matches.push({
+        url: cleanURL(matchedSite.regex, url) ?? url,
+        site: { id: matchedSite.id, name: matchedSite.name },
+      });
+    else remainder.push(url);
+  }
+  return [matches, remainder];
+};
+
+
 const parseSceneUrls = (
   urls: string[],
   type: ValidSiteTypeEnum,
@@ -186,33 +214,6 @@ const parseAliases = (value: string | null | undefined) => {
   const aliases = value?.split(",").map((alias) => alias.trim());
   if (aliases.length > 0) return aliases;
   return null;
-};
-
-const parseUrls = (
-  urls: string[],
-  type: ValidSiteTypeEnum,
-  sites: Site[],
-): [URL[], string[]] => {
-  const matches = [];
-  const remainder = [];
-
-  for (const url of urls) {
-    if (url == "") continue;
-
-    const matchedSite = sites.find((site) => {
-      if (!site.valid_types.includes(type) || !site.regex) return false;
-
-      return Boolean(url.match(site.regex));
-    });
-
-    if (matchedSite)
-      matches.push({
-        url: cleanURL(matchedSite.regex, url) ?? url,
-        site: { id: matchedSite.id, name: matchedSite.name },
-      });
-    else remainder.push(url);
-  }
-  return [matches, remainder];
 };
 
 export const parsePerformerDraft = (
