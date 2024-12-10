@@ -2,6 +2,7 @@ import * as yup from "yup";
 
 export const StudioSchema = yup.object({
   name: yup.string().trim().required("Name is required"),
+  aliases: yup.array().of(yup.string().trim().ensure()).ensure().default([]),
   urls: yup
     .array()
     .of(

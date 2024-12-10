@@ -112,6 +112,8 @@ fragment EditFragment on Edit {
     }
     ... on StudioEdit {
       name
+      added_aliases
+      removed_aliases
       added_urls {
         ...URLFragment
       }

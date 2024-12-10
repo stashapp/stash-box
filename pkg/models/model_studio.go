@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -82,6 +83,94 @@ func (s *StudioURLs) Remove(id string) {
 			break
 		}
 	}
+}
+
+type StudioAlias struct {
+	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
+	Alias    string    `db:"alias" json:"alias"`
+}
+
+func (p StudioAlias) ID() string {
+	return p.Alias
+}
+
+type StudioAliases []*StudioAlias
+
+func (p StudioAliases) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p StudioAliases) EachPtr(fn func(interface{})) {
+	for _, v := range p {
+		fn(v)
+	}
+}
+
+func (p *StudioAliases) Add(o interface{}) {
+	*p = append(*p, o.(*StudioAlias))
+}
+
+func (p StudioAliases) ToAliases() []string {
+	var ret []string
+	for _, v := range p {
+		ret = append(ret, v.Alias)
+	}
+
+	return ret
+}
+
+func (p *StudioAliases) Remove(id string) {
+	for i, v := range *p {
+		if v.ID() == id {
+			(*p)[i] = (*p)[len(*p)-1]
+			*p = (*p)[:len(*p)-1]
+			break
+		}
+	}
+}
+
+func (p *StudioAliases) AddAliases(newAliases []*StudioAlias) error {
+	aliasMap := map[string]bool{}
+	for _, x := range *p {
+		aliasMap[x.Alias] = true
+	}
+	for _, v := range newAliases {
+		if aliasMap[v.Alias] {
+			return fmt.Errorf("Invalid alias addition. Alias already exists: '%v'", v.Alias)
+		}
+	}
+	for _, v := range newAliases {
+		p.Add(v)
+	}
+	return nil
+}
+
+func (p *StudioAliases) RemoveAliases(oldAliases []string) error {
+	aliasMap := map[string]bool{}
+	for _, x := range *p {
+		aliasMap[x.Alias] = true
+	}
+	for _, v := range oldAliases {
+		if !aliasMap[v] {
+			return fmt.Errorf("Invalid alias removal. Alias does not exist: '%v'", v)
+		}
+	}
+	for _, v := range oldAliases {
+		p.Remove(v)
+	}
+	return nil
+}
+
+func CreateStudioAliases(studioID uuid.UUID, aliases []string) StudioAliases {
+	var ret StudioAliases
+
+	for _, alias := range aliases {
+		ret = append(ret, &StudioAlias{StudioID: studioID, Alias: alias})
+	}
+
+	return ret
 }
 
 func CreateStudioURLs(studioID uuid.UUID, urls []*URL) StudioURLs {

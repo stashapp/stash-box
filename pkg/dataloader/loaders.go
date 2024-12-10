@@ -36,6 +36,7 @@ type Loaders struct {
 	StudioImageIDsByID             UUIDsLoader
 	StudioIsFavoriteByID           BoolsLoader
 	StudioUrlsByID                 URLLoader
+	StudioAliasesByID              StringsLoader
 	SceneTagIDsByID                UUIDsLoader
 	SiteByID                       SiteLoader
 	StudioByID                     StudioLoader
@@ -272,6 +273,14 @@ func GetLoaders(ctx context.Context, fac models.Repo) *Loaders {
 			fetch: func(ids []uuid.UUID) ([]bool, []error) {
 				qb := fac.Studio()
 				return qb.IsFavoriteByIds(currentUser.ID, ids)
+			},
+		},
+		StudioAliasesByID: StringsLoader{
+			maxBatch: 100,
+			wait:     1 * time.Millisecond,
+			fetch: func(ids []uuid.UUID) ([][]string, []error) {
+				qb := fac.Studio()
+				return qb.GetAllAliases(ids)
 			},
 		},
 	}

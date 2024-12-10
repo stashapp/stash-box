@@ -2,6 +2,7 @@
 fragment StudioFragment on Studio {
   id
   name
+  aliases
   child_studios {
     id
     name

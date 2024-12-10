@@ -517,6 +517,8 @@ export interface StudioDetails {
   removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
   removed_urls?: URL[] | null;
+  added_aliases?: string[] | null;
+  removed_aliases?: string[] | null;
 }
 
 export type OldStudioDetails = TargetOldDetails<StudioDetails>;
@@ -531,6 +533,12 @@ export const renderStudioDetails = (
       name="Name"
       newValue={studioDetails.name}
       oldValue={oldStudioDetails?.name}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Aliases"
+      newValue={studioDetails.added_aliases?.join(", ")}
+      oldValue={studioDetails.removed_aliases?.join(", ")}
       showDiff={showDiff}
     />
     <LinkedChangeRow

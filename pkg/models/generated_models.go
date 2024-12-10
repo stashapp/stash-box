@@ -699,6 +699,7 @@ type StringCriterionInput struct {
 
 type StudioCreateInput struct {
 	Name     string      `json:"name"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`
@@ -710,6 +711,7 @@ type StudioDestroyInput struct {
 
 type StudioEditDetailsInput struct {
 	Name     *string     `json:"name,omitempty"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`
@@ -724,7 +726,7 @@ type StudioEditInput struct {
 type StudioQueryInput struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name,omitempty"`
-	// Filter to search studio and parent studio name - assumes like query unless quoted
+	// Filter to search studio name, aliases and parent studio name - assumes like query unless quoted
 	Names *string `json:"names,omitempty"`
 	// Filter to search url - assumes like query unless quoted
 	URL       *string           `json:"url,omitempty"`
@@ -741,6 +743,7 @@ type StudioQueryInput struct {
 type StudioUpdateInput struct {
 	ID       uuid.UUID   `json:"id"`
 	Name     *string     `json:"name,omitempty"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *uuid.UUID  `json:"parent_id,omitempty"`
 	ImageIds []uuid.UUID `json:"image_ids,omitempty"`

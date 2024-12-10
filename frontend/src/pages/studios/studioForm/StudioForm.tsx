@@ -22,6 +22,7 @@ import { StudioSchema, StudioFormData } from "./schema";
 import { InitialStudio } from "./types";
 import DiffStudio from "./diff";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import MultiSelect from "src/components/multiSelect";
 
 interface StudioProps {
   studio?: Studio | null;
@@ -39,6 +40,7 @@ const StudioForm: FC<StudioProps> = ({
   saving,
 }) => {
   useBeforeUnload();
+  const initialAliases = initial?.aliases ?? studio?.aliases ?? [];
   const {
     register,
     control,
@@ -49,6 +51,7 @@ const StudioForm: FC<StudioProps> = ({
     resolver: yupResolver(StudioSchema),
     defaultValues: {
       name: initial?.name ?? studio?.name,
+      aliases: initialAliases,
       images: initial?.images ?? studio?.images ?? [],
       urls: initial?.urls ?? studio?.urls ?? [],
       parent: initial?.parent ?? studio?.parent,
@@ -73,6 +76,7 @@ const StudioForm: FC<StudioProps> = ({
   const onSubmit = (data: StudioFormData) => {
     const callbackData: StudioEditDetailsInput = {
       name: data.name,
+      aliases: data.aliases ?? [],
       urls: data.urls?.map((u) => ({
         url: u.url,
         site_id: u.site.id,
@@ -108,6 +112,24 @@ const StudioForm: FC<StudioProps> = ({
             />
             <Form.Control.Feedback type="invalid">
               {errors?.name?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="aliases" className="mb-3">
+            <Form.Label>Aliases</Form.Label>
+            <Controller
+              name="aliases"
+              control={control}
+              render={({ field: { onChange } }) => (
+                <MultiSelect
+                  initialValues={initialAliases}
+                  onChange={onChange}
+                  placeholder="Enter name..."
+                />
+              )}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors?.aliases?.message}
             </Form.Control.Feedback>
           </Form.Group>
 
