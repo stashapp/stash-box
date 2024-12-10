@@ -55,6 +55,10 @@ func (r *performerResolver) BirthDate(ctx context.Context, obj *models.Performer
 	return resolveNullString(obj.Birthdate), nil
 }
 
+func (r *performerResolver) DeathDate(ctx context.Context, obj *models.Performer) (*string, error) {
+	return resolveNullString(obj.Deathdate), nil
+}
+
 func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {
 	if !obj.Birthdate.Valid {
 		return nil, nil
@@ -65,11 +69,19 @@ func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*in
 		return nil, nil
 	}
 
+	end := time.Now()
+	if obj.Deathdate.Valid {
+		deathdate, err := utils.ParseDateStringAsTime(obj.Deathdate.String)
+		if err == nil {
+			end = deathdate
+		}
+	}
+
 	birthYear := birthdate.Year()
-	now := time.Now()
-	thisYear := now.Year()
+	thisYear := end.Year()
 	age := thisYear - birthYear
-	if now.YearDay() < birthdate.YearDay() {
+
+	if end.YearDay() < birthdate.YearDay() {
 		age--
 	}
 

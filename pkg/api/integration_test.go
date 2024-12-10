@@ -286,6 +286,7 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
 	birthdate := "2000-02-03"
+	deathdate := "2024-01-02"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
@@ -303,6 +304,7 @@ func (s *testRunner) createFullPerformerCreateInput() *models.PerformerCreateInp
 			},
 		},
 		Birthdate:       &birthdate,
+		Deathdate:       &deathdate,
 		Ethnicity:       &ethnicity,
 		Country:         &country,
 		EyeColor:        &eyecolor,
@@ -732,6 +734,7 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 	careerend := 2020
 	tattoodesc := "Tatto Desc"
 	birthdate := "2000-02-03"
+	deathdate := "2024-01-02"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
@@ -749,6 +752,7 @@ func (s *testRunner) createPerformerEditDetailsInput() *models.PerformerEditDeta
 			},
 		},
 		Birthdate:       &birthdate,
+		Deathdate:       &deathdate,
 		Ethnicity:       &ethnicity,
 		Country:         &country,
 		EyeColor:        &eyecolor,

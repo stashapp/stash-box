@@ -156,6 +156,7 @@ const PerformerForm: FC<PerformerProps> = ({
       aliases: initialAliases,
       gender: initial?.gender ?? performer?.gender ?? "",
       birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
+      deathdate: initial?.deathdate ?? performer?.death_date ?? undefined,
       eye_color: getEnumValue(
         EYE,
         initial?.eye_color ?? performer?.eye_color ?? null,
@@ -234,6 +235,7 @@ const PerformerForm: FC<PerformerProps> = ({
       disambiguation: data.disambiguation,
       gender: GenderEnum[data.gender as keyof typeof GenderEnum] || null,
       birthdate: data.birthdate,
+      deathdate: data.deathdate,
       eye_color:
         EyeColorEnum[data.eye_color as keyof typeof EyeColorEnum] || null,
       hair_color:
@@ -296,6 +298,7 @@ const PerformerForm: FC<PerformerProps> = ({
     { error: errors.name?.message, tab: "personal" },
     { error: errors.gender?.message, tab: "personal" },
     { error: errors.birthdate?.message, tab: "personal" },
+    { error: errors.deathdate?.message, tab: "personal" },
     { error: errors.career_start_year?.message, tab: "personal" },
     { error: errors.career_end_year?.message, tab: "personal" },
     { error: errors.height?.message, tab: "personal" },
@@ -369,7 +372,7 @@ const PerformerForm: FC<PerformerProps> = ({
           )}
 
           <Row>
-            <Form.Group controlId="aliases" className="col mb-3">
+            <Form.Group controlId="aliases" className="col">
               <Form.Label>Aliases</Form.Label>
               <Controller
                 control={control}
@@ -388,8 +391,8 @@ const PerformerForm: FC<PerformerProps> = ({
             </Form.Group>
           </Row>
 
-          <Row>
-            <Form.Group controlId="gender" className="col-6 mb-3">
+          <Row className="mb-3">
+            <Form.Group controlId="gender" className="col-6">
               <Form.Label>Gender</Form.Label>
               <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
@@ -402,7 +405,7 @@ const PerformerForm: FC<PerformerProps> = ({
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="birthdate" className="col-6 mb-3">
+            <Form.Group controlId="birthdate" className="col-3">
               <Form.Label>Birthdate</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.birthdate })}
@@ -412,11 +415,26 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Control.Feedback type="invalid">
                 {errors?.birthdate?.message}
               </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group controlId="deathdate" className="col-3">
+              <Form.Label>Deathdate</Form.Label>
+              <Form.Control
+                className={cx({ "is-invalid": errors.deathdate })}
+                placeholder="YYYY-MM-DD"
+                {...register("deathdate")}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors?.deathdate?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Col xs={{ span: 6, offset: 6 }}>
               <Form.Text>
                 If the precise date is unknown the day and/or month can be
                 omitted.
               </Form.Text>
-            </Form.Group>
+            </Col>
           </Row>
 
           <Row>

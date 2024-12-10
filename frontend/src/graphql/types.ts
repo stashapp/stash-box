@@ -855,6 +855,7 @@ export type Performer = {
   country?: Maybe<Scalars["String"]["output"]>;
   created: Scalars["Time"]["output"];
   cup_size?: Maybe<Scalars["String"]["output"]>;
+  death_date?: Maybe<Scalars["String"]["output"]>;
   deleted: Scalars["Boolean"]["output"];
   disambiguation?: Maybe<Scalars["String"]["output"]>;
   edits: Array<Edit>;
@@ -911,6 +912,7 @@ export type PerformerCreateInput = {
   career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
   country?: InputMaybe<Scalars["String"]["input"]>;
   cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  deathdate?: InputMaybe<Scalars["String"]["input"]>;
   disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   draft_id?: InputMaybe<Scalars["ID"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
@@ -939,6 +941,7 @@ export type PerformerDraft = {
   career_end_year?: Maybe<Scalars["Int"]["output"]>;
   career_start_year?: Maybe<Scalars["Int"]["output"]>;
   country?: Maybe<Scalars["String"]["output"]>;
+  deathdate?: Maybe<Scalars["String"]["output"]>;
   disambiguation?: Maybe<Scalars["String"]["output"]>;
   ethnicity?: Maybe<Scalars["String"]["output"]>;
   eye_color?: Maybe<Scalars["String"]["output"]>;
@@ -961,6 +964,7 @@ export type PerformerDraftInput = {
   career_end_year?: InputMaybe<Scalars["Int"]["input"]>;
   career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
   country?: InputMaybe<Scalars["String"]["input"]>;
+  deathdate?: InputMaybe<Scalars["String"]["input"]>;
   disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   ethnicity?: InputMaybe<Scalars["String"]["input"]>;
   eye_color?: InputMaybe<Scalars["String"]["input"]>;
@@ -991,6 +995,7 @@ export type PerformerEdit = {
   career_start_year?: Maybe<Scalars["Int"]["output"]>;
   country?: Maybe<Scalars["String"]["output"]>;
   cup_size?: Maybe<Scalars["String"]["output"]>;
+  deathdate?: Maybe<Scalars["String"]["output"]>;
   disambiguation?: Maybe<Scalars["String"]["output"]>;
   draft_id?: Maybe<Scalars["ID"]["output"]>;
   ethnicity?: Maybe<EthnicityEnum>;
@@ -1022,6 +1027,7 @@ export type PerformerEditDetailsInput = {
   career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
   country?: InputMaybe<Scalars["String"]["input"]>;
   cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  deathdate?: InputMaybe<Scalars["String"]["input"]>;
   disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   draft_id?: InputMaybe<Scalars["ID"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
@@ -1073,6 +1079,7 @@ export type PerformerQueryInput = {
   career_start_year?: InputMaybe<IntCriterionInput>;
   country?: InputMaybe<StringCriterionInput>;
   cup_size?: InputMaybe<StringCriterionInput>;
+  deathdate?: InputMaybe<DateCriterionInput>;
   direction?: SortDirectionEnum;
   disambiguation?: InputMaybe<StringCriterionInput>;
   ethnicity?: InputMaybe<EthnicityFilterEnum>;
@@ -1114,6 +1121,7 @@ export enum PerformerSortEnum {
   BIRTHDATE = "BIRTHDATE",
   CAREER_START_YEAR = "CAREER_START_YEAR",
   CREATED_AT = "CREATED_AT",
+  DEATHDATE = "DEATHDATE",
   DEBUT = "DEBUT",
   LAST_SCENE = "LAST_SCENE",
   NAME = "NAME",
@@ -1136,6 +1144,7 @@ export type PerformerUpdateInput = {
   career_start_year?: InputMaybe<Scalars["Int"]["input"]>;
   country?: InputMaybe<Scalars["String"]["input"]>;
   cup_size?: InputMaybe<Scalars["String"]["input"]>;
+  deathdate?: InputMaybe<Scalars["String"]["input"]>;
   disambiguation?: InputMaybe<Scalars["String"]["input"]>;
   ethnicity?: InputMaybe<EthnicityEnum>;
   eye_color?: InputMaybe<EyeColorEnum>;
@@ -2133,6 +2142,7 @@ export type EditFragment = {
         aliases: Array<string>;
         gender?: GenderEnum | null;
         birth_date?: string | null;
+        death_date?: string | null;
         age?: number | null;
         height?: number | null;
         hair_color?: HairColorEnum | null;
@@ -2280,6 +2290,7 @@ export type EditFragment = {
         removed_aliases?: Array<string> | null;
         gender?: GenderEnum | null;
         birthdate?: string | null;
+        deathdate?: string | null;
         ethnicity?: EthnicityEnum | null;
         country?: string | null;
         eye_color?: EyeColorEnum | null;
@@ -2401,6 +2412,7 @@ export type EditFragment = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -2457,6 +2469,7 @@ export type EditFragment = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -2634,6 +2647,7 @@ export type EditFragment = {
         disambiguation?: string | null;
         gender?: GenderEnum | null;
         birthdate?: string | null;
+        deathdate?: string | null;
         ethnicity?: EthnicityEnum | null;
         country?: string | null;
         eye_color?: EyeColorEnum | null;
@@ -2709,6 +2723,7 @@ export type EditFragment = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -2765,6 +2780,7 @@ export type EditFragment = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -2918,6 +2934,7 @@ export type EditFragment = {
         aliases: Array<string>;
         gender?: GenderEnum | null;
         birth_date?: string | null;
+        death_date?: string | null;
         age?: number | null;
         height?: number | null;
         hair_color?: HairColorEnum | null;
@@ -3088,6 +3105,7 @@ export type PerformerFragment = {
   aliases: Array<string>;
   gender?: GenderEnum | null;
   birth_date?: string | null;
+  death_date?: string | null;
   age?: number | null;
   height?: number | null;
   hair_color?: HairColorEnum | null;
@@ -3481,6 +3499,7 @@ export type ApplyEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -3643,6 +3662,7 @@ export type ApplyEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -3784,6 +3804,7 @@ export type ApplyEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -3840,6 +3861,7 @@ export type ApplyEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -4027,6 +4049,7 @@ export type ApplyEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -4112,6 +4135,7 @@ export type ApplyEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -4168,6 +4192,7 @@ export type ApplyEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -4321,6 +4346,7 @@ export type ApplyEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -4720,6 +4746,7 @@ export type PerformerEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -4882,6 +4909,7 @@ export type PerformerEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -5023,6 +5051,7 @@ export type PerformerEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -5079,6 +5108,7 @@ export type PerformerEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -5266,6 +5296,7 @@ export type PerformerEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -5351,6 +5382,7 @@ export type PerformerEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -5407,6 +5439,7 @@ export type PerformerEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -5560,6 +5593,7 @@ export type PerformerEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -5769,6 +5803,7 @@ export type PerformerEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -5931,6 +5966,7 @@ export type PerformerEditUpdateMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -6072,6 +6108,7 @@ export type PerformerEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -6128,6 +6165,7 @@ export type PerformerEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -6315,6 +6353,7 @@ export type PerformerEditUpdateMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -6400,6 +6439,7 @@ export type PerformerEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -6456,6 +6496,7 @@ export type PerformerEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -6609,6 +6650,7 @@ export type PerformerEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -6862,6 +6904,7 @@ export type SceneEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -7024,6 +7067,7 @@ export type SceneEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -7165,6 +7209,7 @@ export type SceneEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -7221,6 +7266,7 @@ export type SceneEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -7408,6 +7454,7 @@ export type SceneEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -7493,6 +7540,7 @@ export type SceneEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -7549,6 +7597,7 @@ export type SceneEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -7702,6 +7751,7 @@ export type SceneEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -7911,6 +7961,7 @@ export type SceneEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -8073,6 +8124,7 @@ export type SceneEditUpdateMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -8214,6 +8266,7 @@ export type SceneEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -8270,6 +8323,7 @@ export type SceneEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -8457,6 +8511,7 @@ export type SceneEditUpdateMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -8542,6 +8597,7 @@ export type SceneEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -8598,6 +8654,7 @@ export type SceneEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -8751,6 +8808,7 @@ export type SceneEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -8959,6 +9017,7 @@ export type StudioEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -9121,6 +9180,7 @@ export type StudioEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -9262,6 +9322,7 @@ export type StudioEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -9318,6 +9379,7 @@ export type StudioEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -9505,6 +9567,7 @@ export type StudioEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -9590,6 +9653,7 @@ export type StudioEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -9646,6 +9710,7 @@ export type StudioEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -9799,6 +9864,7 @@ export type StudioEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -10008,6 +10074,7 @@ export type StudioEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -10170,6 +10237,7 @@ export type StudioEditUpdateMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -10311,6 +10379,7 @@ export type StudioEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -10367,6 +10436,7 @@ export type StudioEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -10554,6 +10624,7 @@ export type StudioEditUpdateMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -10639,6 +10710,7 @@ export type StudioEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -10695,6 +10767,7 @@ export type StudioEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -10848,6 +10921,7 @@ export type StudioEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -11056,6 +11130,7 @@ export type TagEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -11218,6 +11293,7 @@ export type TagEditMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -11359,6 +11435,7 @@ export type TagEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -11415,6 +11492,7 @@ export type TagEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -11602,6 +11680,7 @@ export type TagEditMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -11687,6 +11766,7 @@ export type TagEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -11743,6 +11823,7 @@ export type TagEditMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -11896,6 +11977,7 @@ export type TagEditMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -12105,6 +12187,7 @@ export type TagEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -12267,6 +12350,7 @@ export type TagEditUpdateMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -12408,6 +12492,7 @@ export type TagEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -12464,6 +12549,7 @@ export type TagEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -12651,6 +12737,7 @@ export type TagEditUpdateMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -12736,6 +12823,7 @@ export type TagEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -12792,6 +12880,7 @@ export type TagEditUpdateMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -12945,6 +13034,7 @@ export type TagEditUpdateMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -13298,6 +13388,7 @@ export type VoteMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -13460,6 +13551,7 @@ export type VoteMutation = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -13601,6 +13693,7 @@ export type VoteMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -13657,6 +13750,7 @@ export type VoteMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -13844,6 +13938,7 @@ export type VoteMutation = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -13929,6 +14024,7 @@ export type VoteMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -13985,6 +14081,7 @@ export type VoteMutation = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -14138,6 +14235,7 @@ export type VoteMutation = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -14370,6 +14468,7 @@ export type DraftQuery = {
           aliases?: string | null;
           gender?: string | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           urls?: Array<string> | null;
           ethnicity?: string | null;
           country?: string | null;
@@ -14457,6 +14556,7 @@ export type DraftQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -14599,6 +14699,7 @@ export type EditQuery = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -14761,6 +14862,7 @@ export type EditQuery = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -14902,6 +15004,7 @@ export type EditQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -14958,6 +15061,7 @@ export type EditQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -15145,6 +15249,7 @@ export type EditQuery = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -15230,6 +15335,7 @@ export type EditQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -15286,6 +15392,7 @@ export type EditQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -15439,6 +15546,7 @@ export type EditQuery = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -15641,6 +15749,7 @@ export type EditUpdateQuery = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -15801,6 +15910,7 @@ export type EditUpdateQuery = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -15906,6 +16016,7 @@ export type EditUpdateQuery = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -16093,6 +16204,7 @@ export type EditsQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -16259,6 +16371,7 @@ export type EditsQuery = {
             removed_aliases?: Array<string> | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -16404,6 +16517,7 @@ export type EditsQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -16460,6 +16574,7 @@ export type EditsQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -16651,6 +16766,7 @@ export type EditsQuery = {
             disambiguation?: string | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -16740,6 +16856,7 @@ export type EditsQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -16796,6 +16913,7 @@ export type EditsQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -16953,6 +17071,7 @@ export type EditsQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -17135,6 +17254,7 @@ export type FullPerformerQuery = {
     aliases: Array<string>;
     gender?: GenderEnum | null;
     birth_date?: string | null;
+    death_date?: string | null;
     age?: number | null;
     height?: number | null;
     hair_color?: HairColorEnum | null;
@@ -17222,6 +17342,7 @@ export type PerformerQuery = {
     aliases: Array<string>;
     gender?: GenderEnum | null;
     birth_date?: string | null;
+    death_date?: string | null;
     age?: number | null;
     height?: number | null;
     hair_color?: HairColorEnum | null;
@@ -17368,6 +17489,7 @@ export type QueryExistingPerformerQuery = {
       aliases: Array<string>;
       gender?: GenderEnum | null;
       birth_date?: string | null;
+      death_date?: string | null;
       age?: number | null;
       height?: number | null;
       hair_color?: HairColorEnum | null;
@@ -17446,6 +17568,7 @@ export type QueryExistingPerformerQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -17612,6 +17735,7 @@ export type QueryExistingPerformerQuery = {
             removed_aliases?: Array<string> | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -17757,6 +17881,7 @@ export type QueryExistingPerformerQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -17813,6 +17938,7 @@ export type QueryExistingPerformerQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -18004,6 +18130,7 @@ export type QueryExistingPerformerQuery = {
             disambiguation?: string | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -18093,6 +18220,7 @@ export type QueryExistingPerformerQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -18149,6 +18277,7 @@ export type QueryExistingPerformerQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -18306,6 +18435,7 @@ export type QueryExistingPerformerQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -18582,6 +18712,7 @@ export type QueryExistingSceneQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -18748,6 +18879,7 @@ export type QueryExistingSceneQuery = {
             removed_aliases?: Array<string> | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -18893,6 +19025,7 @@ export type QueryExistingSceneQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -18949,6 +19082,7 @@ export type QueryExistingSceneQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -19140,6 +19274,7 @@ export type QueryExistingSceneQuery = {
             disambiguation?: string | null;
             gender?: GenderEnum | null;
             birthdate?: string | null;
+            deathdate?: string | null;
             ethnicity?: EthnicityEnum | null;
             country?: string | null;
             eye_color?: EyeColorEnum | null;
@@ -19229,6 +19364,7 @@ export type QueryExistingSceneQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -19285,6 +19421,7 @@ export type QueryExistingSceneQuery = {
                 aliases: Array<string>;
                 gender?: GenderEnum | null;
                 birth_date?: string | null;
+                death_date?: string | null;
                 age?: number | null;
                 height?: number | null;
                 hair_color?: HairColorEnum | null;
@@ -19442,6 +19579,7 @@ export type QueryExistingSceneQuery = {
             aliases: Array<string>;
             gender?: GenderEnum | null;
             birth_date?: string | null;
+            death_date?: string | null;
             age?: number | null;
             height?: number | null;
             hair_color?: HairColorEnum | null;
@@ -19654,6 +19792,7 @@ export type NotificationCommentFragment = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -19816,6 +19955,7 @@ export type NotificationCommentFragment = {
           removed_aliases?: Array<string> | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -19957,6 +20097,7 @@ export type NotificationCommentFragment = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -20013,6 +20154,7 @@ export type NotificationCommentFragment = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -20200,6 +20342,7 @@ export type NotificationCommentFragment = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -20285,6 +20428,7 @@ export type NotificationCommentFragment = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -20341,6 +20485,7 @@ export type NotificationCommentFragment = {
               aliases: Array<string>;
               gender?: GenderEnum | null;
               birth_date?: string | null;
+              death_date?: string | null;
               age?: number | null;
               height?: number | null;
               hair_color?: HairColorEnum | null;
@@ -20494,6 +20639,7 @@ export type NotificationCommentFragment = {
           aliases: Array<string>;
           gender?: GenderEnum | null;
           birth_date?: string | null;
+          death_date?: string | null;
           age?: number | null;
           height?: number | null;
           hair_color?: HairColorEnum | null;
@@ -20726,6 +20872,7 @@ export type NotificationsQuery = {
                       aliases: Array<string>;
                       gender?: GenderEnum | null;
                       birth_date?: string | null;
+                      death_date?: string | null;
                       age?: number | null;
                       height?: number | null;
                       hair_color?: HairColorEnum | null;
@@ -20896,6 +21043,7 @@ export type NotificationsQuery = {
                       removed_aliases?: Array<string> | null;
                       gender?: GenderEnum | null;
                       birthdate?: string | null;
+                      deathdate?: string | null;
                       ethnicity?: EthnicityEnum | null;
                       country?: string | null;
                       eye_color?: EyeColorEnum | null;
@@ -21041,6 +21189,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -21097,6 +21246,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -21288,6 +21438,7 @@ export type NotificationsQuery = {
                       disambiguation?: string | null;
                       gender?: GenderEnum | null;
                       birthdate?: string | null;
+                      deathdate?: string | null;
                       ethnicity?: EthnicityEnum | null;
                       country?: string | null;
                       eye_color?: EyeColorEnum | null;
@@ -21377,6 +21528,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -21433,6 +21585,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -21590,6 +21743,7 @@ export type NotificationsQuery = {
                       aliases: Array<string>;
                       gender?: GenderEnum | null;
                       birth_date?: string | null;
+                      death_date?: string | null;
                       age?: number | null;
                       height?: number | null;
                       hair_color?: HairColorEnum | null;
@@ -21816,6 +21970,7 @@ export type NotificationsQuery = {
                       aliases: Array<string>;
                       gender?: GenderEnum | null;
                       birth_date?: string | null;
+                      death_date?: string | null;
                       age?: number | null;
                       height?: number | null;
                       hair_color?: HairColorEnum | null;
@@ -21986,6 +22141,7 @@ export type NotificationsQuery = {
                       removed_aliases?: Array<string> | null;
                       gender?: GenderEnum | null;
                       birthdate?: string | null;
+                      deathdate?: string | null;
                       ethnicity?: EthnicityEnum | null;
                       country?: string | null;
                       eye_color?: EyeColorEnum | null;
@@ -22131,6 +22287,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -22187,6 +22344,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -22378,6 +22536,7 @@ export type NotificationsQuery = {
                       disambiguation?: string | null;
                       gender?: GenderEnum | null;
                       birthdate?: string | null;
+                      deathdate?: string | null;
                       ethnicity?: EthnicityEnum | null;
                       country?: string | null;
                       eye_color?: EyeColorEnum | null;
@@ -22467,6 +22626,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -22523,6 +22683,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -22680,6 +22841,7 @@ export type NotificationsQuery = {
                       aliases: Array<string>;
                       gender?: GenderEnum | null;
                       birth_date?: string | null;
+                      death_date?: string | null;
                       age?: number | null;
                       height?: number | null;
                       hair_color?: HairColorEnum | null;
@@ -22906,6 +23068,7 @@ export type NotificationsQuery = {
                       aliases: Array<string>;
                       gender?: GenderEnum | null;
                       birth_date?: string | null;
+                      death_date?: string | null;
                       age?: number | null;
                       height?: number | null;
                       hair_color?: HairColorEnum | null;
@@ -23076,6 +23239,7 @@ export type NotificationsQuery = {
                       removed_aliases?: Array<string> | null;
                       gender?: GenderEnum | null;
                       birthdate?: string | null;
+                      deathdate?: string | null;
                       ethnicity?: EthnicityEnum | null;
                       country?: string | null;
                       eye_color?: EyeColorEnum | null;
@@ -23221,6 +23385,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -23277,6 +23442,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -23468,6 +23634,7 @@ export type NotificationsQuery = {
                       disambiguation?: string | null;
                       gender?: GenderEnum | null;
                       birthdate?: string | null;
+                      deathdate?: string | null;
                       ethnicity?: EthnicityEnum | null;
                       country?: string | null;
                       eye_color?: EyeColorEnum | null;
@@ -23557,6 +23724,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -23613,6 +23781,7 @@ export type NotificationsQuery = {
                           aliases: Array<string>;
                           gender?: GenderEnum | null;
                           birth_date?: string | null;
+                          death_date?: string | null;
                           age?: number | null;
                           height?: number | null;
                           hair_color?: HairColorEnum | null;
@@ -23770,6 +23939,7 @@ export type NotificationsQuery = {
                       aliases: Array<string>;
                       gender?: GenderEnum | null;
                       birth_date?: string | null;
+                      death_date?: string | null;
                       age?: number | null;
                       height?: number | null;
                       hair_color?: HairColorEnum | null;
@@ -23983,6 +24153,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -24153,6 +24324,7 @@ export type NotificationsQuery = {
                     removed_aliases?: Array<string> | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -24298,6 +24470,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -24354,6 +24527,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -24545,6 +24719,7 @@ export type NotificationsQuery = {
                     disambiguation?: string | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -24634,6 +24809,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -24690,6 +24866,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -24847,6 +25024,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -25058,6 +25236,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -25228,6 +25407,7 @@ export type NotificationsQuery = {
                     removed_aliases?: Array<string> | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -25373,6 +25553,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -25429,6 +25610,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -25620,6 +25802,7 @@ export type NotificationsQuery = {
                     disambiguation?: string | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -25709,6 +25892,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -25765,6 +25949,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -25922,6 +26107,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -26133,6 +26319,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -26303,6 +26490,7 @@ export type NotificationsQuery = {
                     removed_aliases?: Array<string> | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -26448,6 +26636,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -26504,6 +26693,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -26695,6 +26885,7 @@ export type NotificationsQuery = {
                     disambiguation?: string | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -26784,6 +26975,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -26840,6 +27032,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -26997,6 +27190,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -27281,6 +27475,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -27451,6 +27646,7 @@ export type NotificationsQuery = {
                     removed_aliases?: Array<string> | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -27596,6 +27792,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -27652,6 +27849,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -27843,6 +28041,7 @@ export type NotificationsQuery = {
                     disambiguation?: string | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -27932,6 +28131,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -27988,6 +28188,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -28145,6 +28346,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -28429,6 +28631,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -28599,6 +28802,7 @@ export type NotificationsQuery = {
                     removed_aliases?: Array<string> | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -28744,6 +28948,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -28800,6 +29005,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -28991,6 +29197,7 @@ export type NotificationsQuery = {
                     disambiguation?: string | null;
                     gender?: GenderEnum | null;
                     birthdate?: string | null;
+                    deathdate?: string | null;
                     ethnicity?: EthnicityEnum | null;
                     country?: string | null;
                     eye_color?: EyeColorEnum | null;
@@ -29080,6 +29287,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -29136,6 +29344,7 @@ export type NotificationsQuery = {
                         aliases: Array<string>;
                         gender?: GenderEnum | null;
                         birth_date?: string | null;
+                        death_date?: string | null;
                         age?: number | null;
                         height?: number | null;
                         hair_color?: HairColorEnum | null;
@@ -29293,6 +29502,7 @@ export type NotificationsQuery = {
                     aliases: Array<string>;
                     gender?: GenderEnum | null;
                     birth_date?: string | null;
+                    death_date?: string | null;
                     age?: number | null;
                     height?: number | null;
                     hair_color?: HairColorEnum | null;
@@ -30569,6 +30779,7 @@ export const PerformerFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -31245,6 +31456,10 @@ export const EditFragmentDoc = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -31754,6 +31969,10 @@ export const EditFragmentDoc = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -32272,6 +32491,7 @@ export const EditFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -32700,6 +32920,7 @@ export const NotificationCommentFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -33244,6 +33465,10 @@ export const NotificationCommentFragmentDoc = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -33753,6 +33978,10 @@ export const NotificationCommentFragmentDoc = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -34848,6 +35077,7 @@ export const ApplyEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -35392,6 +35622,10 @@ export const ApplyEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -35901,6 +36135,10 @@ export const ApplyEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -37345,6 +37583,7 @@ export const PerformerEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -37889,6 +38128,10 @@ export const PerformerEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -38398,6 +38641,10 @@ export const PerformerEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -38970,6 +39217,7 @@ export const PerformerEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -39514,6 +39762,10 @@ export const PerformerEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -40023,6 +40275,10 @@ export const PerformerEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -40781,6 +41037,7 @@ export const SceneEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -41325,6 +41582,10 @@ export const SceneEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -41834,6 +42095,10 @@ export const SceneEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -42403,6 +42668,7 @@ export const SceneEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -42947,6 +43213,10 @@ export const SceneEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -43456,6 +43726,10 @@ export const SceneEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -44012,6 +44286,7 @@ export const StudioEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -44556,6 +44831,10 @@ export const StudioEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -45065,6 +45344,10 @@ export const StudioEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -45634,6 +45917,7 @@ export const StudioEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -46178,6 +46462,10 @@ export const StudioEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -46687,6 +46975,10 @@ export const StudioEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -47243,6 +47535,7 @@ export const TagEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -47787,6 +48080,10 @@ export const TagEditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -48296,6 +48593,10 @@ export const TagEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -48865,6 +49166,7 @@ export const TagEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -49409,6 +49711,10 @@ export const TagEditUpdateDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -49918,6 +50224,10 @@ export const TagEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -51151,6 +51461,7 @@ export const VoteDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -51695,6 +52006,10 @@ export const VoteDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -52204,6 +52519,10 @@ export const VoteDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -52821,6 +53140,10 @@ export const DraftDocument = {
                             },
                             {
                               kind: "Field",
+                              name: { kind: "Name", value: "deathdate" },
+                            },
+                            {
+                              kind: "Field",
                               name: { kind: "Name", value: "urls" },
                             },
                             {
@@ -53270,6 +53593,7 @@ export const DraftDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -53605,6 +53929,7 @@ export const EditDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -54149,6 +54474,10 @@ export const EditDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -54658,6 +54987,10 @@ export const EditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -55346,6 +55679,10 @@ export const EditUpdateDocument = {
                             },
                             {
                               kind: "Field",
+                              name: { kind: "Name", value: "deathdate" },
+                            },
+                            {
+                              kind: "Field",
                               name: { kind: "Name", value: "ethnicity" },
                             },
                             {
@@ -55809,6 +56146,7 @@ export const EditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -56266,6 +56604,7 @@ export const EditsDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -56810,6 +57149,10 @@ export const EditsDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -57319,6 +57662,10 @@ export const EditsDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -57857,6 +58204,7 @@ export const FullPerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -58144,6 +58492,7 @@ export const PerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -58755,6 +59104,7 @@ export const QueryExistingPerformerDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -59299,6 +59649,10 @@ export const QueryExistingPerformerDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -59808,6 +60162,10 @@ export const QueryExistingPerformerDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -60405,6 +60763,7 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -60930,6 +61289,10 @@ export const QueryExistingSceneDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -61439,6 +61802,10 @@ export const QueryExistingSceneDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",
@@ -62342,6 +62709,7 @@ export const NotificationsDocument = {
           { kind: "Field", name: { kind: "Name", value: "aliases" } },
           { kind: "Field", name: { kind: "Name", value: "gender" } },
           { kind: "Field", name: { kind: "Name", value: "birth_date" } },
+          { kind: "Field", name: { kind: "Name", value: "death_date" } },
           { kind: "Field", name: { kind: "Name", value: "age" } },
           { kind: "Field", name: { kind: "Name", value: "height" } },
           { kind: "Field", name: { kind: "Name", value: "hair_color" } },
@@ -62867,6 +63235,10 @@ export const NotificationsDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "ethnicity" },
                       },
                       {
@@ -63376,6 +63748,10 @@ export const NotificationsDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "birthdate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deathdate" },
                       },
                       {
                         kind: "Field",

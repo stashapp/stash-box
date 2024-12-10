@@ -35,6 +35,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 	hairColor := models.HairColorEnumBlonde
 	breastType := models.BreastTypeEnumNatural
 	birthdate := "2001-02-03"
+	deathdate := "2024-12-23"
 	site, err := s.createTestSite(nil)
 	assert.NilError(s.t, err)
 
@@ -50,6 +51,7 @@ func (s *performerTestRunner) testCreatePerformer() {
 			},
 		},
 		Birthdate:       &birthdate,
+		Deathdate:       &deathdate,
 		Ethnicity:       &ethnicity,
 		Country:         &country,
 		EyeColor:        &eyeColor,
@@ -104,6 +106,9 @@ func (s *performerTestRunner) verifyCreatedPerformer(input models.PerformerCreat
 
 	birthdate, _ := r.BirthDate(s.ctx, performer)
 	assert.DeepEqual(s.t, birthdate, input.Birthdate)
+
+	deathdate, _ := r.DeathDate(s.ctx, performer)
+	assert.DeepEqual(s.t, deathdate, input.Deathdate)
 
 	ethnicity, _ := r.Ethnicity(s.ctx, performer)
 	assert.DeepEqual(s.t, ethnicity, input.Ethnicity)
@@ -166,6 +171,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 	bandSize := 32
 	tattooDesc := "Foobar"
 	date := "2001-02-03"
+	deathdate := "2024-11-23"
 	site, err := s.createTestSite(nil)
 	assert.NilError(s.t, err)
 
@@ -179,6 +185,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 			},
 		},
 		Birthdate: &date,
+		Deathdate: &deathdate,
 		CupSize:   &cupSize,
 		BandSize:  &bandSize,
 		WaistSize: &bandSize,
@@ -212,6 +219,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 			},
 		},
 		Birthdate: &date,
+		Deathdate: &deathdate,
 		CupSize:   &cupSize,
 		BandSize:  &bandSize,
 		WaistSize: &bandSize,
@@ -235,6 +243,7 @@ func (s *performerTestRunner) testUpdatePerformer() {
 		"aliases",
 		"urls",
 		"birthdate",
+		"deathdate",
 		"tattoos",
 		"piercings",
 		"cup_size",
@@ -264,6 +273,9 @@ func (s *performerTestRunner) verifyUpdatedPerformer(input models.PerformerUpdat
 
 	birthdate, _ := s.resolver.Performer().BirthDate(s.ctx, performer)
 	assert.DeepEqual(s.t, birthdate, input.Birthdate)
+
+	deathdate, _ := s.resolver.Performer().DeathDate(s.ctx, performer)
+	assert.DeepEqual(s.t, deathdate, input.Deathdate)
 
 	tattoos, _ := s.resolver.Performer().Tattoos(s.ctx, performer)
 	assert.Assert(s.t, compareBodyMods(input.Tattoos, tattoos))

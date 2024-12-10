@@ -15,6 +15,7 @@ query Draft($id: ID!) {
         aliases
         gender
         birthdate
+        deathdate
         urls
         ethnicity
         country

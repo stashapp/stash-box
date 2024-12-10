@@ -9,6 +9,7 @@ fragment PerformerFragment on Performer {
   aliases
   gender
   birth_date
+  death_date
   age
   height
   hair_color

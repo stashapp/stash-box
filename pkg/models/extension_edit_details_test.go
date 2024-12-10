@@ -25,6 +25,7 @@ var (
 	bGenderStr      = bGender.String()
 	aDate           = "2001-01-01"
 	bDate           = "2002-01"
+	dDate           = "2024-11"
 	aEthnicity      = EthnicityEnumAsian
 	bEthnicity      = EthnicityEnumBlack
 	aEthnicityStr   = aEthnicity.String()
@@ -161,6 +162,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 		Disambiguation:  &bDisambiguation,
 		Gender:          &bGender,
 		Birthdate:       &bDate,
+		Deathdate:       &dDate,
 		Ethnicity:       &bEthnicity,
 		Country:         &bCountry,
 		EyeColor:        &bEyeColor,
@@ -183,6 +185,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			Disambiguation:  &bDisambiguation,
 			Gender:          &bGenderStr,
 			Birthdate:       &bDate,
+			Deathdate:       &dDate,
 			Ethnicity:       &bEthnicityStr,
 			Country:         &bCountry,
 			EyeColor:        &bEyeColorStr,
@@ -227,6 +230,7 @@ func TestPerformerEditFromDiff(t *testing.T) {
 			Disambiguation:  &bDisambiguation,
 			Gender:          &bGenderStr,
 			Birthdate:       &bDate,
+			Deathdate:       &dDate,
 			Ethnicity:       &bEthnicityStr,
 			Country:         &bCountry,
 			EyeColor:        &bEyeColorStr,

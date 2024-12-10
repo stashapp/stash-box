@@ -50,6 +50,7 @@ type PerformerDraft struct {
 	Aliases         *string    `json:"aliases,omitempty"`
 	Gender          *string    `json:"gender,omitempty"`
 	Birthdate       *string    `json:"birthdate,omitempty"`
+	Deathdate       *string    `json:"deathdate,omitempty"`
 	Urls            []string   `json:"urls,omitempty"`
 	Ethnicity       *string    `json:"ethnicity,omitempty"`
 	Country         *string    `json:"country,omitempty"`

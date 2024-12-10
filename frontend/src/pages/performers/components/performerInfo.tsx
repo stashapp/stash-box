@@ -1,5 +1,4 @@
 import { FC, useContext } from "react";
-import { parseISO, differenceInYears } from "date-fns";
 import { Link } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
@@ -87,16 +86,8 @@ const Actions: FC<Props> = ({ performer }) => {
   );
 };
 
-const PerformerAge = ({
-  birthdate,
-}: {
-  birthdate?: null | string;
-}): React.ReactNode => {
-  if (!birthdate) return "";
-  const date = parseISO(birthdate);
-  if (!date) return "";
-
-  const age = differenceInYears(new Date(), date);
+const PerformerAge = ({ age }: { age?: number | null }): React.ReactNode => {
+  if (!age) return "";
   return <small className="text-muted ms-2">{`${age} years old`}</small>;
 };
 
@@ -151,9 +142,20 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                     <td>Birthdate</td>
                     <td>
                       {performer.birth_date}
-                      <PerformerAge birthdate={performer.birth_date} />
+                      {!performer.death_date && (
+                        <PerformerAge age={performer.age} />
+                      )}
                     </td>
                   </tr>
+                  {performer.death_date && (
+                    <tr>
+                      <td>Deathdate</td>
+                      <td>
+                        {performer.death_date}
+                        <PerformerAge age={performer.age} />
+                      </td>
+                    </tr>
+                  )}
                   <tr>
                     <td>Height</td>
                     <td>

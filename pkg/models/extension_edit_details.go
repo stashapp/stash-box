@@ -47,6 +47,10 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer, inputAr
 		return nil, err
 	}
 
+	if err := ValidateFuzzyString(e.Deathdate); err != nil {
+		return nil, err
+	}
+
 	newData := &PerformerEdit{}
 	oldData := &PerformerEdit{}
 
@@ -62,6 +66,9 @@ func (e PerformerEditDetailsInput) PerformerEditFromDiff(orig Performer, inputAr
 	}
 	if e.Birthdate != nil || inputArgs.Field("birthdate").IsNull() {
 		oldData.Birthdate, newData.Birthdate = ed.nullString(orig.Birthdate, e.Birthdate)
+	}
+	if e.Deathdate != nil || inputArgs.Field("deathdate").IsNull() {
+		oldData.Deathdate, newData.Deathdate = ed.nullString(orig.Deathdate, e.Deathdate)
 	}
 	if e.Ethnicity != nil || inputArgs.Field("ethnicity").IsNull() {
 		oldData.Ethnicity, newData.Ethnicity = ed.nullStringEnum(orig.Ethnicity, e.Ethnicity)

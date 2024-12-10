@@ -312,6 +312,7 @@ type PerformerEdit struct {
 	AddedUrls        []*URL              `json:"added_urls,omitempty"`
 	RemovedUrls      []*URL              `json:"removed_urls,omitempty"`
 	Birthdate        *string             `json:"birthdate,omitempty"`
+	Deathdate        *string             `json:"deathdate,omitempty"`
 	Ethnicity        *string             `json:"ethnicity,omitempty"`
 	Country          *string             `json:"country,omitempty"`
 	EyeColor         *string             `json:"eye_color,omitempty"`
