@@ -16019,6 +16019,7 @@ export type EditUpdateQuery = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -56138,6 +56139,10 @@ export const EditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "production_date" },
                             },
                             {
                               kind: "Field",

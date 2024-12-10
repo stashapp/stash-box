@@ -113,6 +113,7 @@ query EditUpdate($id: ID!) {
         title
         details
         date
+        production_date
         studio {
           ...StudioFragment
         }
