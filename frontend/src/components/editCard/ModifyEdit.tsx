@@ -364,6 +364,7 @@ type ScenePerformance = {
 export interface SceneDetails {
   title?: string | null;
   date?: string | null;
+  production_date?: string | null;
   duration?: number | null;
   details?: string | null;
   director?: string | null;
@@ -472,6 +473,12 @@ export const renderSceneDetails = (
       name="Director"
       newValue={sceneDetails.director}
       oldValue={oldSceneDetails?.director}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Production Date"
+      newValue={sceneDetails.production_date}
+      oldValue={oldSceneDetails?.production_date}
       showDiff={showDiff}
     />
     <ChangeRow

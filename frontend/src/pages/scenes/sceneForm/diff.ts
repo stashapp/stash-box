@@ -83,6 +83,10 @@ const selectSceneDetails = (
       title: diffValue(original?.title, data.title),
       details: diffValue(original?.details, data.details),
       date: diffValue(original?.release_date, data.date),
+      production_date: diffValue(
+        original?.production_date,
+        data.production_date,
+      ),
       duration: diffValue(original?.duration, parseDuration(data.duration)),
       director: diffValue(original?.director, data.director),
       code: diffValue(original?.code, data.code),
@@ -100,6 +104,10 @@ const selectSceneDetails = (
       title: diffValue(data.title, original?.title),
       details: diffValue(data.details, original?.details),
       date: diffValue(data.date, original?.release_date),
+      production_date: diffValue(
+        data.production_date,
+        original?.production_date,
+      ),
       duration: diffValue(parseDuration(data.duration), original?.duration),
       director: diffValue(data.director, original?.director),
       code: diffValue(data.code, original?.code),

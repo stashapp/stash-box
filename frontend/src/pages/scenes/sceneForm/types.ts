@@ -6,6 +6,7 @@ export type InitialScene = {
   duration?: number | null;
   director?: string | null;
   date?: string | null;
+  production_date?: string | null;
   code?: string | null;
   urls?: {
     url: string;

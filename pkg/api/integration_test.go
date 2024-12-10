@@ -783,6 +783,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 	title := s.generateSceneName()
 	details := "Details"
 	date := "2000-02-03"
+	production_date := "2000-01-09"
 	duration := 123
 	director := "Director"
 	code := "SomeCode"
@@ -800,7 +801,8 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 				SiteID: site.ID,
 			},
 		},
-		Date: date,
+		Date:           date,
+		ProductionDate: &production_date,
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
@@ -814,6 +816,7 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 	title := s.generateSceneName()
 	details := "Details"
 	date := "2000-02-03"
+	production_date := "2000-01-09"
 	duration := 123
 	director := "Director"
 	code := "SomeCode"
@@ -831,10 +834,11 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 				SiteID: site.ID,
 			},
 		},
-		Date:     &date,
-		Duration: &duration,
-		Director: &director,
-		Code:     &code,
+		Date:           &date,
+		ProductionDate: &production_date,
+		Duration:       &duration,
+		Director:       &director,
+		Code:           &code,
 	}
 }
 
@@ -853,6 +857,7 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 	title := s.generateSceneName()
 	details := "Details"
 	date := "2000-02-03"
+	production_date := "2000-01-09"
 	duration := 123
 	director := "Director"
 	code := "SomeCode"
@@ -871,7 +876,8 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 				SiteID: site.ID,
 			},
 		},
-		Date: &date,
+		Date:           &date,
+		ProductionDate: &production_date,
 		Performers: []*models.PerformerAppearanceInput{
 			{
 				PerformerID: createdPerformer.UUID(),

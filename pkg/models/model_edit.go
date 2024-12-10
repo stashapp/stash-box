@@ -370,6 +370,7 @@ type SceneEdit struct {
 	AddedUrls           []*URL                      `json:"added_urls,omitempty"`
 	RemovedUrls         []*URL                      `json:"removed_urls,omitempty"`
 	Date                *string                     `json:"date,omitempty"`
+	ProductionDate      *string                     `json:"production_date,omitempty"`
 	StudioID            *uuid.UUID                  `json:"studio_id,omitempty"`
 	AddedPerformers     []*PerformerAppearanceInput `json:"added_performers,omitempty"`
 	RemovedPerformers   []*PerformerAppearanceInput `json:"removed_performers,omitempty"`

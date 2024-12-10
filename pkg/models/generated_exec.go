@@ -484,39 +484,41 @@ type ComplexityRoot struct {
 	}
 
 	Scene struct {
-		Code         func(childComplexity int) int
-		Created      func(childComplexity int) int
-		Date         func(childComplexity int) int
-		Deleted      func(childComplexity int) int
-		Details      func(childComplexity int) int
-		Director     func(childComplexity int) int
-		Duration     func(childComplexity int) int
-		Edits        func(childComplexity int) int
-		Fingerprints func(childComplexity int, isSubmitted *bool) int
-		ID           func(childComplexity int) int
-		Images       func(childComplexity int) int
-		Performers   func(childComplexity int) int
-		ReleaseDate  func(childComplexity int) int
-		Studio       func(childComplexity int) int
-		Tags         func(childComplexity int) int
-		Title        func(childComplexity int) int
-		Updated      func(childComplexity int) int
-		Urls         func(childComplexity int) int
+		Code           func(childComplexity int) int
+		Created        func(childComplexity int) int
+		Date           func(childComplexity int) int
+		Deleted        func(childComplexity int) int
+		Details        func(childComplexity int) int
+		Director       func(childComplexity int) int
+		Duration       func(childComplexity int) int
+		Edits          func(childComplexity int) int
+		Fingerprints   func(childComplexity int, isSubmitted *bool) int
+		ID             func(childComplexity int) int
+		Images         func(childComplexity int) int
+		Performers     func(childComplexity int) int
+		ProductionDate func(childComplexity int) int
+		ReleaseDate    func(childComplexity int) int
+		Studio         func(childComplexity int) int
+		Tags           func(childComplexity int) int
+		Title          func(childComplexity int) int
+		Updated        func(childComplexity int) int
+		Urls           func(childComplexity int) int
 	}
 
 	SceneDraft struct {
-		Code         func(childComplexity int) int
-		Date         func(childComplexity int) int
-		Details      func(childComplexity int) int
-		Director     func(childComplexity int) int
-		Fingerprints func(childComplexity int) int
-		ID           func(childComplexity int) int
-		Image        func(childComplexity int) int
-		Performers   func(childComplexity int) int
-		Studio       func(childComplexity int) int
-		Tags         func(childComplexity int) int
-		Title        func(childComplexity int) int
-		URLs         func(childComplexity int) int
+		Code           func(childComplexity int) int
+		Date           func(childComplexity int) int
+		Details        func(childComplexity int) int
+		Director       func(childComplexity int) int
+		Fingerprints   func(childComplexity int) int
+		ID             func(childComplexity int) int
+		Image          func(childComplexity int) int
+		Performers     func(childComplexity int) int
+		ProductionDate func(childComplexity int) int
+		Studio         func(childComplexity int) int
+		Tags           func(childComplexity int) int
+		Title          func(childComplexity int) int
+		URLs           func(childComplexity int) int
 	}
 
 	SceneEdit struct {
@@ -534,6 +536,7 @@ type ComplexityRoot struct {
 		Fingerprints        func(childComplexity int) int
 		Images              func(childComplexity int) int
 		Performers          func(childComplexity int) int
+		ProductionDate      func(childComplexity int) int
 		RemovedFingerprints func(childComplexity int) int
 		RemovedImages       func(childComplexity int) int
 		RemovedPerformers   func(childComplexity int) int
@@ -903,6 +906,7 @@ type SceneResolver interface {
 	Details(ctx context.Context, obj *Scene) (*string, error)
 	Date(ctx context.Context, obj *Scene) (*string, error)
 	ReleaseDate(ctx context.Context, obj *Scene) (*string, error)
+	ProductionDate(ctx context.Context, obj *Scene) (*string, error)
 	Urls(ctx context.Context, obj *Scene) ([]*URL, error)
 	Studio(ctx context.Context, obj *Scene) (*Studio, error)
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
@@ -3484,6 +3488,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Performers(childComplexity), true
 
+	case "Scene.production_date":
+		if e.complexity.Scene.ProductionDate == nil {
+			break
+		}
+
+		return e.complexity.Scene.ProductionDate(childComplexity), true
+
 	case "Scene.release_date":
 		if e.complexity.Scene.ReleaseDate == nil {
 			break
@@ -3581,6 +3592,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneDraft.Performers(childComplexity), true
+
+	case "SceneDraft.production_date":
+		if e.complexity.SceneDraft.ProductionDate == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.ProductionDate(childComplexity), true
 
 	case "SceneDraft.studio":
 		if e.complexity.SceneDraft.Studio == nil {
@@ -3707,6 +3725,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneEdit.Performers(childComplexity), true
+
+	case "SceneEdit.production_date":
+		if e.complexity.SceneEdit.ProductionDate == nil {
+			break
+		}
+
+		return e.complexity.SceneEdit.ProductionDate(childComplexity), true
 
 	case "SceneEdit.removed_fingerprints":
 		if e.complexity.SceneEdit.RemovedFingerprints == nil {
@@ -5493,6 +5518,7 @@ type Scene {
   details: String
   date: String @deprecated(reason: "Please use ` + "`" + `release_date` + "`" + ` instead")
   release_date: String
+  production_date: String
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -5513,6 +5539,7 @@ input SceneCreateInput {
   details: String
   urls: [URLInput!]
   date: String!
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -5529,6 +5556,7 @@ input SceneUpdateInput {
   details: String
   urls: [URLInput!]
   date: String
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -5548,6 +5576,7 @@ input SceneEditDetailsInput {
   details: String
   urls: [URLInput!]
   date: String
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -5571,6 +5600,7 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: String
+  production_date: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -5615,6 +5645,8 @@ input SceneQueryInput {
   url: String
   """Filter by date"""
   date: DateCriterionInput
+  """Filter by production date"""
+  production_date: DateCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
   """Filter to only include scenes with this studio as primary or parent"""
@@ -5650,6 +5682,7 @@ type SceneDraft {
   director: String
   urls: [String!]
   date: String
+  production_date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
   tags: [SceneDraftTag!]
@@ -5666,6 +5699,7 @@ input SceneDraftInput {
   url: String @deprecated(reason: "Use urls field instead.")
   urls: [String!]
   date: String
+  production_date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!
   tags: [DraftEntityInput!]
@@ -11913,6 +11947,8 @@ func (ec *executionContext) fieldContext_FavoritePerformerScene_scene(_ context.
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -12085,6 +12121,8 @@ func (ec *executionContext) fieldContext_FavoriteStudioScene_scene(_ context.Con
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -13141,6 +13179,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneCreate(ctx context.Contex
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -13258,6 +13298,8 @@ func (ec *executionContext) fieldContext_Mutation_sceneUpdate(ctx context.Contex
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -19734,6 +19776,8 @@ func (ec *executionContext) fieldContext_Performer_scenes(ctx context.Context, f
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -23656,6 +23700,8 @@ func (ec *executionContext) fieldContext_Query_findScene(ctx context.Context, fi
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -23776,6 +23822,8 @@ func (ec *executionContext) fieldContext_Query_findSceneByFingerprint(ctx contex
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -23896,6 +23944,8 @@ func (ec *executionContext) fieldContext_Query_findScenesByFingerprints(ctx cont
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -24016,6 +24066,8 @@ func (ec *executionContext) fieldContext_Query_findScenesByFullFingerprints(ctx 
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -24136,6 +24188,8 @@ func (ec *executionContext) fieldContext_Query_findScenesBySceneFingerprints(ctx
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -25149,6 +25203,8 @@ func (ec *executionContext) fieldContext_Query_searchScene(ctx context.Context, 
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -26665,6 +26721,8 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_scenes(_ conte
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -27049,6 +27107,8 @@ func (ec *executionContext) fieldContext_QueryScenesResultType_scenes(_ context.
 				return ec.fieldContext_Scene_date(ctx, field)
 			case "release_date":
 				return ec.fieldContext_Scene_release_date(ctx, field)
+			case "production_date":
+				return ec.fieldContext_Scene_production_date(ctx, field)
 			case "urls":
 				return ec.fieldContext_Scene_urls(ctx, field)
 			case "studio":
@@ -27820,6 +27880,47 @@ func (ec *executionContext) _Scene_release_date(ctx context.Context, field graph
 }
 
 func (ec *executionContext) fieldContext_Scene_release_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Scene_production_date(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Scene_production_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().ProductionDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Scene_production_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Scene",
 		Field:      field,
@@ -28826,6 +28927,47 @@ func (ec *executionContext) fieldContext_SceneDraft_date(_ context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _SceneDraft_production_date(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneDraft_production_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProductionDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SceneDraft_production_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SceneDraft_studio(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SceneDraft_studio(ctx, field)
 	if err != nil {
@@ -29264,6 +29406,47 @@ func (ec *executionContext) _SceneEdit_date(ctx context.Context, field graphql.C
 }
 
 func (ec *executionContext) fieldContext_SceneEdit_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SceneEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SceneEdit_production_date(ctx context.Context, field graphql.CollectedField, obj *SceneEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneEdit_production_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProductionDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SceneEdit_production_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneEdit",
 		Field:      field,
@@ -39011,7 +39194,7 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
+	fieldsInOrder := [...]string{"title", "details", "urls", "date", "production_date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39046,6 +39229,13 @@ func (ec *executionContext) unmarshalInputSceneCreateInput(ctx context.Context, 
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studio_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
@@ -39142,7 +39332,7 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "url", "urls", "date", "studio", "performers", "tags", "image", "fingerprints"}
+	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "url", "urls", "date", "production_date", "studio", "performers", "tags", "image", "fingerprints"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39205,6 +39395,13 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studio":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio"))
 			data, err := ec.unmarshalODraftEntityInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDraftEntityInput(ctx, v)
@@ -39253,7 +39450,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "duration", "director", "code", "fingerprints", "draft_id"}
+	fieldsInOrder := [...]string{"title", "details", "urls", "date", "production_date", "studio_id", "performers", "tag_ids", "image_ids", "duration", "director", "code", "fingerprints", "draft_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39288,6 +39485,13 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studio_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
@@ -39414,7 +39618,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	fieldsInOrder := [...]string{"text", "title", "url", "date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"text", "title", "url", "date", "production_date", "studios", "parentStudio", "tags", "performers", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39449,6 +39653,13 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDateCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studios":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studios"))
 			data, err := ec.unmarshalOMultiIDCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMultiIDCriterionInput(ctx, v)
@@ -39546,7 +39757,7 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
+	fieldsInOrder := [...]string{"id", "title", "details", "urls", "date", "production_date", "studio_id", "performers", "tag_ids", "image_ids", "fingerprints", "duration", "director", "code"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39588,6 +39799,13 @@ func (ec *executionContext) unmarshalInputSceneUpdateInput(ctx context.Context, 
 				return it, err
 			}
 			it.Date = data
+		case "production_date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("production_date"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductionDate = data
 		case "studio_id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studio_id"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
@@ -47296,6 +47514,39 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "production_date":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_production_date(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "urls":
 			field := field
 
@@ -47769,6 +48020,8 @@ func (ec *executionContext) _SceneDraft(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._SceneDraft_urls(ctx, field, obj)
 		case "date":
 			out.Values[i] = ec._SceneDraft_date(ctx, field, obj)
+		case "production_date":
+			out.Values[i] = ec._SceneDraft_production_date(ctx, field, obj)
 		case "studio":
 			field := field
 
@@ -47953,6 +48206,8 @@ func (ec *executionContext) _SceneEdit(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = ec._SceneEdit_removed_urls(ctx, field, obj)
 		case "date":
 			out.Values[i] = ec._SceneEdit_date(ctx, field, obj)
+		case "production_date":
+			out.Values[i] = ec._SceneEdit_production_date(ctx, field, obj)
 		case "studio":
 			field := field
 

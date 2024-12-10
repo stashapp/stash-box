@@ -24,6 +24,20 @@ export const SceneSchema = yup.object({
     )
     .nullable()
     .required("Release date is required"),
+  production_date: yup
+    .string()
+    .trim()
+    .defined()
+    .transform(nullCheck)
+    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
+      excludeEmptyString: true,
+      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
+    })
+    .test("valid-date", "Invalid date", isValidDate)
+    .test("date-outside-range", "Outside of range", (date) =>
+      dateWithinRange(date, "1900-01-01", addYears(new Date(), 1)),
+    )
+    .nullable(),
   duration: yup
     .string()
     .trim()
