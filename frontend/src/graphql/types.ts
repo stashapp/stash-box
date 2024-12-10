@@ -15909,6 +15909,7 @@ export type EditUpdateQuery = {
           disambiguation?: string | null;
           gender?: GenderEnum | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           ethnicity?: EthnicityEnum | null;
           country?: string | null;
           eye_color?: EyeColorEnum | null;
@@ -55670,6 +55671,10 @@ export const EditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "birthdate" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "deathdate" },
                             },
                             {
                               kind: "Field",

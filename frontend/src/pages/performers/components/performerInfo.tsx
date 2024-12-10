@@ -87,11 +87,7 @@ const Actions: FC<Props> = ({ performer }) => {
   );
 };
 
-const PerformerAge = ({
-  age,
-}: {
-  age?: number | null;
-}): React.ReactNode => {
+const PerformerAge = ({ age }: { age?: number | null }): React.ReactNode => {
   if (!age) return "";
   return <small className="text-muted ms-2">{`${age} years old`}</small>;
 };
@@ -147,10 +143,12 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                     <td>Birthdate</td>
                     <td>
                       {performer.birth_date}
-                      { !performer.death_date && <PerformerAge age={performer.age} /> }
+                      {!performer.death_date && (
+                        <PerformerAge age={performer.age} />
+                      )}
                     </td>
                   </tr>
-                  { performer.death_date && (
+                  {performer.death_date && (
                     <tr>
                       <td>Deathdate</td>
                       <td>

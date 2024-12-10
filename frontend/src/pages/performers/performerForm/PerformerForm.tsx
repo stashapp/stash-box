@@ -429,14 +429,13 @@ const PerformerForm: FC<PerformerProps> = ({
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Col xs={{ span: 6, offset: 6 }}> 
+            <Col xs={{ span: 6, offset: 6 }}>
               <Form.Text>
                 If the precise date is unknown the day and/or month can be
                 omitted.
               </Form.Text>
             </Col>
           </Row>
-
 
           <Row>
             <Form.Group controlId="eye_color" className="col-6 mb-3">
