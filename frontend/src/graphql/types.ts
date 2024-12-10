@@ -14468,6 +14468,7 @@ export type DraftQuery = {
           aliases?: string | null;
           gender?: string | null;
           birthdate?: string | null;
+          deathdate?: string | null;
           urls?: Array<string> | null;
           ethnicity?: string | null;
           country?: string | null;
@@ -53136,6 +53137,10 @@ export const DraftDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "birthdate" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "deathdate" },
                             },
                             {
                               kind: "Field",
