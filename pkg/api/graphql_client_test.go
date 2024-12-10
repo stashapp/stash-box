@@ -76,6 +76,7 @@ type performerOutput struct {
 	Disambiguation  *string       `json:"disambiguation"`
 	Gender          *string       `json:"gender"`
 	Birthdate       *string       `json:"birth_date"`
+	Deathdate       *string       `json:"death_date"`
 	Ethnicity       *string       `json:"ethnicity"`
 	Country         *string       `json:"country"`
 	EyeColor        *string       `json:"eye_color"`

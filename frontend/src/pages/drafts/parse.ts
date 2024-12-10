@@ -243,6 +243,7 @@ export const parsePerformerDraft = (
       HairColorEnum,
     ) as HairColorEnum | null,
     birthdate: draft.birthdate,
+    deathdate: draft.deathdate,
     height: Number.parseInt(draft.height ?? "") || null,
     country: draft?.country?.length === 2 ? draft.country : null,
     aliases: draftAliases ?? existingPerformer?.aliases,

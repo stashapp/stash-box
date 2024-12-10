@@ -14,6 +14,7 @@ type Performer struct {
 	Disambiguation  sql.NullString `db:"disambiguation" json:"disambiguation"`
 	Gender          sql.NullString `db:"gender" json:"gender"`
 	Birthdate       sql.NullString `db:"birthdate" json:"birthdate"`
+	Deathdate       sql.NullString `db:"deathdate" json:"deathdate"`
 	Ethnicity       sql.NullString `db:"ethnicity" json:"ethnicity"`
 	Country         sql.NullString `db:"country" json:"country"`
 	EyeColor        sql.NullString `db:"eye_color" json:"eye_color"`
@@ -350,6 +351,7 @@ func (p *Performer) CopyFromPerformerEdit(input PerformerEdit, old PerformerEdit
 	fe.nullInt64(&p.HipSize, input.HipSize, old.HipSize)
 	fe.nullInt64(&p.WaistSize, input.WaistSize, old.WaistSize)
 	fe.nullString(&p.Birthdate, input.Birthdate, old.Birthdate)
+	fe.nullString(&p.Deathdate, input.Deathdate, old.Deathdate)
 
 	p.UpdatedAt = time.Now()
 }
@@ -373,6 +375,7 @@ func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
 	v.int64("hip size", edit.Old.HipSize, p.HipSize.Int64)
 	v.int64("waist size", edit.Old.WaistSize, p.WaistSize.Int64)
 	v.string("birthdate", edit.Old.Birthdate, p.Birthdate.String)
+	v.string("deathdate", edit.Old.Deathdate, p.Deathdate.String)
 
 	return v.err
 }

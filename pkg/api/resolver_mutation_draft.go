@@ -93,6 +93,7 @@ func (r *mutationResolver) SubmitPerformerDraft(ctx context.Context, input model
 		Aliases:         input.Aliases,
 		Gender:          input.Gender,
 		Birthdate:       input.Birthdate,
+		Deathdate:       input.Deathdate,
 		Urls:            input.Urls,
 		Ethnicity:       input.Ethnicity,
 		Country:         input.Country,

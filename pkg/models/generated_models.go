@@ -329,6 +329,7 @@ type PerformerCreateInput struct {
 	Gender          *GenderEnum         `json:"gender,omitempty"`
 	Urls            []*URLInput         `json:"urls,omitempty"`
 	Birthdate       *string             `json:"birthdate,omitempty"`
+	Deathdate       *string             `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity,omitempty"`
 	Country         *string             `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum       `json:"eye_color,omitempty"`
@@ -358,6 +359,7 @@ type PerformerDraftInput struct {
 	Aliases         *string         `json:"aliases,omitempty"`
 	Gender          *string         `json:"gender,omitempty"`
 	Birthdate       *string         `json:"birthdate,omitempty"`
+	Deathdate       *string         `json:"deathdate,omitempty"`
 	Urls            []string        `json:"urls,omitempty"`
 	Ethnicity       *string         `json:"ethnicity,omitempty"`
 	Country         *string         `json:"country,omitempty"`
@@ -380,6 +382,7 @@ type PerformerEditDetailsInput struct {
 	Gender          *GenderEnum         `json:"gender,omitempty"`
 	Urls            []*URLInput         `json:"urls,omitempty"`
 	Birthdate       *string             `json:"birthdate,omitempty"`
+	Deathdate       *string             `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity,omitempty"`
 	Country         *string             `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum       `json:"eye_color,omitempty"`
@@ -432,6 +435,7 @@ type PerformerQueryInput struct {
 	// Filter to search urls - assumes like query unless quoted
 	URL             *string                         `json:"url,omitempty"`
 	Birthdate       *DateCriterionInput             `json:"birthdate,omitempty"`
+	Deathdate       *DateCriterionInput             `json:"deathdate,omitempty"`
 	BirthYear       *IntCriterionInput              `json:"birth_year,omitempty"`
 	Age             *IntCriterionInput              `json:"age,omitempty"`
 	Ethnicity       *EthnicityFilterEnum            `json:"ethnicity,omitempty"`
@@ -477,6 +481,7 @@ type PerformerUpdateInput struct {
 	Gender          *GenderEnum         `json:"gender,omitempty"`
 	Urls            []*URLInput         `json:"urls,omitempty"`
 	Birthdate       *string             `json:"birthdate,omitempty"`
+	Deathdate       *string             `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum      `json:"ethnicity,omitempty"`
 	Country         *string             `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum       `json:"eye_color,omitempty"`
@@ -1591,6 +1596,7 @@ type PerformerSortEnum string
 const (
 	PerformerSortEnumName            PerformerSortEnum = "NAME"
 	PerformerSortEnumBirthdate       PerformerSortEnum = "BIRTHDATE"
+	PerformerSortEnumDeathdate       PerformerSortEnum = "DEATHDATE"
 	PerformerSortEnumSceneCount      PerformerSortEnum = "SCENE_COUNT"
 	PerformerSortEnumCareerStartYear PerformerSortEnum = "CAREER_START_YEAR"
 	PerformerSortEnumDebut           PerformerSortEnum = "DEBUT"
@@ -1602,6 +1608,7 @@ const (
 var AllPerformerSortEnum = []PerformerSortEnum{
 	PerformerSortEnumName,
 	PerformerSortEnumBirthdate,
+	PerformerSortEnumDeathdate,
 	PerformerSortEnumSceneCount,
 	PerformerSortEnumCareerStartYear,
 	PerformerSortEnumDebut,
@@ -1612,7 +1619,7 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 
 func (e PerformerSortEnum) IsValid() bool {
 	switch e {
-	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
 		return true
 	}
 	return false

@@ -37,6 +37,19 @@ export const PerformerSchema = yup.object({
       dateWithinRange(date, "1900-01-01", addYears(new Date(), -18)),
     )
     .nullable(),
+  deathdate: yup
+    .string()
+    .trim()
+    .transform(nullCheck)
+    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
+      excludeEmptyString: true,
+      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
+    })
+    .test("valid-date", "Invalid date", isValidDate)
+    .test("date-outside-range", "Outside of range", (date) =>
+      dateWithinRange(date, "1900-01-01", new Date().toISOString().slice(10)),
+    )
+    .nullable(),
   career_start_year: yup
     .number()
     .transform(zeroCheck)

@@ -67,6 +67,7 @@ query EditUpdate($id: ID!) {
         disambiguation
         gender
         birthdate
+        deathdate
         ethnicity
         country
         eye_color

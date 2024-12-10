@@ -290,6 +290,7 @@ type ComplexityRoot struct {
 		Country         func(childComplexity int) int
 		Created         func(childComplexity int) int
 		CupSize         func(childComplexity int) int
+		DeathDate       func(childComplexity int) int
 		Deleted         func(childComplexity int) int
 		Disambiguation  func(childComplexity int) int
 		Edits           func(childComplexity int) int
@@ -328,6 +329,7 @@ type ComplexityRoot struct {
 		CareerEndYear   func(childComplexity int) int
 		CareerStartYear func(childComplexity int) int
 		Country         func(childComplexity int) int
+		Deathdate       func(childComplexity int) int
 		Disambiguation  func(childComplexity int) int
 		Ethnicity       func(childComplexity int) int
 		EyeColor        func(childComplexity int) int
@@ -357,6 +359,7 @@ type ComplexityRoot struct {
 		CareerStartYear  func(childComplexity int) int
 		Country          func(childComplexity int) int
 		CupSize          func(childComplexity int) int
+		Deathdate        func(childComplexity int) int
 		Disambiguation   func(childComplexity int) int
 		DraftID          func(childComplexity int) int
 		Ethnicity        func(childComplexity int) int
@@ -784,6 +787,7 @@ type PerformerResolver interface {
 	Urls(ctx context.Context, obj *Performer) ([]*URL, error)
 	Birthdate(ctx context.Context, obj *Performer) (*FuzzyDate, error)
 	BirthDate(ctx context.Context, obj *Performer) (*string, error)
+	DeathDate(ctx context.Context, obj *Performer) (*string, error)
 	Age(ctx context.Context, obj *Performer) (*int, error)
 	Ethnicity(ctx context.Context, obj *Performer) (*EthnicityEnum, error)
 	Country(ctx context.Context, obj *Performer) (*string, error)
@@ -2271,6 +2275,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Performer.CupSize(childComplexity), true
 
+	case "Performer.death_date":
+		if e.complexity.Performer.DeathDate == nil {
+			break
+		}
+
+		return e.complexity.Performer.DeathDate(childComplexity), true
+
 	case "Performer.deleted":
 		if e.complexity.Performer.Deleted == nil {
 			break
@@ -2500,6 +2511,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PerformerDraft.Country(childComplexity), true
 
+	case "PerformerDraft.deathdate":
+		if e.complexity.PerformerDraft.Deathdate == nil {
+			break
+		}
+
+		return e.complexity.PerformerDraft.Deathdate(childComplexity), true
+
 	case "PerformerDraft.disambiguation":
 		if e.complexity.PerformerDraft.Disambiguation == nil {
 			break
@@ -2681,6 +2699,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PerformerEdit.CupSize(childComplexity), true
+
+	case "PerformerEdit.deathdate":
+		if e.complexity.PerformerEdit.Deathdate == nil {
+			break
+		}
+
+		return e.complexity.PerformerEdit.Deathdate(childComplexity), true
 
 	case "PerformerEdit.disambiguation":
 		if e.complexity.PerformerEdit.Disambiguation == nil {
@@ -5037,6 +5062,7 @@ type Performer {
   urls: [URL!]!
   birthdate: FuzzyDate @deprecated(reason: "Please use ` + "`" + `birth_date` + "`" + `")
   birth_date: String
+  death_date: String
   age: Int # resolver
   ethnicity: EthnicityEnum
   country: String
@@ -5092,6 +5118,7 @@ input PerformerCreateInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -5118,6 +5145,7 @@ input PerformerUpdateInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -5146,6 +5174,7 @@ input PerformerEditDetailsInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -5188,6 +5217,7 @@ type PerformerEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -5252,6 +5282,7 @@ input BodyModificationCriterionInput {
 enum PerformerSortEnum {
   NAME
   BIRTHDATE
+  DEATHDATE
   SCENE_COUNT
   CAREER_START_YEAR
   DEBUT
@@ -5278,6 +5309,7 @@ input PerformerQueryInput {
   url: String
 
   birthdate: DateCriterionInput
+  deathdate: DateCriterionInput
   birth_year: IntCriterionInput
   age: IntCriterionInput
 
@@ -5320,6 +5352,7 @@ type PerformerDraft {
   aliases: String
   gender: String
   birthdate: String
+  deathdate: String
   urls: [String!]
   ethnicity: String
   country: String
@@ -5342,6 +5375,7 @@ input PerformerDraftInput {
   aliases: String
   gender: String
   birthdate: String
+  deathdate: String
   urls: [String!]
   ethnicity: String
   country: String
@@ -13429,6 +13463,8 @@ func (ec *executionContext) fieldContext_Mutation_performerCreate(ctx context.Co
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -13580,6 +13616,8 @@ func (ec *executionContext) fieldContext_Mutation_performerUpdate(ctx context.Co
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -18693,6 +18731,47 @@ func (ec *executionContext) fieldContext_Performer_birth_date(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Performer_death_date(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Performer_death_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Performer().DeathDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Performer_death_date(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Performer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Performer_age(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Performer_age(ctx, field)
 	if err != nil {
@@ -20021,6 +20100,8 @@ func (ec *executionContext) fieldContext_PerformerAppearance_performer(_ context
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -20360,6 +20441,47 @@ func (ec *executionContext) _PerformerDraft_birthdate(ctx context.Context, field
 }
 
 func (ec *executionContext) fieldContext_PerformerDraft_birthdate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PerformerDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PerformerDraft_deathdate(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PerformerDraft_deathdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deathdate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PerformerDraft_deathdate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PerformerDraft",
 		Field:      field,
@@ -21247,6 +21369,47 @@ func (ec *executionContext) _PerformerEdit_birthdate(ctx context.Context, field 
 }
 
 func (ec *executionContext) fieldContext_PerformerEdit_birthdate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PerformerEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PerformerEdit_deathdate(ctx context.Context, field graphql.CollectedField, obj *PerformerEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PerformerEdit_deathdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deathdate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PerformerEdit_deathdate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PerformerEdit",
 		Field:      field,
@@ -22613,6 +22776,8 @@ func (ec *executionContext) fieldContext_Query_findPerformer(ctx context.Context
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -24834,6 +24999,8 @@ func (ec *executionContext) fieldContext_Query_searchPerformer(ctx context.Conte
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -26296,6 +26463,8 @@ func (ec *executionContext) fieldContext_QueryExistingPerformerResult_performers
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -26724,6 +26893,8 @@ func (ec *executionContext) fieldContext_QueryPerformersResultType_performers(_ 
 				return ec.fieldContext_Performer_birthdate(ctx, field)
 			case "birth_date":
 				return ec.fieldContext_Performer_birth_date(ctx, field)
+			case "death_date":
+				return ec.fieldContext_Performer_death_date(ctx, field)
 			case "age":
 				return ec.fieldContext_Performer_age(ctx, field)
 			case "ethnicity":
@@ -37519,7 +37690,7 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
+	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "deathdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37568,6 +37739,13 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "ethnicity":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ethnicity"))
 			data, err := ec.unmarshalOEthnicityEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEthnicityEnum(ctx, v)
@@ -37720,7 +37898,7 @@ func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "disambiguation", "name", "aliases", "gender", "birthdate", "urls", "ethnicity", "country", "eye_color", "hair_color", "height", "measurements", "breast_type", "tattoos", "piercings", "career_start_year", "career_end_year", "image"}
+	fieldsInOrder := [...]string{"id", "disambiguation", "name", "aliases", "gender", "birthdate", "deathdate", "urls", "ethnicity", "country", "eye_color", "hair_color", "height", "measurements", "breast_type", "tattoos", "piercings", "career_start_year", "career_end_year", "image"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37769,6 +37947,13 @@ func (ec *executionContext) unmarshalInputPerformerDraftInput(ctx context.Contex
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "urls":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("urls"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
@@ -37873,7 +38058,7 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
+	fieldsInOrder := [...]string{"name", "disambiguation", "aliases", "gender", "urls", "birthdate", "deathdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids", "draft_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37922,6 +38107,13 @@ func (ec *executionContext) unmarshalInputPerformerEditDetailsInput(ctx context.
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "ethnicity":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ethnicity"))
 			data, err := ec.unmarshalOEthnicityEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEthnicityEnum(ctx, v)
@@ -38142,7 +38334,7 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 		asMap["sort"] = "CREATED_AT"
 	}
 
-	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"names", "name", "alias", "disambiguation", "gender", "url", "birthdate", "deathdate", "birth_year", "age", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "is_favorite", "performed_with", "studio_id", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -38198,6 +38390,13 @@ func (ec *executionContext) unmarshalInputPerformerQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalODateCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐDateCriterionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "birth_year":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birth_year"))
 			data, err := ec.unmarshalOIntCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐIntCriterionInput(ctx, v)
@@ -38413,7 +38612,7 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "name", "disambiguation", "aliases", "gender", "urls", "birthdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids"}
+	fieldsInOrder := [...]string{"id", "name", "disambiguation", "aliases", "gender", "urls", "birthdate", "deathdate", "ethnicity", "country", "eye_color", "hair_color", "height", "cup_size", "band_size", "waist_size", "hip_size", "breast_type", "career_start_year", "career_end_year", "tattoos", "piercings", "image_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -38469,6 +38668,13 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 				return it, err
 			}
 			it.Birthdate = data
+		case "deathdate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deathdate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deathdate = data
 		case "ethnicity":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ethnicity"))
 			data, err := ec.unmarshalOEthnicityEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEthnicityEnum(ctx, v)
@@ -43648,6 +43854,39 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "death_date":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Performer_death_date(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "age":
 			field := field
 
@@ -44631,6 +44870,8 @@ func (ec *executionContext) _PerformerDraft(ctx context.Context, sel ast.Selecti
 			out.Values[i] = ec._PerformerDraft_gender(ctx, field, obj)
 		case "birthdate":
 			out.Values[i] = ec._PerformerDraft_birthdate(ctx, field, obj)
+		case "deathdate":
+			out.Values[i] = ec._PerformerDraft_deathdate(ctx, field, obj)
 		case "urls":
 			out.Values[i] = ec._PerformerDraft_urls(ctx, field, obj)
 		case "ethnicity":
@@ -44769,6 +45010,8 @@ func (ec *executionContext) _PerformerEdit(ctx context.Context, sel ast.Selectio
 			out.Values[i] = ec._PerformerEdit_removed_urls(ctx, field, obj)
 		case "birthdate":
 			out.Values[i] = ec._PerformerEdit_birthdate(ctx, field, obj)
+		case "deathdate":
+			out.Values[i] = ec._PerformerEdit_deathdate(ctx, field, obj)
 		case "ethnicity":
 			field := field
 

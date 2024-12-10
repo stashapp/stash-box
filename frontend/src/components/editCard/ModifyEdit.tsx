@@ -116,6 +116,7 @@ export interface PerformerDetails {
   gender?: GenderEnum | null;
   disambiguation?: string | null;
   birthdate?: string | null;
+  deathdate?: string | null;
   career_start_year?: number | null;
   career_end_year?: number | null;
   height?: number | null;
@@ -197,6 +198,12 @@ export const renderPerformerDetails = (
       name="Birthdate"
       newValue={performerDetails.birthdate}
       oldValue={oldPerformerDetails?.birthdate}
+      showDiff={showDiff}
+    />
+    <ChangeRow
+      name="Deathdate"
+      newValue={performerDetails.deathdate}
+      oldValue={oldPerformerDetails?.deathdate}
       showDiff={showDiff}
     />
     <ChangeRow

@@ -74,6 +74,7 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       birthdate
+      deathdate
       ethnicity
       country
       eye_color
@@ -193,6 +194,7 @@ fragment EditFragment on Edit {
       disambiguation
       gender
       birthdate
+      deathdate
       ethnicity
       country
       eye_color

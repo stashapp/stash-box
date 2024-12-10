@@ -54,9 +54,11 @@ func (s *performerEditTestRunner) testModifyPerformerEdit() {
 	existingName := "performerName"
 
 	existingBirthdate := "1990-01-02"
+	existingDeathdate := "2024-11-22"
 	performerCreateInput := models.PerformerCreateInput{
 		Name:      existingName,
 		Birthdate: &existingBirthdate,
+		Deathdate: &existingDeathdate,
 	}
 	createdPerformer, err := s.createTestPerformer(&performerCreateInput)
 	assert.NilError(s.t, err)
@@ -90,6 +92,7 @@ func (s *performerEditTestRunner) verifyPerformerEditDetails(input models.Perfor
 	c.strPtrStrPtr(input.Name, performerDetails.Name, "Name")
 	c.strPtrStrPtr(input.Disambiguation, performerDetails.Disambiguation, "Disambiguation")
 	c.strPtrStrPtr(input.Birthdate, performerDetails.Birthdate, "Birthdate")
+	c.strPtrStrPtr(input.Deathdate, performerDetails.Deathdate, "Deathdate")
 
 	assert.DeepEqual(s.t, input.Aliases, performerDetails.AddedAliases)
 	assert.Assert(s.t, input.Gender.IsValid() && (input.Gender.String() == *performerDetails.Gender))
@@ -144,6 +147,12 @@ func (s *performerEditTestRunner) verifyPerformerEdit(input models.PerformerEdit
 		assert.Assert(s.t, !performer.Birthdate.Valid)
 	} else {
 		assert.Equal(s.t, *input.Birthdate, performer.Birthdate.String)
+	}
+
+	if input.Deathdate == nil {
+		assert.Assert(s.t, !performer.Deathdate.Valid)
+	} else {
+		assert.Equal(s.t, *input.Deathdate, performer.Deathdate.String)
 	}
 
 	if input.Ethnicity == nil {
