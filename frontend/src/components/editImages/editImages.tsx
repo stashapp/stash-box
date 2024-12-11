@@ -59,7 +59,7 @@ const EditImages: FC<EditImagesProps> = ({
   const [error, setError] = useState<string>();
 
   const handleAddImage = () => {
-    setError('');
+    setError("");
     setUploading(true);
     addImage({
       variables: {
@@ -76,8 +76,8 @@ const EditImages: FC<EditImagesProps> = ({
         }
       })
       .catch((error: unknown) => {
-          if (error instanceof Error && isApolloError(error))
-            setError(error.message);
+        if (error instanceof Error && isApolloError(error))
+          setError(error.message);
       })
       .finally(() => {
         setUploading(false);
@@ -86,7 +86,7 @@ const EditImages: FC<EditImagesProps> = ({
 
   const removeImage = () => {
     setFile(undefined);
-    setError('');
+    setError("");
     setImageData("");
   };
 
