@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
@@ -23,7 +24,7 @@ import (
 var ErrImageZeroSize = errors.New("image has 0px dimension")
 
 func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error {
-	img, _, err := image.Decode(imgReader)
+	img, format, err := image.Decode(imgReader)
 	if err != nil {
 		// SVG is not an image so we have to manually check if the image is SVG
 		if _, readerErr := imgReader.Seek(0, 0); readerErr != nil {
@@ -40,6 +41,10 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 		}
 
 		return err
+	}
+
+	if format != "jpeg" && format != "webp" {
+		return fmt.Errorf("unsupported image format: %s", format)
 	}
 
 	dest.Width = int64(img.Bounds().Max.X)
