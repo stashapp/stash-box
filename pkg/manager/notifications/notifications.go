@@ -2,13 +2,10 @@
 package notifications
 
 import (
-	"fmt"
-
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
 func OnApplyEdit(fac models.Repo, edit *models.Edit) {
-	fmt.Println("onApplyEdit")
 	nqb := fac.Notification()
 	eqb := fac.Edit()
 	if edit.Status == models.VoteStatusEnumAccepted.String() || edit.Status == models.VoteStatusEnumImmediateAccepted.String() {
@@ -26,12 +23,10 @@ func OnApplyEdit(fac models.Repo, edit *models.Edit) {
 }
 
 func OnCancelEdit(fac models.Repo, edit *models.Edit) {
-	fmt.Println("onCancelEdit")
 	fac.Notification().TriggerFailedEditNotifications(edit.ID)
 }
 
 func OnCreateEdit(fac models.Repo, edit *models.Edit) {
-	fmt.Println("onCreateEdit")
 	switch edit.TargetType {
 	case models.TargetTypeEnumPerformer.String():
 		fac.Notification().TriggerPerformerEditNotifications(edit.ID)
@@ -43,16 +38,13 @@ func OnCreateEdit(fac models.Repo, edit *models.Edit) {
 }
 
 func OnUpdateEdit(fac models.Repo, edit *models.Edit) {
-	fmt.Println("onUpdateEdit")
 	fac.Notification().TriggerUpdatedEditNotifications(edit.ID)
 }
 
 func OnEditDownvote(fac models.Repo, edit *models.Edit) {
-	fmt.Println("onDownvoteEdit")
 	fac.Notification().TriggerDownvoteEditNotifications(edit.ID)
 }
 
 func OnEditComment(fac models.Repo, comment *models.EditComment) {
-	fmt.Println("onEditComment")
 	fac.Notification().TriggerEditCommentNotifications(comment.ID)
 }
