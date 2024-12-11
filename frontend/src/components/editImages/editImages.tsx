@@ -2,6 +2,7 @@ import { FC, ChangeEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
 import type { Control } from "react-hook-form";
+import { isApolloError } from "@apollo/client";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
@@ -55,8 +56,10 @@ const EditImages: FC<EditImagesProps> = ({
   const [imageData, setImageData] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [addImage] = useAddImage();
+  const [error, setError] = useState<string>();
 
   const handleAddImage = () => {
+    setError('');
     setUploading(true);
     addImage({
       variables: {
@@ -72,6 +75,10 @@ const EditImages: FC<EditImagesProps> = ({
           setImageData("");
         }
       })
+      .catch((error: unknown) => {
+          if (error instanceof Error && isApolloError(error))
+            setError(error.message);
+      })
       .finally(() => {
         setUploading(false);
       });
@@ -79,6 +86,7 @@ const EditImages: FC<EditImagesProps> = ({
 
   const removeImage = () => {
     setFile(undefined);
+    setError('');
     setImageData("");
   };
 
@@ -137,6 +145,9 @@ const EditImages: FC<EditImagesProps> = ({
             )
           )}
         </div>
+        <Row className="text-end text-danger">
+          <div>{error}</div>
+        </Row>
         <div className="mt-4 d-flex">
           {file && (
             <>

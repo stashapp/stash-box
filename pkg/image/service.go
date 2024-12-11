@@ -81,6 +81,7 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 		if _, err = fileReader.Seek(0, 0); err != nil {
 			return nil, err
 		}
+
 		if err := populateImageDimensions(fileReader, &newImage); err != nil {
 			return nil, err
 		}
