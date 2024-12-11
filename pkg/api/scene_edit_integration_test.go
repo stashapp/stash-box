@@ -53,11 +53,13 @@ func (s *sceneEditTestRunner) testFindEditById() {
 func (s *sceneEditTestRunner) testModifySceneEdit() {
 	existingTitle := "sceneName"
 	existingDetails := "sceneDetails"
+	existingProductionDate := "2020-03-01"
 
 	sceneCreateInput := models.SceneCreateInput{
-		Title:   &existingTitle,
-		Details: &existingDetails,
-		Date:    "2020-03-02",
+		Title:          &existingTitle,
+		Details:        &existingDetails,
+		Date:           "2020-03-02",
+		ProductionDate: &existingProductionDate,
 	}
 	createdScene, err := s.createTestScene(&sceneCreateInput)
 	assert.NilError(s.t, err)
@@ -95,6 +97,7 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
 	c.intPtrInt64Ptr(input.Duration, sceneDetails.Duration, "Duration")
 	c.strPtrStrPtr(input.Date, sceneDetails.Date, "Date")
+	c.strPtrStrPtr(input.ProductionDate, sceneDetails.ProductionDate, "ProductionDate")
 
 	s.compareURLs(input.Urls, sceneDetails.AddedUrls)
 
@@ -117,6 +120,7 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	c.uuidPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
 	c.intPtrNullInt64(input.Duration, scene.Duration, "Duration")
 	c.strPtrNullStr(input.Date, scene.Date, "Date")
+	c.strPtrNullStr(input.ProductionDate, scene.ProductionDate, "ProductionDate")
 
 	urls, _ := resolver.Urls(s.ctx, scene)
 	s.compareURLs(input.Urls, urls)
@@ -184,9 +188,11 @@ func (s *sceneEditTestRunner) verifyDestroySceneEdit(sceneID uuid.UUID, edit *mo
 
 func (s *sceneEditTestRunner) testMergeSceneEdit() {
 	existingName := "sceneName2"
+	existingProductionDate := "2020-03-01"
 	sceneCreateInput := models.SceneCreateInput{
-		Title: &existingName,
-		Date:  "2020-03-02",
+		Title:          &existingName,
+		Date:           "2020-03-02",
+		ProductionDate: &existingProductionDate,
 	}
 	createdPrimaryScene, err := s.createTestScene(&sceneCreateInput)
 	assert.NilError(s.t, err)
@@ -247,6 +253,7 @@ func (s *sceneEditTestRunner) verifyAppliedSceneCreateEdit(input models.SceneEdi
 
 func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 	title := "sceneName3"
+	productionDate := "2020-03-01"
 	site, err := s.createTestSite(nil)
 	assert.NilError(s.t, err)
 
@@ -258,7 +265,8 @@ func (s *sceneEditTestRunner) testApplyModifySceneEdit() {
 				SiteID: site.ID,
 			},
 		},
-		Date: "2020-03-02",
+		Date:           "2020-03-02",
+		ProductionDate: &productionDate,
 	}
 	createdScene, err := s.createTestScene(&sceneCreateInput)
 	assert.NilError(s.t, err)

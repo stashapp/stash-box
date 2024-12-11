@@ -134,6 +134,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
               Director: <strong>{scene.director}</strong>
             </div>
           )}
+          {scene.production_date && (
+            <div className="ms-3">
+              Produced: <strong>{scene.production_date}</strong>
+            </div>
+          )}
         </Card.Footer>
       </Card>
       <div className="float-end">

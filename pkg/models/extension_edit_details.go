@@ -192,6 +192,9 @@ func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene, inputArgs utils.Arg
 	if e.Date != nil || inputArgs.Field("date").IsNull() {
 		oldData.Date, newData.Date = ed.nullString(orig.Date, e.Date)
 	}
+	if e.ProductionDate != nil || inputArgs.Field("production_date").IsNull() {
+		oldData.ProductionDate, newData.ProductionDate = ed.nullString(orig.ProductionDate, e.ProductionDate)
+	}
 	if e.StudioID != nil || inputArgs.Field("studio_id").IsNull() {
 		oldData.StudioID, newData.StudioID = ed.nullUUID(orig.StudioID, e.StudioID)
 	}

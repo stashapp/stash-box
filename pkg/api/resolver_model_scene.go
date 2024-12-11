@@ -47,6 +47,10 @@ func (r *sceneResolver) ReleaseDate(ctx context.Context, obj *models.Scene) (*st
 	return resolveNullString(obj.Date), nil
 }
 
+func (r *sceneResolver) ProductionDate(ctx context.Context, obj *models.Scene) (*string, error) {
+	return resolveNullString(obj.ProductionDate), nil
+}
+
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
 	if !obj.StudioID.Valid {
 		return nil, nil

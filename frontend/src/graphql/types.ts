@@ -1482,6 +1482,7 @@ export type Scene = {
   id: Scalars["ID"]["output"];
   images: Array<Image>;
   performers: Array<PerformerAppearance>;
+  production_date?: Maybe<Scalars["String"]["output"]>;
   release_date?: Maybe<Scalars["String"]["output"]>;
   studio?: Maybe<Studio>;
   tags: Array<Tag>;
@@ -1503,6 +1504,7 @@ export type SceneCreateInput = {
   fingerprints: Array<FingerprintEditInput>;
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
+  production_date?: InputMaybe<Scalars["String"]["input"]>;
   studio_id?: InputMaybe<Scalars["ID"]["input"]>;
   tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   title?: InputMaybe<Scalars["String"]["input"]>;
@@ -1523,6 +1525,7 @@ export type SceneDraft = {
   id?: Maybe<Scalars["ID"]["output"]>;
   image?: Maybe<Image>;
   performers: Array<SceneDraftPerformer>;
+  production_date?: Maybe<Scalars["String"]["output"]>;
   studio?: Maybe<SceneDraftStudio>;
   tags?: Maybe<Array<SceneDraftTag>>;
   title?: Maybe<Scalars["String"]["output"]>;
@@ -1538,6 +1541,7 @@ export type SceneDraftInput = {
   id?: InputMaybe<Scalars["ID"]["input"]>;
   image?: InputMaybe<Scalars["Upload"]["input"]>;
   performers: Array<DraftEntityInput>;
+  production_date?: InputMaybe<Scalars["String"]["input"]>;
   studio?: InputMaybe<DraftEntityInput>;
   tags?: InputMaybe<Array<DraftEntityInput>>;
   title?: InputMaybe<Scalars["String"]["input"]>;
@@ -1569,6 +1573,7 @@ export type SceneEdit = {
   fingerprints: Array<Fingerprint>;
   images: Array<Image>;
   performers: Array<PerformerAppearance>;
+  production_date?: Maybe<Scalars["String"]["output"]>;
   removed_fingerprints?: Maybe<Array<Fingerprint>>;
   removed_images?: Maybe<Array<Maybe<Image>>>;
   removed_performers?: Maybe<Array<PerformerAppearance>>;
@@ -1590,6 +1595,7 @@ export type SceneEditDetailsInput = {
   fingerprints?: InputMaybe<Array<FingerprintInput>>;
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
+  production_date?: InputMaybe<Scalars["String"]["input"]>;
   studio_id?: InputMaybe<Scalars["ID"]["input"]>;
   tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   title?: InputMaybe<Scalars["String"]["input"]>;
@@ -1620,6 +1626,8 @@ export type SceneQueryInput = {
   per_page?: Scalars["Int"]["input"];
   /** Filter to only include scenes with these performers */
   performers?: InputMaybe<MultiIdCriterionInput>;
+  /** Filter by production date */
+  production_date?: InputMaybe<DateCriterionInput>;
   sort?: SceneSortEnum;
   /** Filter to only include scenes with this studio */
   studios?: InputMaybe<MultiIdCriterionInput>;
@@ -1651,6 +1659,7 @@ export type SceneUpdateInput = {
   id: Scalars["ID"]["input"];
   image_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   performers?: InputMaybe<Array<PerformerAppearanceInput>>;
+  production_date?: InputMaybe<Scalars["String"]["input"]>;
   studio_id?: InputMaybe<Scalars["ID"]["input"]>;
   tag_ids?: InputMaybe<Array<Scalars["ID"]["input"]>>;
   title?: InputMaybe<Scalars["String"]["input"]>;
@@ -2184,6 +2193,7 @@ export type EditFragment = {
         __typename: "Scene";
         id: string;
         release_date?: string | null;
+        production_date?: string | null;
         title?: string | null;
         deleted: boolean;
         details?: string | null;
@@ -2354,6 +2364,7 @@ export type EditFragment = {
         title?: string | null;
         details?: string | null;
         date?: string | null;
+        production_date?: string | null;
         duration?: number | null;
         director?: string | null;
         code?: string | null;
@@ -2666,6 +2677,7 @@ export type EditFragment = {
         title?: string | null;
         details?: string | null;
         date?: string | null;
+        production_date?: string | null;
         duration?: number | null;
         director?: string | null;
         code?: string | null;
@@ -2976,6 +2988,7 @@ export type EditFragment = {
         __typename: "Scene";
         id: string;
         release_date?: string | null;
+        production_date?: string | null;
         title?: string | null;
         deleted: boolean;
         details?: string | null;
@@ -3182,6 +3195,7 @@ export type SceneFragment = {
   __typename: "Scene";
   id: string;
   release_date?: string | null;
+  production_date?: string | null;
   title?: string | null;
   deleted: boolean;
   details?: string | null;
@@ -3351,6 +3365,7 @@ export type AddSceneMutation = {
     __typename: "Scene";
     id: string;
     release_date?: string | null;
+    production_date?: string | null;
     title?: string | null;
     code?: string | null;
     details?: string | null;
@@ -3546,6 +3561,7 @@ export type ApplyEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -3736,6 +3752,7 @@ export type ApplyEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -4068,6 +4085,7 @@ export type ApplyEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -4393,6 +4411,7 @@ export type ApplyEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -4793,6 +4812,7 @@ export type PerformerEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -4983,6 +5003,7 @@ export type PerformerEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -5315,6 +5336,7 @@ export type PerformerEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -5640,6 +5662,7 @@ export type PerformerEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -5850,6 +5873,7 @@ export type PerformerEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -6040,6 +6064,7 @@ export type PerformerEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -6372,6 +6397,7 @@ export type PerformerEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -6697,6 +6723,7 @@ export type PerformerEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -6951,6 +6978,7 @@ export type SceneEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -7141,6 +7169,7 @@ export type SceneEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -7473,6 +7502,7 @@ export type SceneEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -7798,6 +7828,7 @@ export type SceneEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -8008,6 +8039,7 @@ export type SceneEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -8198,6 +8230,7 @@ export type SceneEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -8530,6 +8563,7 @@ export type SceneEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -8855,6 +8889,7 @@ export type SceneEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -9064,6 +9099,7 @@ export type StudioEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -9254,6 +9290,7 @@ export type StudioEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -9586,6 +9623,7 @@ export type StudioEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -9911,6 +9949,7 @@ export type StudioEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -10121,6 +10160,7 @@ export type StudioEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -10311,6 +10351,7 @@ export type StudioEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -10643,6 +10684,7 @@ export type StudioEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -10968,6 +11010,7 @@ export type StudioEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -11177,6 +11220,7 @@ export type TagEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -11367,6 +11411,7 @@ export type TagEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -11699,6 +11744,7 @@ export type TagEditMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -12024,6 +12070,7 @@ export type TagEditMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -12234,6 +12281,7 @@ export type TagEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -12424,6 +12472,7 @@ export type TagEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -12756,6 +12805,7 @@ export type TagEditUpdateMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -13081,6 +13131,7 @@ export type TagEditUpdateMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -13218,6 +13269,7 @@ export type UpdateSceneMutation = {
     __typename: "Scene";
     id: string;
     release_date?: string | null;
+    production_date?: string | null;
     details?: string | null;
     director?: string | null;
     code?: string | null;
@@ -13435,6 +13487,7 @@ export type VoteMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -13625,6 +13678,7 @@ export type VoteMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -13957,6 +14011,7 @@ export type VoteMutation = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -14282,6 +14337,7 @@ export type VoteMutation = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -14746,6 +14802,7 @@ export type EditQuery = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -14936,6 +14993,7 @@ export type EditQuery = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -15268,6 +15326,7 @@ export type EditQuery = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -15593,6 +15652,7 @@ export type EditQuery = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -15796,6 +15856,7 @@ export type EditUpdateQuery = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -15958,6 +16019,7 @@ export type EditUpdateQuery = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -16251,6 +16313,7 @@ export type EditsQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -16445,6 +16508,7 @@ export type EditsQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -16785,6 +16849,7 @@ export type EditsQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -17118,6 +17183,7 @@ export type EditsQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -17615,6 +17681,7 @@ export type QueryExistingPerformerQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -17809,6 +17876,7 @@ export type QueryExistingPerformerQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -18149,6 +18217,7 @@ export type QueryExistingPerformerQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -18482,6 +18551,7 @@ export type QueryExistingPerformerQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -18614,6 +18684,7 @@ export type QueryExistingSceneQuery = {
       __typename: "Scene";
       id: string;
       release_date?: string | null;
+      production_date?: string | null;
       title?: string | null;
       deleted: boolean;
       details?: string | null;
@@ -18759,6 +18830,7 @@ export type QueryExistingSceneQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -18953,6 +19025,7 @@ export type QueryExistingSceneQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -19293,6 +19366,7 @@ export type QueryExistingSceneQuery = {
             title?: string | null;
             details?: string | null;
             date?: string | null;
+            production_date?: string | null;
             duration?: number | null;
             director?: string | null;
             code?: string | null;
@@ -19626,6 +19700,7 @@ export type QueryExistingSceneQuery = {
             __typename: "Scene";
             id: string;
             release_date?: string | null;
+            production_date?: string | null;
             title?: string | null;
             deleted: boolean;
             details?: string | null;
@@ -19839,6 +19914,7 @@ export type NotificationCommentFragment = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -20029,6 +20105,7 @@ export type NotificationCommentFragment = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -20361,6 +20438,7 @@ export type NotificationCommentFragment = {
           title?: string | null;
           details?: string | null;
           date?: string | null;
+          production_date?: string | null;
           duration?: number | null;
           director?: string | null;
           code?: string | null;
@@ -20686,6 +20764,7 @@ export type NotificationCommentFragment = {
           __typename: "Scene";
           id: string;
           release_date?: string | null;
+          production_date?: string | null;
           title?: string | null;
           deleted: boolean;
           details?: string | null;
@@ -20919,6 +20998,7 @@ export type NotificationsQuery = {
                       __typename: "Scene";
                       id: string;
                       release_date?: string | null;
+                      production_date?: string | null;
                       title?: string | null;
                       deleted: boolean;
                       details?: string | null;
@@ -21117,6 +21197,7 @@ export type NotificationsQuery = {
                       title?: string | null;
                       details?: string | null;
                       date?: string | null;
+                      production_date?: string | null;
                       duration?: number | null;
                       director?: string | null;
                       code?: string | null;
@@ -21457,6 +21538,7 @@ export type NotificationsQuery = {
                       title?: string | null;
                       details?: string | null;
                       date?: string | null;
+                      production_date?: string | null;
                       duration?: number | null;
                       director?: string | null;
                       code?: string | null;
@@ -21790,6 +21872,7 @@ export type NotificationsQuery = {
                       __typename: "Scene";
                       id: string;
                       release_date?: string | null;
+                      production_date?: string | null;
                       title?: string | null;
                       deleted: boolean;
                       details?: string | null;
@@ -22017,6 +22100,7 @@ export type NotificationsQuery = {
                       __typename: "Scene";
                       id: string;
                       release_date?: string | null;
+                      production_date?: string | null;
                       title?: string | null;
                       deleted: boolean;
                       details?: string | null;
@@ -22215,6 +22299,7 @@ export type NotificationsQuery = {
                       title?: string | null;
                       details?: string | null;
                       date?: string | null;
+                      production_date?: string | null;
                       duration?: number | null;
                       director?: string | null;
                       code?: string | null;
@@ -22555,6 +22640,7 @@ export type NotificationsQuery = {
                       title?: string | null;
                       details?: string | null;
                       date?: string | null;
+                      production_date?: string | null;
                       duration?: number | null;
                       director?: string | null;
                       code?: string | null;
@@ -22888,6 +22974,7 @@ export type NotificationsQuery = {
                       __typename: "Scene";
                       id: string;
                       release_date?: string | null;
+                      production_date?: string | null;
                       title?: string | null;
                       deleted: boolean;
                       details?: string | null;
@@ -23115,6 +23202,7 @@ export type NotificationsQuery = {
                       __typename: "Scene";
                       id: string;
                       release_date?: string | null;
+                      production_date?: string | null;
                       title?: string | null;
                       deleted: boolean;
                       details?: string | null;
@@ -23313,6 +23401,7 @@ export type NotificationsQuery = {
                       title?: string | null;
                       details?: string | null;
                       date?: string | null;
+                      production_date?: string | null;
                       duration?: number | null;
                       director?: string | null;
                       code?: string | null;
@@ -23653,6 +23742,7 @@ export type NotificationsQuery = {
                       title?: string | null;
                       details?: string | null;
                       date?: string | null;
+                      production_date?: string | null;
                       duration?: number | null;
                       director?: string | null;
                       code?: string | null;
@@ -23986,6 +24076,7 @@ export type NotificationsQuery = {
                       __typename: "Scene";
                       id: string;
                       release_date?: string | null;
+                      production_date?: string | null;
                       title?: string | null;
                       deleted: boolean;
                       details?: string | null;
@@ -24200,6 +24291,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -24398,6 +24490,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -24738,6 +24831,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -25071,6 +25165,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -25283,6 +25378,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -25481,6 +25577,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -25821,6 +25918,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -26154,6 +26252,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -26366,6 +26465,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -26564,6 +26664,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -26904,6 +27005,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -27237,6 +27339,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -27365,6 +27468,7 @@ export type NotificationsQuery = {
               __typename: "Scene";
               id: string;
               release_date?: string | null;
+              production_date?: string | null;
               title?: string | null;
               deleted: boolean;
               details?: string | null;
@@ -27522,6 +27626,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -27720,6 +27825,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -28060,6 +28166,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -28393,6 +28500,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -28521,6 +28629,7 @@ export type NotificationsQuery = {
               __typename: "Scene";
               id: string;
               release_date?: string | null;
+              production_date?: string | null;
               title?: string | null;
               deleted: boolean;
               details?: string | null;
@@ -28678,6 +28787,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -28876,6 +28986,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -29216,6 +29327,7 @@ export type NotificationsQuery = {
                     title?: string | null;
                     details?: string | null;
                     date?: string | null;
+                    production_date?: string | null;
                     duration?: number | null;
                     director?: string | null;
                     code?: string | null;
@@ -29549,6 +29661,7 @@ export type NotificationsQuery = {
                     __typename: "Scene";
                     id: string;
                     release_date?: string | null;
+                    production_date?: string | null;
                     title?: string | null;
                     deleted: boolean;
                     details?: string | null;
@@ -29685,6 +29798,7 @@ export type SceneQuery = {
     __typename: "Scene";
     id: string;
     release_date?: string | null;
+    production_date?: string | null;
     title?: string | null;
     deleted: boolean;
     details?: string | null;
@@ -30192,9 +30306,9 @@ export type StudioPerformersQuery = {
         __typename: "Scene";
         id: string;
         title?: string | null;
-        date?: string | null;
         duration?: number | null;
         release_date?: string | null;
+        production_date?: string | null;
         studio?: { __typename: "Studio"; id: string; name: string } | null;
         images: Array<{
           __typename: "Image";
@@ -31002,6 +31116,7 @@ export const SceneFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -31736,6 +31851,10 @@ export const EditFragmentDoc = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -32092,6 +32211,10 @@ export const EditFragmentDoc = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -32635,6 +32758,7 @@ export const EditFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -33083,6 +33207,7 @@ export const NotificationCommentFragmentDoc = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -33745,6 +33870,10 @@ export const NotificationCommentFragmentDoc = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -34101,6 +34230,10 @@ export const NotificationCommentFragmentDoc = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -34543,6 +34676,10 @@ export const AddSceneDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "release_date" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "production_date" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "title" } },
                 { kind: "Field", name: { kind: "Name", value: "code" } },
@@ -35240,6 +35377,7 @@ export const ApplyEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -35902,6 +36040,10 @@ export const ApplyEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -36258,6 +36400,10 @@ export const ApplyEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -37746,6 +37892,7 @@ export const PerformerEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -38408,6 +38555,10 @@ export const PerformerEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -38764,6 +38915,10 @@ export const PerformerEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -39380,6 +39535,7 @@ export const PerformerEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -40042,6 +40198,10 @@ export const PerformerEditUpdateDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -40398,6 +40558,10 @@ export const PerformerEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -41200,6 +41364,7 @@ export const SceneEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -41862,6 +42027,10 @@ export const SceneEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -42218,6 +42387,10 @@ export const SceneEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -42831,6 +43004,7 @@ export const SceneEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -43493,6 +43667,10 @@ export const SceneEditUpdateDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -43849,6 +44027,10 @@ export const SceneEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -44449,6 +44631,7 @@ export const StudioEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -45111,6 +45294,10 @@ export const StudioEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -45467,6 +45654,10 @@ export const StudioEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -46080,6 +46271,7 @@ export const StudioEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -46742,6 +46934,10 @@ export const StudioEditUpdateDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -47098,6 +47294,10 @@ export const StudioEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -47698,6 +47898,7 @@ export const TagEditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -48360,6 +48561,10 @@ export const TagEditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -48716,6 +48921,10 @@ export const TagEditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -49329,6 +49538,7 @@ export const TagEditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -49991,6 +50201,10 @@ export const TagEditUpdateDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -50347,6 +50561,10 @@ export const TagEditUpdateDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -50790,6 +51008,10 @@ export const UpdateSceneDocument = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "release_date" },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "production_date" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "details" } },
                 { kind: "Field", name: { kind: "Name", value: "director" } },
@@ -51624,6 +51846,7 @@ export const VoteDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -52286,6 +52509,10 @@ export const VoteDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -52642,6 +52869,10 @@ export const VoteDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -54092,6 +54323,7 @@ export const EditDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -54754,6 +54986,10 @@ export const EditDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -55110,6 +55346,10 @@ export const EditDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -55902,6 +56142,10 @@ export const EditUpdateDocument = {
                             },
                             {
                               kind: "Field",
+                              name: { kind: "Name", value: "production_date" },
+                            },
+                            {
+                              kind: "Field",
                               name: { kind: "Name", value: "studio" },
                               selectionSet: {
                                 kind: "SelectionSet",
@@ -56290,6 +56534,7 @@ export const EditUpdateDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -56767,6 +57012,7 @@ export const EditsDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -57429,6 +57675,10 @@ export const EditsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -57785,6 +58035,10 @@ export const EditsDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -59267,6 +59521,7 @@ export const QueryExistingPerformerDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -59929,6 +60184,10 @@ export const QueryExistingPerformerDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -60285,6 +60544,10 @@ export const QueryExistingPerformerDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -60907,6 +61170,7 @@ export const QueryExistingSceneDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -61569,6 +61833,10 @@ export const QueryExistingSceneDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -61925,6 +62193,10 @@ export const QueryExistingSceneDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -62853,6 +63125,7 @@ export const NotificationsDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -63515,6 +63788,10 @@ export const NotificationsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "date" } },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "studio" },
                         selectionSet: {
                           kind: "SelectionSet",
@@ -63871,6 +64148,10 @@ export const NotificationsDocument = {
                         },
                       },
                       { kind: "Field", name: { kind: "Name", value: "date" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "production_date" },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "studio" },
@@ -64286,6 +64567,7 @@ export const SceneDocument = {
         selections: [
           { kind: "Field", name: { kind: "Name", value: "id" } },
           { kind: "Field", name: { kind: "Name", value: "release_date" } },
+          { kind: "Field", name: { kind: "Name", value: "production_date" } },
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
@@ -66507,15 +66789,15 @@ export const StudioPerformersDocument = {
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "date" },
-                            },
-                            {
-                              kind: "Field",
                               name: { kind: "Name", value: "duration" },
                             },
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "release_date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "production_date" },
                             },
                             {
                               kind: "Field",

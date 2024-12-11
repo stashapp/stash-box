@@ -89,6 +89,7 @@ type Scene {
   details: String
   date: String @deprecated(reason: "Please use `release_date` instead")
   release_date: String
+  production_date: String
   urls: [URL!]!
   studio: Studio
   tags: [Tag!]!
@@ -109,6 +110,7 @@ input SceneCreateInput {
   details: String
   urls: [URLInput!]
   date: String!
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -125,6 +127,7 @@ input SceneUpdateInput {
   details: String
   urls: [URLInput!]
   date: String
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -144,6 +147,7 @@ input SceneEditDetailsInput {
   details: String
   urls: [URLInput!]
   date: String
+  production_date: String
   studio_id: ID
   performers: [PerformerAppearanceInput!]
   tag_ids: [ID!]
@@ -167,6 +171,7 @@ type SceneEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   date: String
+  production_date: String
   studio: Studio
   """Added or modified performer appearance entries"""
   added_performers: [PerformerAppearance!]
@@ -211,6 +216,8 @@ input SceneQueryInput {
   url: String
   """Filter by date"""
   date: DateCriterionInput
+  """Filter by production date"""
+  production_date: DateCriterionInput
   """Filter to only include scenes with this studio"""
   studios: MultiIDCriterionInput
   """Filter to only include scenes with this studio as primary or parent"""
@@ -246,6 +253,7 @@ type SceneDraft {
   director: String
   urls: [String!]
   date: String
+  production_date: String
   studio: SceneDraftStudio
   performers: [SceneDraftPerformer!]!
   tags: [SceneDraftTag!]
@@ -262,6 +270,7 @@ input SceneDraftInput {
   url: String @deprecated(reason: "Use urls field instead.")
   urls: [String!]
   date: String
+  production_date: String
   studio: DraftEntityInput
   performers: [DraftEntityInput!]!
   tags: [DraftEntityInput!]

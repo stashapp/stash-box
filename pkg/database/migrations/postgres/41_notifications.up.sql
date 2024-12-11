@@ -1,3 +1,4 @@
+DROP TYPE IF EXISTS notification_type;
 CREATE TYPE notification_type AS ENUM (
   'FAVORITE_PERFORMER_SCENE',
   'FAVORITE_PERFORMER_EDIT',

@@ -4,6 +4,7 @@
 fragment SceneFragment on Scene {
   id
   release_date
+  production_date
   title
   deleted
   details
