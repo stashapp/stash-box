@@ -116,7 +116,7 @@ importers:
         version: 3.2.0(graphql@16.9.0)
       '@rollup/plugin-graphql':
         specifier: ^2.0.5
-        version: 2.0.5(graphql@16.9.0)
+        version: 2.0.5(graphql@16.9.0)(rollup@4.27.3)
       '@types/apollo-upload-client':
         specifier: ^18.0.0
         version: 18.0.0(@types/react@18.3.12)(graphql-ws@5.16.0(graphql@16.9.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2923,8 +2923,8 @@ packages:
   mute-stream@0.0.8:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
 
-  nanoid@3.3.7:
-    resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
+  nanoid@3.3.8:
+    resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -5092,17 +5092,21 @@ snapshots:
       uncontrollable: 8.0.2(react@18.3.1)
       warning: 4.0.3
 
-  '@rollup/plugin-graphql@2.0.5(graphql@16.9.0)':
+  '@rollup/plugin-graphql@2.0.5(graphql@16.9.0)(rollup@4.27.3)':
     dependencies:
-      '@rollup/pluginutils': 5.0.2
+      '@rollup/pluginutils': 5.0.2(rollup@4.27.3)
       graphql: 16.9.0
       graphql-tag: 2.12.6(graphql@16.9.0)
+    optionalDependencies:
+      rollup: 4.27.3
 
-  '@rollup/pluginutils@5.0.2':
+  '@rollup/pluginutils@5.0.2(rollup@4.27.3)':
     dependencies:
       '@types/estree': 1.0.6
       estree-walker: 2.0.2
       picomatch: 2.3.1
+    optionalDependencies:
+      rollup: 4.27.3
 
   '@rollup/rollup-android-arm-eabi@4.27.3':
     optional: true
@@ -7334,7 +7338,7 @@ snapshots:
 
   mute-stream@0.0.8: {}
 
-  nanoid@3.3.7: {}
+  nanoid@3.3.8: {}
 
   natural-compare@1.4.0: {}
 
@@ -7545,7 +7549,7 @@ snapshots:
 
   postcss@8.4.49:
     dependencies:
-      nanoid: 3.3.7
+      nanoid: 3.3.8
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
