@@ -43,7 +43,7 @@ func populateImageDimensions(imgReader *bytes.Reader, dest *models.Image) error 
 		return err
 	}
 
-	if format != "jpeg" && format != "webp" {
+	if format != "jpeg" && format != "webp" && format != "png" {
 		return fmt.Errorf("unsupported image format: %s", format)
 	}
 
