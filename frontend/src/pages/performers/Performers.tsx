@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
@@ -14,11 +14,10 @@ import {
   GenderFilterEnum,
   PerformerSortEnum,
 } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
+import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
-import { canEdit, ensureEnum, resolveEnum } from "src/utils";
-import AuthContext from "src/AuthContext";
+import { ensureEnum, resolveEnum } from "src/utils";
 import { List } from "src/components/list";
 import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
 
@@ -39,7 +38,7 @@ const sortOptions = [
 ];
 
 const PerformersComponent: FC = () => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
     gender: { name: "gender", type: "string" },
@@ -147,7 +146,7 @@ const PerformersComponent: FC = () => {
     <>
       <div className="d-flex">
         <h3 className="me-4">Performers</h3>
-        {canEdit(auth.user) && (
+        {isEditor && (
           <Link to={ROUTE_PERFORMER_ADD} className="ms-auto">
             <Button>Create</Button>
           </Link>

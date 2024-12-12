@@ -4,7 +4,6 @@ import { Route, Routes, useParams } from "react-router-dom";
 import { useUser } from "src/graphql";
 import Title from "src/components/title";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import { isPrivateUser } from "src/utils";
 
 import Users from "./Users";
 import User from "./User";
@@ -52,7 +51,7 @@ const UserLoader: FC = () => {
         element={
           <>
             <Title page={`Edits by ${user.name}`} />
-            <UserEdits user={user} isPrivateUser={isPrivateUser(user)} />
+            <UserEdits user={user} />
           </>
         }
       />

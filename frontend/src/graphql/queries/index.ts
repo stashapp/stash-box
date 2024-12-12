@@ -1,13 +1,9 @@
-import { useContext } from "react";
 import {
   useQuery,
   useLazyQuery,
   QueryHookOptions,
   LazyQueryHookOptions,
 } from "@apollo/client";
-
-import AuthContext from "src/AuthContext";
-import { isAdmin } from "src/utils";
 
 import {
   CategoryDocument,
@@ -79,6 +75,7 @@ import {
   NotificationsQueryVariables,
   UnreadNotificationCountDocument,
 } from "../types";
+import { useCurrentUser } from "src/hooks";
 
 export const useCategory = (variables: CategoryQueryVariables, skip = false) =>
   useQuery(CategoryDocument, {
@@ -237,9 +234,9 @@ export const usePublicUser = (
   });
 
 export const useUser = (variables: UserQueryVariables, skip = false) => {
-  const Auth = useContext(AuthContext);
-  const isUser = () => Auth.user?.name === variables.name;
-  const showPrivate = isUser() || isAdmin(Auth.user);
+  const { isAdmin, user } = useCurrentUser();
+  const isUser = () => user?.name === variables.name;
+  const showPrivate = isUser() || isAdmin;
 
   const privateUser = usePrivateUser(variables, skip || !showPrivate);
   const publicUser = usePublicUser(variables, skip || showPrivate);

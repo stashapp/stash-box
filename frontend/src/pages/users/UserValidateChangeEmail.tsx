@@ -6,7 +6,7 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form, Row, Col } from "react-bootstrap";
 
-import type { User } from "src/AuthContext";
+import type { User } from "src/context";
 import { useQueryParams } from "src/hooks";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";

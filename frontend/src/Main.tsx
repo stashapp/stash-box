@@ -6,7 +6,7 @@ import { faBell as faBellOutlined } from "@fortawesome/free-regular-svg-icons";
 
 import SearchField, { SearchType } from "src/components/searchField";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
-import { isAdmin, canEdit, userHref, setCachedUser } from "src/utils";
+import { userHref, setCachedUser, canEdit, isAdmin } from "src/utils";
 import { useAuth } from "src/hooks";
 import { Icon } from "src/components/fragments";
 import { useConfig, useUnreadNotificationsCount } from "src/graphql";
@@ -28,7 +28,7 @@ import {
   ROUTE_DRAFTS,
   ROUTE_NOTIFICATIONS,
 } from "src/constants/route";
-import AuthContext from "./AuthContext";
+import AuthContext from "./context";
 
 interface Props {
   children?: React.ReactNode;

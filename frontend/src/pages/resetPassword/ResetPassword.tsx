@@ -1,9 +1,8 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { isApolloError } from "@apollo/client";
 import { useNavigate, useLocation } from "react-router-dom";
-import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form, Row, Col } from "react-bootstrap";
@@ -11,6 +10,7 @@ import { Button, Form, Row, Col } from "react-bootstrap";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
 import { useChangePassword } from "src/graphql";
+import { useCurrentUser } from "src/hooks";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 
 const schema = yup.object({
@@ -46,8 +46,8 @@ function useQuery() {
 const ResetPassword: FC = () => {
   const navigate = useNavigate();
   const query = useQuery();
-  const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
+  const { isAuthenticated } = useCurrentUser();
 
   const {
     register,
@@ -59,7 +59,7 @@ const ResetPassword: FC = () => {
 
   const [changePassword, { loading }] = useChangePassword();
 
-  if (Auth.authenticated) navigate(ROUTE_HOME);
+  if (isAuthenticated) navigate(ROUTE_HOME);
 
   const key = query.get("key");
 
