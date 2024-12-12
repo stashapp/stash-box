@@ -34,10 +34,8 @@ jobs:
 
     steps:
 
-    - uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: libvips-dev libhdf5-dev
-        version: 1.0
+    - name: Install vips
+      run: sudo apt install -y libvips-dev
 
     - name: Checkout
       uses: actions/checkout@v4
