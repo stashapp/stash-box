@@ -51,8 +51,9 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputArgs
 		return err
 	}
 
-	if studio == nil {
-		return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
+	var entity editEntity = studio
+	if err := validateEditEntity(&entity, studioID, "studio"); err != nil {
+		return err
 	}
 
 	// perform a diff against the input and the current object
@@ -175,12 +176,14 @@ func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput) error {
 	tqb := m.fac.Studio()
 
 	// Get the existing studio
+	studioID := *input.Edit.ID
 	studio, err := tqb.Find(*input.Edit.ID)
-	if studio == nil {
-		return fmt.Errorf("scene with id %v not found", *input.Edit.ID)
+	if err != nil {
+		return err
 	}
 
-	return err
+	var entity editEntity = studio
+	return validateEditEntity(&entity, studioID, "studio")
 }
 
 func (m *StudioEditProcessor) CreateJoin(input models.StudioEditInput) error {

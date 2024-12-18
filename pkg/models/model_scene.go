@@ -26,6 +26,10 @@ func (p Scene) GetID() uuid.UUID {
 	return p.ID
 }
 
+func (p Scene) IsDeleted() bool {
+	return p.Deleted
+}
+
 type Scenes []*Scene
 
 func (p Scenes) Each(fn func(interface{})) {

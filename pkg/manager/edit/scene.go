@@ -51,8 +51,9 @@ func (m *SceneEditProcessor) modifyEdit(input models.SceneEditInput, inputArgs u
 		return err
 	}
 
-	if scene == nil {
-		return fmt.Errorf("%w: scene %s", ErrEntityNotFound, sceneID.String())
+	var entity editEntity = *scene
+	if err := validateEditEntity(&entity, sceneID, "scene"); err != nil {
+		return err
 	}
 
 	// perform a diff against the input and the current object
@@ -304,12 +305,14 @@ func (m *SceneEditProcessor) destroyEdit(input models.SceneEditInput, inputArgs 
 	tqb := m.fac.Scene()
 
 	// get the existing scene
-	scene, err := tqb.Find(*input.Edit.ID)
-	if scene == nil {
-		return fmt.Errorf("scene with id %v not found", *input.Edit.ID)
+	sceneID := *input.Edit.ID
+	scene, err := tqb.Find(sceneID)
+	if err != nil {
+		return err
 	}
 
-	return err
+	var entity editEntity = *scene
+	return validateEditEntity(&entity, sceneID, "scene")
 }
 
 func (m *SceneEditProcessor) CreateJoin(input models.SceneEditInput) error {
