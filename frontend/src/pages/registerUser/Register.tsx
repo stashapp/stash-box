@@ -16,7 +16,11 @@ import { ROUTE_HOME, ROUTE_ACTIVATE, ROUTE_LOGIN } from "src/constants/route";
 
 const schema = yup.object({
   email: yup.string().email().required("Email is required"),
-  inviteKey: yup.string().required("Invite key is required"),
+  inviteKey: yup
+    .string()
+    .trim()
+    .uuid("Invalid invite key")
+    .required("Invite key is required"),
 });
 type RegisterFormData = yup.Asserts<typeof schema>;
 
