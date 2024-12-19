@@ -36,6 +36,7 @@ const sortOptions = [
   { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
   { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
   { value: PerformerSortEnum.CREATED_AT, label: "Created At" },
+  { value: PerformerSortEnum.UPDATED_AT, label: "Updated At" },
 ];
 
 const PerformersComponent: FC = () => {
