@@ -38,6 +38,10 @@ func (p Performer) GetID() uuid.UUID {
 	return p.ID
 }
 
+func (p Performer) IsDeleted() bool {
+	return p.Deleted
+}
+
 type Performers []*Performer
 
 func (p Performers) Each(fn func(interface{})) {

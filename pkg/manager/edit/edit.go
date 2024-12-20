@@ -21,6 +21,7 @@ var ErrEditAlreadyApplied = errors.New("edit already applied")
 var ErrNoChanges = errors.New("edit contains no changes")
 var ErrMergeIDMissing = errors.New("merge target ID is required")
 var ErrEntityNotFound = errors.New("entity not found")
+var ErrEntityDeleted = errors.New("entity is deleted")
 var ErrMergeTargetIsSource = errors.New("merge target cannot be used as source")
 var ErrNoMergeSources = errors.New("no merge sources found")
 
@@ -308,4 +309,19 @@ func ResolveVotingThreshold(fac models.Repo, edit *models.Edit) (models.VoteStat
 	}
 
 	return models.VoteStatusEnumPending, nil
+}
+
+type editEntity interface {
+	IsDeleted() bool
+}
+
+func validateEditEntity(entity *editEntity, id uuid.UUID, typeName string) error {
+	if entity == nil {
+		return fmt.Errorf("%w: %s %s", ErrEntityNotFound, typeName, id.String())
+	}
+	if (*entity).IsDeleted() {
+		return fmt.Errorf("%w: %s %s", ErrEntityDeleted, typeName, id.String())
+	}
+
+	return nil
 }

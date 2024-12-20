@@ -22,6 +22,10 @@ func (s Studio) GetID() uuid.UUID {
 	return s.ID
 }
 
+func (s Studio) IsDeleted() bool {
+	return s.Deleted
+}
+
 type Studios []*Studio
 
 func (s Studios) Each(fn func(interface{})) {

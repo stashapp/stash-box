@@ -51,8 +51,9 @@ func (m *PerformerEditProcessor) modifyEdit(input models.PerformerEditInput, inp
 		return err
 	}
 
-	if performer == nil {
-		return fmt.Errorf("performer with id %v not found", performerID)
+	var entity editEntity = *performer
+	if err := validateEditEntity(&entity, *input.Edit.ID, "performer"); err != nil {
+		return err
 	}
 
 	// perform a diff against the input and the current object
@@ -163,9 +164,14 @@ func (m *PerformerEditProcessor) destroyEdit(input models.PerformerEditInput) er
 	pqb := m.fac.Performer()
 
 	// get the existing performer
-	_, err := pqb.Find(*input.Edit.ID)
+	performerID := *input.Edit.ID
+	performer, err := pqb.Find(performerID)
+	if err != nil {
+		return err
+	}
 
-	return err
+	var entity editEntity = *performer
+	return validateEditEntity(&entity, performerID, "performer")
 }
 
 func (m *PerformerEditProcessor) CreateJoin(input models.PerformerEditInput) error {
