@@ -1,10 +1,10 @@
-import { FC, ChangeEvent, useContext, useState } from "react";
+import { FC, ChangeEvent, useState } from "react";
 import { Form, Tabs, Tab } from "react-bootstrap";
 import cx from "classnames";
 
-import AuthContext from "src/AuthContext";
 import EditComment from "src/components/editCard/EditComment";
 import { UseFormRegister } from "react-hook-form";
+import { useCurrentUser } from "src/hooks";
 
 interface IProps {
   onChange?: (text: string) => void;
@@ -20,7 +20,7 @@ const NoteInput: FC<IProps> = ({
   register,
   hasError = false,
 }) => {
-  const auth = useContext(AuthContext);
+  const { user } = useCurrentUser();
   const [comment, setComment] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -45,10 +45,10 @@ const NoteInput: FC<IProps> = ({
         </Tab>
         <Tab eventKey="preview" title="Preview" unmountOnExit mountOnEnter>
           <EditComment
-            id={`${auth.user?.id}-${now}`}
+            id={`${user?.id}-${now}`}
             comment={comment}
             date={now}
-            user={auth.user}
+            user={user}
           />
         </Tab>
       </Tabs>

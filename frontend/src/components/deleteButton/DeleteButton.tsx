@@ -1,10 +1,8 @@
-import { FC, useState, useContext } from "react";
+import { FC, useState } from "react";
 import { Button } from "react-bootstrap";
 
-import AuthContext from "src/AuthContext";
-import { isAdmin } from "src/utils";
-
 import Modal from "src/components/modal";
+import { useCurrentUser } from "src/hooks";
 
 interface DeleteButtonProps {
   message?: string;
@@ -19,8 +17,8 @@ const DeleteButton: FC<DeleteButtonProps> = ({
   disabled = false,
   className,
 }) => {
+  const { isAdmin } = useCurrentUser();
   const [showDelete, setShowDelete] = useState(false);
-  const auth = useContext(AuthContext);
 
   const toggleModal = () => setShowDelete(true);
   const handleDelete = (status: boolean): void => {
@@ -40,7 +38,7 @@ const DeleteButton: FC<DeleteButtonProps> = ({
   return (
     <>
       {deleteModal}
-      {isAdmin(auth.user) && (
+      {isAdmin && (
         <Button
           variant="danger"
           disabled={showDelete || disabled}

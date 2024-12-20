@@ -1,16 +1,16 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button, Form, Row, Col } from "react-bootstrap";
-import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 import cx from "classnames";
 
 import Title from "src/components/title";
 import { useResetPassword } from "src/graphql";
 import { ROUTE_HOME } from "src/constants/route";
+import { useCurrentUser } from "src/hooks";
 
 const schema = yup.object({
   email: yup.string().email().required("Email is required"),
@@ -19,8 +19,8 @@ type ResetPasswordFormData = yup.Asserts<typeof schema>;
 
 const ForgotPassword: FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useCurrentUser();
   const [resetEmail, setResetEmail] = useState("");
-  const Auth = useContext<ContextType>(AuthContext);
   const [submitError, setSubmitError] = useState<string | undefined>();
 
   const {
@@ -33,7 +33,7 @@ const ForgotPassword: FC = () => {
 
   const [resetPassword, { loading }] = useResetPassword();
 
-  if (Auth.authenticated) navigate(ROUTE_HOME);
+  if (isAuthenticated) navigate(ROUTE_HOME);
 
   const onSubmit = (formData: ResetPasswordFormData) => {
     const userData = {

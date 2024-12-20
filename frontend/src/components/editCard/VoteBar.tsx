@@ -1,9 +1,8 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
-import AuthContext from "src/AuthContext";
 import {
   VoteStatusEnum,
   VoteTypeEnum,
@@ -11,7 +10,7 @@ import {
   EditFragment,
 } from "src/graphql";
 import { Icon } from "src/components/fragments";
-import { canVote } from "src/utils";
+import { useCurrentUser } from "src/hooks";
 
 const CLASSNAME = "VoteBar";
 const CLASSNAME_BUTTON = `${CLASSNAME}-button`;
@@ -23,10 +22,8 @@ interface Props {
 }
 
 const VoteBar: FC<Props> = ({ edit }) => {
-  const auth = useContext(AuthContext);
-  const userVote = (edit.votes ?? []).find(
-    (v) => v.user?.id && v.user.id === auth.user?.id,
-  );
+  const { isVoter, isSelf } = useCurrentUser();
+  const userVote = (edit.votes ?? []).find((v) => v.user?.id && isSelf(v.user));
   const [vote, setVote] = useState<VoteTypeEnum | null>(userVote?.vote ?? null);
   const [submitVote, { loading: savingVote }] = useVote();
 
@@ -42,8 +39,7 @@ const VoteBar: FC<Props> = ({ edit }) => {
   );
 
   // Only show vote total for edit owner and users without vote role
-  if (!canVote(auth.user) || auth.user?.id === edit.user?.id)
-    return <div>{currentVote}</div>;
+  if (!isVoter || isSelf(edit.user)) return <div>{currentVote}</div>;
 
   const handleSave = () => {
     if (!vote) return;

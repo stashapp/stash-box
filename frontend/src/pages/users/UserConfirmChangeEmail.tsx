@@ -3,7 +3,7 @@ import { isApolloError } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
 
-import type { User } from "src/AuthContext";
+import type { User } from "src/context";
 import { useQueryParams, useToast } from "src/hooks";
 import { userHref } from "src/utils";
 import { ErrorMessage } from "src/components/fragments";

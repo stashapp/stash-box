@@ -1,16 +1,15 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card } from "react-bootstrap";
 import { sortBy } from "lodash-es";
 
 import { useSites } from "src/graphql";
 import { LoadingIndicator, SiteLink } from "src/components/fragments";
-import { isAdmin } from "src/utils";
 import { ROUTE_SITE_ADD } from "src/constants/route";
-import AuthContext from "src/AuthContext";
+import { useCurrentUser } from "src/hooks";
 
 const SiteList: FC = () => {
-  const auth = useContext(AuthContext);
+  const { isAdmin } = useCurrentUser();
   const { loading, data } = useSites();
 
   const sites = sortBy(data?.querySites.sites ?? [], (s) =>
@@ -21,7 +20,7 @@ const SiteList: FC = () => {
     <>
       <div className="d-flex">
         <h3 className="me-4">Sites</h3>
-        {isAdmin(auth.user) && (
+        {isAdmin && (
           <Link to={ROUTE_SITE_ADD} className="ms-auto">
             <Button>Create</Button>
           </Link>

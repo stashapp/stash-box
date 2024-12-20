@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Tabs, Tab } from "react-bootstrap";
 
@@ -7,9 +7,8 @@ import {
   TargetTypeEnum,
   SceneFragment as Scene,
 } from "src/graphql";
-import AuthContext from "src/AuthContext";
+import { useCurrentUser } from "src/hooks";
 import {
-  canEdit,
   tagHref,
   performerHref,
   studioHref,
@@ -35,7 +34,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.SCENE,
@@ -79,7 +78,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
       <Card className="scene-info">
         <Card.Header>
           <div className="float-end">
-            {canEdit(auth.user) && !scene.deleted && (
+            {isEditor && !scene.deleted && (
               <>
                 <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
                   <Button>Edit</Button>

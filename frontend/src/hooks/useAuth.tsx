@@ -1,6 +1,6 @@
 import { useMe } from "src/graphql";
 import { getCachedUser, setCachedUser } from "src/utils";
-import { User } from "../AuthContext";
+import { User } from "../context";
 
 interface AuthResult {
   loading: boolean;

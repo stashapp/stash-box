@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
@@ -9,9 +9,8 @@ import {
   usePerformer,
 } from "src/graphql";
 
-import AuthContext from "src/AuthContext";
+import { useCurrentUser } from "src/hooks";
 import {
-  canEdit,
   getCountryByISO,
   formatBodyModifications,
   formatMeasurements,
@@ -49,9 +48,9 @@ interface Props {
 }
 
 const Actions: FC<Props> = ({ performer }) => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
 
-  if (!canEdit(auth?.user) || performer.deleted) return null;
+  if (!isEditor || performer.deleted) return null;
 
   return (
     <Row className={CLASSNAME_ACTIONS}>

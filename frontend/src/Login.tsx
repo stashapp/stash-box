@@ -1,4 +1,4 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Button, Col, Form, Row } from "react-bootstrap";
@@ -6,11 +6,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import cx from "classnames";
 
-import AuthContext, { ContextType } from "src/AuthContext";
 import { ROUTE_REGISTER, ROUTE_FORGOT_PASSWORD } from "src/constants/route";
 import { getPlatformURL, getCredentialsSetting } from "src/utils/createClient";
 
 import "./App.scss";
+import { useCurrentUser } from "./hooks";
 
 const schema = yup.object({
   username: yup.string().required("Username is required"),
@@ -30,7 +30,7 @@ const Login: FC = () => {
   const [loginError, setLoginError] = useState("");
   const msg = new URLSearchParams(location.search).get("msg");
   const redirect = new URLSearchParams(location.search).get("redirect");
-  const Auth = useContext<ContextType>(AuthContext);
+  const { isAuthenticated } = useCurrentUser();
   const {
     register,
     handleSubmit,
@@ -39,7 +39,7 @@ const Login: FC = () => {
     resolver: yupResolver(schema),
   });
 
-  if (Auth.authenticated) navigate("/");
+  if (isAuthenticated) navigate("/");
 
   const onSubmit = async (formData: LoginFormData) => {
     setLoading(true);

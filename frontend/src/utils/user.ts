@@ -1,5 +1,5 @@
-import { User } from "../AuthContext";
-import { UserQuery, PublicUserQuery } from "src/graphql";
+import type { User } from "../context";
+import { UserQuery, PublicUserQuery, RoleEnum } from "src/graphql";
 
 type PrivateUser = NonNullable<UserQuery["findUser"]>;
 type PublicUser = NonNullable<PublicUserQuery["findUser"]>;
@@ -17,3 +17,12 @@ export const setCachedUser = (user?: User | null) => {
 export const isPrivateUser = (
   user: PublicUser | PrivateUser,
 ): user is PrivateUser => !!(user as PrivateUser).email;
+
+export const isAdmin = (user?: User) =>
+  (user?.roles ?? []).includes(RoleEnum.ADMIN);
+
+export const canEdit = (user?: User) =>
+  (user?.roles ?? []).includes(RoleEnum.EDIT) || isAdmin(user);
+
+export const canVote = (user?: User) =>
+  (user?.roles ?? []).includes(RoleEnum.VOTE) || isAdmin(user);
