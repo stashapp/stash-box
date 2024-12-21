@@ -520,6 +520,11 @@ type QueryNotificationsInput struct {
 	PerPage int `json:"per_page"`
 }
 
+type QueryScenesUpdatesResult struct {
+	Ids     []uuid.UUID  `json:"ids"`
+	Updated []*time.Time `json:"updated"`
+}
+
 type QuerySitesResultType struct {
 	Count int     `json:"count"`
 	Sites []*Site `json:"sites"`

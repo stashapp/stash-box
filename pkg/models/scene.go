@@ -14,6 +14,7 @@ type SceneRepo interface {
 	DestroyFingerprints(sceneID uuid.UUID, toDelete SceneFingerprints) error
 	Find(id uuid.UUID) (*Scene, error)
 	FindByIds(ids []uuid.UUID) ([]*Scene, []error)
+	FindUpdatesByIds(inputIds []uuid.UUID) (*QueryScenesUpdatesResult, error)
 	FindByFingerprint(algorithm FingerprintAlgorithm, hash string) ([]*Scene, error)
 	FindByFingerprints(fingerprints []string) ([]*Scene, error)
 	FindByFullFingerprints(fingerprints []*FingerprintQueryInput) ([]*Scene, error)

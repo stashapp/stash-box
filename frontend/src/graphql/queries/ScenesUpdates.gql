@@ -1,0 +1,6 @@
+query ScenesUpdates($ids: [ID!]!) {
+  findScenesUpdates(ids: $ids) {
+    ids
+    updated
+  }
+}

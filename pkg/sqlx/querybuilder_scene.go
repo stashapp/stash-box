@@ -256,6 +256,29 @@ func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, []erro
 	return result, nil
 }
 
+func (qb *sceneQueryBuilder) FindUpdatesByIds(inputIds []uuid.UUID) (*models.QueryScenesUpdatesResult, error) {
+	query := `
+		SELECT id, updated_at FROM scenes
+		WHERE id IN (?)
+	`
+	query, args, _ := sqlx.In(query, inputIds)
+	queryRes, err := qb.queryScenes(query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	resultIds := make([]uuid.UUID, 0, len(inputIds))
+	times := make([]*time.Time, 0, len(inputIds))
+	for _, scene := range queryRes {
+		times = append(times, &scene.UpdatedAt)
+		resultIds = append(resultIds, scene.ID)
+	}
+	return &models.QueryScenesUpdatesResult{
+		Ids:     resultIds,
+		Updated: times,
+	}, nil
+}
+
 func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.FingerprintQueryInput) (map[string][]uuid.UUID, error) {
 	hashClause := `
 		SELECT scene_id, hash
