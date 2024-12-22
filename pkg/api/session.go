@@ -14,7 +14,7 @@ const cookieName = "stashbox"
 const usernameFormKey = "username"
 const passwordFormKey = "password"
 const userIDKey = "userID"
-const maxCookieAge = 60 * 60 * 1 // 1 hours
+const maxCookieAge = 60 * 60 * 24 * 30 // 1 month
 
 var sessionStore *sessions.CookieStore
 
