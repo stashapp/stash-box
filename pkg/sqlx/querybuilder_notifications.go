@@ -165,14 +165,12 @@ INSERT INTO notifications
 }
 
 func (qb *notificationsQueryBuilder) GetUnreadNotificationsCount(userID uuid.UUID) (int, error) {
-	var args []interface{}
-	args = append(args, userID)
+	args := []interface{}{userID}
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT * FROM notifications WHERE user_id = ? AND read_at IS NULL"), args)
 }
 
 func (qb *notificationsQueryBuilder) GetNotificationsCount(userID uuid.UUID) (int, error) {
-	var args []interface{}
-	args = append(args, userID)
+	args := []interface{}{userID}
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT * FROM notifications WHERE user_id = ?"), args)
 }
 
@@ -190,4 +188,9 @@ func (qb *notificationsQueryBuilder) GetNotifications(filter models.QueryNotific
 	}
 
 	return notifications, nil
+}
+
+func (qb *notificationsQueryBuilder) MarkRead(userID uuid.UUID) error {
+	args := []interface{}{userID}
+	return qb.dbi.RawExec("UPDATE notifications SET read_at = WHERE user_id = ? AND read_at IS NULL", args)
 }

@@ -589,6 +589,8 @@ export type Mutation = {
   /** Update a pending tag edit */
   tagEditUpdate: Edit;
   tagUpdate?: Maybe<Tag>;
+  /** Update notification subscriptions for current user. */
+  updateNotificationSubscriptions: Scalars["Boolean"]["output"];
   userCreate?: Maybe<User>;
   userDestroy: Scalars["Boolean"]["output"];
   userUpdate?: Maybe<User>;
@@ -793,6 +795,10 @@ export type MutationTagUpdateArgs = {
   input: TagUpdateInput;
 };
 
+export type MutationUpdateNotificationSubscriptionsArgs = {
+  subscriptions: Array<NotificationEnum>;
+};
+
 export type MutationUserCreateArgs = {
   input: UserCreateInput;
 };
@@ -833,6 +839,19 @@ export type NotificationData =
   | FavoriteStudioEdit
   | FavoriteStudioScene
   | UpdatedEdit;
+
+export enum NotificationEnum {
+  COMMENT_COMMENTED_EDIT = "COMMENT_COMMENTED_EDIT",
+  COMMENT_OWN_EDIT = "COMMENT_OWN_EDIT",
+  COMMENT_VOTED_EDIT = "COMMENT_VOTED_EDIT",
+  DOWNVOTE_OWN_EDIT = "DOWNVOTE_OWN_EDIT",
+  FAILED_OWN_EDIT = "FAILED_OWN_EDIT",
+  FAVORITE_PERFORMER_EDIT = "FAVORITE_PERFORMER_EDIT",
+  FAVORITE_PERFORMER_SCENE = "FAVORITE_PERFORMER_SCENE",
+  FAVORITE_STUDIO_EDIT = "FAVORITE_STUDIO_EDIT",
+  FAVORITE_STUDIO_SCENE = "FAVORITE_STUDIO_SCENE",
+  UPDATED_EDIT = "UPDATED_EDIT",
+}
 
 export enum OperationEnum {
   CREATE = "CREATE",
@@ -1966,6 +1985,7 @@ export type User = {
   invite_tokens?: Maybe<Scalars["Int"]["output"]>;
   invited_by?: Maybe<User>;
   name: Scalars["String"]["output"];
+  notification_subscriptions: Array<NotificationEnum>;
   /** Should not be visible to other users */
   roles?: Maybe<Array<RoleEnum>>;
   /**  Vote counts by type  */
@@ -13257,6 +13277,15 @@ export type UnmatchFingerprintMutationVariables = Exact<{
 export type UnmatchFingerprintMutation = {
   __typename: "Mutation";
   unmatchFingerprint: boolean;
+};
+
+export type UpdateNotificationSubscriptionsMutationVariables = Exact<{
+  subscriptions: Array<NotificationEnum> | NotificationEnum;
+}>;
+
+export type UpdateNotificationSubscriptionsMutation = {
+  __typename: "Mutation";
+  updateNotificationSubscriptions: boolean;
 };
 
 export type UpdateSceneMutationVariables = Exact<{
@@ -30422,6 +30451,7 @@ export type UserQuery = {
     api_key?: string | null;
     api_calls: number;
     invite_tokens?: number | null;
+    notification_subscriptions: Array<NotificationEnum>;
     invited_by?: { __typename: "User"; id: string; name: string } | null;
     invite_codes?: Array<{
       __typename: "InviteKey";
@@ -50962,6 +50992,60 @@ export const UnmatchFingerprintDocument = {
   UnmatchFingerprintMutation,
   UnmatchFingerprintMutationVariables
 >;
+export const UpdateNotificationSubscriptionsDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "UpdateNotificationSubscriptions" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "subscriptions" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "NotificationEnum" },
+                },
+              },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "updateNotificationSubscriptions" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "subscriptions" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "subscriptions" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  UpdateNotificationSubscriptionsMutation,
+  UpdateNotificationSubscriptionsMutationVariables
+>;
 export const UpdateSceneDocument = {
   kind: "Document",
   definitions: [
@@ -67333,6 +67417,10 @@ export const UserDocument = {
                       },
                     ],
                   },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "notification_subscriptions" },
                 },
               ],
             },

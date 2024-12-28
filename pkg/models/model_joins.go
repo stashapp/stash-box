@@ -226,3 +226,20 @@ type StudioFavorite struct {
 	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
 	UserID   uuid.UUID `db:"user_id" json:"user_id"`
 }
+
+type UserNotification struct {
+	UserID uuid.UUID        `db:"user_id" json:"user_id"`
+	Type   NotificationEnum `db:"type" json:"type"`
+}
+
+type UserNotifications []*UserNotification
+
+func (u *UserNotifications) Add(o interface{}) {
+	*u = append(*u, o.(*UserNotification))
+}
+
+func (u UserNotifications) Each(fn func(interface{})) {
+	for _, v := range u {
+		fn(*v)
+	}
+}

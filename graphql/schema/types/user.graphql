@@ -29,6 +29,7 @@ type User {
   email: String @isUserOwner
   """Should not be visible to other users"""
   api_key: String @isUserOwner
+  notification_subscriptions: [NotificationEnum!]! @isUserOwner
 
   """ Vote counts by type """
   vote_count: UserVoteCount!

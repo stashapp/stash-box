@@ -4,6 +4,19 @@ type Notification {
   data: NotificationData!
 }
 
+enum NotificationEnum {
+  FAVORITE_PERFORMER_SCENE
+  FAVORITE_PERFORMER_EDIT
+  FAVORITE_STUDIO_SCENE
+  FAVORITE_STUDIO_EDIT
+  COMMENT_OWN_EDIT
+  DOWNVOTE_OWN_EDIT
+  FAILED_OWN_EDIT
+  COMMENT_COMMENTED_EDIT
+  COMMENT_VOTED_EDIT
+  UPDATED_EDIT
+}
+
 union NotificationData =
    | FavoritePerformerScene
    | FavoritePerformerEdit

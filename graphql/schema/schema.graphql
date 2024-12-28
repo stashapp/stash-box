@@ -189,6 +189,8 @@ type Mutation {
 
   """Mark all of the current users notifications as read."""
   markNotificationsRead: Boolean! @hasRole(role: READ)
+  """Update notification subscriptions for current user."""
+  updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: EDIT)
 }
 
 schema {

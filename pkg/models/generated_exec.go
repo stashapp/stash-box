@@ -215,61 +215,62 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		ActivateNewUser       func(childComplexity int, input ActivateNewUserInput) int
-		ApplyEdit             func(childComplexity int, input ApplyEditInput) int
-		CancelEdit            func(childComplexity int, input CancelEditInput) int
-		ChangePassword        func(childComplexity int, input UserChangePasswordInput) int
-		ConfirmChangeEmail    func(childComplexity int, token uuid.UUID) int
-		DestroyDraft          func(childComplexity int, id uuid.UUID) int
-		EditComment           func(childComplexity int, input EditCommentInput) int
-		EditVote              func(childComplexity int, input EditVoteInput) int
-		FavoritePerformer     func(childComplexity int, id uuid.UUID, favorite bool) int
-		FavoriteStudio        func(childComplexity int, id uuid.UUID, favorite bool) int
-		GenerateInviteCode    func(childComplexity int) int
-		GenerateInviteCodes   func(childComplexity int, input *GenerateInviteCodeInput) int
-		GrantInvite           func(childComplexity int, input GrantInviteInput) int
-		ImageCreate           func(childComplexity int, input ImageCreateInput) int
-		ImageDestroy          func(childComplexity int, input ImageDestroyInput) int
-		MarkNotificationsRead func(childComplexity int) int
-		NewUser               func(childComplexity int, input NewUserInput) int
-		PerformerCreate       func(childComplexity int, input PerformerCreateInput) int
-		PerformerDestroy      func(childComplexity int, input PerformerDestroyInput) int
-		PerformerEdit         func(childComplexity int, input PerformerEditInput) int
-		PerformerEditUpdate   func(childComplexity int, id uuid.UUID, input PerformerEditInput) int
-		PerformerUpdate       func(childComplexity int, input PerformerUpdateInput) int
-		RegenerateAPIKey      func(childComplexity int, userID *uuid.UUID) int
-		RequestChangeEmail    func(childComplexity int) int
-		RescindInviteCode     func(childComplexity int, code uuid.UUID) int
-		ResetPassword         func(childComplexity int, input ResetPasswordInput) int
-		RevokeInvite          func(childComplexity int, input RevokeInviteInput) int
-		SceneCreate           func(childComplexity int, input SceneCreateInput) int
-		SceneDestroy          func(childComplexity int, input SceneDestroyInput) int
-		SceneEdit             func(childComplexity int, input SceneEditInput) int
-		SceneEditUpdate       func(childComplexity int, id uuid.UUID, input SceneEditInput) int
-		SceneUpdate           func(childComplexity int, input SceneUpdateInput) int
-		SiteCreate            func(childComplexity int, input SiteCreateInput) int
-		SiteDestroy           func(childComplexity int, input SiteDestroyInput) int
-		SiteUpdate            func(childComplexity int, input SiteUpdateInput) int
-		StudioCreate          func(childComplexity int, input StudioCreateInput) int
-		StudioDestroy         func(childComplexity int, input StudioDestroyInput) int
-		StudioEdit            func(childComplexity int, input StudioEditInput) int
-		StudioEditUpdate      func(childComplexity int, id uuid.UUID, input StudioEditInput) int
-		StudioUpdate          func(childComplexity int, input StudioUpdateInput) int
-		SubmitFingerprint     func(childComplexity int, input FingerprintSubmission) int
-		SubmitPerformerDraft  func(childComplexity int, input PerformerDraftInput) int
-		SubmitSceneDraft      func(childComplexity int, input SceneDraftInput) int
-		TagCategoryCreate     func(childComplexity int, input TagCategoryCreateInput) int
-		TagCategoryDestroy    func(childComplexity int, input TagCategoryDestroyInput) int
-		TagCategoryUpdate     func(childComplexity int, input TagCategoryUpdateInput) int
-		TagCreate             func(childComplexity int, input TagCreateInput) int
-		TagDestroy            func(childComplexity int, input TagDestroyInput) int
-		TagEdit               func(childComplexity int, input TagEditInput) int
-		TagEditUpdate         func(childComplexity int, id uuid.UUID, input TagEditInput) int
-		TagUpdate             func(childComplexity int, input TagUpdateInput) int
-		UserCreate            func(childComplexity int, input UserCreateInput) int
-		UserDestroy           func(childComplexity int, input UserDestroyInput) int
-		UserUpdate            func(childComplexity int, input UserUpdateInput) int
-		ValidateChangeEmail   func(childComplexity int, token uuid.UUID, email string) int
+		ActivateNewUser                 func(childComplexity int, input ActivateNewUserInput) int
+		ApplyEdit                       func(childComplexity int, input ApplyEditInput) int
+		CancelEdit                      func(childComplexity int, input CancelEditInput) int
+		ChangePassword                  func(childComplexity int, input UserChangePasswordInput) int
+		ConfirmChangeEmail              func(childComplexity int, token uuid.UUID) int
+		DestroyDraft                    func(childComplexity int, id uuid.UUID) int
+		EditComment                     func(childComplexity int, input EditCommentInput) int
+		EditVote                        func(childComplexity int, input EditVoteInput) int
+		FavoritePerformer               func(childComplexity int, id uuid.UUID, favorite bool) int
+		FavoriteStudio                  func(childComplexity int, id uuid.UUID, favorite bool) int
+		GenerateInviteCode              func(childComplexity int) int
+		GenerateInviteCodes             func(childComplexity int, input *GenerateInviteCodeInput) int
+		GrantInvite                     func(childComplexity int, input GrantInviteInput) int
+		ImageCreate                     func(childComplexity int, input ImageCreateInput) int
+		ImageDestroy                    func(childComplexity int, input ImageDestroyInput) int
+		MarkNotificationsRead           func(childComplexity int) int
+		NewUser                         func(childComplexity int, input NewUserInput) int
+		PerformerCreate                 func(childComplexity int, input PerformerCreateInput) int
+		PerformerDestroy                func(childComplexity int, input PerformerDestroyInput) int
+		PerformerEdit                   func(childComplexity int, input PerformerEditInput) int
+		PerformerEditUpdate             func(childComplexity int, id uuid.UUID, input PerformerEditInput) int
+		PerformerUpdate                 func(childComplexity int, input PerformerUpdateInput) int
+		RegenerateAPIKey                func(childComplexity int, userID *uuid.UUID) int
+		RequestChangeEmail              func(childComplexity int) int
+		RescindInviteCode               func(childComplexity int, code uuid.UUID) int
+		ResetPassword                   func(childComplexity int, input ResetPasswordInput) int
+		RevokeInvite                    func(childComplexity int, input RevokeInviteInput) int
+		SceneCreate                     func(childComplexity int, input SceneCreateInput) int
+		SceneDestroy                    func(childComplexity int, input SceneDestroyInput) int
+		SceneEdit                       func(childComplexity int, input SceneEditInput) int
+		SceneEditUpdate                 func(childComplexity int, id uuid.UUID, input SceneEditInput) int
+		SceneUpdate                     func(childComplexity int, input SceneUpdateInput) int
+		SiteCreate                      func(childComplexity int, input SiteCreateInput) int
+		SiteDestroy                     func(childComplexity int, input SiteDestroyInput) int
+		SiteUpdate                      func(childComplexity int, input SiteUpdateInput) int
+		StudioCreate                    func(childComplexity int, input StudioCreateInput) int
+		StudioDestroy                   func(childComplexity int, input StudioDestroyInput) int
+		StudioEdit                      func(childComplexity int, input StudioEditInput) int
+		StudioEditUpdate                func(childComplexity int, id uuid.UUID, input StudioEditInput) int
+		StudioUpdate                    func(childComplexity int, input StudioUpdateInput) int
+		SubmitFingerprint               func(childComplexity int, input FingerprintSubmission) int
+		SubmitPerformerDraft            func(childComplexity int, input PerformerDraftInput) int
+		SubmitSceneDraft                func(childComplexity int, input SceneDraftInput) int
+		TagCategoryCreate               func(childComplexity int, input TagCategoryCreateInput) int
+		TagCategoryDestroy              func(childComplexity int, input TagCategoryDestroyInput) int
+		TagCategoryUpdate               func(childComplexity int, input TagCategoryUpdateInput) int
+		TagCreate                       func(childComplexity int, input TagCreateInput) int
+		TagDestroy                      func(childComplexity int, input TagDestroyInput) int
+		TagEdit                         func(childComplexity int, input TagEditInput) int
+		TagEditUpdate                   func(childComplexity int, id uuid.UUID, input TagEditInput) int
+		TagUpdate                       func(childComplexity int, input TagUpdateInput) int
+		UpdateNotificationSubscriptions func(childComplexity int, subscriptions []NotificationEnum) int
+		UserCreate                      func(childComplexity int, input UserCreateInput) int
+		UserDestroy                     func(childComplexity int, input UserDestroyInput) int
+		UserUpdate                      func(childComplexity int, input UserUpdateInput) int
+		ValidateChangeEmail             func(childComplexity int, token uuid.UUID, email string) int
 	}
 
 	Notification struct {
@@ -640,18 +641,19 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		APICalls          func(childComplexity int) int
-		APIKey            func(childComplexity int) int
-		ActiveInviteCodes func(childComplexity int) int
-		EditCount         func(childComplexity int) int
-		Email             func(childComplexity int) int
-		ID                func(childComplexity int) int
-		InviteCodes       func(childComplexity int) int
-		InviteTokens      func(childComplexity int) int
-		InvitedBy         func(childComplexity int) int
-		Name              func(childComplexity int) int
-		Roles             func(childComplexity int) int
-		VoteCount         func(childComplexity int) int
+		APICalls                  func(childComplexity int) int
+		APIKey                    func(childComplexity int) int
+		ActiveInviteCodes         func(childComplexity int) int
+		EditCount                 func(childComplexity int) int
+		Email                     func(childComplexity int) int
+		ID                        func(childComplexity int) int
+		InviteCodes               func(childComplexity int) int
+		InviteTokens              func(childComplexity int) int
+		InvitedBy                 func(childComplexity int) int
+		Name                      func(childComplexity int) int
+		NotificationSubscriptions func(childComplexity int) int
+		Roles                     func(childComplexity int) int
+		VoteCount                 func(childComplexity int) int
 	}
 
 	UserEditCount struct {
@@ -777,6 +779,7 @@ type MutationResolver interface {
 	FavoritePerformer(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
 	FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
 	MarkNotificationsRead(ctx context.Context) (bool, error)
+	UpdateNotificationSubscriptions(ctx context.Context, subscriptions []NotificationEnum) (bool, error)
 }
 type NotificationResolver interface {
 	Created(ctx context.Context, obj *Notification) (*time.Time, error)
@@ -997,6 +1000,7 @@ type URLResolver interface {
 type UserResolver interface {
 	Roles(ctx context.Context, obj *User) ([]RoleEnum, error)
 
+	NotificationSubscriptions(ctx context.Context, obj *User) ([]NotificationEnum, error)
 	VoteCount(ctx context.Context, obj *User) (*UserVoteCount, error)
 	EditCount(ctx context.Context, obj *User) (*UserEditCount, error)
 
@@ -2132,6 +2136,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.TagUpdate(childComplexity, args["input"].(TagUpdateInput)), true
+
+	case "Mutation.updateNotificationSubscriptions":
+		if e.complexity.Mutation.UpdateNotificationSubscriptions == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateNotificationSubscriptions_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateNotificationSubscriptions(childComplexity, args["subscriptions"].([]NotificationEnum)), true
 
 	case "Mutation.userCreate":
 		if e.complexity.Mutation.UserCreate == nil {
@@ -4319,6 +4335,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Name(childComplexity), true
 
+	case "User.notification_subscriptions":
+		if e.complexity.User.NotificationSubscriptions == nil {
+			break
+		}
+
+		return e.complexity.User.NotificationSubscriptions(childComplexity), true
+
 	case "User.roles":
 		if e.complexity.User.Roles == nil {
 			break
@@ -4928,6 +4951,19 @@ input URLInput {
   created: Time!
   read: Boolean!
   data: NotificationData!
+}
+
+enum NotificationEnum {
+  FAVORITE_PERFORMER_SCENE
+  FAVORITE_PERFORMER_EDIT
+  FAVORITE_STUDIO_SCENE
+  FAVORITE_STUDIO_EDIT
+  COMMENT_OWN_EDIT
+  DOWNVOTE_OWN_EDIT
+  FAILED_OWN_EDIT
+  COMMENT_COMMENTED_EDIT
+  COMMENT_VOTED_EDIT
+  UPDATED_EDIT
 }
 
 union NotificationData =
@@ -6004,6 +6040,7 @@ type User {
   email: String @isUserOwner
   """Should not be visible to other users"""
   api_key: String @isUserOwner
+  notification_subscriptions: [NotificationEnum!]! @isUserOwner
 
   """ Vote counts by type """
   vote_count: UserVoteCount!
@@ -6349,6 +6386,8 @@ type Mutation {
 
   """Mark all of the current users notifications as read."""
   markNotificationsRead: Boolean! @hasRole(role: READ)
+  """Update notification subscriptions for current user."""
+  updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: EDIT)
 }
 
 schema {
@@ -8090,6 +8129,38 @@ func (ec *executionContext) field_Mutation_tagUpdate_argsInput(
 	}
 
 	var zeroVal TagUpdateInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateNotificationSubscriptions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_updateNotificationSubscriptions_argsSubscriptions(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["subscriptions"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateNotificationSubscriptions_argsSubscriptions(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) ([]NotificationEnum, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["subscriptions"]
+	if !ok {
+		var zeroVal []NotificationEnum
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("subscriptions"))
+	if tmp, ok := rawArgs["subscriptions"]; ok {
+		return ec.unmarshalNNotificationEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnumᚄ(ctx, tmp)
+	}
+
+	var zeroVal []NotificationEnum
 	return zeroVal, nil
 }
 
@@ -10368,6 +10439,8 @@ func (ec *executionContext) fieldContext_Edit_user(_ context.Context, field grap
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -11364,6 +11437,8 @@ func (ec *executionContext) fieldContext_EditComment_user(_ context.Context, fie
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -11609,6 +11684,8 @@ func (ec *executionContext) fieldContext_EditVote_user(_ context.Context, field 
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -14459,6 +14536,8 @@ func (ec *executionContext) fieldContext_Mutation_userCreate(ctx context.Context
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -14564,6 +14643,8 @@ func (ec *executionContext) fieldContext_Mutation_userUpdate(ctx context.Context
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -14947,6 +15028,8 @@ func (ec *executionContext) fieldContext_Mutation_activateNewUser(ctx context.Co
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -18283,6 +18366,88 @@ func (ec *executionContext) fieldContext_Mutation_markNotificationsRead(_ contex
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateNotificationSubscriptions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateNotificationSubscriptions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateNotificationSubscriptions(rctx, fc.Args["subscriptions"].([]NotificationEnum))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "EDIT")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateNotificationSubscriptions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateNotificationSubscriptions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -24784,6 +24949,8 @@ func (ec *executionContext) fieldContext_Query_findUser(ctx context.Context, fie
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -24950,6 +25117,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -27663,6 +27832,8 @@ func (ec *executionContext) fieldContext_QueryUsersResultType_users(_ context.Co
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -33743,6 +33914,72 @@ func (ec *executionContext) fieldContext_User_api_key(_ context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _User_notification_subscriptions(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_notification_subscriptions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().NotificationSubscriptions(rctx, obj)
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsUserOwner == nil {
+				var zeroVal []NotificationEnum
+				return zeroVal, errors.New("directive isUserOwner is not implemented")
+			}
+			return ec.directives.IsUserOwner(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]NotificationEnum); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/stashapp/stash-box/pkg/models.NotificationEnum`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]NotificationEnum)
+	fc.Result = res
+	return ec.marshalNNotificationEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnumᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_notification_subscriptions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type NotificationEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_vote_count(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_vote_count(ctx, field)
 	if err != nil {
@@ -33993,6 +34230,8 @@ func (ec *executionContext) fieldContext_User_invited_by(_ context.Context, fiel
 				return ec.fieldContext_User_email(ctx, field)
 			case "api_key":
 				return ec.fieldContext_User_api_key(ctx, field)
+			case "notification_subscriptions":
+				return ec.fieldContext_User_notification_subscriptions(ctx, field)
 			case "vote_count":
 				return ec.fieldContext_User_vote_count(ctx, field)
 			case "edit_count":
@@ -43682,6 +43921,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "updateNotificationSubscriptions":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateNotificationSubscriptions(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -50360,6 +50606,42 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_email(ctx, field, obj)
 		case "api_key":
 			out.Values[i] = ec._User_api_key(ctx, field, obj)
+		case "notification_subscriptions":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_notification_subscriptions(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "vote_count":
 			field := field
 
@@ -51985,6 +52267,77 @@ func (ec *executionContext) marshalNNotificationData2githubᚗcomᚋstashappᚋs
 		return graphql.Null
 	}
 	return ec._NotificationData(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx context.Context, v interface{}) (NotificationEnum, error) {
+	var res NotificationEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx context.Context, sel ast.SelectionSet, v NotificationEnum) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNNotificationEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnumᚄ(ctx context.Context, v interface{}) ([]NotificationEnum, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]NotificationEnum, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNNotificationEnum2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnumᚄ(ctx context.Context, sel ast.SelectionSet, v []NotificationEnum) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNNotificationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNOperationEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx context.Context, v interface{}) (OperationEnum, error) {

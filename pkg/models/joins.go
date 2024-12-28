@@ -24,4 +24,6 @@ type JoinsRepo interface {
 	DestroyPerformerFavorite(join PerformerFavorite) error
 	IsPerformerFavorite(favorite PerformerFavorite) (bool, error)
 	IsStudioFavorite(favorite StudioFavorite) (bool, error)
+	UpdateUserNotifications(userID uuid.UUID, updatedJoins UserNotifications) error
+	GetUserNotifications(userID uuid.UUID) ([]NotificationEnum, error)
 }

@@ -6,6 +6,7 @@ type NotificationRepo interface {
 	GetNotificationsCount(userID uuid.UUID) (int, error)
 	GetUnreadNotificationsCount(userID uuid.UUID) (int, error)
 	GetNotifications(filter QueryNotificationsInput, userID uuid.UUID) ([]*Notification, error)
+	MarkRead(userID uuid.UUID) error
 
 	TriggerSceneCreationNotifications(sceneID uuid.UUID) error
 	TriggerPerformerEditNotifications(editID uuid.UUID) error
