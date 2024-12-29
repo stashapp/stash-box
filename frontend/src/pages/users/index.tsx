@@ -14,7 +14,7 @@ import UserEdits from "./UserEdits";
 import UserConfirmChangeEmail from "./UserConfirmChangeEmail";
 import UserValidateChangeEmail from "./UserValidateChangeEmail";
 import UserFingerprints from "./UserFingerprints";
-import {UserNotificationPreferences} from "./UserNotificationPreferences";
+import { UserNotificationPreferences } from "./UserNotificationPreferences";
 
 const UserLoader: FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -64,15 +64,19 @@ const UserLoader: FC = () => {
         path="/change-email"
         element={<UserValidateChangeEmail user={user} />}
       />
-    <Route
-      path="/notifications"
-      element={
-          ('notification_subscriptions' in user) ? <>
-            <Title page={"Notification Preferences"} />
-            <UserNotificationPreferences user={user} />
-          </>
-            : <ErrorMessage error="Forbidden" /> }
-    />
+      <Route
+        path="/notifications"
+        element={
+          "notification_subscriptions" in user ? (
+            <>
+              <Title page={"Notification Preferences"} />
+              <UserNotificationPreferences user={user} />
+            </>
+          ) : (
+            <ErrorMessage error="Forbidden" />
+          )
+        }
+      />
     </Routes>
   );
 };

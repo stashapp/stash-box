@@ -22,9 +22,14 @@ const CLASSNAME = "EditCard";
 interface Props {
   edit: EditFragment;
   showVotes?: boolean;
+  hideDiff?: boolean;
 }
 
-const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
+const EditCardComponent: FC<Props> = ({
+  edit,
+  showVotes = false,
+  hideDiff = false,
+}) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
   const created = new Date(edit.created);
 
@@ -94,15 +99,21 @@ const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
       <hr />
       <Card.Body>
         <EditHeader edit={edit} />
-        {creation}
-        {modifications}
-        <Row className="mt-2">
-          <Col md={{ offset: 4, span: 8 }}>
-            {showVotes && <Votes edit={edit} />}
-            {comments}
-            <AddComment editID={edit.id} />
-          </Col>
-        </Row>
+        {!hideDiff ? (
+          <>
+            {creation}
+            {modifications}
+            <Row className="mt-2">
+              <Col md={{ offset: 4, span: 8 }}>
+                {showVotes && <Votes edit={edit} />}
+                {comments}
+                <AddComment editID={edit.id} />
+              </Col>
+            </Row>
+          </>
+        ) : (
+          showVotes && <Votes edit={edit} />
+        )}
       </Card.Body>
     </Card>
   );

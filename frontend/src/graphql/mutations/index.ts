@@ -439,9 +439,10 @@ export const useRequestChangeEmail = (
 export const useUpdateNotificationSubscriptions = (
   options?: MutationHookOptions<
     UpdateNotificationSubscriptionsMutation,
-   UpdateNotificationSubscriptionsMutationVariables 
+    UpdateNotificationSubscriptionsMutationVariables
   >,
-) => useMutation(UpdateNotificationSubscriptionsDocument, {
+) =>
+  useMutation(UpdateNotificationSubscriptionsDocument, {
     update(cache, { data }) {
       if (data?.updateNotificationSubscriptions) {
         cache.evict({
@@ -452,7 +453,8 @@ export const useUpdateNotificationSubscriptions = (
     ...options,
   });
 
-export const useMarkNotificationsRead = () => useMutation(MarkNotificationsReadDocument, {
+export const useMarkNotificationsRead = () =>
+  useMutation(MarkNotificationsReadDocument, {
     update(cache, { data }) {
       if (data?.markNotificationsRead) {
         cache.evict({ fieldName: "queryNotifications" });
