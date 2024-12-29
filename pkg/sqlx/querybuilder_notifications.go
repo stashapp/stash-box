@@ -195,7 +195,7 @@ func buildQuery(userID uuid.UUID, filter models.QueryNotificationsInput) *queryB
 	query.AddWhere("user_id = ?")
 	query.AddArg(userID)
 
-	if filter.UnreadOnly != nil && *filter.UnreadOnly == true {
+	if filter.UnreadOnly != nil && *filter.UnreadOnly {
 		query.AddWhere("read_at IS NULL")
 	}
 
