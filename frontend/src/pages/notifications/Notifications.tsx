@@ -8,10 +8,9 @@ import {
   NotificationEnum,
   useUnreadNotificationsCount,
 } from "src/graphql";
-import { usePagination } from "src/hooks";
+import { useCurrentUser, useQueryParams, usePagination } from "src/hooks";
 import { ROUTE_NOTIFICATION_SUBSCRIPTIONS } from "src/constants/route";
 import { userHref, resolveEnum, NotificationType } from "src/utils";
-import { useCurrentUser, useQueryParams } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import { Notification } from "./Notification";

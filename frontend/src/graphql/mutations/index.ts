@@ -135,7 +135,6 @@ import {
   UpdateNotificationSubscriptionsDocument,
   UpdateNotificationSubscriptionsMutation,
   UpdateNotificationSubscriptionsMutationVariables,
-  MeDocument,
   MarkNotificationsReadDocument,
 } from "../types";
 
