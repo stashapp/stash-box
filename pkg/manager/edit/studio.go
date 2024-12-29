@@ -25,6 +25,10 @@ func Studio(fac models.Repo, edit *models.Edit) *StudioEditProcessor {
 }
 
 func (m *StudioEditProcessor) Edit(input models.StudioEditInput, inputArgs utils.ArgumentsQuery) error {
+	if err := validateStudioEditInput(m.fac, input); err != nil {
+		return err
+	}
+
 	var err error
 	switch input.Edit.Operation {
 	case models.OperationEnumModify:

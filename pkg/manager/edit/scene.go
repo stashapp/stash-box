@@ -25,6 +25,10 @@ func Scene(fac models.Repo, edit *models.Edit) *SceneEditProcessor {
 }
 
 func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
+	if err := validateSceneEditInput(m.fac, input); err != nil {
+		return err
+	}
+
 	var err error
 	switch input.Edit.Operation {
 	case models.OperationEnumModify:

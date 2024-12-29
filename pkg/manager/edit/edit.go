@@ -15,13 +15,8 @@ import (
 	"github.com/stashapp/stash-box/pkg/utils"
 )
 
-var ErrInvalidVoteStatus = errors.New("invalid vote status")
-var ErrEditNotFound = errors.New("edit not found")
-var ErrEditAlreadyApplied = errors.New("edit already applied")
 var ErrNoChanges = errors.New("edit contains no changes")
 var ErrMergeIDMissing = errors.New("merge target ID is required")
-var ErrEntityNotFound = errors.New("entity not found")
-var ErrEntityDeleted = errors.New("entity is deleted")
 var ErrMergeTargetIsSource = errors.New("merge target cannot be used as source")
 var ErrNoMergeSources = errors.New("no merge sources found")
 
@@ -79,28 +74,6 @@ func (m *mutator) CreateComment(user *models.User, comment *string) error {
 
 type editApplyer interface {
 	apply() error
-}
-
-func validateEditPresence(edit *models.Edit) error {
-	if edit == nil {
-		return ErrEditNotFound
-	}
-
-	if edit.Applied {
-		return ErrEditAlreadyApplied
-	}
-
-	return nil
-}
-
-func validateEditPrerequisites(fac models.Repo, edit *models.Edit) error {
-	var status models.VoteStatusEnum
-	utils.ResolveEnumString(edit.Status, &status)
-	if status != models.VoteStatusEnumPending {
-		return fmt.Errorf("%w: %s", ErrInvalidVoteStatus, edit.Status)
-	}
-
-	return nil
 }
 
 func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit, error) {
@@ -309,19 +282,4 @@ func ResolveVotingThreshold(fac models.Repo, edit *models.Edit) (models.VoteStat
 	}
 
 	return models.VoteStatusEnumPending, nil
-}
-
-type editEntity interface {
-	IsDeleted() bool
-}
-
-func validateEditEntity(entity *editEntity, id uuid.UUID, typeName string) error {
-	if entity == nil {
-		return fmt.Errorf("%w: %s %s", ErrEntityNotFound, typeName, id.String())
-	}
-	if (*entity).IsDeleted() {
-		return fmt.Errorf("%w: %s %s", ErrEntityDeleted, typeName, id.String())
-	}
-
-	return nil
 }
