@@ -516,8 +516,10 @@ type QueryExistingSceneInput struct {
 }
 
 type QueryNotificationsInput struct {
-	Page    int `json:"page"`
-	PerPage int `json:"per_page"`
+	Page       int               `json:"page"`
+	PerPage    int               `json:"per_page"`
+	Type       *NotificationEnum `json:"type,omitempty"`
+	UnreadOnly *bool             `json:"unread_only,omitempty"`
 }
 
 type QuerySitesResultType struct {

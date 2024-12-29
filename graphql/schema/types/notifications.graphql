@@ -72,6 +72,8 @@ type UpdatedEdit {
 input QueryNotificationsInput {
   page: Int! = 1
   per_page: Int! = 25
+  type: NotificationEnum
+  unread_only: Boolean
 }
 
 type QueryNotificationsResult {

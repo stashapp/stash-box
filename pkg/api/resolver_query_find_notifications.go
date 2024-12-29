@@ -18,12 +18,13 @@ func (r *queryNotificationsResolver) Count(ctx context.Context, query *models.Qu
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Notification()
 	currentUser := getCurrentUser(ctx)
-	return qb.GetNotificationsCount(currentUser.ID)
+
+	return qb.GetNotificationsCount(currentUser.ID, query.Input)
 }
 
 func (r *queryNotificationsResolver) Notifications(ctx context.Context, query *models.QueryNotificationsResult) ([]*models.Notification, error) {
 	fac := r.getRepoFactory(ctx)
 	qb := fac.Notification()
 	currentUser := getCurrentUser(ctx)
-	return qb.GetNotifications(query.Input, currentUser.ID)
+	return qb.GetNotifications(currentUser.ID, query.Input)
 }

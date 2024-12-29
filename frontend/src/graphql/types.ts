@@ -1409,6 +1409,8 @@ export type QueryExistingSceneResult = {
 export type QueryNotificationsInput = {
   page?: Scalars["Int"]["input"];
   per_page?: Scalars["Int"]["input"];
+  type?: InputMaybe<NotificationEnum>;
+  unread_only?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
 export type QueryNotificationsResult = {
@@ -4727,6 +4729,15 @@ export type GrantInviteMutationVariables = Exact<{
 export type GrantInviteMutation = {
   __typename: "Mutation";
   grantInvite: number;
+};
+
+export type MarkNotificationsReadMutationVariables = Exact<{
+  [key: string]: never;
+}>;
+
+export type MarkNotificationsReadMutation = {
+  __typename: "Mutation";
+  markNotificationsRead: boolean;
 };
 
 export type NewUserMutationVariables = Exact<{
@@ -37545,6 +37556,28 @@ export const GrantInviteDocument = {
     },
   ],
 } as unknown as DocumentNode<GrantInviteMutation, GrantInviteMutationVariables>;
+export const MarkNotificationsReadDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "MarkNotificationsRead" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "markNotificationsRead" },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  MarkNotificationsReadMutation,
+  MarkNotificationsReadMutationVariables
+>;
 export const NewUserDocument = {
   kind: "Document",
   definitions: [

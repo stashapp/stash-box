@@ -5021,6 +5021,8 @@ type UpdatedEdit {
 input QueryNotificationsInput {
   page: Int! = 1
   per_page: Int! = 25
+  type: NotificationEnum
+  unread_only: Boolean
 }
 
 type QueryNotificationsResult {
@@ -39304,7 +39306,7 @@ func (ec *executionContext) unmarshalInputQueryNotificationsInput(ctx context.Co
 		asMap["per_page"] = 25
 	}
 
-	fieldsInOrder := [...]string{"page", "per_page"}
+	fieldsInOrder := [...]string{"page", "per_page", "type", "unread_only"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39325,6 +39327,20 @@ func (ec *executionContext) unmarshalInputQueryNotificationsInput(ctx context.Co
 				return it, err
 			}
 			it.PerPage = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalONotificationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "unread_only":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unread_only"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UnreadOnly = data
 		}
 	}
 
@@ -54650,6 +54666,22 @@ func (ec *executionContext) unmarshalOMultiStringCriterionInput2ᚖgithubᚗcom�
 	}
 	res, err := ec.unmarshalInputMultiStringCriterionInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalONotificationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx context.Context, v interface{}) (*NotificationEnum, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(NotificationEnum)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalONotificationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNotificationEnum(ctx context.Context, sel ast.SelectionSet, v *NotificationEnum) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOOperationEnum2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐOperationEnum(ctx context.Context, v interface{}) (*OperationEnum, error) {

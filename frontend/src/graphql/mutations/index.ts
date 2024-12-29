@@ -136,6 +136,7 @@ import {
   UpdateNotificationSubscriptionsMutation,
   UpdateNotificationSubscriptionsMutationVariables,
   MeDocument,
+  MarkNotificationsReadDocument,
 } from "../types";
 
 export const useActivateUser = (
@@ -441,14 +442,21 @@ export const useUpdateNotificationSubscriptions = (
    UpdateNotificationSubscriptionsMutationVariables 
   >,
 ) => useMutation(UpdateNotificationSubscriptionsDocument, {
-    update(cache, { data }, { variables }) {
+    update(cache, { data }) {
       if (data?.updateNotificationSubscriptions) {
-        const user = cache.readQuery({ query: MeDocument });
         cache.evict({
-          id: cache.identify({ __typename: "User", id: user?.me?.id }),
-          fieldName: "notification_subscriptions",
+          fieldName: "queryNotifications",
         });
       }
     },
     ...options,
+  });
+
+export const useMarkNotificationsRead = () => useMutation(MarkNotificationsReadDocument, {
+    update(cache, { data }) {
+      if (data?.markNotificationsRead) {
+        cache.evict({ fieldName: "queryNotifications" });
+        cache.evict({ fieldName: "getUnreadNotificationCount" });
+      }
+    },
   });
