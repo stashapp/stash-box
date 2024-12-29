@@ -63,7 +63,7 @@ export const getImage = (
   orientation: "portrait" | "landscape",
 ) => {
   const images = sortImageURLs(urls, orientation);
-  return images?.[0]?.url ?? "";
+  return images?.[0]?.url;
 };
 
 export const imageType = (image?: Image) => {

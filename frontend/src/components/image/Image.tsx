@@ -13,7 +13,7 @@ type Image = {
 };
 
 interface ImageProps {
-  image: Image;
+  image?: Image;
   emptyMessage?: string;
   size?: number | "full";
   alt?: string;
@@ -29,7 +29,7 @@ const ImageComponent: FC<ImageProps> = ({
     "loading",
   );
 
-  if (!image.url)
+  if (!image?.url)
     return (
       <div className={`${CLASSNAME}-missing`}>
         <Icon icon={faXmark} color="var(--bs-gray-400)" />
@@ -62,7 +62,7 @@ const ImageComponent: FC<ImageProps> = ({
 };
 
 interface ContainerProps {
-  images: Image[] | Image;
+  images: Image[] | Image | undefined;
   orientation?: "landscape" | "portrait";
   emptyMessage?: string;
   size?: number | "full";
@@ -80,11 +80,10 @@ const ImageContainer: FC<ContainerProps> = ({
     ? sortImageURLs(images, orientation)[0]
     : images;
 
+  const aspectRatio = image ? `${image.width}/${image.height}` : "16/6";
+
   return (
-    <div
-      className={cx(CLASSNAME, className)}
-      style={{ aspectRatio: `${image.width}/${image.height}` }}
-    >
+    <div className={cx(CLASSNAME, className)} style={{ aspectRatio }}>
       <ImageComponent {...props} image={image} />
     </div>
   );
