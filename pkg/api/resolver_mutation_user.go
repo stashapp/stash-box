@@ -24,11 +24,7 @@ func (r *mutationResolver) UserCreate(ctx context.Context, input models.UserCrea
 	err = fac.WithTxn(func() error {
 		u, err = user.Create(fac, input)
 
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return err
 	})
 
 	if err != nil {

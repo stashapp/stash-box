@@ -37,12 +37,16 @@ func (p *inviteKeyRow) fromInviteKey(i models.InviteKey) {
 }
 
 func (p inviteKeyRow) resolve() models.InviteKey {
+	var expires *time.Time
+	if p.ExpireTime.Valid {
+		expires = &p.ExpireTime.Time
+	}
 	return models.InviteKey{
 		ID:          p.ID,
 		Uses:        intPtrFromNullInt(p.Uses),
 		GeneratedBy: p.GeneratedBy,
 		GeneratedAt: p.GeneratedAt,
-		Expires:     &p.ExpireTime.Time,
+		Expires:     expires,
 	}
 }
 

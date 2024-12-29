@@ -48,3 +48,16 @@ func OnEditDownvote(fac models.Repo, edit *models.Edit) {
 func OnEditComment(fac models.Repo, comment *models.EditComment) {
 	fac.Notification().TriggerEditCommentNotifications(comment.ID)
 }
+
+var defaultSubscriptions = []models.NotificationEnum{
+	models.NotificationEnumCommentOwnEdit,
+	models.NotificationEnumDownvoteOwnEdit,
+	models.NotificationEnumFailedOwnEdit,
+	models.NotificationEnumCommentCommentedEdit,
+	models.NotificationEnumCommentVotedEdit,
+	models.NotificationEnumUpdatedEdit,
+}
+
+func GetDefaultSubscriptions() []models.NotificationEnum {
+	return defaultSubscriptions
+}

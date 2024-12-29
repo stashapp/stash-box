@@ -243,3 +243,16 @@ func (u UserNotifications) Each(fn func(interface{})) {
 		fn(*v)
 	}
 }
+
+func CreateUserNotifications(userID uuid.UUID, subscriptions []NotificationEnum) UserNotifications {
+	var ret UserNotifications
+
+	for _, sub := range subscriptions {
+		ret = append(ret, &UserNotification{
+			UserID: userID,
+			Type:   sub,
+		})
+	}
+
+	return ret
+}

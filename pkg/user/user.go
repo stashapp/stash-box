@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/manager/notifications"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -260,6 +261,12 @@ func Create(fac models.Repo, input models.UserCreateInput) (*models.User, error)
 	// Save the roles
 	userRoles := models.CreateUserRoles(user.ID, input.Roles)
 	if err := qb.CreateRoles(userRoles); err != nil {
+		return nil, err
+	}
+
+	// Save the notification subscriptions
+	notificationSubscriptions := models.CreateUserNotifications(user.ID, notifications.GetDefaultSubscriptions())
+	if err := fac.Joins().UpdateUserNotifications(user.ID, notificationSubscriptions); err != nil {
 		return nil, err
 	}
 
