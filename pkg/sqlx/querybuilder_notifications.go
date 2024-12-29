@@ -164,21 +164,13 @@ INSERT INTO notifications
 	return err
 }
 
-func (qb *notificationsQueryBuilder) GetUnreadNotificationsCount(userID uuid.UUID) (int, error) {
-	var args []interface{}
-	args = append(args, userID)
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT * FROM notifications WHERE user_id = ? AND read_at IS NULL"), args)
+func (qb *notificationsQueryBuilder) GetNotificationsCount(userID uuid.UUID, filter models.QueryNotificationsInput) (int, error) {
+	query := buildQuery(userID, filter)
+	return qb.dbi.CountOnly(*query)
 }
 
-func (qb *notificationsQueryBuilder) GetNotificationsCount(userID uuid.UUID) (int, error) {
-	var args []interface{}
-	args = append(args, userID)
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT * FROM notifications WHERE user_id = ?"), args)
-}
-
-func (qb *notificationsQueryBuilder) GetNotifications(filter models.QueryNotificationsInput, userID uuid.UUID) ([]*models.Notification, error) {
-	query := newQueryBuilder(notificationDBTable)
-	query.Eq("user_id", userID)
+func (qb *notificationsQueryBuilder) GetNotifications(userID uuid.UUID, filter models.QueryNotificationsInput) ([]*models.Notification, error) {
+	query := buildQuery(userID, filter)
 	query.Pagination = getPagination(filter.Page, filter.PerPage)
 	query.Sort = getSort("created_at", models.SortDirectionEnumDesc.String(), notificationDBTable.name, nil)
 
@@ -190,4 +182,27 @@ func (qb *notificationsQueryBuilder) GetNotifications(filter models.QueryNotific
 	}
 
 	return notifications, nil
+}
+
+func (qb *notificationsQueryBuilder) MarkRead(userID uuid.UUID) error {
+	args := []interface{}{userID}
+	return qb.dbi.RawExec("UPDATE notifications SET read_at = now() WHERE user_id = ? AND read_at IS NULL", args)
+}
+
+func buildQuery(userID uuid.UUID, filter models.QueryNotificationsInput) *queryBuilder {
+	query := newQueryBuilder(notificationDBTable)
+
+	query.AddWhere("user_id = ?")
+	query.AddArg(userID)
+
+	if filter.UnreadOnly != nil && *filter.UnreadOnly {
+		query.AddWhere("read_at IS NULL")
+	}
+
+	if filter.Type != nil {
+		query.AddWhere("type = ?")
+		query.AddArg(filter.Type.String())
+	}
+
+	return query
 }

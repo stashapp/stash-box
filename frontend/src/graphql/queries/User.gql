@@ -32,5 +32,6 @@ query User($name: String!) {
       canceled
       pending
     }
+    notification_subscriptions
   }
 }

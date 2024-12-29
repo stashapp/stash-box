@@ -3,9 +3,9 @@ package models
 import "github.com/gofrs/uuid"
 
 type NotificationRepo interface {
-	GetNotificationsCount(userID uuid.UUID) (int, error)
-	GetUnreadNotificationsCount(userID uuid.UUID) (int, error)
-	GetNotifications(filter QueryNotificationsInput, userID uuid.UUID) ([]*Notification, error)
+	GetNotifications(userID uuid.UUID, filter QueryNotificationsInput) ([]*Notification, error)
+	GetNotificationsCount(userID uuid.UUID, filter QueryNotificationsInput) (int, error)
+	MarkRead(userID uuid.UUID) error
 
 	TriggerSceneCreationNotifications(sceneID uuid.UUID) error
 	TriggerPerformerEditNotifications(editID uuid.UUID) error

@@ -53,3 +53,4 @@ export const ROUTE_SITES = "/sites";
 export const ROUTE_DRAFT = "/drafts/:id";
 export const ROUTE_DRAFTS = "/drafts";
 export const ROUTE_NOTIFICATIONS = "/notifications";
+export const ROUTE_NOTIFICATION_SUBSCRIPTIONS = "/users/:name/notifications";

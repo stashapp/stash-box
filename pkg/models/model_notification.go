@@ -7,21 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-type NotificationEnum string
-
-const (
-	NotificationEnumFavoritePerformerScene NotificationEnum = "FAVORITE_PERFORMER_SCENE"
-	NotificationEnumFavoritePerformerEdit  NotificationEnum = "FAVORITE_PERFORMER_EDIT"
-	NotificationEnumFavoriteStudioScene    NotificationEnum = "FAVORITE_STUDIO_SCENE"
-	NotificationEnumFavoriteStudioEdit     NotificationEnum = "FAVORITE_STUDIO_EDIT"
-	NotificationEnumCommentOwnEdit         NotificationEnum = "COMMENT_OWN_EDIT"
-	NotificationEnumDownvoteOwnEdit        NotificationEnum = "DOWNVOTE_OWN_EDIT"
-	NotificationEnumFailedOwnEdit          NotificationEnum = "FAILED_OWN_EDIT"
-	NotificationEnumCommentCommentedEdit   NotificationEnum = "COMMENT_COMMENTED_EDIT"
-	NotificationEnumCommentVotedEdit       NotificationEnum = "COMMENT_VOTED_EDIT"
-	NotificationEnumUpdatedEdit            NotificationEnum = "UPDATED_EDIT"
-)
-
 type Notification struct {
 	UserID    uuid.UUID        `db:"user_id" json:"user_id"`
 	Type      NotificationEnum `db:"type" json:"type"`

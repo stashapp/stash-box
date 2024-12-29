@@ -87,3 +87,8 @@ func (r *userResolver) InviteCodes(ctx context.Context, user *models.User) ([]*m
 	qb := r.getRepoFactory(ctx).Invite()
 	return qb.FindActiveKeysForUser(user.ID, config.GetActivationExpireTime())
 }
+
+func (r *userResolver) NotificationSubscriptions(ctx context.Context, user *models.User) ([]models.NotificationEnum, error) {
+	qb := r.getRepoFactory(ctx).Joins()
+	return qb.GetUserNotifications(user.ID)
+}

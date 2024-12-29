@@ -8,7 +8,7 @@ import (
 func OnApplyEdit(fac models.Repo, edit *models.Edit) {
 	nqb := fac.Notification()
 	eqb := fac.Edit()
-	if edit.Status == models.VoteStatusEnumAccepted.String() || edit.Status == models.VoteStatusEnumImmediateAccepted.String() {
+	if edit.Status == models.VoteStatusEnumAccepted.String() || edit.Status == models.VoteStatusEnumImmediateAccepted.String() && edit.Operation == models.OperationEnumCreate.String() {
 		if edit.TargetType == models.TargetTypeEnumScene.String() {
 			sceneID, err := eqb.FindSceneID(edit.ID)
 			if err != nil || sceneID == nil {
@@ -47,4 +47,17 @@ func OnEditDownvote(fac models.Repo, edit *models.Edit) {
 
 func OnEditComment(fac models.Repo, comment *models.EditComment) {
 	fac.Notification().TriggerEditCommentNotifications(comment.ID)
+}
+
+var defaultSubscriptions = []models.NotificationEnum{
+	models.NotificationEnumCommentOwnEdit,
+	models.NotificationEnumDownvoteOwnEdit,
+	models.NotificationEnumFailedOwnEdit,
+	models.NotificationEnumCommentCommentedEdit,
+	models.NotificationEnumCommentVotedEdit,
+	models.NotificationEnumUpdatedEdit,
+}
+
+func GetDefaultSubscriptions() []models.NotificationEnum {
+	return defaultSubscriptions
 }

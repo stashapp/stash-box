@@ -516,8 +516,10 @@ type QueryExistingSceneInput struct {
 }
 
 type QueryNotificationsInput struct {
-	Page    int `json:"page"`
-	PerPage int `json:"per_page"`
+	Page       int               `json:"page"`
+	PerPage    int               `json:"per_page"`
+	Type       *NotificationEnum `json:"type,omitempty"`
+	UnreadOnly *bool             `json:"unread_only,omitempty"`
 }
 
 type QuerySitesResultType struct {
@@ -1549,6 +1551,63 @@ func (e *HairColorEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e HairColorEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type NotificationEnum string
+
+const (
+	NotificationEnumFavoritePerformerScene NotificationEnum = "FAVORITE_PERFORMER_SCENE"
+	NotificationEnumFavoritePerformerEdit  NotificationEnum = "FAVORITE_PERFORMER_EDIT"
+	NotificationEnumFavoriteStudioScene    NotificationEnum = "FAVORITE_STUDIO_SCENE"
+	NotificationEnumFavoriteStudioEdit     NotificationEnum = "FAVORITE_STUDIO_EDIT"
+	NotificationEnumCommentOwnEdit         NotificationEnum = "COMMENT_OWN_EDIT"
+	NotificationEnumDownvoteOwnEdit        NotificationEnum = "DOWNVOTE_OWN_EDIT"
+	NotificationEnumFailedOwnEdit          NotificationEnum = "FAILED_OWN_EDIT"
+	NotificationEnumCommentCommentedEdit   NotificationEnum = "COMMENT_COMMENTED_EDIT"
+	NotificationEnumCommentVotedEdit       NotificationEnum = "COMMENT_VOTED_EDIT"
+	NotificationEnumUpdatedEdit            NotificationEnum = "UPDATED_EDIT"
+)
+
+var AllNotificationEnum = []NotificationEnum{
+	NotificationEnumFavoritePerformerScene,
+	NotificationEnumFavoritePerformerEdit,
+	NotificationEnumFavoriteStudioScene,
+	NotificationEnumFavoriteStudioEdit,
+	NotificationEnumCommentOwnEdit,
+	NotificationEnumDownvoteOwnEdit,
+	NotificationEnumFailedOwnEdit,
+	NotificationEnumCommentCommentedEdit,
+	NotificationEnumCommentVotedEdit,
+	NotificationEnumUpdatedEdit,
+}
+
+func (e NotificationEnum) IsValid() bool {
+	switch e {
+	case NotificationEnumFavoritePerformerScene, NotificationEnumFavoritePerformerEdit, NotificationEnumFavoriteStudioScene, NotificationEnumFavoriteStudioEdit, NotificationEnumCommentOwnEdit, NotificationEnumDownvoteOwnEdit, NotificationEnumFailedOwnEdit, NotificationEnumCommentCommentedEdit, NotificationEnumCommentVotedEdit, NotificationEnumUpdatedEdit:
+		return true
+	}
+	return false
+}
+
+func (e NotificationEnum) String() string {
+	return string(e)
+}
+
+func (e *NotificationEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NotificationEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NotificationEnum", str)
+	}
+	return nil
+}
+
+func (e NotificationEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

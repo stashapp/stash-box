@@ -80,6 +80,10 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 		return nil, err
 	}
 
+	if len(sceneIDs) == 0 {
+		return make([][]*models.Scene, len(sceneFingerprints)), nil
+	}
+
 	var ids []uuid.UUID
 	for _, id := range sceneIDs {
 		ids = append(ids, id...)

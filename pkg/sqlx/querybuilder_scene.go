@@ -253,7 +253,7 @@ func (qb *sceneQueryBuilder) FindByIds(ids []uuid.UUID) ([]*models.Scene, []erro
 	for i, id := range ids {
 		result[i] = m[id]
 	}
-	return result, nil
+	return result, utils.DuplicateError(nil, len(ids))
 }
 
 func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.FingerprintQueryInput) (map[string][]uuid.UUID, error) {

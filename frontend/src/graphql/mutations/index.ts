@@ -132,6 +132,10 @@ import {
   ConfirmChangeEmailDocument,
   RequestChangeEmailDocument,
   RequestChangeEmailMutationVariables,
+  UpdateNotificationSubscriptionsDocument,
+  UpdateNotificationSubscriptionsMutation,
+  UpdateNotificationSubscriptionsMutationVariables,
+  MarkNotificationsReadDocument,
 } from "../types";
 
 export const useActivateUser = (
@@ -430,3 +434,30 @@ export const useRequestChangeEmail = (
     RequestChangeEmailMutationVariables
   >,
 ) => useMutation(RequestChangeEmailDocument, options);
+
+export const useUpdateNotificationSubscriptions = (
+  options?: MutationHookOptions<
+    UpdateNotificationSubscriptionsMutation,
+    UpdateNotificationSubscriptionsMutationVariables
+  >,
+) =>
+  useMutation(UpdateNotificationSubscriptionsDocument, {
+    update(cache, { data }) {
+      if (data?.updateNotificationSubscriptions) {
+        cache.evict({
+          fieldName: "queryNotifications",
+        });
+      }
+    },
+    ...options,
+  });
+
+export const useMarkNotificationsRead = () =>
+  useMutation(MarkNotificationsReadDocument, {
+    update(cache, { data }) {
+      if (data?.markNotificationsRead) {
+        cache.evict({ fieldName: "queryNotifications" });
+        cache.evict({ fieldName: "getUnreadNotificationCount" });
+      }
+    },
+  });
