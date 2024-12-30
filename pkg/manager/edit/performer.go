@@ -25,6 +25,10 @@ func Performer(fac models.Repo, edit *models.Edit) *PerformerEditProcessor {
 }
 
 func (m *PerformerEditProcessor) Edit(input models.PerformerEditInput, inputArgs utils.ArgumentsQuery) error {
+	if err := validatePerformerEditInput(m.fac, input); err != nil {
+		return err
+	}
+
 	var err error
 	switch input.Edit.Operation {
 	case models.OperationEnumModify:
