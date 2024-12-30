@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/stashapp/stash-box/pkg/image"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -245,6 +246,13 @@ func submissionTypeToInt(t models.FingerprintSubmissionType) int {
 
 func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.FingerprintSubmission) (bool, error) {
 	qb := fac.Scene()
+
+	// Optionally filter out phashes below a certain duration.
+	// Phashes are inaccurate for short videos which can make them undesirable.
+	cutoff := config.GetPhashDurationCutoff()
+	if cutoff > 0 && input.Fingerprint.Algorithm == models.FingerprintAlgorithmPhash && cutoff >= input.Fingerprint.Duration {
+		return true, nil
+	}
 
 	// Find the scene
 	scene, err := qb.Find(input.SceneID)
