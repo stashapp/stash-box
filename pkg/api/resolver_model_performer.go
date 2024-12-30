@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -45,13 +46,17 @@ func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]
 	return dataloader.For(ctx).PerformerUrlsByID.Load(obj.ID)
 }
 
+// Deprecated: use `BirthDate`
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
-	ret := obj.ResolveBirthdate()
-	return &ret, nil
+	return resolveFuzzyDate(obj.Birthdate), nil
 }
 
 func (r *performerResolver) BirthDate(ctx context.Context, obj *models.Performer) (*string, error) {
-	return resolveFuzzyDate(&obj.Birthdate.String, &obj.BirthdateAccuracy.String), nil
+	return resolveNullString(obj.Birthdate), nil
+}
+
+func (r *performerResolver) DeathDate(ctx context.Context, obj *models.Performer) (*string, error) {
+	return resolveNullString(obj.Deathdate), nil
 }
 
 func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*int, error) {
@@ -64,11 +69,19 @@ func (r *performerResolver) Age(ctx context.Context, obj *models.Performer) (*in
 		return nil, nil
 	}
 
+	end := time.Now()
+	if obj.Deathdate.Valid {
+		deathdate, err := utils.ParseDateStringAsTime(obj.Deathdate.String)
+		if err == nil {
+			end = deathdate
+		}
+	}
+
 	birthYear := birthdate.Year()
-	now := time.Now()
-	thisYear := now.Year()
+	thisYear := end.Year()
 	age := thisYear - birthYear
-	if now.YearDay() < birthdate.YearDay() {
+
+	if end.YearDay() < birthdate.YearDay() {
 		age--
 	}
 
@@ -223,6 +236,16 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer, i
 
 func (r *performerResolver) MergedIds(ctx context.Context, obj *models.Performer) ([]uuid.UUID, error) {
 	return dataloader.For(ctx).PerformerMergeIDsByID.Load(obj.ID)
+}
+
+func (r *performerResolver) MergedIntoID(ctx context.Context, obj *models.Performer) (*uuid.UUID, error) {
+	res, err := dataloader.For(ctx).PerformerMergeIDsBySourceID.Load(obj.ID)
+	if len(res) == 1 {
+		return &res[0], err
+	} else if err != nil && len(res) > 1 {
+		return nil, fmt.Errorf("invalid number of results returned, expecting exactly 1, found %d", len(res))
+	}
+	return nil, err
 }
 
 func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer) ([]*models.PerformerStudio, error) {

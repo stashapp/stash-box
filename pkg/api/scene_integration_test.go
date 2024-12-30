@@ -25,6 +25,7 @@ func (s *sceneTestRunner) testCreateScene() {
 	title := "Title"
 	details := "Details"
 	date := "2003-02-01"
+	production_date := "2003-03-09"
 
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
@@ -38,9 +39,10 @@ func (s *sceneTestRunner) testCreateScene() {
 	performerAlias := "alias"
 
 	input := models.SceneCreateInput{
-		Title:   &title,
-		Details: &details,
-		Date:    date,
+		Title:          &title,
+		Details:        &details,
+		Date:           date,
+		ProductionDate: &production_date,
 		Fingerprints: []*models.FingerprintEditInput{
 			s.generateSceneFingerprint(nil),
 		},
@@ -78,6 +80,7 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 	s.compareSiteURLs(input.Urls, scene.Urls)
 
 	assert.Assert(s.t, bothNil(scene.Date, input.Date) || (!oneNil(scene.Date, input.Date) && input.Date == *scene.Date))
+	assert.Assert(s.t, bothNil(scene.ProductionDate, input.ProductionDate) || (!oneNil(scene.ProductionDate, input.ProductionDate) && *input.ProductionDate == *scene.ProductionDate))
 	assert.Assert(s.t, compareFingerprints(input.Fingerprints, scene.Fingerprints))
 	assert.Assert(s.t, comparePerformers(input.Performers, scene.Performers))
 	assert.Assert(s.t, compareTags(input.TagIds, scene.Tags))
@@ -153,6 +156,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	title := "Title"
 	details := "Details"
 	date := "2003-02-01"
+	production_date := "2003-01-30"
 
 	performer, _ := s.createTestPerformer(nil)
 	studio, _ := s.createTestStudio(nil)
@@ -166,9 +170,10 @@ func (s *sceneTestRunner) testUpdateScene() {
 	performerAlias := "alias"
 
 	input := models.SceneCreateInput{
-		Title:   &title,
-		Details: &details,
-		Date:    date,
+		Title:          &title,
+		Details:        &details,
+		Date:           date,
+		ProductionDate: &production_date,
 		Fingerprints: []*models.FingerprintEditInput{
 			// fingerprint that will be kept
 			s.generateSceneFingerprint([]uuid.UUID{
@@ -202,6 +207,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 	newTitle := "NewTitle"
 	newDetails := "NewDetails"
 	newDate := "2001-02-03"
+	newProductionDate := "2001-02-01"
 
 	performer, _ = s.createTestPerformer(nil)
 	studio, _ = s.createTestStudio(nil)
@@ -216,10 +222,11 @@ func (s *sceneTestRunner) testUpdateScene() {
 
 	sceneID := createdScene.UUID()
 	updateInput := models.SceneUpdateInput{
-		ID:      sceneID,
-		Title:   &newTitle,
-		Details: &newDetails,
-		Date:    &newDate,
+		ID:             sceneID,
+		Title:          &newTitle,
+		Details:        &newDetails,
+		Date:           &newDate,
+		ProductionDate: &newProductionDate,
 		Fingerprints: []*models.FingerprintEditInput{
 			input.Fingerprints[0],
 			s.generateSceneFingerprint(nil),
@@ -269,6 +276,7 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 	assert.DeepEqual(s.t, scene.Details, input.Details)
 
 	assert.Assert(s.t, bothNil(scene.Date, input.Date) || (!oneNil(scene.Date, input.Date) && *scene.Date == *input.Date))
+	assert.Assert(s.t, bothNil(scene.ProductionDate, input.ProductionDate) || (!oneNil(scene.ProductionDate, input.ProductionDate) && *scene.ProductionDate == *input.ProductionDate))
 
 	s.compareSiteURLs(input.Urls, scene.Urls)
 

@@ -4,7 +4,6 @@ import { Route, Routes, useParams } from "react-router-dom";
 import { useUser } from "src/graphql";
 import Title from "src/components/title";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
-import { isPrivateUser } from "src/utils";
 
 import Users from "./Users";
 import User from "./User";
@@ -12,6 +11,10 @@ import UserAdd from "./UserAdd";
 import UserEdit from "./UserEdit";
 import UserPassword from "./UserPassword";
 import UserEdits from "./UserEdits";
+import UserConfirmChangeEmail from "./UserConfirmChangeEmail";
+import UserValidateChangeEmail from "./UserValidateChangeEmail";
+import UserFingerprints from "./UserFingerprints";
+import { UserNotificationPreferences } from "./UserNotificationPreferences";
 
 const UserLoader: FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -49,8 +52,29 @@ const UserLoader: FC = () => {
         element={
           <>
             <Title page={`Edits by ${user.name}`} />
-            <UserEdits user={user} isPrivateUser={isPrivateUser(user)} />
+            <UserEdits user={user} />
           </>
+        }
+      />
+      <Route
+        path="/confirm-email"
+        element={<UserConfirmChangeEmail user={user} />}
+      />
+      <Route
+        path="/change-email"
+        element={<UserValidateChangeEmail user={user} />}
+      />
+      <Route
+        path="/notifications"
+        element={
+          "notification_subscriptions" in user ? (
+            <>
+              <Title page={"Notification Preferences"} />
+              <UserNotificationPreferences user={user} />
+            </>
+          ) : (
+            <ErrorMessage error="Forbidden" />
+          )
         }
       />
     </Routes>
@@ -83,6 +107,15 @@ const UserRoutes: FC = () => (
         <>
           <Title page="Change Password" />
           <UserPassword />
+        </>
+      }
+    />
+    <Route
+      path="/fingerprints"
+      element={
+        <>
+          <Title page={"My Fingerprints"} />
+          <UserFingerprints />
         </>
       }
     />

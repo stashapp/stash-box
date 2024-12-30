@@ -11,6 +11,7 @@ export type InitialPerformer = {
   disambiguation?: string | null;
   gender?: GenderEnum | null;
   birthdate?: string | null;
+  deathdate?: string | null;
   height?: number | null;
   hair_color?: HairColorEnum | null;
   eye_color?: EyeColorEnum | null;

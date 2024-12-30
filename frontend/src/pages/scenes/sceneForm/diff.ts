@@ -33,7 +33,7 @@ type Tag = {
 
 const selectSceneDetails = (
   data: SceneFormData,
-  original: SceneFragment | null | undefined
+  original: SceneFragment | null | undefined,
 ): [Required<OldSceneDetails>, Required<Omit<SceneDetails, OmittedKeys>>] => {
   const [addedPerformers, removedPerformers] = diffArray<Performer>(
     (data.performers ?? []).flatMap((p) =>
@@ -50,10 +50,10 @@ const selectSceneDetails = (
               as: p.alias ?? null,
             },
           ]
-        : []
+        : [],
     ),
     original?.performers ?? [],
-    (s) => `${s.performer.id}${s.as}`
+    (s) => `${s.performer.id}${s.as}`,
   );
 
   const [addedTags, removedTags] = diffArray<Tag>(
@@ -66,15 +66,15 @@ const selectSceneDetails = (
               description: t.description ?? null,
             },
           ]
-        : []
+        : [],
     ),
     original?.tags ?? [],
-    (t) => t.id
+    (t) => t.id,
   );
 
   const [addedImages, removedImages] = diffImages(
     data.images,
-    original?.images ?? []
+    original?.images ?? [],
   );
   const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);
 
@@ -83,6 +83,10 @@ const selectSceneDetails = (
       title: diffValue(original?.title, data.title),
       details: diffValue(original?.details, data.details),
       date: diffValue(original?.release_date, data.date),
+      production_date: diffValue(
+        original?.production_date,
+        data.production_date,
+      ),
       duration: diffValue(original?.duration, parseDuration(data.duration)),
       director: diffValue(original?.director, data.director),
       code: diffValue(original?.code, data.code),
@@ -100,6 +104,10 @@ const selectSceneDetails = (
       title: diffValue(data.title, original?.title),
       details: diffValue(data.details, original?.details),
       date: diffValue(data.date, original?.release_date),
+      production_date: diffValue(
+        data.production_date,
+        original?.production_date,
+      ),
       duration: diffValue(parseDuration(data.duration), original?.duration),
       director: diffValue(data.director, original?.director),
       code: diffValue(data.code, original?.code),

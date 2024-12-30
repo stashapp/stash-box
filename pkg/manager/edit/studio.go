@@ -25,6 +25,10 @@ func Studio(fac models.Repo, edit *models.Edit) *StudioEditProcessor {
 }
 
 func (m *StudioEditProcessor) Edit(input models.StudioEditInput, inputArgs utils.ArgumentsQuery) error {
+	if err := validateStudioEditInput(m.fac, input); err != nil {
+		return err
+	}
+
 	var err error
 	switch input.Edit.Operation {
 	case models.OperationEnumModify:
@@ -51,8 +55,9 @@ func (m *StudioEditProcessor) modifyEdit(input models.StudioEditInput, inputArgs
 		return err
 	}
 
-	if studio == nil {
-		return fmt.Errorf("%w: studio %s", ErrEntityNotFound, studioID.String())
+	var entity editEntity = studio
+	if err := validateEditEntity(&entity, studioID, "studio"); err != nil {
+		return err
 	}
 
 	// perform a diff against the input and the current object
@@ -80,6 +85,17 @@ func (m *StudioEditProcessor) diffURLs(studioEdit *models.StudioEditData, studio
 		return err
 	}
 	studioEdit.New.AddedUrls, studioEdit.New.RemovedUrls = urlCompare(newURLs, urls)
+	return nil
+}
+
+func (m *StudioEditProcessor) diffAliases(studioEdit *models.StudioEditData, studioID uuid.UUID, newAliases []string) error {
+	pqb := m.fac.Studio()
+
+	aliases, err := pqb.GetAliases(studioID)
+	if err != nil {
+		return err
+	}
+	studioEdit.New.AddedAliases, studioEdit.New.RemovedAliases = utils.SliceCompare(newAliases, aliases.ToAliases())
 	return nil
 }
 
@@ -155,6 +171,7 @@ func (m *StudioEditProcessor) createEdit(input models.StudioEditInput) error {
 
 	studioEdit.New.AddedUrls = models.ParseURLInput(input.Details.Urls)
 	studioEdit.New.AddedImages = input.Details.ImageIds
+	studioEdit.New.AddedAliases = input.Details.Aliases
 
 	return m.edit.SetData(studioEdit)
 }
@@ -163,12 +180,14 @@ func (m *StudioEditProcessor) destroyEdit(input models.StudioEditInput) error {
 	tqb := m.fac.Studio()
 
 	// Get the existing studio
+	studioID := *input.Edit.ID
 	studio, err := tqb.Find(*input.Edit.ID)
-	if studio == nil {
-		return fmt.Errorf("scene with id %v not found", *input.Edit.ID)
+	if err != nil {
+		return err
 	}
 
-	return err
+	var entity editEntity = studio
+	return validateEditEntity(&entity, studioID, "studio")
 }
 
 func (m *StudioEditProcessor) CreateJoin(input models.StudioEditInput) error {
@@ -235,6 +254,12 @@ func (m *StudioEditProcessor) diffRelationships(studioEdit *models.StudioEditDat
 
 	if input.Details.ImageIds != nil || inputArgs.Field("image_ids").IsNull() {
 		if err := m.diffImages(studioEdit, studioID, input.Details.ImageIds); err != nil {
+			return err
+		}
+	}
+
+	if input.Details.Aliases != nil || inputArgs.Field("aliases").IsNull() {
+		if err := m.diffAliases(studioEdit, studioID, input.Details.Aliases); err != nil {
 			return err
 		}
 	}

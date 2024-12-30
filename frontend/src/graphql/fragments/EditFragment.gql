@@ -17,6 +17,8 @@ fragment EditFragment on Edit {
   updated
   closed
   expires
+  update_count
+  updatable
   vote_count
   destructive
   comments {
@@ -72,6 +74,7 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       birthdate
+      deathdate
       ethnicity
       country
       eye_color
@@ -110,6 +113,8 @@ fragment EditFragment on Edit {
     }
     ... on StudioEdit {
       name
+      added_aliases
+      removed_aliases
       added_urls {
         ...URLFragment
       }
@@ -136,6 +141,7 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       date
+      production_date
       studio {
         ...StudioFragment
       }
@@ -189,6 +195,7 @@ fragment EditFragment on Edit {
       disambiguation
       gender
       birthdate
+      deathdate
       ethnicity
       country
       eye_color
@@ -218,6 +225,7 @@ fragment EditFragment on Edit {
         ...URLFragment
       }
       date
+      production_date
       studio {
         ...StudioFragment
       }

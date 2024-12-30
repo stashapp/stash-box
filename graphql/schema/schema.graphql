@@ -17,8 +17,10 @@ type Query {
   #### Tags ####
 
   # tag names will be unique
-  """Find a tag by ID or name, or aliases"""
+  """Find a tag by ID or name"""
   findTag(id: ID, name: String): Tag @hasRole(role: READ)
+  """Find a tag with a matching name or alias"""
+  findTagOrAlias(name: String!): Tag @hasRole(role: READ)
   queryTags(input: TagQueryInput!): QueryTagsResultType! @hasRole(role: READ)
 
   """Find a tag category by ID"""
@@ -61,6 +63,7 @@ type Query {
   searchPerformer(term: String!, limit: Int): [Performer!]! @hasRole(role: READ)
   searchScene(term: String!, limit: Int): [Scene!]! @hasRole(role: READ)
   searchTag(term: String!, limit: Int): [Tag!]! @hasRole(role: READ)
+  searchStudio(term: String!, limit: Int): [Studio!]! @hasRole(role: READ)
 
   ### Drafts ###
   findDraft(id: ID!): Draft @hasRole(role: READ)
@@ -69,11 +72,17 @@ type Query {
   ###Find scenes or pending scenes which match scene input###
   queryExistingScene(input: QueryExistingSceneInput!): QueryExistingSceneResult! @hasRole(role: READ)
 
+  ###Find performers or pending performers which match performer input###
+  queryExistingPerformer(input: QueryExistingPerformerInput!): QueryExistingPerformerResult! @hasRole(role: READ)
+
   #### Version ####
   version: Version! @hasRole(role: READ)
 
   ### Instance Config ###
   getConfig: StashBoxConfig!
+
+  queryNotifications(input: QueryNotificationsInput!): QueryNotificationsResult! @hasRole(role: READ)
+  getUnreadNotificationCount: Int! @hasRole(role: READ)
 }
 
 type Mutation {
@@ -102,7 +111,7 @@ type Mutation {
   imageDestroy(input: ImageDestroyInput!): Boolean! @hasRole(role: MODIFY)
 
   """User interface for registering"""
-  newUser(input: NewUserInput!): String
+  newUser(input: NewUserInput!): ID
   activateNewUser(input: ActivateNewUserInput!): User
 
   generateInviteCode: ID @deprecated(reason: "Use generateInviteCodes")
@@ -131,6 +140,11 @@ type Mutation {
 
   """Changes the password for the current user"""
   changePassword(input: UserChangePasswordInput!): Boolean!
+
+  """Request an email change for the current user"""
+  requestChangeEmail: UserChangeEmailStatus! @hasRole(role: READ)
+  validateChangeEmail(token: ID!, email: String!): UserChangeEmailStatus! @hasRole(role: READ)
+  confirmChangeEmail(token: ID!): UserChangeEmailStatus! @hasRole(role: READ)
 
   # Edit interfaces
   """Propose a new scene or modification to a scene"""
@@ -172,6 +186,11 @@ type Mutation {
   favoritePerformer(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
   """Favorite or unfavorite a studio"""
   favoriteStudio(id: ID!, favorite: Boolean!): Boolean! @hasRole(role: READ)
+
+  """Mark all of the current users notifications as read."""
+  markNotificationsRead: Boolean! @hasRole(role: READ)
+  """Update notification subscriptions for current user."""
+  updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: EDIT)
 }
 
 schema {

@@ -1,20 +1,19 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Button, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { studioHref, createHref, canEdit } from "src/utils";
+import { studioHref, createHref } from "src/utils";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
 import { debounce } from "lodash-es";
-import AuthContext from "src/AuthContext";
 
 import { useStudios, SortDirectionEnum, StudioSortEnum } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
+import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
 import { List } from "src/components/list";
 import { FavoriteStar } from "src/components/fragments";
 
 const PER_PAGE = 40;
 
 const StudiosComponent: FC = () => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
     favorite: { name: "favorite", type: "string", default: "false" },
@@ -73,7 +72,7 @@ const StudiosComponent: FC = () => {
     <>
       <div className="d-flex">
         <h3 className="me-4">Studios</h3>
-        {canEdit(auth.user) && (
+        {isEditor && (
           <Link to={createHref(ROUTE_STUDIO_ADD)} className="ms-auto">
             <Button className="me-auto">Create</Button>
           </Link>

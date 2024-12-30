@@ -1,47 +1,28 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
-import {
-  faCheckCircle,
-  faTimesCircle,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+import { Button, Card, Tabs, Tab } from "react-bootstrap";
 
 import {
   usePendingEditsCount,
   TargetTypeEnum,
-  useUnmatchFingerprint,
   SceneFragment as Scene,
 } from "src/graphql";
-import AuthContext from "src/AuthContext";
-import { useToast } from "src/hooks";
+import { useCurrentUser } from "src/hooks";
 import {
-  canEdit,
   tagHref,
   performerHref,
   studioHref,
   createHref,
   formatDuration,
-  formatDateTime,
   formatPendingEdits,
   getUrlBySite,
   compareByName,
 } from "src/utils";
-import {
-  ROUTE_SCENE_EDIT,
-  ROUTE_SCENES,
-  ROUTE_SCENE_DELETE,
-} from "src/constants/route";
-import {
-  GenderIcon,
-  TagLink,
-  PerformerName,
-  Icon,
-} from "src/components/fragments";
+import { ROUTE_SCENE_EDIT, ROUTE_SCENE_DELETE } from "src/constants/route";
+import { GenderIcon, TagLink, PerformerName } from "src/components/fragments";
 import { EditList, URLList } from "src/components/list";
 import Image from "src/components/image";
-
-type Fingerprint = NonNullable<Scene["fingerprints"][number]>;
+import { FingerprintTable } from "./components/fingerprints";
 
 const DEFAULT_TAB = "description";
 
@@ -53,10 +34,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
-  const auth = useContext(AuthContext);
-  const addToast = useToast();
-
-  const [unmatchFingerprint, { loading: unmatching }] = useUnmatchFingerprint();
+  const { isEditor } = useCurrentUser();
 
   const { data: editData } = usePendingEditsCount({
     type: TargetTypeEnum.SCENE,
@@ -83,70 +61,6 @@ const SceneComponent: FC<Props> = ({ scene }) => {
     })
     .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
 
-  async function handleFingerprintUnmatch(fingerprint: Fingerprint) {
-    if (unmatching) return;
-
-    const { data } = await unmatchFingerprint({
-      variables: {
-        scene_id: scene.id,
-        algorithm: fingerprint.algorithm,
-        hash: fingerprint.hash,
-        duration: fingerprint.duration,
-      },
-    });
-    const success = data?.unmatchFingerprint;
-    addToast({
-      variant: success ? "success" : "danger",
-      content: `${
-        success ? "Removed" : "Failed to remove"
-      } fingerprint submission`,
-    });
-  }
-
-  function maybeRenderSubmitted(fingerprint: Fingerprint) {
-    if (fingerprint.user_submitted) {
-      return (
-        <span
-          className="user-submitted"
-          title="Submitted by you - click to remove submission"
-          onClick={() => handleFingerprintUnmatch(fingerprint)}
-        >
-          {!unmatching ? (
-            <>
-              <Icon icon={faCheckCircle} />
-              <Icon icon={faTimesCircle} />
-            </>
-          ) : (
-            <Icon icon={faSpinner} className="fa-spin" />
-          )}
-        </span>
-      );
-    }
-  }
-
-  const fingerprints = scene.fingerprints.map((fingerprint) => (
-    <tr key={fingerprint.hash}>
-      <td>{fingerprint.algorithm}</td>
-      <td className="font-monospace">
-        <Link
-          to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
-        >
-          {fingerprint.hash}
-        </Link>
-      </td>
-      <td>
-        <span title={`${fingerprint.duration}s`}>
-          {formatDuration(fingerprint.duration)}
-        </span>
-      </td>
-      <td>
-        {fingerprint.submissions}
-        {maybeRenderSubmitted(fingerprint)}
-      </td>
-      <td>{formatDateTime(fingerprint.created)}</td>
-      <td>{formatDateTime(fingerprint.updated)}</td>
-    </tr>
-  ));
   const tags = [...scene.tags].sort(compareByName).map((tag) => (
     <li key={tag.name}>
       <TagLink
@@ -164,7 +78,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
       <Card className="scene-info">
         <Card.Header>
           <div className="float-end">
-            {canEdit(auth.user) && !scene.deleted && (
+            {isEditor && !scene.deleted && (
               <>
                 <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
                   <Button>Edit</Button>
@@ -196,7 +110,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           </h6>
         </Card.Header>
         <Card.Body className="ScenePhoto">
-          <Image images={scene.images} emptyMessage="Scene has no image" />
+          <Image
+            images={scene.images}
+            emptyMessage="Scene has no image"
+            size={1280}
+          />
         </Card.Body>
         <Card.Footer className="d-flex mx-1">
           <div className="scene-performers me-auto">{performers}</div>
@@ -213,6 +131,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           {scene.director && (
             <div className="ms-3">
               Director: <strong>{scene.director}</strong>
+            </div>
+          )}
+          {scene.production_date && (
+            <div className="ms-3">
+              Produced: <strong>{scene.production_date}</strong>
             </div>
           )}
         </Card.Footer>
@@ -256,38 +179,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           )}
         </Tab>
         <Tab eventKey="fingerprints" title="Fingerprints" mountOnEnter={false}>
-          <div className="scene-fingerprints my-4">
-            <h4>Fingerprints:</h4>
-            {fingerprints.length === 0 ? (
-              <h6>No fingerprints found for this scene.</h6>
-            ) : (
-              <Table striped variant="dark">
-                <thead>
-                  <tr>
-                    <td>
-                      <b>Algorithm</b>
-                    </td>
-                    <td>
-                      <b>Hash</b>
-                    </td>
-                    <td>
-                      <b>Duration</b>
-                    </td>
-                    <td>
-                      <b>Submissions</b>
-                    </td>
-                    <td>
-                      <b>First Added</b>
-                    </td>
-                    <td>
-                      <b>Last Added</b>
-                    </td>
-                  </tr>
-                </thead>
-                <tbody>{fingerprints}</tbody>
-              </Table>
-            )}
-          </div>
+          <FingerprintTable scene={scene} />
         </Tab>
         <Tab eventKey="links" title="Links">
           <URLList urls={scene.urls} />

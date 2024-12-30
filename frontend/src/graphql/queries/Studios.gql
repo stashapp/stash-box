@@ -6,6 +6,7 @@ query Studios($input: StudioQueryInput!) {
     studios {
       id
       name
+      aliases
       deleted
       parent {
         id

@@ -27,18 +27,19 @@ func (DraftEntity) IsSceneDraftPerformer() {}
 func (DraftEntity) IsSceneDraftStudio()    {}
 
 type SceneDraft struct {
-	ID           *uuid.UUID         `json:"id,omitempty"`
-	Title        *string            `json:"title,omitempty"`
-	Code         *string            `json:"code,omitempty"`
-	Details      *string            `json:"details,omitempty"`
-	Director     *string            `json:"director,omitempty"`
-	URL          *string            `json:"url,omitempty"`
-	Date         *string            `json:"date,omitempty"`
-	Studio       *DraftEntity       `json:"studio,omitempty"`
-	Performers   []DraftEntity      `json:"performers,omitempty"`
-	Tags         []DraftEntity      `json:"tags,omitempty"`
-	Image        *uuid.UUID         `json:"image,omitempty"`
-	Fingerprints []DraftFingerprint `json:"fingerprints"`
+	ID             *uuid.UUID         `json:"id,omitempty"`
+	Title          *string            `json:"title,omitempty"`
+	Code           *string            `json:"code,omitempty"`
+	Details        *string            `json:"details,omitempty"`
+	Director       *string            `json:"director,omitempty"`
+	URLs           []string           `json:"urls,omitempty"`
+	Date           *string            `json:"date,omitempty"`
+	ProductionDate *string            `json:"production_date,omitempty"`
+	Studio         *DraftEntity       `json:"studio,omitempty"`
+	Performers     []DraftEntity      `json:"performers,omitempty"`
+	Tags           []DraftEntity      `json:"tags,omitempty"`
+	Image          *uuid.UUID         `json:"image,omitempty"`
+	Fingerprints   []DraftFingerprint `json:"fingerprints"`
 }
 
 func (SceneDraft) IsDraftData() {}
@@ -50,6 +51,7 @@ type PerformerDraft struct {
 	Aliases         *string    `json:"aliases,omitempty"`
 	Gender          *string    `json:"gender,omitempty"`
 	Birthdate       *string    `json:"birthdate,omitempty"`
+	Deathdate       *string    `json:"deathdate,omitempty"`
 	Urls            []string   `json:"urls,omitempty"`
 	Ethnicity       *string    `json:"ethnicity,omitempty"`
 	Country         *string    `json:"country,omitempty"`

@@ -1,28 +1,27 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { GraphQLError } from "graphql";
+import { GraphQLFormattedError } from "graphql";
 import { useEditComment } from "src/graphql";
 import cx from "classnames";
 
-import AuthContext from "src/AuthContext";
-import { canEdit } from "src/utils";
 import { NoteInput } from "src/components/form";
+import { useCurrentUser } from "src/hooks";
 
 interface IProps {
   editID: string;
 }
 
 const AddComment: FC<IProps> = ({ editID }) => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
   const [showInput, setShowInput] = useState(false);
-  const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
+  const [errors, setErrors] = useState<readonly GraphQLFormattedError[]>([]);
   const [comment, setComment] = useState("");
   const [saveComment, { loading: saving }] = useEditComment();
 
   if (!showInput)
     return (
       <div className="d-flex">
-        {!showInput && canEdit(auth.user) && (
+        {!showInput && isEditor && (
           <Button
             className="ms-auto minimal"
             variant="link"

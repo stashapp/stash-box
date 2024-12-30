@@ -211,7 +211,7 @@ func Start(rfp RepoProvider, ui embed.FS) {
 
 		go func() {
 			printVersion()
-			logger.Infof("stash-box is running on HTTPS at https://" + address + "/")
+			logger.Infof("stash-box is running on HTTPS at https://%s/", address)
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 		}()
 	} else {
@@ -222,7 +222,7 @@ func Start(rfp RepoProvider, ui embed.FS) {
 
 		go func() {
 			printVersion()
-			logger.Infof("stash-box is running on HTTP at http://" + address + "/")
+			logger.Infof("stash-box is running on HTTP at http://%s/", address)
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}
@@ -258,6 +258,7 @@ func makeTLSConfig() *tls.Config {
 	}
 	tlsConfig := &tls.Config{
 		Certificates: certs,
+		MinVersion:   tls.VersionTLS13,
 	}
 
 	return tlsConfig

@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash-box/pkg/api"
 	"github.com/stashapp/stash-box/pkg/database"
+	"github.com/stashapp/stash-box/pkg/image"
 	"github.com/stashapp/stash-box/pkg/logger"
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/manager/config"
@@ -15,8 +16,6 @@ import (
 	"github.com/stashapp/stash-box/pkg/user"
 )
 
-// nolint
-//
 //go:embed frontend/build
 var ui embed.FS
 
@@ -35,6 +34,9 @@ func main() {
 	user.CreateSystemUsers(txnMgr.Repo(context.Background()))
 	api.Start(txnMgr, ui)
 	cron.Init(txnMgr)
+
+	image.InitResizer()
+
 	blockForever()
 }
 

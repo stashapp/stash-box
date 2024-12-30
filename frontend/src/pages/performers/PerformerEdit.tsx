@@ -31,7 +31,7 @@ const PerformerModify: FC<Props> = ({ performer }) => {
   const doUpdate = (
     updateData: PerformerEditDetailsInput,
     editNote: string,
-    setModifyAliases: boolean
+    setModifyAliases: boolean,
   ) => {
     submitPerformerEdit({
       variables: {

@@ -40,8 +40,8 @@ func (f *repo) Joins() models.JoinsRepo {
 	return newJoinsQueryBuilder(f.txnState)
 }
 
-func (f *repo) PendingActivation() models.PendingActivationRepo {
-	return newPendingActivationQueryBuilder(f.txnState)
+func (f *repo) UserToken() models.UserTokenRepo {
+	return newUserTokenQueryBuilder(f.txnState)
 }
 
 func (f *repo) Invite() models.InviteKeyRepo {
@@ -58,4 +58,8 @@ func (f *repo) Site() models.SiteRepo {
 
 func (f *repo) Draft() models.DraftRepo {
 	return newDraftQueryBuilder(f.txnState)
+}
+
+func (f *repo) Notification() models.NotificationRepo {
+	return newNotificationQueryBuilder(f.txnState)
 }

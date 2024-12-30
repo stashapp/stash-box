@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import Select from "react-select";
@@ -14,19 +14,18 @@ import {
   GenderFilterEnum,
   PerformerSortEnum,
 } from "src/graphql";
-import { usePagination, useQueryParams } from "src/hooks";
+import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
-import { canEdit, ensureEnum, resolveEnum } from "src/utils";
-import AuthContext from "src/AuthContext";
+import { ensureEnum, resolveEnum } from "src/utils";
 import { List } from "src/components/list";
 import { ROUTE_PERFORMER_ADD, GenderFilterTypes } from "src/constants";
 
 const PER_PAGE = 25;
 
-const genderOptions = Object.keys(GenderFilterEnum).map((g) => ({
-  value: g,
-  label: GenderFilterTypes[g as GenderFilterEnum],
+const genderOptions = Object.entries(GenderFilterEnum).map(([, value]) => ({
+  value,
+  label: GenderFilterTypes[value],
 }));
 const sortOptions = [
   { value: PerformerSortEnum.NAME, label: "Name" },
@@ -36,10 +35,11 @@ const sortOptions = [
   { value: PerformerSortEnum.DEBUT, label: "Scene Debut" },
   { value: PerformerSortEnum.LAST_SCENE, label: "Latest Scene" },
   { value: PerformerSortEnum.CREATED_AT, label: "Created At" },
+  { value: PerformerSortEnum.UPDATED_AT, label: "Updated At" },
 ];
 
 const PerformersComponent: FC = () => {
-  const auth = useContext(AuthContext);
+  const { isEditor } = useCurrentUser();
   const [params, setParams] = useQueryParams({
     query: { name: "query", type: "string", default: "" },
     gender: { name: "gender", type: "string" },
@@ -72,7 +72,7 @@ const PerformersComponent: FC = () => {
       <Col xs="auto" key={performer.id}>
         <PerformerCard performer={performer} />
       </Col>
-    )
+    ),
   );
 
   const debouncedHandler = debounce(setParams, 200);
@@ -116,7 +116,7 @@ const PerformersComponent: FC = () => {
               "direction",
               direction === SortDirectionEnum.ASC
                 ? SortDirectionEnum.DESC
-                : undefined
+                : undefined,
             )
           }
         >
@@ -147,7 +147,7 @@ const PerformersComponent: FC = () => {
     <>
       <div className="d-flex">
         <h3 className="me-4">Performers</h3>
-        {canEdit(auth.user) && (
+        {isEditor && (
           <Link to={ROUTE_PERFORMER_ADD} className="ms-auto">
             <Button>Create</Button>
           </Link>

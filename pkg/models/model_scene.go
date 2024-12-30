@@ -8,22 +8,26 @@ import (
 )
 
 type Scene struct {
-	ID           uuid.UUID      `db:"id" json:"id"`
-	Title        sql.NullString `db:"title" json:"title"`
-	Details      sql.NullString `db:"details" json:"details"`
-	Date         SQLDate        `db:"date" json:"date"`
-	DateAccuracy sql.NullString `db:"date_accuracy" json:"date_accuracy"`
-	StudioID     uuid.NullUUID  `db:"studio_id,omitempty" json:"studio_id"`
-	CreatedAt    time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt    time.Time      `db:"updated_at" json:"updated_at"`
-	Duration     sql.NullInt64  `db:"duration" json:"duration"`
-	Director     sql.NullString `db:"director" json:"director"`
-	Code         sql.NullString `db:"code" json:"code"`
-	Deleted      bool           `db:"deleted" json:"deleted"`
+	ID             uuid.UUID      `db:"id" json:"id"`
+	Title          sql.NullString `db:"title" json:"title"`
+	Details        sql.NullString `db:"details" json:"details"`
+	Date           sql.NullString `db:"date" json:"date"`
+	ProductionDate sql.NullString `db:"production_date" json:"production_date"`
+	StudioID       uuid.NullUUID  `db:"studio_id,omitempty" json:"studio_id"`
+	CreatedAt      time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time      `db:"updated_at" json:"updated_at"`
+	Duration       sql.NullInt64  `db:"duration" json:"duration"`
+	Director       sql.NullString `db:"director" json:"director"`
+	Code           sql.NullString `db:"code" json:"code"`
+	Deleted        bool           `db:"deleted" json:"deleted"`
 }
 
 func (p Scene) GetID() uuid.UUID {
 	return p.ID
+}
+
+func (p Scene) IsDeleted() bool {
+	return p.Deleted
 }
 
 type Scenes []*Scene
@@ -105,6 +109,7 @@ type SceneFingerprint struct {
 	Algorithm string    `db:"algorithm" json:"algorithm"`
 	Duration  int       `db:"duration" json:"duration"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	Vote      int       `db:"vote" json:"vote"`
 }
 
 type SceneFingerprints []*SceneFingerprint
@@ -123,32 +128,6 @@ func (f SceneFingerprints) EachPtr(fn func(interface{})) {
 
 func (f *SceneFingerprints) Add(o interface{}) {
 	*f = append(*f, o.(*SceneFingerprint))
-}
-
-type DBSceneFingerprint struct {
-	SceneID       uuid.UUID `db:"scene_id" json:"scene_id"`
-	UserID        uuid.UUID `db:"user_id" json:"user_id"`
-	FingerprintID int       `db:"fingerprint_id" json:"fingerprint_id"`
-	Duration      int       `db:"duration" json:"duration"`
-	CreatedAt     time.Time `db:"created_at" json:"created_at"`
-}
-
-type DBSceneFingerprints []*DBSceneFingerprint
-
-func (f DBSceneFingerprints) Each(fn func(interface{})) {
-	for _, v := range f {
-		fn(*v)
-	}
-}
-
-func (f DBSceneFingerprints) EachPtr(fn func(interface{})) {
-	for _, v := range f {
-		fn(v)
-	}
-}
-
-func (f *DBSceneFingerprints) Add(o interface{}) {
-	*f = append(*f, o.(*DBSceneFingerprint))
 }
 
 func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditInput) SceneFingerprints {
@@ -172,7 +151,7 @@ func CreateSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintEditI
 	return ret
 }
 
-func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput) SceneFingerprints {
+func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*FingerprintInput, vote int) SceneFingerprints {
 	var ret SceneFingerprints
 
 	for _, fingerprint := range fingerprints {
@@ -184,6 +163,7 @@ func CreateSubmittedSceneFingerprints(sceneID uuid.UUID, fingerprints []*Fingerp
 					Hash:      fingerprint.Hash,
 					Algorithm: fingerprint.Algorithm.String(),
 					Duration:  fingerprint.Duration,
+					Vote:      vote,
 				})
 			}
 		}
@@ -239,45 +219,14 @@ func CreateScenePerformers(sceneID uuid.UUID, appearances []*PerformerAppearance
 func (p *Scene) IsEditTarget() {
 }
 
-func (p Scene) ResolveDate() *FuzzyDate {
-	if !p.Date.Valid {
-		return nil
-	}
-
-	ret := FuzzyDate{Date: p.Date.String}
-
-	if p.DateAccuracy.Valid {
-		ret.Accuracy = DateAccuracyEnum(p.DateAccuracy.String)
-		if !ret.Accuracy.IsValid() {
-			ret.Accuracy = ""
-		}
-	}
-
-	return &ret
-}
-
 func (p *Scene) CopyFromCreateInput(input SceneCreateInput) error {
 	CopyFull(p, input)
-
-	date, accuracy, err := ParseFuzzyString(&input.Date)
-	if err != nil {
-		return err
-	}
-	p.Date = date
-	p.DateAccuracy = accuracy
 
 	return nil
 }
 
 func (p *Scene) CopyFromUpdateInput(input SceneUpdateInput) error {
 	CopyFull(p, input)
-
-	date, accuracy, err := ParseFuzzyString(input.Date)
-	if err != nil {
-		return err
-	}
-	p.Date = date
-	p.DateAccuracy = accuracy
 
 	return nil
 }
@@ -290,11 +239,8 @@ func (p *Scene) CopyFromSceneEdit(input SceneEdit, old *SceneEdit) {
 	fe.nullInt64(&p.Duration, input.Duration, old.Duration)
 	fe.nullString(&p.Director, input.Director, old.Director)
 	fe.nullString(&p.Code, input.Code, old.Code)
-	fe.sqlDate(&p.Date, input.Date, old.Date)
-	fe.nullString(&p.DateAccuracy, input.DateAccuracy, old.DateAccuracy)
-	if input.DateAccuracy == nil && input.Date != nil {
-		p.DateAccuracy = sql.NullString{String: DateAccuracyEnumDay.String(), Valid: true}
-	}
+	fe.nullString(&p.Date, input.Date, old.Date)
+	fe.nullString(&p.ProductionDate, input.ProductionDate, old.ProductionDate)
 }
 
 func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
@@ -303,7 +249,7 @@ func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
 	v.string("Title", edit.Old.Title, p.Title.String)
 	v.string("Details", edit.Old.Details, p.Details.String)
 	v.string("Date", edit.Old.Date, p.Date.String)
-	v.string("Date Accuracy", edit.Old.DateAccuracy, p.DateAccuracy.String)
+	v.string("ProductionDate", edit.Old.ProductionDate, p.ProductionDate.String)
 	v.uuid("StudioID", edit.Old.StudioID, p.StudioID)
 	v.int64("Duration", edit.Old.Duration, p.Duration.Int64)
 	v.string("Director", edit.Old.Director, p.Director.String)

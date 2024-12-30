@@ -14,11 +14,11 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     services:
       postgres:
-        image: postgres:16.1
+        image: postgres:17.1
         env:
           POSTGRES_DB: postgres
           POSTGRES_PASSWORD: postgres
@@ -33,40 +33,49 @@ jobs:
           --health-retries 5
 
     steps:
+
+    - name: Install vips
+      run: sudo apt install -y libvips-dev
+
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Install Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v5
       with:
-        go-version: 1.22.x
+        go-version: 1.23.x
 
     - name: Install Node
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
+
+    - name: Install PNPM
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
 
     - name: Cache node modules
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       env:
         cache-name: cache-node_modules
       with:
         path: frontend/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/pnpm-lock.yaml') }}
 
     - name: Cache UI build
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cache-ui
       env:
         cache-name: cache-ui
       with:
         path: frontend/build
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock', 'frontend/vite.config.js', 'frontend/src/**', 'graphql/**/*.graphql') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/pnpm-lock.yaml', 'frontend/vite.config.js', 'frontend/src/**', 'graphql/**/*.graphql') }}
 
     - name: Cache go build
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       env:
         cache-name: cache-go-cache-2
       with:
@@ -84,11 +93,6 @@ jobs:
         make generate
         git add --intent-to-add .
         git diff --stat --exit-code
-
-    - name: Validate UI
-      # skip UI validation for pull requests if UI is unchanged
-      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: make ui-validate
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
@@ -126,14 +130,14 @@ jobs:
     - name: Upload Windows binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-box-win.exe
         path: dist/stash-box-windows.exe
     - name: Upload Linux binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-box-linux
         path: dist/stash-box-linux
@@ -169,7 +173,7 @@ jobs:
 
     - name: Login to DockerHub
       if: ${{ github.event_name != 'pull_request' }}
-      uses: docker/login-action@v1
+      uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}

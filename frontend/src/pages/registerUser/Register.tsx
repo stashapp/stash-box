@@ -1,4 +1,4 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -9,14 +9,18 @@ import cx from "classnames";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
 import { useNewUser, useConfig, ConfigQuery } from "src/graphql";
-import AuthContext, { ContextType } from "src/AuthContext";
 import * as yup from "yup";
 
 import { ROUTE_HOME, ROUTE_ACTIVATE, ROUTE_LOGIN } from "src/constants/route";
+import { useCurrentUser } from "src/hooks";
 
 const schema = yup.object({
   email: yup.string().email().required("Email is required"),
-  inviteKey: yup.string().required("Invite key is required"),
+  inviteKey: yup
+    .string()
+    .trim()
+    .uuid("Invalid invite key")
+    .required("Invite key is required"),
 });
 type RegisterFormData = yup.Asserts<typeof schema>;
 
@@ -27,7 +31,7 @@ interface Props {
 const Register: FC<Props> = ({ config }) => {
   const navigate = useNavigate();
   const [awaitingActivation, setAwaitingActivation] = useState(false);
-  const Auth = useContext<ContextType>(AuthContext);
+  const { isAuthenticated } = useCurrentUser();
   const [submitError, setSubmitError] = useState<string | undefined>();
 
   const inviteRequired = config.require_invite ?? true;
@@ -42,7 +46,7 @@ const Register: FC<Props> = ({ config }) => {
 
   const [newUser] = useNewUser();
 
-  if (Auth.authenticated) navigate(ROUTE_HOME);
+  if (isAuthenticated) navigate(ROUTE_HOME);
 
   const onSubmit = (formData: RegisterFormData) => {
     const userData = {
@@ -55,8 +59,8 @@ const Register: FC<Props> = ({ config }) => {
         if (response.data?.newUser) {
           navigate(
             `${ROUTE_ACTIVATE}?email=${encodeURIComponent(
-              formData.email
-            )}&key=${response.data.newUser}`
+              formData.email,
+            )}&key=${response.data.newUser}`,
           );
         } else {
           setAwaitingActivation(true);
@@ -94,6 +98,8 @@ const Register: FC<Props> = ({ config }) => {
         onSubmit={handleSubmit(onSubmit)}
       >
         <Form.Group controlId="email">
+          <h3>Register account</h3>
+          <hr className="my-4" />
           <Row>
             <Col xs={4}>
               <Form.Label>Email:</Form.Label>

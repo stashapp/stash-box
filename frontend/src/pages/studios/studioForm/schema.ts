@@ -2,6 +2,7 @@ import * as yup from "yup";
 
 export const StudioSchema = yup.object({
   name: yup.string().trim().required("Name is required"),
+  aliases: yup.array().of(yup.string().trim().ensure()).ensure().default([]),
   urls: yup
     .array()
     .of(
@@ -14,7 +15,7 @@ export const StudioSchema = yup.object({
             icon: yup.string().required(),
           })
           .required(),
-      })
+      }),
     )
     .ensure(),
   images: yup
@@ -25,7 +26,7 @@ export const StudioSchema = yup.object({
         url: yup.string().required(),
         width: yup.number().required(),
         height: yup.number().required(),
-      })
+      }),
     )
     .required(),
   parent: yup

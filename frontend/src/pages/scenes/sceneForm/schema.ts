@@ -20,10 +20,24 @@ export const SceneSchema = yup.object({
     })
     .test("valid-date", "Invalid date", isValidDate)
     .test("date-outside-range", "Outside of range", (date) =>
-      dateWithinRange(date, "1900-01-01", addYears(new Date(), 1))
+      dateWithinRange(date, "1900-01-01", addYears(new Date(), 1)),
     )
     .nullable()
     .required("Release date is required"),
+  production_date: yup
+    .string()
+    .trim()
+    .defined()
+    .transform(nullCheck)
+    .matches(/^\d{4}$|^\d{4}-\d{2}$|^\d{4}-\d{2}-\d{2}$/, {
+      excludeEmptyString: true,
+      message: "Invalid date, must be YYYY, YYYY-MM, or YYYY-MM-DD",
+    })
+    .test("valid-date", "Invalid date", isValidDate)
+    .test("date-outside-range", "Outside of range", (date) =>
+      dateWithinRange(date, "1900-01-01", addYears(new Date(), 1)),
+    )
+    .nullable(),
   duration: yup
     .string()
     .trim()
@@ -61,7 +75,7 @@ export const SceneSchema = yup.object({
           ...s,
           alias: s.name === s?.alias?.trim() ? undefined : s?.alias?.trim(),
         }))
-        .required()
+        .required(),
     )
     .ensure(),
   tags: yup
@@ -72,7 +86,7 @@ export const SceneSchema = yup.object({
         name: yup.string().required(),
         description: yup.string().nullable().optional(),
         aliases: yup.array().of(yup.string().required()).defined(),
-      })
+      }),
     )
     .ensure(),
   images: yup
@@ -83,7 +97,7 @@ export const SceneSchema = yup.object({
         url: yup.string().required(),
         width: yup.number().required(),
         height: yup.number().required(),
-      })
+      }),
     )
     .required(),
   urls: yup
@@ -98,7 +112,7 @@ export const SceneSchema = yup.object({
             icon: yup.string().required(),
           })
           .required(),
-      })
+      }),
     )
     .ensure(),
   note: yup.string().required("Edit note is required"),

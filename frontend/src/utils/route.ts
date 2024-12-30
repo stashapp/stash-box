@@ -24,7 +24,7 @@ export const editHref = (obj: { id: string }, route: string = ROUTE_EDIT) =>
 
 export const categoryHref = (
   obj: { id: string },
-  route: string = ROUTE_CATEGORY
+  route: string = ROUTE_CATEGORY,
 ) => generatePath(route, obj);
 
 export const tagHref = (obj: { id: string }, route: string = ROUTE_TAG) =>
@@ -32,7 +32,7 @@ export const tagHref = (obj: { id: string }, route: string = ROUTE_TAG) =>
 
 export const performerHref = (
   obj: { id: string },
-  route: string = ROUTE_PERFORMER
+  route: string = ROUTE_PERFORMER,
 ) => generatePath(route, obj);
 
 export const siteHref = (obj: { id: string }, route: string = ROUTE_SITE) =>
@@ -41,5 +41,5 @@ export const siteHref = (obj: { id: string }, route: string = ROUTE_SITE) =>
 export const createHref = (route: string, params: unknown = {}) =>
   generatePath(
     route,
-    params as Record<string, string | number | boolean | undefined>
+    params as Record<string, string | number | boolean | undefined>,
   );

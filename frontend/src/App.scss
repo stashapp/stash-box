@@ -2,6 +2,7 @@
 @import "./hooks/toast";
 @import "./pages/home/styles";
 @import "./pages/users/styles";
+@import "./pages/notifications/styles";
 @import "./pages/performers/styles";
 @import "./pages/scenes/styles";
 @import "./pages/scenes/sceneForm/styles";
@@ -93,4 +94,13 @@ div.react-select__menu {
 .NarrowPage {
   margin: auto;
   max-width: 1200px;
+}
+
+.NotificationBadge {
+  color: white;
+
+  &:active,
+  &:hover {
+    color: var(--bs-gray-500);
+  }
 }

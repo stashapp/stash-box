@@ -33,6 +33,7 @@ import URLInput from "src/components/urlInput";
 import DiffScene from "./diff";
 import { SceneSchema, SceneFormData } from "./schema";
 import { InitialScene } from "./types";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import ExistingSceneAlert from "./ExistingSceneAlert";
 
 const CLASS_NAME = "SceneForm";
@@ -59,6 +60,7 @@ const SceneForm: FC<SceneProps> = ({
   isCreate = false,
   draftFingerprints,
 }) => {
+  useBeforeUnload();
   const {
     register,
     control,
@@ -72,6 +74,8 @@ const SceneForm: FC<SceneProps> = ({
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
       date: initial?.date ?? scene?.release_date ?? undefined,
+      production_date:
+        initial?.production_date ?? scene?.production_date ?? undefined,
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
@@ -108,9 +112,9 @@ const SceneForm: FC<SceneProps> = ({
         SceneSchema.cast(fieldData, {
           assert: "ignore-optionality",
         }) as SceneFormData,
-        scene
+        scene,
       ),
-    [fieldData, scene]
+    [fieldData, scene],
   );
 
   const [isChanging, setChange] = useState<number | undefined>();
@@ -121,6 +125,7 @@ const SceneForm: FC<SceneProps> = ({
     const sceneData: SceneEditDetailsInput = {
       title: data.title,
       date: data.date,
+      production_date: data.production_date,
       duration: parseDuration(data.duration),
       director: data.director,
       code: data.code,
@@ -215,7 +220,7 @@ const SceneForm: FC<SceneProps> = ({
                   res.__typename === "Performer" && handleChange(res, index)
                 }
                 excludeIDs={currentPerformerIds.filter(
-                  (id) => id !== p.performerId
+                  (id) => id !== p.performerId,
                 )}
                 searchType={SearchType.Performer}
               />
@@ -264,10 +269,11 @@ const SceneForm: FC<SceneProps> = ({
                 options={p.aliases ?? []}
                 defaultInputValue={p.alias ?? ""}
                 emptyLabel={""}
-                renderMenu={(results, { id }) => {
-                  if (!results.length) {
+                renderMenu={(options, { id }) => {
+                  if (!options.length) {
                     return <></>;
                   }
+                  const results = options as string[];
                   return (
                     <Menu id={id}>
                       <MenuItem
@@ -282,9 +288,9 @@ const SceneForm: FC<SceneProps> = ({
                         <MenuItem
                           option={result}
                           position={idx + 1}
-                          key={`${result}-idx`}
+                          key={result}
                         >
-                          {result as string}
+                          {result}
                         </MenuItem>
                       ))}
                     </Menu>
@@ -302,6 +308,7 @@ const SceneForm: FC<SceneProps> = ({
   const metadataErrors = [
     { error: errors.title?.message, tab: "details" },
     { error: errors.date?.message, tab: "details" },
+    { error: errors.production_date?.message, tab: "details" },
     { error: errors.duration?.message, tab: "details" },
     {
       error: errors.studio !== undefined ? "Studio is required" : undefined,
@@ -449,7 +456,21 @@ const SceneForm: FC<SceneProps> = ({
               />
             </Form.Group>
 
-            <Form.Group className="col-8 mb-3" />
+            <Form.Group controlId="production_date" className="col-2 mb-3">
+              <Form.Label>Production Date</Form.Label>
+              <Form.Control
+                as="input"
+                className={cx({ "is-invalid": errors.production_date })}
+                type="text"
+                placeholder="YYYY-MM-DD"
+                {...register("production_date")}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors?.production_date?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="col-6 mb-3" />
           </Row>
 
           <Form.Group className="mb-3">

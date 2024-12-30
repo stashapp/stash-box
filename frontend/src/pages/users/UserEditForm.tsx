@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Button, Row, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Select from "react-select";
@@ -8,8 +8,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
 import { RoleEnum, UserUpdateInput } from "src/graphql";
-import { isAdmin, userHref } from "src/utils";
-import AuthContext from "src/AuthContext";
+import { userHref } from "src/utils";
+import { useCurrentUser } from "src/hooks";
 
 const schema = yup.object({
   name: yup.string().optional(),
@@ -39,7 +39,7 @@ const roles = Object.keys(RoleEnum).map((role) => ({
 }));
 
 const UserForm: FC<UserProps> = ({ user, username, callback, error }) => {
-  const Auth = useContext(AuthContext);
+  const { isAdmin } = useCurrentUser();
   const {
     register,
     control,
@@ -62,7 +62,7 @@ const UserForm: FC<UserProps> = ({ user, username, callback, error }) => {
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
       <Row>
-        {isAdmin(Auth.user) && (
+        {isAdmin && (
           <Form.Group controlId="name" className="col-6 mb-3">
             <Form.Label>Username</Form.Label>
             <Form.Control
@@ -90,7 +90,7 @@ const UserForm: FC<UserProps> = ({ user, username, callback, error }) => {
           <div className="invalid-feedback">{errors?.email?.message}</div>
         </Form.Group>
       </Row>
-      {isAdmin(Auth.user) && (
+      {isAdmin && (
         <Row>
           <Form.Group className="col-6 mb-3">
             <Form.Label>Roles</Form.Label>

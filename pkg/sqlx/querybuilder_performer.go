@@ -3,6 +3,7 @@ package sqlx
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -908,6 +909,27 @@ func (qb *performerQueryBuilder) FindMergeIDsByPerformerIDs(ids []uuid.UUID) ([]
 	return result, nil
 }
 
+func (qb *performerQueryBuilder) FindMergeIDsBySourcePerformerIDs(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	redirects := models.Redirects{}
+	err := qb.dbi.FindAllJoins(performerSourceRedirectTable, ids, &redirects)
+
+	if err != nil {
+		return nil, utils.DuplicateError(err, len(ids))
+	}
+
+	// each list should only really have one entry
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, redirect := range redirects {
+		m[redirect.SourceID] = append(m[redirect.SourceID], redirect.TargetID)
+	}
+
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
+}
+
 func (qb *performerQueryBuilder) IsFavoriteByIds(userID uuid.UUID, ids []uuid.UUID) ([]bool, []error) {
 	query := "SELECT performer_id FROM performer_favorites WHERE user_id = :userid AND performer_id IN (:performer_ids)"
 
@@ -944,4 +966,66 @@ func (qb *performerQueryBuilder) IsFavoriteByIds(userID uuid.UUID, ids []uuid.UU
 		result[i] = m[id]
 	}
 	return result, nil
+}
+
+func (qb *performerQueryBuilder) FindByURL(url string, limit int) ([]*models.Performer, error) {
+	query := `
+    SELECT P.*
+		FROM performers P
+		JOIN performer_urls PU
+		ON PU.performer_id = P.id
+		WHERE PU.url = ?
+		LIMIT ?
+	`
+	return qb.queryPerformers(query, []any{url, limit})
+}
+
+func (qb *performerQueryBuilder) FindExistingPerformers(input models.QueryExistingPerformerInput) ([]*models.Performer, error) {
+	if (input.Name == nil || len(*input.Name) == 0) && len(input.Urls) == 0 {
+		return nil, nil
+	}
+
+	var clauses []string
+	arg := make(map[string]interface{})
+
+	if input.Name != nil && *input.Name != "" {
+		arg["name"] = *input.Name
+
+		disambiguationClause := "(disambiguation IS NULL OR disambiguation = '')"
+
+		if input.Disambiguation != nil && len(*input.Disambiguation) > 0 {
+			arg["disambiguation"] = *input.Disambiguation
+			disambiguationClause = "TRIM(LOWER(disambiguation)) = TRIM(LOWER(:disambiguation))"
+		}
+
+		clauses = append(clauses, fmt.Sprintf(`
+			(TRIM(LOWER(name)) = TRIM(LOWER(:name)) AND %s)
+		`, disambiguationClause))
+	}
+
+	if len(input.Urls) > 0 {
+		arg["urls"] = input.Urls
+		clauses = append(clauses, `
+			id IN (
+				SELECT performer_id
+				FROM performer_urls
+				WHERE url IN (:urls)
+				GROUP BY performer_id
+			)
+		`)
+	}
+
+	query := "SELECT * FROM performers WHERE " + strings.Join(clauses, " OR ")
+
+	query, args, err := sqlx.Named(query, arg)
+	if err != nil {
+		return nil, err
+	}
+	if len(input.Urls) > 0 {
+		query, args, err = sqlx.In(query, args...)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return qb.queryPerformers(query, args)
 }

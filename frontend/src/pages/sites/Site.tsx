@@ -1,13 +1,13 @@
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
 import { useDeleteSite, SiteQuery } from "src/graphql";
-import AuthContext from "src/AuthContext";
-import { isAdmin, createHref } from "src/utils";
+import { createHref } from "src/utils";
 import { SiteLink } from "src/components/fragments";
 import DeleteButton from "src/components/deleteButton";
 import { ROUTE_SITES, ROUTE_SITE_EDIT } from "src/constants/route";
+import { useCurrentUser } from "src/hooks";
 
 type Site = NonNullable<SiteQuery["findSite"]>;
 
@@ -17,7 +17,7 @@ interface Props {
 
 const SiteComponent: FC<Props> = ({ site }) => {
   const navigate = useNavigate();
-  const auth = useContext(AuthContext);
+  const { isAdmin } = useCurrentUser();
 
   const [deleteSite, { loading: deleting }] = useDeleteSite({
     onCompleted: (result) => {
@@ -42,7 +42,7 @@ const SiteComponent: FC<Props> = ({ site }) => {
         <h3 className="me-auto">
           <SiteLink site={site} />
         </h3>
-        {isAdmin(auth.user) && (
+        {isAdmin && (
           <div className="ms-auto">
             <Link to={createHref(ROUTE_SITE_EDIT, site)} className="me-2">
               <Button>Edit</Button>

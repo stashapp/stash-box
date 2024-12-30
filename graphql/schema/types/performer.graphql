@@ -70,6 +70,7 @@ enum HairColorEnum {
   GREY
   BALD
   VARIOUS
+  WHITE
   OTHER
 }
 
@@ -92,6 +93,7 @@ type Performer {
   urls: [URL!]!
   birthdate: FuzzyDate @deprecated(reason: "Please use `birth_date`")
   birth_date: String
+  death_date: String
   age: Int # resolver
   ethnicity: EthnicityEnum
   country: String
@@ -114,7 +116,10 @@ type Performer {
   edits: [Edit!]!
   scene_count: Int!
   scenes(input: PerformerScenesInput): [Scene!]!
+  """IDs of performers that were merged into this one"""
   merged_ids: [ID!]!
+  """ID of performer that replaces this one"""
+  merged_into_id: ID
   studios: [PerformerStudio!]!
   is_favorite: Boolean!
   created: Time!
@@ -144,6 +149,7 @@ input PerformerCreateInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -170,6 +176,7 @@ input PerformerUpdateInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -198,6 +205,7 @@ input PerformerEditDetailsInput {
   gender: GenderEnum
   urls: [URLInput!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -240,6 +248,7 @@ type PerformerEdit {
   added_urls: [URL!]
   removed_urls: [URL!]
   birthdate: String
+  deathdate: String
   ethnicity: EthnicityEnum
   country: String
   eye_color: EyeColorEnum
@@ -304,6 +313,7 @@ input BodyModificationCriterionInput {
 enum PerformerSortEnum {
   NAME
   BIRTHDATE
+  DEATHDATE
   SCENE_COUNT
   CAREER_START_YEAR
   DEBUT
@@ -330,6 +340,7 @@ input PerformerQueryInput {
   url: String
 
   birthdate: DateCriterionInput
+  deathdate: DateCriterionInput
   birth_year: IntCriterionInput
   age: IntCriterionInput
 
@@ -372,6 +383,7 @@ type PerformerDraft {
   aliases: String
   gender: String
   birthdate: String
+  deathdate: String
   urls: [String!]
   ethnicity: String
   country: String
@@ -394,6 +406,7 @@ input PerformerDraftInput {
   aliases: String
   gender: String
   birthdate: String
+  deathdate: String
   urls: [String!]
   ethnicity: String
   country: String
@@ -407,4 +420,15 @@ input PerformerDraftInput {
   career_start_year: Int
   career_end_year: Int
   image: Upload
+}
+
+input QueryExistingPerformerInput {
+  name: String
+  disambiguation: String
+  urls: [String!]!
+}
+
+type QueryExistingPerformerResult {
+  edits: [Edit!]!
+  performers: [Performer!]!
 }

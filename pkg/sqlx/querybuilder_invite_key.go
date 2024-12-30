@@ -1,11 +1,11 @@
 package sqlx
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/pkg/models"
-	"gopkg.in/guregu/null.v4"
 )
 
 const (
@@ -13,11 +13,11 @@ const (
 )
 
 type inviteKeyRow struct {
-	ID          uuid.UUID `db:"id" json:"id"`
-	Uses        null.Int  `db:"uses" json:"uses"`
-	GeneratedBy uuid.UUID `db:"generated_by" json:"generated_by"`
-	GeneratedAt time.Time `db:"generated_at" json:"generated_at"`
-	ExpireTime  null.Time `db:"expire_time" json:"expire_time"`
+	ID          uuid.UUID     `db:"id" json:"id"`
+	Uses        sql.NullInt64 `db:"uses" json:"uses"`
+	GeneratedBy uuid.UUID     `db:"generated_by" json:"generated_by"`
+	GeneratedAt time.Time     `db:"generated_at" json:"generated_at"`
+	ExpireTime  sql.NullTime  `db:"expire_time" json:"expire_time"`
 }
 
 func (p inviteKeyRow) GetID() uuid.UUID {
@@ -27,20 +27,26 @@ func (p inviteKeyRow) GetID() uuid.UUID {
 func (p *inviteKeyRow) fromInviteKey(i models.InviteKey) {
 	p.ID = i.ID
 	if i.Uses != nil {
-		p.Uses = null.IntFrom(int64(*i.Uses))
+		p.Uses = sql.NullInt64{Int64: int64(*i.Uses), Valid: true}
 	}
 	p.GeneratedBy = i.GeneratedBy
 	p.GeneratedAt = i.GeneratedAt
-	p.ExpireTime = null.TimeFromPtr(i.Expires)
+	if i.Expires != nil {
+		p.ExpireTime = sql.NullTime{Time: *i.Expires, Valid: true}
+	}
 }
 
 func (p inviteKeyRow) resolve() models.InviteKey {
+	var expires *time.Time
+	if p.ExpireTime.Valid {
+		expires = &p.ExpireTime.Time
+	}
 	return models.InviteKey{
 		ID:          p.ID,
 		Uses:        intPtrFromNullInt(p.Uses),
 		GeneratedBy: p.GeneratedBy,
 		GeneratedAt: p.GeneratedAt,
-		Expires:     p.ExpireTime.Ptr(),
+		Expires:     expires,
 	}
 }
 
@@ -110,14 +116,13 @@ func (qb *inviteKeyQueryBuilder) Find(id uuid.UUID) (*models.InviteKey, error) {
 func (qb *inviteKeyQueryBuilder) FindActiveKeysForUser(userID uuid.UUID, expireTime time.Time) (models.InviteKeys, error) {
 	query := `SELECT i.* FROM ` + inviteKeyTable + ` i 
 	 LEFT JOIN (
-	   SELECT invite_key, COUNT(*) as count
-		 FROM pending_activations
-		 WHERE time > ?
+	   SELECT uuid(data->>'invite_key') as invite_key, COUNT(*) as count
+		 FROM user_tokens
+		 WHERE expires_at > now()
 		 GROUP BY invite_key
 	 ) a ON a.invite_key = i.id
 	 WHERE i.generated_by = ? AND (a.invite_key IS NULL OR i.uses IS NULL OR a.count < i.uses)`
 	var args []interface{}
-	args = append(args, expireTime)
 	args = append(args, userID)
 	output := inviteKeyRows{}
 	err := qb.dbi.RawQuery(inviteKeyDBTable, query, args, &output)

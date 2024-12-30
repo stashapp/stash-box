@@ -1,14 +1,14 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isApolloError } from "@apollo/client";
 
 import { useChangePassword } from "src/graphql";
-import AuthContext from "src/AuthContext";
 import { userHref } from "src/utils";
 import UserPassword, { UserPasswordData } from "./UserPasswordForm";
+import { useCurrentUser } from "src/hooks";
 
 const ChangePasswordComponent: FC = () => {
-  const Auth = useContext(AuthContext);
+  const { user } = useCurrentUser();
   const [queryError, setQueryError] = useState<string>();
   const navigate = useNavigate();
   const [changePassword] = useChangePassword();
@@ -19,12 +19,12 @@ const ChangePasswordComponent: FC = () => {
       new_password: formData.newPassword,
     };
     changePassword({ variables: { userData } })
-      .then(() => Auth.user && navigate(userHref(Auth.user)))
+      .then(() => user && navigate(userHref(user)))
       .catch(
         (error: unknown) =>
           error instanceof Error &&
           isApolloError(error) &&
-          setQueryError(error.message)
+          setQueryError(error.message),
       );
   };
 

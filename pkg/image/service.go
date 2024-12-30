@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
+	"io"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -48,6 +49,10 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 
 	// handle image upload
 	if input.File != nil {
+		if input.File.Size > int64(10*1024*1024) {
+			return nil, errors.New("file too big")
+		}
+
 		file := make([]byte, input.File.Size)
 		if _, err := input.File.File.Read(file); err != nil {
 			return nil, err
@@ -76,6 +81,7 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 		if _, err = fileReader.Seek(0, 0); err != nil {
 			return nil, err
 		}
+
 		if err := populateImageDimensions(fileReader, &newImage); err != nil {
 			return nil, err
 		}
@@ -161,4 +167,8 @@ func (s *Service) DestroyUnusedImage(imageID uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (s *Service) Read(image models.Image) (io.Reader, error) {
+	return s.Backend.ReadFile(image)
 }

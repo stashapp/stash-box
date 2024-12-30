@@ -10,11 +10,11 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-const cookieName = "session"
+const cookieName = "stashbox"
 const usernameFormKey = "username"
 const passwordFormKey = "password"
 const userIDKey = "userID"
-const maxCookieAge = 60 * 60 * 1 // 1 hours
+const maxCookieAge = 60 * 60 * 24 * 30 // 1 month
 
 var sessionStore *sessions.CookieStore
 
@@ -51,6 +51,9 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	newSession.Options.HttpOnly = true
 	if config.GetIsProduction() {
 		newSession.Options.Secure = true
+	} else {
+		newSession.Options.Secure = false
+		newSession.Options.SameSite = http.SameSiteLaxMode
 	}
 
 	err = newSession.Save(r, w)

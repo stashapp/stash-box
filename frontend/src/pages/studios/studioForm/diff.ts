@@ -4,17 +4,22 @@ import {
 } from "src/components/editCard/ModifyEdit";
 import { StudioFragment } from "src/graphql";
 import { StudioFormData } from "./schema";
-import { diffValue, diffImages, diffURLs } from "src/utils";
+import { diffValue, diffImages, diffURLs, diffArray } from "src/utils";
 
 const selectStudioDetails = (
   data: StudioFormData,
-  original: StudioFragment | null | undefined
+  original: StudioFragment | null | undefined,
 ): [Required<OldStudioDetails>, Required<StudioDetails>] => {
   const [addedImages, removedImages] = diffImages(
     data.images,
-    original?.images ?? []
+    original?.images ?? [],
   );
   const [addedUrls, removedUrls] = diffURLs(data.urls, original?.urls ?? []);
+  const [addedAliases, removedAliases] = diffArray(
+    data?.aliases,
+    original?.aliases ?? [],
+    (a) => a,
+  );
 
   return [
     {
@@ -44,6 +49,8 @@ const selectStudioDetails = (
       removed_urls: removedUrls,
       added_images: addedImages,
       removed_images: removedImages,
+      added_aliases: addedAliases,
+      removed_aliases: removedAliases,
     },
   ];
 };

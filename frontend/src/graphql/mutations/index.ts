@@ -82,268 +82,298 @@ import {
   DeleteDraftMutationVariables,
   UnmatchFingerprintMutation,
   UnmatchFingerprintMutationVariables,
+  ValidateChangeEmailMutation,
+  ValidateChangeEmailMutationVariables,
+  ConfirmChangeEmailMutation,
+  ConfirmChangeEmailMutationVariables,
+  RequestChangeEmailMutation,
+  ActivateNewUserDocument,
+  AddUserDocument,
+  NewUserDocument,
+  UpdateUserDocument,
+  DeleteUserDocument,
+  AddTagCategoryDocument,
+  DeleteTagCategoryDocument,
+  UpdateTagCategoryDocument,
+  AddImageDocument,
+  PerformerEditDocument,
+  TagEditDocument,
+  StudioEditDocument,
+  SceneEditDocument,
+  PerformerEditUpdateDocument,
+  TagEditUpdateDocument,
+  StudioEditUpdateDocument,
+  SceneEditUpdateDocument,
+  AddSceneDocument,
+  DeleteSceneDocument,
+  UpdateSceneDocument,
+  AddStudioDocument,
+  DeleteStudioDocument,
+  UpdateStudioDocument,
+  ApplyEditDocument,
+  CancelEditDocument,
+  ChangePasswordDocument,
+  ResetPasswordDocument,
+  RegenerateApiKeyDocument,
+  GenerateInviteCodesDocument,
+  GrantInviteDocument,
+  RescindInviteCodeDocument,
+  RevokeInviteDocument,
+  EditCommentDocument,
+  VoteDocument,
+  AddSiteDocument,
+  DeleteSiteDocument,
+  UpdateSiteDocument,
+  FavoritePerformerDocument,
+  FavoriteStudioDocument,
+  DeleteDraftDocument,
+  UnmatchFingerprintDocument,
+  ValidateChangeEmailDocument,
+  ConfirmChangeEmailDocument,
+  RequestChangeEmailDocument,
+  RequestChangeEmailMutationVariables,
+  UpdateNotificationSubscriptionsDocument,
+  UpdateNotificationSubscriptionsMutation,
+  UpdateNotificationSubscriptionsMutationVariables,
+  MarkNotificationsReadDocument,
 } from "../types";
-
-import ActivateUserGQL from "./ActivateNewUser.gql";
-import AddUserGQL from "./AddUser.gql";
-import NewUserGQL from "./NewUser.gql";
-import UpdateUserGQL from "./UpdateUser.gql";
-import DeleteUserGQL from "./DeleteUser.gql";
-import AddTagCategoryGQL from "./AddTagCategory.gql";
-import DeleteTagCategoryGQL from "./DeleteTagCategory.gql";
-import UpdateTagCategoryGQL from "./UpdateTagCategory.gql";
-import AddImageGQL from "./AddImage.gql";
-import PerformerEditGQL from "./PerformerEdit.gql";
-import TagEditGQL from "./TagEdit.gql";
-import StudioEditGQL from "./StudioEdit.gql";
-import SceneEditGQL from "./SceneEdit.gql";
-import PerformerEditUpdateGQL from "./PerformerEditUpdate.gql";
-import TagEditUpdateGQL from "./TagEditUpdate.gql";
-import StudioEditUpdateGQL from "./StudioEditUpdate.gql";
-import SceneEditUpdateGQL from "./SceneEditUpdate.gql";
-import AddSceneGQL from "./AddScene.gql";
-import DeleteSceneGQL from "./DeleteScene.gql";
-import UpdateSceneGQL from "./UpdateScene.gql";
-import AddStudioGQL from "./AddStudio.gql";
-import DeleteStudioGQL from "./DeleteStudio.gql";
-import UpdateStudioGQL from "./UpdateStudio.gql";
-import ApplyEditGQL from "./ApplyEdit.gql";
-import CancelEditGQL from "./CancelEdit.gql";
-import ChangePasswordGQL from "./ChangePassword.gql";
-import ResetPasswordGQL from "./ResetPassword.gql";
-import RegenerateAPIKeyGQL from "./RegenerateAPIKey.gql";
-import GenerateInviteCodesGQL from "./GenerateInviteCode.gql";
-import GrantInviteGQL from "./GrantInvite.gql";
-import RescindInviteCodeGQL from "./RescindInviteCode.gql";
-import RevokeInviteGQL from "./RevokeInvite.gql";
-import EditCommentGQL from "./EditComment.gql";
-import VoteGQL from "./Vote.gql";
-import AddSiteGQL from "./AddSite.gql";
-import DeleteSiteGQL from "./DeleteSite.gql";
-import UpdateSiteGQL from "./UpdateSite.gql";
-import FavoriteStudioGQL from "./FavoriteStudio.gql";
-import FavoritePerformerGQL from "./FavoritePerformer.gql";
-import DeleteDraftGQL from "./DeleteDraft.gql";
-import UnmatchFingerprintGQL from "./UnmatchFingerprint.gql";
 
 export const useActivateUser = (
   options?: MutationHookOptions<
     ActivateNewUserMutation,
     ActivateNewUserMutationVariables
-  >
-) => useMutation(ActivateUserGQL, options);
+  >,
+) => useMutation(ActivateNewUserDocument, options);
 
 export const useAddUser = (
-  options?: MutationHookOptions<AddUserMutation, AddUserMutationVariables>
-) => useMutation(AddUserGQL, options);
+  options?: MutationHookOptions<AddUserMutation, AddUserMutationVariables>,
+) => useMutation(AddUserDocument, options);
 
 export const useNewUser = (
-  options?: MutationHookOptions<NewUserMutation, NewUserMutationVariables>
-) => useMutation(NewUserGQL, options);
+  options?: MutationHookOptions<NewUserMutation, NewUserMutationVariables>,
+) => useMutation(NewUserDocument, options);
 
 export const useUpdateUser = (
-  options?: MutationHookOptions<UpdateUserMutation, UpdateUserMutationVariables>
-) => useMutation(UpdateUserGQL, options);
+  options?: MutationHookOptions<
+    UpdateUserMutation,
+    UpdateUserMutationVariables
+  >,
+) => useMutation(UpdateUserDocument, options);
 
 export const useDeleteUser = (
-  options?: MutationHookOptions<DeleteUserMutation, DeleteUserMutationVariables>
-) => useMutation(DeleteUserGQL, options);
+  options?: MutationHookOptions<
+    DeleteUserMutation,
+    DeleteUserMutationVariables
+  >,
+) => useMutation(DeleteUserDocument, options);
 
 export const useAddCategory = (
   options?: MutationHookOptions<
     AddTagCategoryMutation,
     AddTagCategoryMutationVariables
-  >
-) => useMutation(AddTagCategoryGQL, options);
+  >,
+) => useMutation(AddTagCategoryDocument, options);
 
 export const useDeleteCategory = (
   options?: MutationHookOptions<
     DeleteTagCategoryMutation,
     DeleteTagCategoryMutationVariables
-  >
-) => useMutation(DeleteTagCategoryGQL, options);
+  >,
+) => useMutation(DeleteTagCategoryDocument, options);
 
 export const useUpdateCategory = (
   options?: MutationHookOptions<
     UpdateTagCategoryMutation,
     UpdateTagCategoryMutationVariables
-  >
-) => useMutation(UpdateTagCategoryGQL, options);
+  >,
+) => useMutation(UpdateTagCategoryDocument, options);
 
 export const useAddImage = (
-  options?: MutationHookOptions<AddImageMutation, AddImageMutationVariables>
-) => useMutation(AddImageGQL, options);
+  options?: MutationHookOptions<AddImageMutation, AddImageMutationVariables>,
+) => useMutation(AddImageDocument, options);
 
 export const usePerformerEdit = (
   options?: MutationHookOptions<
     PerformerEditMutation,
     PerformerEditMutationVariables
-  >
-) => useMutation(PerformerEditGQL, options);
+  >,
+) => useMutation(PerformerEditDocument, options);
 
 export const usePerformerEditUpdate = (
   options?: MutationHookOptions<
     PerformerEditUpdateMutation,
     PerformerEditUpdateMutationVariables
-  >
-) => useMutation(PerformerEditUpdateGQL, options);
+  >,
+) => useMutation(PerformerEditUpdateDocument, options);
 
 export const useAddScene = (
-  options?: MutationHookOptions<AddSceneMutation, AddSceneMutationVariables>
-) => useMutation(AddSceneGQL, options);
+  options?: MutationHookOptions<AddSceneMutation, AddSceneMutationVariables>,
+) => useMutation(AddSceneDocument, options);
 
 export const useDeleteScene = (
   options?: MutationHookOptions<
     DeleteSceneMutation,
     DeleteSceneMutationVariables
-  >
-) => useMutation(DeleteSceneGQL, options);
+  >,
+) => useMutation(DeleteSceneDocument, options);
 
 export const useUpdateScene = (
   options?: MutationHookOptions<
     UpdateSceneMutation,
     UpdateSceneMutationVariables
-  >
-) => useMutation(UpdateSceneGQL, options);
+  >,
+) => useMutation(UpdateSceneDocument, options);
 
 export const useAddStudio = (
-  options?: MutationHookOptions<AddStudioMutation, AddStudioMutationVariables>
-) => useMutation(AddStudioGQL, options);
+  options?: MutationHookOptions<AddStudioMutation, AddStudioMutationVariables>,
+) => useMutation(AddStudioDocument, options);
 
 export const useDeleteStudio = (
   options?: MutationHookOptions<
     DeleteStudioMutation,
     DeleteStudioMutationVariables
-  >
-) => useMutation(DeleteStudioGQL, options);
+  >,
+) => useMutation(DeleteStudioDocument, options);
 
 export const useUpdateStudio = (
   options?: MutationHookOptions<
     UpdateStudioMutation,
     UpdateStudioMutationVariables
-  >
-) => useMutation(UpdateStudioGQL, options);
+  >,
+) => useMutation(UpdateStudioDocument, options);
 
 export const useTagEdit = (
-  options?: MutationHookOptions<TagEditMutation, TagEditMutationVariables>
-) => useMutation(TagEditGQL, options);
+  options?: MutationHookOptions<TagEditMutation, TagEditMutationVariables>,
+) => useMutation(TagEditDocument, options);
 
 export const useTagEditUpdate = (
   options?: MutationHookOptions<
     TagEditUpdateMutation,
     TagEditUpdateMutationVariables
-  >
-) => useMutation(TagEditUpdateGQL, options);
+  >,
+) => useMutation(TagEditUpdateDocument, options);
 
 export const useStudioEdit = (
-  options?: MutationHookOptions<StudioEditMutation, StudioEditMutationVariables>
-) => useMutation(StudioEditGQL, options);
+  options?: MutationHookOptions<
+    StudioEditMutation,
+    StudioEditMutationVariables
+  >,
+) => useMutation(StudioEditDocument, options);
 
 export const useStudioEditUpdate = (
   options?: MutationHookOptions<
     StudioEditUpdateMutation,
     StudioEditUpdateMutationVariables
-  >
-) => useMutation(StudioEditUpdateGQL, options);
+  >,
+) => useMutation(StudioEditUpdateDocument, options);
 
 export const useSceneEdit = (
-  options?: MutationHookOptions<SceneEditMutation, SceneEditMutationVariables>
-) => useMutation(SceneEditGQL, options);
+  options?: MutationHookOptions<SceneEditMutation, SceneEditMutationVariables>,
+) => useMutation(SceneEditDocument, options);
 
 export const useSceneEditUpdate = (
   options?: MutationHookOptions<
     SceneEditUpdateMutation,
     SceneEditUpdateMutationVariables
-  >
-) => useMutation(SceneEditUpdateGQL, options);
+  >,
+) => useMutation(SceneEditUpdateDocument, options);
 
 export const useApplyEdit = (
-  options?: MutationHookOptions<ApplyEditMutation, ApplyEditMutationVariables>
-) => useMutation(ApplyEditGQL, options);
+  options?: MutationHookOptions<ApplyEditMutation, ApplyEditMutationVariables>,
+) => useMutation(ApplyEditDocument, options);
 
 export const useCancelEdit = (
-  options?: MutationHookOptions<CancelEditMutation, CancelEditMutationVariables>
-) => useMutation(CancelEditGQL, options);
+  options?: MutationHookOptions<
+    CancelEditMutation,
+    CancelEditMutationVariables
+  >,
+) => useMutation(CancelEditDocument, options);
 
 export const useChangePassword = (
   options?: MutationHookOptions<
     ChangePasswordMutation,
     ChangePasswordMutationVariables
-  >
-) => useMutation(ChangePasswordGQL, options);
+  >,
+) => useMutation(ChangePasswordDocument, options);
 
 export const useResetPassword = (
   options?: MutationHookOptions<
     ResetPasswordMutation,
     ResetPasswordMutationVariables
-  >
-) => useMutation(ResetPasswordGQL, options);
+  >,
+) => useMutation(ResetPasswordDocument, options);
 
 export const useRegenerateAPIKey = (
   options?: MutationHookOptions<
     RegenerateApiKeyMutation,
     RegenerateApiKeyMutationVariables
-  >
-) => useMutation(RegenerateAPIKeyGQL, options);
+  >,
+) => useMutation(RegenerateApiKeyDocument, options);
 
 export const useGenerateInviteCodes = (
-  options?: MutationHookOptions<GenerateInviteCodesMutation>
-) => useMutation(GenerateInviteCodesGQL, options);
+  options?: MutationHookOptions<GenerateInviteCodesMutation>,
+) => useMutation(GenerateInviteCodesDocument, options);
 
 export const useGrantInvite = (
   options?: MutationHookOptions<
     GrantInviteMutation,
     GrantInviteMutationVariables
-  >
-) => useMutation(GrantInviteGQL, options);
+  >,
+) => useMutation(GrantInviteDocument, options);
 
 export const useRescindInviteCode = (
   options?: MutationHookOptions<
     RescindInviteCodeMutation,
     RescindInviteCodeMutationVariables
-  >
-) => useMutation(RescindInviteCodeGQL, options);
+  >,
+) => useMutation(RescindInviteCodeDocument, options);
 
 export const useRevokeInvite = (
   options?: MutationHookOptions<
     RevokeInviteMutation,
     RevokeInviteMutationVariables
-  >
-) => useMutation(RevokeInviteGQL, options);
+  >,
+) => useMutation(RevokeInviteDocument, options);
 
 export const useEditComment = (
   options?: MutationHookOptions<
     EditCommentMutation,
     EditCommentMutationVariables
-  >
-) => useMutation(EditCommentGQL, options);
+  >,
+) => useMutation(EditCommentDocument, options);
 
 export const useVote = (
-  options?: MutationHookOptions<VoteMutation, VoteMutationVariables>
-) => useMutation(VoteGQL, options);
+  options?: MutationHookOptions<VoteMutation, VoteMutationVariables>,
+) => useMutation(VoteDocument, options);
 
 export const useAddSite = (
-  options?: MutationHookOptions<AddSiteMutation, AddSiteMutationVariables>
-) => useMutation(AddSiteGQL, options);
+  options?: MutationHookOptions<AddSiteMutation, AddSiteMutationVariables>,
+) => useMutation(AddSiteDocument, options);
 
 export const useDeleteSite = (
-  options?: MutationHookOptions<DeleteSiteMutation, DeleteSiteMutationVariables>
-) => useMutation(DeleteSiteGQL, options);
+  options?: MutationHookOptions<
+    DeleteSiteMutation,
+    DeleteSiteMutationVariables
+  >,
+) => useMutation(DeleteSiteDocument, options);
 
 export const useUpdateSite = (
-  options?: MutationHookOptions<UpdateSiteMutation, UpdateSiteMutationVariables>
-) => useMutation(UpdateSiteGQL, options);
+  options?: MutationHookOptions<
+    UpdateSiteMutation,
+    UpdateSiteMutationVariables
+  >,
+) => useMutation(UpdateSiteDocument, options);
 
 export const useSetFavorite = <T extends "performer" | "studio">(
   type: T,
-  id: string
+  id: string,
 ) =>
   useMutation<
     T extends "performer" ? FavoritePerformerMutation : FavoriteStudioMutation,
     T extends "performer"
       ? FavoritePerformerMutationVariables
       : FavoriteStudioMutationVariables
-  >(type === "performer" ? FavoritePerformerGQL : FavoriteStudioGQL, {
+  >(type === "performer" ? FavoritePerformerDocument : FavoriteStudioDocument, {
     update: (cache, { errors }) => {
       if (errors === undefined) {
         const identity = cache.identify({
@@ -364,16 +394,16 @@ export const useDeleteDraft = (
   options?: MutationHookOptions<
     DeleteDraftMutation,
     DeleteDraftMutationVariables
-  >
-) => useMutation(DeleteDraftGQL, options);
+  >,
+) => useMutation(DeleteDraftDocument, options);
 
 export const useUnmatchFingerprint = (
   options?: MutationHookOptions<
     UnmatchFingerprintMutation,
     UnmatchFingerprintMutationVariables
-  >
+  >,
 ) =>
-  useMutation(UnmatchFingerprintGQL, {
+  useMutation(UnmatchFingerprintDocument, {
     update(cache, { data }, { variables }) {
       if (data?.unmatchFingerprint)
         cache.evict({
@@ -382,4 +412,52 @@ export const useUnmatchFingerprint = (
         });
     },
     ...options,
+  });
+
+export const useValidateChangeEmail = (
+  options?: MutationHookOptions<
+    ValidateChangeEmailMutation,
+    ValidateChangeEmailMutationVariables
+  >,
+) => useMutation(ValidateChangeEmailDocument, options);
+
+export const useConfirmChangeEmail = (
+  options?: MutationHookOptions<
+    ConfirmChangeEmailMutation,
+    ConfirmChangeEmailMutationVariables
+  >,
+) => useMutation(ConfirmChangeEmailDocument, options);
+
+export const useRequestChangeEmail = (
+  options?: MutationHookOptions<
+    RequestChangeEmailMutation,
+    RequestChangeEmailMutationVariables
+  >,
+) => useMutation(RequestChangeEmailDocument, options);
+
+export const useUpdateNotificationSubscriptions = (
+  options?: MutationHookOptions<
+    UpdateNotificationSubscriptionsMutation,
+    UpdateNotificationSubscriptionsMutationVariables
+  >,
+) =>
+  useMutation(UpdateNotificationSubscriptionsDocument, {
+    update(cache, { data }) {
+      if (data?.updateNotificationSubscriptions) {
+        cache.evict({
+          fieldName: "queryNotifications",
+        });
+      }
+    },
+    ...options,
+  });
+
+export const useMarkNotificationsRead = () =>
+  useMutation(MarkNotificationsReadDocument, {
+    update(cache, { data }) {
+      if (data?.markNotificationsRead) {
+        cache.evict({ fieldName: "queryNotifications" });
+        cache.evict({ fieldName: "getUnreadNotificationCount" });
+      }
+    },
   });

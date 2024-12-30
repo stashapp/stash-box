@@ -38,20 +38,21 @@ type siteURL struct {
 }
 
 type sceneOutput struct {
-	ID           string                 `json:"id"`
-	Title        *string                `json:"title"`
-	Details      *string                `json:"details"`
-	Date         *string                `json:"release_date"`
-	Urls         []*siteURL             `json:"urls"`
-	Studio       *idObject              `json:"studio"`
-	Tags         []*idObject            `json:"tags"`
-	Images       []*idObject            `json:"images"`
-	Performers   []*performerAppearance `json:"performers"`
-	Fingerprints []*fingerprint         `json:"fingerprints"`
-	Duration     *int                   `json:"duration"`
-	Director     *string                `json:"director"`
-	Code         *string                `json:"code"`
-	Deleted      bool                   `json:"deleted"`
+	ID             string                 `json:"id"`
+	Title          *string                `json:"title"`
+	Details        *string                `json:"details"`
+	Date           *string                `json:"release_date"`
+	ProductionDate *string                `json:"production_date"`
+	Urls           []*siteURL             `json:"urls"`
+	Studio         *idObject              `json:"studio"`
+	Tags           []*idObject            `json:"tags"`
+	Images         []*idObject            `json:"images"`
+	Performers     []*performerAppearance `json:"performers"`
+	Fingerprints   []*fingerprint         `json:"fingerprints"`
+	Duration       *int                   `json:"duration"`
+	Director       *string                `json:"director"`
+	Code           *string                `json:"code"`
+	Deleted        bool                   `json:"deleted"`
 }
 
 func (s sceneOutput) UUID() uuid.UUID {
@@ -76,6 +77,7 @@ type performerOutput struct {
 	Disambiguation  *string       `json:"disambiguation"`
 	Gender          *string       `json:"gender"`
 	Birthdate       *string       `json:"birth_date"`
+	Deathdate       *string       `json:"death_date"`
 	Ethnicity       *string       `json:"ethnicity"`
 	Country         *string       `json:"country"`
 	EyeColor        *string       `json:"eye_color"`

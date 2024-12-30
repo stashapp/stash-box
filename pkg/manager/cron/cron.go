@@ -80,11 +80,45 @@ func (c Cron) cleanDrafts() {
 	}
 }
 
+func (c Cron) cleanTokens() {
+	ctx := context.Background()
+	fac := c.rfp.Repo(ctx)
+	err := fac.WithTxn(func() error {
+		return fac.UserToken().DestroyExpired()
+	})
+
+	if err != nil {
+		logger.Errorf("Error cleaning user tokens: %s", err)
+	}
+}
+
+func (c Cron) cleanInvites() {
+	ctx := context.Background()
+	fac := c.rfp.Repo(ctx)
+	err := fac.WithTxn(func() error {
+		return fac.Invite().DestroyExpired()
+	})
+
+	if err != nil {
+		logger.Errorf("Error cleaning invites: %s", err)
+	}
+}
+
 func Init(rfp api.RepoProvider) {
 	c := cron.New()
 	cronJobs := Cron{rfp}
 
 	_, err := c.AddFunc("@every 5m", cronJobs.cleanDrafts)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = c.AddFunc("@every 1m", cronJobs.cleanTokens)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = c.AddFunc("@every 60m", cronJobs.cleanInvites)
 	if err != nil {
 		panic(err.Error())
 	}

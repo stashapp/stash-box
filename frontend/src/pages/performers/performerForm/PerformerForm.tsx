@@ -34,10 +34,12 @@ import {
 import MultiSelect from "src/components/multiSelect";
 import EditImages from "src/components/editImages";
 import URLInput from "src/components/urlInput";
+import ExistingPerformerAlert from "./ExistingPerformerAlert";
 
 import DiffPerformer from "./diff";
 import { PerformerSchema, PerformerFormData } from "./schema";
 import { InitialPerformer } from "./types";
+import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 
 import { GenderTypes } from "src/constants";
 
@@ -63,12 +65,13 @@ const GENDER: OptionEnum[] = [
 
 const HAIR: OptionEnum[] = [
   { value: "null", label: "Unknown" },
-  { value: "BLONDE", label: "Blonde" },
-  { value: "BRUNETTE", label: "Brunette" },
+  { value: "BLONDE", label: "Blond" },
+  { value: "BRUNETTE", label: "Brown" },
   { value: "BLACK", label: "Black" },
   { value: "RED", label: "Red" },
   { value: "AUBURN", label: "Auburn" },
   { value: "GREY", label: "Grey" },
+  { value: "WHITE", label: "White" },
   { value: "BALD", label: "Bald" },
   { value: "VARIOUS", label: "Various" },
   { value: "OTHER", label: "Other" },
@@ -119,11 +122,12 @@ interface PerformerProps {
     data: PerformerEditDetailsInput,
     note: string,
     updateAliases: boolean,
-    id?: string
+    id?: string,
   ) => void;
   initial?: InitialPerformer;
   options?: PerformerEditOptionsInput | null;
   saving: boolean;
+  isCreate?: boolean;
 }
 
 const PerformerForm: FC<PerformerProps> = ({
@@ -132,7 +136,9 @@ const PerformerForm: FC<PerformerProps> = ({
   initial,
   saving,
   options,
+  isCreate = false,
 }) => {
+  useBeforeUnload();
   const initialAliases = initial?.aliases ?? performer?.aliases ?? [];
   const {
     register,
@@ -150,29 +156,30 @@ const PerformerForm: FC<PerformerProps> = ({
       aliases: initialAliases,
       gender: initial?.gender ?? performer?.gender ?? "",
       birthdate: initial?.birthdate ?? performer?.birth_date ?? undefined,
+      deathdate: initial?.deathdate ?? performer?.death_date ?? undefined,
       eye_color: getEnumValue(
         EYE,
-        initial?.eye_color ?? performer?.eye_color ?? null
+        initial?.eye_color ?? performer?.eye_color ?? null,
       ),
       hair_color: getEnumValue(
         HAIR,
-        initial?.hair_color ?? performer?.hair_color ?? null
+        initial?.hair_color ?? performer?.hair_color ?? null,
       ),
       height: initial?.height || performer?.height,
       breastType: getEnumValue(
         BREAST,
-        initial?.breast_type ?? performer?.breast_type ?? null
+        initial?.breast_type ?? performer?.breast_type ?? null,
       ),
       braSize: getBraSize(
         initial?.cup_size ?? performer?.cup_size,
-        initial?.band_size ?? performer?.band_size
+        initial?.band_size ?? performer?.band_size,
       ),
       waistSize: initial?.waist_size ?? performer?.waist_size,
       hipSize: initial?.hip_size ?? performer?.hip_size,
       country: initial?.country ?? performer?.country ?? "",
       ethnicity: getEnumValue(
         ETHNICITY,
-        initial?.ethnicity ?? performer?.ethnicity ?? null
+        initial?.ethnicity ?? performer?.ethnicity ?? null,
       ),
       career_start_year:
         initial?.career_start_year ?? performer?.career_start_year,
@@ -186,7 +193,7 @@ const PerformerForm: FC<PerformerProps> = ({
 
   const [activeTab, setActiveTab] = useState("personal");
   const [updateAliases, setUpdateAliases] = useState<boolean>(
-    options?.set_modify_aliases ?? true
+    options?.set_modify_aliases ?? true,
   );
   const [file, setFile] = useState<File | undefined>();
 
@@ -197,9 +204,9 @@ const PerformerForm: FC<PerformerProps> = ({
         PerformerSchema.cast(fieldData, {
           assert: "ignore-optionality",
         }) as PerformerFormData,
-        performer
+        performer,
       ),
-    [fieldData, performer]
+    [fieldData, performer],
   );
 
   const changedName =
@@ -228,6 +235,7 @@ const PerformerForm: FC<PerformerProps> = ({
       disambiguation: data.disambiguation,
       gender: GenderEnum[data.gender as keyof typeof GenderEnum] || null,
       birthdate: data.birthdate,
+      deathdate: data.deathdate,
       eye_color:
         EyeColorEnum[data.eye_color as keyof typeof EyeColorEnum] || null,
       hair_color:
@@ -256,6 +264,9 @@ const PerformerForm: FC<PerformerProps> = ({
       const [cupSize, bandSize] = parseBraSize(data.braSize);
       performerData.cup_size = cupSize;
       performerData.band_size = bandSize ?? 0;
+    } else if (performer?.band_size || performer?.cup_size) {
+      performerData.cup_size = null;
+      performerData.band_size = null;
     }
 
     if (
@@ -270,16 +281,13 @@ const PerformerForm: FC<PerformerProps> = ({
   const countryObj = [
     { label: "Unknown", value: "" },
     ...sortBy(
-      Object.keys(CountryList).map((name: string) => {
-        const countryName: string = Array.isArray(CountryList[name])
-          ? CountryList[name][0]
-          : CountryList[name];
+      Object.entries(CountryList).map(([, countryName]) => {
         return {
           label: countryName,
           value: Countries.getAlpha2Code(countryName, "en"),
         };
       }),
-      "label"
+      "label",
     ),
   ];
 
@@ -290,6 +298,7 @@ const PerformerForm: FC<PerformerProps> = ({
     { error: errors.name?.message, tab: "personal" },
     { error: errors.gender?.message, tab: "personal" },
     { error: errors.birthdate?.message, tab: "personal" },
+    { error: errors.deathdate?.message, tab: "personal" },
     { error: errors.career_start_year?.message, tab: "personal" },
     { error: errors.career_end_year?.message, tab: "personal" },
     { error: errors.height?.message, tab: "personal" },
@@ -304,6 +313,17 @@ const PerformerForm: FC<PerformerProps> = ({
   return (
     <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" value={performer?.id} {...register("id")} />
+      {isCreate && (
+        <Row>
+          <Col xs={9}>
+            <ExistingPerformerAlert
+              name={fieldData.name || ""}
+              disambiguation={fieldData.disambiguation}
+              urls={fieldData.urls || []}
+            />
+          </Col>
+        </Row>
+      )}
       <Tabs
         activeKey={activeTab}
         onSelect={(key) => key && setActiveTab(key)}
@@ -352,7 +372,7 @@ const PerformerForm: FC<PerformerProps> = ({
           )}
 
           <Row>
-            <Form.Group controlId="aliases" className="col mb-3">
+            <Form.Group controlId="aliases" className="col">
               <Form.Label>Aliases</Form.Label>
               <Controller
                 control={control}
@@ -371,12 +391,11 @@ const PerformerForm: FC<PerformerProps> = ({
             </Form.Group>
           </Row>
 
-          <Row>
-            <Form.Group controlId="gender" className="col-6 mb-3">
+          <Row className="mb-3">
+            <Form.Group controlId="gender" className="col-6">
               <Form.Label>Gender</Form.Label>
               <Form.Select
                 className={cx({ "is-invalid": errors.gender })}
-                placeholder="Select gender..."
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
@@ -386,7 +405,7 @@ const PerformerForm: FC<PerformerProps> = ({
               </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group controlId="birthdate" className="col-6 mb-3">
+            <Form.Group controlId="birthdate" className="col-3">
               <Form.Label>Birthdate</Form.Label>
               <Form.Control
                 className={cx({ "is-invalid": errors.birthdate })}
@@ -396,11 +415,26 @@ const PerformerForm: FC<PerformerProps> = ({
               <Form.Control.Feedback type="invalid">
                 {errors?.birthdate?.message}
               </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group controlId="deathdate" className="col-3">
+              <Form.Label>Deathdate</Form.Label>
+              <Form.Control
+                className={cx({ "is-invalid": errors.deathdate })}
+                placeholder="YYYY-MM-DD"
+                {...register("deathdate")}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors?.deathdate?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Col xs={{ span: 6, offset: 6 }}>
               <Form.Text>
                 If the precise date is unknown the day and/or month can be
                 omitted.
               </Form.Text>
-            </Form.Group>
+            </Col>
           </Row>
 
           <Row>
@@ -519,7 +553,7 @@ const PerformerForm: FC<PerformerProps> = ({
                     onChange={(option) => onChange(option?.value)}
                     options={countryObj}
                     defaultValue={countryObj.find(
-                      (country) => country.value === value
+                      (country) => country.value === value,
                     )}
                   />
                 )}
@@ -657,7 +691,7 @@ const PerformerForm: FC<PerformerProps> = ({
             newChanges,
             oldChanges,
             !!performer,
-            updateAliases
+            updateAliases,
           )}
           <Row className="my-4">
             <Col md={{ span: 8, offset: 4 }}>

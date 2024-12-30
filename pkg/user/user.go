@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/manager/notifications"
 	"github.com/stashapp/stash-box/pkg/models"
 	"github.com/stashapp/stash-box/pkg/utils"
 )
@@ -28,6 +29,7 @@ var (
 	ErrUserNotExist                    = errors.New("user not found")
 	ErrEmptyUsername                   = errors.New("empty username")
 	ErrUsernameHasWhitespace           = errors.New("username has leading or trailing whitespace")
+	ErrUsernameMatchesEmail            = errors.New("username is the same as email")
 	ErrEmptyEmail                      = errors.New("empty email")
 	ErrEmailHasWhitespace              = errors.New("email has leading or trailing whitespace")
 	ErrInvalidEmail                    = errors.New("not a valid email address")
@@ -57,7 +59,7 @@ var modUserRoles []models.RoleEnum = []models.RoleEnum{
 
 func ValidateCreate(input models.UserCreateInput) error {
 	// username must be set
-	err := validateUserName(input.Name)
+	err := validateUserName(input.Name, &input.Email)
 	if err != nil {
 		return err
 	}
@@ -99,7 +101,7 @@ func ValidateUpdate(input models.UserUpdateInput, current models.User) error {
 	if input.Name != nil {
 		currentName = *input.Name
 
-		err := validateUserName(*input.Name)
+		err := validateUserName(*input.Name, input.Email)
 		if err != nil {
 			return err
 		}
@@ -135,7 +137,7 @@ func ValidateDestroy(user *models.User) error {
 	return nil
 }
 
-func validateUserName(username string) error {
+func validateUserName(username string, email *string) error {
 	if username == "" {
 		return ErrEmptyUsername
 	}
@@ -145,6 +147,10 @@ func validateUserName(username string) error {
 
 	if trimmed != username {
 		return ErrUsernameHasWhitespace
+	}
+
+	if email != nil && *email == trimmed {
+		return ErrUsernameMatchesEmail
 	}
 
 	return nil
@@ -255,6 +261,12 @@ func Create(fac models.Repo, input models.UserCreateInput) (*models.User, error)
 	// Save the roles
 	userRoles := models.CreateUserRoles(user.ID, input.Roles)
 	if err := qb.CreateRoles(userRoles); err != nil {
+		return nil, err
+	}
+
+	// Save the notification subscriptions
+	notificationSubscriptions := models.CreateUserNotifications(user.ID, notifications.GetDefaultSubscriptions())
+	if err := fac.Joins().UpdateUserNotifications(user.ID, notificationSubscriptions); err != nil {
 		return nil, err
 	}
 
