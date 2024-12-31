@@ -45,6 +45,9 @@ type Query {
   findSite(id: ID!): Site @hasRole(role: READ)
   querySites: QuerySitesResultType! @hasRole(role: READ)
 
+  """Find Updated Scenes"""
+  findUpdatedScenes(input: [QueryUpdatedScenesInput!]!): [QueryUpdatedScenesResult!]! @hasRole(role: READ)
+
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)

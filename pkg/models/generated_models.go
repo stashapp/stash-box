@@ -542,6 +542,18 @@ type QueryTagsResultType struct {
 	Tags  []*Tag `json:"tags"`
 }
 
+type QueryUpdatedScenesInput struct {
+	ID                 uuid.UUID `json:"id"`
+	LastRecordedUpdate time.Time `json:"last_recorded_update"`
+}
+
+type QueryUpdatedScenesResult struct {
+	ID      uuid.UUID `json:"id"`
+	Updated bool      `json:"updated"`
+	Deleted bool      `json:"deleted"`
+	Scene   *Scene    `json:"scene,omitempty"`
+}
+
 type QueryUsersResultType struct {
 	Count int     `json:"count"`
 	Users []*User `json:"users"`

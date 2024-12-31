@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -118,6 +119,46 @@ func (r *queryResolver) FindScenesBySceneFingerprints(ctx context.Context, scene
 	}
 
 	return result, nil
+}
+
+func (r *queryResolver) FindUpdatedScenes(ctx context.Context, input []*models.QueryUpdatedScenesInput) ([]*models.QueryUpdatedScenesResult, error) {
+	if len(input) > 100 || len(input) < 1 {
+		return nil, errors.New("request between 1 and 100 ids")
+	}
+
+	fac := r.getRepoFactory(ctx)
+	qb := fac.Scene()
+
+	idDateMap := make(map[uuid.UUID]time.Time, len(input))
+	ids := make([]uuid.UUID, len(input))
+	for i, inputScene := range input {
+		idDateMap[inputScene.ID] = inputScene.LastRecordedUpdate
+		ids[i] = inputScene.ID
+	}
+
+	outputScenes, errs := qb.FindByIds(ids)
+	if errs[0] != nil {
+		return nil, errs[0]
+	}
+
+	response := make([]*models.QueryUpdatedScenesResult, 0, len(outputScenes))
+	for _, scene := range outputScenes {
+		if scene != nil {
+			updated := scene.UpdatedAt.After(idDateMap[scene.ID])
+			deleted := scene.IsDeleted()
+
+			result := &models.QueryUpdatedScenesResult{
+				ID:      scene.ID,
+				Updated: updated,
+				Deleted: deleted,
+			}
+			if updated || deleted {
+				result.Scene = scene
+			}
+			response = append(response, result)
+		}
+	}
+	return response, nil
 }
 
 type querySceneResolver struct{ *Resolver }
