@@ -100,7 +100,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			ctx = context.WithValue(ctx, user.ContextRoles, roles)
 
 			span := trace.SpanFromContext(ctx)
-			if span.SpanContext().IsValid() {
+			if span.SpanContext().IsValid() && u != nil {
 				span.SetAttributes(attribute.String("user.id", u.ID.String()))
 			}
 
