@@ -34,7 +34,7 @@ func InitTracer() func(context.Context) error {
 	resources, err := resource.New(
 		context.Background(),
 		resource.WithAttributes(
-			attribute.String("service.name", "stash-box"),
+			attribute.String("service.name", config.GetTitle()),
 			attribute.String("library.language", "go"),
 		),
 	)
