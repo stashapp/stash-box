@@ -159,7 +159,7 @@ func (qb *studioQueryBuilder) FindByParentID(id uuid.UUID) (models.Studios, erro
 }
 
 func (qb *studioQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT studios.id FROM studios"), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
 func (qb *studioQueryBuilder) Query(filter models.StudioQueryInput, userID uuid.UUID) (models.Studios, int, error) {
@@ -311,7 +311,7 @@ func (qb *studioQueryBuilder) CountByPerformer(performerID uuid.UUID) ([]*models
 			GROUP BY studio_id
 		) C ON S.id = C.studio_id`
 	query = qb.dbi.db().Rebind(query)
-	if err := qb.dbi.db().Select(&results, query, performerID); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err := qb.dbi.db().SelectContext(qb.dbi.txn.ctx, &results, query, performerID); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 

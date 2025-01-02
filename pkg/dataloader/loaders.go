@@ -46,10 +46,12 @@ type Loaders struct {
 	EditCommentByID                EditCommentLoader
 }
 
-func Middleware(fac models.Repo) func(next http.Handler) http.Handler {
+func Middleware(getRepo func(ctx context.Context) models.Repo) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), loadersKey, GetLoaders(r.Context(), fac))
+			ctx := r.Context()
+			fac := getRepo(ctx)
+			ctx = context.WithValue(ctx, loadersKey, GetLoaders(r.Context(), fac))
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
 		})

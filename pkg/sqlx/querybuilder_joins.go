@@ -146,7 +146,7 @@ func (qb *joinsQueryBuilder) IsPerformerFavorite(favorite models.PerformerFavori
 		AND user_id = $2
 	`
 	args := []interface{}{favorite.PerformerID, favorite.UserID}
-	res, err := runCountQuery(qb.dbi.db(), query, args)
+	res, err := runCountQuery(qb.dbi, query, args)
 	return res > 0, err
 }
 
@@ -157,7 +157,7 @@ func (qb *joinsQueryBuilder) IsStudioFavorite(favorite models.StudioFavorite) (b
 		AND user_id = $2
 	`
 	args := []interface{}{favorite.StudioID, favorite.UserID}
-	res, err := runCountQuery(qb.dbi.db(), query, args)
+	res, err := runCountQuery(qb.dbi, query, args)
 	return res > 0, err
 }
 

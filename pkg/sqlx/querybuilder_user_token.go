@@ -69,5 +69,5 @@ func (qb *userTokenQueryBuilder) FindByInviteKey(key uuid.UUID) ([]*models.UserT
 }
 
 func (qb *userTokenQueryBuilder) Count() (int, error) {
-	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT "+userTokenTable+".id FROM "+userTokenTable), nil)
+	return runCountQuery(qb.dbi, buildCountQuery("SELECT "+userTokenTable+".id FROM "+userTokenTable), nil)
 }

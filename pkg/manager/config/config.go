@@ -25,6 +25,11 @@ type PostgresConfig struct {
 	ConnMaxLifetime int `mapstructure:"conn_max_lifetime"`
 }
 
+type OTelConfig struct {
+	Endpoint   string  `mapstructure:"endpoint"`
+	TraceRatio float64 `mapstructure:"trace_ratio"`
+}
+
 type config struct {
 	Host         string `mapstructure:"host"`
 	Port         int    `mapstructure:"port"`
@@ -89,6 +94,10 @@ type config struct {
 
 	Postgres struct {
 		PostgresConfig `mapstructure:",squash"`
+	}
+
+	OTel struct {
+		OTelConfig `mapstructure:",squash"`
 	}
 
 	PHashDistance int `mapstructure:"phash_distance"`
@@ -244,6 +253,13 @@ func GetImageBackend() ImageBackendType {
 
 func GetS3Config() *S3Config {
 	return &C.S3.S3Config
+}
+
+func GetOTelConfig() *OTelConfig {
+	if C.OTel.Endpoint != "" {
+		return &C.OTel.OTelConfig
+	}
+	return nil
 }
 
 // ValidateImageLocation returns an error is image_location is not set.

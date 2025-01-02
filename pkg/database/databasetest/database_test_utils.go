@@ -1,6 +1,7 @@
 package databasetest
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -59,7 +60,7 @@ func initPostgres(connString string) func() {
 
 	db = database.Initialize(databaseType, connString)
 	txnMgr := sqlxx.NewTxnMgr(db)
-	repo = txnMgr.Repo()
+	repo = txnMgr.Repo(context.TODO())
 
 	return teardownPostgres
 }
