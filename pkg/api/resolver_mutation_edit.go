@@ -35,7 +35,7 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumScene, input.Edit)
 
 	fac := r.getRepoFactory(ctx)
-	if config.GetRequireSceneDraft() {
+	if config.GetRequireSceneDraft() && input.Edit.Operation == models.OperationEnumCreate {
 		if input.Details != nil && input.Details.DraftID != nil {
 			draft, err := fac.Draft().Find(*input.Details.DraftID)
 			if err != nil || draft == nil {
