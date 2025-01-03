@@ -95,8 +95,6 @@ function handleResult(
   let performers: SearchResult[] = [];
   let scenes: SearchResult[] = [];
 
-  debugger;
-
   if (resultIsSearchAll(result)) {
     const performerResults =
       result?.searchPerformer?.filter((p) => p !== null) ?? [];
