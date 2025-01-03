@@ -22,16 +22,11 @@
   &-performer {
     &-image {
       max-width: 4.67rem;
-
-      .fa-icon {
-        margin-right: 0 !important;
-      }
     }
   }
 
   &-scene {
     &-image {
-      height: 7rem;
       width: 12.44rem;
     }
   }
@@ -63,6 +58,10 @@
 
       &[src=""] {
         visibility: hidden;
+      }
+
+      .fa-icon {
+        margin-right: 0 !important;
       }
     }
   }

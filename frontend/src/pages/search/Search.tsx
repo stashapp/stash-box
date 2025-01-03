@@ -49,6 +49,7 @@ const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
         orientation="portrait"
         image={getImage(performer.images, "portrait")}
         className={CLASSNAME_PERFORMER_IMAGE}
+        size={150}
       />
       <div className="ms-3">
         <h4>
@@ -91,10 +92,10 @@ const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
 const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
   <Link to={sceneHref(scene)} className={CLASSNAME_SCENE}>
     <Card>
-      <img
-        src={getImage(scene.images, "landscape")}
+      <Thumbnail
+        image={getImage(scene.images, "landscape")}
         className={CLASSNAME_SCENE_IMAGE}
-        alt=""
+        size={200}
       />
       <div className="ms-3 w-100">
         <h5>
