@@ -68,6 +68,7 @@ const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
         className="SearchField-thumb"
         alt={value.name}
         size={100}
+        orientation="portrait"
       />
     )}
     <div>
