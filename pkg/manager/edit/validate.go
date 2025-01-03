@@ -58,14 +58,13 @@ func validateEditPrerequisites(fac models.Repo, edit *models.Edit) error {
 	return nil
 }
 
-func validateSceneEditInput(fac models.Repo, input models.SceneEditInput) error {
+func validateSceneEditInput(fac models.Repo, input models.SceneEditInput, edit *models.Edit, update bool) error {
 	if input.Details == nil {
 		return nil
 	}
 
 	if input.Details.DraftID != nil {
-		switch input.Edit.Operation {
-		case models.OperationEnumCreate:
+		if !update {
 			draft, err := fac.Draft().Find(*input.Details.DraftID)
 			if err != nil {
 				return err
@@ -73,8 +72,8 @@ func validateSceneEditInput(fac models.Repo, input models.SceneEditInput) error 
 			if draft == nil {
 				return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
 			}
-		case models.OperationEnumModify:
-			edit, err := fac.Edit().Find(*input.Edit.ID)
+		} else {
+			edit, err := fac.Edit().Find(edit.ID)
 			if err != nil {
 				return err
 			}
@@ -87,8 +86,6 @@ func validateSceneEditInput(fac models.Repo, input models.SceneEditInput) error 
 			if data.New.DraftID == nil || *data.New.DraftID != *input.Details.DraftID {
 				return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
 			}
-		default:
-			return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
 		}
 	}
 
@@ -156,14 +153,13 @@ func validateSceneEditInput(fac models.Repo, input models.SceneEditInput) error 
 	return nil
 }
 
-func validatePerformerEditInput(fac models.Repo, input models.PerformerEditInput) error {
+func validatePerformerEditInput(fac models.Repo, input models.PerformerEditInput, edit *models.Edit, update bool) error {
 	if input.Details == nil {
 		return nil
 	}
 
 	if input.Details.DraftID != nil {
-		switch input.Edit.Operation {
-		case models.OperationEnumCreate:
+		if !update {
 			draft, err := fac.Draft().Find(*input.Details.DraftID)
 			if err != nil {
 				return err
@@ -171,8 +167,8 @@ func validatePerformerEditInput(fac models.Repo, input models.PerformerEditInput
 			if draft == nil {
 				return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
 			}
-		case models.OperationEnumModify:
-			edit, err := fac.Edit().Find(*input.Edit.ID)
+		} else {
+			edit, err := fac.Edit().Find(edit.ID)
 			if err != nil {
 				return err
 			}
@@ -185,8 +181,6 @@ func validatePerformerEditInput(fac models.Repo, input models.PerformerEditInput
 			if data.New.DraftID == nil || *data.New.DraftID != *input.Details.DraftID {
 				return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
 			}
-		default:
-			return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
 		}
 	}
 
