@@ -21,8 +21,11 @@
 
   &-performer {
     &-image {
-      height: 7rem;
-      width: 4.67rem;
+      max-width: 4.67rem;
+
+      .fa-icon {
+        margin-right: 0 !important;
+      }
     }
   }
 

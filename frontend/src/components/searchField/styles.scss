@@ -12,8 +12,9 @@
   }
 
   &-thumb {
-    aspect-ratio: 2 / 3;
+    aspect-ratio: 2/3;
     height: 4rem;
+    width: auto;
     object-fit: cover;
     margin-right: 0.5rem;
   }

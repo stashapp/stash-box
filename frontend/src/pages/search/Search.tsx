@@ -19,6 +19,7 @@ import {
   GenderIcon,
   LoadingIndicator,
   PerformerName,
+  Thumbnail,
 } from "src/components/fragments";
 import Title from "src/components/title";
 import {
@@ -44,10 +45,10 @@ const CLASSNAME_SCENE_IMAGE = `${CLASSNAME_SCENE}-image`;
 const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
   <Link to={performerHref(performer)} className={CLASSNAME_PERFORMER}>
     <Card>
-      <img
-        src={getImage(performer.images, "portrait")}
+      <Thumbnail
+        orientation="portrait"
+        image={getImage(performer.images, "portrait")}
         className={CLASSNAME_PERFORMER_IMAGE}
-        alt=""
       />
       <div className="ms-3">
         <h4>
