@@ -35,6 +35,7 @@ const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
           image={getImage(performer.images, "portrait")}
           alt={performer.name}
           size={350}
+          orientation="portrait"
         />
         <FavoriteStar
           entity={performer}
