@@ -8,7 +8,7 @@ import (
 func OnApplyEdit(fac models.Repo, edit *models.Edit) {
 	nqb := fac.Notification()
 	eqb := fac.Edit()
-	if edit.Status == models.VoteStatusEnumAccepted.String() || edit.Status == models.VoteStatusEnumImmediateAccepted.String() && edit.Operation == models.OperationEnumCreate.String() {
+	if (edit.Status == models.VoteStatusEnumAccepted.String() || edit.Status == models.VoteStatusEnumImmediateAccepted.String()) && edit.Operation == models.OperationEnumCreate.String() {
 		if edit.TargetType == models.TargetTypeEnumScene.String() {
 			sceneID, err := eqb.FindSceneID(edit.ID)
 			if err != nil || sceneID == nil {
