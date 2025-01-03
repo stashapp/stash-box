@@ -13,8 +13,12 @@ import Title from "src/components/title";
 import { useCurrentUser } from "src/hooks";
 
 const schema = yup.object({
-  name: yup.string().required("Username is required"),
-  activationKey: yup.string().required("Activation Key is required"),
+  name: yup.string().trim().required("Username is required"),
+  activationKey: yup
+    .string()
+    .trim()
+    .uuid("Invalid activation key")
+    .required("Activation key is required"),
   password: yup.string().required("Password is required"),
 });
 type ActivateNewUserFormData = yup.InferType<typeof schema>;
