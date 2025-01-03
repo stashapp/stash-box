@@ -25,7 +25,7 @@ type ScenePerformer = NonNullable<
   SceneQuery["findScene"]
 >["performers"][number];
 
-type URL = { url: string; site: { id: string; name: string } };
+type URL = { url: string; site: { id: string; name: string; icon: string } };
 const joinURLs = <T extends URL>(
   newURLs: T[] | undefined | null,
   existingURLs: T[] | undefined,
@@ -84,7 +84,7 @@ const parseUrls = (
     if (matchedSite)
       matches.push({
         url: cleanURL(matchedSite.regex, url) ?? url,
-        site: { id: matchedSite.id, name: matchedSite.name },
+        site: matchedSite,
       });
     else remainder.push(url);
   }
@@ -101,11 +101,7 @@ const parseSceneUrls = (
   // Fall back to studio URL if there's only one unmatched URL
   if (matches.length === 0 && remainder.length === 1) {
     const studio = sites.find((site) => site.name === "Studio");
-    if (studio)
-      return [
-        [{ url: remainder[0], site: { id: studio.id, name: studio.name } }],
-        [],
-      ];
+    if (studio) return [[{ url: remainder[0], site: studio }], []];
   }
 
   return [matches, remainder];
