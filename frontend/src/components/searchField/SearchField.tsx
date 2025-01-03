@@ -161,7 +161,7 @@ function handleResult(
     ? [{ label: "Scenes", options: scenes }]
     : [];
   const showAll =
-    showAllLink && performerResults.length > 0 && sceneResults.length > 0
+    showAllLink && (performerResults.length > 0 || sceneResults.length > 0)
       ? [{ type: "ALL", label: "Show all results" }]
       : [];
 
