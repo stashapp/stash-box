@@ -24,8 +24,8 @@ func Performer(fac models.Repo, edit *models.Edit) *PerformerEditProcessor {
 	}
 }
 
-func (m *PerformerEditProcessor) Edit(input models.PerformerEditInput, inputArgs utils.ArgumentsQuery) error {
-	if err := validatePerformerEditInput(m.fac, input); err != nil {
+func (m *PerformerEditProcessor) Edit(input models.PerformerEditInput, inputArgs utils.ArgumentsQuery, update bool) error {
+	if err := validatePerformerEditInput(m.fac, input, m.edit, update); err != nil {
 		return err
 	}
 
