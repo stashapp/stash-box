@@ -64,14 +64,34 @@ func validateSceneEditInput(fac models.Repo, input models.SceneEditInput) error 
 	}
 
 	if input.Details.DraftID != nil {
-		draft, err := fac.Draft().Find(*input.Details.DraftID)
-		if err != nil {
-			return err
-		}
-		if draft == nil {
+		switch input.Edit.Operation {
+		case models.OperationEnumCreate:
+			draft, err := fac.Draft().Find(*input.Details.DraftID)
+			if err != nil {
+				return err
+			}
+			if draft == nil {
+				return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
+			}
+		case models.OperationEnumModify:
+			edit, err := fac.Edit().Find(*input.Edit.ID)
+			if err != nil {
+				return err
+			}
+
+			data, err := edit.GetSceneData()
+			if err != nil {
+				return err
+			}
+
+			if data.New.DraftID == nil || *data.New.DraftID != *input.Details.DraftID {
+				return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
+			}
+		default:
 			return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
 		}
 	}
+
 	if input.Details.StudioID != nil {
 		draft, err := fac.Studio().Find(*input.Details.StudioID)
 		if err != nil {
@@ -142,14 +162,34 @@ func validatePerformerEditInput(fac models.Repo, input models.PerformerEditInput
 	}
 
 	if input.Details.DraftID != nil {
-		draft, err := fac.Draft().Find(*input.Details.DraftID)
-		if err != nil {
-			return err
-		}
-		if draft == nil {
+		switch input.Edit.Operation {
+		case models.OperationEnumCreate:
+			draft, err := fac.Draft().Find(*input.Details.DraftID)
+			if err != nil {
+				return err
+			}
+			if draft == nil {
+				return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
+			}
+		case models.OperationEnumModify:
+			edit, err := fac.Edit().Find(*input.Edit.ID)
+			if err != nil {
+				return err
+			}
+
+			data, err := edit.GetPerformerData()
+			if err != nil {
+				return err
+			}
+
+			if data.New.DraftID == nil || *data.New.DraftID != *input.Details.DraftID {
+				return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
+			}
+		default:
 			return fmt.Errorf("%w: %s", ErrInvalidDraft, *input.Details.DraftID)
 		}
 	}
+
 	if len(input.Details.ImageIds) > 0 {
 		images, errs := fac.Image().FindByIds(input.Details.ImageIds)
 		for i := range images {
