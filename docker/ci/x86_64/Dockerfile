@@ -1,10 +1,10 @@
 
 # must be built from /dist directory
 
-FROM alpine as app
+FROM ubuntu:24.04 as app
 LABEL MAINTAINER="https://discord.gg/Uz29ny"
 
-RUN apk add --update --no-cache --repository https://dl-3.alpinelinux.org/alpine/edge/community --repository https://dl-3.alpinelinux.org/alpine/edge/main vips
+RUN apt-get update && apt-get install -y libvips
 
 COPY stash-box-linux /usr/bin/stash-box
 
