@@ -33,7 +33,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	imageRepo := getRepo(r.Context()).Image()
 
 	databaseImage, err := imageRepo.Find(uuid)
-	if err != nil {
+	if err != nil || databaseImage == nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -43,6 +43,10 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
+	}
+
+	if databaseImage.Width == -1 {
+		w.Header().Add("Content-Type", "image/svg+xml")
 	}
 
 	w.Header().Add("Cache-Control", "max-age=604800000")

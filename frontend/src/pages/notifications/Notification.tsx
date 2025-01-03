@@ -50,7 +50,7 @@ const NotificationHeader = ({
           <span>
             <em>{notification.data.comment.user?.name}</em> commented on an{" "}
             {editLink}
-            {"you've commented on."}
+            {" you've commented on."}
           </span>
         );
       if (notification.data.__typename === "CommentOwnEdit")
