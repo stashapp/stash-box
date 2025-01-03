@@ -24,8 +24,8 @@ func Scene(fac models.Repo, edit *models.Edit) *SceneEditProcessor {
 	}
 }
 
-func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery) error {
-	if err := validateSceneEditInput(m.fac, input); err != nil {
+func (m *SceneEditProcessor) Edit(input models.SceneEditInput, inputArgs utils.ArgumentsQuery, update bool) error {
+	if err := validateSceneEditInput(m.fac, input, m.edit, update); err != nil {
 		return err
 	}
 

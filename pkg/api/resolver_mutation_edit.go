@@ -35,7 +35,7 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 	newEdit := models.NewEdit(UUID, currentUser, models.TargetTypeEnumScene, input.Edit)
 
 	fac := r.getRepoFactory(ctx)
-	if config.GetRequireSceneDraft() {
+	if config.GetRequireSceneDraft() && input.Edit.Operation == models.OperationEnumCreate {
 		if input.Details != nil && input.Details.DraftID != nil {
 			draft, err := fac.Draft().Find(*input.Details.DraftID)
 			if err != nil || draft == nil {
@@ -49,7 +49,7 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 	err = fac.WithTxn(func() error {
 		p := edit.Scene(fac, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
-		if err := p.Edit(input, inputArgs); err != nil {
+		if err := p.Edit(input, inputArgs, false); err != nil {
 			return err
 		}
 
@@ -95,7 +95,7 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 	err = fac.WithTxn(func() error {
 		p := edit.Scene(fac, existingEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
-		if err := p.Edit(input, inputArgs); err != nil {
+		if err := p.Edit(input, inputArgs, true); err != nil {
 			return err
 		}
 
@@ -286,7 +286,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	err = fac.WithTxn(func() error {
 		p := edit.Performer(fac, newEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
-		if err := p.Edit(input, inputArgs); err != nil {
+		if err := p.Edit(input, inputArgs, false); err != nil {
 			return err
 		}
 
@@ -332,7 +332,7 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 	err = fac.WithTxn(func() error {
 		p := edit.Performer(fac, existingEdit)
 		inputArgs := utils.Arguments(ctx).Field("input")
-		if err := p.Edit(input, inputArgs); err != nil {
+		if err := p.Edit(input, inputArgs, true); err != nil {
 			return err
 		}
 

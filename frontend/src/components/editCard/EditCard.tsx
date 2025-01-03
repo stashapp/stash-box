@@ -22,12 +22,14 @@ const CLASSNAME = "EditCard";
 interface Props {
   edit: EditFragment;
   showVotes?: boolean;
+  showVoteBar?: boolean;
   hideDiff?: boolean;
 }
 
 const EditCardComponent: FC<Props> = ({
   edit,
   showVotes = false,
+  showVoteBar = true,
   hideDiff = false,
 }) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
@@ -92,7 +94,7 @@ const EditCardComponent: FC<Props> = ({
             <b className="me-2">Status:</b>
             <EditStatus {...edit} />
             <EditExpiration edit={edit} />
-            <VoteBar edit={edit} />
+            {showVoteBar && <VoteBar edit={edit} />}
           </div>
         </div>
       </Card.Header>
