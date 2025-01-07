@@ -212,7 +212,7 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleChange = (result: OnChangeValue<SearchResult, false>) => {
     if (result?.type === "ALL")
-      return navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+      return navigate(createHref(ROUTE_SEARCH, { "*": searchTerm.current }));
 
     if (result?.value) {
       if (valueIsPerformer(result.value)) onClickPerformer?.(result.value);
@@ -225,7 +225,7 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
-      navigate(createHref(ROUTE_SEARCH, { term: searchTerm.current }));
+      navigate(createHref(ROUTE_SEARCH, { "*": searchTerm.current }));
       selectRef?.current?.blur();
     }
   };

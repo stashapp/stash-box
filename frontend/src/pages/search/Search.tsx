@@ -127,7 +127,7 @@ const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
 );
 
 const Search: FC = () => {
-  const { term } = useParams();
+  const { "*": term } = useParams();
   const navigate = useNavigate();
   const { loading, data } = useSearchAll(
     {
@@ -143,7 +143,7 @@ const Search: FC = () => {
         (searchTerm: string) =>
           navigate(
             searchTerm
-              ? createHref(ROUTE_SEARCH, { term: searchTerm })
+              ? createHref(ROUTE_SEARCH, { "*": searchTerm })
               : ROUTE_SEARCH_INDEX,
             { replace: true },
           ),
