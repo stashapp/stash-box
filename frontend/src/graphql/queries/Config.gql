@@ -1,5 +1,6 @@
 query Config {
   getConfig {
+    edit_update_limit
     host_url
     require_invite
     require_activation

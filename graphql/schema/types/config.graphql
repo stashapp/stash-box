@@ -9,4 +9,5 @@ type StashBoxConfig {
   vote_cron_interval: String!
   guidelines_url: String!
   require_scene_draft: Boolean!
+  edit_update_limit: Int!
 }

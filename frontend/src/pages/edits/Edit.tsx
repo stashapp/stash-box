@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import { Button } from "react-bootstrap";
 import { useParams, Link } from "react-router-dom";
+import { UpdateCount } from "./components/UpdateCount";
 
 import {
   useEdit,
@@ -80,6 +81,10 @@ const EditComponent: FC = () => {
   const buttons = (isAdmin || isSelf(edit.user?.id)) &&
     edit.status === VoteStatusEnum.PENDING && (
       <div className="d-flex justify-content-end">
+        <UpdateCount
+          updatable={edit.updatable}
+          updateCount={edit.update_count}
+        />
         {edit.updatable && (
           <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
             <Button variant="primary" disabled={mutating}>
