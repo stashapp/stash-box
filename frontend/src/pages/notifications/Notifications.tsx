@@ -11,7 +11,7 @@ import {
 import { useCurrentUser, useQueryParams, usePagination } from "src/hooks";
 import { ROUTE_NOTIFICATION_SUBSCRIPTIONS } from "src/constants/route";
 import { userHref, resolveEnum, NotificationType } from "src/utils";
-import { ErrorMessage, Icon } from "src/components/fragments";
+import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import { List } from "src/components/list";
 import { Notification } from "./Notification";
 
@@ -43,7 +43,7 @@ const Notifications: FC = () => {
     },
   });
 
-  if (loading) return null;
+  if (loading) return <LoadingIndicator message="Loading notifications..." />;
 
   if (!loading && !data) return <ErrorMessage error="No notifications" />;
 
