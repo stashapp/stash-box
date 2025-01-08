@@ -1,5 +1,6 @@
 import { useMutation, MutationHookOptions } from "@apollo/client";
 
+import MeGql from "../queries/Me.gql";
 import {
   ActivateNewUserMutation,
   ActivateNewUserMutationVariables,
@@ -136,6 +137,7 @@ import {
   UpdateNotificationSubscriptionsMutation,
   UpdateNotificationSubscriptionsMutationVariables,
   MarkNotificationsReadDocument,
+  MeQuery,
 } from "../types";
 
 export const useActivateUser = (
@@ -444,8 +446,11 @@ export const useUpdateNotificationSubscriptions = (
   useMutation(UpdateNotificationSubscriptionsDocument, {
     update(cache, { data }) {
       if (data?.updateNotificationSubscriptions) {
+        const user = cache.read<MeQuery>({ query: MeGql, optimistic: false });
+
         cache.evict({
-          fieldName: "queryNotifications",
+          id: cache.identify({ __typename: "User", id: user?.me?.id }),
+          fieldName: "notification_subscriptions",
         });
       }
     },
