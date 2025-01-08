@@ -114,21 +114,27 @@ INSERT INTO notifications
 			FROM edit_comments EC
 			JOIN edits E ON EC.edit_id = E.id
 			JOIN user_notifications N ON E.user_id = N.user_id AND N.type = 'COMMENT_OWN_EDIT'
-			WHERE EC.id = $1
+			WHERE E.user_id != EC.user_id
+			AND EC.id = $1
 			UNION
 			SELECT N.user_id, N.type, 2 as ordering
 			FROM edit_comments EC
 			JOIN edits E ON EC.edit_id = E.id
 			JOIN edit_comments EO ON EO.edit_id = E.id
 			JOIN user_notifications N ON EO.user_id = N.user_id AND N.type = 'COMMENT_COMMENTED_EDIT'
-			WHERE EO.user_id != E.user_id AND EO.user_id != EC.user_id AND EC.id = $1
+			WHERE EO.user_id != E.user_id
+			AND EO.user_id != EC.user_id
+			AND EC.id = $1
 			UNION
 			SELECT N.user_id, N.type, 3 as ordering
 			FROM edit_comments EC
 			JOIN edits E ON EC.edit_id = E.id
 			JOIN edit_votes EV ON EV.edit_id = E.id
 			JOIN user_notifications N ON EV.user_id = N.user_id AND N.type = 'COMMENT_VOTED_EDIT'
-			WHERE EV.vote != 'ABSTAIN' AND EV.user_id != E.user_id AND EV.user_id != EC.user_id AND EC.id = $1
+			WHERE EV.vote != 'ABSTAIN'
+			AND EV.user_id != E.user_id
+			AND EV.user_id != EC.user_id
+			AND EC.id = $1
 		) notifications
 		ORDER BY user_id, ordering ASC
 	`
