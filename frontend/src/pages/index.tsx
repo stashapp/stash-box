@@ -16,7 +16,6 @@ import {
   ROUTE_FORGOT_PASSWORD,
   ROUTE_RESET_PASSWORD,
   ROUTE_SEARCH,
-  ROUTE_SEARCH_INDEX,
   ROUTE_VERSION,
   ROUTE_SITES,
   ROUTE_DRAFTS,
@@ -63,7 +62,6 @@ const Pages: FC = () => (
             <Route path={ROUTE_FORGOT_PASSWORD} element={<ForgotPassword />} />
             <Route path={ROUTE_RESET_PASSWORD} element={<ResetPassword />} />
             <Route path={ROUTE_SEARCH} element={<Search />} />
-            <Route path={ROUTE_SEARCH_INDEX} element={<Search />} />
             <Route path={ROUTE_VERSION} element={<Version />} />
             <Route path={`${ROUTE_SITES}/*`} element={<Sites />} />
             <Route path={`${ROUTE_DRAFTS}/*`} element={<Drafts />} />
