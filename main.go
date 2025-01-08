@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash-box/pkg/manager"
 	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/manager/cron"
+	"github.com/stashapp/stash-box/pkg/manager/notifications"
 	"github.com/stashapp/stash-box/pkg/sqlx"
 	"github.com/stashapp/stash-box/pkg/user"
 )
@@ -34,6 +35,7 @@ func main() {
 	user.CreateSystemUsers(txnMgr.Repo(context.Background()))
 	api.Start(txnMgr, ui)
 	cron.Init(txnMgr)
+	notifications.Init(txnMgr)
 
 	image.InitResizer()
 
