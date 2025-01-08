@@ -1728,6 +1728,7 @@ export enum SortDirectionEnum {
 
 export type StashBoxConfig = {
   __typename: "StashBoxConfig";
+  edit_update_limit: Scalars["Int"]["output"];
   guidelines_url: Scalars["String"]["output"];
   host_url: Scalars["String"]["output"];
   min_destructive_voting_period: Scalars["Int"]["output"];
@@ -14531,6 +14532,7 @@ export type ConfigQuery = {
   __typename: "Query";
   getConfig: {
     __typename: "StashBoxConfig";
+    edit_update_limit: number;
     host_url: string;
     require_invite: boolean;
     require_activation: boolean;
@@ -53360,6 +53362,10 @@ export const ConfigDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "edit_update_limit" },
+                },
                 { kind: "Field", name: { kind: "Name", value: "host_url" } },
                 {
                   kind: "Field",
