@@ -72,7 +72,7 @@ func (r *mutationResolver) SceneEdit(ctx context.Context, input models.SceneEdit
 	})
 
 	if err == nil {
-		go notifications.OnCreateEdit(fac, newEdit)
+		go notifications.OnCreateEdit(newEdit)
 	}
 
 	return newEdit, err
@@ -108,7 +108,7 @@ func (r *mutationResolver) SceneEditUpdate(ctx context.Context, id uuid.UUID, in
 	})
 
 	if err == nil {
-		go notifications.OnUpdateEdit(fac, existingEdit)
+		go notifications.OnUpdateEdit(existingEdit)
 	}
 
 	return existingEdit, err
@@ -149,7 +149,7 @@ func (r *mutationResolver) StudioEdit(ctx context.Context, input models.StudioEd
 	})
 
 	if err == nil {
-		go notifications.OnCreateEdit(fac, newEdit)
+		go notifications.OnCreateEdit(newEdit)
 	}
 
 	return newEdit, err
@@ -185,7 +185,7 @@ func (r *mutationResolver) StudioEditUpdate(ctx context.Context, id uuid.UUID, i
 	})
 
 	if err == nil {
-		go notifications.OnUpdateEdit(fac, existingEdit)
+		go notifications.OnUpdateEdit(existingEdit)
 	}
 
 	return existingEdit, err
@@ -226,7 +226,7 @@ func (r *mutationResolver) TagEdit(ctx context.Context, input models.TagEditInpu
 	})
 
 	if err == nil {
-		go notifications.OnCreateEdit(fac, newEdit)
+		go notifications.OnCreateEdit(newEdit)
 	}
 
 	return newEdit, err
@@ -262,7 +262,7 @@ func (r *mutationResolver) TagEditUpdate(ctx context.Context, id uuid.UUID, inpu
 	})
 
 	if err == nil {
-		go notifications.OnUpdateEdit(fac, existingEdit)
+		go notifications.OnUpdateEdit(existingEdit)
 	}
 
 	return existingEdit, err
@@ -309,7 +309,7 @@ func (r *mutationResolver) PerformerEdit(ctx context.Context, input models.Perfo
 	})
 
 	if err == nil {
-		go notifications.OnCreateEdit(fac, newEdit)
+		go notifications.OnCreateEdit(newEdit)
 	}
 
 	return newEdit, err
@@ -345,7 +345,7 @@ func (r *mutationResolver) PerformerEditUpdate(ctx context.Context, id uuid.UUID
 	})
 
 	if err == nil {
-		go notifications.OnUpdateEdit(fac, existingEdit)
+		go notifications.OnUpdateEdit(existingEdit)
 	}
 
 	return existingEdit, err
@@ -395,7 +395,7 @@ func (r *mutationResolver) EditVote(ctx context.Context, input models.EditVoteIn
 	})
 
 	if err == nil && input.Vote == models.VoteTypeEnumReject {
-		go notifications.OnEditDownvote(fac, voteEdit)
+		go notifications.OnEditDownvote(voteEdit)
 	}
 
 	return voteEdit, err
@@ -421,7 +421,7 @@ func (r *mutationResolver) EditComment(ctx context.Context, input models.EditCom
 	})
 
 	if err == nil {
-		go notifications.OnEditComment(fac, comment)
+		go notifications.OnEditComment(comment)
 	}
 
 	return edit, err

@@ -157,7 +157,7 @@ func ApplyEdit(fac models.Repo, editID uuid.UUID, immediate bool) (*models.Edit,
 	})
 
 	if err == nil {
-		go notifications.OnApplyEdit(fac, updatedEdit)
+		go notifications.OnApplyEdit(updatedEdit)
 	}
 
 	return updatedEdit, err
@@ -197,7 +197,7 @@ func CloseEdit(fac models.Repo, editID uuid.UUID, status models.VoteStatusEnum) 
 	})
 
 	if err == nil && status != models.VoteStatusEnumCanceled {
-		go notifications.OnCancelEdit(fac, updatedEdit)
+		go notifications.OnCancelEdit(updatedEdit)
 	}
 
 	return updatedEdit, err

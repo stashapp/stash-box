@@ -2,10 +2,20 @@
 package notifications
 
 import (
+	"context"
+
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/sqlx"
 )
 
-func OnApplyEdit(fac models.Repo, edit *models.Edit) {
+var rfp *sqlx.TxnMgr
+
+func Init(txnMgr *sqlx.TxnMgr) {
+	rfp = txnMgr
+}
+
+func OnApplyEdit(edit *models.Edit) {
+	fac := rfp.Repo(context.Background())
 	nqb := fac.Notification()
 	eqb := fac.Edit()
 	if (edit.Status == models.VoteStatusEnumAccepted.String() || edit.Status == models.VoteStatusEnumImmediateAccepted.String()) && edit.Operation == models.OperationEnumCreate.String() {
@@ -22,11 +32,13 @@ func OnApplyEdit(fac models.Repo, edit *models.Edit) {
 	}
 }
 
-func OnCancelEdit(fac models.Repo, edit *models.Edit) {
+func OnCancelEdit(edit *models.Edit) {
+	fac := rfp.Repo(context.Background())
 	fac.Notification().TriggerFailedEditNotifications(edit.ID)
 }
 
-func OnCreateEdit(fac models.Repo, edit *models.Edit) {
+func OnCreateEdit(edit *models.Edit) {
+	fac := rfp.Repo(context.Background())
 	switch edit.TargetType {
 	case models.TargetTypeEnumPerformer.String():
 		fac.Notification().TriggerPerformerEditNotifications(edit.ID)
@@ -37,15 +49,18 @@ func OnCreateEdit(fac models.Repo, edit *models.Edit) {
 	}
 }
 
-func OnUpdateEdit(fac models.Repo, edit *models.Edit) {
+func OnUpdateEdit(edit *models.Edit) {
+	fac := rfp.Repo(context.Background())
 	fac.Notification().TriggerUpdatedEditNotifications(edit.ID)
 }
 
-func OnEditDownvote(fac models.Repo, edit *models.Edit) {
+func OnEditDownvote(edit *models.Edit) {
+	fac := rfp.Repo(context.Background())
 	fac.Notification().TriggerDownvoteEditNotifications(edit.ID)
 }
 
-func OnEditComment(fac models.Repo, comment *models.EditComment) {
+func OnEditComment(comment *models.EditComment) {
+	fac := rfp.Repo(context.Background())
 	fac.Notification().TriggerEditCommentNotifications(comment.ID)
 }
 
