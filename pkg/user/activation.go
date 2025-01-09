@@ -138,14 +138,13 @@ func ActivateNewUser(fac models.Repo, name string, id uuid.UUID, password string
 	if err != nil {
 		return nil, err
 	}
+	if t == nil || t.Type != models.UserTokenTypeNewUser {
+		return nil, ErrInvalidActivationKey
+	}
 
 	data, err := t.GetNewUserTokenData()
 	if err != nil {
 		return nil, err
-	}
-
-	if t == nil || t.Type != models.UserTokenTypeNewUser {
-		return nil, ErrInvalidActivationKey
 	}
 
 	var invitedBy *uuid.UUID
