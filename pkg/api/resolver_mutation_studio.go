@@ -171,11 +171,12 @@ func (r *mutationResolver) FavoriteStudio(ctx context.Context, id uuid.UUID, fav
 			return fmt.Errorf("studio is deleted, unable to make favorite")
 		}
 
+		studioFavorite := models.StudioFavorite{StudioID: id, UserID: user.ID}
 		if favorite {
-			err := jqb.AddStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+			err := jqb.AddStudioFavorite(studioFavorite)
 			return err
 		}
-		return jqb.DestroyStudioFavorite(models.StudioFavorite{StudioID: id, UserID: user.ID})
+		return jqb.DestroyStudioFavorite(studioFavorite)
 	})
 	return err == nil, err
 }
