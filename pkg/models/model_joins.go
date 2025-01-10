@@ -218,13 +218,15 @@ func ParseURLInput(input []*URLInput) []*URL {
 }
 
 type PerformerFavorite struct {
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	UserID      uuid.UUID `db:"user_id" json:"user_id"`
+	PerformerID uuid.UUID    `db:"performer_id" json:"performer_id"`
+	UserID      uuid.UUID    `db:"user_id" json:"user_id"`
+	CreatedAt   sql.NullTime `db:"created_at" json:"created_at"`
 }
 
 type StudioFavorite struct {
-	StudioID uuid.UUID `db:"studio_id" json:"studio_id"`
-	UserID   uuid.UUID `db:"user_id" json:"user_id"`
+	StudioID  uuid.UUID    `db:"studio_id" json:"studio_id"`
+	UserID    uuid.UUID    `db:"user_id" json:"user_id"`
+	CreatedAt sql.NullTime `db:"created_at" json:"created_at"`
 }
 
 type UserNotification struct {
