@@ -189,6 +189,10 @@ type ComplexityRoot struct {
 		UserSubmitted func(childComplexity int) int
 	}
 
+	FingerprintedSceneEdit struct {
+		Edit func(childComplexity int) int
+	}
+
 	FuzzyDate struct {
 		Accuracy func(childComplexity int) int
 		Date     func(childComplexity int) int
@@ -1449,6 +1453,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Fingerprint.UserSubmitted(childComplexity), true
+
+	case "FingerprintedSceneEdit.edit":
+		if e.complexity.FingerprintedSceneEdit.Edit == nil {
+			break
+		}
+
+		return e.complexity.FingerprintedSceneEdit.Edit(childComplexity), true
 
 	case "FuzzyDate.accuracy":
 		if e.complexity.FuzzyDate.Accuracy == nil {
@@ -4973,6 +4984,7 @@ enum NotificationEnum {
   COMMENT_COMMENTED_EDIT
   COMMENT_VOTED_EDIT
   UPDATED_EDIT
+  FINGERPRINTED_SCENE_EDIT
 }
 
 union NotificationData =
@@ -4986,6 +4998,7 @@ union NotificationData =
    | DownvoteOwnEdit
    | FailedOwnEdit
    | UpdatedEdit
+   | FingerprintedSceneEdit
 
 type FavoritePerformerScene {
   scene: Scene!
@@ -5024,6 +5037,10 @@ type CommentVotedEdit {
 }
 
 type UpdatedEdit {
+  edit: Edit!
+}
+
+type FingerprintedSceneEdit {
   edit: Edit!
 }
 
@@ -12635,6 +12652,96 @@ func (ec *executionContext) fieldContext_Fingerprint_user_reported(_ context.Con
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FingerprintedSceneEdit_edit(ctx context.Context, field graphql.CollectedField, obj *FingerprintedSceneEdit) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FingerprintedSceneEdit_edit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Edit)
+	fc.Result = res
+	return ec.marshalNEdit2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐEdit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FingerprintedSceneEdit_edit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FingerprintedSceneEdit",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Edit_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Edit_user(ctx, field)
+			case "target":
+				return ec.fieldContext_Edit_target(ctx, field)
+			case "target_type":
+				return ec.fieldContext_Edit_target_type(ctx, field)
+			case "merge_sources":
+				return ec.fieldContext_Edit_merge_sources(ctx, field)
+			case "operation":
+				return ec.fieldContext_Edit_operation(ctx, field)
+			case "bot":
+				return ec.fieldContext_Edit_bot(ctx, field)
+			case "details":
+				return ec.fieldContext_Edit_details(ctx, field)
+			case "old_details":
+				return ec.fieldContext_Edit_old_details(ctx, field)
+			case "options":
+				return ec.fieldContext_Edit_options(ctx, field)
+			case "comments":
+				return ec.fieldContext_Edit_comments(ctx, field)
+			case "votes":
+				return ec.fieldContext_Edit_votes(ctx, field)
+			case "vote_count":
+				return ec.fieldContext_Edit_vote_count(ctx, field)
+			case "destructive":
+				return ec.fieldContext_Edit_destructive(ctx, field)
+			case "status":
+				return ec.fieldContext_Edit_status(ctx, field)
+			case "applied":
+				return ec.fieldContext_Edit_applied(ctx, field)
+			case "update_count":
+				return ec.fieldContext_Edit_update_count(ctx, field)
+			case "updatable":
+				return ec.fieldContext_Edit_updatable(ctx, field)
+			case "created":
+				return ec.fieldContext_Edit_created(ctx, field)
+			case "updated":
+				return ec.fieldContext_Edit_updated(ctx, field)
+			case "closed":
+				return ec.fieldContext_Edit_closed(ctx, field)
+			case "expires":
+				return ec.fieldContext_Edit_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Edit", field.Name)
 		},
 	}
 	return fc, nil
@@ -41640,6 +41747,13 @@ func (ec *executionContext) _NotificationData(ctx context.Context, sel ast.Selec
 			return graphql.Null
 		}
 		return ec._UpdatedEdit(ctx, sel, obj)
+	case FingerprintedSceneEdit:
+		return ec._FingerprintedSceneEdit(ctx, sel, &obj)
+	case *FingerprintedSceneEdit:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._FingerprintedSceneEdit(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -43402,6 +43516,45 @@ func (ec *executionContext) _Fingerprint(ctx context.Context, sel ast.SelectionS
 			}
 		case "user_reported":
 			out.Values[i] = ec._Fingerprint_user_reported(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var fingerprintedSceneEditImplementors = []string{"FingerprintedSceneEdit", "NotificationData"}
+
+func (ec *executionContext) _FingerprintedSceneEdit(ctx context.Context, sel ast.SelectionSet, obj *FingerprintedSceneEdit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fingerprintedSceneEditImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FingerprintedSceneEdit")
+		case "edit":
+			out.Values[i] = ec._FingerprintedSceneEdit_edit(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

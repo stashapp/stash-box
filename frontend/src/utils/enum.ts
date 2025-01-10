@@ -106,4 +106,6 @@ export const NotificationType: NotificationEnumMap = {
     "A new scene from a studio you have favorited.",
   [NotificationEnum.FAVORITE_PERFORMER_SCENE]:
     "A new scene involving a performer you have favorited.",
+  [NotificationEnum.FINGERPRINTED_SCENE_EDIT]:
+    "An edit to a scene you have submitted fingerprints for.",
 };

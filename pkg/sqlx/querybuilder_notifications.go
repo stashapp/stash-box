@@ -99,6 +99,12 @@ INSERT INTO notifications
 		) E JOIN performer_favorites PF ON E.performer_id = PF.performer_id
 		JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
 		WHERE E.id = $1
+		UNION
+		SELECT N.user_id, N.type, $1
+		FROM edits E
+		JOIN scene_fingerprints SF ON E.id = SF.edit_id
+		JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FINGERPRINTED_SCENE_EDIT' AND N.user_id != E.user_id
+		WHERE E.id = $1
 	`
 	err := qb.dbi.RawExec(query, args)
 	return err

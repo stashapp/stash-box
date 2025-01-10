@@ -67,6 +67,11 @@ query Notifications($input: QueryNotificationsInput!) {
             ...EditFragment
           }
         }
+        ... on FingerprintedSceneEdit {
+          edit {
+            ...EditFragment
+          }
+        }
       }
     }
   }
