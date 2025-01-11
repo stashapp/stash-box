@@ -1,6 +1,10 @@
 import React from "react";
+import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import { faEnvelope, faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/fragments";
+import { editHref } from "src/utils";
+import { useMarkNotificationRead, NotificationEnum } from "src/graphql";
 import {
   NotificationType,
   isSceneNotification,
@@ -10,12 +14,70 @@ import {
 import { CommentNotification } from "./CommentNotification";
 import { SceneNotification } from "./sceneNotification";
 import { EditNotification } from "./EditNotification";
-import { editHref } from "src/utils";
-import { Link } from "react-router-dom";
 
 interface Props {
   notification: NotificationType;
 }
+
+const createMarkNotificationReadInput = (notification: NotificationType) => {
+  switch (notification.data.__typename) {
+    case "CommentOwnEdit":
+      return {
+        type: NotificationEnum.COMMENT_OWN_EDIT,
+        id: notification.data.comment.id,
+      };
+    case "CommentCommentedEdit":
+      return {
+        type: NotificationEnum.COMMENT_COMMENTED_EDIT,
+        id: notification.data.comment.id,
+      };
+    case "CommentVotedEdit":
+      return {
+        type: NotificationEnum.COMMENT_VOTED_EDIT,
+        id: notification.data.comment.id,
+      };
+    case "DownvoteOwnEdit":
+      return {
+        type: NotificationEnum.DOWNVOTE_OWN_EDIT,
+        id: notification.data.edit.id,
+      };
+    case "FailedOwnEdit":
+      return {
+        type: NotificationEnum.FAILED_OWN_EDIT,
+        id: notification.data.edit.id,
+      };
+    case "FavoritePerformerEdit":
+      return {
+        type: NotificationEnum.FAVORITE_PERFORMER_EDIT,
+        id: notification.data.edit.id,
+      };
+    case "FavoriteStudioEdit":
+      return {
+        type: NotificationEnum.FAVORITE_STUDIO_EDIT,
+        id: notification.data.edit.id,
+      };
+    case "FingerprintedSceneEdit":
+      return {
+        type: NotificationEnum.FINGERPRINTED_SCENE_EDIT,
+        id: notification.data.edit.id,
+      };
+    case "UpdatedEdit":
+      return {
+        type: NotificationEnum.UPDATED_EDIT,
+        id: notification.data.edit.id,
+      };
+    case "FavoritePerformerScene":
+      return {
+        type: NotificationEnum.FAVORITE_PERFORMER_SCENE,
+        id: notification.data.scene.id,
+      };
+    case "FavoriteStudioScene":
+      return {
+        type: NotificationEnum.FAVORITE_STUDIO_SCENE,
+        id: notification.data.scene.id,
+      };
+  }
+};
 
 const NotificationBody = ({
   notification,
@@ -35,6 +97,10 @@ const NotificationHeader = ({
 }: {
   notification: NotificationType;
 }) => {
+  const [markRead, { loading }] = useMarkNotificationRead({
+    notification: createMarkNotificationReadInput(notification),
+  });
+
   const headerText = () => {
     if (isCommentNotification(notification)) {
       const editLink = (
@@ -97,12 +163,21 @@ const NotificationHeader = ({
   };
 
   return (
-    <h5>
-      <Icon
-        icon={notification.read ? faEnvelopeOpen : faEnvelope}
-        variant={!notification.read ? "warning" : undefined}
-        className="me-2"
-      />
+    <h5 className="d-flex gap-2">
+      <div className="Notification-read-state">
+        {notification.read && <Icon icon={faEnvelopeOpen} />}
+        {!notification.read && (
+          <Button
+            variant="link"
+            onClick={() => markRead()}
+            title="Mark notification as read"
+            disabled={loading}
+          >
+            <Icon icon={faEnvelope} variant={"warning"} />
+            <Icon icon={faEnvelopeOpen} />
+          </Button>
+        )}
+      </div>
       {headerText()}
     </h5>
   );
@@ -110,7 +185,7 @@ const NotificationHeader = ({
 
 export const Notification: React.FC<Props> = ({ notification }) => {
   return (
-    <div className="notification">
+    <div className="Notification">
       <NotificationHeader notification={notification} />
       <NotificationBody notification={notification} />
     </div>

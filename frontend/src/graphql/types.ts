@@ -496,6 +496,11 @@ export type InviteKey = {
   uses?: Maybe<Scalars["Int"]["output"]>;
 };
 
+export type MarkNotificationReadInput = {
+  id: Scalars["ID"]["input"];
+  type: NotificationEnum;
+};
+
 export type Measurements = {
   __typename: "Measurements";
   band_size?: Maybe<Scalars["Int"]["output"]>;
@@ -658,6 +663,10 @@ export type MutationImageCreateArgs = {
 
 export type MutationImageDestroyArgs = {
   input: ImageDestroyInput;
+};
+
+export type MutationMarkNotificationsReadArgs = {
+  notification?: InputMaybe<MarkNotificationReadInput>;
 };
 
 export type MutationNewUserArgs = {
@@ -4737,6 +4746,15 @@ export type GrantInviteMutationVariables = Exact<{
 export type GrantInviteMutation = {
   __typename: "Mutation";
   grantInvite: number;
+};
+
+export type MarkNotificationReadMutationVariables = Exact<{
+  notification: MarkNotificationReadInput;
+}>;
+
+export type MarkNotificationReadMutation = {
+  __typename: "Mutation";
+  markNotificationsRead: boolean;
 };
 
 export type MarkNotificationsReadMutationVariables = Exact<{
@@ -38652,6 +38670,54 @@ export const GrantInviteDocument = {
     },
   ],
 } as unknown as DocumentNode<GrantInviteMutation, GrantInviteMutationVariables>;
+export const MarkNotificationReadDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "MarkNotificationRead" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "notification" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "MarkNotificationReadInput" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "markNotificationsRead" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "notification" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "notification" },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  MarkNotificationReadMutation,
+  MarkNotificationReadMutationVariables
+>;
 export const MarkNotificationsReadDocument = {
   kind: "Document",
   definitions: [

@@ -218,7 +218,8 @@ func (qb *notificationsQueryBuilder) GetNotificationsCount(userID uuid.UUID, fil
 func (qb *notificationsQueryBuilder) GetNotifications(userID uuid.UUID, filter models.QueryNotificationsInput) ([]*models.Notification, error) {
 	query := buildQuery(userID, filter)
 	query.Pagination = getPagination(filter.Page, filter.PerPage)
-	query.Sort = getSort("created_at", models.SortDirectionEnumDesc.String(), notificationDBTable.name, nil)
+	secondarySort := "type"
+	query.Sort = getSort("created_at", models.SortDirectionEnumDesc.String(), notificationDBTable.name, &secondarySort)
 
 	var notifications models.Notifications
 	_, err := qb.dbi.Query(*query, &notifications)
@@ -230,9 +231,14 @@ func (qb *notificationsQueryBuilder) GetNotifications(userID uuid.UUID, filter m
 	return notifications, nil
 }
 
-func (qb *notificationsQueryBuilder) MarkRead(userID uuid.UUID) error {
+func (qb *notificationsQueryBuilder) MarkAllRead(userID uuid.UUID) error {
 	args := []interface{}{userID}
 	return qb.dbi.RawExec("UPDATE notifications SET read_at = now() WHERE user_id = ? AND read_at IS NULL", args)
+}
+
+func (qb *notificationsQueryBuilder) MarkRead(userID uuid.UUID, notificationType models.NotificationEnum, id uuid.UUID) error {
+	args := []interface{}{userID, notificationType, id}
+	return qb.dbi.RawExec("UPDATE notifications SET read_at = now() WHERE user_id = ? AND type = ? AND id = ? AND read_at IS NULL", args)
 }
 
 func buildQuery(userID uuid.UUID, filter models.QueryNotificationsInput) *queryBuilder {

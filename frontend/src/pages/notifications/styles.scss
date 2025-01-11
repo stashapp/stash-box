@@ -1,5 +1,42 @@
-.notification {
+.Notification {
   .SceneCard {
     width: 300px;
+  }
+
+  &-read-state {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+
+    .btn {
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      padding: 4px 0;
+
+      .fa-envelope {
+        display: block;
+      }
+
+      .fa-envelope-open {
+        display: none;
+      }
+
+      &:hover {
+        border-color: white;
+
+        .fa-envelope {
+          display: none;
+        }
+
+        .fa-envelope-open {
+          display: block;
+          color: white !important;
+        }
+      }
+    }
   }
 }

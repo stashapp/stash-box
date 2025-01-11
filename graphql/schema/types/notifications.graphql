@@ -86,3 +86,8 @@ type QueryNotificationsResult {
   count: Int!
   notifications: [Notification!]!
 }
+
+input MarkNotificationReadInput {
+  type: NotificationEnum!
+  id: ID!
+}

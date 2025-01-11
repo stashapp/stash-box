@@ -6,12 +6,17 @@ import (
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func (r *mutationResolver) MarkNotificationsRead(ctx context.Context) (bool, error) {
+func (r *mutationResolver) MarkNotificationsRead(ctx context.Context, notification *models.MarkNotificationReadInput) (bool, error) {
 	user := getCurrentUser(ctx)
 	fac := r.getRepoFactory(ctx)
 	err := fac.WithTxn(func() error {
 		qb := fac.Notification()
-		return qb.MarkRead(user.ID)
+
+		if notification == nil {
+			return qb.MarkAllRead(user.ID)
+		}
+
+		return qb.MarkRead(user.ID, notification.Type, notification.ID)
 	})
 	return err == nil, err
 }
