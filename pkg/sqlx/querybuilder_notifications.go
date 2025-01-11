@@ -87,18 +87,43 @@ func (qb *notificationsQueryBuilder) TriggerSceneEditNotifications(editID uuid.U
 	args = append(args, editID)
 	query := `
 INSERT INTO notifications 
-		SELECT N.user_id, N.type, $1
-		FROM edits E JOIN studio_favorites SF ON (E.data->'new_data'->>'studio_id')::uuid = SF.studio_id
-		JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
-		WHERE E.id = $1
-		UNION
-		SELECT N.user_id, N.type, $1
-		FROM (
-				SELECT id, (jsonb_array_elements(edits.data->'new_data'->'added_performers')->>'performer_id')::uuid AS performer_id, user_id
-				FROM edits
-		) E JOIN performer_favorites PF ON E.performer_id = PF.performer_id
-		JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
-		WHERE E.id = $1
+    SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
+			SELECT N.user_id, N.type
+			FROM edits E JOIN studio_favorites SF ON (E.data->'new_data'->>'studio_id')::uuid = SF.studio_id
+			JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
+			WHERE E.id = $1
+			UNION
+			SELECT N.user_id, N.type
+			FROM edits E
+			JOIN scene_edits SE ON E.id = SE.edit_id
+			JOIN scenes S ON SE.scene_id = S.id
+			JOIN studio_favorites SF ON S.studio_id = SF.studio_id
+			JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDIO_EDIT' AND N.user_id != E.user_id
+			WHERE E.id = $1
+			UNION
+			SELECT N.user_id, N.type
+			FROM (
+					SELECT id, (jsonb_array_elements(edits.data->'new_data'->'added_performers')->>'performer_id')::uuid AS performer_id, user_id
+					FROM edits
+			) E JOIN performer_favorites PF ON E.performer_id = PF.performer_id
+			JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
+			WHERE E.id = $1
+			UNION
+			SELECT N.user_id, N.type
+			FROM edits E
+			JOIN scene_edits SE ON E.id = SE.edit_id
+			JOIN scene_performers SP ON SP.scene_id = SE.scene_id
+			JOIN performer_favorites PF ON PF.performer_id = SP.performer_id
+			JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
+			WHERE E.id = $1
+			UNION
+			SELECT N.user_id, N.type
+			FROM edits E
+			JOIN scene_edits SE ON E.id = SE.edit_id
+			JOIN scene_fingerprints SF ON SE.scene_id = SF.scene_id
+			JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FINGERPRINTED_SCENE_EDIT' AND N.user_id != E.user_id
+			WHERE E.id = $1
+		) notifications
 	`
 	err := qb.dbi.RawExec(query, args)
 	return err

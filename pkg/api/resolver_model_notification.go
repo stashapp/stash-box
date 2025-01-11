@@ -61,6 +61,8 @@ func (r *notificationResolver) Data(ctx context.Context, obj *models.Notificatio
 		fallthrough
 	case models.NotificationEnumFailedOwnEdit:
 		fallthrough
+	case models.NotificationEnumFingerprintedSceneEdit:
+		fallthrough
 	case models.NotificationEnumUpdatedEdit:
 		edit, err := dataloader.For(ctx).EditByID.Load(obj.TargetID)
 		if err != nil {
@@ -79,6 +81,8 @@ func (r *notificationResolver) Data(ctx context.Context, obj *models.Notificatio
 			return &models.FailedOwnEdit{Edit: edit}, nil
 		case models.NotificationEnumUpdatedEdit:
 			return &models.UpdatedEdit{Edit: edit}, nil
+		case models.NotificationEnumFingerprintedSceneEdit:
+			return &models.FingerprintedSceneEdit{Edit: edit}, nil
 		}
 	}
 	return nil, nil

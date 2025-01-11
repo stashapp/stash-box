@@ -80,6 +80,8 @@ const NotificationHeader = ({
         return `An edit was created involving a favorited performer.`;
       if (notification.data.__typename === "FavoriteStudioEdit")
         return `An edit was created involving a favorited studio.`;
+      if (notification.data.__typename === "FingerprintedSceneEdit")
+        return `An edit was created for a scene you have submitted fingerprints for.`;
     }
     if (isSceneNotification(notification)) {
       if (notification.data.__typename === "FavoriteStudioScene")
