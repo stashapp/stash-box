@@ -14,9 +14,9 @@ func (r *mutationResolver) MarkNotificationsRead(ctx context.Context, notificati
 
 		if notification == nil {
 			return qb.MarkAllRead(user.ID)
-		} else {
-			return qb.MarkRead(user.ID, notification.Type, notification.ID)
 		}
+
+		return qb.MarkRead(user.ID, notification.Type, notification.ID)
 	})
 	return err == nil, err
 }
