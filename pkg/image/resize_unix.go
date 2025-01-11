@@ -10,6 +10,8 @@ import (
 )
 
 func Resize(reader io.Reader, maxSize int) ([]byte, error) {
+	defer vips.ShutdownThread()
+
 	image, err := vips.NewImageFromReader(reader)
 	if err != nil {
 		return nil, err
