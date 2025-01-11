@@ -291,6 +291,11 @@ type IntCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type MarkNotificationReadInput struct {
+	Type NotificationEnum `json:"type"`
+	ID   uuid.UUID        `json:"id"`
+}
+
 type Measurements struct {
 	CupSize  *string `json:"cup_size,omitempty"`
 	BandSize *int    `json:"band_size,omitempty"`
