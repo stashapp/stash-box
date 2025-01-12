@@ -40,11 +40,11 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 	service := image.GetService(imageRepo)
 	reader, err := service.Read(*databaseImage)
-	defer reader.Close()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+	defer reader.Close()
 
 	if databaseImage.Width == -1 {
 		w.Header().Add("Content-Type", "image/svg+xml")
