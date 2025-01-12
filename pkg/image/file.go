@@ -1,7 +1,6 @@
 package image
 
 import (
-	"bytes"
 	"io"
 	"os"
 
@@ -12,7 +11,7 @@ import (
 
 type FileBackend struct{}
 
-func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
+func (s *FileBackend) WriteFile(file []byte, image *models.Image) error {
 	if err := config.ValidateImageLocation(); err != nil {
 		return err
 	}
@@ -26,14 +25,9 @@ func (s *FileBackend) WriteFile(file *bytes.Reader, image *models.Image) error {
 		return nil
 	}
 
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(file); err != nil {
-		return err
-	}
-
 	// write the file
 	path := GetImagePath(fileDir, image.Checksum)
-	if err := os.WriteFile(path, buf.Bytes(), os.FileMode(0644)); err != nil {
+	if err := os.WriteFile(path, file, os.FileMode(0644)); err != nil {
 		_ = os.Remove(path)
 		return err
 	}
@@ -45,7 +39,7 @@ func (s *FileBackend) DestroyFile(image *models.Image) error {
 	return os.Remove(GetImagePath(config.GetImageLocation(), image.Checksum))
 }
 
-func (s *FileBackend) ReadFile(image models.Image) (io.Reader, error) {
+func (s *FileBackend) ReadFile(image models.Image) (io.ReadCloser, error) {
 	fileDir := config.GetImageLocation()
 	path := GetImagePath(fileDir, image.Checksum)
 	return os.Open(path)

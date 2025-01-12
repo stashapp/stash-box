@@ -15,7 +15,7 @@ import (
 
 type S3Backend struct{}
 
-func (s *S3Backend) WriteFile(file *bytes.Reader, image *models.Image) error {
+func (s *S3Backend) WriteFile(file []byte, image *models.Image) error {
 	s3config := config.GetS3Config()
 	headers := s3config.UploadHeaders
 
@@ -27,11 +27,7 @@ func (s *S3Backend) WriteFile(file *bytes.Reader, image *models.Image) error {
 		return fmt.Errorf("creating minio client: %w", err)
 	}
 
-	buf := new(bytes.Buffer)
-	if _, err = buf.ReadFrom(file); err != nil {
-		return fmt.Errorf("reading from file: %w", err)
-	}
-	if err := uploadS3File(*minioClient, buf.Bytes(), s3config.Bucket, image.ID.String(), headers); err != nil {
+	if err := uploadS3File(*minioClient, file, s3config.Bucket, image.ID.String(), headers); err != nil {
 		return fmt.Errorf("uploading to s3: %w", err)
 	}
 
@@ -84,7 +80,7 @@ func uploadS3File(client minio.Client, file []byte, bucket string, id string, he
 	return err
 }
 
-func (s *S3Backend) ReadFile(image models.Image) (io.Reader, error) {
+func (s *S3Backend) ReadFile(image models.Image) (io.ReadCloser, error) {
 	ctx := context.TODO()
 
 	s3config := config.GetS3Config()

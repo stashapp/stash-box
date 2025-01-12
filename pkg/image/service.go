@@ -86,10 +86,7 @@ func (s *Service) Create(input models.ImageCreateInput) (*models.Image, error) {
 			return nil, err
 		}
 
-		if _, err = fileReader.Seek(0, 0); err != nil {
-			return nil, err
-		}
-		if err := s.Backend.WriteFile(fileReader, &newImage); err != nil {
+		if err := s.Backend.WriteFile(file, &newImage); err != nil {
 			return nil, err
 		}
 	} else if input.URL != nil {
@@ -169,6 +166,6 @@ func (s *Service) DestroyUnusedImage(imageID uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) Read(image models.Image) (io.Reader, error) {
+func (s *Service) Read(image models.Image) (io.ReadCloser, error) {
 	return s.Backend.ReadFile(image)
 }
