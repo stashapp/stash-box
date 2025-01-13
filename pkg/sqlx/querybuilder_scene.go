@@ -1156,7 +1156,7 @@ func (qb *sceneQueryBuilder) FindByURL(url string, limit int) ([]*models.Scene, 
 		FROM scenes S
 		JOIN scene_urls SU
 		ON SU.scene_id = S.id
-		WHERE SU.url = ?
+		WHERE LOWER(SU.url) = LOWER(?)
 		LIMIT ?
 	`
 	return qb.queryScenes(query, []any{url, limit})
