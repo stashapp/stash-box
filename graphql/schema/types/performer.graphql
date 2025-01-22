@@ -329,8 +329,8 @@ input PerformerQueryInput {
   """Searches name only - assumes like query unless quoted"""
   name: String
 
-  """Search aliases only - assumes like query unless quoted"""
-  alias: String
+  # """Search aliases only - assumes like query unless quoted"""
+  # alias: String
 
   disambiguation: StringCriterionInput
 
@@ -339,28 +339,29 @@ input PerformerQueryInput {
   """Filter to search urls - assumes like query unless quoted"""
   url: String
 
-  birthdate: DateCriterionInput
-  deathdate: DateCriterionInput
+  # birthdate: DateCriterionInput
+  # deathdate: DateCriterionInput
   birth_year: IntCriterionInput
   age: IntCriterionInput
 
   ethnicity: EthnicityFilterEnum
   country: StringCriterionInput
-  eye_color: EyeColorCriterionInput
-  hair_color: HairColorCriterionInput
-  height: IntCriterionInput
+  # eye_color: EyeColorCriterionInput
+  # hair_color: HairColorCriterionInput
+  # height: IntCriterionInput
 
-  cup_size: StringCriterionInput
-  band_size: IntCriterionInput
-  waist_size: IntCriterionInput
-  hip_size: IntCriterionInput
+  # cup_size: StringCriterionInput
+  # band_size: IntCriterionInput
+  # waist_size: IntCriterionInput
+  # hip_size: IntCriterionInput
 
-  breast_type: BreastTypeCriterionInput
+  # breast_type: BreastTypeCriterionInput
 
-  career_start_year: IntCriterionInput
-  career_end_year: IntCriterionInput
-  tattoos: BodyModificationCriterionInput
-  piercings: BodyModificationCriterionInput
+  # career_start_year: IntCriterionInput
+  # career_end_year: IntCriterionInput
+  # tattoos: BodyModificationCriterionInput
+  # piercings: BodyModificationCriterionInput
+
   """Filter by performerfavorite status for the current user"""
   is_favorite: Boolean
 
