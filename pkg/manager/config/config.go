@@ -77,10 +77,11 @@ type config struct {
 	HostURL   string `mapstructure:"host_url"`
 
 	// Image storage settings
-	ImageLocation string `mapstructure:"image_location"`
-	ImageBackend  string `mapstructure:"image_backend"`
-	FaviconPath   string `mapstructure:"favicon_path"`
-	ImageMaxSize  int    `mapstructure:"image_max_size"`
+	ImageLocation    string `mapstructure:"image_location"`
+	ImageBackend     string `mapstructure:"image_backend"`
+	FaviconPath      string `mapstructure:"favicon_path"`
+	ImageMaxSize     int    `mapstructure:"image_max_size"`
+	ImageJpegQuality int    `mapstructure:"image_jpeg_quality"`
 
 	// Logging options
 	LogFile     string `mapstructure:"logFile"`
@@ -277,6 +278,13 @@ func GetImageMaxSize() *int {
 		return nil
 	}
 	return &size
+}
+
+func GetImageJpegQuality() int {
+	if C.ImageJpegQuality <= 0 || C.ImageJpegQuality > 100 {
+		return 75
+	}
+	return C.ImageJpegQuality
 }
 
 // GetLogFile returns the filename of the file to output logs to.

@@ -7,6 +7,7 @@ import (
 	"math"
 
 	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 )
 
 func Resize(reader io.Reader, maxSize int) ([]byte, error) {
@@ -26,9 +27,20 @@ func Resize(reader io.Reader, maxSize int) ([]byte, error) {
 		}
 	}
 
+	format := image.Format()
+
+	if format == vips.ImageTypePNG {
+		ep := vips.NewWebpExportParams()
+		ep.StripMetadata = true
+		ep.Lossless = true
+
+		imageBytes, _, err := image.ExportWebp(ep)
+		return imageBytes, err
+	}
+
 	ep := vips.NewJpegExportParams()
 	ep.StripMetadata = true
-	ep.Quality = 80
+	ep.Quality = config.GetImageJpegQuality()
 	ep.Interlace = true
 	ep.OptimizeCoding = true
 	ep.SubsampleMode = vips.VipsForeignSubsampleAuto

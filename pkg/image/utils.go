@@ -18,6 +18,7 @@ import (
 	"github.com/disintegration/imaging"
 	issvg "github.com/h2non/go-is-svg"
 
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -81,7 +82,7 @@ func resizeImage(srcReader io.Reader, maxDimension int64) ([]byte, error) {
 		}
 	} else {
 		options := jpeg.Options{
-			Quality: 90,
+			Quality: config.GetImageJpegQuality(),
 		}
 		err = jpeg.Encode(buf, resizedImage, &options)
 		if err != nil {
