@@ -186,10 +186,12 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 		JOIN scene_fingerprints SFP ON SFP.fingerprint_id = FP.id
 	`
 
+	distance := config.GetPHashDistance()
+
 	var phashes []int64
 	var hashes []string
 	for _, fp := range fingerprints {
-		if fp.Algorithm == models.FingerprintAlgorithmPhash {
+		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
 			// Postgres only supports signed integers, so we parse
 			// as uint64 and cast to int64 to ensure values are the same.
 			value, err := strconv.ParseUint(fp.Hash, 16, 64)
@@ -215,7 +217,7 @@ func (qb *sceneQueryBuilder) FindByFullFingerprints(fingerprints []*models.Finge
 	arg := map[string]interface{}{
 		"phashes":  phashes,
 		"hashes":   hashes,
-		"distance": config.GetPHashDistance(),
+		"distance": distance,
 	}
 
 	query := `
@@ -275,10 +277,12 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 		GROUP BY scene_id, phash
 	`
 
+	distance := config.GetPHashDistance()
+
 	var phashes []int64
 	var hashes []string
 	for _, fp := range fingerprints {
-		if fp.Algorithm == models.FingerprintAlgorithmPhash {
+		if fp.Algorithm == models.FingerprintAlgorithmPhash && distance > 0 {
 			// Postgres only supports signed integers, so we parse
 			// as uint64 and cast to int64 to ensure values are the same.
 			value, err := strconv.ParseUint(fp.Hash, 16, 64)
@@ -304,7 +308,7 @@ func (qb *sceneQueryBuilder) FindIdsBySceneFingerprints(fingerprints []*models.F
 	arg := map[string]interface{}{
 		"phashes":  phashes,
 		"hashes":   hashes,
-		"distance": config.GetPHashDistance(),
+		"distance": distance,
 	}
 
 	query := strings.Join(clauses, " UNION ")
@@ -386,7 +390,7 @@ func (qb *sceneQueryBuilder) buildQuery(filter models.SceneQueryInput, userID uu
 				FROM scene_fingerprints
 				WHERE user_id = ?
 				GROUP BY scene_id
-			) T ON scenes.id = T.scene_id
+			) SFP ON scenes.id = SFP.scene_id
 		`
 		query.AddArg(userID)
 	}
@@ -1156,7 +1160,7 @@ func (qb *sceneQueryBuilder) FindByURL(url string, limit int) ([]*models.Scene, 
 		FROM scenes S
 		JOIN scene_urls SU
 		ON SU.scene_id = S.id
-		WHERE SU.url = ?
+		WHERE LOWER(SU.url) = LOWER(?)
 		LIMIT ?
 	`
 	return qb.queryScenes(query, []any{url, limit})

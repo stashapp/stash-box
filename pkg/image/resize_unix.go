@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/stashapp/stash-box/pkg/manager/config"
 	"github.com/stashapp/stash-box/pkg/models"
 )
 
@@ -22,9 +23,20 @@ func Resize(reader io.Reader, maxSize int, dbimage *models.Image, fileSize int64
 		return nil, err
 	}
 
+	format := image.Format()
+
+	if format == vips.ImageTypePNG {
+		ep := vips.NewWebpExportParams()
+		ep.StripMetadata = true
+		ep.Lossless = true
+
+		imageBytes, _, err := image.ExportWebp(ep)
+		return imageBytes, err
+	}
+
 	ep := vips.NewJpegExportParams()
 	ep.StripMetadata = true
-	ep.Quality = 80
+	ep.Quality = config.GetImageJpegQuality()
 	ep.Interlace = true
 	ep.OptimizeCoding = true
 	ep.SubsampleMode = vips.VipsForeignSubsampleAuto

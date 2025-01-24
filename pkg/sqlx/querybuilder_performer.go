@@ -974,7 +974,7 @@ func (qb *performerQueryBuilder) FindByURL(url string, limit int) ([]*models.Per
 		FROM performers P
 		JOIN performer_urls PU
 		ON PU.performer_id = P.id
-		WHERE PU.url = ?
+		WHERE LOWER(PU.url) = LOWER(?)
 		LIMIT ?
 	`
 	return qb.queryPerformers(query, []any{url, limit})

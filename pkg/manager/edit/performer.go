@@ -123,7 +123,8 @@ func (m *PerformerEditProcessor) mergeEdit(input models.PerformerEditInput, inpu
 	}
 
 	// perform a diff against the input and the current object
-	performerEdit, err := input.Details.PerformerEditFromMerge(*performer, mergeSources, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	performerEdit, err := input.Details.PerformerEditFromMerge(*performer, mergeSources, detailArgs)
 	if err != nil {
 		return err
 	}

@@ -277,7 +277,8 @@ func (m *SceneEditProcessor) mergeEdit(input models.SceneEditInput, inputArgs ut
 	}
 
 	// perform a diff against the input and the current object
-	sceneEdit, err := input.Details.SceneEditFromMerge(*scene, mergeSources, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	sceneEdit, err := input.Details.SceneEditFromMerge(*scene, mergeSources, detailArgs)
 	if err != nil {
 		return err
 	}

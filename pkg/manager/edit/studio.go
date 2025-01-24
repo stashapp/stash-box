@@ -154,7 +154,8 @@ func (m *StudioEditProcessor) mergeEdit(input models.StudioEditInput, inputArgs 
 	}
 
 	// perform a diff against the input and the current object
-	studioEdit, err := input.Details.StudioEditFromMerge(*studio, mergeSources, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	studioEdit, err := input.Details.StudioEditFromMerge(*studio, mergeSources, detailArgs)
 	if err != nil {
 		return err
 	}
