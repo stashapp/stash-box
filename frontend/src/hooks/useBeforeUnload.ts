@@ -7,6 +7,6 @@ export const useBeforeUnload = () => {
   };
   useEffect(() => {
     window.addEventListener("beforeunload", unloadListener);
+    return () => window.removeEventListener("beforeunload", unloadListener);
   }, []);
-  return () => window.removeEventListener("beforeunload", unloadListener);
 };
