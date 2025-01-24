@@ -13,7 +13,9 @@ func Resize(reader io.Reader, maxSize int, dbimage *models.Image, fileSize int64
 	defer vips.ShutdownThread()
 
 	buffer := make([]byte, fileSize)
-	reader.Read(buffer)
+	if _, err := reader.Read(buffer); err != nil {
+		return nil, err
+	}
 
 	image, err := vips.NewThumbnailFromBuffer(buffer, maxSize, maxSize, vips.InterestingNone)
 	if err != nil {
