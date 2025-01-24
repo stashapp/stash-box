@@ -56,13 +56,16 @@ const TagFilter: FC<TagFilterProps> = ({
 
     const { exact, query } = data;
 
-    const exactResult = exact
-      ? {
-          label: exact.name,
-          value: exact,
-          sublabel: exact.description ?? "",
-        }
-      : undefined;
+    const exactResult =
+      exact &&
+      (allowDeleted || !exact.deleted) &&
+      !excludeTags.includes(exact.id)
+        ? {
+            label: exact.name,
+            value: exact,
+            sublabel: exact.description ?? "",
+          }
+        : undefined;
 
     const queryResult = query
       .filter(
