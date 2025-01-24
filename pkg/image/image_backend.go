@@ -9,5 +9,5 @@ import (
 type Backend interface {
 	WriteFile(file []byte, image *models.Image) error
 	DestroyFile(image *models.Image) error
-	ReadFile(image models.Image) (io.ReadCloser, error)
+	ReadFile(image models.Image) (io.ReadCloser, int64, error)
 }

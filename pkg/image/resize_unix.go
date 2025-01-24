@@ -4,27 +4,23 @@ package image
 
 import (
 	"io"
-	"math"
 
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/stashapp/stash-box/pkg/manager/config"
+	"github.com/stashapp/stash-box/pkg/models"
 )
 
-func Resize(reader io.Reader, maxSize int) ([]byte, error) {
+func Resize(reader io.Reader, maxSize int, dbimage *models.Image, fileSize int64) ([]byte, error) {
 	defer vips.ShutdownThread()
 
-	image, err := vips.NewImageFromReader(reader)
-	if err != nil {
+	buffer := make([]byte, fileSize)
+	if _, err := io.ReadFull(reader, buffer); err != nil {
 		return nil, err
 	}
 
-	h := image.Height()
-	w := image.Width()
-	scale := float64(maxSize) / math.Max(float64(h), float64(w))
-	if scale < 1 {
-		if err := image.Resize(scale, vips.KernelCubic); err != nil {
-			return nil, err
-		}
+	image, err := vips.NewThumbnailFromBuffer(buffer, maxSize, maxSize, vips.InterestingNone)
+	if err != nil {
+		return nil, err
 	}
 
 	format := image.Format()
@@ -51,5 +47,5 @@ func Resize(reader io.Reader, maxSize int) ([]byte, error) {
 
 func InitResizer() {
 	vips.LoggingSettings(nil, vips.LogLevelWarning)
-	vips.Startup(nil)
+	vips.Startup(&vips.Config{MaxCacheSize: 0, MaxCacheMem: 0})
 }

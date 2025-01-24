@@ -13,7 +13,7 @@ type BackendService interface {
 	Destroy(input models.ImageDestroyInput) error
 	DestroyUnusedImages() error
 	DestroyUnusedImage(imageID uuid.UUID) error
-	Read(image models.Image) (io.ReadCloser, error)
+	Read(image models.Image) (io.ReadCloser, int64, error)
 }
 
 func GetService(repo models.ImageRepo) BackendService {

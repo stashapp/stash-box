@@ -33,13 +33,17 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	imageRepo := getRepo(r.Context()).Image()
 
 	databaseImage, err := imageRepo.Find(uuid)
-	if err != nil || databaseImage == nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if databaseImage == nil {
+		http.NotFound(w, r)
 		return
 	}
 
 	service := image.GetService(imageRepo)
-	reader, err := service.Read(*databaseImage)
+	reader, size, err := service.Read(*databaseImage)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -69,7 +73,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 
 	if maxSize != 0 {
 		if databaseImage.Width > int64(maxSize) || databaseImage.Height > int64(maxSize) {
-			data, err := image.Resize(reader, maxSize)
+			data, err := image.Resize(reader, maxSize, databaseImage, size)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
