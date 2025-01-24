@@ -12,12 +12,14 @@ import {
   SceneSortEnum,
   useUnmatchFingerprint,
   FingerprintAlgorithm,
+  CriterionModifier,
 } from "src/graphql";
 import { usePagination, useQueryParams } from "src/hooks";
 import { ensureEnum } from "src/utils";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "src/components/list/List";
 import Modal from "src/components/modal";
+import TagFilter from "src/components/tagFilter";
 import UserSceneLine from "./UserSceneLine";
 
 const PER_PAGE = 20;
@@ -29,6 +31,7 @@ interface Props {
 
 const sortOptions = [
   { value: SceneSortEnum.DATE, label: "Release Date" },
+  { value: SceneSortEnum.TITLE, label: "Title" },
   { value: SceneSortEnum.TRENDING, label: "Trending" },
   { value: SceneSortEnum.CREATED_AT, label: "Created At" },
   { value: SceneSortEnum.UPDATED_AT, label: "Updated At" },
@@ -52,6 +55,7 @@ export const UserFingerprintsList: FC<Props> = ({
   const [params, setParams] = useQueryParams({
     sort: { name: "sort", type: "string", default: SceneSortEnum.DATE },
     dir: { name: "dir", type: "string", default: SortDirectionEnum.DESC },
+    tag: { name: "tag", type: "string" },
   });
   const sort = ensureEnum(SceneSortEnum, params.sort);
   const direction = ensureEnum(SortDirectionEnum, params.dir);
@@ -64,6 +68,9 @@ export const UserFingerprintsList: FC<Props> = ({
       sort,
       direction,
       ...filter,
+      tags: params.tag
+        ? { value: [params.tag], modifier: CriterionModifier.INCLUDES }
+        : undefined,
     },
     submitted: true,
   });
@@ -72,6 +79,7 @@ export const UserFingerprintsList: FC<Props> = ({
 
   const filters = (
     <InputGroup className="scene-sort w-auto">
+      <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
       <Form.Select
         className="w-auto"
         onChange={(e) => setParams("sort", e.currentTarget.value.toLowerCase())}
