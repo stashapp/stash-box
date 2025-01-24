@@ -115,7 +115,8 @@ func (m *TagEditProcessor) mergeEdit(input models.TagEditInput, inputArgs utils.
 	}
 
 	// perform a diff against the input and the current object
-	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources, inputArgs)
+	detailArgs := inputArgs.Field("details")
+	tagEdit := input.Details.TagEditFromMerge(*tag, mergeSources, detailArgs)
 
 	aliases, err := tqb.GetAliases(tagID)
 
