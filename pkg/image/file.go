@@ -39,8 +39,14 @@ func (s *FileBackend) DestroyFile(image *models.Image) error {
 	return os.Remove(GetImagePath(config.GetImageLocation(), image.Checksum))
 }
 
-func (s *FileBackend) ReadFile(image models.Image) (io.ReadCloser, error) {
+func (s *FileBackend) ReadFile(image models.Image) (io.ReadCloser, int64, error) {
 	fileDir := config.GetImageLocation()
 	path := GetImagePath(fileDir, image.Checksum)
-	return os.Open(path)
+	stat, err := os.Stat(path)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	file, err := os.Open(path)
+	return file, stat.Size(), err
 }

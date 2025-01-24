@@ -80,7 +80,7 @@ func uploadS3File(client minio.Client, file []byte, bucket string, id string, he
 	return err
 }
 
-func (s *S3Backend) ReadFile(image models.Image) (io.ReadCloser, error) {
+func (s *S3Backend) ReadFile(image models.Image) (io.ReadCloser, int64, error) {
 	ctx := context.TODO()
 
 	s3config := config.GetS3Config()
@@ -89,16 +89,26 @@ func (s *S3Backend) ReadFile(image models.Image) (io.ReadCloser, error) {
 		Secure: true,
 	})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	id := image.ID.String()
 	path := id[0:2] + "/" + id[2:4] + "/" + id
 
-	return minioClient.GetObject(
+	object, err := minioClient.GetObject(
 		ctx,
 		s3config.Bucket,
 		path,
 		minio.GetObjectOptions{},
 	)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	stat, err := object.Stat()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return object, stat.Size, err
 }

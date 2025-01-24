@@ -166,6 +166,6 @@ func (s *Service) DestroyUnusedImage(imageID uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) Read(image models.Image) (io.ReadCloser, error) {
+func (s *Service) Read(image models.Image) (io.ReadCloser, int64, error) {
 	return s.Backend.ReadFile(image)
 }
