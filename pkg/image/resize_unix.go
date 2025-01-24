@@ -13,7 +13,7 @@ func Resize(reader io.Reader, maxSize int, dbimage *models.Image, fileSize int64
 	defer vips.ShutdownThread()
 
 	buffer := make([]byte, fileSize)
-	if _, err := reader.Read(buffer); err != nil {
+	if _, err := io.ReadFull(reader, buffer); err != nil {
 		return nil, err
 	}
 
