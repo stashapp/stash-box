@@ -104,6 +104,18 @@ func (c Cron) cleanInvites() {
 	}
 }
 
+func (c Cron) cleanNotifications() {
+	ctx := context.Background()
+	fac := c.rfp.Repo(ctx)
+	err := fac.WithTxn(func() error {
+		return fac.Notification().DestroyExpired()
+	})
+
+	if err != nil {
+		logger.Errorf("Error cleaning notifications: %s", err)
+	}
+}
+
 func Init(rfp api.RepoProvider) {
 	c := cron.New()
 	cronJobs := Cron{rfp}
@@ -114,6 +126,11 @@ func Init(rfp api.RepoProvider) {
 	}
 
 	_, err = c.AddFunc("@every 1m", cronJobs.cleanTokens)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = c.AddFunc("@every 60m", cronJobs.cleanNotifications)
 	if err != nil {
 		panic(err.Error())
 	}
