@@ -218,9 +218,10 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 		if filter.TargetType == nil || *filter.TargetType == "" {
 			return nil, errors.New("TargetType is required when TargetID filter is used")
 		}
+		jsonID, _ := json.Marshal(*targetID)
 
 		// Union is significantly faster than an OR query
-		query.AddWhere(fmt.Sprintf(`
+		whereQueryString := fmt.Sprintf(`
 			edits.id IN (
 				SELECT id
 				FROM edits E
@@ -230,11 +231,55 @@ func (qb *editQueryBuilder) buildQuery(filter models.EditQueryInput, userID uuid
 				FROM edits E
 				JOIN %[1]s_edits TJ ON TJ.edit_id = E.id
 				WHERE TJ.%[1]s_id = ?
-			)
-    `, strings.ToLower(filter.TargetType.String())))
+			
+    `, strings.ToLower(filter.TargetType.String()))
 
-		jsonID, _ := json.Marshal(*targetID)
-		query.AddArg(jsonID, *targetID)
+		switch *filter.TargetType {
+		case models.TargetTypeEnumPerformer:
+			// Add scenes with performer to performer edit query
+			whereQueryString += `
+			UNION
+			SELECT id
+		 	FROM edits E
+		 	WHERE jsonb_path_query_array(data, '$.new_data.added_performers[*].performer_id') @> ? 
+		 	AND E.status = 'PENDING'
+		 	AND E.target_type = 'SCENE'
+			)
+			`
+			query.AddWhere(whereQueryString)
+			query.AddArg(jsonID, *targetID, jsonID)
+		case models.TargetTypeEnumStudio:
+			// Add scenes with studio to studio edit query
+			whereQueryString += `
+			UNION
+			SELECT id
+			FROM edits E
+			WHERE E.status = 'PENDING' AND
+            E.target_type = 'SCENE' AND
+			E.data->'new_data'->'studio_id' @> ?
+			)
+			`
+			query.AddWhere(whereQueryString)
+			query.AddArg(jsonID, *targetID, jsonID)
+		case models.TargetTypeEnumTag:
+			// Add scenes with tag to tag edit query
+			whereQueryString += `
+			UNION
+			SELECT id
+			FROM edits E
+			WHERE E.status = 'PENDING' AND
+            E.target_type = 'SCENE' AND
+			E.data->'new_data'->'added_tags' @> ?
+			)
+			`
+			query.AddWhere(whereQueryString)
+			query.AddArg(jsonID, *targetID, jsonID)
+		default:
+			whereQueryString += ")"
+			query.AddWhere(whereQueryString)
+			query.AddArg(jsonID, *targetID)
+		}
+
 	} else if q := filter.TargetType; q != nil && *q != "" {
 		query.Eq("target_type", q.String())
 	}
